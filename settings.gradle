@@ -1,0 +1,14 @@
+pluginManagement {
+    plugins {
+        id "com.github.node-gradle.node" version "${nodeGradleVersion}"
+        id "com.google.protobuf" version "${googleProtobufPluginVersion}"
+        id "org.flywaydb.flyway" version "${flywayVersion}"
+    }
+
+    repositories {
+        gradlePluginPortal()
+        maven { url "https://repo.spring.io/release" }
+    }
+}
+
+rootProject.name = "snow-white"
