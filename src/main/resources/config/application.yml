@@ -1,3 +1,9 @@
+grpc:
+  server:
+    port: ${APPL_GRPC_SERVER_PORT:9090}
+management:
+  server:
+    port: 8090
 server:
   port: ${APPL_HTTP_SERVER_PORT:8080}
 spring:
@@ -11,6 +17,3 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-grpc:
-  server:
-    port: ${APPL_GRPC_SERVER_PORT:9090}

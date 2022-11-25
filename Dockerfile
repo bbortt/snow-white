@@ -3,8 +3,9 @@ LABEL maintainer="Timon Borter <bbortt.github.io>"
 
 ENTRYPOINT ["java", "-jar", "snow-white.jar"]
 
-EXPOSE 8080
-EXPOSE 9090
+EXPOSE 8080 # Default HTTP Port
+EXPOSE 8090 # Default Spring Actuator Port
+EXPOSE 9090 # Default gRPC Port
 
 RUN useradd -ms /bin/sh snow-white && \
     apt update && \

@@ -1,0 +1,36 @@
+openapi: 3.0.1
+info:
+  title: Snow White
+  description: The Snow White REST API definition
+  contact:
+    email: timon.borter@gmx.ch
+  license:
+    name: Apache 2.0
+    url: https://github.com/bbortt/snow-white/blob/release/LICENSE
+  version: 1.0.0
+servers:
+  - description: Localhost
+    url: http://localhost:8080
+tags:
+  - name: span-resource
+    description: The Span resource.
+paths:
+  /api/rest/v1/spans/count:
+    get:
+      tags:
+        - span-resource
+      summary: Count the number of recorded spans.
+      description: |
+        This will count the number of recorded spans. It is just a demo API
+        endpoint and will be removed in future releases!
+      operationId: countRecordedSpans
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        500:
+          description: INTERNAL SERVER ERROR

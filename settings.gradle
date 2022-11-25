@@ -4,6 +4,7 @@ pluginManagement {
         id "com.google.protobuf" version "${googleProtobufPluginVersion}"
         id "io.spring.dependency-management" version "${springDependenciesVersion}"
         id "org.flywaydb.flyway" version "${flywayVersion}"
+        id "org.openapi.generator" version "${openApiGeneratorVersion}"
         id "org.springframework.boot" version "${springBootVersion}"
     }
 
