@@ -1,10 +1,10 @@
 plugins {
-	id "com.github.node-gradle.node"
-	id "com.google.protobuf"
-	id "java"
-	id "org.flywaydb.flyway"
-	id "org.springframework.boot" version "3.0.0"
-	id "io.spring.dependency-management" version "1.1.0"
+    id "com.github.node-gradle.node"
+    id "com.google.protobuf"
+    id "java"
+    id "org.flywaydb.flyway"
+    id "org.springframework.boot"
+    id "io.spring.dependency-management"
 }
 
 group = "io.github.bbortt"
@@ -14,115 +14,106 @@ sourceCompatibility = "${sourceCompatibility}"
 assert System.properties["java.specification.version"] == "${sourceCompatibility}"
 
 repositories {
-	mavenLocal()
-	mavenCentral()
+    mavenLocal()
+    mavenCentral()
 }
 
 clean {
-	delete "${node.workDir}"
-	delete "${node.npmWorkDir}"
-	delete "${node.nodeProjectDir}"
+    delete "${node.workDir}"
+    delete "${node.npmWorkDir}"
+    delete "${node.nodeProjectDir}"
 }
 
 dependencies {
-	implementation "com.google.protobuf:protobuf-java:${googleProtobufVersion}"
-	implementation "io.grpc:grpc-stub:${ioGrpcVersion}"
-	implementation "io.grpc:grpc-protobuf:${ioGrpcVersion}"
-	implementation "jakarta.annotation:jakarta.annotation-api:2.1.1"
-	implementation "javax.annotation:javax.annotation-api:1.3.2"
-	implementation "net.devh:grpc-spring-boot-starter:2.14.0.RELEASE"
-	implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-	implementation "org.springframework.boot:spring-boot-starter-web"
-	developmentOnly "org.springframework.boot:spring-boot-devtools"
-	runtimeOnly "org.postgresql:postgresql"
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+    implementation "com.google.protobuf:protobuf-java:${googleProtobufVersion}"
+    implementation "io.grpc:grpc-stub:${ioGrpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${ioGrpcVersion}"
+    implementation "jakarta.annotation:jakarta.annotation-api:2.1.1"
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    implementation "net.devh:grpc-server-spring-boot-starter:2.14.0.RELEASE"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-undertow"
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    // TODO: Should be `developmentOnly "com.h2database:h2"` later!
+    implementation "com.h2database:h2"
+    developmentOnly "org.springframework.boot:spring-boot-devtools"
+    runtimeOnly "org.postgresql:postgresql"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 node {
-	version = "16.17.0"
-	npmVersion = "8.15.0"
-	npmInstallCommand = "ci"
-	download = project.hasProperty("nodeInstall")
-	workDir = file("${project.rootDir}/.gradle/nodejs")
-	npmWorkDir = file("${project.rootDir}/.gradle/npm")
+    version = "16.17.0"
+    npmVersion = "8.15.0"
+    npmInstallCommand = "ci"
+    download = project.hasProperty("nodeInstall")
+    workDir = file("${project.rootDir}/.gradle/nodejs")
+    npmWorkDir = file("${project.rootDir}/.gradle/npm")
 }
 
 task prettier(type: NpmTask, dependsOn: "npmInstall") {
-	args = ["run", "prettier:check"]
+    args = ["run", "prettier:check"]
 }
 check.dependsOn prettier
 
-//task downloadOpenTelemetryProtobuf(){
-//	def f = new File("src/main/proto/trace/v1/trace.proto")
-//	if (!f.exists()) {
-//		new URL("the url").withInputStream{ i -> f.withOutputStream{ it << i }}
-//	}
-//}
-
 protobuf {
-	protoc {
-		artifact = "com.google.protobuf:protoc:${googleProtobufVersion}"
-	}
-	plugins {
-		// Optional: an artifact spec for a protoc plugin, with "grpc" as
-		// the identifier, which can be referred to in the "plugins"
-		// container of the "generateProtoTasks" closure.
-		grpc {
-			artifact = "io.grpc:protoc-gen-grpc-java:${ioGrpcVersion}"
-		}
-	}
-	generateProtoTasks {
-		ofSourceSet("main").configureEach {
-			plugins {
-				// Apply the "grpc" plugin whose spec is defined above, without
-				// options.  Note the braces cannot be omitted, otherwise the
-				// plugin will not be added. This is because of the implicit way
-				// NamedDomainObjectContainer binds the methods.
-				grpc { }
-			}
-		}
-	}
+    protoc {
+        artifact = "com.google.protobuf:protoc:${googleProtobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${ioGrpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").configureEach {
+            plugins {
+                grpc {}
+            }
+        }
+    }
 }
 
 flyway {
-	locations = ["filesystem:src/main/resources/db/migration"]
+    locations = ["filesystem:src/main/resources/db/migration"]
 }
 
 task flywayMigrateDev(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-	url = "jdbc:postgresql://localhost:5432/snow_white"
-	user = "snow_white"
-	password = "snow_white_password"
+    url = "jdbc:postgresql://localhost:5432/snow_white"
+    user = "snow_white"
+    password = "snow_white_password"
 }
 
 task flywayMigrateTest(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-	url = "jdbc:postgresql://localhost:5432/snow_white_test"
-	user = "snow_white"
-	password = "snow_white_password"
+    url = "jdbc:postgresql://localhost:5432/snow_white_test"
+    user = "snow_white"
+    password = "snow_white_password"
 }
 
 task flywayCleanTest(type: org.flywaydb.gradle.task.FlywayCleanTask) {
-	url = "jdbc:postgresql://localhost:5432/snow_white_test"
-	user = "snow_white"
-	password = "snow_white_password"
+    url = "jdbc:postgresql://localhost:5432/snow_white_test"
+    user = "snow_white"
+    password = "snow_white_password"
 }
 
 test {
-	useJUnitPlatform()
-	exclude "**/*IntegrationTest*"
+    useJUnitPlatform()
+    exclude "**/*IntegrationTest*"
 }
 
 task testReport(type: TestReport) {
-	destinationDir = file("$buildDir/reports/tests")
-	reportOn test
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
 }
 
 task integrationTest(type: Test, dependsOn: test) {
-	useJUnitPlatform()
-	include "**/*IntegrationTest*"
+    useJUnitPlatform()
+    include "**/*IntegrationTest*"
 }
 check.dependsOn integrationTest
 
 task integrationTestReport(type: TestReport) {
-	destinationDir = file("$buildDir/reports/tests")
-	reportOn integrationTest
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn integrationTest
 }

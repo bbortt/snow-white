@@ -2,7 +2,9 @@ pluginManagement {
     plugins {
         id "com.github.node-gradle.node" version "${nodeGradleVersion}"
         id "com.google.protobuf" version "${googleProtobufPluginVersion}"
+        id "io.spring.dependency-management" version "${springDependenciesVersion}"
         id "org.flywaydb.flyway" version "${flywayVersion}"
+        id "org.springframework.boot" version "${springBootVersion}"
     }
 
     repositories {
