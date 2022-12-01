@@ -1,8 +1,0 @@
-logging:
-  level:
-    web: debug
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/snow_white
-    username: snow_white
-    password: snow_white_password

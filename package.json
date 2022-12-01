@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "prepare": "husky install",
-    "prettier": "prettier \"{,apps/**/}*.{md,java,json,y(a)?ml,html,js,ts,tsx,css,scss}\"",
+    "prettier": "prettier \"{,src/**/}*.{md,java,json,y(a)?ml,html,js,ts,tsx,css,scss}\"",
     "prettier:check": "npm run prettier -- --check",
     "prettier:format": "npm run prettier -- --write",
     "semantic-release": "semantic-release"

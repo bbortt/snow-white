@@ -1,0 +1,6 @@
+quarkus:
+  datasource:
+    username: snow_white
+    password: snow_white_password
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/snow_white_test

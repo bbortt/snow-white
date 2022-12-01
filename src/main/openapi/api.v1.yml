@@ -2,6 +2,7 @@ openapi: 3.0.1
 info:
   title: Snow White
   description: The Snow White REST API definition
+  x-otel-service-name: snow-white
   contact:
     email: timon.borter@gmx.ch
   license:
@@ -13,7 +14,9 @@ servers:
     url: http://localhost:8080
 tags:
   - name: span-resource
-    description: The Span resource.
+    description: The resource managing all around spans.
+  - name: specification-resource
+    description: The resource managing all around specifications.
 paths:
   /api/rest/v1/spans/count:
     get:
@@ -33,4 +36,114 @@ paths:
                 type: integer
                 format: int64
         500:
-          description: INTERNAL SERVER ERROR
+          description: Kinda no clue what went wrong at this point...
+  /api/v1/specifications/openapi:
+    post:
+      tags:
+        - specification-resource
+      summary: Upload OpenAPI specification files.
+      description: |
+        This will record the paths of the OpenAPI specifications and register
+        it for later observability. The application will never record spans for
+        any endpoints if it is not contained in any OpenAPI specification
+        uploaded beforehand.
+      operationId: uploadOpenapiSpecifications
+      parameters:
+        - name: Content-Type
+          description: multipart/form-data description.
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - specification
+              properties:
+                specification:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        204:
+          $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        409:
+          $ref: '#/components/responses/ConflictingOpenApiSpecification'
+        500:
+          description: Kinda no clue what went wrong at this point...
+  /api/v1/specifications/openapi/force:
+    post:
+      tags:
+        - specification-resource
+      summary: Force-upload OpenAPI specification files.
+      description: |
+        Use this method with caution! This will overwrite existing versions of
+        the same OpenAPI specification regardless of any errors that might
+        occure. This method should only be used with prerelease versions and
+        only after checking that the upload using the endpoint at
+        `/api/v1/specifications/openapi` did not succeed.
+      parameters:
+        - name: Content-Type
+          description: multipart/form-data description.
+          schema:
+            type: string
+          in: header
+          required: true
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - specification
+              properties:
+                specification:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        204:
+          $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        500:
+          description: Kinda no clue what went wrong at this point...
+components:
+  responses:
+    ConflictingOpenApiSpecification:
+      description: |
+        You attempted to upload an OpenApi specification in a version that
+        already exists on the server, but with a different body (hash matching)!
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                specification:
+                  type: string
+                  description: |
+                    The x-otel-service-name of the conflicting OpenApi
+                    specification.
+                uploadDate:
+                  type: string
+                  format: date-time
+                  description: Date and time of upload.
+                  example: '2022-01-1T08:30:00Z'
+    OpenApiSpecificationUploadWithHints:
+      description: |
+        The upload of the OpenAPi specifications succeeded. We're a kind server
+        and validate all specifications for you. If any of the specifications
+        containted warnings, not errors, we will hint you about it.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
