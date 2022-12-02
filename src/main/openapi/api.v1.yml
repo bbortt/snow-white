@@ -46,7 +46,8 @@ paths:
         This will record the paths of the OpenAPI specifications and register
         it for later observability. The application will never record spans for
         any endpoints if it is not contained in any OpenAPI specification
-        uploaded beforehand.
+        uploaded beforehand. All specifications must contain the `x-otel-service-name`
+        information, otherwise we cannot identify belonging resource later on.
       operationId: uploadOpenapiSpecifications
       parameters:
         - name: Content-Type
@@ -72,6 +73,8 @@ paths:
       responses:
         204:
           $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        400:
+          $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
         409:
           $ref: '#/components/responses/ConflictingOpenApiSpecification'
         500:
@@ -86,7 +89,9 @@ paths:
         the same OpenAPI specification regardless of any errors that might
         occure. This method should only be used with prerelease versions and
         only after checking that the upload using the endpoint at
-        `/api/v1/specifications/openapi` did not succeed.
+        `/api/v1/specifications/openapi` did not succeed. All specifications
+        must contain the `x-otel-service-name` information, otherwise we cannot
+        identify belonging resource later on.
       parameters:
         - name: Content-Type
           description: multipart/form-data description.
@@ -111,10 +116,24 @@ paths:
       responses:
         204:
           $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        400:
+          $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
         500:
           description: Kinda no clue what went wrong at this point...
 components:
   responses:
+    InvalidOpenApiSpecification:
+      description: |
+        The upload of the OpenAPi specifications (at least partially)
+        succeeded. We're a kind server and validate all specifications
+        for you. If any of the specifications contained warnings, not
+        errors, we will hint you about it.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/OpenApiSpecificationInformation'
     ConflictingOpenApiSpecification:
       description: |
         You attempted to upload an OpenApi specification in a version that
@@ -124,26 +143,31 @@ components:
           schema:
             type: array
             items:
-              type: object
-              properties:
-                specification:
-                  type: string
-                  description: |
-                    The x-otel-service-name of the conflicting OpenApi
-                    specification.
-                uploadDate:
-                  type: string
-                  format: date-time
-                  description: Date and time of upload.
-                  example: '2022-01-1T08:30:00Z'
+              $ref: '#/components/schemas/OpenApiSpecificationInformation'
     OpenApiSpecificationUploadWithHints:
       description: |
         The upload of the OpenAPi specifications succeeded. We're a kind server
         and validate all specifications for you. If any of the specifications
-        containted warnings, not errors, we will hint you about it.
+        contained warnings, not errors, we will hint you about it.
       content:
         application/json:
           schema:
             type: array
             items:
               type: string
+  schemas:
+    OpenApiSpecificationInformation:
+      type: object
+      required:
+        - specification
+      properties:
+        specification:
+          type: string
+          description: |
+            The `x-otel-service-name` of the conflicting OpenApi
+            specification.
+        uploadDate:
+          type: string
+          format: date-time
+          description: Date and time of upload.
+          example: '2022-01-1T08:30:00Z'
