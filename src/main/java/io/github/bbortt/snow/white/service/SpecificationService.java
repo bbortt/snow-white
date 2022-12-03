@@ -40,6 +40,8 @@ public class SpecificationService {
 
     if (result.getMessages() != null) result.getMessages().forEach(System.err::println); // validation errors and warnings
 
+    // String sha256hex = DigestUtils.sha256Hex(originalString);
+
     return List.of();
   }
 }
