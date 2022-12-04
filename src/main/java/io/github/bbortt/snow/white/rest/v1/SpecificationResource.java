@@ -50,8 +50,14 @@ public class SpecificationResource {
   }
 
   private Map<String, List<FileItem>> parseMultipartRequest(String contentType, InputStream specificationInputStream) {
+    logger.debug("Parsing multipart request...");
+
     try {
-      return MultipartParser.parseRequest(specificationInputStream.readAllBytes(), contentType);
+      Map<String, List<FileItem>> multiparts = MultipartParser.parseRequest(specificationInputStream.readAllBytes(), contentType);
+
+      logger.trace("Parsed {} different multipart files", multiparts.size());
+
+      return multiparts;
     } catch (FileUploadException | IOException e) {
       logger.error("Failed to read OpenAPI specification from multipart request!", e);
       throw new IllegalArgumentException(e);

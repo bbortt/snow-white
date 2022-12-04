@@ -36,6 +36,7 @@ dependencies {
     implementation "io.quarkus:quarkus-reactive-pg-client"
     implementation "io.quarkus:quarkus-arc"
     implementation "io.quarkus:quarkus-smallrye-health"
+    compileOnly "org.postgresql:postgresql"
     testImplementation "io.quarkus:quarkus-junit5"
     testImplementation "io.rest-assured:rest-assured"
     implementation "javax.validation:validation-api:2.0.1.Final"
