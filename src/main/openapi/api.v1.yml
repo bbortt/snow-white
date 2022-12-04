@@ -41,13 +41,14 @@ paths:
     post:
       tags:
         - specification-resource
-      summary: Upload OpenAPI specification files.
+      summary: Upload an OpenAPI specification.
       description: |
-        This will record the paths of the OpenAPI specifications and register
-        it for later observability. The application will never record spans for
-        any endpoints if it is not contained in any OpenAPI specification
-        uploaded beforehand.
-      operationId: uploadOpenapiSpecifications
+        This will record the paths of the OpenAPI specification and register it
+        for later observability. The application will never record spans for any
+        endpoints if it is not contained in any OpenAPI specification uploaded
+        beforehand. All specifications must contain the `x-otel-service-name`
+        information, otherwise we cannot identify belonging resource later on.
+      operationId: uploadOpenapiSpecification
       parameters:
         - name: Content-Type
           description: multipart/form-data description.
@@ -65,13 +66,14 @@ paths:
                 - specification
               properties:
                 specification:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
+                  type: string
+                  format: binary
       responses:
         204:
           $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        400:
+          description: |
+            The uploaded OpenAPi specification is invalid!
         409:
           $ref: '#/components/responses/ConflictingOpenApiSpecification'
         500:
@@ -80,13 +82,16 @@ paths:
     post:
       tags:
         - specification-resource
-      summary: Force-upload OpenAPI specification files.
+      summary: Force-upload an OpenAPI specification.
       description: |
         Use this method with caution! This will overwrite existing versions of
         the same OpenAPI specification regardless of any errors that might
-        occure. This method should only be used with prerelease versions and
+        occur. This method should only be used with prerelease versions and
         only after checking that the upload using the endpoint at
-        `/api/v1/specifications/openapi` did not succeed.
+        `/api/v1/specifications/openapi` did not succeed. All specifications
+        must contain the `x-otel-service-name` information, otherwise we cannot
+        identify belonging resource later on.
+      operationId: forceUploadOpenApiSpecification
       parameters:
         - name: Content-Type
           description: multipart/form-data description.
@@ -104,17 +109,29 @@ paths:
                 - specification
               properties:
                 specification:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
+                  type: string
+                  format: binary
       responses:
         204:
           $ref: '#/components/responses/OpenApiSpecificationUploadWithHints'
+        400:
+          description: |
+            The uploaded OpenAPi specification is invalid!
         500:
           description: Kinda no clue what went wrong at this point...
 components:
   responses:
+    OpenApiSpecificationUploadWithHints:
+      description: |
+        The upload of the OpenAPi specification succeeded. We're a kind server
+        and validate all specifications for you. If the specification contained
+        warnings (not errors!) we will hint you about it.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
     ConflictingOpenApiSpecification:
       description: |
         You attempted to upload an OpenApi specification in a version that
@@ -124,26 +141,20 @@ components:
           schema:
             type: array
             items:
-              type: object
-              properties:
-                specification:
-                  type: string
-                  description: |
-                    The x-otel-service-name of the conflicting OpenApi
-                    specification.
-                uploadDate:
-                  type: string
-                  format: date-time
-                  description: Date and time of upload.
-                  example: '2022-01-1T08:30:00Z'
-    OpenApiSpecificationUploadWithHints:
-      description: |
-        The upload of the OpenAPi specifications succeeded. We're a kind server
-        and validate all specifications for you. If any of the specifications
-        containted warnings, not errors, we will hint you about it.
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              type: string
+              $ref: '#/components/schemas/OpenApiSpecificationInformation'
+  schemas:
+    OpenApiSpecificationInformation:
+      type: object
+      required:
+        - specification
+      properties:
+        specification:
+          type: string
+          description: |
+            The `x-otel-service-name` of the conflicting OpenApi
+            specification.
+        uploadDate:
+          type: string
+          format: date-time
+          description: Date and time of upload.
+          example: '2022-01-1T08:30:00Z'
