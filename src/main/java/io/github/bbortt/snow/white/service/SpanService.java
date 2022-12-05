@@ -41,8 +41,8 @@ public class SpanService {
     return Uni.createFrom().voidItem();
   }
 
-  @Transactional
   @ConsumeEvent
+  @Transactional
   public void persistResourceSpans(PersistResourceSpansEvent persistResourceSpansEvent) {}
 
   private boolean specificationServiceContainsOpenAPISpecificationForServiceExists(ResourceSpans resourceSpans) {
