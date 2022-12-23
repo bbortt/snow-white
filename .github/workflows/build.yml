@@ -30,7 +30,7 @@ jobs:
           java-version: 17
       - run: ./gradlew flywayMigrateTest --no-daemon --scan
       - run: ./gradlew nativeTest --no-daemon --scan
-      - uses: actions/cache@v3.2.0
+      - uses: actions/cache@v3.2.1
         with:
           path: |
             ~/.gradle/caches
