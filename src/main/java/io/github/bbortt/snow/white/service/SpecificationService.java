@@ -36,14 +36,16 @@ public class SpecificationService {
           .values()
           .stream()
           .flatMap(Collection::stream)
-          .map(fileItem -> tryToParseOpenAPI(fileItem, forcePersist))
+          .map(fileItem -> parseFileItemAndPersistOpenApi(fileItem, forcePersist))
           .flatMap(Collection::stream)
       );
   }
 
-  private List<String> tryToParseOpenAPI(FileItem fileItem, boolean forcePersist) {
+  private List<String> parseFileItemAndPersistOpenApi(FileItem fileItem, boolean forcePersist) {
     SwaggerParseResult result = new OpenAPIParser().readContents(fileItem.getString(), null, new ParseOptions());
     // OpenAPI openAPI = result.getOpenAPI();
+
+    logger.info("Parsed OpenAPI: {}", result.getOpenAPI().getInfo());
 
     return result.getMessages() == null ? List.of() : result.getMessages();
   }
