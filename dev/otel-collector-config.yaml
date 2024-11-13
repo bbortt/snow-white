@@ -1,0 +1,81 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+        cors:
+          allowed_origins:
+            - 'http://localhost:*'
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+  batch:
+    send_batch_size: 512
+    send_batch_max_size: 1024
+  filter/snow-white:
+    error_mode: propagate
+    spans:
+      exclude:
+        match_type: strict
+        services:
+  groupbyattrs/service:
+    keys:
+      - service.name
+      - service.namespace
+      - service.version
+  groupbytrace:
+    wait_duration: 5s
+    num_traces: 512
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"
+    check_collector_pipeline:
+      enabled: true
+      interval: 30s
+  zpages: {}
+exporters:
+  debug/basic:
+    verbosity: basic
+    sampling_initial: 5
+  debug/detailed:
+    verbosity: detailed
+    sampling_initial: 5
+  kafka/snow-white:
+    brokers:
+      - kafka:9092
+    protocol_version: 2.0.0
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
+  prometheus:
+    endpoint: "0.0.0.0:8090"
+    send_timestamps: true
+    metric_expiration: 10m
+    enable_open_metrics: true
+    resource_to_telemetry_conversion:
+      enabled: true
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    logs/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug/basic, kafka/snow-white]
+    metrics/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, groupbyattrs/service]
+      exporters: [debug/basic, kafka/snow-white] # For debugging purposes `prometheus` can be enabled
+    traces/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, groupbytrace, batch]
+      exporters: [debug/basic, kafka/snow-white]
+  telemetry:
+    logs:
+      level: WARN # DEBUG
+      sampling:
+        initial: 100
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888
