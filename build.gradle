@@ -25,7 +25,7 @@ clean {
 
 dependencies {
     implementation enforcedPlatform("io.quarkus.platform:quarkus-bom:${quarkusPlatformVersion}")
-    implementation "commons-fileupload:commons-fileupload:1.4"
+    implementation "commons-fileupload:commons-fileupload:1.5"
     implementation "io.opentelemetry:opentelemetry-semconv:1.22.0-alpha"
     implementation "io.swagger.parser.v3:swagger-parser:2.1.11"
     implementation "io.quarkus:quarkus-config-yaml"
