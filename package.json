@@ -1,0 +1,39 @@
+{
+  "name": "snow-white",
+  "version": "1.0.0",
+  "description": "An awesome pairing with, well.. do you know Snow White and the Jaeger?",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky",
+    "prettier": "prettier \"{,**/}*.{java,js,md,xml,yaml,yml}\"",
+    "prettier:check": "npm run prettier -- --list-different",
+    "prettier:format": "npm run prettier -- --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/bbortt/snow-white.git"
+  },
+  "keywords": [
+    "coverage",
+    "jaeger",
+    "openapi",
+    "test",
+    "testautomation",
+    "tracing"
+  ],
+  "author": "Timon Borter <timon.borter@gmx.ch>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bbortt/snow-white/issues"
+  },
+  "homepage": "https://github.com/bbortt/snow-white#readme",
+  "devDependencies": {
+    "@commitlint/config-conventional": "19.5.0",
+    "@prettier/plugin-xml": "3.4.1",
+    "commitlint": "19.5.0",
+    "husky": "9.1.6",
+    "lint-staged": "15.2.10",
+    "prettier": "3.3.3",
+    "prettier-plugin-java": "2.6.5"
+  }
+}
