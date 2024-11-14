@@ -1,0 +1,25 @@
+{
+  "name": "swagger-petstore-1.0.11.tgz",
+  "properties": [
+    {
+      "key": "stage"
+    },
+    {
+      "key": "oas.info.title",
+      "value": "Swagger Petstore - OpenAPI 3.1"
+    },
+    {
+      "key": "oas.info.version",
+      "value": "1.0.11"
+    },
+    {
+      "key": "oas.info.x-otel-service-name",
+      "value": "example-application"
+    },
+    {
+      "key": "oas.type",
+      "value": "openapi"
+    }
+  ],
+  "source": "http://repo.example.com/sir/petstore.yml"
+}
