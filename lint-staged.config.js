@@ -1,3 +1,3 @@
 module.exports = {
-  '{,**/}*.{java,js,md,xml,yaml,yml}': ['prettier --ignore-unknown --write'],
+  '{,**/}*.{java,js,json,md,xml,yaml,yml}': ['prettier --write'],
 };

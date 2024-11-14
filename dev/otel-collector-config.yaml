@@ -2,9 +2,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: "0.0.0.0:4317"
+        endpoint: '0.0.0.0:4317'
       http:
-        endpoint: "0.0.0.0:4318"
+        endpoint: '0.0.0.0:4318'
         cors:
           allowed_origins:
             - 'http://localhost:*'
@@ -22,6 +22,7 @@ processors:
       exclude:
         match_type: strict
         services:
+          - api-sync-job
   groupbyattrs/service:
     keys:
       - service.name
@@ -32,7 +33,7 @@ processors:
     num_traces: 512
 extensions:
   health_check:
-    endpoint: "0.0.0.0:13133"
+    endpoint: '0.0.0.0:13133'
     check_collector_pipeline:
       enabled: true
       interval: 30s
@@ -46,11 +47,12 @@ exporters:
     sampling_initial: 5
   kafka/snow-white:
     brokers:
-      - kafka:9092
+      - kafka:9094
     protocol_version: 2.0.0
+    partition_traces_by_id: true
   # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
   prometheus:
-    endpoint: "0.0.0.0:8090"
+    endpoint: '0.0.0.0:8090'
     send_timestamps: true
     metric_expiration: 10m
     enable_open_metrics: true
@@ -62,12 +64,12 @@ service:
     logs/infra:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [debug/basic, kafka/snow-white]
+      exporters: [debug/basic]
     metrics/infra:
       receivers: [otlp]
       processors: [memory_limiter, batch, groupbyattrs/service]
-      exporters: [debug/basic, kafka/snow-white] # For debugging purposes `prometheus` can be enabled
-    traces/infra:
+      exporters: [debug/basic] # For debugging purposes `prometheus` can be enabled
+    traces/snow-white:
       receivers: [otlp]
       processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, kafka/snow-white]

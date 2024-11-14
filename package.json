@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
-    "prettier": "prettier \"{,**/}*.{java,js,md,xml,yaml,yml}\"",
+    "prettier": "prettier \"{,**/}*.{java,js,json,md,xml,yaml,yml}\"",
     "prettier:check": "npm run prettier -- --list-different",
     "prettier:format": "npm run prettier -- --write"
   },
