@@ -1,0 +1,31 @@
+bug:
+  - head-branch: ['^fix', '^bugfix', 'fix']
+
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package*.json'
+          - '**/pom.xml'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+
+feature:
+  - head-branch: ['^feat', 'feature']
+
+github_actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/*'
+
+java:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.java'
