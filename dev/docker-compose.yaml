@@ -8,7 +8,7 @@ networks:
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.113.0
+    image: otel/opentelemetry-collector-contrib:0.115.1
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
@@ -68,7 +68,22 @@ services:
     networks:
       - internal
 
-  kafka-ui:
+  kafka.schema-registry:
+    image: confluentinc/cp-schema-registry:7.7.2
+    hostname: schemaregistry
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9094
+    ports:
+      - '8081:8081'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  kafka.ui:
     image: provectuslabs/kafka-ui:v0.7.2
     environment:
       KAFKA_CLUSTERS_0_NAME: snow-white
@@ -96,7 +111,7 @@ services:
     networks:
       - internal
 
-  redis_insight:
+  redis.insight:
     image: redislabs/redisinsight:2.60.0
     ports:
       - '5540:5540'
@@ -133,6 +148,24 @@ services:
       SPRING_DATA_REDIS_HOST: redis
     depends_on:
       service-interface-repository:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.kafka-event-filter:
+    build:
+      context: ../microservices/kafka-event-filter
+    environment:
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: snow-white_inbound
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: snow-white_outbound
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_SCHEMA_REGISTRY_URL: http://schemaregistry:8081
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      SPRING_KAFKA_STREAMS_APPLICATION_ID: kafka-event-filter
+    depends_on:
+      kafka:
         condition: service_healthy
     restart: on-failure
     networks:

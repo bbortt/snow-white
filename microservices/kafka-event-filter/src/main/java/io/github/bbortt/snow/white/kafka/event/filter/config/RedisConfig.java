@@ -1,15 +1,11 @@
-package io.github.bbortt.snow.white.api.sync.job.config;
+package io.github.bbortt.snow.white.kafka.event.filter.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 @Configuration
-@EnableRedisRepositories(
-  basePackages = "io.github.bbortt.snow.white.api.sync.job.storage.redis"
-)
 public class RedisConfig {
 
   @Bean

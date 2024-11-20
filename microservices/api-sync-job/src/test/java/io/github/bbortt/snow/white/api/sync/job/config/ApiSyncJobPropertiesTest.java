@@ -1,11 +1,12 @@
 package io.github.bbortt.snow.white.api.sync.job.config;
 
+import static io.github.bbortt.snow.white.api.sync.job.config.ApiSyncJobProperties.PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +22,6 @@ class ApiSyncJobPropertiesTest {
   }
 
   @Nested
-  @DisplayName("sanitizeProperties")
   class SanitizeProperties {
 
     public static Stream<String> emptyAndNullString() {
@@ -33,13 +33,17 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      fixture.sanitizeProperties();
+      assertDoesNotThrow(() -> fixture.sanitizeProperties());
 
-      assertThat(fixture.getServiceInterface().getBaseUrl()).isEqualTo(
-        "http://localhost:8080"
-      );
-      assertThat(fixture.getServiceInterface().getIndexUri()).isEqualTo(
-        "/api/index"
+      assertThat(fixture).satisfies(
+        f ->
+          assertThat(f.getServiceInterface().getBaseUrl()).isEqualTo(
+            "http://localhost:8080"
+          ),
+        f ->
+          assertThat(f.getServiceInterface().getIndexUri()).isEqualTo(
+            "/api/index"
+          )
       );
     }
 
@@ -60,10 +64,7 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl(baseUrl);
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      assertThatThrownBy(() -> fixture.sanitizeProperties())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("base-url")
-        .hasMessageContaining("index-uri");
+      assertSanitizePropertiesThrows();
     }
 
     @ParameterizedTest
@@ -72,24 +73,22 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri(indexUrl);
 
-      assertThatThrownBy(() -> fixture.sanitizeProperties())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("base-url")
-        .hasMessageContaining("index-uri");
+      assertSanitizePropertiesThrows();
     }
 
-    @Test
-    @DisplayName(
-      "should throw IllegalArgumentException when both properties are null"
-    )
-    void shouldThrowWhenBothPropertiesAreNull() {
-      fixture.getServiceInterface().setBaseUrl(null);
-      fixture.getServiceInterface().setIndexUri(null);
+    @ParameterizedTest
+    @MethodSource("emptyAndNullString")
+    void shouldThrowWhenBothPropertiesAreEmptyOrNull(String value) {
+      fixture.getServiceInterface().setBaseUrl(value);
+      fixture.getServiceInterface().setIndexUri(value);
 
+      assertSanitizePropertiesThrows();
+    }
+
+    private void assertSanitizePropertiesThrows() {
       assertThatThrownBy(() -> fixture.sanitizeProperties())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("base-url")
-        .hasMessageContaining("index-uri");
+        .hasMessageContaining(PREFIX, "base-url", PREFIX, "index-uri");
     }
   }
 }
