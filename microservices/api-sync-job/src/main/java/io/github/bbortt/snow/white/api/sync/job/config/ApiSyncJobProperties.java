@@ -8,22 +8,19 @@ import static org.springframework.util.StringUtils.hasText;
 import io.github.bbortt.snow.white.api.sync.job.parser.ParsingMode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 
-@Slf4j
 @Getter
 @Setter
 @Configuration
 @ConfigurationProperties(PREFIX)
 public class ApiSyncJobProperties {
 
-  public static final String PREFIX = "io.github.bbortt.snow.white.sync.job";
-
-  private Integer poolSize = 5;
+  @VisibleForTesting
+  static final String PREFIX = "io.github.bbortt.snow.white.sync.job";
 
   private final ServiceInterface serviceInterface = new ServiceInterface();
 

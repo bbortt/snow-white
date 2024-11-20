@@ -27,10 +27,12 @@ import org.wiremock.spring.EnableWireMock;
 @Testcontainers
 class SyncJobIT {
 
+  private static final int REDIS_PORT = 6379;
+
   @Container
-  private static final RedisContainer REDIS_CONTAINER = new RedisContainer(
+  static final RedisContainer REDIS_CONTAINER = new RedisContainer(
     DockerImageName.parse("redis:7.4.1-alpine")
-  ).withExposedPorts(6379);
+  ).withExposedPorts(REDIS_PORT);
 
   @Value("${wiremock.server.baseUrl}")
   private String wiremockServerBaseUrl;
@@ -39,12 +41,10 @@ class SyncJobIT {
   private SyncJob fixture;
 
   @DynamicPropertySource
-  private static void registerRedisProperties(
-    DynamicPropertyRegistry registry
-  ) {
-    registry.add("spring.redis.host", REDIS_CONTAINER::getHost);
-    registry.add("spring.redis.port", () ->
-      REDIS_CONTAINER.getMappedPort(6379).toString()
+  static void redisProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
+    registry.add("spring.data.redis.port", () ->
+      REDIS_CONTAINER.getMappedPort(REDIS_PORT)
     );
   }
 

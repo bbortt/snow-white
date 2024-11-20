@@ -10,6 +10,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasLength;
 
@@ -51,7 +52,7 @@ public class ServiceInterfaceCatalogService implements ApiCatalogService {
     var apis = serviceInterfaceRepositoryClient
       .get()
       .uri(serviceInterfaceIndexUri)
-      .accept(APPLICATION_JSON)
+      .accept(APPLICATION_JSON, APPLICATION_OCTET_STREAM)
       .retrieve()
       .body(Api[].class);
 

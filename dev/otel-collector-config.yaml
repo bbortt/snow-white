@@ -23,6 +23,7 @@ processors:
         match_type: strict
         services:
           - api-sync-job
+          - kafka-event-filter
   groupbyattrs/service:
     keys:
       - service.name
@@ -48,8 +49,10 @@ exporters:
   kafka/snow-white:
     brokers:
       - kafka:9094
-    protocol_version: 2.0.0
+    encoding: otlp_proto
     partition_traces_by_id: true
+    protocol_version: 3.9.0
+    topic: snow-white_inbound
   # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
   prometheus:
     endpoint: '0.0.0.0:8090'
@@ -80,4 +83,9 @@ service:
         initial: 100
     metrics:
       level: detailed
-      address: 0.0.0.0:8888
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '0.0.0.0'
+                port: 8888
