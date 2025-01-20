@@ -70,10 +70,37 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-spec</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/specs</outputDirectory>
+              <resources>
+                <resource>
+                  <directory
+                  >${maven.multiModuleProjectDirectory}/dev/sir</directory>
+                  <includes>
+                    <include>petstore.yml</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>unpack</id>
+            <id>unpack-otel-agent</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>copy-dependencies</goal>
@@ -92,7 +119,7 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>${spring-boot.version}</version>
         <executions>
           <execution>
             <configuration>
@@ -109,6 +136,13 @@
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
         <version>7.11.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>io.github.bbortt.snow-white</groupId>
+            <artifactId>openapi-generator-spring</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
@@ -116,9 +150,9 @@
             </goals>
             <configuration>
               <inputSpec>
-                  example-application/specs/petstore.yml
+                example-application/specs/petstore.yml
               </inputSpec>
-              <generatorName>spring</generatorName>
+              <generatorName>snow-white-spring</generatorName>
               <modelPackage
               >io.github.bbortt.snow.white.example.application.model</modelPackage>
               <apiPackage

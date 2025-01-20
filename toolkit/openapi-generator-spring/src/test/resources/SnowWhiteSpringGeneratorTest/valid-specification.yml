@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Sample API
+  version: 1.2.3
+  x-api-name: Valid Specification
+  x-otel-service-name: sample-service
+paths:
+  /example:
+    get:
+      operationId: getExample
+      responses:
+        '200':
+          description: Successful response
