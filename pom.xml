@@ -19,6 +19,7 @@
   <modules>
     <module>example-application</module>
     <module>microservices</module>
+    <module>toolkit</module>
   </modules>
 
   <properties>
