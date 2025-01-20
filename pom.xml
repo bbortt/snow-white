@@ -29,7 +29,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Management -->
-    <spring-boot.version>3.3.5</spring-boot.version>
+    <spring-boot.version>3.4.1</spring-boot.version>
   </properties>
 
   <dependencyManagement>

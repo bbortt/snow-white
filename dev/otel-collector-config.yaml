@@ -49,7 +49,7 @@ exporters:
   kafka/snow-white:
     brokers:
       - kafka:9094
-    encoding: otlp_proto
+    encoding: otlp_json
     partition_traces_by_id: true
     protocol_version: 3.9.0
     topic: snow-white_inbound

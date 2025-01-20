@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.kafka.event.filter.config;
 
+import static io.github.bbortt.snow.white.kafka.event.filter.config.KafkaEventFilterProperties.ConsumerMode.JSON;
 import static io.github.bbortt.snow.white.kafka.event.filter.config.KafkaEventFilterProperties.PREFIX;
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_VERSION;
 import static java.lang.String.format;
@@ -29,9 +30,11 @@ public class KafkaEventFilterProperties {
   private String outboundTopicName;
 
   public static final String DEFAULT_CONSUMER_GROUP_NAME = "kafka-event-filter";
-  public static final String CONSUMER_GROUP_PROPERTY_NAME =
-    PREFIX + ".consumer-group-name";
   private String consumerGroupName = DEFAULT_CONSUMER_GROUP_NAME;
+
+  public static final String CONSUMER_MODE_PROPERTY_NAME =
+    PREFIX + ".consumer-mode";
+  private ConsumerMode consumerMode = JSON;
 
   private String schemaRegistryUrl;
 
@@ -62,5 +65,10 @@ public class KafkaEventFilterProperties {
     private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
     private String apiVersionProperty = DEFAULT_API_VERSION_PROPERTY;
     private String otelServiceNameProperty = SERVICE_VERSION.getKey();
+  }
+
+  public enum ConsumerMode {
+    JSON,
+    PROTOBUF,
   }
 }

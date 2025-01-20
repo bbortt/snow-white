@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration
+    default="false"
+    name="Kafka Event Filter"
+    type="SpringBootApplicationConfigurationType"
+    factoryName="Spring Boot"
+  >
+    <option name="ACTIVE_PROFILES" value="dev" />
+    <module name="kafka-event-filter" />
+    <option
+      name="SPRING_BOOT_MAIN_CLASS"
+      value="io.github.bbortt.snow.white.kafka.event.filter.Main"
+    />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -9,24 +9,24 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 
-class TestData {
+public class TestData {
 
-  static final String API_NAME_PROPERTY =
+  public static final String API_NAME_PROPERTY =
     TestData.class.getSimpleName() + ":apiNameProperty";
-  static final String API_VERSION_PROPERTY =
+  public static final String API_VERSION_PROPERTY =
     TestData.class.getSimpleName() + ":apiVersionProperty";
-  static final String OTEL_SERVICE_NAME_PROPERTY =
+  public static final String OTEL_SERVICE_NAME_PROPERTY =
     TestData.class.getSimpleName() + ":otelServiceNameProperty";
 
-  static final String API_NAME = TestData.class.getSimpleName();
-  static final String API_VERSION = "1.2.3";
-  static final String OTEL_SERVICE_NAME = "kafka-event-filter";
+  public static final String API_NAME = TestData.class.getSimpleName();
+  public static final String API_VERSION = "1.2.3";
+  public static final String OTEL_SERVICE_NAME = "kafka-event-filter";
 
   // -------------------------------------------
   // Utility Method
   // -------------------------------------------
 
-  static ExportTraceServiceRequest wrapResourceSpans(
+  public static ExportTraceServiceRequest wrapResourceSpans(
     ResourceSpans resourceSpans
   ) {
     return ExportTraceServiceRequest.newBuilder()
@@ -38,7 +38,7 @@ class TestData {
   // Valid ResourceSpans
   // -------------------------------------------
 
-  static final ResourceSpans RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES =
+  public static final ResourceSpans RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -63,7 +63,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES =
+  public static final ResourceSpans RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES =
     ResourceSpans.newBuilder()
       .addScopeSpans(
         ScopeSpans.newBuilder()
@@ -91,7 +91,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES =
+  public static final ResourceSpans RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES =
     ResourceSpans.newBuilder()
       .addScopeSpans(
         ScopeSpans.newBuilder()
@@ -118,7 +118,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL =
+  public static final ResourceSpans RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -155,7 +155,7 @@ class TestData {
   // Invalid ResourceSpans
   // -------------------------------------------
 
-  static final ResourceSpans RESOURCE_SPANS_WITHOUT_API_NAME =
+  public static final ResourceSpans RESOURCE_SPANS_WITHOUT_API_NAME =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -175,7 +175,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITHOUT_API_VERSION =
+  public static final ResourceSpans RESOURCE_SPANS_WITHOUT_API_VERSION =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -195,7 +195,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITHOUT_OTEL_SERVICE_NAME =
+  public static final ResourceSpans RESOURCE_SPANS_WITHOUT_OTEL_SERVICE_NAME =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -215,7 +215,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITHOUT_SCOPE_SPANS =
+  public static final ResourceSpans RESOURCE_SPANS_WITHOUT_SCOPE_SPANS =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -237,7 +237,7 @@ class TestData {
       )
       .build();
 
-  static final ResourceSpans RESOURCE_SPANS_WITHOUT_SPANS =
+  public static final ResourceSpans RESOURCE_SPANS_WITHOUT_SPANS =
     ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
