@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration
+    default="false"
+    name="API Sync Job"
+    type="SpringBootApplicationConfigurationType"
+    factoryName="Spring Boot"
+  >
+    <option name="ACTIVE_PROFILES" value="dev" />
+    <option
+      name="FRAME_DEACTIVATION_UPDATE_POLICY"
+      value="UpdateClassesAndResources"
+    />
+    <module name="api-sync-job" />
+    <option
+      name="SPRING_BOOT_MAIN_CLASS"
+      value="io.github.bbortt.snow.white.api.sync.job.Main"
+    />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
