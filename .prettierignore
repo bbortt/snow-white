@@ -4,5 +4,6 @@
 .npm/
 
 node_modules/
+opentelemetry-proto/
 
 package-lock.json

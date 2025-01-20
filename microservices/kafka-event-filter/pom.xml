@@ -17,14 +17,14 @@
   <packaging>jar</packaging>
 
   <properties>
-    <confluent.version>7.7.2</confluent.version>
+    <confluent.version>7.8.0</confluent.version>
     <!-- DON'T UPGRADE! See https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/serdes-protobuf.html#limitations-and-developer-notes -->
     <google-protobuf.version>3.25.5</google-protobuf.version>
-    <grpc.version>1.68.2</grpc.version>
+    <grpc.version>1.69.1</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
-    <protobuf-maven-plugin.version>2.7.1</protobuf-maven-plugin.version>
-    <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
+    <protobuf-maven-plugin.version>2.10.1</protobuf-maven-plugin.version>
+    <spring-boot-maven-plugin.version>3.4.1</spring-boot-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -32,7 +32,7 @@
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.44.1</version>
+        <version>1.46.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -87,7 +87,7 @@
     <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
       <artifactId>opentelemetry-javaagent</artifactId>
-      <version>2.10.0</version>
+      <version>2.12.0</version>
       <scope>compile</scope>
     </dependency>
 

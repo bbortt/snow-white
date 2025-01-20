@@ -1,4 +1,4 @@
-package io.github.bbortt.snow.white.kafka.event.filter.processor;
+package io.github.bbortt.snow.white.kafka.event.filter.processor.protobuf;
 
 import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.RESOURCE_SPANS_WITHOUT_SCOPE_SPANS;
 import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.RESOURCE_SPANS_WITHOUT_SPANS;
@@ -6,7 +6,6 @@ import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.
 import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
-import static io.github.bbortt.snow.white.kafka.event.filter.processor.TestData.wrapResourceSpans;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,11 +14,14 @@ import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.kafka.event.filter.config.KafkaStreamsConfig;
+import io.github.bbortt.snow.white.kafka.event.filter.processor.ExportTraceServiceRequestFilter;
+import io.github.bbortt.snow.white.kafka.event.filter.processor.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -35,7 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
-class ExportTraceServiceRequestEventProcessorUnitTest {
+class ExportTraceServiceRequestEventProtobufProcessorUnitTest {
 
   private final String inboundTopicName =
     getClass().getSimpleName() + ":inbound";
@@ -46,8 +48,9 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
   private ExportTraceServiceRequestFilter exportTraceServiceRequestFilterMock;
 
   private Properties snowWhiteKafkaProperties;
+  private Serde<ExportTraceServiceRequest> protobufSerde;
 
-  private ExportTraceServiceRequestEventProcessor fixture;
+  private ExportTraceServiceRequestEventProtobufProcessor fixture;
 
   @BeforeEach
   void beforeEachSetup() {
@@ -58,13 +61,22 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
     kafkaEventFilterProperties.setInboundTopicName(inboundTopicName);
     kafkaEventFilterProperties.setOutboundTopicName(outboundTopicName);
 
-    snowWhiteKafkaProperties = new KafkaStreamsConfig()
-      .snowWhiteKafkaProperties(kafkaEventFilterProperties);
-
-    fixture = new ExportTraceServiceRequestEventProcessor(
-      exportTraceServiceRequestFilterMock,
+    var kafkaStreamsConfig = new KafkaStreamsConfig();
+    snowWhiteKafkaProperties = kafkaStreamsConfig.snowWhiteKafkaProperties(
       kafkaEventFilterProperties
     );
+    protobufSerde = kafkaStreamsConfig.protobufSerde(snowWhiteKafkaProperties);
+
+    fixture = new ExportTraceServiceRequestEventProtobufProcessor(
+      exportTraceServiceRequestFilterMock,
+      kafkaEventFilterProperties,
+      protobufSerde
+    );
+  }
+
+  @Test
+  void constructor() {
+    assertThat(fixture).hasNoNullFieldsOrProperties();
   }
 
   @Nested
@@ -82,7 +94,7 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
     @ParameterizedTest
     @MethodSource("validResourceSpans")
     void validTraceServiceRequestIsBeingForwarded(ResourceSpans resourceSpans) {
-      doReturn(wrapResourceSpans(resourceSpans))
+      doReturn(TestData.wrapResourceSpans(resourceSpans))
         .when(exportTraceServiceRequestFilterMock)
         .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
 
@@ -118,7 +130,7 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
     void exportTraceServiceRequestWithoutContentIsBeingDiscarded(
       ResourceSpans resourceSpans
     ) {
-      doReturn(wrapResourceSpans(resourceSpans))
+      doReturn(TestData.wrapResourceSpans(resourceSpans))
         .when(exportTraceServiceRequestFilterMock)
         .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
 
@@ -134,10 +146,8 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
     Consumer<TestOutputTopic<String, ExportTraceServiceRequest>> eventAssert
   ) {
     var streamsBuilder = new StreamsBuilder();
-    var exportTraceServiceRequestSerde = new KafkaStreamsConfig()
-      .exportTraceServiceRequestSerde(snowWhiteKafkaProperties);
 
-    fixture.resourceSpansStream(streamsBuilder, exportTraceServiceRequestSerde);
+    fixture.resourceSpansStream(streamsBuilder);
     var topology = streamsBuilder.build();
 
     try (
@@ -149,13 +159,13 @@ class ExportTraceServiceRequestEventProcessorUnitTest {
       var inputTopic = topologyTestDriver.createInputTopic(
         inboundTopicName,
         new StringSerializer(),
-        exportTraceServiceRequestSerde.serializer()
+        protobufSerde.serializer()
       );
 
       var outputTopic = topologyTestDriver.createOutputTopic(
         outboundTopicName,
         new StringDeserializer(),
-        exportTraceServiceRequestSerde.deserializer()
+        protobufSerde.deserializer()
       );
 
       inputTopic.pipeInput(randomUUID().toString(), exportTraceServiceRequest);

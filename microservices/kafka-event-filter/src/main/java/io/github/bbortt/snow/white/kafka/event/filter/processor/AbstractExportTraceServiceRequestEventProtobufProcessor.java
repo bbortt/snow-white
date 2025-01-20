@@ -8,22 +8,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
-public class ExportTraceServiceRequestEventProcessor {
+public abstract class AbstractExportTraceServiceRequestEventProtobufProcessor {
 
   private final ExportTraceServiceRequestFilter exportTraceServiceRequestFilter;
 
   private final String inboundTopicName;
   private final String outboundTopicName;
 
-  public ExportTraceServiceRequestEventProcessor(
+  protected AbstractExportTraceServiceRequestEventProtobufProcessor(
     ExportTraceServiceRequestFilter exportTraceServiceRequestFilter,
     KafkaEventFilterProperties kafkaEventFilterProperties
   ) {
@@ -33,15 +29,10 @@ public class ExportTraceServiceRequestEventProcessor {
     this.outboundTopicName = kafkaEventFilterProperties.getOutboundTopicName();
   }
 
-  @Bean
-  public KStream<String, ExportTraceServiceRequest> resourceSpansStream(
-    StreamsBuilder streamsBuilder,
-    Serde<ExportTraceServiceRequest> exportTraceServiceRequestSerde
+  protected KStream<String, ExportTraceServiceRequest> resourceSpansStream(
+    StreamsBuilder streamsBuilder
   ) {
-    KStream<String, ExportTraceServiceRequest> stream = streamsBuilder.stream(
-      inboundTopicName,
-      Consumed.with(Serdes.String(), exportTraceServiceRequestSerde)
-    );
+    var stream = createStream(streamsBuilder, inboundTopicName);
 
     stream
       .peek((key, value) -> logger.trace("Handling message id '{}'", key))
@@ -68,9 +59,16 @@ public class ExportTraceServiceRequestEventProcessor {
       .peek((key, value) -> logger.trace("Message '{}' passed processed", key))
       .to(
         outboundTopicName,
-        Produced.with(Serdes.String(), exportTraceServiceRequestSerde)
+        Produced.with(Serdes.String(), outboundValueSerde())
       );
 
     return stream;
   }
+
+  protected abstract KStream<String, ExportTraceServiceRequest> createStream(
+    StreamsBuilder streamsBuilder,
+    String inboundTopicName
+  );
+
+  protected abstract Serde<ExportTraceServiceRequest> outboundValueSerde();
 }
