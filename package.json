@@ -34,7 +34,7 @@
     "husky": "9.1.7",
     "lint-staged": "15.4.2",
     "prettier": "3.4.2",
-    "prettier-plugin-java": "2.6.6"
+    "prettier-plugin-java": "2.6.7"
   },
   "optionalDependencies": {
     "npm-check-updates": "17.1.14"
