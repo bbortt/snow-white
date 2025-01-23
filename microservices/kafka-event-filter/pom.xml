@@ -24,7 +24,7 @@
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
     <protobuf-maven-plugin.version>2.10.2</protobuf-maven-plugin.version>
-    <spring-boot-maven-plugin.version>3.4.1</spring-boot-maven-plugin.version>
+    <spring-boot-maven-plugin.version>3.4.2</spring-boot-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
