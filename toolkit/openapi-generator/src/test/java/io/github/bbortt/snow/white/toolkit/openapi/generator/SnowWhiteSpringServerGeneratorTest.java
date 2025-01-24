@@ -79,7 +79,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @Test
   void doesAddAnnotationIfValuesDefined() throws Exception {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/valid-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/valid-specification.yml";
     var outputDir =
       "target/test-generated/" +
       getClass().getSimpleName() +
@@ -102,7 +104,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @Test
   void doesAddAnnotationFromCustomDefinitions() throws Exception {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/custom-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/custom-specification.yml";
     var outputDir =
       "target/test-generated/" +
       getClass().getSimpleName() +
@@ -128,7 +132,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @Test
   void doesAddAnnotationFromOpenApiDefinitions() throws Exception {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/openapi-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/openapi-specification.yml";
     var outputDir =
       "target/test-generated/" +
       getClass().getSimpleName() +
@@ -152,7 +158,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @Test
   void doesNotAddAnnotationIfValuesNotDefined() throws Exception {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/empty-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/empty-specification.yml";
     var outputDir =
       "target/test-generated/" +
       getClass().getSimpleName() +
@@ -184,7 +192,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @MethodSource("invalidProperties")
   void throwsGivenInvalidTitle(String title) {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/valid-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/valid-specification.yml";
     var outputDir = "target/test-generated/noop";
 
     fixture.apiName = title;
@@ -204,7 +214,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @MethodSource("invalidProperties")
   void throwsGivenInvalidVersion(String version) {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/valid-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/valid-specification.yml";
     var outputDir = "target/test-generated/noop";
 
     fixture.apiVersion = version;
@@ -224,7 +236,9 @@ class SnowWhiteSpringServerGeneratorTest {
   @MethodSource("blankProperties")
   void throwsGivenInvalidOtelServiceName(String otelServiceName) {
     var inputSpec =
-      "src/test/resources/SnowWhiteSpringGeneratorUnitTest/valid-specification.yml";
+      "src/test/resources/" +
+      getClass().getSimpleName() +
+      "/valid-specification.yml";
     var outputDir = "target/test-generated/noop";
 
     fixture.otelServiceName = otelServiceName;
