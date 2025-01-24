@@ -14,7 +14,6 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,10 +33,10 @@ public class KafkaStreamsConfig {
     havingValue = "json"
   )
   public Serde<ExportTraceServiceRequest> jsonSerde() {
-    JsonFormat.Parser parser = JsonFormat.parser().ignoringUnknownFields();
-    JsonFormat.Printer printer = JsonFormat.printer();
+    var parser = JsonFormat.parser().ignoringUnknownFields();
+    var printer = JsonFormat.printer();
 
-    Logger logger = LoggerFactory.getLogger("protobuf-jackson-bridge");
+    var logger = LoggerFactory.getLogger("protobuf-jackson-bridge");
 
     Serializer<ExportTraceServiceRequest> serializer = (
       String topic,
@@ -56,8 +55,7 @@ public class KafkaStreamsConfig {
       byte[] data
     ) -> {
       try {
-        ExportTraceServiceRequest.Builder builder =
-          ExportTraceServiceRequest.newBuilder();
+        var builder = ExportTraceServiceRequest.newBuilder();
         parser.merge(new String(data), builder);
         return builder.build();
       } catch (Exception e) {

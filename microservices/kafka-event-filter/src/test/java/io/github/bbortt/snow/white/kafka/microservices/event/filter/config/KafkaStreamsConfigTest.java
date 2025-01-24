@@ -5,6 +5,7 @@ import static io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerC
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,29 @@ class KafkaStreamsConfigTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new KafkaStreamsConfig();
+  }
+
+  @Nested
+  class JsonSerde {
+
+    @Test
+    void serializationAndDeserializationLoop() {
+      var jsonSerde = fixture.jsonSerde();
+
+      var originalMessage = ExportTraceServiceRequest.newBuilder()
+        .addResourceSpans(TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL)
+        .build();
+
+      byte[] serializedData = jsonSerde
+        .serializer()
+        .serialize("test-topic", originalMessage);
+      assertThat(serializedData).isNotNull();
+
+      ExportTraceServiceRequest deserializedMessage = jsonSerde
+        .deserializer()
+        .deserialize("test-topic", serializedData);
+      assertThat(deserializedMessage).isNotNull().isEqualTo(originalMessage);
+    }
   }
 
   @Nested
