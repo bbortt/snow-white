@@ -13,36 +13,14 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>openapi-generator-spring</artifactId>
+  <artifactId>spring-aop</artifactId>
   <packaging>jar</packaging>
-
-  <properties>
-    <openapi-generator.version>7.11.0</openapi-generator.version>
-  </properties>
 
   <dependencies>
     <dependency>
       <groupId>io.github.bbortt.snow-white.toolkit</groupId>
       <artifactId>annotation-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.openapitools</groupId>
-      <artifactId>openapi-generator</artifactId>
-      <version>${openapi-generator.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <scope>test</scope>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

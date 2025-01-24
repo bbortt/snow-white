@@ -19,7 +19,8 @@
 
   <modules>
     <module>annotation-api</module>
-    <module>openapi-generator-spring</module>
+    <module>openapi-generator</module>
+    <module>spring-aop</module>
   </modules>
 
   <dependencies>

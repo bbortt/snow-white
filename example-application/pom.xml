@@ -33,6 +33,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+      <artifactId>spring-aop</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
@@ -138,8 +144,8 @@
         <version>7.11.0</version>
         <dependencies>
           <dependency>
-            <groupId>io.github.bbortt.snow-white</groupId>
-            <artifactId>openapi-generator-spring</artifactId>
+            <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+            <artifactId>openapi-generator</artifactId>
             <version>${project.version}</version>
           </dependency>
         </dependencies>
@@ -152,7 +158,7 @@
               <inputSpec>
                 example-application/specs/petstore.yml
               </inputSpec>
-              <generatorName>snow-white-spring</generatorName>
+              <generatorName>snow-white-spring-server</generatorName>
               <modelPackage
               >io.github.bbortt.snow.white.example.application.model</modelPackage>
               <apiPackage
