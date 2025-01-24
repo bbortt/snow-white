@@ -1,0 +1,37 @@
+name: Application CI
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: 'Build and Test'
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Check if PR exists
+        uses: 8BitJonny/gh-get-current-pr@3.0.0
+        id: check
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        if: '!steps.check.outputs.number'
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 21
+      - name: Version Report
+        if: '!steps.check.outputs.number'
+        run: ./mvnw --version
+      - name: Build with Maven
+        if: '!steps.check.outputs.number'
+        run: ./mvnw verify
