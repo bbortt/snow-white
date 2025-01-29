@@ -57,8 +57,8 @@ public class KafkaEventFilterProperties {
   @Setter
   public static class Filtering {
 
-    private static final String DEFAULT_API_NAME_PROPERTY = "api-name";
-    private static final String DEFAULT_API_VERSION_PROPERTY = "api-version";
+    private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
+    private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";
     private static final String DEFAULT_OTEL_SERVICE_NAME_PROPERTY =
       SERVICE_NAME.getKey();
 
