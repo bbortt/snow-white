@@ -20,7 +20,8 @@
   <modules>
     <module>annotation-api</module>
     <module>openapi-generator</module>
-    <module>spring-aop</module>
+    <module>spring-web-autoconfiguration</module>
+    <module>spring-web-autoconfiguration-it</module>
   </modules>
 
   <dependencies>
