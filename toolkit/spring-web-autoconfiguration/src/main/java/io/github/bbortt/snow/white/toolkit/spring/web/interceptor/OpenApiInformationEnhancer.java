@@ -46,7 +46,7 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
         SnowWhiteInformation.class
       );
 
-      log.trace("Enhancing span: [{}]", snowWhiteInformation);
+      logger.trace("Enhancing span: [{}]", snowWhiteInformation);
 
       currentSpan.setAttribute(
         springWebInterceptorProperties.getApiNameProperty(),

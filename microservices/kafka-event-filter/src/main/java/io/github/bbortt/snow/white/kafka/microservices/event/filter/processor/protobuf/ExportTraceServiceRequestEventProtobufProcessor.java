@@ -34,6 +34,8 @@ public class ExportTraceServiceRequestEventProtobufProcessor
   ) {
     super(exportTraceServiceRequestFilter, kafkaEventFilterProperties);
     this.protobufSerde = protobufSerde;
+
+    logger.info("Enabled protobuf processing mode");
   }
 
   @Bean

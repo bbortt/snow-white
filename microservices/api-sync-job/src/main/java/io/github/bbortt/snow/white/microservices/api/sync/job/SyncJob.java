@@ -36,7 +36,7 @@ public class SyncJob {
       .filter(this::publishLoadedApi)
       .toList();
 
-    logger.info("Updated {} valid APIs!", validApis.size());
+    logger.info("Updated {} valid APIs", validApis.size());
   }
 
   private boolean publishLoadedApi(Api api) {

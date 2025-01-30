@@ -35,7 +35,7 @@ public abstract class AbstractExportTraceServiceRequestEventProtobufProcessor {
     var stream = createStream(streamsBuilder, inboundTopicName);
 
     stream
-      .peek((key, value) -> logger.trace("Handling message id '{}'", key))
+      .peek((key, value) -> logger.debug("Handling message id '{}'", key))
       .map((key, value) ->
         pair(
           key,
@@ -56,7 +56,7 @@ public abstract class AbstractExportTraceServiceRequestEventProtobufProcessor {
                   .anyMatch(scopeSpans -> scopeSpans.getSpansCount() > 0)
             ))
       )
-      .peek((key, value) -> logger.trace("Message '{}' passed processed", key))
+      .peek((key, value) -> logger.trace("Message '{}' passed processing", key))
       .to(
         outboundTopicName,
         Produced.with(Serdes.String(), outboundValueSerde())

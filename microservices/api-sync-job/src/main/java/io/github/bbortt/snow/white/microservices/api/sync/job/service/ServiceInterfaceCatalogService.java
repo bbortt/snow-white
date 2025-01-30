@@ -18,11 +18,9 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobP
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.Api;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-@Slf4j
 @Service
 public class ServiceInterfaceCatalogService implements ApiCatalogService {
 
