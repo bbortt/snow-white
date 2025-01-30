@@ -35,7 +35,7 @@ public class SnowWhiteAutoConfiguration implements WebMvcConfigurer {
     OpenApiInformationEnhancer openApiInformationEnhancer
   ) {
     this.openApiInformationEnhancer = openApiInformationEnhancer;
-    log.info("Enhancing OTEL Spans with Snow-White information ✅");
+    logger.info("Enhancing OTEL Spans with Snow-White information ✅");
   }
 
   @Override

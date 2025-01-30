@@ -31,6 +31,8 @@ public class ExportTraceServiceRequestEventJsonProcessor
   ) {
     super(exportTraceServiceRequestFilter, kafkaEventFilterProperties);
     this.jsonSerde = jsonSerde;
+
+    logger.info("Enabled JSON processing mode");
   }
 
   @Bean

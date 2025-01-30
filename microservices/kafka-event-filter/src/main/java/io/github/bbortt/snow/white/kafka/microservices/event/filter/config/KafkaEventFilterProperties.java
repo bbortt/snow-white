@@ -19,7 +19,8 @@ import org.springframework.context.event.EventListener;
 @ConfigurationProperties(PREFIX)
 public class KafkaEventFilterProperties {
 
-  static final String PREFIX = "io.github.bbortt.snow.white.kafka.event.filter";
+  public static final String PREFIX =
+    "io.github.bbortt.snow.white.kafka.event.filter";
 
   public static final String INBOUND_TOPIC_PROPERTY_NAME =
     PREFIX + ".inbound-topic-name";
@@ -28,6 +29,8 @@ public class KafkaEventFilterProperties {
   public static final String OUTBOUND_TOPIC_PROPERTY_NAME =
     PREFIX + ".outbound-topic-name";
   private String outboundTopicName;
+
+  private Boolean initTopics;
 
   public static final String DEFAULT_CONSUMER_GROUP_NAME = "kafka-event-filter";
   private String consumerGroupName = DEFAULT_CONSUMER_GROUP_NAME;

@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.kafka.microservices.event.filter.storage.redis;
 
+import static io.github.bbortt.snow.white.kafka.microservices.event.filter.storage.redis.RedisCachingService.HASH_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
@@ -42,7 +43,9 @@ class RedisCachingServiceTest {
 
       doReturn(apiExists)
         .when(redisTemplateMock)
-        .hasKey(otelServiceName + ":" + apiName + ":" + apiVersion);
+        .hasKey(
+          HASH_PREFIX + otelServiceName + ":" + apiName + ":" + apiVersion
+        );
 
       var result = fixture.apiExists(otelServiceName, apiName, apiVersion);
 

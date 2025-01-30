@@ -15,7 +15,7 @@
       },
       {
         "key": "oas.info.x-api-name",
-        "value": "swagger-petstore"
+        "value": "petstore"
       },
       {
         "key": "oas.info.x-otel-service-name",
