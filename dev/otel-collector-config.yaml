@@ -1,4 +1,10 @@
 receivers:
+  kafka:
+    brokers:
+      - kafka:9094
+    encoding: otlp_json
+    protocol_version: 3.9.0
+    topic: snow-white_outbound
   otlp:
     protocols:
       grpc:
@@ -76,6 +82,10 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, kafka/snow-white]
+    traces/persist:
+      receivers: [kafka]
+      processors: [memory_limiter, groupbytrace, batch]
+      exporters: [debug/basic]
   telemetry:
     logs:
       level: WARN # DEBUG
