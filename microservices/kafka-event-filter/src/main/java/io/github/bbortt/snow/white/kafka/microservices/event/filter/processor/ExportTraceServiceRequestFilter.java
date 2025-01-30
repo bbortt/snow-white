@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class ExportTraceServiceRequestFilter {
 
@@ -40,6 +42,8 @@ public class ExportTraceServiceRequestFilter {
     this.apiVersionProperty = filteringProperties.getApiVersionProperty();
     this.otelServiceNameProperty =
       filteringProperties.getOtelServiceNameProperty();
+
+    logger.info("Filter is in place: {}", filteringProperties);
   }
 
   public @Nonnull ExportTraceServiceRequest filterUnknownSpecifications(
