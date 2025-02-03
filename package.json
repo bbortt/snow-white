@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/bbortt/snow-white#readme",
   "devDependencies": {
-    "@commitlint/config-conventional": "19.6.0",
+    "@commitlint/config-conventional": "19.7.1",
     "@prettier/plugin-xml": "3.4.1",
     "commitlint": "19.7.1",
     "husky": "9.1.7",
