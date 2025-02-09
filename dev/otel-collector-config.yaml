@@ -1,5 +1,5 @@
 receivers:
-  kafka:
+  kafka/snow-white:
     brokers:
       - kafka:9094
     encoding: otlp_json
@@ -59,6 +59,11 @@ exporters:
     partition_traces_by_id: true
     protocol_version: 3.9.0
     topic: snow-white_inbound
+  influxdb:
+    endpoint: http://influxdb:8086
+    org: snow-white
+    bucket: raw-data
+    token: ${INFLUXDB_TOKEN}
   # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
   prometheus:
     endpoint: '0.0.0.0:8090'
@@ -83,12 +88,11 @@ service:
       processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, kafka/snow-white]
     traces/persist:
-      receivers: [kafka]
-      processors: [memory_limiter, groupbytrace, batch]
-      exporters: [debug/basic]
+      receivers: [kafka/snow-white]
+      exporters: [debug/basic, influxdb]
   telemetry:
     logs:
-      level: WARN # DEBUG
+      level: INFO # DEBUG
       sampling:
         initial: 100
     metrics:

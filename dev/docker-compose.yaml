@@ -8,7 +8,8 @@ networks:
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.117.0
+    image: otel/opentelemetry-collector-contrib:0.119.0
+    env_file: .env
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
@@ -118,6 +119,21 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  influxdb:
+    image: influxdb:2-alpine
+    ports:
+      - '8086:8086'
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_ORG: snow-white
+      DOCKER_INFLUXDB_INIT_BUCKET: raw-data
+      DOCKER_INFLUXDB_INIT_USERNAME: snow-white
+      DOCKER_INFLUXDB_INIT_PASSWORD: snow-white
     restart: on-failure
     networks:
       - default
