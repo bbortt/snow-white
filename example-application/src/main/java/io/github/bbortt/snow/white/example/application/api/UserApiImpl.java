@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserApiImpl implements UserApi {
 
   public ResponseEntity<User> getUserByName(String username) {
-    return ResponseEntity.ok(new User());
+    return ResponseEntity.ok(User.builder().username(username).build());
   }
 }
