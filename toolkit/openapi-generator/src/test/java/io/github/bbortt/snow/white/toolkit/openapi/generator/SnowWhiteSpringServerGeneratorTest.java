@@ -1,60 +1,65 @@
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
-import static java.nio.file.Files.readAllBytes;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.openapitools.codegen.CodegenType.SERVER;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-import java.io.File;
-import java.util.stream.Stream;
+import io.swagger.v3.oas.models.tags.Tag;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.openapitools.codegen.CodegenConfigLoader;
-import org.openapitools.codegen.DefaultGenerator;
-import org.openapitools.codegen.config.CodegenConfigurator;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.openapitools.codegen.CliOption;
+import org.openapitools.codegen.CodegenOperation;
+import org.openapitools.codegen.model.ModelMap;
+import org.openapitools.codegen.model.OperationMap;
+import org.openapitools.codegen.model.OperationsMap;
 
+@ExtendWith({ MockitoExtension.class })
 class SnowWhiteSpringServerGeneratorTest {
 
-  private static CodegenConfigurator getCodegenConfigurator(
-    String inputSpec,
-    String outputDir
-  ) {
-    return new CodegenConfigurator()
-      .setGeneratorName(SnowWhiteSpringServerGenerator.NAME)
-      .setInputSpec(inputSpec)
-      .setOutputDir(outputDir)
-      .addAdditionalProperty("delegatePattern", true)
-      .addAdditionalProperty("interfaceOnly", true)
-      .addAdditionalProperty("useSpringBoot3", true);
-  }
+  private static final String VALID_API_NAME = "Test API";
+  private static final String VALID_API_VERSION = "1.0.0";
+  private static final String VALID_SERVICE_NAME = "test-service";
 
-  private static void invokeGenerator(CodegenConfigurator fixture) {
-    var clientOptInput = fixture.toClientOptInput();
-    var generator = new DefaultGenerator();
-    generator.opts(clientOptInput).generate();
-  }
+  private static final String INPUT_SPEC =
+    "SnowWhiteSpringServerGeneratorIntegrationTest/valid-specification.yml";
+  private static final String VALID_YAML = // language=yaml
+    """
+    info:
+      title: Test API
+      version: 1.0.0
+      x-service-name: test-service
+    """;
+
+  @Mock
+  private InformationExtractor informationExtractorMock;
+
+  @Mock
+  private YamlParser yamlParserMock;
 
   private SnowWhiteSpringServerGenerator fixture;
 
   @BeforeEach
-  void setUp() {
+  void beforeEachSetup() {
     fixture = new SnowWhiteSpringServerGenerator();
-
-    fixture.additionalProperties().put("delegatePattern", true);
-    fixture.additionalProperties().put("interfaceOnly", true);
-    fixture.additionalProperties().put("useSpringBoot3", true);
-  }
-
-  @Test
-  void isRegisteredWithinSpi() {
-    var codegenConfig = CodegenConfigLoader.forName(
-      SnowWhiteSpringServerGenerator.NAME
+    setField(
+      fixture,
+      "informationExtractor",
+      informationExtractorMock,
+      InformationExtractor.class
     );
-    assertThat(codegenConfig)
-      .isNotNull()
-      .isInstanceOf(SnowWhiteSpringServerGenerator.class);
+    setField(fixture, "yamlParser", yamlParserMock, YamlParser.class);
   }
 
   @Test
@@ -76,192 +81,126 @@ class SnowWhiteSpringServerGeneratorTest {
     assertThat(fixture.getTag()).isEqualTo(SERVER);
   }
 
-  @Test
-  void doesAddAnnotationIfValuesDefined() throws Exception {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/valid-specification.yml";
-    var outputDir =
-      "target/test-generated/" +
-      getClass().getSimpleName() +
-      "/valid-specification";
+  @Nested
+  class Constructor {
 
-    var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
-    invokeGenerator(codegenConfigurator);
-
-    var controllerFile = new File(
-      outputDir + "/src/main/java/org/openapitools/api/ExampleApi.java"
-    );
-    assertThat(controllerFile).exists();
-
-    var generatedCode = new String(readAllBytes(controllerFile.toPath()));
-    assertThat(generatedCode).contains(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Valid Specification\", apiVersion = \"1.2.3\")"
-    );
+    @Test
+    void initializesCliOptions() {
+      assertThat(fixture)
+        .extracting("cliOptions")
+        .asInstanceOf(LIST)
+        .anySatisfy(option ->
+          assertThat(option)
+            .asInstanceOf(type(CliOption.class))
+            .extracting(CliOption::getOpt)
+            .isEqualTo(SnowWhiteSpringServerGenerator.API_NAME_PROPERTY)
+        )
+        .anySatisfy(option ->
+          assertThat(option)
+            .asInstanceOf(type(CliOption.class))
+            .extracting(CliOption::getOpt)
+            .isEqualTo(SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY)
+        )
+        .anySatisfy(option ->
+          assertThat(option)
+            .asInstanceOf(type(CliOption.class))
+            .extracting(CliOption::getOpt)
+            .isEqualTo(SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY)
+        );
+    }
   }
 
   @Test
-  void doesAddAnnotationFromCustomDefinitions() throws Exception {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/custom-specification.yml";
-    var outputDir =
-      "target/test-generated/" +
-      getClass().getSimpleName() +
-      "/custom-specification";
+  void settersUpdateJsonPaths() {
+    String newApiName = "custom.api.name";
+    String newApiVersion = "custom.api.version";
+    String newServiceName = "custom.service.name";
 
-    fixture.apiName = "x-custom-api-name";
-    fixture.apiVersion = "x-custom-api-version";
-    fixture.otelServiceName = "x-custom-otel-service-name";
+    fixture.setApiName(newApiName);
+    fixture.setApiVersion(newApiVersion);
+    fixture.setServiceName(newServiceName);
 
-    invokeGeneratorBasedOnFixture(inputSpec, outputDir);
-
-    var controllerFile = new File(
-      outputDir + "/src/main/java/org/openapitools/api/ExampleApi.java"
-    );
-    assertThat(controllerFile).exists();
-
-    var generatedCode = new String(readAllBytes(controllerFile.toPath()));
-    assertThat(generatedCode).contains(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Custom Specification\", apiVersion = \"1.0.0\")"
-    );
+    assertThat(fixture.apiName).isEqualTo(newApiName);
+    assertThat(fixture.apiVersion).isEqualTo(newApiVersion);
+    assertThat(fixture.serviceName).isEqualTo(newServiceName);
   }
 
-  @Test
-  void doesAddAnnotationFromOpenApiDefinitions() throws Exception {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/openapi-specification.yml";
-    var outputDir =
-      "target/test-generated/" +
-      getClass().getSimpleName() +
-      "/openapi-specification";
+  @Nested
+  class PostProcessOperationsWithModels {
 
-    fixture.apiName = "title";
+    @Test
+    void enhancesOperationsWithCompleteInformation() {
+      var operationsMap = new OperationsMap();
+      var operations = new OperationMap();
+      List<CodegenOperation> operationList = new ArrayList<>();
+      var operation = new CodegenOperation();
+      operation.tags = singletonList(new Tag());
+      operationList.add(operation);
+      operations.put("operation", operationList);
+      operationsMap.setOperation(operations);
+      operationsMap.setImports(emptyList());
 
-    invokeGeneratorBasedOnFixture(inputSpec, outputDir);
+      fixture.setInputSpec(INPUT_SPEC);
+      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
 
-    var controllerFile = new File(
-      outputDir + "/src/main/java/org/openapitools/api/ExampleApi.java"
-    );
-    assertThat(controllerFile).exists();
-
-    var generatedCode = new String(readAllBytes(controllerFile.toPath()));
-    assertThat(generatedCode).contains(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Sample API\", apiVersion = \"1.2.3\")"
-    );
-  }
-
-  @Test
-  void doesNotAddAnnotationIfValuesNotDefined() throws Exception {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/empty-specification.yml";
-    var outputDir =
-      "target/test-generated/" +
-      getClass().getSimpleName() +
-      "/empty-specification";
-
-    var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
-    invokeGenerator(codegenConfigurator);
-
-    var controllerFile = new File(
-      outputDir + "/src/main/java/org/openapitools/api/ExampleApi.java"
-    );
-    assertThat(controllerFile).exists();
-
-    var generatedCode = new String(readAllBytes(controllerFile.toPath()));
-    assertThat(generatedCode).doesNotContain(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation"
-    );
-  }
-
-  public static Stream<String> blankProperties() {
-    return Stream.of(null, "");
-  }
-
-  public static Stream<String> invalidProperties() {
-    return Stream.concat(blankProperties(), Stream.of("foo"));
-  }
-
-  @ParameterizedTest
-  @MethodSource("invalidProperties")
-  void throwsGivenInvalidTitle(String title) {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/valid-specification.yml";
-    var outputDir = "target/test-generated/noop";
-
-    fixture.apiName = title;
-
-    assertThatThrownBy(() -> invokeGeneratorBasedOnFixture(inputSpec, outputDir)
-    )
-      .isInstanceOf(RuntimeException.class)
-      .hasMessage("Could not generate api file for 'example'")
-      .rootCause()
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "The api name property must either be 'title' or start with 'x-'"
+      var apiInfo = new OpenApiInformation(
+        VALID_API_NAME,
+        VALID_API_VERSION,
+        VALID_SERVICE_NAME
       );
-  }
+      doReturn(apiInfo)
+        .when(informationExtractorMock)
+        .extractFromOpenApi(anyString());
 
-  @ParameterizedTest
-  @MethodSource("invalidProperties")
-  void throwsGivenInvalidVersion(String version) {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/valid-specification.yml";
-    var outputDir = "target/test-generated/noop";
-
-    fixture.apiVersion = version;
-
-    assertThatThrownBy(() -> invokeGeneratorBasedOnFixture(inputSpec, outputDir)
-    )
-      .isInstanceOf(RuntimeException.class)
-      .hasMessage("Could not generate api file for 'example'")
-      .rootCause()
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "The api version property must either be 'version' or start with 'x-'"
+      OperationsMap result = fixture.postProcessOperationsWithModels(
+        operationsMap,
+        List.of()
       );
-  }
 
-  @ParameterizedTest
-  @MethodSource("blankProperties")
-  void throwsGivenInvalidOtelServiceName(String otelServiceName) {
-    var inputSpec =
-      "src/test/resources/" +
-      getClass().getSimpleName() +
-      "/valid-specification.yml";
-    var outputDir = "target/test-generated/noop";
+      @SuppressWarnings("unchecked")
+      List<CodegenOperation> resultOperations = (List<CodegenOperation>) result
+        .getOperations()
+        .get("operation");
+      String expectedAnnotation = String.format(
+        "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"%s\", apiName = \"%s\", apiVersion = \"%s\")",
+        VALID_SERVICE_NAME,
+        VALID_API_NAME,
+        VALID_API_VERSION
+      );
+      assertThat(resultOperations)
+        .hasSize(1)
+        .first()
+        .extracting(op ->
+          op.vendorExtensions.get("x-operation-extra-annotation")
+        )
+        .isEqualTo(expectedAnnotation);
+    }
 
-    fixture.otelServiceName = otelServiceName;
+    @Test
+    void returnsUnmodifiedOperationsWithIncompleteInformation() {
+      var operationsMap = new OperationsMap();
+      operationsMap.setImports(emptyList());
 
-    assertThatThrownBy(() -> invokeGeneratorBasedOnFixture(inputSpec, outputDir)
-    )
-      .isInstanceOf(RuntimeException.class)
-      .hasMessage("Could not generate api file for 'example'")
-      .rootCause()
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("The OTEL service name property must start with 'x-'");
-  }
+      List<ModelMap> models = emptyList();
 
-  private void invokeGeneratorBasedOnFixture(
-    String inputSpec,
-    String outputDir
-  ) {
-    fixture.setInputSpec(inputSpec);
-    fixture.setOutputDir(outputDir);
+      fixture.setInputSpec(INPUT_SPEC);
+      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
 
-    var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
-    var clientOptInput = codegenConfigurator.toClientOptInput().config(fixture);
-    var defaultGenerator = new DefaultGenerator();
-    defaultGenerator.opts(clientOptInput).generate();
+      var incompleteInfo = new OpenApiInformation(
+        null,
+        VALID_API_VERSION,
+        VALID_SERVICE_NAME
+      );
+      doReturn(incompleteInfo)
+        .when(informationExtractorMock)
+        .extractFromOpenApi(anyString());
+
+      OperationsMap result = fixture.postProcessOperationsWithModels(
+        operationsMap,
+        models
+      );
+
+      assertThat(result).isSameAs(operationsMap);
+    }
   }
 }

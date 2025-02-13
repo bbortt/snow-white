@@ -1,10 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Sample API
+  title: Valid Specification
   version: 1.2.3
-  x-custom-api-name: Custom Specification
-  x-custom-api-version: 1.0.0
-  x-custom-otel-service-name: sample-service
+  x-service-name: sample-service
 paths:
   /example:
     get:
