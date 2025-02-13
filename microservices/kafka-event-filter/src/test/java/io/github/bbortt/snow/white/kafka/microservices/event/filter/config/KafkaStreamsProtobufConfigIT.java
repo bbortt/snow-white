@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.IntegrationTest;
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.Main;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
 import org.apache.kafka.common.serialization.Serde;

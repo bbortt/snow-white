@@ -5,7 +5,6 @@ import static io.github.bbortt.snow.white.kafka.microservices.event.filter.proce
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.API_VERSION;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.API_VERSION_PROPERTY;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.OTEL_SERVICE_NAME;
-import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.OTEL_SERVICE_NAME_PROPERTY;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITHOUT_API_NAME;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITHOUT_API_VERSION;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITHOUT_OTEL_SERVICE_NAME;
@@ -13,6 +12,7 @@ import static io.github.bbortt.snow.white.kafka.microservices.event.filter.proce
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
+import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.SERVICE_NAME_PROPERTY;
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData.wrapResourceSpans;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.filter.ExportTraceServiceRequestFilter;
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.service.CachingService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -55,7 +56,7 @@ class ExportTraceServiceRequestFilterTest {
       .setApiVersionProperty(API_VERSION_PROPERTY);
     kafkaEventFilterProperties
       .getFiltering()
-      .setOtelServiceNameProperty(OTEL_SERVICE_NAME_PROPERTY);
+      .setServiceNameProperty(SERVICE_NAME_PROPERTY);
 
     fixture = new ExportTraceServiceRequestFilter(
       cachingServiceMock,

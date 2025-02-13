@@ -1,4 +1,4 @@
-package io.github.bbortt.snow.white.kafka.microservices.event.filter.processor;
+package io.github.bbortt.snow.white.kafka.microservices.event.filter.filter;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Stream.concat;
@@ -29,7 +29,7 @@ public class ExportTraceServiceRequestFilter {
 
   private final String apiNameProperty;
   private final String apiVersionProperty;
-  private final String otelServiceNameProperty;
+  private final String serviceNameProperty;
 
   public ExportTraceServiceRequestFilter(
     CachingService cachingService,
@@ -40,8 +40,7 @@ public class ExportTraceServiceRequestFilter {
     var filteringProperties = kafkaEventFilterProperties.getFiltering();
     this.apiNameProperty = filteringProperties.getApiNameProperty();
     this.apiVersionProperty = filteringProperties.getApiVersionProperty();
-    this.otelServiceNameProperty =
-      filteringProperties.getOtelServiceNameProperty();
+    this.serviceNameProperty = filteringProperties.getServiceNameProperty();
 
     logger.info("Filter is in place: {}", filteringProperties);
   }
@@ -177,7 +176,7 @@ public class ExportTraceServiceRequestFilter {
       .orElse(null);
     var otelServiceName = attributes
       .stream()
-      .filter(attribute -> attribute.getKey().equals(otelServiceNameProperty))
+      .filter(attribute -> attribute.getKey().equals(serviceNameProperty))
       .findFirst()
       .map(KeyValue::getValue)
       .map(AnyValue::getStringValue)
