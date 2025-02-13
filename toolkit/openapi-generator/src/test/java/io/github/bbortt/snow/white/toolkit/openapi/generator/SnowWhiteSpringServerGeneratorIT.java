@@ -10,7 +10,7 @@ import org.openapitools.codegen.CodegenConfigLoader;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
 
-class SnowWhiteSpringServerGeneratorIntegrationTest {
+class SnowWhiteSpringServerGeneratorIT {
 
   private static CodegenConfigurator getCodegenConfigurator(
     String inputSpec,

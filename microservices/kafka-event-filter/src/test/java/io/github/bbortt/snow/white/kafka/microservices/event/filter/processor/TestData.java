@@ -15,8 +15,8 @@ public class TestData {
     TestData.class.getSimpleName() + ":apiNameProperty";
   public static final String API_VERSION_PROPERTY =
     TestData.class.getSimpleName() + ":apiVersionProperty";
-  public static final String OTEL_SERVICE_NAME_PROPERTY =
-    TestData.class.getSimpleName() + ":otelServiceNameProperty";
+  public static final String SERVICE_NAME_PROPERTY =
+    TestData.class.getSimpleName() + ":serviceNameProperty";
 
   public static final String API_NAME = TestData.class.getSimpleName();
   public static final String API_VERSION = "1.2.3";
@@ -54,7 +54,7 @@ public class TestData {
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(OTEL_SERVICE_NAME_PROPERTY)
+              .setKey(SERVICE_NAME_PROPERTY)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -81,7 +81,7 @@ public class TestData {
               )
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(OTEL_SERVICE_NAME_PROPERTY)
+                  .setKey(SERVICE_NAME_PROPERTY)
                   .setValue(
                     AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                   )
@@ -109,7 +109,7 @@ public class TestData {
               )
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(OTEL_SERVICE_NAME_PROPERTY)
+                  .setKey(SERVICE_NAME_PROPERTY)
                   .setValue(
                     AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                   )
@@ -142,7 +142,7 @@ public class TestData {
             Span.newBuilder()
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(OTEL_SERVICE_NAME_PROPERTY)
+                  .setKey(SERVICE_NAME_PROPERTY)
                   .setValue(
                     AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                   )
@@ -166,7 +166,7 @@ public class TestData {
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(OTEL_SERVICE_NAME_PROPERTY)
+              .setKey(SERVICE_NAME_PROPERTY)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -186,7 +186,7 @@ public class TestData {
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(OTEL_SERVICE_NAME_PROPERTY)
+              .setKey(SERVICE_NAME_PROPERTY)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -231,7 +231,7 @@ public class TestData {
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(OTEL_SERVICE_NAME_PROPERTY)
+              .setKey(SERVICE_NAME_PROPERTY)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -253,7 +253,7 @@ public class TestData {
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(OTEL_SERVICE_NAME_PROPERTY)
+              .setKey(SERVICE_NAME_PROPERTY)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )

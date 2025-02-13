@@ -3,8 +3,8 @@ package io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.j
 import static io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
 
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.filter.ExportTraceServiceRequestFilter;
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.AbstractExportTraceServiceRequestEventProtobufProcessor;
-import io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.ExportTraceServiceRequestFilter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serde;
