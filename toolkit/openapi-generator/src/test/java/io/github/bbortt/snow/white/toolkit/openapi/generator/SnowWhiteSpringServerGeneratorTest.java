@@ -33,7 +33,7 @@ class SnowWhiteSpringServerGeneratorTest {
   private static final String VALID_SERVICE_NAME = "test-service";
 
   private static final String INPUT_SPEC =
-    "SnowWhiteSpringServerGeneratorIntegrationTest/valid-specification.yml";
+    "SnowWhiteSpringServerGeneratorIT/valid-specification.yml";
   private static final String VALID_YAML = // language=yaml
     """
     info:

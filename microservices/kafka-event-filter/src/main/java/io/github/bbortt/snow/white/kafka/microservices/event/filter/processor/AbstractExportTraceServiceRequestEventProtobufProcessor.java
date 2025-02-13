@@ -3,6 +3,7 @@ package io.github.bbortt.snow.white.kafka.microservices.event.filter.processor;
 import static org.apache.kafka.streams.KeyValue.pair;
 
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.filter.ExportTraceServiceRequestFilter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serde;

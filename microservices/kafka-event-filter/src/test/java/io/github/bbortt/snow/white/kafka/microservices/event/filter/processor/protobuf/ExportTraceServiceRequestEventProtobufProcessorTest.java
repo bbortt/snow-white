@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.config.KafkaStreamsConfig;
-import io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.ExportTraceServiceRequestFilter;
+import io.github.bbortt.snow.white.kafka.microservices.event.filter.filter.ExportTraceServiceRequestFilter;
 import io.github.bbortt.snow.white.kafka.microservices.event.filter.processor.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;

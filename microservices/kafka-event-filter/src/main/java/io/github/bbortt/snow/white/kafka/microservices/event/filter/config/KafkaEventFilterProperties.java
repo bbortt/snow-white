@@ -62,12 +62,12 @@ public class KafkaEventFilterProperties {
 
     private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
     private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";
-    private static final String DEFAULT_OTEL_SERVICE_NAME_PROPERTY =
+    private static final String DEFAULT_SERVICE_NAME_PROPERTY =
       SERVICE_NAME.getKey();
 
     private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
     private String apiVersionProperty = DEFAULT_API_VERSION_PROPERTY;
-    private String otelServiceNameProperty = DEFAULT_OTEL_SERVICE_NAME_PROPERTY;
+    private String serviceNameProperty = DEFAULT_SERVICE_NAME_PROPERTY;
   }
 
   public enum ConsumerMode {
