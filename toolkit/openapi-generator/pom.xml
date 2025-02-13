@@ -22,6 +22,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.github.bbortt.snow-white.toolkit</groupId>
       <artifactId>annotation-api</artifactId>
       <version>${project.version}</version>
@@ -40,8 +46,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
