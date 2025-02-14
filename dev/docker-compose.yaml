@@ -157,6 +157,7 @@ services:
     build:
       context: ../microservices/api-sync-job
     environment:
+      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: oas.info.x-api-name
       IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: http://service-interface-repository:3000
       IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: /index.json
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc

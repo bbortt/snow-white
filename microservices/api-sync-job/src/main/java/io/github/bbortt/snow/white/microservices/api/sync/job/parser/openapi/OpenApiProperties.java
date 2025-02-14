@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum OpenApiProperties implements ApiProperty {
-  OAS_INFO_TITLE("oas.info.title", false),
+  OAS_INFO_TITLE("oas.info.title", true),
   OAS_INFO_VERSION("oas.info.version", true),
 
   OAS_TYPE("oas.type", true);

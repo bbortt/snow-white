@@ -17,7 +17,7 @@ public class RedisCachingService implements CachingService {
   public void publishApiInformation(Api api) {
     repository.save(
       new ApiEndpointEntry(
-        api.getOtelServiceName(),
+        api.getServiceName(),
         api.getName(),
         api.getVersion(),
         api.getSourceUrl()

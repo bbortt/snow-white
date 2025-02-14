@@ -46,7 +46,7 @@ class RedisCachingServiceTest {
       var sourceUrl = "https://sample.repository";
 
       var api = new Api()
-        .withOtelServiceName(serviceName)
+        .withServiceName(serviceName)
         .withName(apiName)
         .withVersion(apiVersion)
         .withSourceUrl(sourceUrl);

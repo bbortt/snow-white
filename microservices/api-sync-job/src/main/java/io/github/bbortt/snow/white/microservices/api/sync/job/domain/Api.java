@@ -22,7 +22,7 @@ public class Api {
   private String sourceUrl;
 
   private String name;
-  private String otelServiceName;
+  private String serviceName;
 
   private ApiType apiType;
 
