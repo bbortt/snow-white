@@ -13,7 +13,7 @@
       "value": "swagger-petstore"
     },
     {
-      "key": "oas.info.x-otel-service-name",
+      "key": "oas.info.x-service-name",
       "value": "example-application"
     },
     {

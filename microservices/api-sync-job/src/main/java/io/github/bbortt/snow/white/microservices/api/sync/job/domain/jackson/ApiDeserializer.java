@@ -5,6 +5,7 @@ import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.open
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_INFO_VERSION;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_TYPE;
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.StreamSupport.stream;
 import static org.springframework.util.StringUtils.hasText;
@@ -20,6 +21,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.domain.Api;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.SimpleRequiredApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogException;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -31,17 +33,30 @@ public class ApiDeserializer extends StdDeserializer<Api> {
   private static final String PROPERTIES_PROPERTY = "properties";
   public static final String SOURCE_PROPERTY = "source";
 
-  private final ApiProperty apiNameProperty;
-  private final ApiProperty otelServiceNameProperty;
+  private final ApiProperty serviceNameProperty;
+
+  private @Nullable ApiProperty apiNameProperty;
+  private @Nullable ApiProperty apiVersionProperty;
 
   public ApiDeserializer(ApiSyncJobProperties apiSyncJobProperties) {
     super(Api.class);
-    this.apiNameProperty = new SimpleRequiredApiProperty(
-      apiSyncJobProperties.getServiceInterface().getApiNameProperty()
+    var serviceInterface = apiSyncJobProperties.getServiceInterface();
+
+    this.serviceNameProperty = new SimpleRequiredApiProperty(
+      serviceInterface.getServiceNameProperty()
     );
-    this.otelServiceNameProperty = new SimpleRequiredApiProperty(
-      apiSyncJobProperties.getServiceInterface().getOtelServiceNameProperty()
-    );
+
+    if (hasText(serviceInterface.getApiNameProperty())) {
+      this.apiNameProperty = new SimpleRequiredApiProperty(
+        serviceInterface.getApiNameProperty()
+      );
+    }
+
+    if (hasText(serviceInterface.getApiVersionProperty())) {
+      this.apiVersionProperty = new SimpleRequiredApiProperty(
+        serviceInterface.getApiVersionProperty()
+      );
+    }
   }
 
   @Override
@@ -75,10 +90,23 @@ public class ApiDeserializer extends StdDeserializer<Api> {
         assignProperty(apiBuilder::title, OAS_INFO_TITLE, propertyLookup);
         assignProperty(apiBuilder::version, OAS_INFO_VERSION, propertyLookup);
 
-        assignProperty(apiBuilder::name, apiNameProperty, propertyLookup);
+        if (nonNull(apiNameProperty)) {
+          assignProperty(apiBuilder::name, apiNameProperty, propertyLookup);
+        } else {
+          assignProperty(apiBuilder::name, OAS_INFO_TITLE, propertyLookup);
+        }
+
+        if (nonNull(apiVersionProperty)) {
+          assignProperty(
+            apiBuilder::version,
+            apiVersionProperty,
+            propertyLookup
+          );
+        }
+
         assignProperty(
-          apiBuilder::otelServiceName,
-          otelServiceNameProperty,
+          apiBuilder::serviceName,
+          serviceNameProperty,
           propertyLookup
         );
 

@@ -2,6 +2,8 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties.PREFIX;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_INFO_TITLE;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_INFO_VERSION;
 import static java.lang.String.format;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -44,16 +46,15 @@ public class ApiSyncJobProperties {
   @Setter
   public static class ServiceInterface {
 
-    private static final String DEFAULT_API_NAME_PROPERTY =
-      "oas.info.x-api-name";
     private static final String DEFAULT_OTEL_SERVICE_NAME_PROPERTY =
-      "oas.info.x-otel-service-name";
+      "oas.info.x-service-name";
 
     private String baseUrl;
     private String indexUri;
 
-    private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
-    private String otelServiceNameProperty = DEFAULT_OTEL_SERVICE_NAME_PROPERTY;
+    private String apiNameProperty;
+    private String apiVersionProperty;
+    private String serviceNameProperty = DEFAULT_OTEL_SERVICE_NAME_PROPERTY;
 
     private ParsingMode parsingMode = GRACEFUL;
   }
