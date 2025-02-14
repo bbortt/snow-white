@@ -1,7 +1,5 @@
-package io.github.bbortt.snow.white.toolkit.spring.web;
+package io.github.bbortt.snow.white.toolkit.spring.web.config;
 
-import static io.github.bbortt.snow.white.toolkit.spring.web.SnowWhiteAutoConfiguration.PROPERTY_PREFIX;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.toolkit.spring.web.interceptor.OpenApiInformationEnhancer;
@@ -14,21 +12,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 @ExtendWith({ MockitoExtension.class })
-class SnowWhiteAutoConfigurationTest {
+class InterceptorConfigTest {
 
   @Mock
   private OpenApiInformationEnhancer openApiInformationEnhancerMock;
 
-  private SnowWhiteAutoConfiguration fixture;
+  private InterceptorConfig fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new SnowWhiteAutoConfiguration(openApiInformationEnhancerMock);
-  }
-
-  @Test
-  void prefixIsPackageName() {
-    assertThat(PROPERTY_PREFIX).isEqualTo(fixture.getClass().getPackageName());
+    fixture = new InterceptorConfig(openApiInformationEnhancerMock);
   }
 
   @Nested

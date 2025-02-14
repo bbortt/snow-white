@@ -2,6 +2,7 @@ package io.github.bbortt.snow.white.toolkit.spring.web.interceptor;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.springframework.util.StringUtils.hasText;
 
 import io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation;
 import io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInterceptorProperties;
@@ -56,7 +57,10 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
         springWebInterceptorProperties.getApiVersionProperty(),
         snowWhiteInformation.apiVersion()
       );
-      currentSpan.setAttribute(
+
+      if (
+        hasText(springWebInterceptorProperties.getOtelServiceNameProperty())
+      ) currentSpan.setAttribute(
         springWebInterceptorProperties.getOtelServiceNameProperty(),
         snowWhiteInformation.serviceName()
       );
