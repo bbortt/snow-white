@@ -3,19 +3,22 @@ package io.github.bbortt.snow.white.toolkit.spring.web;
 import static io.github.bbortt.snow.white.toolkit.spring.web.SnowWhiteAutoConfiguration.PROPERTY;
 import static io.github.bbortt.snow.white.toolkit.spring.web.SnowWhiteAutoConfiguration.PROPERTY_PREFIX;
 
+import io.github.bbortt.snow.white.toolkit.spring.web.config.InterceptorConfig;
 import io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInterceptorProperties;
 import io.github.bbortt.snow.white.toolkit.spring.web.interceptor.OpenApiInformationEnhancer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Slf4j
 @AutoConfiguration
 @Import(
-  { SpringWebInterceptorProperties.class, OpenApiInformationEnhancer.class }
+  {
+    SpringWebInterceptorProperties.class,
+    OpenApiInformationEnhancer.class,
+    InterceptorConfig.class,
+  }
 )
 @ConditionalOnProperty(
   prefix = PROPERTY_PREFIX,
@@ -23,23 +26,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
   havingValue = "true",
   matchIfMissing = true
 )
-public class SnowWhiteAutoConfiguration implements WebMvcConfigurer {
+public class SnowWhiteAutoConfiguration {
 
   static final String PROPERTY_PREFIX =
     "io.github.bbortt.snow.white.toolkit.spring.web";
   static final String PROPERTY = "enabled";
 
-  private final OpenApiInformationEnhancer openApiInformationEnhancer;
-
-  public SnowWhiteAutoConfiguration(
-    OpenApiInformationEnhancer openApiInformationEnhancer
-  ) {
-    this.openApiInformationEnhancer = openApiInformationEnhancer;
+  public SnowWhiteAutoConfiguration() {
     logger.info("Enhancing OTEL Spans with Snow-White information ✅");
-  }
-
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(openApiInformationEnhancer);
   }
 }
