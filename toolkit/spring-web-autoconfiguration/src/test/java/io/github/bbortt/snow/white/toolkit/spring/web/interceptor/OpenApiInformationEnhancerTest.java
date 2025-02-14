@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation;
@@ -13,12 +14,17 @@ import io.opentelemetry.api.trace.Span;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.lang.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
 @ExtendWith({ MockitoExtension.class })
@@ -161,5 +167,43 @@ class OpenApiInformationEnhancerTest {
     verify(spanMock).setAttribute(API_NAME_PROPERTY, API_NAME);
     verify(spanMock).setAttribute(API_VERSION_PROPERTY, API_VERSION);
     verify(spanMock).setAttribute(SERVICE_NAME_PROPERTY, SERVICE_NAME);
+  }
+
+  public static Stream<
+    String
+  > invocationWithAnnotationButNoServiceNamePropertySetsSpanAttributes() {
+    return Stream.of(null, "");
+  }
+
+  @MethodSource
+  @ParameterizedTest
+  void invocationWithAnnotationButNoServiceNamePropertySetsSpanAttributes(
+    @Nullable String serviceNameProperty
+  ) {
+    doReturn(API_NAME_PROPERTY).when(propertiesMock).getApiNameProperty();
+    doReturn(API_VERSION_PROPERTY).when(propertiesMock).getApiVersionProperty();
+    doReturn(serviceNameProperty)
+      .when(propertiesMock)
+      .getOtelServiceNameProperty();
+
+    var annotation = createMockAnnotation();
+    doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
+    doReturn(methodMock).when(handlerMethodMock).getMethod();
+    doReturn(true)
+      .when(methodMock)
+      .isAnnotationPresent(SnowWhiteInformation.class);
+    doReturn(annotation)
+      .when(methodMock)
+      .getAnnotation(SnowWhiteInformation.class);
+
+    fixture.preHandle(
+      httpServletRequestMock,
+      httpServletResponseMock,
+      handlerMethodMock
+    );
+
+    verify(spanMock).setAttribute(API_NAME_PROPERTY, API_NAME);
+    verify(spanMock).setAttribute(API_VERSION_PROPERTY, API_VERSION);
+    verifyNoMoreInteractions(spanMock);
   }
 }
