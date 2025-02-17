@@ -23,13 +23,19 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   public static final String NAME = "snow-white-spring-server";
 
   public static final String API_NAME_PROPERTY = "apiNameProperty";
-  public String apiName = "info.title";
+
+  @Setter
+  protected String apiName = "info.title";
 
   public static final String API_VERSION_PROPERTY = "apiVersionProperty";
-  public String apiVersion = "info.version";
+
+  @Setter
+  protected String apiVersion = "info.version";
 
   public static final String SERVICE_NAME_PROPERTY = "serviceNameProperty";
-  public String serviceName = "info.x-service-name";
+
+  @Setter
+  protected String serviceName = "info.x-service-name";
 
   private final YamlParser yamlParser = new YamlParser();
 
@@ -38,24 +44,21 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   public SnowWhiteSpringServerGenerator() {
     super();
     cliOptions.add(
-      new CliOption(
+      CliOption.newString(
         API_NAME_PROPERTY,
-        "Property from which to extract the API name",
-        apiName
+        "Property from which to extract the API name"
       )
     );
     cliOptions.add(
-      new CliOption(
+      CliOption.newString(
         API_VERSION_PROPERTY,
-        "Property from which to extract the API version",
-        apiVersion
+        "Property from which to extract the API version"
       )
     );
     cliOptions.add(
-      new CliOption(
+      CliOption.newString(
         SERVICE_NAME_PROPERTY,
-        "Property from which to extract the service name, the name of the API provider",
-        serviceName
+        "Property from which to extract the service name, the name of the API provider"
       )
     );
   }
@@ -68,6 +71,21 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   @Override
   public String getHelp() {
     return "Enhances the OpenAPI Spring generator with snow-white specific information.";
+  }
+
+  @Override
+  public void processOpts() {
+    super.processOpts();
+
+    convertPropertyToStringAndWriteBack(API_NAME_PROPERTY, this::setApiName);
+    convertPropertyToStringAndWriteBack(
+      API_VERSION_PROPERTY,
+      this::setApiVersion
+    );
+    convertPropertyToStringAndWriteBack(
+      SERVICE_NAME_PROPERTY,
+      this::setServiceName
+    );
   }
 
   @Override

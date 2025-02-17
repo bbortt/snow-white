@@ -1,5 +1,8 @@
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY;
 import static java.nio.file.Files.readAllBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,11 +91,21 @@ class SnowWhiteSpringServerGeneratorIT {
       getClass().getSimpleName() +
       "/custom-specification";
 
-    fixture.apiName = "info.x-custom-api-name";
-    fixture.apiVersion = "info.x-custom-api-version";
-    fixture.serviceName = "info.x-custom-service-name";
+    var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
+    codegenConfigurator.addAdditionalProperty(
+      API_NAME_PROPERTY,
+      "info.x-custom-api-name"
+    );
+    codegenConfigurator.addAdditionalProperty(
+      API_VERSION_PROPERTY,
+      "info.x-custom-api-version"
+    );
+    codegenConfigurator.addAdditionalProperty(
+      SERVICE_NAME_PROPERTY,
+      "info.x-custom-service-name"
+    );
 
-    invokeGeneratorBasedOnFixture(inputSpec, outputDir);
+    invokeGenerator(codegenConfigurator);
 
     var controllerFile = new File(
       outputDir + "/src/main/java/org/openapitools/api/ExampleApi.java"
@@ -128,18 +141,5 @@ class SnowWhiteSpringServerGeneratorIT {
     assertThat(generatedCode).doesNotContain(
       "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation"
     );
-  }
-
-  private void invokeGeneratorBasedOnFixture(
-    String inputSpec,
-    String outputDir
-  ) {
-    fixture.setInputSpec(inputSpec);
-    fixture.setOutputDir(outputDir);
-
-    var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
-    var clientOptInput = codegenConfigurator.toClientOptInput().config(fixture);
-    var defaultGenerator = new DefaultGenerator();
-    defaultGenerator.opts(clientOptInput).generate();
   }
 }
