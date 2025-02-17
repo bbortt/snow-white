@@ -1,5 +1,8 @@
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +30,10 @@ import org.openapitools.codegen.model.OperationsMap;
 
 @ExtendWith({ MockitoExtension.class })
 class SnowWhiteSpringServerGeneratorTest {
+
+  private static final String DEFAULT_API_NAME = "info.title";
+  private static final String DEFAULT_API_VERSION = "info.version";
+  private static final String DEFAULT_SERVICE_NAME = "info.x-service-name";
 
   private static final String VALID_API_NAME = "Test API";
   private static final String VALID_API_VERSION = "1.0.0";
@@ -85,6 +92,15 @@ class SnowWhiteSpringServerGeneratorTest {
   class Constructor {
 
     @Test
+    void initializesDefaultProperties() {
+      assertThat(fixture).satisfies(
+        f -> assertThat(f.apiName).isEqualTo(DEFAULT_API_NAME),
+        f -> assertThat(f.apiVersion).isEqualTo(DEFAULT_API_VERSION),
+        f -> assertThat(f.serviceName).isEqualTo(DEFAULT_SERVICE_NAME)
+      );
+    }
+
+    @Test
     void initializesCliOptions() {
       assertThat(fixture)
         .extracting("cliOptions")
@@ -93,7 +109,7 @@ class SnowWhiteSpringServerGeneratorTest {
           assertThat(option)
             .asInstanceOf(type(CliOption.class))
             .extracting(CliOption::getOpt)
-            .isEqualTo(SnowWhiteSpringServerGenerator.API_NAME_PROPERTY)
+            .isEqualTo(API_NAME_PROPERTY)
         )
         .anySatisfy(option ->
           assertThat(option)
@@ -120,9 +136,69 @@ class SnowWhiteSpringServerGeneratorTest {
     fixture.setApiVersion(newApiVersion);
     fixture.setServiceName(newServiceName);
 
-    assertThat(fixture.apiName).isEqualTo(newApiName);
-    assertThat(fixture.apiVersion).isEqualTo(newApiVersion);
-    assertThat(fixture.serviceName).isEqualTo(newServiceName);
+    assertThat(fixture).satisfies(
+      f -> assertThat(f.apiName).isEqualTo(newApiName),
+      f -> assertThat(f.apiVersion).isEqualTo(newApiVersion),
+      f -> assertThat(f.serviceName).isEqualTo(newServiceName)
+    );
+  }
+
+  @Nested
+  class ProcessOpts {
+
+    @Test
+    void withoutAdditionalArgumentsRetainsDefaults() {
+      fixture.processOpts();
+
+      assertThat(fixture).satisfies(
+        f -> assertThat(f.apiName).isEqualTo(DEFAULT_API_NAME),
+        f -> assertThat(f.apiVersion).isEqualTo(DEFAULT_API_VERSION),
+        f -> assertThat(f.serviceName).isEqualTo(DEFAULT_SERVICE_NAME)
+      );
+    }
+
+    @Test
+    void processesApiNameProperty() {
+      fixture.additionalProperties().put(API_NAME_PROPERTY, VALID_API_NAME);
+
+      fixture.processOpts();
+
+      assertThat(fixture).satisfies(
+        f -> assertThat(f.apiName).isEqualTo(VALID_API_NAME),
+        f -> assertThat(f.apiVersion).isEqualTo(DEFAULT_API_VERSION),
+        f -> assertThat(f.serviceName).isEqualTo(DEFAULT_SERVICE_NAME)
+      );
+    }
+
+    @Test
+    void processesApiVersionProperty() {
+      fixture
+        .additionalProperties()
+        .put(API_VERSION_PROPERTY, VALID_API_VERSION);
+
+      fixture.processOpts();
+
+      assertThat(fixture).satisfies(
+        f -> assertThat(f.apiName).isEqualTo(DEFAULT_API_NAME),
+        f -> assertThat(f.apiVersion).isEqualTo(VALID_API_VERSION),
+        f -> assertThat(f.serviceName).isEqualTo(DEFAULT_SERVICE_NAME)
+      );
+    }
+
+    @Test
+    void processesServiceNameProperty() {
+      fixture
+        .additionalProperties()
+        .put(SERVICE_NAME_PROPERTY, VALID_SERVICE_NAME);
+
+      fixture.processOpts();
+
+      assertThat(fixture).satisfies(
+        f -> assertThat(f.apiName).isEqualTo(DEFAULT_API_NAME),
+        f -> assertThat(f.apiVersion).isEqualTo(DEFAULT_API_VERSION),
+        f -> assertThat(f.serviceName).isEqualTo(VALID_SERVICE_NAME)
+      );
+    }
   }
 
   @Nested
