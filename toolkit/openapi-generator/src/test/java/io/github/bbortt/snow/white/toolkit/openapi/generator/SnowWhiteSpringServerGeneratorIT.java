@@ -76,7 +76,7 @@ class SnowWhiteSpringServerGeneratorIT {
 
     var generatedCode = new String(readAllBytes(controllerFile.toPath()));
     assertThat(generatedCode).contains(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Valid Specification\", apiVersion = \"1.2.3\")"
+      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Valid Specification\", apiVersion = \"1.2.3\", operationId = \"getExample\")"
     );
   }
 
@@ -114,7 +114,7 @@ class SnowWhiteSpringServerGeneratorIT {
 
     var generatedCode = new String(readAllBytes(controllerFile.toPath()));
     assertThat(generatedCode).contains(
-      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Custom Specification\", apiVersion = \"1.0.0\")"
+      "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"sample-service\", apiName = \"Custom Specification\", apiVersion = \"1.0.0\", operationId = \"getExample\")"
     );
   }
 

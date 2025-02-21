@@ -16,10 +16,13 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openapitools.codegen.CliOption;
@@ -204,29 +207,65 @@ class SnowWhiteSpringServerGeneratorTest {
   @Nested
   class PostProcessOperationsWithModels {
 
-    @Test
-    void enhancesOperationsWithCompleteInformation() {
+    private static OperationsMap createOperationsMapWithSingleOperation(
+      String operationId
+    ) {
       var operationsMap = new OperationsMap();
       var operations = new OperationMap();
       List<CodegenOperation> operationList = new ArrayList<>();
       var operation = new CodegenOperation();
+      operation.operationId = operationId;
       operation.tags = singletonList(new Tag());
       operationList.add(operation);
       operations.put("operation", operationList);
       operationsMap.setOperation(operations);
       operationsMap.setImports(emptyList());
+      return operationsMap;
+    }
 
-      fixture.setInputSpec(INPUT_SPEC);
-      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
+    @Test
+    void enhancesOperationsWithCompleteInformation() {
+      var operationId = "testOperationId";
 
-      var apiInfo = new OpenApiInformation(
+      var operationsMap = createOperationsMapWithSingleOperation(operationId);
+
+      prepareOpenApiInformation(VALID_API_NAME);
+
+      OperationsMap result = fixture.postProcessOperationsWithModels(
+        operationsMap,
+        List.of()
+      );
+
+      @SuppressWarnings("unchecked")
+      List<CodegenOperation> resultOperations = (List<CodegenOperation>) result
+        .getOperations()
+        .get("operation");
+      String expectedAnnotation = String.format(
+        "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"%s\", apiName = \"%s\", apiVersion = \"%s\", operationId = \"%s\")",
+        VALID_SERVICE_NAME,
         VALID_API_NAME,
         VALID_API_VERSION,
-        VALID_SERVICE_NAME
+        operationId
       );
-      doReturn(apiInfo)
-        .when(informationExtractorMock)
-        .extractFromOpenApi(anyString());
+      assertThat(resultOperations)
+        .hasSize(1)
+        .first()
+        .extracting(op ->
+          op.vendorExtensions.get("x-operation-extra-annotation")
+        )
+        .isEqualTo(expectedAnnotation);
+    }
+
+    static Stream<String> enhancesOperationsWithoutOperationIDs() {
+      return Stream.of(null, "", " ");
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void enhancesOperationsWithoutOperationIDs(String operationId) {
+      var operationsMap = createOperationsMapWithSingleOperation(operationId);
+
+      prepareOpenApiInformation(VALID_API_NAME);
 
       OperationsMap result = fixture.postProcessOperationsWithModels(
         operationsMap,
@@ -259,17 +298,7 @@ class SnowWhiteSpringServerGeneratorTest {
 
       List<ModelMap> models = emptyList();
 
-      fixture.setInputSpec(INPUT_SPEC);
-      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
-
-      var incompleteInfo = new OpenApiInformation(
-        null,
-        VALID_API_VERSION,
-        VALID_SERVICE_NAME
-      );
-      doReturn(incompleteInfo)
-        .when(informationExtractorMock)
-        .extractFromOpenApi(anyString());
+      prepareOpenApiInformation(null);
 
       OperationsMap result = fixture.postProcessOperationsWithModels(
         operationsMap,
@@ -277,6 +306,20 @@ class SnowWhiteSpringServerGeneratorTest {
       );
 
       assertThat(result).isSameAs(operationsMap);
+    }
+
+    private void prepareOpenApiInformation(String validApiName) {
+      fixture.setInputSpec(INPUT_SPEC);
+      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
+
+      var apiInfo = new OpenApiInformation(
+        validApiName,
+        VALID_API_VERSION,
+        VALID_SERVICE_NAME
+      );
+      doReturn(apiInfo)
+        .when(informationExtractorMock)
+        .extractFromOpenApi(anyString());
     }
   }
 }
