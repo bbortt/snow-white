@@ -4,8 +4,10 @@ import static io.github.bbortt.snow.white.toolkit.openapi.generator.YamlParser.O
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -146,18 +148,42 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
           CodegenOperation
         >) operations.get("operation");
       for (CodegenOperation operation : operationList) {
-        var annotation = format(
-          "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"%s\", apiName = \"%s\", apiVersion = \"%s\")",
-          extractedApiInformation.serviceName(),
-          extractedApiInformation.apiName(),
-          extractedApiInformation.apiVersion()
-        );
-
         operation.vendorExtensions.put(
           "x-operation-extra-annotation",
-          annotation
+          buildAnnotationString(
+            extractedApiInformation,
+            operation.operationId,
+            operation.path
+          )
         );
       }
+    }
+  }
+
+  private String buildAnnotationString(
+    OpenApiInformation extractedApiInformation,
+    @Nullable String operationId,
+    String path
+  ) {
+    if (isNotBlank(operationId)) {
+      return format(
+        "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"%s\", apiName = \"%s\", apiVersion = \"%s\", operationId = \"%s\")",
+        extractedApiInformation.serviceName(),
+        extractedApiInformation.apiName(),
+        extractedApiInformation.apiVersion(),
+        operationId
+      );
+    } else {
+      logger.warn(
+        "No ID present for operation '{}'! Note that unique operation IDs will speed up data processing in snow-white drastically.",
+        path
+      );
+      return format(
+        "@io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation(serviceName = \"%s\", apiName = \"%s\", apiVersion = \"%s\")",
+        extractedApiInformation.serviceName(),
+        extractedApiInformation.apiName(),
+        extractedApiInformation.apiVersion()
+      );
     }
   }
 }
