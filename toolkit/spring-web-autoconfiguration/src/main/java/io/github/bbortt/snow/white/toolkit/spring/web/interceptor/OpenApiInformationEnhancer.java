@@ -64,6 +64,11 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
         springWebInterceptorProperties.getOtelServiceNameProperty(),
         snowWhiteInformation.serviceName()
       );
+
+      if (hasText(snowWhiteInformation.operationId())) currentSpan.setAttribute(
+        springWebInterceptorProperties.getOperationIdProperty(),
+        snowWhiteInformation.operationId()
+      );
     }
 
     return true;
