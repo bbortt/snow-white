@@ -13,4 +13,6 @@ public @interface SnowWhiteInformation {
   String apiName();
 
   String apiVersion();
+
+  String operationId() default "";
 }
