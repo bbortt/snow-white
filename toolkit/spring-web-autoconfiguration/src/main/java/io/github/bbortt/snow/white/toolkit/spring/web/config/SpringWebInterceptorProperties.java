@@ -16,28 +16,28 @@ public class SpringWebInterceptorProperties {
 
   static final String PREFIX = "io.github.bbortt.snow.white.toolkit.spring.web";
 
-  private static final String DEFAULT_API_NAME_PROPERTY = "openapi.name";
-  private static final String DEFAULT_API_VERSION_PROPERTY = "openapi.version";
-  private static final String DEFAULT_OPERATION_ID_PROPERTY =
+  private static final String DEFAULT_API_NAME_ATTRIBUTE = "openapi.name";
+  private static final String DEFAULT_API_VERSION_ATTRIBUTE = "openapi.version";
+  private static final String DEFAULT_OPERATION_ID_ATTRIBUTE =
     "openapi.operation.id";
 
   /**
    * Name of the attribute correlating an OTEL span with the name of the OpenAPI it presents.
    */
-  private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
+  private String apiNameAttribute = DEFAULT_API_NAME_ATTRIBUTE;
 
   /**
    * Name of the attribute correlating an OTEL span with the version of the OpenAPI it presents.
    */
-  private String apiVersionProperty = DEFAULT_API_VERSION_PROPERTY;
+  private String apiVersionAttribute = DEFAULT_API_VERSION_ATTRIBUTE;
 
   /**
    * Name of the attribute correlating an OTEL span with the name of the service implementing the OpenAPI.
    */
-  private @Nullable String otelServiceNameProperty;
+  private @Nullable String otelServiceNameAttribute;
 
   /**
-   * Name of the attribute correlating an OTEL span with speific operation of an OpenAPI.
+   * Name of the attribute correlating an OTEL span with specific operation of an OpenAPI.
    */
-  private String operationIdProperty = DEFAULT_OPERATION_ID_PROPERTY;
+  private String operationIdAttribute = DEFAULT_OPERATION_ID_ATTRIBUTE;
 }
