@@ -226,19 +226,19 @@ class OpenApiInformationEnhancerTest {
     String serviceNameProperty,
     String operationIdProperty
   ) {
-    doReturn(apiNameProperty).when(propertiesMock).getApiNameProperty();
-    doReturn(apiVersionProperty).when(propertiesMock).getApiVersionProperty();
+    doReturn(apiNameProperty).when(propertiesMock).getApiNameAttribute();
+    doReturn(apiVersionProperty).when(propertiesMock).getApiVersionAttribute();
 
     if (hasText(serviceNameProperty)) {
       doReturn(serviceNameProperty)
         .when(propertiesMock)
-        .getOtelServiceNameProperty();
+        .getOtelServiceNameAttribute();
     }
 
     if (hasText(operationIdProperty)) {
       doReturn(operationIdProperty)
         .when(propertiesMock)
-        .getOperationIdProperty();
+        .getOperationIdAttribute();
     }
   }
 

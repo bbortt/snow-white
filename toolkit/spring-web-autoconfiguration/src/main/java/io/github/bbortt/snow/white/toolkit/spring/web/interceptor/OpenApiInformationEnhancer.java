@@ -50,23 +50,23 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
       logger.trace("Enhancing span: [{}]", snowWhiteInformation);
 
       currentSpan.setAttribute(
-        springWebInterceptorProperties.getApiNameProperty(),
+        springWebInterceptorProperties.getApiNameAttribute(),
         snowWhiteInformation.apiName()
       );
       currentSpan.setAttribute(
-        springWebInterceptorProperties.getApiVersionProperty(),
+        springWebInterceptorProperties.getApiVersionAttribute(),
         snowWhiteInformation.apiVersion()
       );
 
       if (
-        hasText(springWebInterceptorProperties.getOtelServiceNameProperty())
+        hasText(springWebInterceptorProperties.getOtelServiceNameAttribute())
       ) currentSpan.setAttribute(
-        springWebInterceptorProperties.getOtelServiceNameProperty(),
+        springWebInterceptorProperties.getOtelServiceNameAttribute(),
         snowWhiteInformation.serviceName()
       );
 
       if (hasText(snowWhiteInformation.operationId())) currentSpan.setAttribute(
-        springWebInterceptorProperties.getOperationIdProperty(),
+        springWebInterceptorProperties.getOperationIdAttribute(),
         snowWhiteInformation.operationId()
       );
     }
