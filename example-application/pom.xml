@@ -96,7 +96,7 @@
                   <directory
                   >${maven.multiModuleProjectDirectory}/dev/sir</directory>
                   <includes>
-                    <include>petstore.yml</include>
+                    <include>ping-pong.yml</include>
                   </includes>
                 </resource>
               </resources>
@@ -160,7 +160,7 @@
             </goals>
             <configuration>
               <inputSpec>
-                example-application/specs/petstore.yml
+                example-application/specs/ping-pong.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
               <modelPackage
