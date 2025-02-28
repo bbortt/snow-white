@@ -20,6 +20,7 @@
     <module>example-application</module>
     <module>microservices</module>
     <module>toolkit</module>
+    <module>internal</module>
   </modules>
 
   <properties>
@@ -45,6 +46,12 @@
         <groupId>io.opentelemetry.semconv</groupId>
         <artifactId>opentelemetry-semconv</artifactId>
         <version>1.30.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.bbortt.snow-white</groupId>
+        <artifactId>commons</artifactId>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

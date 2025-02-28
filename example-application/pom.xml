@@ -20,10 +20,6 @@
   <name>application</name>
   <description>Demo Application exporting OTEL Metrics.</description>
 
-  <properties>
-    <java.version>21</java.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
@@ -93,8 +89,9 @@
               <outputDirectory>${project.basedir}/specs</outputDirectory>
               <resources>
                 <resource>
-                  <directory
-                  >${maven.multiModuleProjectDirectory}/dev/sir</directory>
+                  <directory>
+                    ${maven.multiModuleProjectDirectory}/dev/sir
+                  </directory>
                   <includes>
                     <include>ping-pong.yml</include>
                   </includes>
@@ -159,14 +156,14 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>
-                example-application/specs/ping-pong.yml
-              </inputSpec>
+              <inputSpec>example-application/specs/ping-pong.yml</inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
-              <modelPackage
-              >io.github.bbortt.snow.white.example.application.model</modelPackage>
-              <apiPackage
-              >io.github.bbortt.snow.white.example.application.api</apiPackage>
+              <modelPackage>
+                io.github.bbortt.snow.white.example.application.model
+              </modelPackage>
+              <apiPackage>
+                io.github.bbortt.snow.white.example.application.api
+              </apiPackage>
               <configOptions>
                 <apiNameProperty>info.x-api-name</apiNameProperty>
                 <delegatePattern>true</delegatePattern>

@@ -170,21 +170,13 @@ services:
     networks:
       - internal
 
-  microservices.kafka-event-filter:
+  microservices.quality-gate-api:
     build:
-      context: ../microservices/kafka-event-filter
+      context: ../microservices/quality-gate-api
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: snow-white_inbound
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: snow-white_outbound
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INIT_TOPICS: true
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
-      SPRING_KAFKA_STREAMS_APPLICATION_ID: kafka-event-filter
-    depends_on:
-      kafka:
-        condition: service_healthy
+      SPRING_PROFILES_ACTIVE: dev
     restart: on-failure
     networks:
       - internal
