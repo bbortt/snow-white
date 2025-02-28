@@ -5,5 +5,5 @@ module.exports = {
   singleQuote: true,
   tabWidth: 2,
   useTabs: false,
-  xmlWhitespaceSensitivity: 'preserve',
+  xmlWhitespaceSensitivity: 'ignore',
 };
