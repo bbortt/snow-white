@@ -81,4 +81,16 @@ class KafkaEventFilterPropertiesTest {
         );
     }
   }
+
+  @Nested
+  class SemanticConvention {
+
+    @Test
+    void defaultFilterPropertiesAlignWithSemanticConvention() {
+      assertThat(fixture.getFiltering()).satisfies(
+        f -> assertThat(f.getApiNameProperty()).isEqualTo("openapi.name"),
+        f -> assertThat(f.getApiVersionProperty()).isEqualTo("openapi.version")
+      );
+    }
+  }
 }
