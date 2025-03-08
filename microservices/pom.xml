@@ -21,6 +21,7 @@
     <module>api-sync-job</module>
     <module>kafka-event-filter</module>
     <module>quality-gate-api</module>
+    <module>tracing-data-processor</module>
   </modules>
 
   <dependencyManagement>

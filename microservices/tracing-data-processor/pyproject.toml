@@ -1,0 +1,19 @@
+[project]
+name = "tracing-data-processor"
+version = "1.0.0.preview"
+description = ""
+authors = [
+    {name = "Timon Borter",email = "timon.borter@gmx.ch"}
+]
+license = {text = "Apache 2.0"}
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "polars (>=1.24.0,<2.0.0)",
+    "influxdb-client (>=1.48.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
