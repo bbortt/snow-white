@@ -4,22 +4,20 @@ import static java.lang.String.format;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.CachingService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class RedisCachingService implements CachingService {
 
   @VisibleForTesting
   static final String HASH_PREFIX = "api_endpoints:";
 
   private final RedisTemplate<String, Object> redisTemplate;
-
-  public RedisCachingService(RedisTemplate<String, Object> redisTemplate) {
-    this.redisTemplate = redisTemplate;
-  }
 
   @Override
   public boolean apiExists(

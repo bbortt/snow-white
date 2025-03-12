@@ -8,6 +8,7 @@ import io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation;
 import io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInterceptorProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -15,17 +16,12 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class OpenApiInformationEnhancer implements HandlerInterceptor {
 
   private final SpanProvider spanProvider = new SpanProvider();
 
   private final SpringWebInterceptorProperties springWebInterceptorProperties;
-
-  public OpenApiInformationEnhancer(
-    SpringWebInterceptorProperties springWebInterceptorProperties
-  ) {
-    this.springWebInterceptorProperties = springWebInterceptorProperties;
-  }
 
   public boolean preHandle(
     HttpServletRequest request,

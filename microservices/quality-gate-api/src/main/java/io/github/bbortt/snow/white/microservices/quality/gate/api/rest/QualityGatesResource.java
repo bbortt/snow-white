@@ -12,10 +12,12 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.Error
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import java.net.URI;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 public class QualityGatesResource implements QualityGatesApi {
 
   @VisibleForTesting
@@ -23,10 +25,6 @@ public class QualityGatesResource implements QualityGatesApi {
     "Quality-Gate configuration created successfully";
 
   private final QualityGateService qualityGateService;
-
-  public QualityGatesResource(QualityGateService qualityGateService) {
-    this.qualityGateService = qualityGateService;
-  }
 
   @Override
   public ResponseEntity createQualityGate(QualityGateConfig qualityGateConfig) {
