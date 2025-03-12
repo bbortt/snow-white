@@ -8,14 +8,13 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.CreateQualityGate201Response;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfigCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +53,7 @@ class QualityGatesResourceTest {
       throws QualityGateService.ConfigurationNameAlreadyExistsException {
       var qualityGateConfig = QualityGateConfig.builder()
         .name("TestQualityGate")
-        .criteria(new QualityGateConfigCriteria())
+        .openApiCoverage(new OpenApiCoverage())
         .build();
 
       var response = fixture.createQualityGate(qualityGateConfig);
@@ -85,7 +84,7 @@ class QualityGatesResourceTest {
       throws QualityGateService.ConfigurationNameAlreadyExistsException {
       var qualityGateConfig = QualityGateConfig.builder()
         .name("ExistingQualityGate")
-        .criteria(new QualityGateConfigCriteria())
+        .openApiCoverage(new OpenApiCoverage())
         .build();
 
       doThrow(new QualityGateService.ConfigurationNameAlreadyExistsException())
@@ -119,7 +118,7 @@ class QualityGatesResourceTest {
     void createdResponseShouldContainCorrectLocationUri() {
       var qualityGateConfig = QualityGateConfig.builder()
         .name("TestQualityGate")
-        .criteria(new QualityGateConfigCriteria())
+        .openApiCoverage(new OpenApiCoverage())
         .build();
 
       var response = fixture.createQualityGate(qualityGateConfig);

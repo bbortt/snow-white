@@ -1,5 +1,5 @@
 [project]
-name = "tracing-data-processor"
+name = "openapi-coverage-service"
 version = "1.0.0.preview"
 description = ""
 authors = [
