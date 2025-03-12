@@ -8,7 +8,7 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 
 @Configuration
 @EnableRedisRepositories(
-  basePackages = "io.github.bbortt.snow.white.api.sync.job.storage.redis"
+  basePackages = "io.github.bbortt.snow.white.microservices.api.sync.job.storage.redis"
 )
 public class RedisConfig {
 

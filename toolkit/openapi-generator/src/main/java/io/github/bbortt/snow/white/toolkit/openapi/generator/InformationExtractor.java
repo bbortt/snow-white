@@ -3,22 +3,14 @@ package io.github.bbortt.snow.white.toolkit.openapi.generator;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import jakarta.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 class InformationExtractor {
 
   private final String apiNameJsonPath;
   private final String apiVersionJsonPath;
   private final String serviceNameJsonPath;
-
-  InformationExtractor(
-    String apiNameJsonPath,
-    String apiVersionJsonPath,
-    String serviceNameJsonPath
-  ) {
-    this.apiNameJsonPath = apiNameJsonPath;
-    this.apiVersionJsonPath = apiVersionJsonPath;
-    this.serviceNameJsonPath = serviceNameJsonPath;
-  }
 
   OpenApiInformation extractFromOpenApi(String openApi) {
     return new OpenApiInformation(

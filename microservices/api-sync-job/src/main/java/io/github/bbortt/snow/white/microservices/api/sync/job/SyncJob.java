@@ -5,25 +5,18 @@ import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.ApiL
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.Api;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SyncJob {
 
   private final ApiCatalogService apiCatalogService;
   private final CachingService cachingService;
-
-  @Autowired
-  public SyncJob(
-    ApiCatalogService apiCatalogService,
-    CachingService cachingService
-  ) {
-    this.apiCatalogService = apiCatalogService;
-    this.cachingService = cachingService;
-  }
 
   void queryAndSafeApiCatalogArtifacts() {
     var apis = apiCatalogService.fetchApiIndex();

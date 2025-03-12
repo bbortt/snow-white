@@ -1,6 +1,7 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.storage.redis;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -52,7 +53,7 @@ public class ApiEndpointEntry {
   public boolean equals(Object o) {
     return (
       o instanceof ApiEndpointEntry apiEndpointEntry &&
-      id != null &&
+      nonNull(id) &&
       id.equals(apiEndpointEntry.id)
     );
   }

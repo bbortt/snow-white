@@ -4,19 +4,14 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.Quality
 import io.github.bbortt.snow.white.microservices.quality.gate.api.repository.QualityGateConfigurationRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class QualityGateService {
 
   private final QualityGateConfigurationRepository qualityGateConfigurationRepository;
-
-  public QualityGateService(
-    QualityGateConfigurationRepository qualityGateConfigurationRepository
-  ) {
-    this.qualityGateConfigurationRepository =
-      qualityGateConfigurationRepository;
-  }
 
   public void persist(
     @Nonnull QualityGateConfiguration qualityGateConfiguration
