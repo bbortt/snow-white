@@ -13,6 +13,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>tracing-data-processor</artifactId>
+  <artifactId>openapi-coverage-service</artifactId>
   <packaging>pom</packaging>
 </project>
