@@ -2,12 +2,11 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.mapp
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfigCriteria;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +26,7 @@ class QualityGateConfigMapperTest {
 
     @Test
     void allCriteriaEnabled() {
-      var criteria = QualityGateConfigCriteria.builder()
+      var openApiCoverage = OpenApiCoverage.builder()
         .pathCoverage(true)
         .responseCodeCoverage(true)
         .requiredParameterCoverage(true)
@@ -41,7 +40,7 @@ class QualityGateConfigMapperTest {
       var qualityGateConfig = QualityGateConfig.builder()
         .name("Test Quality Gate")
         .description("Test Description")
-        .criteria(criteria)
+        .openApiCoverage(openApiCoverage)
         .build();
 
       QualityGateConfiguration result = QualityGateConfigMapper.toEntity(
@@ -62,7 +61,7 @@ class QualityGateConfigMapperTest {
 
     @Test
     void allCriteriaDisabled() {
-      var criteria = QualityGateConfigCriteria.builder()
+      var openApiCoverage = OpenApiCoverage.builder()
         .pathCoverage(false)
         .responseCodeCoverage(false)
         .requiredParameterCoverage(false)
@@ -76,7 +75,7 @@ class QualityGateConfigMapperTest {
       var qualityGateConfig = QualityGateConfig.builder()
         .name("Test Quality Gate")
         .description("Test Description")
-        .criteria(criteria)
+        .openApiCoverage(openApiCoverage)
         .build();
 
       var result = QualityGateConfigMapper.toEntity(qualityGateConfig);
@@ -121,15 +120,18 @@ class QualityGateConfigMapperTest {
           r -> assertThat(r.getDescription()).isEqualTo("Test Description")
         );
 
-      assertNotNull(result.getCriteria());
-      assertTrue(result.getCriteria().getPathCoverage());
-      assertTrue(result.getCriteria().getResponseCodeCoverage());
-      assertTrue(result.getCriteria().getRequiredParameterCoverage());
-      assertTrue(result.getCriteria().getQueryParameterCoverage());
-      assertTrue(result.getCriteria().getHeaderParameterCoverage());
-      assertTrue(result.getCriteria().getRequestBodySchemaCoverage());
-      assertTrue(result.getCriteria().getErrorResponseCoverage());
-      assertTrue(result.getCriteria().getContentTypeCoverage());
+      assertThat(result.getOpenApiCoverage())
+        .isNotNull()
+        .satisfies(
+          c -> assertThat(c.getPathCoverage()).isTrue(),
+          c -> assertThat(c.getResponseCodeCoverage()).isTrue(),
+          c -> assertThat(c.getRequiredParameterCoverage()).isTrue(),
+          c -> assertThat(c.getQueryParameterCoverage()).isTrue(),
+          c -> assertThat(c.getHeaderParameterCoverage()).isTrue(),
+          c -> assertThat(c.getRequestBodySchemaCoverage()).isTrue(),
+          c -> assertThat(c.getErrorResponseCoverage()).isTrue(),
+          c -> assertThat(c.getContentTypeCoverage()).isTrue()
+        );
     }
 
     @Test
@@ -156,15 +158,18 @@ class QualityGateConfigMapperTest {
           r -> assertThat(r.getDescription()).isEqualTo("Test Description")
         );
 
-      assertNotNull(result.getCriteria());
-      assertFalse(result.getCriteria().getPathCoverage());
-      assertFalse(result.getCriteria().getResponseCodeCoverage());
-      assertFalse(result.getCriteria().getRequiredParameterCoverage());
-      assertFalse(result.getCriteria().getQueryParameterCoverage());
-      assertFalse(result.getCriteria().getHeaderParameterCoverage());
-      assertFalse(result.getCriteria().getRequestBodySchemaCoverage());
-      assertFalse(result.getCriteria().getErrorResponseCoverage());
-      assertFalse(result.getCriteria().getContentTypeCoverage());
+      assertThat(result.getOpenApiCoverage())
+        .isNotNull()
+        .satisfies(
+          c -> assertThat(c.getPathCoverage()).isFalse(),
+          c -> assertThat(c.getResponseCodeCoverage()).isFalse(),
+          c -> assertThat(c.getRequiredParameterCoverage()).isFalse(),
+          c -> assertThat(c.getQueryParameterCoverage()).isFalse(),
+          c -> assertThat(c.getHeaderParameterCoverage()).isFalse(),
+          c -> assertThat(c.getRequestBodySchemaCoverage()).isFalse(),
+          c -> assertThat(c.getErrorResponseCoverage()).isFalse(),
+          c -> assertThat(c.getContentTypeCoverage()).isFalse()
+        );
     }
   }
 }

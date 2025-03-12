@@ -186,7 +186,7 @@ components:
       type: object
       required:
         - name
-        - criteria
+        - openApiCoverage
       properties:
         name:
           type: string
@@ -196,50 +196,52 @@ components:
           type: string
           description: Optional description of the quality gate configuration
           example: 'Basic coverage criteria for API testing'
-        criteria:
-          type: object
-          properties:
-            pathCoverage:
-              type: boolean
-              description: Every API endpoint has at least one test
-              default: true
-            responseCodeCoverage:
-              type: boolean
-              description: Each documented response code for each endpoint is tested at least once
-              default: true
-            requiredParameterCoverage:
-              type: boolean
-              description: All required parameters for each endpoint are included in at least one test
-              default: true
-            queryParameterCoverage:
-              type: boolean
-              description: Each optional query parameter is tested in at least one request
-              default: false
-            headerParameterCoverage:
-              type: boolean
-              description: Each documented header parameter is included in at least one test
-              default: false
-            requestBodySchemaCoverage:
-              type: boolean
-              description: For endpoints accepting request bodies, at least one test covers each required property
-              default: true
-            errorResponseCoverage:
-              type: boolean
-              description: At least one negative test exists for each endpoint that verifies error handling
-              default: true
-            contentTypeCoverage:
-              type: boolean
-              description: Each supported content type is tested
-              default: false
-          required:
-            - pathCoverage
-            - responseCodeCoverage
-            - requiredParameterCoverage
-            - queryParameterCoverage
-            - headerParameterCoverage
-            - requestBodySchemaCoverage
-            - errorResponseCoverage
-            - contentTypeCoverage
+        openApiCoverage:
+          $ref: '#/components/schemas/OpenApiCoverage'
+    OpenApiCoverage:
+      type: object
+      required:
+        - pathCoverage
+        - responseCodeCoverage
+        - requiredParameterCoverage
+        - queryParameterCoverage
+        - headerParameterCoverage
+        - requestBodySchemaCoverage
+        - errorResponseCoverage
+        - contentTypeCoverage
+      properties:
+        pathCoverage:
+          type: boolean
+          description: Every API endpoint has at least one test
+          default: true
+        responseCodeCoverage:
+          type: boolean
+          description: Each documented response code for each endpoint is tested at least once
+          default: true
+        requiredParameterCoverage:
+          type: boolean
+          description: All required parameters for each endpoint are included in at least one test
+          default: true
+        queryParameterCoverage:
+          type: boolean
+          description: Each optional query parameter is tested in at least one request
+          default: false
+        headerParameterCoverage:
+          type: boolean
+          description: Each documented header parameter is included in at least one test
+          default: false
+        requestBodySchemaCoverage:
+          type: boolean
+          description: For endpoints accepting request bodies, at least one test covers each required property
+          default: true
+        errorResponseCoverage:
+          type: boolean
+          description: At least one negative test exists for each endpoint that verifies error handling
+          default: true
+        contentTypeCoverage:
+          type: boolean
+          description: Each supported content type is tested
+          default: false
     Error:
       type: object
       required:

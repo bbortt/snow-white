@@ -1,8 +1,8 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.mapper;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfigCriteria;
 
 public final class QualityGateConfigMapper {
 
@@ -16,8 +16,8 @@ public final class QualityGateConfigMapper {
     return QualityGateConfig.builder()
       .name(qualityGateConfiguration.getName())
       .description(qualityGateConfiguration.getDescription())
-      .criteria(
-        QualityGateConfigCriteria.builder()
+      .openApiCoverage(
+        OpenApiCoverage.builder()
           .pathCoverage(qualityGateConfiguration.getIncludePathCoverage())
           .responseCodeCoverage(
             qualityGateConfiguration.getIncludeResponseCodeCoverage()
@@ -48,7 +48,7 @@ public final class QualityGateConfigMapper {
   public static QualityGateConfiguration toEntity(
     QualityGateConfig qualityGateConfig
   ) {
-    var qualityGateConfigCriteria = qualityGateConfig.getCriteria();
+    var qualityGateConfigCriteria = qualityGateConfig.getOpenApiCoverage();
 
     return QualityGateConfiguration.builder()
       .name(qualityGateConfig.getName())
