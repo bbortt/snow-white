@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.InitializingBean;
 
 class KafkaEventFilterPropertiesTest {
 
@@ -22,8 +23,13 @@ class KafkaEventFilterPropertiesTest {
     fixture = new KafkaEventFilterProperties();
   }
 
+  @Test
+  void isInitializingBean() {
+    assertThat(fixture).isInstanceOf(InitializingBean.class);
+  }
+
   @Nested
-  class SanitizeProperties {
+  class AfterPropertiesSet {
 
     public static Stream<String> emptyAndNullString() {
       return Stream.of("", null);
@@ -37,7 +43,7 @@ class KafkaEventFilterPropertiesTest {
       fixture.setInboundTopicName(inbound);
       fixture.setOutboundTopicName(outbound);
 
-      assertDoesNotThrow(() -> fixture.sanitizeProperties());
+      assertDoesNotThrow(() -> fixture.afterPropertiesSet());
 
       assertThat(fixture).satisfies(
         f -> assertThat(f.getInboundTopicName()).isEqualTo(inbound),
@@ -51,7 +57,7 @@ class KafkaEventFilterPropertiesTest {
       fixture.setInboundTopicName(inbound);
       fixture.setOutboundTopicName("outbound");
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
     @ParameterizedTest
@@ -60,7 +66,7 @@ class KafkaEventFilterPropertiesTest {
       fixture.setInboundTopicName("inbound");
       fixture.setOutboundTopicName(outbound);
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
     @ParameterizedTest
@@ -69,11 +75,11 @@ class KafkaEventFilterPropertiesTest {
       fixture.setInboundTopicName(value);
       fixture.setOutboundTopicName(value);
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
-    private void assertSanitizePropertiesThrows() {
-      assertThatThrownBy(() -> fixture.sanitizeProperties())
+    private void assertAfterPropertiesSetThrows() {
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(
           INBOUND_TOPIC_PROPERTY_NAME,
