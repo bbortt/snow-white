@@ -8,16 +8,15 @@ import static org.springframework.util.StringUtils.hasText;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 
 @Getter
 @Setter
 @Configuration
 @ConfigurationProperties(PREFIX)
-public class KafkaEventFilterProperties {
+public class KafkaEventFilterProperties implements InitializingBean {
 
   public static final String PREFIX =
     "io.github.bbortt.snow.white.kafka.event.filter";
@@ -43,8 +42,8 @@ public class KafkaEventFilterProperties {
 
   private final Filtering filtering = new Filtering();
 
-  @EventListener({ ApplicationStartedEvent.class })
-  public void sanitizeProperties() {
+  @Override
+  public void afterPropertiesSet() {
     if (!hasText(inboundTopicName) || !hasText(outboundTopicName)) {
       throw new IllegalArgumentException(
         format(

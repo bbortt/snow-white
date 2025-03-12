@@ -14,5 +14,70 @@
   </parent>
 
   <artifactId>openapi-coverage-service</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
+
+  <properties>
+    <influxdb.version>7.2.0</influxdb.version>
+    <tablesaw.version>0.44.1</tablesaw.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.influxdb</groupId>
+      <artifactId>influxdb-client-java</artifactId>
+      <version>${influxdb.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.swagger.parser.v3</groupId>
+      <artifactId>swagger-parser</artifactId>
+      <version>2.1.25</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>tech.tablesaw</groupId>
+      <artifactId>tablesaw-core</artifactId>
+      <version>${tablesaw.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <classifier>executable</classifier>
+            </configuration>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

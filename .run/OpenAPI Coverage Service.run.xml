@@ -1,0 +1,33 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration
+    default="false"
+    name="OpenAPI Coverage Service"
+    type="SpringBootApplicationConfigurationType"
+    factoryName="Spring Boot"
+  >
+    <option name="ACTIVE_PROFILES" value="dev" />
+    <envs>
+      <env
+        name="INFLUXDB_TOKEN"
+        value="kh6e-cp8_u35m-8aFVumhaTh1MX4uQYFVE1SNR-Xp0eNBe2Qhkk5DOMDjE9JM2OyNr3vE5ixOP49gihE4TG54g=="
+      />
+    </envs>
+    <module name="openapi-coverage-service" />
+    <option
+      name="SPRING_BOOT_MAIN_CLASS"
+      value="io.github.bbortt.snow.white.microservices.openapi.coverage.service.Main"
+    />
+    <extension name="coverage">
+      <pattern>
+        <option
+          name="PATTERN"
+          value="io.github.bbortt.snow.white.microservices.openapi.coverage.service.*"
+        />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
