@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.InitializingBean;
 
 class ApiSyncJobPropertiesTest {
 
@@ -21,8 +22,13 @@ class ApiSyncJobPropertiesTest {
     fixture = new ApiSyncJobProperties();
   }
 
+  @Test
+  void isInitializingBean() {
+    assertThat(fixture).isInstanceOf(InitializingBean.class);
+  }
+
   @Nested
-  class SanitizeProperties {
+  class AfterPropertiesSet {
 
     public static Stream<String> emptyAndNullString() {
       return Stream.of("", null);
@@ -33,7 +39,7 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      assertDoesNotThrow(() -> fixture.sanitizeProperties());
+      assertDoesNotThrow(() -> fixture.afterPropertiesSet());
 
       assertThat(fixture).satisfies(
         f ->
@@ -52,7 +58,7 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl(null);
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      assertThatThrownBy(() -> fixture.sanitizeProperties())
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("base-url")
         .hasMessageContaining("index-uri");
@@ -64,7 +70,7 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl(baseUrl);
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
     @ParameterizedTest
@@ -73,7 +79,7 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri(indexUrl);
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
     @ParameterizedTest
@@ -82,11 +88,11 @@ class ApiSyncJobPropertiesTest {
       fixture.getServiceInterface().setBaseUrl(value);
       fixture.getServiceInterface().setIndexUri(value);
 
-      assertSanitizePropertiesThrows();
+      assertAfterPropertiesSetThrows();
     }
 
-    private void assertSanitizePropertiesThrows() {
-      assertThatThrownBy(() -> fixture.sanitizeProperties())
+    private void assertAfterPropertiesSetThrows() {
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(PREFIX, "base-url", PREFIX, "index-uri");
     }
