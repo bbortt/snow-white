@@ -3,3 +3,5 @@ spring:
     jdbc-url: jdbc:h2:mem:quality-gate;MODE=PostgreSQL
     username: sa
     password: password
+server:
+  port: 8082

@@ -31,8 +31,8 @@ services:
     build:
       context: ../example-application
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
     ports:
       - '8080:8080'
     depends_on:
@@ -45,18 +45,18 @@ services:
   kafka:
     image: bitnami/kafka:3.9.0
     environment:
-      ALLOW_PLAINTEXT_LISTENER: yes
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_BROKER_ID: 1
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@127.0.0.1:9093
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094'
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '1@127.0.0.1:9093'
+      KAFKA_CFG_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_CFG_NODE_ID: 1
       KAFKA_CFG_NUM_PARTITIONS: 1
-      KAFKA_CFG_PROCESS_ROLES: broker,controller
-      KAFKA_ENABLE_KRAFT: yes
+      KAFKA_CFG_PROCESS_ROLES: 'broker,controller'
+      KAFKA_ENABLE_KRAFT: 'yes'
     ports:
       - '9092:9092'
       - '9094:9094'
@@ -73,8 +73,8 @@ services:
     image: confluentinc/cp-schema-registry:7.7.2
     hostname: schemaregistry
     environment:
-      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9094
+      SCHEMA_REGISTRY_HOST_NAME: 'schemaregistry'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:9094'
     ports:
       - '8081:8081'
     depends_on:
@@ -87,8 +87,8 @@ services:
   kafka.ui:
     image: provectuslabs/kafka-ui:v0.7.2
     environment:
-      KAFKA_CLUSTERS_0_NAME: snow-white
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9094
+      KAFKA_CLUSTERS_0_NAME: 'snow-white'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9094'
     ports:
       - '8090:8080'
     depends_on:
@@ -129,11 +129,11 @@ services:
     ports:
       - '8086:8086'
     environment:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_ORG: snow-white
-      DOCKER_INFLUXDB_INIT_BUCKET: raw-data
-      DOCKER_INFLUXDB_INIT_USERNAME: snow-white
-      DOCKER_INFLUXDB_INIT_PASSWORD: snow-white
+      DOCKER_INFLUXDB_INIT_MODE: 'setup'
+      DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
+      DOCKER_INFLUXDB_INIT_BUCKET: 'raw-data'
+      DOCKER_INFLUXDB_INIT_USERNAME: 'snow-white'
+      DOCKER_INFLUXDB_INIT_PASSWORD: 'snow-white'
     restart: on-failure
     networks:
       - default
@@ -157,12 +157,12 @@ services:
     build:
       context: ../microservices/api-sync-job
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: oas.info.x-api-name
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: http://service-interface-repository:3000
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: /index.json
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      SPRING_DATA_REDIS_HOST: redis
+      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
+      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
+      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/index.json'
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SPRING_DATA_REDIS_HOST: 'redis'
     depends_on:
       service-interface-repository:
         condition: service_healthy
@@ -174,14 +174,14 @@ services:
     build:
       context: ../microservices/kafka-event-filter
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: snow-white_inbound
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: snow-white_outbound
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INIT_TOPICS: true
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
-      SPRING_KAFKA_STREAMS_APPLICATION_ID: kafka-event-filter
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
+      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INIT_TOPICS: 'true'
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SPRING_DATA_REDIS_HOST: 'redis'
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+      SPRING_KAFKA_STREAMS_APPLICATION_ID: 'kafka-event-filter'
     depends_on:
       kafka:
         condition: service_healthy
@@ -193,9 +193,31 @@ services:
     build:
       context: ../microservices/quality-gate-api
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      SPRING_PROFILES_ACTIVE: dev
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'
+      SPRING_DATASOURCE_USERNAME: 'sa'
+      SPRING_DATASOURCE_PASSWORD: 'password'
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.openapi-coverage-service:
+    build:
+      context: ../microservices/openapi-coverage-service
+    env_file: .env
+    environment:
+      INFLUXDB_URL: 'http://influxdb:8086'
+      INFLUXDB_ORG: 'snow-white'
+      INFLUXDB_BUCKET: 'raw-data'
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SPRING_DATA_REDIS_HOST: 'redis'
+    depends_on:
+      redis:
+        condition: service_healthy
+      microservices.api-sync-job:
+        condition: service_completed_successfully
     restart: on-failure
     networks:
       - internal
