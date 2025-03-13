@@ -1,4 +1,6 @@
 influxdb:
-  url: http://influxdb:8086
+  url: http://localhost:8086
   org: snow-white
   bucket: raw-data
+server:
+  port: 8082
