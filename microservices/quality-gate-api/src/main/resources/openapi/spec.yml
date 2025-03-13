@@ -212,27 +212,27 @@ components:
       properties:
         pathCoverage:
           type: boolean
-          description: Every API endpoint has at least one test
+          description: Every API endpoint has at least one request
           default: true
         responseCodeCoverage:
           type: boolean
-          description: Each documented response code for each endpoint is tested at least once
+          description: Each documented response code for each endpoint is present at least once
           default: true
         requiredParameterCoverage:
           type: boolean
-          description: All required parameters for each endpoint are included in at least one test
+          description: All required parameters for each endpoint are included in at least one request
           default: true
         queryParameterCoverage:
           type: boolean
-          description: Each optional query parameter is tested in at least one request
+          description: Each optional query parameter is present in at least one request
           default: false
         headerParameterCoverage:
           type: boolean
-          description: Each documented header parameter is included in at least one test
+          description: Each documented header parameter is included in at least one request
           default: false
         requestBodySchemaCoverage:
           type: boolean
-          description: For endpoints accepting request bodies, at least one test covers each required property
+          description: For endpoints accepting request bodies, at least one request covers each required property
           default: true
         errorResponseCoverage:
           type: boolean
@@ -240,7 +240,7 @@ components:
           default: true
         contentTypeCoverage:
           type: boolean
-          description: Each supported content type is tested
+          description: Each supported content type is present
           default: false
     Error:
       type: object
