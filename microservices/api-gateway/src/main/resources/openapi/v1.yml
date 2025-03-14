@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: API Gateway
+  description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.
+  version: 1.0.0
+paths:
+  /api/rest/v1/quality-gates/{qualityGateName}/calculate:
+    post:
+      operationId: calculateQualityGate
+      summary: 'Initiate asynchronous quality gate calculation for a specific service and API'
+      description: >
+        Starts an asynchronous calculation of a previously configured quality gate for a specified service.
+        Returns a UUID that can be used to query the status and results of the calculation.
+      tags:
+        - quality-gate
+      parameters:
+        - name: qualityGateName
+          in: path
+          description: 'The name of the quality gate that must be previously configured'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityGateRequest'
+      responses:
+        '202':
+          description: 'Quality gate calculation initiated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGate'
+        '400':
+          description: 'Bad request, such as missing required parameters or invalid format'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 'Quality gate name not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/rest/v1/reports/{calculationId}:
+    get:
+      operationId: getReportByCalculationId
+      summary: 'Get quality gate calculation results'
+      description: 'Retrieves the status and results of an asynchronous quality gate calculation'
+      tags:
+        - report
+      parameters:
+        - name: calculationId
+          in: path
+          description: 'The UUID of the calculation job returned from the POST request'
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Quality gate calculation completed successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGate'
+        '202':
+          description: 'Calculation is still in progress'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGate'
+        '404':
+          description: 'Quality gate name or calculation ID not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    QualityGateRequest:
+      type: object
+      required:
+        - serviceName
+        - apiName
+      properties:
+        serviceName:
+          type: string
+          description: 'The service name for which the quality gate is being calculated'
+        apiName:
+          type: string
+          description: 'The name of the OpenAPI for which the quality gate is being calculated'
+        apiVersion:
+          type: string
+          description: 'The version of the OpenAPI for which the quality gate is being calculated - latest is being picked if non supplied'
+        lookbackWindow:
+          type: string
+          description: "The time window to consider for calculation (e.g., '1h', '24h', '7d')"
+          default: '1h'
+          example: '1h'
+        attributeFilters:
+          type: object
+          description: 'Key-value map of attributes to filter data considered for calculation'
+          additionalProperties:
+            type: string
+          example:
+            environment: 'production'
+            region: 'us-west-1'
+    QualityGate:
+      type: object
+      properties:
+        calculationId:
+          type: string
+          format: uuid
+          description: 'UUID for the calculation job'
+        status:
+          type: string
+          enum: [PENDING]
+          default: 'PENDING'
+          description: 'Current status of the calculation'
+        qualityGateRequest:
+          $ref: '#/components/schemas/QualityGateRequest'
+        initiatedAt:
+          type: string
+          format: date-time
+          description: 'When the calculation was initiated'
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: 'INVALID_REQUEST'
+        message:
+          type: string
+          example: 'Invalid request parameters'

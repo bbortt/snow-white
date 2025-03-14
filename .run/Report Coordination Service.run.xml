@@ -1,16 +1,25 @@
 <component name="ProjectRunConfigurationManager">
   <configuration
     default="false"
-    name="Kafka Event Filter"
+    name="Report Coordination Service"
     type="SpringBootApplicationConfigurationType"
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
-    <module name="kafka-event-filter" />
+    <module name="report-coordination-service" />
     <option
       name="SPRING_BOOT_MAIN_CLASS"
-      value="io.github.bbortt.snow.white.microservices.kafka.event.filter.Main"
+      value="io.github.bbortt.snow.white.microservices.report.coordination.service.Main"
     />
+    <extension name="coverage">
+      <pattern>
+        <option
+          name="PATTERN"
+          value="io.github.bbortt.snow.white.microservices.report.coordination.service.*"
+        />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
       <option name="IS_SUBST" value="false" />

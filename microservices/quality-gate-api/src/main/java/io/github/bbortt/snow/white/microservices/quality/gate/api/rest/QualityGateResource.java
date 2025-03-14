@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class QualityGatesResource implements QualityGatesApi {
+public class QualityGateResource implements QualityGateApi {
 
   @VisibleForTesting
   static final String QUALITY_GATE_CREATED_MESSAGE =
@@ -36,7 +36,7 @@ public class QualityGatesResource implements QualityGatesApi {
           .code(CONFLICT.getReasonPhrase())
           .message(
             format(
-              "Quality-Gate with name '%s' already exists",
+              "Quality-Gate configuration with name '%s' already exists",
               qualityGateConfig.getName()
             )
           )
@@ -62,7 +62,12 @@ public class QualityGatesResource implements QualityGatesApi {
       return ResponseEntity.status(NOT_FOUND).body(
         Error.builder()
           .code(NOT_FOUND.getReasonPhrase())
-          .message(format("Quality-Gate with name '%s' does not exist", name))
+          .message(
+            format(
+              "Quality-Gate configuration with name '%s' does not exist",
+              name
+            )
+          )
           .build()
       );
     }
