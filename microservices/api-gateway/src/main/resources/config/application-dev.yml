@@ -1,0 +1,12 @@
+io:
+  github:
+    bbortt:
+      snow:
+        white:
+          microservices:
+            api:
+              gateway:
+                quality-gate-api-url: http://localhost:8082
+                report-coordination-service-url: http://localhost:8084
+server:
+  port: 9080

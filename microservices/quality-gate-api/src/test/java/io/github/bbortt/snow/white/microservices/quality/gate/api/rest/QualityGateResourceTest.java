@@ -1,6 +1,6 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.rest;
 
-import static io.github.bbortt.snow.white.microservices.quality.gate.api.rest.QualityGatesResource.QUALITY_GATE_CREATED_MESSAGE;
+import static io.github.bbortt.snow.white.microservices.quality.gate.api.rest.QualityGateResource.QUALITY_GATE_CREATED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,16 +26,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 @ExtendWith({ MockitoExtension.class })
-class QualityGatesResourceTest {
+class QualityGateResourceTest {
 
   @Mock
   private QualityGateService qualityGateServiceMock;
 
-  private QualityGatesResource fixture;
+  private QualityGateResource fixture;
 
   @BeforeEach
   void setUp() {
-    fixture = new QualityGatesResource(qualityGateServiceMock);
+    fixture = new QualityGateResource(qualityGateServiceMock);
   }
 
   @Test

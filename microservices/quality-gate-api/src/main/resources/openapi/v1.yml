@@ -3,15 +3,14 @@ info:
   title: Quality Gate Configuration Service
   description: A microservice for managing API quality gate configurations
   version: 1.0.0
-servers:
-  - url: https://api.example.com/v1
-    description: Production server
 paths:
-  /quality-gates:
+  /api/rest/v1/quality-gates:
     get:
+      operationId: getAllQualityGates
       summary: Retrieve all quality gate configuration names
       description: Returns a list of all available quality gate configuration names
-      operationId: getAllQualityGateNames
+      tags:
+        - quality-gate
       responses:
         '200':
           description: A list of quality gate configuration names
@@ -32,9 +31,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
+      operationId: createQualityGate
       summary: Create a new quality gate configuration
       description: Creates a new quality gate configuration with specified criteria
-      operationId: createQualityGate
+      tags:
+        - quality-gate
       requestBody:
         required: true
         content:
@@ -72,11 +73,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /quality-gates/{name}:
+  /api/rest/v1/quality-gates/{name}:
     get:
+      operationId: getQualityGateByName
       summary: Retrieve a specific quality gate configuration
       description: Returns a quality gate configuration by name
-      operationId: getQualityGateByName
+      tags:
+        - quality-gate
       parameters:
         - name: name
           in: path
@@ -107,9 +110,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     put:
+      operationId: updateQualityGate
       summary: Update a quality gate configuration
       description: Updates an existing quality gate configuration
-      operationId: updateQualityGate
+      tags:
+        - quality-gate
       parameters:
         - name: name
           in: path
@@ -155,9 +160,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
+      operationId: deleteQualityGate
       summary: Delete a quality gate configuration
       description: Deletes a quality gate configuration by name
-      operationId: deleteQualityGate
+      tags:
+        - quality-gate
       parameters:
         - name: name
           in: path

@@ -1,16 +1,29 @@
 <component name="ProjectRunConfigurationManager">
   <configuration
     default="false"
-    name="Kafka Event Filter"
+    name="Api Gateway"
     type="SpringBootApplicationConfigurationType"
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
-    <module name="kafka-event-filter" />
+    <option
+      name="ALTERNATIVE_JRE_PATH"
+      value="/usr/lib/jvm/temurin-21-jdk-amd64"
+    />
+    <module name="api-gateway" />
     <option
       name="SPRING_BOOT_MAIN_CLASS"
-      value="io.github.bbortt.snow.white.microservices.kafka.event.filter.Main"
+      value="io.github.bbortt.snow.white.microservices.api.gateway.Main"
     />
+    <extension name="coverage">
+      <pattern>
+        <option
+          name="PATTERN"
+          value="io.github.bbortt.snow.white.microservices.api.gateway.*"
+        />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
       <option name="IS_SUBST" value="false" />
