@@ -1,0 +1,10 @@
+io:
+  github:
+    bbortt:
+      snow:
+        white:
+          sync:
+            job:
+              service-interface:
+                index-uri: /localhost.json
+                base-url: http://localhost:3000
