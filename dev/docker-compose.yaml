@@ -63,8 +63,8 @@ services:
     healthcheck:
       test: kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1
       interval: 1s
-      timeout: 60s
-      retries: 60
+      timeout: 5s
+      retries: 12
     restart: on-failure
     networks:
       - internal
@@ -138,6 +138,28 @@ services:
     networks:
       - internal
 
+  microservices.api-gateway:
+    build:
+      context: ../microservices/api-gateway
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+    ports:
+      - '8080:80'
+    depends_on:
+      microservices.quality-gate-api:
+        condition: service_healthy
+      microservices.report-coordination-service:
+        condition: service_healthy
+    healthcheck:
+      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - internal
+
   microservices.api-sync-job:
     build:
       context: ../microservices/api-sync-job
@@ -174,21 +196,6 @@ services:
     networks:
       - internal
 
-  microservices.quality-gate-api:
-    build:
-      context: ../microservices/quality-gate-api
-    environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
-      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'
-      SPRING_DATASOURCE_USERNAME: 'sa'
-      SPRING_DATASOURCE_PASSWORD: 'password'
-    ports:
-      - '8080:8081'
-    restart: on-failure
-    networks:
-      - internal
-
   microservices.openapi-coverage-service:
     build:
       context: ../microservices/openapi-coverage-service
@@ -205,6 +212,52 @@ services:
         condition: service_healthy
       microservices.api-sync-job:
         condition: service_completed_successfully
+    healthcheck:
+      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.quality-gate-api:
+    build:
+      context: ../microservices/quality-gate-api
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'
+      SPRING_DATASOURCE_USERNAME: 'sa'
+      SPRING_DATASOURCE_PASSWORD: 'password'
+    ports:
+      - '8080:8081'
+    healthcheck:
+      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.report-coordination-service:
+    build:
+      context: ../microservices/report-coordination-service
+    env_file: .env
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+    ports:
+      - '8080:8084'
+    depends_on:
+      microservices.quality-gate-api:
+        condition: service_healthy
+    healthcheck:
+      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
     restart: on-failure
     networks:
       - internal

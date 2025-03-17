@@ -108,7 +108,7 @@ class QualityGateResourceTest {
                 e -> assertThat(e.getCode()).isEqualTo("Conflict"),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
-                    "Quality-Gate with name 'ExistingQualityGate' already exists"
+                    "Quality-Gate configuration with name 'ExistingQualityGate' already exists"
                   )
               )
         );
@@ -179,7 +179,7 @@ class QualityGateResourceTest {
                 e -> assertThat(e.getCode()).isEqualTo("Not Found"),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
-                    "Quality-Gate with name 'NonExistingConfiguration' does not exist"
+                    "Quality-Gate configuration with name 'NonExistingConfiguration' does not exist"
                   )
               )
         );
