@@ -2,6 +2,7 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
 import java.time.Duration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,13 +56,15 @@ class RoutingConfigIT {
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("quality-gate-api"),
-            r -> assertThat(r.getUri()).isEqualTo("http://localhost:8082")
+            r ->
+              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8082"))
           )
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("report-coordination-service"),
-            r -> assertThat(r.getUri()).isEqualTo("http://localhost:8084")
+            r ->
+              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         );
     }
