@@ -26,7 +26,7 @@
         "value": "openapi"
       }
     ],
-    "source": "http://sir/ping-pong.yml"
+    "source": "http://service-interface-repository:3000/ping-pong.yml"
   },
   {
     "name": "streetlights-kafka-api-1.0.0.tgz",
@@ -55,6 +55,6 @@
         "value": "asyncapi"
       }
     ],
-    "source": "http://sir/streetlights.yml"
+    "source": "http://service-interface-repository:3000/streetlights.yml"
   }
 ]

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY target/*-executable.jar app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-ENV OTEL_SERVICE_NAME="openapi-coverage-service"
+ENV OTEL_SERVICE_NAME="report-coordination-service"
 ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
 ENV OTEL_TRACES_EXPORTER="otlp"
 ENV OTEL_METRICS_EXPORTER="otlp"
