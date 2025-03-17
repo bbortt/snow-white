@@ -6,7 +6,13 @@
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
+    <option name="envFilePaths">
+      <option value="$PROJECT_DIR$/dev/.env" />
+    </option>
     <module name="openapi-coverage-service" />
+    <selectedOptions>
+      <option name="environmentVariables" />
+    </selectedOptions>
     <option
       name="SPRING_BOOT_MAIN_CLASS"
       value="io.github.bbortt.snow.white.microservices.openapi.coverage.service.Main"
