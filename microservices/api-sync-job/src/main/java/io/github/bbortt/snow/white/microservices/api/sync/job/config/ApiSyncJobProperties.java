@@ -19,7 +19,8 @@ import org.springframework.context.annotation.Configuration;
 public class ApiSyncJobProperties implements InitializingBean {
 
   @VisibleForTesting
-  static final String PREFIX = "io.github.bbortt.snow.white.sync.job";
+  static final String PREFIX =
+    "io.github.bbortt.snow.white.microservices.api.sync.job";
 
   private final ServiceInterface serviceInterface = new ServiceInterface();
 

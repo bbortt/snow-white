@@ -42,7 +42,7 @@ class ApiGatewayPropertiesTest {
     assertThatThrownBy(() -> fixture.afterPropertiesSet())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage(
-        "All URLs must be configured - missing properties: [io.github.bbortt.snow.white.microservices.api.gatewayquality-gate-api-url]."
+        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url]."
       );
   }
 
@@ -53,7 +53,7 @@ class ApiGatewayPropertiesTest {
     assertThatThrownBy(() -> fixture.afterPropertiesSet())
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage(
-        "All URLs must be configured - missing properties: [io.github.bbortt.snow.white.microservices.api.gatewayreport-coordination-service-url]."
+        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url]."
       );
   }
 }

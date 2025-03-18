@@ -23,7 +23,7 @@ public class InfluxDBProperties implements InitializingBean {
   public void afterPropertiesSet() {
     if (!hasText(url) || !hasText(token) || !hasText(org) || !hasText(bucket)) {
       throw new IllegalArgumentException(
-        "InfluxDB connection not propperly configured! Please read the docs."
+        "InfluxDB connection not properly configured! Please read the docs."
       );
     }
   }

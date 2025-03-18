@@ -1,4 +1,4 @@
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.domain;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
 import java.math.BigDecimal;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.ToString;
 
 @Builder
 @ToString
-public class OpenApiCoverage {
+final class OpenApiCoverage {
 
   private BigDecimal pathCoverage;
   private BigDecimal responseCodeCoverage;

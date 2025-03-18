@@ -16,11 +16,22 @@
   <artifactId>report-coordination-service</artifactId>
   <packaging>jar</packaging>
 
+  <properties>
+    <basePackage>
+      io.github.bbortt.snow.white.microservices.report.coordination.service
+    </basePackage>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
       <artifactId>opentelemetry-javaagent</artifactId>
       <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
     </dependency>
 
     <dependency>
@@ -111,20 +122,17 @@
         </dependencies>
         <executions>
           <execution>
+            <id>generate-report-coordination-service</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/api-gateway/src/main/resources/openapi/v1.yml
+                microservices/report-coordination-service/src/main/resources/openapi/v1.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
-              <modelPackage>
-                io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto
-              </modelPackage>
-              <apiPackage>
-                io.github.bbortt.snow.white.microservices.report.coordination.service.rest
-              </apiPackage>
+              <modelPackage>${basePackage}.rest.dto</modelPackage>
+              <apiPackage>${basePackage}.rest</apiPackage>
               <configOptions>
                 <apiNameProperty>info.x-api-name</apiNameProperty>
                 <delegatePattern>true</delegatePattern>
@@ -134,6 +142,50 @@
                 <useSpringBoot3>true</useSpringBoot3>
                 <useTags>true</useTags>
               </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-quality-gate-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/quality-gate-api/src/main/resources/openapi/v1.yml
+              </inputSpec>
+              <apiPackage>${basePackage}.client.api</apiPackage>
+              <invokerPackage>${basePackage}.client</invokerPackage>
+              <modelPackage>${basePackage}.client.model</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJakartaEe>true</useJakartaEe>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>remove-generated-test-sources</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete>
+                  <fileset
+                    dir="${project.build.directory}/generated-sources/openapi/src"
+                    includes="test/**"
+                  />
+                </delete>
+              </target>
             </configuration>
           </execution>
         </executions>

@@ -10,7 +10,6 @@ import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAtt
 import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.PUT;
 import static java.util.stream.Collectors.groupingBy;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.domain.OpenApiCoverage;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import java.util.HashMap;

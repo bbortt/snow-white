@@ -18,7 +18,7 @@ class ApiSyncJobPropertiesTest {
   private ApiSyncJobProperties fixture;
 
   @BeforeEach
-  void setUp() {
+  void beforeEachSetup() {
     fixture = new ApiSyncJobProperties();
   }
 

@@ -14,7 +14,6 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.domain.OpenApiCoverage;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.Parameter;

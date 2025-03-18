@@ -1,37 +1,40 @@
-example-application/application/HELP.md
-target/
-!../../.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
+# Eclipse
 .classpath
-.factorypath
 .project
-.settings
-.springBeans
-.sts4-cache
+.settings/
+.temp-Rerun*
 
-### IntelliJ IDEA ###
+# Intellij
 .idea/
-*.iws
 *.iml
-*.ipr
+*.iws
+**/.intelij/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Mac
+.DS_Store
 
-### VS Code ###
+# Maven
+.mvn/jvm.config
+.mvn/settings.xml
+.mvn/wrapper/maven-wrapper.jar
+log/
+target/
+**/target/
+*.versionsBackup
+
+# Python
+.pydevproject
+
+# Node.js & npm
+node_modules/
+
+# Binaries
+bin/
+out/
+
+# VSCode
 .vscode/
 
-### npm ###
+# Caches
+.m2/
 .npm/
-node_modules/

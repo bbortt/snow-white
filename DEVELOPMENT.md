@@ -75,3 +75,28 @@ The following services are only mapped in [`dev/docker-compose.yaml`](dev/docker
 | Service Interface Repository | `3000`                                                   |
 
 This guide ensures a structured and efficient development setup. Happy coding!
+
+## Maven Proxy Setup
+
+The following proxies are required in order to build `snow-white` behind corporate proxies:
+
+```xml
+<settings>
+  <mirrors>
+    <mirror>
+      <id>central-mirror</id>
+      <name>...</name>
+      <url>...</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+    <mirror>
+      <id>confluent-mirror</id>
+      <name>...</name>
+      <url>...</url>
+      <mirrorOf>confluent</mirrorOf>
+    </mirror>
+  </mirrors>
+</settings>
+```
+
+You should add them to [`.mvn/settings.xml`](./.mvn/settings.xml) which is being ignored by `git`.

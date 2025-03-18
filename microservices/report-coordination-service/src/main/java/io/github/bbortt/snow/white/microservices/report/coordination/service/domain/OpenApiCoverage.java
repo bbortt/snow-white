@@ -2,10 +2,10 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static lombok.AccessLevel.PRIVATE;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,8 +19,9 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-public class QualityGateReport {
+public class OpenApiCoverage {
 
   @Id
-  private UUID calculationId;
+  @Column(nullable = false, updatable = false)
+  private Long id;
 }
