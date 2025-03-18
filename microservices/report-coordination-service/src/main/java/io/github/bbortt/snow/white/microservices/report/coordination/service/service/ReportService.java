@@ -1,36 +1,87 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.QualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.Report;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.repository.ReportRepository;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportService {
 
-  private String calculationRequestTopic;
+  private final String calculationRequestTopic;
 
-  private final KafkaTemplate<String, String> kafkaTemplate;
+  private final KafkaTemplate<
+    String,
+    QualityGateCalculationRequestEvent
+  > kafkaTemplate;
+  private final ReportRepository reportRepository;
+  private final QualityGateService qualityGateService;
 
   public ReportService(
+    KafkaTemplate<String, QualityGateCalculationRequestEvent> kafkaTemplate,
+    ReportRepository reportRepository,
     ReportCoordinationServiceProperties reportCoordinationServiceProperties,
-    KafkaTemplate<String, String> kafkaTemplate
+    QualityGateService qualityGateService
   ) {
     this.calculationRequestTopic =
       reportCoordinationServiceProperties.getCalculationRequestTopic();
+
     this.kafkaTemplate = kafkaTemplate;
+    this.reportRepository = reportRepository;
+
+    this.qualityGateService = qualityGateService;
   }
 
-  public QualityGateReport createInitialReport(
-    String qualityGateName,
-    QualityGateRequest qualityGateRequest
+  public Optional<Report> findReportByCalculationId(UUID calculationId) {
+    return reportRepository.findById(calculationId);
+  }
+
+  public Report initializeQualityGateCalculation(
+    String qualityGateConfigName,
+    ReportParameters reportParameters
+  ) throws QualityGateNotFoundException {
+    qualityGateService
+      .findQualityGateByName(qualityGateConfigName)
+      .orElseThrow(() -> new QualityGateNotFoundException(qualityGateConfigName)
+      );
+
+    var qualityGateReport = createInitialReport(
+      qualityGateConfigName,
+      reportParameters
+    );
+
+    dispatchOpenApiCoverageCalculation(qualityGateReport);
+
+    return qualityGateReport;
+  }
+
+  private Report createInitialReport(
+    String qualityGateConfigName,
+    ReportParameters reportParameters
   ) {
-    return null;
+    return reportRepository.save(
+      Report.builder()
+        .qualityGateConfigName(qualityGateConfigName)
+        .reportParameters(reportParameters)
+        .build()
+    );
   }
 
-  public void dispatchCalculations(QualityGateReport qualityGateReport) {
-    // TODO: https://docs.spring.io/spring-kafka/reference/kafka/serdes.html#json-serde
-    kafkaTemplate.send(calculationRequestTopic, "");
+  private void dispatchOpenApiCoverageCalculation(Report report) {
+    kafkaTemplate.send(
+      calculationRequestTopic,
+      new QualityGateCalculationRequestEvent(
+        report.getCalculationId(),
+        report.getReportParameters().getServiceName(),
+        report.getReportParameters().getApiName(),
+        report.getReportParameters().getApiVersion(),
+        report.getReportParameters().getLookbackWindow()
+      )
+    );
   }
 }

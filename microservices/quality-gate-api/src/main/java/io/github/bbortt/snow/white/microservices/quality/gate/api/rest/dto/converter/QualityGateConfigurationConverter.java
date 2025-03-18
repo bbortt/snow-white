@@ -1,16 +1,17 @@
-package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.mapper;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.converter;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-public final class QualityGateConfigMapper {
+@Component
+public final class QualityGateConfigurationConverter
+  implements Converter<QualityGateConfiguration, QualityGateConfig> {
 
-  private QualityGateConfigMapper() {
-    // Static mapper class
-  }
-
-  public static QualityGateConfig toDto(
+  @Override
+  public QualityGateConfig convert(
     QualityGateConfiguration qualityGateConfiguration
   ) {
     return QualityGateConfig.builder()
@@ -41,39 +42,6 @@ public final class QualityGateConfigMapper {
             qualityGateConfiguration.getIncludeContentTypeCoverage()
           )
           .build()
-      )
-      .build();
-  }
-
-  public static QualityGateConfiguration toEntity(
-    QualityGateConfig qualityGateConfig
-  ) {
-    var qualityGateConfigCriteria = qualityGateConfig.getOpenApiCoverage();
-
-    return QualityGateConfiguration.builder()
-      .name(qualityGateConfig.getName())
-      .description(qualityGateConfig.getDescription())
-      .includePathCoverage(qualityGateConfigCriteria.getPathCoverage())
-      .includeResponseCodeCoverage(
-        qualityGateConfigCriteria.getResponseCodeCoverage()
-      )
-      .includeRequiredParameterCoverage(
-        qualityGateConfigCriteria.getRequiredParameterCoverage()
-      )
-      .includeQueryParameterCoverage(
-        qualityGateConfigCriteria.getQueryParameterCoverage()
-      )
-      .includeHeaderParameterCoverage(
-        qualityGateConfigCriteria.getHeaderParameterCoverage()
-      )
-      .includeRequestBodySchemaCoverage(
-        qualityGateConfigCriteria.getRequestBodySchemaCoverage()
-      )
-      .includeErrorResponseCoverage(
-        qualityGateConfigCriteria.getErrorResponseCoverage()
-      )
-      .includeContentTypeCoverage(
-        qualityGateConfigCriteria.getContentTypeCoverage()
       )
       .build();
   }

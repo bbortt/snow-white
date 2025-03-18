@@ -1,16 +1,14 @@
-package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.mapper;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.convert.converter.Converter;
 
-class QualityGateConfigMapperTest {
+class QualityGateConfigurationConverterTest {
 
   private static void verifyBasicAttributes(QualityGateConfiguration result) {
     assertThat(result)
@@ -21,80 +19,20 @@ class QualityGateConfigMapperTest {
       );
   }
 
-  @Nested
-  class ToEntity {
+  private QualityGateConfigurationConverter fixture;
 
-    @Test
-    void allCriteriaEnabled() {
-      var openApiCoverage = OpenApiCoverage.builder()
-        .pathCoverage(true)
-        .responseCodeCoverage(true)
-        .requiredParameterCoverage(true)
-        .queryParameterCoverage(true)
-        .headerParameterCoverage(true)
-        .requestBodySchemaCoverage(true)
-        .errorResponseCoverage(true)
-        .contentTypeCoverage(true)
-        .build();
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new QualityGateConfigurationConverter();
+  }
 
-      var qualityGateConfig = QualityGateConfig.builder()
-        .name("Test Quality Gate")
-        .description("Test Description")
-        .openApiCoverage(openApiCoverage)
-        .build();
-
-      QualityGateConfiguration result = QualityGateConfigMapper.toEntity(
-        qualityGateConfig
-      );
-
-      verifyBasicAttributes(result);
-
-      assertTrue(result.getIncludePathCoverage());
-      assertTrue(result.getIncludeResponseCodeCoverage());
-      assertTrue(result.getIncludeRequiredParameterCoverage());
-      assertTrue(result.getIncludeQueryParameterCoverage());
-      assertTrue(result.getIncludeHeaderParameterCoverage());
-      assertTrue(result.getIncludeRequestBodySchemaCoverage());
-      assertTrue(result.getIncludeErrorResponseCoverage());
-      assertTrue(result.getIncludeContentTypeCoverage());
-    }
-
-    @Test
-    void allCriteriaDisabled() {
-      var openApiCoverage = OpenApiCoverage.builder()
-        .pathCoverage(false)
-        .responseCodeCoverage(false)
-        .requiredParameterCoverage(false)
-        .queryParameterCoverage(false)
-        .headerParameterCoverage(false)
-        .requestBodySchemaCoverage(false)
-        .errorResponseCoverage(false)
-        .contentTypeCoverage(false)
-        .build();
-
-      var qualityGateConfig = QualityGateConfig.builder()
-        .name("Test Quality Gate")
-        .description("Test Description")
-        .openApiCoverage(openApiCoverage)
-        .build();
-
-      var result = QualityGateConfigMapper.toEntity(qualityGateConfig);
-
-      verifyBasicAttributes(result);
-
-      assertFalse(result.getIncludePathCoverage());
-      assertFalse(result.getIncludeResponseCodeCoverage());
-      assertFalse(result.getIncludeRequiredParameterCoverage());
-      assertFalse(result.getIncludeQueryParameterCoverage());
-      assertFalse(result.getIncludeHeaderParameterCoverage());
-      assertFalse(result.getIncludeRequestBodySchemaCoverage());
-      assertFalse(result.getIncludeErrorResponseCoverage());
-      assertFalse(result.getIncludeContentTypeCoverage());
-    }
+  @Test
+  void isConverter() {
+    assertThat(fixture).isInstanceOf(Converter.class);
   }
 
   @Nested
-  class ToDto {
+  class Convert {
 
     @Test
     void allCriteriaEnabled() {
@@ -111,7 +49,7 @@ class QualityGateConfigMapperTest {
         .includeContentTypeCoverage(true)
         .build();
 
-      var result = QualityGateConfigMapper.toDto(qualityGateConfiguration);
+      var result = fixture.convert(qualityGateConfiguration);
 
       assertThat(result)
         .isNotNull()
@@ -149,7 +87,7 @@ class QualityGateConfigMapperTest {
         .includeContentTypeCoverage(false)
         .build();
 
-      var result = QualityGateConfigMapper.toDto(qualityGateConfiguration);
+      var result = fixture.convert(qualityGateConfiguration);
 
       assertThat(result)
         .isNotNull()

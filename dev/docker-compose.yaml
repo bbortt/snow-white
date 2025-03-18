@@ -141,11 +141,14 @@ services:
   microservices.api-gateway:
     build:
       context: ../microservices/api-gateway
+    hostname: api-gateway
     environment:
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8081'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL: 'http://report-coordination-service:8084'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
     ports:
-      - '8080:80'
+      - '80:8080'
     depends_on:
       microservices.quality-gate-api:
         condition: service_healthy
@@ -163,10 +166,11 @@ services:
   microservices.api-sync-job:
     build:
       context: ../microservices/api-sync-job
+    hostname: api-sync-job
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
-      IO_GITHUB_BBORTT_SNOW_WHITE_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
@@ -180,6 +184,7 @@ services:
   microservices.kafka-event-filter:
     build:
       context: ../microservices/kafka-event-filter
+    hostname: kafka-event-filter
     environment:
       IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
       IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
@@ -199,6 +204,7 @@ services:
   microservices.openapi-coverage-service:
     build:
       context: ../microservices/openapi-coverage-service
+    hostname: openapi-coverage-service
     env_file: .env
     environment:
       INFLUXDB_URL: 'http://influxdb:8086'
@@ -224,6 +230,7 @@ services:
   microservices.quality-gate-api:
     build:
       context: ../microservices/quality-gate-api
+    hostname: quality-gate-api
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
@@ -231,7 +238,7 @@ services:
       SPRING_DATASOURCE_USERNAME: 'sa'
       SPRING_DATASOURCE_PASSWORD: 'password'
     ports:
-      - '8080:8081'
+      - '8081:8080'
     healthcheck:
       test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
       interval: 1s
@@ -244,12 +251,16 @@ services:
   microservices.report-coordination-service:
     build:
       context: ../microservices/report-coordination-service
+    hostname: report-coordination-service
     env_file: .env
     environment:
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8081'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
     ports:
-      - '8080:8084'
+      - '8084:8080'
     depends_on:
       microservices.quality-gate-api:
         condition: service_healthy

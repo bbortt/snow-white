@@ -4,7 +4,7 @@ info:
   description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.
   version: 1.0.0
 paths:
-  /api/rest/v1/quality-gates/{qualityGateName}/calculate:
+  /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate:
     post:
       operationId: calculateQualityGate
       summary: 'Initiate asynchronous quality gate calculation for a specific service and API'
@@ -14,7 +14,7 @@ paths:
       tags:
         - quality-gate
       parameters:
-        - name: qualityGateName
+        - name: qualityGateConfigName
           in: path
           description: 'The name of the quality gate that must be previously configured'
           required: true
@@ -80,7 +80,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/QualityGate'
         '404':
-          description: 'Quality gate name or calculation ID not found'
+          description: 'Calculation ID not found'
           content:
             application/json:
               schema:
