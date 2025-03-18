@@ -3,17 +3,11 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.rest;
 import static io.github.bbortt.snow.white.microservices.quality.gate.api.rest.QualityGateResource.QUALITY_GATE_CREATED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
+import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpStatus.*;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.CreateQualityGate201Response;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.OpenApiCoverage;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import java.net.URI;
@@ -23,10 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateResourceTest {
+
+  @Mock
+  private ConversionService conversionServiceMock;
 
   @Mock
   private QualityGateService qualityGateServiceMock;
@@ -34,8 +32,11 @@ class QualityGateResourceTest {
   private QualityGateResource fixture;
 
   @BeforeEach
-  void setUp() {
-    fixture = new QualityGateResource(qualityGateServiceMock);
+  void beforeEachSetup() {
+    fixture = new QualityGateResource(
+      conversionServiceMock,
+      qualityGateServiceMock
+    );
   }
 
   @Test
@@ -48,13 +49,22 @@ class QualityGateResourceTest {
   @Nested
   class CreateQualityGate {
 
+    QualityGateConfig qualityGateConfig;
+
+    @BeforeEach
+    void beforeEachSetup() {
+      qualityGateConfig = QualityGateConfig.builder()
+        .name("TestQualityGate")
+        .build();
+    }
+
     @Test
     void shouldReturnCreatedResponse()
       throws QualityGateService.ConfigurationNameAlreadyExistsException {
-      var qualityGateConfig = QualityGateConfig.builder()
-        .name("TestQualityGate")
-        .openApiCoverage(new OpenApiCoverage())
-        .build();
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(qualityGateConfiguration)
+        .when(conversionServiceMock)
+        .convert(qualityGateConfig, QualityGateConfiguration.class);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -74,22 +84,20 @@ class QualityGateResourceTest {
               )
         );
 
-      verify(qualityGateServiceMock).persist(
-        any(QualityGateConfiguration.class)
-      );
+      verify(qualityGateServiceMock).persist(qualityGateConfiguration);
     }
 
     @Test
     void shouldReturnConflictResponse_whenConfigurationAlreadyExists()
       throws QualityGateService.ConfigurationNameAlreadyExistsException {
-      var qualityGateConfig = QualityGateConfig.builder()
-        .name("ExistingQualityGate")
-        .openApiCoverage(new OpenApiCoverage())
-        .build();
+      var qualityGateConfiguration = new QualityGateConfiguration();
 
+      doReturn(qualityGateConfiguration)
+        .when(conversionServiceMock)
+        .convert(qualityGateConfig, QualityGateConfiguration.class);
       doThrow(new QualityGateService.ConfigurationNameAlreadyExistsException())
         .when(qualityGateServiceMock)
-        .persist(any(QualityGateConfiguration.class));
+        .persist(qualityGateConfiguration);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -108,7 +116,7 @@ class QualityGateResourceTest {
                 e -> assertThat(e.getCode()).isEqualTo("Conflict"),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
-                    "Quality-Gate configuration with name 'ExistingQualityGate' already exists"
+                    "Quality-Gate configuration with name 'TestQualityGate' already exists"
                   )
               )
         );
@@ -116,10 +124,10 @@ class QualityGateResourceTest {
 
     @Test
     void createdResponseShouldContainCorrectLocationUri() {
-      var qualityGateConfig = QualityGateConfig.builder()
-        .name("TestQualityGate")
-        .openApiCoverage(new OpenApiCoverage())
-        .build();
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(qualityGateConfiguration)
+        .when(conversionServiceMock)
+        .convert(qualityGateConfig, QualityGateConfiguration.class);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -135,21 +143,25 @@ class QualityGateResourceTest {
     @Test
     void shouldReturnConfiguration()
       throws QualityGateService.ConfigurationDoesNotExistException {
-      var qualityGateConfig = QualityGateConfiguration.builder()
-        .name("TestQualityGate")
-        .build();
-
-      doReturn(qualityGateConfig)
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(qualityGateConfiguration)
         .when(qualityGateServiceMock)
-        .findByName(qualityGateConfig.getName());
+        .findByName(qualityGateConfiguration.getName());
 
-      var response = fixture.getQualityGateByName(qualityGateConfig.getName());
+      var qualityGateConfig = new QualityGateConfig();
+      doReturn(qualityGateConfig)
+        .when(conversionServiceMock)
+        .convert(qualityGateConfiguration, QualityGateConfig.class);
+
+      var response = fixture.getQualityGateByName(
+        qualityGateConfiguration.getName()
+      );
 
       assertThat(response)
         .isNotNull()
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-          r -> assertThat(r.getBody()).isInstanceOf(QualityGateConfig.class)
+          r -> assertThat(r.getBody()).isEqualTo(qualityGateConfig)
         );
     }
 
@@ -157,7 +169,6 @@ class QualityGateResourceTest {
     void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
       throws QualityGateService.ConfigurationDoesNotExistException {
       var name = "NonExistingConfiguration";
-
       doThrow(new QualityGateService.ConfigurationDoesNotExistException())
         .when(qualityGateServiceMock)
         .findByName(name);

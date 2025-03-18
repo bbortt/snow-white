@@ -1,0 +1,27 @@
+package io.github.bbortt.snow.white.microservices.report.coordination.service.config;
+
+import io.github.bbortt.snow.white.microservices.report.coordination.service.client.ApiClient;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.client.api.QualityGateApi;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
+
+@Configuration
+public class QualityGateApiConfig {
+
+  private final String qualityGateApiUrl;
+
+  public QualityGateApiConfig(
+    ReportCoordinationServiceProperties reportCoordinationServiceProperties
+  ) {
+    this.qualityGateApiUrl =
+      reportCoordinationServiceProperties.getQualityGateApiUrl();
+  }
+
+  @Bean
+  public QualityGateApi qualityGateApi(RestClient.Builder builder) {
+    var apiClient = new ApiClient(builder.build());
+    apiClient.setBasePath(qualityGateApiUrl);
+    return new QualityGateApi(apiClient);
+  }
+}

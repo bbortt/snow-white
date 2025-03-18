@@ -26,7 +26,7 @@ class QualityGateServiceTest {
   private QualityGateService fixture;
 
   @BeforeEach
-  void setUp() {
+  void beforeEachSetup() {
     fixture = new QualityGateService(qualityGateConfigurationRepositoryMock);
   }
 
