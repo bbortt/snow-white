@@ -6,7 +6,7 @@ import lombok.ToString;
 
 @Builder
 @ToString
-final class OpenApiCoverage {
+public final class OpenApiCoverage {
 
   private BigDecimal pathCoverage;
   private BigDecimal responseCodeCoverage;

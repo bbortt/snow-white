@@ -193,7 +193,6 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
-      SPRING_KAFKA_STREAMS_APPLICATION_ID: 'kafka-event-filter'
     depends_on:
       kafka:
         condition: service_healthy
@@ -210,6 +209,9 @@ services:
       INFLUXDB_URL: 'http://influxdb:8086'
       INFLUXDB_ORG: 'snow-white'
       INFLUXDB_BUCKET: 'raw-data'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-coverage-request'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_INIT-TOPICS: 'true'
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
@@ -218,11 +220,6 @@ services:
         condition: service_healthy
       microservices.api-sync-job:
         condition: service_completed_successfully
-    healthcheck:
-      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
-      interval: 1s
-      timeout: 5s
-      retries: 12
     restart: on-failure
     networks:
       - internal
@@ -232,6 +229,7 @@ services:
       context: ../microservices/quality-gate-api
     hostname: quality-gate-api
     environment:
+      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost:8090'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'

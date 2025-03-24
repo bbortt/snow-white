@@ -13,3 +13,5 @@ spring:
       enable-auto-commit: false
     listener:
       ack-mode: manual
+    streams:
+      application-id: kafka-event-filter
