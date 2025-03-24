@@ -1,16 +1,12 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.redis.ApiEndpointRepository;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.core.models.AuthorizationValue;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
