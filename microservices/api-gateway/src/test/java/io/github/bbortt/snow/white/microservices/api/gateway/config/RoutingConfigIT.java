@@ -18,7 +18,7 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext
 @SpringBootTest(
   properties = {
-    "io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url=http://localhost:8082",
+    "io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url=http://localhost:8081",
     "io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url=http://localhost:8084",
   }
 )
@@ -52,12 +52,21 @@ class RoutingConfigIT {
         .block(Duration.ofSeconds(5));
 
       assertThat(routes)
-        .hasSize(2)
+        .hasSize(4)
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("quality-gate-api"),
             r ->
-              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8082"))
+              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
+          )
+        )
+        .satisfiesOnlyOnce(route ->
+          assertThat(route).satisfies(
+            r -> assertThat(r.getId()).isEqualTo("quality-gate-api-swagger"),
+            r ->
+              assertThat(r.getUri()).isEqualTo(
+                new URI("http://localhost:8081/v3/api-docs")
+              )
           )
         )
         .satisfiesOnlyOnce(route ->
@@ -65,6 +74,18 @@ class RoutingConfigIT {
             r -> assertThat(r.getId()).isEqualTo("report-coordination-service"),
             r ->
               assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
+          )
+        )
+        .satisfiesOnlyOnce(route ->
+          assertThat(route).satisfies(
+            r ->
+              assertThat(r.getId()).isEqualTo(
+                "report-coordination-service-swagger"
+              ),
+            r ->
+              assertThat(r.getUri()).isEqualTo(
+                new URI("http://localhost:8084/v3/api-docs")
+              )
           )
         );
     }

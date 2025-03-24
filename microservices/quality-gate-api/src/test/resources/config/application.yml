@@ -1,0 +1,11 @@
+io:
+  github:
+    bbortt:
+      snow:
+        white:
+          microservices:
+            quality:
+              gate:
+                api:
+                  config:
+                    public-api-gateway-url: http://localhost:9080

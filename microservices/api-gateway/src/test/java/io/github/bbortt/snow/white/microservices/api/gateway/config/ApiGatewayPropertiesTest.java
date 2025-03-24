@@ -33,27 +33,27 @@ class ApiGatewayPropertiesTest {
 
       assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
     }
-  }
 
-  @Test
-  void throwsExceptionWithMissingQualityGateApiUrl() {
-    fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+    @Test
+    void throwsExceptionWithMissingQualityGateApiUrl() {
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-    assertThatThrownBy(() -> fixture.afterPropertiesSet())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url]."
-      );
-  }
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url]."
+        );
+    }
 
-  @Test
-  void throwsExceptionWithMissingQReportCoordinationServiceUrl() {
-    fixture.setQualityGateApiUrl("qualityGateApiUrl");
+    @Test
+    void throwsExceptionWithMissingReportCoordinationServiceUrl() {
+      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
 
-    assertThatThrownBy(() -> fixture.afterPropertiesSet())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url]."
-      );
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url]."
+        );
+    }
   }
 }

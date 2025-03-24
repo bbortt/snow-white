@@ -1,3 +1,14 @@
+io:
+  github:
+    bbortt:
+      snow:
+        white:
+          microservices:
+            quality:
+              gate:
+                api:
+                  config:
+                    public-api-gateway-url: http://localhost:8090
 spring:
   datasource:
     jdbc-url: jdbc:h2:mem:quality-gate;MODE=PostgreSQL
@@ -7,4 +18,4 @@ spring:
     console:
       enabled: true
 server:
-  port: 8082
+  port: 8081

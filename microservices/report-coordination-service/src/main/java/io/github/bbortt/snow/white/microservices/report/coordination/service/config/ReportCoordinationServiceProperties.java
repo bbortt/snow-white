@@ -24,6 +24,8 @@ public class ReportCoordinationServiceProperties implements InitializingBean {
 
   private String openapiCalculationResponseTopic;
 
+  private String publicApiGatewayUrl;
+
   private String qualityGateApiUrl;
 
   @Override
@@ -34,6 +36,7 @@ public class ReportCoordinationServiceProperties implements InitializingBean {
       PREFIX + ".openapi-calculation-response-topic",
       openapiCalculationResponseTopic
     );
+    fields.put(PREFIX + ".public-api-gateway-url", publicApiGatewayUrl);
     fields.put(PREFIX + ".quality-gate-api-url", qualityGateApiUrl);
 
     assertRequiredProperties(fields);

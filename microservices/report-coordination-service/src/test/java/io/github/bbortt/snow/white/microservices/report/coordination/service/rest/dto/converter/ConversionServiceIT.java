@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 
 @IntegrationTest
-class ConvertionServiceIT {
+class ConversionServiceIT {
 
   @Autowired
   private ConversionService conversionService;
@@ -19,6 +19,13 @@ class ConvertionServiceIT {
   void containsReportConverter() {
     assertThat(
       conversionService.canConvert(Report.class, ReportParameters.class)
+    ).isTrue();
+  }
+
+  @Test
+  void containsReportParametersConverter() {
+    assertThat(
+      conversionService.canConvert(ReportParameters.class, Report.class)
     ).isTrue();
   }
 }

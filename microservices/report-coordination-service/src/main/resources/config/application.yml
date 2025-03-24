@@ -1,0 +1,2 @@
+springdoc:
+  packages-to-scan: io.github.bbortt.snow.white.microservices.report.coordination.service.rest
