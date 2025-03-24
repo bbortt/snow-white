@@ -75,6 +75,7 @@ public class ReportService {
   private void dispatchOpenApiCoverageCalculation(Report report) {
     kafkaTemplate.send(
       calculationRequestTopic,
+      report.getCalculationId().toString(),
       new QualityGateCalculationRequestEvent(
         report.getCalculationId(),
         report.getReportParameters().getServiceName(),

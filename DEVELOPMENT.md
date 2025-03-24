@@ -56,7 +56,7 @@ For rapid development, follow these steps:
 | [`example-application`](./example-application)                               | `8080`                      | `8080`                                 |
 | [`api-gateway`](./microservices/api-gateway)                                 | `9080`                      | `80`                                   |
 | [`kafka-event-filter`](./microservices/kafka-event-filter)                   | -                           | -                                      |
-| [`openapi-coverage-service`](./microservices/openapi-coverage-service)       | `8083`                      | `8083`                                 |
+| [`openapi-coverage-service`](./microservices/openapi-coverage-service)       | -                           | -                                      |
 | [`quality-gate-api`](./microservices/quality-gate-api)                       | `8081`                      | `8081`                                 |
 | [`report-coordination-service`](./microservices/report-coordination-service) | `8084`                      | `8084`                                 |
 

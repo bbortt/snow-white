@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class QualityGateApiProperties implements InitializingBean {
 
   public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.quality.gate.api.config";
+    "io.github.bbortt.snow.white.microservices.quality.gate.api";
 
   private String publicApiGatewayUrl;
 

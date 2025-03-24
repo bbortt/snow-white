@@ -4,6 +4,7 @@ import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.SCHE
 import static io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.PropertyUtils.propertiesToMap;
+import static org.apache.kafka.common.serialization.Serdes.serdeFrom;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.google.protobuf.util.JsonFormat;
@@ -64,7 +65,7 @@ public class KafkaStreamsConfig {
       }
     };
 
-    return Serdes.serdeFrom(serializer, deserializer);
+    return serdeFrom(serializer, deserializer);
   }
 
   @Bean

@@ -38,7 +38,7 @@ class QualityGateApiPropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.quality.gate.api.config.public-api-gateway-url]."
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.quality.gate.apipublic-api-gateway-url]."
         );
     }
   }
