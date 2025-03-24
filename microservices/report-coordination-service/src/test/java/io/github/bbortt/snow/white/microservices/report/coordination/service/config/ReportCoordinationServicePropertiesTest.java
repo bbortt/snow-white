@@ -32,49 +32,68 @@ class ReportCoordinationServicePropertiesTest {
       fixture.setOpenapiCalculationResponseTopic(
         "openapiCalculationResponseTopic"
       );
+      fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
       assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
     }
-  }
 
-  @Test
-  void throwsExceptionWithMissingCalculationRequestTopic() {
-    fixture.setOpenapiCalculationResponseTopic(
-      "openapiCalculationResponseTopic"
-    );
-    fixture.setQualityGateApiUrl("qualityGateApiUrl");
-
-    assertThatThrownBy(() -> fixture.afterPropertiesSet())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.calculation-request-topic]."
+    @Test
+    void throwsExceptionWithMissingCalculationRequestTopic() {
+      fixture.setOpenapiCalculationResponseTopic(
+        "openapiCalculationResponseTopic"
       );
-  }
+      fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-  @Test
-  void throwsExceptionWithMissingOpenapiCalculationResponseTopic() {
-    fixture.setCalculationRequestTopic("calculationRequestTopic");
-    fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.calculation-request-topic]."
+        );
+    }
 
-    assertThatThrownBy(() -> fixture.afterPropertiesSet())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response-topic]."
+    @Test
+    void throwsExceptionWithMissingOpenapiCalculationResponseTopic() {
+      fixture.setCalculationRequestTopic("calculationRequestTopic");
+      fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response-topic]."
+        );
+    }
+
+    @Test
+    void throwsExceptionWithMissingPublicApiGatewayUrl() {
+      fixture.setCalculationRequestTopic("calculationRequestTopic");
+      fixture.setOpenapiCalculationResponseTopic(
+        "openapiCalculationResponseTopic"
       );
-  }
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-  @Test
-  void throwsExceptionWithMissingQualityGateApiUrl() {
-    fixture.setCalculationRequestTopic("calculationRequestTopic");
-    fixture.setOpenapiCalculationResponseTopic(
-      "openapiCalculationResponseTopic"
-    );
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.public-api-gateway-url]."
+        );
+    }
 
-    assertThatThrownBy(() -> fixture.afterPropertiesSet())
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage(
-        "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.quality-gate-api-url]."
+    @Test
+    void throwsExceptionWithMissingQualityGateApiUrl() {
+      fixture.setCalculationRequestTopic("calculationRequestTopic");
+      fixture.setOpenapiCalculationResponseTopic(
+        "openapiCalculationResponseTopic"
       );
+      fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
+
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.quality-gate-api-url]."
+        );
+    }
   }
 }
