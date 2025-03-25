@@ -45,7 +45,7 @@ class OpenApiCoverageServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.openapi.coverage.servicecalculation-request-topic]."
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.openapi.coverage.service.calculation-request-topic]."
         );
     }
 
@@ -56,7 +56,7 @@ class OpenApiCoverageServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.openapi.coverage.serviceopenapi-calculation-response-topic]."
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.openapi.coverage.service.openapi-calculation-response-topic]."
         );
     }
   }

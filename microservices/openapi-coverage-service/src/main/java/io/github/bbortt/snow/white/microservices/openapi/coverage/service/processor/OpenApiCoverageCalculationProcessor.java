@@ -5,6 +5,7 @@ import static org.apache.kafka.streams.KeyValue.pair;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.domain.mapper.OpenApiCoverageMapper;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
 
+  private final OpenApiCoverageMapper openApiCoverageMapper;
   private final OpenApiCoverageService openApiCoverageService;
   private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
 
@@ -43,9 +45,15 @@ public class OpenApiCoverageCalculationProcessor {
           )
         )
       )
+      .map((key, value) ->
+        pair(key, openApiCoverageMapper.toResponseEvent(value))
+      )
       .to(
         openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic(),
-        Produced.with(Serdes.String(), KafkaStreamsConfig.OpenApiCoverage())
+        Produced.with(
+          Serdes.String(),
+          KafkaStreamsConfig.OpenApiCoverageResponseEvent()
+        )
       );
 
     return stream;
