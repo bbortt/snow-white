@@ -1,6 +1,6 @@
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.AttributeFilterOperator.STRING_EQUALS;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilterOperator.STRING_EQUALS;
 
 import java.util.ArrayList;
 import java.util.List;

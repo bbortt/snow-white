@@ -77,7 +77,6 @@ public class ReportService {
       calculationRequestTopic,
       report.getCalculationId().toString(),
       new QualityGateCalculationRequestEvent(
-        report.getCalculationId(),
         report.getReportParameters().getServiceName(),
         report.getReportParameters().getApiName(),
         report.getReportParameters().getApiVersion(),

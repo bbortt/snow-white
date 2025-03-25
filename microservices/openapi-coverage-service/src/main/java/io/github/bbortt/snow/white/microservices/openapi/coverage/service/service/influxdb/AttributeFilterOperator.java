@@ -1,4 +1,4 @@
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb;
 
 enum AttributeFilterOperator {
   STRING_EQUALS("==");

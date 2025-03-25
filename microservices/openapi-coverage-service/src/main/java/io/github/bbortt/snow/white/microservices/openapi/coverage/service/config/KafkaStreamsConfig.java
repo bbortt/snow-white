@@ -1,7 +1,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.config;
 
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverage;
 import org.apache.kafka.common.serialization.Serde;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -21,17 +21,21 @@ public class KafkaStreamsConfig {
       new JsonSerializer<>();
     JsonDeserializer<QualityGateCalculationRequestEvent> deserializer =
       new JsonDeserializer<>(QualityGateCalculationRequestEvent.class);
+
     return org.apache.kafka.common.serialization.Serdes.serdeFrom(
       serializer,
       deserializer
     );
   }
 
-  public static Serde<OpenApiCoverage> OpenApiCoverage() {
-    JsonSerializer<OpenApiCoverage> serializer = new JsonSerializer<>();
-    JsonDeserializer<OpenApiCoverage> deserializer = new JsonDeserializer<>(
-      OpenApiCoverage.class
-    );
+  public static Serde<
+    OpenApiCoverageResponseEvent
+  > OpenApiCoverageResponseEvent() {
+    JsonSerializer<OpenApiCoverageResponseEvent> serializer =
+      new JsonSerializer<>();
+    JsonDeserializer<OpenApiCoverageResponseEvent> deserializer =
+      new JsonDeserializer<>(OpenApiCoverageResponseEvent.class);
+
     return org.apache.kafka.common.serialization.Serdes.serdeFrom(
       serializer,
       deserializer
