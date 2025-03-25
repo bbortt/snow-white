@@ -10,7 +10,13 @@ import org.springframework.test.context.ActiveProfiles;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-@SpringBootTest
+@SpringBootTest(
+  classes = { Main.class },
+  properties = {
+    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
+    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.index-uri=/sir/index",
+  }
+)
 @ActiveProfiles("test")
 public @interface IntegrationTest {
 }

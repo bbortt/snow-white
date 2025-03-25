@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.*;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.CreateQualityGate201Response;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
@@ -24,7 +25,7 @@ import org.springframework.http.HttpStatus;
 class QualityGateResourceTest {
 
   @Mock
-  private ConversionService conversionServiceMock;
+  private QualityGateConfigurationMapper qualityGateConfigurationMapperMock;
 
   @Mock
   private QualityGateService qualityGateServiceMock;
@@ -34,7 +35,7 @@ class QualityGateResourceTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new QualityGateResource(
-      conversionServiceMock,
+      qualityGateConfigurationMapperMock,
       qualityGateServiceMock
     );
   }
@@ -63,8 +64,8 @@ class QualityGateResourceTest {
       throws QualityGateService.ConfigurationNameAlreadyExistsException {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
-        .when(conversionServiceMock)
-        .convert(qualityGateConfig, QualityGateConfiguration.class);
+        .when(qualityGateConfigurationMapperMock)
+        .fromDto(qualityGateConfig);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -93,8 +94,8 @@ class QualityGateResourceTest {
       var qualityGateConfiguration = new QualityGateConfiguration();
 
       doReturn(qualityGateConfiguration)
-        .when(conversionServiceMock)
-        .convert(qualityGateConfig, QualityGateConfiguration.class);
+        .when(qualityGateConfigurationMapperMock)
+        .fromDto(qualityGateConfig);
       doThrow(new QualityGateService.ConfigurationNameAlreadyExistsException())
         .when(qualityGateServiceMock)
         .persist(qualityGateConfiguration);
@@ -126,8 +127,8 @@ class QualityGateResourceTest {
     void createdResponseShouldContainCorrectLocationUri() {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
-        .when(conversionServiceMock)
-        .convert(qualityGateConfig, QualityGateConfiguration.class);
+        .when(qualityGateConfigurationMapperMock)
+        .fromDto(qualityGateConfig);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -150,8 +151,8 @@ class QualityGateResourceTest {
 
       var qualityGateConfig = new QualityGateConfig();
       doReturn(qualityGateConfig)
-        .when(conversionServiceMock)
-        .convert(qualityGateConfiguration, QualityGateConfig.class);
+        .when(qualityGateConfigurationMapperMock)
+        .toDto(qualityGateConfiguration);
 
       var response = fixture.getQualityGateByName(
         qualityGateConfiguration.getName()

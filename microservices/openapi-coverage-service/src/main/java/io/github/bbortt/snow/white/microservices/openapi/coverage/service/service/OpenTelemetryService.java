@@ -6,6 +6,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.influxdb.client.InfluxDBClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.InfluxDBProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
