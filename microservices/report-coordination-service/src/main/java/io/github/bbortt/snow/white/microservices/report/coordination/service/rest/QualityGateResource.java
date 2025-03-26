@@ -4,15 +4,13 @@ import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.mapper.ReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.QualityGate;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.QualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateNotFoundException;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class QualityGateResource implements QualityGateApi {
 
-  private final ConversionService conversionService;
   private final ReportService reportService;
-  private final QualityGateService qualityGateService;
+  private final ReportMapper reportMapper;
+  private final ReportParameterMapper reportParameterMapper;
 
   @Override
   public ResponseEntity calculateQualityGate(
@@ -30,14 +28,12 @@ public class QualityGateResource implements QualityGateApi {
     QualityGateRequest qualityGateRequest
   ) {
     try {
-      var qualityGateReport = reportService.initializeQualityGateCalculation(
+      var report = reportService.initializeQualityGateCalculation(
         qualityGateConfigName,
-        conversionService.convert(qualityGateRequest, ReportParameters.class)
+        reportParameterMapper.fromDto(qualityGateRequest)
       );
 
-      return ResponseEntity.status(ACCEPTED).body(
-        conversionService.convert(qualityGateReport, QualityGate.class)
-      );
+      return ResponseEntity.status(ACCEPTED).body(reportMapper.toDto(report));
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
         Error.builder()

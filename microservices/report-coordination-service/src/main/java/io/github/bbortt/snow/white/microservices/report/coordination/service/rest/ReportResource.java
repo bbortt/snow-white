@@ -1,17 +1,15 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.rest;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.Report;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.mapper.ReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.rest.dto.QualityGate;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReportResource implements ReportApi {
 
-  private final ConversionService conversionService;
   private final ReportService reportService;
+  private final ReportMapper reportMapper;
 
   @Override
   public ResponseEntity getReportByCalculationId(UUID calculationId) {
@@ -37,14 +35,10 @@ public class ReportResource implements ReportApi {
 
     var report = optionalReport.get();
 
-    if (isNull(report.getOpenApiCoverage())) {
-      return ResponseEntity.status(ACCEPTED).body(convertToDto(report));
+    if (IN_PROGRESS.equals(report.getReportStatus())) {
+      return ResponseEntity.status(ACCEPTED).body(reportMapper.toDto(report));
     }
 
-    return ResponseEntity.ok(convertToDto(report));
-  }
-
-  private QualityGate convertToDto(Report report) {
-    return conversionService.convert(report, QualityGate.class);
+    return ResponseEntity.ok(reportMapper.toDto(report));
   }
 }

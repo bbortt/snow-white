@@ -1,8 +1,10 @@
 openapi: 3.0.3
 info:
-  title: Quality Gate Configuration Service
+  title: Quality Gate API
   description: A microservice for managing API quality gate configurations
   version: 1.0.0
+  x-api-name: quality-gate-api
+  x-service-name: quality-gate-api
 paths:
   /api/rest/v1/quality-gates:
     get:

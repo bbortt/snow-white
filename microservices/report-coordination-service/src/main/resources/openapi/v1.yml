@@ -1,8 +1,10 @@
 openapi: 3.0.3
 info:
-  title: API Gateway
+  title: Report Coordination Service
   description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.
   version: 1.0.0
+  x-api-name: report-api
+  x-service-name: report-coordination-service
 paths:
   /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate:
     post:
@@ -130,8 +132,8 @@ components:
           description: 'UUID for the calculation job'
         status:
           type: string
-          enum: [PENDING]
-          default: 'PENDING'
+          enum: [IN_PROGRESS, FAILED, PASSED]
+          default: 'IN_PROGRESS'
           description: 'Current status of the calculation'
         qualityGateRequest:
           $ref: '#/components/schemas/QualityGateRequest'

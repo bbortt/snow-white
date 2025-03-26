@@ -8,7 +8,8 @@ io:
               coordination:
                 service:
                   calculation-request-topic: snow-white-coverage-request
-                  openapi-calculation-response-topic: snow-white-openapi-calculation-response
+                  openapi-calculation-response:
+                    topic: snow-white-openapi-calculation-response
                   public-api-gateway-url: http://localhost:8090
                   quality-gate-api-url: http://localhost:8081
 server:

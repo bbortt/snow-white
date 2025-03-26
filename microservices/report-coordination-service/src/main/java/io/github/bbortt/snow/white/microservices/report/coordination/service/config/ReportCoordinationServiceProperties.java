@@ -22,23 +22,43 @@ public class ReportCoordinationServiceProperties implements InitializingBean {
 
   private String calculationRequestTopic;
 
-  private String openapiCalculationResponseTopic;
-
   private String publicApiGatewayUrl;
 
   private String qualityGateApiUrl;
+
+  private final OpenapiCalculationResponse openapiCalculationResponse =
+    new OpenapiCalculationResponse();
 
   @Override
   public void afterPropertiesSet() {
     Map<String, String> fields = new HashMap<>();
     fields.put(PREFIX + ".calculation-request-topic", calculationRequestTopic);
     fields.put(
-      PREFIX + ".openapi-calculation-response-topic",
-      openapiCalculationResponseTopic
+      OpenapiCalculationResponse.OPENAPI_CALCULATION_RESPONSE_TOPIC,
+      openapiCalculationResponse.getTopic()
     );
     fields.put(PREFIX + ".public-api-gateway-url", publicApiGatewayUrl);
     fields.put(PREFIX + ".quality-gate-api-url", qualityGateApiUrl);
 
     assertRequiredProperties(fields);
+  }
+
+  @Getter
+  @Setter
+  public static class OpenapiCalculationResponse {
+
+    private static final String OPENAPI_CALCULATION_RESPONSE =
+      PREFIX + ".openapi-calculation-response";
+
+    public static final String CONSUMER_GROUP_ID =
+      OPENAPI_CALCULATION_RESPONSE + ".consumer-group-id";
+    public static final String OPENAPI_CALCULATION_RESPONSE_TOPIC =
+      OPENAPI_CALCULATION_RESPONSE + ".topic";
+
+    public static final String DEFAULT_CONSUMER_GROUP_ID =
+      "report-coordination-service";
+
+    private String consumerGroupId = DEFAULT_CONSUMER_GROUP_ID;
+    private String topic;
   }
 }
