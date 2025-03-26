@@ -125,10 +125,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: Each documented response code for each endpoint is tested at least once.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateResponseCodeCoverage(
     Map<String, Operation> operationsMap,
@@ -181,10 +177,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: All <i>required</i> parameters for each endpoint are included in at least one test.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateRequiredParameterCoverage(
     Map<String, Operation> operationsMap,
@@ -269,15 +261,12 @@ class OpenApiCoverageCalculator {
     String paramName,
     String paramIn
   ) {
+    // TODO: Implement calculation
     return false;
   }
 
   /**
    * Coverage criteria: Each <i>optional</i> query parameter is tested in at least one request.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateQueryParameterCoverage(
     Map<String, Operation> operationsMap,
@@ -366,10 +355,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: Each <i>documented</i> header parameter is included in at least one test.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateHeaderParameterCoverage(
     Map<String, Operation> operationsMap,
@@ -457,10 +442,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: For endpoints accepting request bodies, at least one test covers each required property.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateRequestBodySchemaCoverage(
     Map<String, Operation> operationsMap,
@@ -540,10 +521,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: At least one negative test exists for each endpoint that verifies error handling.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private ErrorResponseCoverage calculateErrorResponseCoverage(
     Map<String, Operation> operationsMap,
@@ -623,10 +600,6 @@ class OpenApiCoverageCalculator {
 
   /**
    * Coverage criteria: Each supported content type is tested.
-   *
-   * @param operationsMap
-   * @param pathToTelemetryMap
-   * @return
    */
   private BigDecimal calculateContentTypeCoverage(
     Map<String, Operation> operationsMap,
