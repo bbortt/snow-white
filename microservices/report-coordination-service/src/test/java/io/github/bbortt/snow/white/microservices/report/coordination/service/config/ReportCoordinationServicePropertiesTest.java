@@ -29,9 +29,9 @@ class ReportCoordinationServicePropertiesTest {
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {
       fixture.setCalculationRequestTopic("calculationRequestTopic");
-      fixture.setOpenapiCalculationResponseTopic(
-        "openapiCalculationResponseTopic"
-      );
+      fixture
+        .getOpenapiCalculationResponse()
+        .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
@@ -40,9 +40,9 @@ class ReportCoordinationServicePropertiesTest {
 
     @Test
     void throwsExceptionWithMissingCalculationRequestTopic() {
-      fixture.setOpenapiCalculationResponseTopic(
-        "openapiCalculationResponseTopic"
-      );
+      fixture
+        .getOpenapiCalculationResponse()
+        .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
@@ -62,16 +62,16 @@ class ReportCoordinationServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response-topic]."
+          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response.topic]."
         );
     }
 
     @Test
     void throwsExceptionWithMissingPublicApiGatewayUrl() {
       fixture.setCalculationRequestTopic("calculationRequestTopic");
-      fixture.setOpenapiCalculationResponseTopic(
-        "openapiCalculationResponseTopic"
-      );
+      fixture
+        .getOpenapiCalculationResponse()
+        .setTopic("openapiCalculationResponseTopic");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
@@ -84,9 +84,9 @@ class ReportCoordinationServicePropertiesTest {
     @Test
     void throwsExceptionWithMissingQualityGateApiUrl() {
       fixture.setCalculationRequestTopic("calculationRequestTopic");
-      fixture.setOpenapiCalculationResponseTopic(
-        "openapiCalculationResponseTopic"
-      );
+      fixture
+        .getOpenapiCalculationResponse()
+        .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())

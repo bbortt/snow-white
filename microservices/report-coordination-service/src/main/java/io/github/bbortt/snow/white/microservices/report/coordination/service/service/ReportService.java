@@ -46,7 +46,7 @@ public class ReportService {
     ReportParameters reportParameters
   ) throws QualityGateNotFoundException {
     qualityGateService
-      .findQualityGateByName(qualityGateConfigName)
+      .findQualityGateConfigByName(qualityGateConfigName)
       .orElseThrow(() -> new QualityGateNotFoundException(qualityGateConfigName)
       );
 
@@ -83,5 +83,9 @@ public class ReportService {
         report.getReportParameters().getLookbackWindow()
       )
     );
+  }
+
+  public Report update(Report report) {
+    return reportRepository.save(report);
   }
 }
