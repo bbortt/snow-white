@@ -19,7 +19,7 @@
   <properties>
     <confluent.version>7.9.0</confluent.version>
     <!-- DON'T UPGRADE! See https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/serdes-protobuf.html#limitations-and-developer-notes -->
-    <google-protobuf.version>3.25.5</google-protobuf.version>
+    <google-protobuf.version>4.30.2</google-protobuf.version>
     <grpc.version>1.71.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
