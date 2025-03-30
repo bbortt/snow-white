@@ -98,7 +98,7 @@ services:
       - internal
 
   redis.insight:
-    image: redislabs/redisinsight:2.60.0
+    image: redislabs/redisinsight:2.66.0
     ports:
       - '5540:5540'
     depends_on:
