@@ -43,7 +43,7 @@ services:
       - internal
 
   kafka:
-    image: bitnami/kafka:3.9.0
+    image: bitnami/kafka:4.0.0
     environment:
       ALLOW_PLAINTEXT_LISTENER: 'yes'
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
