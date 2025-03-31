@@ -19,6 +19,14 @@ public class RoutingConfig {
   public RouteLocator snowWhiteRouteLocator(RouteLocatorBuilder builder) {
     return builder
       .routes()
+      .route("report-coordination-service", r ->
+        r
+          .path(
+            "/api/rest/v1/quality-gates/*/calculate",
+            "/api/rest/v1/reports/**"
+          )
+          .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
+      )
       .route("quality-gate-api", r ->
         r
           .path("/api/rest/v1/quality-gates", "/api/rest/v1/quality-gates/**")
@@ -29,11 +37,6 @@ public class RoutingConfig {
           .path("/v3/api-docs/quality-gate-api")
           .filters(apiDocsRewriteTarget())
           .uri(toSwaggerUrl(apiGatewayProperties.getQualityGateApiUrl()))
-      )
-      .route("report-coordination-service", r ->
-        r
-          .path("/api/rest/v1/reports/**")
-          .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
       )
       .route("report-coordination-service-swagger", r ->
         r

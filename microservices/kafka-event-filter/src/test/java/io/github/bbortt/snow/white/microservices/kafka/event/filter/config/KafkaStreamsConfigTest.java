@@ -5,7 +5,7 @@ import static io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerC
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.bbortt.snow.white.microservices.kafka.event.filter.processor.TestData;
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;

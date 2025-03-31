@@ -1,0 +1,48 @@
+openapi: 3.0.3
+info:
+  title: Report Coordination Service
+  description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.
+  version: 1.0.0
+  x-api-name: report
+  x-service-name: report-coordination-service
+paths:
+  /api/rest/v1/reports/{calculationId}:
+    get:
+      operationId: getReportByCalculationId
+      summary: 'Get quality gate calculation results'
+      description: 'Retrieves the status and results of an asynchronous quality gate calculation'
+      tags:
+        - report
+      parameters:
+        - name: calculationId
+          in: path
+          description: 'The UUID of the calculation job returned from the POST request'
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Quality gate calculation completed successfully'
+          content:
+            application/json:
+              schema:
+                $ref: './components/QualityGateReport.yml'
+        '202':
+          description: 'Calculation is still in progress'
+          content:
+            application/json:
+              schema:
+                $ref: './components/QualityGateReport.yml'
+        '404':
+          description: 'Calculation ID not found'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'

@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: Quality Gate API
+  description: A microservice for managing API quality gate configurations
+  version: 1.0.0
+  x-api-name: quality-gate
+  x-service-name: quality-gate-api
+paths:
+  /api/rest/v1/quality-gates:
+    get:
+      operationId: getAllQualityGates
+      summary: Retrieve all quality gate configuration names
+      description: Returns a list of all available quality gate configuration names
+      tags:
+        - quality-gate
+      responses:
+        '200':
+          description: A list of quality gate configuration names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  names:
+                    type: array
+                    items:
+                      type: string
+                    example: ['basic-coverage', 'full-feature', 'minimal']
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createQualityGate
+      summary: Create a new quality gate configuration
+      description: Creates a new quality gate configuration with specified criteria
+      tags:
+        - quality-gate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityGateConfig'
+      responses:
+        '201':
+          description: Configuration created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  message:
+                    type: string
+                    example: 'Quality gate configuration created successfully'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Configuration name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/rest/v1/quality-gates/{name}:
+    get:
+      operationId: getQualityGateByName
+      summary: Retrieve a specific quality gate configuration
+      description: Returns a quality gate configuration by name
+      tags:
+        - quality-gate
+      parameters:
+        - name: name
+          in: path
+          description: Name of the quality gate configuration to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quality gate configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityGateConfig'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/QualityGateConfig'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateQualityGate
+      summary: Update a quality gate configuration
+      description: Updates an existing quality gate configuration
+      tags:
+        - quality-gate
+      parameters:
+        - name: name
+          in: path
+          description: Name of the quality gate configuration to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualityGateConfig'
+      responses:
+        '200':
+          description: Configuration updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  message:
+                    type: string
+                    example: 'Quality gate configuration updated successfully'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteQualityGate
+      summary: Delete a quality gate configuration
+      description: Deletes a quality gate configuration by name
+      tags:
+        - quality-gate
+      parameters:
+        - name: name
+          in: path
+          description: Name of the quality gate configuration to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Configuration deleted successfully
+        '404':
+          description: Configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    QualityGateConfig:
+      type: object
+      required:
+        - name
+        - openApiCoverage
+      properties:
+        name:
+          type: string
+          description: Unique name for the quality gate configuration
+          example: 'basic-coverage'
+        description:
+          type: string
+          description: Optional description of the quality gate configuration
+          example: 'Basic coverage criteria for API testing'
+        openApiCoverageConfig:
+          $ref: '#/components/schemas/OpenApiCoverageConfig'
+    OpenApiCoverageConfig:
+      type: object
+      required:
+        - pathCoverage
+        - responseCodeCoverage
+        - requiredParameterCoverage
+        - queryParameterCoverage
+        - headerParameterCoverage
+        - requestBodySchemaCoverage
+        - errorResponseCoverage
+        - contentTypeCoverage
+      properties:
+        pathCoverage:
+          type: boolean
+          description: Every API endpoint has at least one request
+          default: true
+        responseCodeCoverage:
+          type: boolean
+          description: Each documented response code for each endpoint is present at least once
+          default: true
+        requiredParameterCoverage:
+          type: boolean
+          description: All required parameters for each endpoint are included in at least one request
+          default: true
+        queryParameterCoverage:
+          type: boolean
+          description: Each optional query parameter is present in at least one request
+          default: false
+        headerParameterCoverage:
+          type: boolean
+          description: Each documented header parameter is included in at least one request
+          default: false
+        requestBodySchemaCoverage:
+          type: boolean
+          description: For endpoints accepting request bodies, at least one request covers each required property
+          default: true
+        errorResponseCoverage:
+          type: boolean
+          description: At least one negative test exists for each endpoint that verifies error handling
+          default: true
+        contentTypeCoverage:
+          type: boolean
+          description: Each supported content type is present
+          default: false
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: 'INVALID_REQUEST'
+        message:
+          type: string
+          example: 'Invalid request parameters'
