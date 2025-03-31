@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -63,7 +65,7 @@ class QualityGateServiceTest {
         .existsById(configuration.getName());
 
       assertThatThrownBy(() -> fixture.persist(configuration)).isInstanceOf(
-        QualityGateService.ConfigurationNameAlreadyExistsException.class
+        ConfigurationNameAlreadyExistsException.class
       );
 
       verify(qualityGateConfigurationRepositoryMock, never()).save(
@@ -77,7 +79,7 @@ class QualityGateServiceTest {
 
     @Test
     void shouldReturnExistingConfiguration()
-      throws QualityGateService.ConfigurationDoesNotExistException {
+      throws ConfigurationDoesNotExistException {
       var name = "ExistingConfig";
       var configuration = QualityGateConfiguration.builder().name(name).build();
 
@@ -99,7 +101,7 @@ class QualityGateServiceTest {
         .findById(name);
 
       assertThatThrownBy(() -> fixture.findByName(name)).isInstanceOf(
-        QualityGateService.ConfigurationDoesNotExistException.class
+        ConfigurationDoesNotExistException.class
       );
     }
   }
