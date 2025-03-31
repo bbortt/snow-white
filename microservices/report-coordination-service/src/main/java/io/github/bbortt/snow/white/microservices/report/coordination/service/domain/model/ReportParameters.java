@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
+import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.annotation.Nullable;
@@ -7,6 +8,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
@@ -30,6 +32,7 @@ import lombok.With;
 public class ReportParameters {
 
   @Id
+  @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
   private Long id;
 
