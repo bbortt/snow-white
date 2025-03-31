@@ -1,2 +1,2 @@
 springdoc:
-  packages-to-scan: io.github.bbortt.snow.white.microservices.quality.gate.api.rest
+  packages-to-scan: io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource

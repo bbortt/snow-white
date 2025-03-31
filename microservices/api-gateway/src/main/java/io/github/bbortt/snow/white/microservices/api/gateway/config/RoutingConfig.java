@@ -36,15 +36,13 @@ public class RoutingConfig {
         r
           .path("/v3/api-docs/quality-gate-api")
           .filters(apiDocsRewriteTarget())
-          .uri(toSwaggerUrl(apiGatewayProperties.getQualityGateApiUrl()))
+          .uri(apiGatewayProperties.getQualityGateApiUrl())
       )
       .route("report-coordination-service-swagger", r ->
         r
           .path("/v3/api-docs/report-coordination-service")
           .filters(apiDocsRewriteTarget())
-          .uri(
-            toSwaggerUrl(apiGatewayProperties.getReportCoordinationServiceUrl())
-          )
+          .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
       )
       .build();
   }
@@ -52,17 +50,5 @@ public class RoutingConfig {
   private static Function<GatewayFilterSpec, UriSpec> apiDocsRewriteTarget() {
     return filterSpec ->
       filterSpec.rewritePath("/v3/api-docs/.+", "/v3/api-docs");
-  }
-
-  private String toSwaggerUrl(String baseUrl) {
-    var apiDocsUrl = new StringBuilder(baseUrl);
-
-    if (!baseUrl.endsWith("/")) {
-      apiDocsUrl.append("/");
-    }
-
-    apiDocsUrl.append("v3/api-docs");
-
-    return apiDocsUrl.toString();
   }
 }
