@@ -48,13 +48,13 @@ public class ReportService {
     String qualityGateConfigName,
     ReportParameters reportParameters
   ) throws QualityGateNotFoundException {
-    qualityGateService
+    var qualityGateConfig = qualityGateService
       .findQualityGateConfigByName(qualityGateConfigName)
       .orElseThrow(() -> new QualityGateNotFoundException(qualityGateConfigName)
       );
 
     var qualityGateReport = createInitialReport(
-      qualityGateConfigName,
+      qualityGateConfig.getName(),
       reportParameters
     );
 

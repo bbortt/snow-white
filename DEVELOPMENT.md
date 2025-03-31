@@ -39,6 +39,8 @@ For rapid development, follow these steps:
    ./mvnw package
    ```
 
+   Optionally add the `-T1C` argument to run a parallel build using one thread per CPU core.
+
 2. Start all microservices and dependencies using Docker Compose:
 
    ```shell
@@ -75,6 +77,28 @@ The following services are only mapped in [`dev/docker-compose.yaml`](dev/docker
 | Service Interface Repository | `3000`                                                   |
 
 This guide ensures a structured and efficient development setup. Happy coding!
+
+## Sonar Analysis
+
+You can start a local [SonarQube](https://www.sonarsource.com/) service using Docker Compose:
+
+```shell
+docker compose -f dev/sonar.yaml up -d
+```
+
+The initial login on http://localhost:9000 can be done with `admin:admin`.
+The password must be changed at first login.
+
+Enter into SonarQube and add a new project called `snow-white`.
+Choose manual setup with a local build environment.
+This will lead you up to the token generation.
+Create a token with a name of your choice, but select "No expiration date".
+
+Afterward, you're able to analyze the project using your token:
+
+```shell
+./mvnw verify sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+```
 
 ## Maven Proxy Setup
 

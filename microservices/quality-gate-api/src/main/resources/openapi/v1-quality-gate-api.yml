@@ -50,13 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  message:
-                    type: string
-                    example: 'Quality gate configuration created successfully'
+                $ref: '#/components/schemas/QualityGateConfig'
         '400':
           description: Invalid request
           content:
@@ -136,13 +130,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  message:
-                    type: string
-                    example: 'Quality gate configuration updated successfully'
+                $ref: '#/components/schemas/QualityGateConfig'
         '400':
           description: Invalid request
           content:
