@@ -3,8 +3,10 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.redis.ApiEndpointEntry;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.redis.ApiEndpointRepository;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointEntry;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointRepository;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;

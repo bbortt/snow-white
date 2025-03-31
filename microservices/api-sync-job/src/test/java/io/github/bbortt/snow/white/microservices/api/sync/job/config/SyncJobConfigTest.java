@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.domain.jackson.ApiDeserializer;
+import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.jackson.ApiInformationDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -28,7 +28,7 @@ class SyncJobConfigTest {
     jsonCustomizer.customize(jackson2ObjectMapperBuilderMock);
 
     verify(jackson2ObjectMapperBuilderMock).deserializers(
-      any(ApiDeserializer.class)
+      any(ApiInformationDeserializer.class)
     );
   }
 }

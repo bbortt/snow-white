@@ -1,6 +1,5 @@
 package io.github.bbortt.snow.white.toolkit.spring.web.it;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bbortt.snow.white.toolkit.spring.web.SnowWhiteAutoConfiguration;

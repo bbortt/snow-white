@@ -1,7 +1,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.QualityGateConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.repository.QualityGateConfigurationRepository;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;

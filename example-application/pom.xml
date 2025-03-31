@@ -20,6 +20,11 @@
   <name>application</name>
   <description>Demo Application exporting OTEL Metrics.</description>
 
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.install.skip>true</maven.install.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
