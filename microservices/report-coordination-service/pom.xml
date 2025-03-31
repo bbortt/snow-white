@@ -20,6 +20,8 @@
     <basePackage>
       io.github.bbortt.snow.white.microservices.report.coordination.service
     </basePackage>
+    <baseRestApiPackage>${basePackage}.api.rest</baseRestApiPackage>
+    <baseClientPackage>${basePackage}.api.client</baseClientPackage>
   </properties>
 
   <dependencies>
@@ -32,6 +34,10 @@
     <dependency>
       <groupId>io.github.bbortt.snow-white</groupId>
       <artifactId>commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+      <artifactId>annotation-api</artifactId>
     </dependency>
 
     <dependency>
@@ -86,7 +92,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
         <configuration>
           <annotationProcessorPaths>
             <path>
@@ -160,17 +165,17 @@
         </dependencies>
         <executions>
           <execution>
-            <id>generate-report-coordination-service</id>
+            <id>generate-quality-gate-api-v1</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/report-coordination-service/src/main/resources/openapi/v1.yml
+                microservices/report-coordination-service/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
-              <modelPackage>${basePackage}.rest.dto</modelPackage>
-              <apiPackage>${basePackage}.rest</apiPackage>
+              <modelPackage>${baseRestApiPackage}.dto</modelPackage>
+              <apiPackage>${baseRestApiPackage}</apiPackage>
               <configOptions>
                 <apiNameProperty>info.x-api-name</apiNameProperty>
                 <delegatePattern>true</delegatePattern>
@@ -183,17 +188,44 @@
             </configuration>
           </execution>
           <execution>
-            <id>generate-quality-gate-api-client</id>
+            <id>generate-report-api-v1</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/quality-gate-api/src/main/resources/openapi/v1.yml
+                microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml
               </inputSpec>
-              <apiPackage>${basePackage}.client.api</apiPackage>
-              <invokerPackage>${basePackage}.client</invokerPackage>
-              <modelPackage>${basePackage}.client.model</modelPackage>
+              <generatorName>snow-white-spring-server</generatorName>
+              <modelPackage>${baseRestApiPackage}.dto</modelPackage>
+              <apiPackage>${baseRestApiPackage}</apiPackage>
+              <configOptions>
+                <apiNameProperty>info.x-api-name</apiNameProperty>
+                <delegatePattern>true</delegatePattern>
+                <generateBuilders>true</generateBuilders>
+                <interfaceOnly>true</interfaceOnly>
+                <userOptional>true</userOptional>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-quality-gate-api-v1-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.qualitygateapi.api</apiPackage>
+              <invokerPackage>
+                ${baseClientPackage}.qualitygateapi
+              </invokerPackage>
+              <modelPackage>
+                ${baseClientPackage}.qualitygateapi.dto
+              </modelPackage>
               <generatorName>java</generatorName>
               <configOptions>
                 <library>restclient</library>

@@ -27,6 +27,10 @@
       <groupId>io.github.bbortt.snow-white</groupId>
       <artifactId>commons</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+      <artifactId>annotation-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.mapstruct</groupId>
@@ -76,7 +80,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
         <configuration>
           <annotationProcessorPaths>
             <path>
@@ -150,19 +153,20 @@
         </dependencies>
         <executions>
           <execution>
+            <id>generate-quality-gate-api-v1</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/quality-gate-api/src/main/resources/openapi/v1.yml
+                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
               <modelPackage>
-                io.github.bbortt.snow.white.microservices.quality.gate.api.rest.dto
+                io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto
               </modelPackage>
               <apiPackage>
-                io.github.bbortt.snow.white.microservices.quality.gate.api.rest
+                io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest
               </apiPackage>
               <configOptions>
                 <apiNameProperty>info.x-api-name</apiNameProperty>

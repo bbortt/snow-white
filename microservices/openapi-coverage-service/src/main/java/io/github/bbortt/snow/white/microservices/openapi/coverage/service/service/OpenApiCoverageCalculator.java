@@ -1,6 +1,8 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.*;
+import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_HEADER;
+import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_HEADER;
+import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 import static java.lang.Boolean.TRUE;
@@ -12,7 +14,8 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.domain.OpenApiCoverage;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenApiCoverage;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -51,7 +54,7 @@ class OpenApiCoverageCalculator {
     );
   }
 
-  OpenApiCoverage performCalculations() {
+  OpenApiCoverage calculate() {
     var pathCoverage = calculatePathCoverage(operationsMap, pathToTelemetryMap);
     var responseCodeCoverage = calculateResponseCodeCoverage(
       operationsMap,

@@ -1,7 +1,8 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.client.api.QualityGateApi;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.client.model.mapper.QualityGateConfigMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api.QualityGateApi;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.mapper.QualityGateConfigMapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

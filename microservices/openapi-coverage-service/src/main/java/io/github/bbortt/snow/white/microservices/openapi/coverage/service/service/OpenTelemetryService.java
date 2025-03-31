@@ -1,11 +1,12 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenTelemetryData.parseOpenTelemetryData;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.parseOpenTelemetryData;
 import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.influxdb.client.InfluxDBClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.InfluxDBProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;

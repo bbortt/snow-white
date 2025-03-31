@@ -1,0 +1,27 @@
+type: object
+required:
+  - serviceName
+  - apiName
+properties:
+  serviceName:
+    type: string
+    description: 'The service name for which the quality gate is being calculated'
+  apiName:
+    type: string
+    description: 'The name of the OpenAPI for which the quality gate is being calculated'
+  apiVersion:
+    type: string
+    description: 'The version of the OpenAPI for which the quality gate is being calculated - latest is being picked if non supplied'
+  lookbackWindow:
+    type: string
+    description: "The time window to consider for calculation (e.g., '1h', '24h', '7d')"
+    default: '1h'
+    example: '1h'
+  attributeFilters:
+    type: object
+    description: 'Key-value map of attributes to filter data considered for calculation'
+    additionalProperties:
+      type: string
+    example:
+      environment: 'production'
+      region: 'us-west-1'

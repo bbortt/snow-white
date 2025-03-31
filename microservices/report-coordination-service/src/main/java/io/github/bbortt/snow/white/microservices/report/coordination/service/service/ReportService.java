@@ -2,9 +2,10 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.se
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.Report;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.ReportParameters;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.repository.ReportRepository;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,12 +20,12 @@ public class ReportService {
     String,
     QualityGateCalculationRequestEvent
   > kafkaTemplate;
-  private final ReportRepository reportRepository;
+  private final QualityGateReportRepository qualityGateReportRepository;
   private final QualityGateService qualityGateService;
 
   public ReportService(
     KafkaTemplate<String, QualityGateCalculationRequestEvent> kafkaTemplate,
-    ReportRepository reportRepository,
+    QualityGateReportRepository qualityGateReportRepository,
     ReportCoordinationServiceProperties reportCoordinationServiceProperties,
     QualityGateService qualityGateService
   ) {
@@ -32,16 +33,18 @@ public class ReportService {
       reportCoordinationServiceProperties.getCalculationRequestTopic();
 
     this.kafkaTemplate = kafkaTemplate;
-    this.reportRepository = reportRepository;
+    this.qualityGateReportRepository = qualityGateReportRepository;
 
     this.qualityGateService = qualityGateService;
   }
 
-  public Optional<Report> findReportByCalculationId(UUID calculationId) {
-    return reportRepository.findById(calculationId);
+  public Optional<QualityGateReport> findReportByCalculationId(
+    UUID calculationId
+  ) {
+    return qualityGateReportRepository.findById(calculationId);
   }
 
-  public Report initializeQualityGateCalculation(
+  public QualityGateReport initializeQualityGateCalculation(
     String qualityGateConfigName,
     ReportParameters reportParameters
   ) throws QualityGateNotFoundException {
@@ -60,32 +63,34 @@ public class ReportService {
     return qualityGateReport;
   }
 
-  private Report createInitialReport(
+  private QualityGateReport createInitialReport(
     String qualityGateConfigName,
     ReportParameters reportParameters
   ) {
-    return reportRepository.save(
-      Report.builder()
+    return qualityGateReportRepository.save(
+      QualityGateReport.builder()
         .qualityGateConfigName(qualityGateConfigName)
         .reportParameters(reportParameters)
         .build()
     );
   }
 
-  private void dispatchOpenApiCoverageCalculation(Report report) {
+  private void dispatchOpenApiCoverageCalculation(
+    QualityGateReport qualityGateReport
+  ) {
     kafkaTemplate.send(
       calculationRequestTopic,
-      report.getCalculationId().toString(),
+      qualityGateReport.getCalculationId().toString(),
       new QualityGateCalculationRequestEvent(
-        report.getReportParameters().getServiceName(),
-        report.getReportParameters().getApiName(),
-        report.getReportParameters().getApiVersion(),
-        report.getReportParameters().getLookbackWindow()
+        qualityGateReport.getReportParameters().getServiceName(),
+        qualityGateReport.getReportParameters().getApiName(),
+        qualityGateReport.getReportParameters().getApiVersion(),
+        qualityGateReport.getReportParameters().getLookbackWindow()
       )
     );
   }
 
-  public Report update(Report report) {
-    return reportRepository.save(report);
+  public QualityGateReport update(QualityGateReport qualityGateReport) {
+    return qualityGateReportRepository.save(qualityGateReport);
   }
 }

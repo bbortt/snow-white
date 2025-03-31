@@ -1,6 +1,6 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.domain.jackson.ApiDeserializer;
+import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.jackson.ApiInformationDeserializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +13,8 @@ public class SyncJobConfig {
     ApiSyncJobProperties apiSyncJobProperties
   ) {
     return builder ->
-      builder.deserializers(new ApiDeserializer(apiSyncJobProperties));
+      builder.deserializers(
+        new ApiInformationDeserializer(apiSyncJobProperties)
+      );
   }
 }

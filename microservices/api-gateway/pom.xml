@@ -46,7 +46,7 @@
 
     <dependency>
       <groupId>org.springdoc</groupId>
-      <!-- TODO: Replace with api, once frontend include Swagger UI -->
+      <!-- TODO: Replace with apiInformation, once frontend include Swagger UI -->
       <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
       <version>${org.springdoc.version}</version>
     </dependency>

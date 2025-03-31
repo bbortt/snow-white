@@ -1,0 +1,17 @@
+type: object
+properties:
+  calculationId:
+    type: string
+    format: uuid
+    description: 'UUID for the calculation job'
+  status:
+    type: string
+    enum: [IN_PROGRESS, FAILED, PASSED]
+    default: 'IN_PROGRESS'
+    description: 'Current status of the calculation'
+  calculationRequest:
+    $ref: './QualityGateCalculationRequest.yml'
+  initiatedAt:
+    type: string
+    format: date-time
+    description: 'When the calculation was initiated'

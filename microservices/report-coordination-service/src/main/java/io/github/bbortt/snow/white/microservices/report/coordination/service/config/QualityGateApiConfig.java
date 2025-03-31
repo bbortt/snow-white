@@ -1,7 +1,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.config;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.client.ApiClient;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.client.api.QualityGateApi;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.ApiClient;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api.QualityGateApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;

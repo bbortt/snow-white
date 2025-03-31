@@ -13,7 +13,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
