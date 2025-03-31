@@ -64,9 +64,7 @@ class RoutingConfigIT {
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("quality-gate-api-swagger"),
             r ->
-              assertThat(r.getUri()).isEqualTo(
-                new URI("http://localhost:8081/v3/api-docs")
-              )
+              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
           )
         )
         .satisfiesOnlyOnce(route ->
@@ -83,9 +81,7 @@ class RoutingConfigIT {
                 "report-coordination-service-swagger"
               ),
             r ->
-              assertThat(r.getUri()).isEqualTo(
-                new URI("http://localhost:8084/v3/api-docs")
-              )
+              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         );
     }
