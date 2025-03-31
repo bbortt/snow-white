@@ -2,7 +2,9 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.api.gateway.config.ApiGatewayProperties.PREFIX;
+import static java.util.Objects.nonNull;
 
+import jakarta.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -24,6 +26,8 @@ public class ApiGatewayProperties
   public static final String PREFIX =
     "io.github.bbortt.snow.white.microservices.api.gateway";
 
+  private @Nullable Environment environment;
+
   private String publicUrl;
   private String qualityGateApiUrl;
   private String reportCoordinationServiceUrl;
@@ -37,16 +41,17 @@ public class ApiGatewayProperties
       reportCoordinationServiceUrl
     );
 
+    if (
+      nonNull(environment) && environment.acceptsProfiles(Profiles.of("prod"))
+    ) {
+      fields.put(PREFIX + ".public-url", publicUrl);
+    }
+
     assertRequiredProperties(fields);
   }
 
   @Override
   public void setEnvironment(Environment environment) {
-    if (environment.acceptsProfiles(Profiles.of("prod"))) {
-      Map<String, String> fields = new HashMap<>();
-      fields.put(PREFIX + ".public-url", publicUrl);
-
-      assertRequiredProperties(fields);
-    }
+    this.environment = environment;
   }
 }

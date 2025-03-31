@@ -23,6 +23,11 @@ import org.springframework.core.env.Profiles;
 @ExtendWith({ MockitoExtension.class })
 class ApiGatewayPropertiesTest {
 
+  private static final Profiles PROD = Profiles.of("prod");
+
+  @Mock
+  private Environment environmentMock;
+
   private ApiGatewayProperties fixture;
 
   @BeforeEach
@@ -45,6 +50,9 @@ class ApiGatewayPropertiesTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {
+      doReturn(false).when(environmentMock).acceptsProfiles(PROD);
+      fixture.setEnvironment(environmentMock);
+
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
 
@@ -72,36 +80,23 @@ class ApiGatewayPropertiesTest {
           "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url]."
         );
     }
-  }
-
-  @Nested
-  class SetEnvironment {
-
-    private static final Profiles PROD = Profiles.of("prod");
-
-    @Mock
-    private Environment environmentMock;
 
     public static Stream<
       String
-    > shouldThrowIfInProdProfileAndUndefinedPublicUrl() {
+    > throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {
       return Stream.of("", null, " ");
-    }
-
-    @Test
-    void shouldNotThrowIfNotInProdProfile() {
-      doReturn(false).when(environmentMock).acceptsProfiles(PROD);
-
-      assertThatNoException()
-        .isThrownBy(() -> fixture.setEnvironment(environmentMock));
     }
 
     @MethodSource
     @ParameterizedTest
-    void shouldThrowIfInProdProfileAndUndefinedPublicUrl(String publicUrl) {
+    void throwsExceptionIfInProdProfileAndUndefinedPublicUrl(String publicUrl) {
       doReturn(true).when(environmentMock).acceptsProfiles(PROD);
+      fixture.setEnvironment(environmentMock);
 
-      assertThatThrownBy(() -> fixture.setEnvironment(environmentMock))
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+
+      assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.public-url]."
@@ -109,12 +104,27 @@ class ApiGatewayPropertiesTest {
     }
 
     @Test
-    void shouldNotThrowIfInProdProfileAndPublicUrlIsSet() {
+    void doesNotThrowAnythingIfInProdProfileAndPublicUrlIsSet() {
       doReturn(true).when(environmentMock).acceptsProfiles(PROD);
+      fixture.setEnvironment(environmentMock);
+
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+
       fixture.setPublicUrl("publicUrl");
 
-      assertThatNoException()
-        .isThrownBy(() -> fixture.setEnvironment(environmentMock));
+      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+    }
+  }
+
+  @Nested
+  class SetEnvironment {
+
+    @Test
+    void setsEnvironment() {
+      fixture.setEnvironment(environmentMock);
+
+      assertThat(fixture.getEnvironment()).isEqualTo(environmentMock);
     }
   }
 }
