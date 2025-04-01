@@ -22,14 +22,24 @@ processors:
   batch:
     send_batch_size: 512
     send_batch_max_size: 1024
+  filter/openapi-traces:
+    error_mode: ignore
+    traces:
+      span:
+        - attributes["http.request.method"] == nil
+        - attributes["openapi.name"] == nil or attributes["openapi.version"] == nil
   filter/snow-white:
     error_mode: propagate
     spans:
       exclude:
         match_type: strict
         services:
+          - api-gateway
           - api-sync-job
           - kafka-event-filter
+          - openapi-coverage-service
+          - quality-gate-api
+          - report-coordination-service
   groupbyattrs/service:
     keys:
       - service.name
@@ -38,6 +48,12 @@ processors:
   groupbytrace:
     wait_duration: 5s
     num_traces: 512
+  resource/cleanup:
+    attributes:
+      - action: delete
+        pattern: ^process\..+
+      - action: delete
+        pattern: ^telemetry\..+
 extensions:
   health_check:
     endpoint: '0.0.0.0:13133'
@@ -81,14 +97,23 @@ service:
       exporters: [debug/basic]
     metrics/infra:
       receivers: [otlp]
-      processors: [memory_limiter, batch, groupbyattrs/service]
-      exporters: [debug/basic] # For debugging purposes `prometheus` can be enabled
+      processors: [memory_limiter, groupbyattrs/service, batch]
+      exporters: [debug/basic]
     traces/snow-white:
       receivers: [otlp]
-      processors: [memory_limiter, groupbytrace, batch]
+      processors:
+        [
+          memory_limiter,
+          filter/snow-white,
+          filter/openapi-traces,
+          groupbytrace,
+          resource/cleanup,
+          batch,
+        ]
       exporters: [debug/basic, kafka/snow-white]
-    traces/persist:
+    traces/infra:
       receivers: [kafka/snow-white]
+      processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, influxdb]
   telemetry:
     logs:
