@@ -145,7 +145,7 @@ class QualityGateResourceTest {
       var response = fixture.createQualityGate(qualityGateConfig);
 
       assertThat(response.getHeaders().getLocation()).isEqualTo(
-        URI.create("/v1/quality-gates/TestQualityGate")
+        URI.create("/api/rest/v1/quality-gates/TestQualityGate")
       );
     }
   }
