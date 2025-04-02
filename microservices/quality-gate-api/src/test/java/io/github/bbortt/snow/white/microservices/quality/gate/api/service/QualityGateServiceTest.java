@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,6 +12,8 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.Q
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -36,9 +39,9 @@ class QualityGateServiceTest {
   class Persist {
 
     @Test
-    void shouldSaveConfiguration() {
+    void shouldSaveNewConfiguration() {
       var configuration = QualityGateConfiguration.builder()
-        .name("TestConfig")
+        .name("NonExistingConfig")
         .build();
 
       doReturn(false)
@@ -55,7 +58,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationNameAlreadyExists() {
+    void shouldThrowException_whenConfigurationAlreadyExists() {
       var configuration = QualityGateConfiguration.builder()
         .name("ExistingConfig")
         .build();
@@ -71,6 +74,53 @@ class QualityGateServiceTest {
       verify(qualityGateConfigurationRepositoryMock, never()).save(
         configuration
       );
+    }
+  }
+
+  @Nested
+  class DeleteByName {
+
+    @Test
+    void shouldRemoveExistingConfiguration()
+      throws ConfigurationDoesNotExistException {
+      var name = "ExistingConfig";
+      doReturn(true)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsById(name);
+
+      fixture.deleteByName(name);
+
+      verify(qualityGateConfigurationRepositoryMock).deleteById(name);
+    }
+
+    @Test
+    void shouldThrowException_whenConfigurationDoesNotExist()
+      throws ConfigurationDoesNotExistException {
+      var name = "NonExistingConfig";
+      doReturn(false)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsById(name);
+
+      assertThatThrownBy(() -> fixture.deleteByName(name)).isInstanceOf(
+        ConfigurationDoesNotExistException.class
+      );
+    }
+  }
+
+  @Nested
+  class GetAllQualityGateConfigNames {
+
+    @Test
+    void shouldReturnAllConfigurationNames() {
+      var name = "TestConfig";
+
+      doReturn(new HashSet<>(singletonList(name)))
+        .when(qualityGateConfigurationRepositoryMock)
+        .findAllNames();
+
+      var result = fixture.getAllQualityGateConfigNames();
+
+      assertThat(result).containsExactly(name);
     }
   }
 
@@ -93,7 +143,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationNameDoesNotExists() {
+    void shouldThrowException_whenConfigurationDoesNotExists() {
       var name = "NonExistingConfig";
 
       doReturn(Optional.empty())
@@ -101,6 +151,44 @@ class QualityGateServiceTest {
         .findById(name);
 
       assertThatThrownBy(() -> fixture.findByName(name)).isInstanceOf(
+        ConfigurationDoesNotExistException.class
+      );
+    }
+  }
+
+  @Nested
+  class Update {
+
+    @Test
+    void shouldUpdateExistingConfiguration()
+      throws ConfigurationDoesNotExistException {
+      var name = "ExistingConfig";
+      var configuration = QualityGateConfiguration.builder().name(name).build();
+
+      doReturn(true)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsById(name);
+
+      var updatedConfig = QualityGateConfiguration.builder().build();
+      doReturn(updatedConfig)
+        .when(qualityGateConfigurationRepositoryMock)
+        .save(configuration);
+
+      var result = fixture.update(configuration);
+
+      assertThat(result).isEqualTo(updatedConfig);
+    }
+
+    @Test
+    void shouldThrowException_whenConfigurationDoesNotExists() {
+      var name = "NonExistingConfig";
+      doReturn(false)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsById(name);
+
+      var configuration = QualityGateConfiguration.builder().name(name).build();
+
+      assertThatThrownBy(() -> fixture.update(configuration)).isInstanceOf(
         ConfigurationDoesNotExistException.class
       );
     }

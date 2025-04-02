@@ -32,13 +32,6 @@ public class QualityGateService {
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
   }
 
-  public QualityGateConfiguration findByName(@Nullable String name)
-    throws ConfigurationDoesNotExistException {
-    return qualityGateConfigurationRepository
-      .findById(name)
-      .orElseThrow(() -> new ConfigurationDoesNotExistException(name));
-  }
-
   public void deleteByName(String name)
     throws ConfigurationDoesNotExistException {
     if (!qualityGateConfigurationRepository.existsById(name)) {
@@ -50,6 +43,13 @@ public class QualityGateService {
 
   public Set<String> getAllQualityGateConfigNames() {
     return qualityGateConfigurationRepository.findAllNames();
+  }
+
+  public QualityGateConfiguration findByName(@Nullable String name)
+    throws ConfigurationDoesNotExistException {
+    return qualityGateConfigurationRepository
+      .findById(name)
+      .orElseThrow(() -> new ConfigurationDoesNotExistException(name));
   }
 
   public QualityGateConfiguration update(

@@ -33,7 +33,9 @@ public class QualityGateResource implements QualityGateApi {
       );
 
       return ResponseEntity.created(
-        URI.create(format("/v1/quality-gates/%s", qualityGateConfig.getName()))
+        URI.create(
+          format("/api/rest/v1/quality-gates/%s", qualityGateConfig.getName())
+        )
       ).body(
         qualityGateConfigurationMapper.toDto(createdQualityGateConfiguration)
       );
