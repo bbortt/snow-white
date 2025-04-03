@@ -78,14 +78,16 @@ public class ReportService {
   private void dispatchOpenApiCoverageCalculation(
     QualityGateReport qualityGateReport
   ) {
+    var reportParameters = qualityGateReport.getReportParameters();
+
     kafkaTemplate.send(
       calculationRequestTopic,
       qualityGateReport.getCalculationId().toString(),
       new QualityGateCalculationRequestEvent(
-        qualityGateReport.getReportParameters().getServiceName(),
-        qualityGateReport.getReportParameters().getApiName(),
-        qualityGateReport.getReportParameters().getApiVersion(),
-        qualityGateReport.getReportParameters().getLookbackWindow()
+        reportParameters.getServiceName(),
+        reportParameters.getApiName(),
+        reportParameters.getApiVersion(),
+        reportParameters.getLookbackWindow()
       )
     );
   }
