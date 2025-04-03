@@ -6,7 +6,6 @@ import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestD
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
-import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -168,7 +167,10 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
         protobufSerde.deserializer()
       );
 
-      inputTopic.pipeInput(randomUUID().toString(), exportTraceServiceRequest);
+      inputTopic.pipeInput(
+        "53b8f95a-1a2b-41d7-ac2a-3faf9f08331f",
+        exportTraceServiceRequest
+      );
 
       eventAssert.accept(outputTopic);
     }

@@ -1,6 +1,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,8 +10,8 @@ import lombok.Getter;
 public class QualityGateConfig {
 
   @Nonnull
-  private String name;
+  private final String name;
 
-  @Nonnull
+  @Nullable
   private OpenApiCoverageConfig openApiCoverageConfig;
 }

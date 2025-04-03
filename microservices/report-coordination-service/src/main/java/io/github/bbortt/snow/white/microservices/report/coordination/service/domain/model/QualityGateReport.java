@@ -5,7 +5,6 @@ import static io.github.bbortt.snow.white.microservices.report.coordination.serv
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.EAGER;
-import static jakarta.persistence.GenerationType.SEQUENCE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
@@ -14,7 +13,6 @@ import static lombok.AccessLevel.PRIVATE;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
