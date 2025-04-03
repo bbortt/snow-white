@@ -59,8 +59,7 @@ public class OpenApiCoverageReport {
   public boolean passed() {
     return stream(getClass().getDeclaredFields())
       .filter(field -> Boolean.class.equals(field.getType()))
-      .map(field -> getBooleanValueFromField(field))
-      .allMatch(TRUE::equals);
+      .allMatch(this::getBooleanValueFromField);
   }
 
   private boolean getBooleanValueFromField(Field field) {
