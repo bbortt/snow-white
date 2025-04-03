@@ -2,21 +2,19 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.bbortt.snow.white.microservices.api.gateway.Main;
 import java.net.URI;
 import java.time.Duration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.test.annotation.DirtiesContext;
 
-@Isolated
-@DirtiesContext
 @SpringBootTest(
+  classes = { Main.class },
   properties = {
     "io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url=http://localhost:8081",
     "io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url=http://localhost:8084",
