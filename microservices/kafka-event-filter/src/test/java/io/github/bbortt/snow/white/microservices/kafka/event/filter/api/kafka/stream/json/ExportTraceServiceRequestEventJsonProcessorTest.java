@@ -88,6 +88,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
         streamsBuilderMock,
         inboundTopicName
       );
+
       assertThat(kStream).isEqualTo(kStreamMock);
     }
   }

@@ -41,9 +41,10 @@ class RoutingConfigIT {
 
     @Test
     void configuresEndpoints() {
-      var routeLocator = fixture.snowWhiteRouteLocator(
+      RouteLocator routeLocator = fixture.snowWhiteRouteLocator(
         new RouteLocatorBuilder(applicationContextMock)
       );
+
       var routes = routeLocator
         .getRoutes()
         .collectList()

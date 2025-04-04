@@ -71,7 +71,9 @@ class ServiceInterfaceCatalogServiceTest {
 
       var api = new ApiInformation().withTitle(API_TITLE).withSourceUrl(null);
 
-      var resultingApi = fixture.validateApiInformationFromIndex(api);
+      ApiInformation resultingApi = fixture.validateApiInformationFromIndex(
+        api
+      );
 
       assertThat(resultingApi.getLoadStatus()).isEqualTo(NO_SOURCE);
     }

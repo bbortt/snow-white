@@ -47,7 +47,7 @@ class RedisCachingServiceTest {
           HASH_PREFIX + otelServiceName + ":" + apiName + ":" + apiVersion
         );
 
-      var result = fixture.apiExists(otelServiceName, apiName, apiVersion);
+      boolean result = fixture.apiExists(otelServiceName, apiName, apiVersion);
 
       assertThat(result).isEqualTo(apiExists);
     }

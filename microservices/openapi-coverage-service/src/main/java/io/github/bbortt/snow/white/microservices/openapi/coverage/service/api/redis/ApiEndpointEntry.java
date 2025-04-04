@@ -1,15 +1,20 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis;
 
 import static java.util.Objects.nonNull;
+import static lombok.AccessLevel.PRIVATE;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
+@Builder
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = PRIVATE)
+@AllArgsConstructor(access = PRIVATE)
 @RedisHash("api_endpoints")
 public class ApiEndpointEntry {
 

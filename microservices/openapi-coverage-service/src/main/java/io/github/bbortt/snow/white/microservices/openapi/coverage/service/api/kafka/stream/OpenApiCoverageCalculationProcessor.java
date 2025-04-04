@@ -1,12 +1,16 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka.stream;
 
-import static org.apache.kafka.streams.KeyValue.pair;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.mapper.OpenApiCoverageMapper;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -22,9 +26,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
 
-  private final OpenApiCoverageMapper openApiCoverageMapper;
   private final OpenApiCoverageService openApiCoverageService;
   private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
+  private final OpenApiService openApiService;
 
   @Bean
   public KStream<
@@ -34,19 +38,42 @@ public class OpenApiCoverageCalculationProcessor {
     var stream = createStream(streamsBuilder);
 
     stream
-      .peek((key, value) -> logger.debug("Handling message id '{}'", key))
-      .map((key, value) ->
-        pair(
-          key,
-          openApiCoverageService.gatherDataAndCalculateCoverage(
-            value.getServiceName(),
-            value.getApiName(),
-            value.getApiVersion()
-          )
-        )
+      .peek((key, calculationRequestEvent) ->
+        logger.debug("Handling message id '{}'", key)
       )
-      .map((key, value) ->
-        pair(key, openApiCoverageMapper.toResponseEvent(value))
+      .flatMapValues((key, calculationRequestEvent) -> {
+        var openApiIdentifier = new OpenApiService.OpenApiIdentifier(
+          calculationRequestEvent.getServiceName(),
+          calculationRequestEvent.getApiName(),
+          calculationRequestEvent.getApiVersion()
+        );
+
+        try {
+          var openApi = openApiService.findAndParseOpenApi(openApiIdentifier);
+
+          return singletonList(
+            new OpenApiService.OpenApiCoverageRequest(
+              openApiIdentifier,
+              openApi,
+              calculationRequestEvent.getLookbackWindow()
+            )
+          );
+        } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {
+          logger.error(
+            "Failed to process message with key {}: {}",
+            key,
+            e.getMessage(),
+            e
+          );
+
+          return emptyList();
+        }
+      })
+      .mapValues((key, openAPI) ->
+        openApiCoverageService.gatherDataAndCalculateCoverage(openAPI)
+      )
+      .flatMapValues((key, openApiCriteriaResult) ->
+        singletonList(new OpenApiCoverageResponseEvent(openApiCriteriaResult))
       )
       .to(
         openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic(),
@@ -55,6 +82,8 @@ public class OpenApiCoverageCalculationProcessor {
           KafkaStreamsConfig.OpenApiCoverageResponseEvent()
         )
       );
+
+    // TODO: Error should not go unnoticed, but be sent to "dead letter queue"
 
     return stream;
   }

@@ -3,6 +3,7 @@ package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +27,14 @@ class KafkaTopicManagerTest {
 
   @Test
   void testInboundTopicCreation() {
-    var inboundTopic = fixture.inboundTopic();
+    NewTopic inboundTopic = fixture.inboundTopic();
 
     assertThat(inboundTopic.name()).isEqualTo(TEST_INBOUND_TOPIC);
   }
 
   @Test
   void testOutboundTopicCreation() {
-    var outboundTopic = fixture.outboundTopic();
+    NewTopic outboundTopic = fixture.outboundTopic();
 
     assertThat(outboundTopic.name()).isEqualTo(TEST_OUTBOUND_TOPIC);
   }

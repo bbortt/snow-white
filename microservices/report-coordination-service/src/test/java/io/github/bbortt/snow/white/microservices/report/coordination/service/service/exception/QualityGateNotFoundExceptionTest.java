@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class QualityGateNotFoundExceptionTest {
 
   @Test
-  void constructMessage() {
+  void shouldConstructMessage() {
     assertThat(new QualityGateNotFoundException("foo")).hasMessage(
       "No Quality-Gate configuration with ID 'foo' exists!"
     );

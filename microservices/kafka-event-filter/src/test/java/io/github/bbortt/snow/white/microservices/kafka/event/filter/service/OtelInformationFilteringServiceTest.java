@@ -78,7 +78,7 @@ class OtelInformationFilteringServiceTest {
       ExportTraceServiceRequest exportTraceServiceRequest,
       Consumer<ExportTraceServiceRequest> assertFunction
     ) {
-      var result = fixture.filterUnknownSpecifications(
+      ExportTraceServiceRequest result = fixture.filterUnknownSpecifications(
         exportTraceServiceRequest
       );
       assertFunction.accept(result);

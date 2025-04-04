@@ -118,7 +118,7 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .findAllNames();
 
-      var result = fixture.getAllQualityGateConfigNames();
+      Set<String> result = fixture.getAllQualityGateConfigNames();
 
       assertThat(result).containsExactly(name);
     }
@@ -137,7 +137,7 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .findById(name);
 
-      var result = fixture.findByName(name);
+      QualityGateConfiguration result = fixture.findByName(name);
 
       assertThat(result).isEqualTo(configuration);
     }
