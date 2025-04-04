@@ -1,6 +1,9 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb;
 
-enum AttributeFilterOperator {
+import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
+
+@VisibleForTesting
+public enum AttributeFilterOperator {
   STRING_EQUALS("==");
 
   private final String fluxComparator;

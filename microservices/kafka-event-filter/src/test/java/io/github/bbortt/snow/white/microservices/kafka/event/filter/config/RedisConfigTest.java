@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @ExtendWith({ MockitoExtension.class })
@@ -25,7 +26,9 @@ class RedisConfigTest {
 
   @Test
   void connectionFactoryIsBeingSet() {
-    var redisTemplate = fixture.redisTemplate(redisConnectionFactoryMock);
+    RedisTemplate<String, Object> redisTemplate = fixture.redisTemplate(
+      redisConnectionFactoryMock
+    );
 
     assertThat(redisTemplate.getConnectionFactory()).isEqualTo(
       redisConnectionFactoryMock
@@ -34,7 +37,9 @@ class RedisConfigTest {
 
   @Test
   void keySerializerIsStringRedisSerializer() {
-    var redisTemplate = fixture.redisTemplate(redisConnectionFactoryMock);
+    RedisTemplate<String, Object> redisTemplate = fixture.redisTemplate(
+      redisConnectionFactoryMock
+    );
 
     assertThat(redisTemplate.getKeySerializer()).isInstanceOf(
       StringRedisSerializer.class

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.codegen.ClientOptInput;
 import org.openapitools.codegen.CodegenConfigLoader;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.config.CodegenConfigurator;
@@ -29,7 +30,7 @@ class SnowWhiteSpringServerGeneratorIT {
   }
 
   private static void invokeGenerator(CodegenConfigurator fixture) {
-    var clientOptInput = fixture.toClientOptInput();
+    ClientOptInput clientOptInput = fixture.toClientOptInput();
     var generator = new DefaultGenerator();
     generator.opts(clientOptInput).generate();
   }

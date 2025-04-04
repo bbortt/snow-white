@@ -57,4 +57,10 @@ public class OpenApiService {
     String apiName,
     String apiVersion
   ) {}
+
+  public record OpenApiCoverageRequest(
+    OpenApiIdentifier openApiIdentifier,
+    OpenAPI openAPI,
+    String lookbackWindow
+  ) {}
 }
