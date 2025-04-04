@@ -7,7 +7,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import java.util.Properties;
 import java.util.stream.Stream;
+import org.apache.kafka.common.serialization.Serde;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ class KafkaStreamsConfigTest {
 
     @Test
     void serializationAndDeserializationLoop() {
-      var jsonSerde = fixture.jsonSerde();
+      Serde<ExportTraceServiceRequest> jsonSerde = fixture.jsonSerde();
 
       var originalMessage = ExportTraceServiceRequest.newBuilder()
         .addResourceSpans(TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL)
@@ -55,7 +57,7 @@ class KafkaStreamsConfigTest {
       var schemaRegistryUrl = "mock://" + getClass().getSimpleName();
       kafkaEventFilterProperties.setSchemaRegistryUrl(schemaRegistryUrl);
 
-      var properties = fixture.snowWhiteKafkaProperties(
+      Properties properties = fixture.snowWhiteKafkaProperties(
         kafkaEventFilterProperties
       );
 

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.jackson.ApiInformationDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 class SyncJobConfigTest {
@@ -20,7 +21,8 @@ class SyncJobConfigTest {
 
   @Test
   void jsonCustomizerRegistersApiDeserializerForObjectMapper() {
-    var jsonCustomizer = fixture.jsonCustomizer(new ApiSyncJobProperties());
+    Jackson2ObjectMapperBuilderCustomizer jsonCustomizer =
+      fixture.jsonCustomizer(new ApiSyncJobProperties());
 
     var jackson2ObjectMapperBuilderMock = mock(
       Jackson2ObjectMapperBuilder.class

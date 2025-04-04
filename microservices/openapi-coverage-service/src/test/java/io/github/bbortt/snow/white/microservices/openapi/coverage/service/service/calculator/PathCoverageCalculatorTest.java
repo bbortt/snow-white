@@ -1,0 +1,167 @@
+package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
+import io.swagger.v3.oas.models.Operation;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith({ MockitoExtension.class })
+class PathCoverageCalculatorTest {
+
+  @Mock
+  private Operation operationMock;
+
+  private PathCoverageCalculator fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new PathCoverageCalculator();
+  }
+
+  @Nested
+  class Accepts {
+
+    @Test
+    void shouldReturnTrue_whenPathCoverage() {
+      boolean result = fixture.accepts(PATH_COVERAGE);
+
+      assertThat(result).isTrue();
+    }
+
+    @EnumSource(OpenApiCriteria.class)
+    @ParameterizedTest
+    void shouldReturnFalse_whenNotPathCoverage(
+      OpenApiCriteria openApiCriteria
+    ) {
+      if (PATH_COVERAGE.equals(openApiCriteria)) {
+        return;
+      }
+
+      boolean result = fixture.accepts(openApiCriteria);
+
+      assertThat(result).isFalse();
+    }
+  }
+
+  @Nested
+  class Calculates {
+
+    @Test
+    void shouldReturn100Percent_whenPathIngoringMethodsCovered() {
+      Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+      pathToOpenAPIOperationMap.put("GET_/api/v1/users", operationMock);
+
+      Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
+      pathToTelemetryMap.put(
+        "GET_/api/v1/users",
+        singletonList(mock(OpenTelemetryData.class))
+      );
+      pathToTelemetryMap.put(
+        "POST_/api/v1/users",
+        singletonList(mock(OpenTelemetryData.class))
+      );
+
+      OpenApiCriteriaResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldReturn100Percent_whenHalfMethodsCovered() {
+      Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+      pathToOpenAPIOperationMap.put("GET_/api/v1/users", operationMock);
+      pathToOpenAPIOperationMap.put("POST_/api/v1/users", operationMock);
+
+      Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
+      pathToTelemetryMap.put(
+        "GET_/api/v1/users",
+        singletonList(mock(OpenTelemetryData.class))
+      );
+
+      OpenApiCriteriaResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldReturn0Percent_whenNoPathsCovered() {
+      Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+      pathToOpenAPIOperationMap.put("GET_/api/v1/users", operationMock);
+      pathToOpenAPIOperationMap.put("POST_/api/v1/users", operationMock);
+
+      Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
+
+      OpenApiCriteriaResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following resources (ignoring request methods) are uncovered: /api/v1/users"
+          )
+      );
+    }
+
+    @Test
+    void shouldHandleEmptyOperationsMap() {
+      Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+      Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
+      pathToTelemetryMap.put(
+        "GET_/api/v1/users",
+        singletonList(mock(OpenTelemetryData.class))
+      );
+
+      OpenApiCriteriaResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    private static @NotNull BigDecimal getBigDecimal(double value) {
+      return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
+    }
+  }
+}

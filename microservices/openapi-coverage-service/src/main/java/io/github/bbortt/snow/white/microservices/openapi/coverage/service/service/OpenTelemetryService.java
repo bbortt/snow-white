@@ -59,6 +59,7 @@ public class OpenTelemetryService {
           openTelemetryData.add(parseOpenTelemetryData(fluxRecord))
         )
     );
+
     return openTelemetryData;
   }
 
