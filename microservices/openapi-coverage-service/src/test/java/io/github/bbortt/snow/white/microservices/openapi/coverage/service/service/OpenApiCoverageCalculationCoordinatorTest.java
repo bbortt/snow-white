@@ -41,7 +41,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
       pathToOpenAPIOperationMap.put("GET_/foo", mock(Operation.class));
       pathToTelemetryMap.put("GET_/foo", emptyList());
 
-      var coverage = BigDecimal.valueOf(1.0);
+      var coverage = BigDecimal.ONE;
       var openApiCriteriaResult = new OpenApiCriteriaResult(
         PATH_COVERAGE,
         coverage,
