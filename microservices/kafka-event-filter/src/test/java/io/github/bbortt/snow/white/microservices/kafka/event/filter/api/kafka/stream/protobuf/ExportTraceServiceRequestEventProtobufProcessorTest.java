@@ -8,6 +8,7 @@ import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestD
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -26,6 +27,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
+import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.KStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -138,41 +141,74 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
     }
+
+    private void sendEventsAndAssert(
+      ExportTraceServiceRequest exportTraceServiceRequest,
+      Consumer<TestOutputTopic<String, ExportTraceServiceRequest>> eventAssert
+    ) {
+      var streamsBuilder = new StreamsBuilder();
+
+      fixture.resourceSpansStream(streamsBuilder);
+      var topology = streamsBuilder.build();
+
+      try (
+        var topologyTestDriver = new TopologyTestDriver(
+          topology,
+          snowWhiteKafkaProperties
+        )
+      ) {
+        var inputTopic = topologyTestDriver.createInputTopic(
+          inboundTopicName,
+          new StringSerializer(),
+          protobufSerde.serializer()
+        );
+
+        var outputTopic = topologyTestDriver.createOutputTopic(
+          outboundTopicName,
+          new StringDeserializer(),
+          protobufSerde.deserializer()
+        );
+
+        inputTopic.pipeInput(
+          "53b8f95a-1a2b-41d7-ac2a-3faf9f08331f",
+          exportTraceServiceRequest
+        );
+
+        eventAssert.accept(outputTopic);
+      }
+    }
   }
 
-  private void sendEventsAndAssert(
-    ExportTraceServiceRequest exportTraceServiceRequest,
-    Consumer<TestOutputTopic<String, ExportTraceServiceRequest>> eventAssert
-  ) {
-    var streamsBuilder = new StreamsBuilder();
+  @Nested
+  class CreateStream {
 
-    fixture.resourceSpansStream(streamsBuilder);
-    var topology = streamsBuilder.build();
+    @Mock
+    private StreamsBuilder streamsBuilderMock;
 
-    try (
-      var topologyTestDriver = new TopologyTestDriver(
-        topology,
-        snowWhiteKafkaProperties
-      )
-    ) {
-      var inputTopic = topologyTestDriver.createInputTopic(
-        inboundTopicName,
-        new StringSerializer(),
-        protobufSerde.serializer()
+    @Test
+    void isNotNull() {
+      var inboundTopicName = "inboundTopicName";
+
+      KStream<String, ExportTraceServiceRequest> kStreamMock = mock();
+      doReturn(kStreamMock)
+        .when(streamsBuilderMock)
+        .stream(eq(inboundTopicName), any(Consumed.class));
+
+      KStream<String, ExportTraceServiceRequest> kStream = fixture.createStream(
+        streamsBuilderMock,
+        inboundTopicName
       );
 
-      var outputTopic = topologyTestDriver.createOutputTopic(
-        outboundTopicName,
-        new StringDeserializer(),
-        protobufSerde.deserializer()
-      );
+      assertThat(kStream).isEqualTo(kStreamMock);
+    }
+  }
 
-      inputTopic.pipeInput(
-        "53b8f95a-1a2b-41d7-ac2a-3faf9f08331f",
-        exportTraceServiceRequest
-      );
+  @Nested
+  class OutboundValueSerde {
 
-      eventAssert.accept(outputTopic);
+    @Test
+    void isNotNull() {
+      assertThat(fixture.outboundValueSerde()).isNotNull();
     }
   }
 }

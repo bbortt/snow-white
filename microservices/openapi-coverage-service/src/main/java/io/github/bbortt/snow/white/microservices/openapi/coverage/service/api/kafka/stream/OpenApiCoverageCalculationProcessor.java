@@ -2,6 +2,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.k
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
@@ -34,14 +35,14 @@ public class OpenApiCoverageCalculationProcessor {
   public KStream<
     String,
     QualityGateCalculationRequestEvent
-  > resourceSpansStream(StreamsBuilder streamsBuilder) {
+  > openapiCoverageStream(StreamsBuilder streamsBuilder) {
     var stream = createStream(streamsBuilder);
 
     stream
       .peek((key, calculationRequestEvent) ->
         logger.debug("Handling message id '{}'", key)
       )
-      .flatMapValues((key, calculationRequestEvent) -> {
+      .mapValues((key, calculationRequestEvent) -> {
         var openApiIdentifier = new OpenApiService.OpenApiIdentifier(
           calculationRequestEvent.getServiceName(),
           calculationRequestEvent.getApiName(),
@@ -49,14 +50,10 @@ public class OpenApiCoverageCalculationProcessor {
         );
 
         try {
-          var openApi = openApiService.findAndParseOpenApi(openApiIdentifier);
-
-          return singletonList(
-            new OpenApiService.OpenApiCoverageRequest(
-              openApiIdentifier,
-              openApi,
-              calculationRequestEvent.getLookbackWindow()
-            )
+          return new OpenApiService.OpenApiCoverageRequest(
+            openApiIdentifier,
+            openApiService.findAndParseOpenApi(openApiIdentifier),
+            calculationRequestEvent.getLookbackWindow()
           );
         } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {
           logger.error(
@@ -66,11 +63,18 @@ public class OpenApiCoverageCalculationProcessor {
             e
           );
 
-          return emptyList();
+          return null;
         }
       })
-      .mapValues((key, openAPI) ->
-        openApiCoverageService.gatherDataAndCalculateCoverage(openAPI)
+      .filter(
+        (key, openApiCoverageRequest) ->
+          nonNull(openApiCoverageRequest) &&
+          nonNull(openApiCoverageRequest.openAPI())
+      )
+      .mapValues((key, openApiCoverageRequest) ->
+        openApiCoverageService.gatherDataAndCalculateCoverage(
+          openApiCoverageRequest
+        )
       )
       .flatMapValues((key, openApiCriteriaResult) ->
         singletonList(new OpenApiCoverageResponseEvent(openApiCriteriaResult))

@@ -1,5 +1,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.config;
 
+import static org.apache.kafka.common.serialization.Serdes.serdeFrom;
+
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import org.apache.kafka.common.serialization.Serde;
@@ -22,10 +24,7 @@ public class KafkaStreamsConfig {
     JsonDeserializer<QualityGateCalculationRequestEvent> deserializer =
       new JsonDeserializer<>(QualityGateCalculationRequestEvent.class);
 
-    return org.apache.kafka.common.serialization.Serdes.serdeFrom(
-      serializer,
-      deserializer
-    );
+    return serdeFrom(serializer, deserializer);
   }
 
   public static Serde<
@@ -36,9 +35,6 @@ public class KafkaStreamsConfig {
     JsonDeserializer<OpenApiCoverageResponseEvent> deserializer =
       new JsonDeserializer<>(OpenApiCoverageResponseEvent.class);
 
-    return org.apache.kafka.common.serialization.Serdes.serdeFrom(
-      serializer,
-      deserializer
-    );
+    return serdeFrom(serializer, deserializer);
   }
 }
