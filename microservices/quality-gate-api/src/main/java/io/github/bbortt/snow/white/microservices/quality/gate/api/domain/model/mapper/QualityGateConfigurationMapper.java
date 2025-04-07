@@ -1,90 +1,97 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper;
 
+import static java.util.Objects.isNull;
+import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCoverageConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = SPRING)
-public interface QualityGateConfigurationMapper {
-  @Mapping(
-    target = "openApiCoverageConfiguration",
-    source = "openApiCoverageConfig"
-  )
-  QualityGateConfiguration fromDto(QualityGateConfig qualityGateConfig);
+@Mapper(componentModel = SPRING, injectionStrategy = CONSTRUCTOR)
+public abstract class QualityGateConfigurationMapper {
 
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "includePathCoverage", source = "pathCoverage")
-  @Mapping(
-    target = "includeResponseCodeCoverage",
-    source = "responseCodeCoverage"
-  )
-  @Mapping(
-    target = "includeRequiredParameterCoverage",
-    source = "requiredParameterCoverage"
-  )
-  @Mapping(
-    target = "includeQueryParameterCoverage",
-    source = "queryParameterCoverage"
-  )
-  @Mapping(
-    target = "includeHeaderParameterCoverage",
-    source = "headerParameterCoverage"
-  )
-  @Mapping(
-    target = "includeRequestBodySchemaCoverage",
-    source = "requestBodySchemaCoverage"
-  )
-  @Mapping(
-    target = "includeErrorResponseCoverage",
-    source = "errorResponseCoverage"
-  )
-  @Mapping(
-    target = "includeContentTypeCoverage",
-    source = "contentTypeCoverage"
-  )
-  OpenApiCoverageConfiguration map(OpenApiCoverageConfig openApiCoverageConfig);
+  @Autowired
+  private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
+  /**
+   * Maps from entity to DTO.
+   */
   @Mapping(
-    target = "openApiCoverageConfig",
-    source = "openApiCoverageConfiguration"
+    target = "openapiCriteria",
+    expression = "java(mapOpenApiCriteriaToStringList(entity))"
   )
-  QualityGateConfig toDto(QualityGateConfiguration qualityGateConfig);
+  public abstract QualityGateConfig toDto(QualityGateConfiguration entity);
 
-  @Mapping(target = "pathCoverage", source = "includePathCoverage")
+  /**
+   * Maps from DTO to entity (for creation).
+   */
   @Mapping(
-    target = "responseCodeCoverage",
-    source = "includeResponseCodeCoverage"
+    target = "openApiCoverageConfigurations",
+    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenapiCriteria(), null))"
   )
-  @Mapping(
-    target = "requiredParameterCoverage",
-    source = "includeRequiredParameterCoverage"
-  )
-  @Mapping(
-    target = "queryParameterCoverage",
-    source = "includeQueryParameterCoverage"
-  )
-  @Mapping(
-    target = "headerParameterCoverage",
-    source = "includeHeaderParameterCoverage"
-  )
-  @Mapping(
-    target = "requestBodySchemaCoverage",
-    source = "includeRequestBodySchemaCoverage"
-  )
-  @Mapping(
-    target = "errorResponseCoverage",
-    source = "includeErrorResponseCoverage"
-  )
-  @Mapping(
-    target = "contentTypeCoverage",
-    source = "includeContentTypeCoverage"
-  )
-  OpenApiCoverageConfig map(
-    OpenApiCoverageConfiguration openApiCoverageConfiguration
-  );
+  public abstract QualityGateConfiguration toEntity(QualityGateConfig dto);
+
+  /**
+   * Helper method to convert OpenAPI coverage mappings to string list for the DTO.
+   */
+  protected List<String> mapOpenApiCriteriaToStringList(
+    QualityGateConfiguration entity
+  ) {
+    if (isNull(entity.getOpenApiCoverageConfigurations())) {
+      return List.of();
+    }
+
+    return entity
+      .getOpenApiCoverageConfigurations()
+      .stream()
+      .map(mapping -> mapping.getOpenApiCoverageConfiguration().getName())
+      .toList();
+  }
+
+  /**
+   * Helper method to convert string list from DTO to OpenAPI coverage mappings.
+   */
+  protected Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
+    List<String> openapiCriteria,
+    QualityGateConfiguration existingEntity
+  ) {
+    if (isEmpty(openapiCriteria)) {
+      return new HashSet<>();
+    }
+
+    Set<QualityGateOpenApiCoverageMapping> mappings = new HashSet<>();
+
+    for (var criteriaName : openapiCriteria) {
+      OpenApiCoverageConfiguration coverage =
+        openApiCoverageConfigurationRepository
+          .findById(criteriaName)
+          .orElseThrow(() ->
+            new IllegalArgumentException(
+              "OpenApiCoverageConfiguration with name '" +
+              criteriaName +
+              "' not found"
+            )
+          );
+
+      QualityGateOpenApiCoverageMapping mapping =
+        QualityGateOpenApiCoverageMapping.builder()
+          .openApiCoverageConfiguration(coverage)
+          .qualityGateConfiguration(existingEntity)
+          .build();
+
+      mappings.add(mapping);
+    }
+
+    return mappings;
+  }
 }

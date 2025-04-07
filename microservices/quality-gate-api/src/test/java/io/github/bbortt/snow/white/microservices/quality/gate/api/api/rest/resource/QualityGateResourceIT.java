@@ -1,7 +1,9 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
@@ -20,7 +22,9 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.IntegrationTes
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @IntegrationTest
 @AutoConfigureMockMvc
-public class QualityGateResourceIT {
+class QualityGateResourceIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/quality-gates";
 
@@ -118,7 +122,9 @@ public class QualityGateResourceIT {
     )
       .withDescription("This is a complete Quality-Gate Configuration.")
       .withOpenApiCoverageConfiguration(
-        OpenApiCoverageConfiguration.builder().build()
+        OpenApiCoverageConfiguration.builder()
+          .name(PATH_COVERAGE.name())
+          .build()
       );
     qualityGateConfiguration = qualityGateConfigurationRepository.save(
       qualityGateConfiguration
@@ -133,8 +139,9 @@ public class QualityGateResourceIT {
           qualityGateConfiguration.getDescription()
         )
       )
+      .andExpect(jsonPath("$.openapiCriteria").value(hasSize(1)))
       .andExpect(
-        jsonPath("$.openApiCoverageConfig").value(is(not(nullValue())))
+        jsonPath("$.openapiCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
   }
 

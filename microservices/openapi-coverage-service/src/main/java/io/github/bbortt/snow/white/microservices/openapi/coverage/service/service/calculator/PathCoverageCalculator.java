@@ -6,7 +6,7 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
@@ -33,7 +33,7 @@ public class PathCoverageCalculator implements OpenApiCoverageCalculator {
   }
 
   @Override
-  public OpenApiCriteriaResult calculate(
+  public OpenApiCriterionResult calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
@@ -71,7 +71,7 @@ public class PathCoverageCalculator implements OpenApiCoverageCalculator {
       availableResources.size()
     );
 
-    return new OpenApiCriteriaResult(
+    return new OpenApiCriterionResult(
       PATH_COVERAGE,
       pathCoverage,
       getAdditionalInformationOrNull(uncoveredResources)
