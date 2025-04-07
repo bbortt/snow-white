@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -98,15 +98,15 @@ class OpenApiCoverageServiceTest {
 
       doReturn(paths).when(openAPIMock).getPaths();
 
-      Set<OpenApiCriteriaResult> openApiCriteriaResults = emptySet();
-      doReturn(openApiCriteriaResults)
+      Set<OpenApiCriterionResult> openApiCriterionResults = emptySet();
+      doReturn(openApiCriterionResults)
         .when(openApiCoverageCalculationCoordinatorMock)
         .calculate(any(Map.class), any(Map.class));
 
-      Set<OpenApiCriteriaResult> result =
+      Set<OpenApiCriterionResult> result =
         fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
 
-      assertThat(result).isEqualTo(openApiCriteriaResults);
+      assertThat(result).isEqualTo(openApiCriterionResults);
 
       ArgumentCaptor<Map<String, Operation>> pathToOpenAPIOperationMapCaptor =
         captor();
@@ -145,7 +145,7 @@ class OpenApiCoverageServiceTest {
         .when(openTelemetryServiceMock)
         .findTracingData(eq(OTEL_SERVICE_NAME), eq(LOOKBACK_WINDOW), anyList());
 
-      Set<OpenApiCriteriaResult> result =
+      Set<OpenApiCriterionResult> result =
         fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
 
       assertThat(result).isEmpty();

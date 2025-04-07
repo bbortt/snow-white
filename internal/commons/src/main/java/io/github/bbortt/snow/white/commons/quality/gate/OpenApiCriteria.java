@@ -33,11 +33,11 @@ public enum OpenApiCriteria {
     "Error responses include all required fields."
   );
 
-  private final String name;
+  private final String label;
   private final String description;
 
-  OpenApiCriteria(String name, String description) {
-    this.name = name;
+  OpenApiCriteria(String label, String description) {
+    this.label = label;
     this.description = description;
   }
 }

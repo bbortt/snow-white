@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
+import static io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.ObjectUtils.copyNonNullFields;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -29,7 +30,7 @@ public class QualityGateResource implements QualityGateApi {
   public ResponseEntity createQualityGate(QualityGateConfig qualityGateConfig) {
     try {
       var createdQualityGateConfiguration = qualityGateService.persist(
-        qualityGateConfigurationMapper.fromDto(qualityGateConfig)
+        qualityGateConfigurationMapper.toEntity(qualityGateConfig)
       );
 
       return ResponseEntity.created(
@@ -40,7 +41,7 @@ public class QualityGateResource implements QualityGateApi {
         qualityGateConfigurationMapper.toDto(createdQualityGateConfiguration)
       );
     } catch (ConfigurationNameAlreadyExistsException e) {
-      return newHttpConflictResponseQualtyGateConfigNameAlreadyExists(
+      return newHttpConflictResponseQualityGateConfigNameAlreadyExists(
         qualityGateConfig
       );
     }
@@ -48,7 +49,7 @@ public class QualityGateResource implements QualityGateApi {
 
   private static ResponseEntity<
     Error
-  > newHttpConflictResponseQualtyGateConfigNameAlreadyExists(
+  > newHttpConflictResponseQualityGateConfigNameAlreadyExists(
     QualityGateConfig qualityGateConfig
   ) {
     return ResponseEntity.status(CONFLICT).body(
@@ -106,8 +107,13 @@ public class QualityGateResource implements QualityGateApi {
     QualityGateConfig qualityGateConfig
   ) {
     try {
+      var qualityGateConfiguration = qualityGateService.findByName(name);
+      var updates = qualityGateConfigurationMapper.toEntity(qualityGateConfig);
+
+      copyNonNullFields(updates, qualityGateConfiguration);
+
       var updatedQualityGateConfiguration = qualityGateService.update(
-        qualityGateConfigurationMapper.fromDto(qualityGateConfig).withName(name)
+        qualityGateConfiguration
       );
 
       return ResponseEntity.ok(

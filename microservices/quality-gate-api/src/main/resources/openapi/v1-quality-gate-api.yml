@@ -90,9 +90,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QualityGateConfig'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/QualityGateConfig'
         '404':
           description: Configuration not found
           content:
@@ -177,13 +174,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/rest/v1/criteria/openapi:
+    get:
+      operationId: listOpenApiCriteria
+      summary: List OpenAPI Coverage Criteria
+      description: Returns all available OpenAPI coverage criteria used for quality gate evaluation
+      tags:
+        - criteria
+      responses:
+        '200':
+          description: List of OpenAPI criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpenApiCriterion'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     QualityGateConfig:
       type: object
       required:
         - name
-        - openApiCoverage
+        - openapiCriteria
       properties:
         name:
           type: string
@@ -193,52 +212,30 @@ components:
           type: string
           description: Optional description of the Quality-Gate Configuration
           example: 'Basic coverage criteria for API testing'
-        openApiCoverageConfig:
-          $ref: '#/components/schemas/OpenApiCoverageConfig'
-    OpenApiCoverageConfig:
+        openapiCriteria:
+          type: array
+          description: List of OpenAPI criteria IDs used in this configuration
+          items:
+            type: string
+          example: ['path-coverage', 'response-code-coverage']
+    OpenApiCriterion:
       type: object
       required:
-        - pathCoverage
-        - responseCodeCoverage
-        - requiredParameterCoverage
-        - queryParameterCoverage
-        - headerParameterCoverage
-        - requestBodySchemaCoverage
-        - errorResponseCoverage
-        - contentTypeCoverage
+        - id
+        - name
       properties:
-        pathCoverage:
-          type: boolean
-          description: Every API endpoint has at least one request
-          default: true
-        responseCodeCoverage:
-          type: boolean
-          description: Each documented response code for each endpoint is present at least once
-          default: true
-        requiredParameterCoverage:
-          type: boolean
-          description: All required parameters for each endpoint are included in at least one request
-          default: true
-        queryParameterCoverage:
-          type: boolean
-          description: Each optional query parameter is present in at least one request
-          default: false
-        headerParameterCoverage:
-          type: boolean
-          description: Each documented header parameter is included in at least one request
-          default: false
-        requestBodySchemaCoverage:
-          type: boolean
-          description: For endpoints accepting request bodies, at least one request covers each required property
-          default: true
-        errorResponseCoverage:
-          type: boolean
-          description: At least one negative test exists for each endpoint that verifies error handling
-          default: true
-        contentTypeCoverage:
-          type: boolean
-          description: Each supported content type is present
-          default: false
+        id:
+          type: string
+          description: Unique ID of the criterion
+          example: path-coverage
+        name:
+          type: string
+          description: Human-readable name
+          example: Path Coverage
+        description:
+          type: string
+          description: Optional description of what the criterion checks
+          example: Every API endpoint has at least one request
     Error:
       type: object
       required:

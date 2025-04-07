@@ -17,7 +17,7 @@ import static java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -59,7 +59,7 @@ class OpenApiCoverageCalculationCoordinator {
     );
   }
 
-  public Set<OpenApiCriteriaResult> calculate(
+  public Set<OpenApiCriterionResult> calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
@@ -67,7 +67,7 @@ class OpenApiCoverageCalculationCoordinator {
       return emptySet();
     }
 
-    List<CompletableFuture<OpenApiCriteriaResult>> futures =
+    List<CompletableFuture<OpenApiCriterionResult>> futures =
       openApiCoverageCalculators
         .stream()
         .map(openApiCoverageCalculator ->

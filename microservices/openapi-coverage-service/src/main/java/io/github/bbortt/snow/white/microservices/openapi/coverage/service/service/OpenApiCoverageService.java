@@ -16,7 +16,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -36,7 +36,7 @@ public class OpenApiCoverageService {
   private final OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinator;
   private final OpenTelemetryService openTelemetryService;
 
-  public Set<OpenApiCriteriaResult> gatherDataAndCalculateCoverage(
+  public Set<OpenApiCriterionResult> gatherDataAndCalculateCoverage(
     OpenApiService.OpenApiCoverageRequest openApiCoverageRequest
   ) {
     var openTelemetryData = openTelemetryService.findTracingData(
@@ -56,7 +56,7 @@ public class OpenApiCoverageService {
     );
   }
 
-  private Set<OpenApiCriteriaResult> calculateCoverage(
+  private Set<OpenApiCriterionResult> calculateCoverage(
     OpenAPI openApi,
     List<OpenTelemetryData> telemetryData
   ) {
