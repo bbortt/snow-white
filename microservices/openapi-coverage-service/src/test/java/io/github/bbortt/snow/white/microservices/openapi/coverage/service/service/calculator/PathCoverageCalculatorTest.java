@@ -5,7 +5,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -80,7 +80,7 @@ class PathCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriteriaResult result = fixture.calculate(
+      OpenApiCriterionResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -104,7 +104,7 @@ class PathCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriteriaResult result = fixture.calculate(
+      OpenApiCriterionResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -124,7 +124,7 @@ class PathCoverageCalculatorTest {
 
       Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
 
-      OpenApiCriteriaResult result = fixture.calculate(
+      OpenApiCriterionResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -148,7 +148,7 @@ class PathCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriteriaResult result = fixture.calculate(
+      OpenApiCriterionResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );

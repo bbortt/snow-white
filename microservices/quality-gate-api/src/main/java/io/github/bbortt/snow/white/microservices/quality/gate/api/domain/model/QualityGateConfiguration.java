@@ -7,12 +7,15 @@ import static lombok.AccessLevel.PRIVATE;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.With;
 import org.springframework.lang.Nullable;
 
@@ -21,6 +24,7 @@ import org.springframework.lang.Nullable;
 @With
 @Getter
 @Builder
+@Setter(PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
 public class QualityGateConfiguration {
@@ -31,6 +35,25 @@ public class QualityGateConfiguration {
 
   private @Nullable String description;
 
-  @OneToOne(cascade = ALL, fetch = EAGER)
-  private @Nullable OpenApiCoverageConfiguration openApiCoverageConfiguration;
+  @Builder.Default
+  @OneToMany(
+    cascade = { ALL },
+    fetch = EAGER,
+    mappedBy = "qualityGateConfiguration"
+  )
+  private Set<QualityGateOpenApiCoverageMapping> openApiCoverageConfigurations =
+    new HashSet<>();
+
+  public QualityGateConfiguration withOpenApiCoverageConfiguration(
+    OpenApiCoverageConfiguration openApiCoverageConfiguration
+  ) {
+    openApiCoverageConfigurations.add(
+      QualityGateOpenApiCoverageMapping.builder()
+        .qualityGateConfiguration(this)
+        .openApiCoverageConfiguration(openApiCoverageConfiguration)
+        .build()
+    );
+
+    return this;
+  }
 }

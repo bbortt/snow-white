@@ -5,7 +5,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.service
 import static java.lang.String.format;
 import static java.lang.String.join;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
@@ -28,7 +28,7 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
   }
 
   @Override
-  public OpenApiCriteriaResult calculate(
+  public OpenApiCriterionResult calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
@@ -50,7 +50,7 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
       pathToOpenAPIOperationMap.size()
     );
 
-    return new OpenApiCriteriaResult(
+    return new OpenApiCriterionResult(
       HTTP_METHOD_COVERAGE,
       pathCoverage,
       getAdditionalInformationOrNull(uncoveredPaths)

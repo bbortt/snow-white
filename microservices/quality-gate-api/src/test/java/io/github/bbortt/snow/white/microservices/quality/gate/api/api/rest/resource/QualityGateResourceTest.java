@@ -4,11 +4,11 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.mockito.ArgumentCaptor.captor;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -29,11 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith({ MockitoExtension.class })
@@ -73,7 +70,7 @@ class QualityGateResourceTest {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .fromDto(qualityGateConfig);
+        .toEntity(qualityGateConfig);
 
       var persistedQualityGateConfiguration = new QualityGateConfiguration();
       doReturn(persistedQualityGateConfiguration)
@@ -107,7 +104,7 @@ class QualityGateResourceTest {
 
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .fromDto(qualityGateConfig);
+        .toEntity(qualityGateConfig);
       doThrow(
         new ConfigurationNameAlreadyExistsException(
           qualityGateConfiguration.getName()
@@ -140,7 +137,7 @@ class QualityGateResourceTest {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .fromDto(qualityGateConfig);
+        .toEntity(qualityGateConfig);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -265,14 +262,18 @@ class QualityGateResourceTest {
       throws ConfigurationDoesNotExistException {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
+        .when(qualityGateServiceMock)
+        .findByName(NAME);
+
+      var qualityGateConfigurationWithUpdates = new QualityGateConfiguration();
+      doReturn(qualityGateConfigurationWithUpdates)
         .when(qualityGateConfigurationMapperMock)
-        .fromDto(qualityGateConfig);
+        .toEntity(qualityGateConfig);
 
       var persistedQualityGateConfiguration = new QualityGateConfiguration();
-      ArgumentCaptor<QualityGateConfiguration> updateArgumentCaptor = captor();
       doReturn(persistedQualityGateConfiguration)
         .when(qualityGateServiceMock)
-        .update(updateArgumentCaptor.capture());
+        .update(qualityGateConfiguration);
 
       var responseEntity = new QualityGateConfig();
       doReturn(responseEntity)
@@ -290,36 +291,22 @@ class QualityGateResourceTest {
               .asInstanceOf(type(QualityGateConfig.class))
               .isEqualTo(responseEntity)
         );
-
-      var qualityGateConfigurationToUpdate = updateArgumentCaptor.getValue();
-      assertThat(qualityGateConfigurationToUpdate)
-        .isNotNull()
-        .extracting(QualityGateConfiguration::getName)
-        .isEqualTo(NAME);
-
-      verify(qualityGateServiceMock).update(qualityGateConfigurationToUpdate);
     }
 
     @Test
-    void shouldReturnConflictResponse_whenConfigurationAlreadyExists()
+    void shouldReturnConflictResponse_whenConfigurationDoesNotExists()
       throws ConfigurationDoesNotExistException {
-      var qualityGateConfiguration = new QualityGateConfiguration();
-
-      doReturn(qualityGateConfiguration)
-        .when(qualityGateConfigurationMapperMock)
-        .fromDto(qualityGateConfig);
-
-      doThrow(
-        new ConfigurationDoesNotExistException(
-          qualityGateConfiguration.getName()
-        )
-      )
+      doThrow(new ConfigurationDoesNotExistException(NAME))
         .when(qualityGateServiceMock)
-        .update(any(QualityGateConfiguration.class));
+        .findByName(NAME);
 
       var response = fixture.updateQualityGate(NAME, qualityGateConfig);
 
       verifyResponseIsHttpNotFoundWithMessage(response, NAME);
+
+      verify(qualityGateServiceMock).findByName(NAME);
+      verifyNoMoreInteractions(qualityGateServiceMock);
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
     }
   }
 

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
       pathToTelemetryMap.put("GET_/foo", emptyList());
 
       var coverage = BigDecimal.ONE;
-      var openApiCriteriaResult = new OpenApiCriteriaResult(
+      var openApiCriteriaResult = new OpenApiCriterionResult(
         PATH_COVERAGE,
         coverage,
         "additionalInformation"
@@ -55,7 +55,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
       var fixture = new OpenApiCoverageCalculationCoordinator(
         singletonList(openApiCoverageCalculatorMock)
       );
-      Set<OpenApiCriteriaResult> result = fixture.calculate(
+      Set<OpenApiCriterionResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -69,7 +69,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
         singletonList(openApiCoverageCalculatorMock)
       );
 
-      Set<OpenApiCriteriaResult> result = fixture.calculate(
+      Set<OpenApiCriterionResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -85,7 +85,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
         singletonList(openApiCoverageCalculatorMock)
       );
 
-      Set<OpenApiCriteriaResult> result = fixture.calculate(
+      Set<OpenApiCriterionResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -99,7 +99,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
     void shouldReturnEmptySet_withoutAnyOpenApiCoverageCalculator() {
       var fixture = new OpenApiCoverageCalculationCoordinator(emptyList());
 
-      Set<OpenApiCriteriaResult> result = fixture.calculate(
+      Set<OpenApiCriterionResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );

@@ -1,8 +1,8 @@
 package io.github.bbortt.snow.white.commons.event;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriteriaResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import java.util.Set;
 
 public record OpenApiCoverageResponseEvent(
-  Set<OpenApiCriteriaResult> openApiCriteria
+  Set<OpenApiCriterionResult> openApiCriteria
 ) {}
