@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
@@ -96,19 +97,32 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
     @ParameterizedTest
     @MethodSource("validResourceSpans")
-    void validTraceServiceRequestIsBeingForwarded(ResourceSpans resourceSpans) {
-      doReturn(wrapResourceSpans(resourceSpans))
+    void streamShouldForwardValidTraceServiceRequest(
+      ResourceSpans resourceSpans
+    ) {
+      var exportTraceServiceRequest = wrapResourceSpans(resourceSpans);
+      doReturn(exportTraceServiceRequest)
         .when(otelInformationFilteringServiceMock)
         .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
 
+      var requestId = "eb647b01-a002-4d8a-862b-6f687636fa80";
+
       sendEventsAndAssert(
+        requestId,
         ExportTraceServiceRequest.getDefaultInstance(),
-        outputTopic -> assertThat(outputTopic.readKeyValuesToList()).hasSize(1)
+        outputTopic ->
+          assertThat(outputTopic.readKeyValuesToList())
+            .hasSize(1)
+            .first()
+            .satisfies(
+              r -> assertThat(r.key).isEqualTo(requestId),
+              r -> assertThat(r.value).isEqualTo(exportTraceServiceRequest)
+            )
       );
     }
 
     @Test
-    void emptyExportTraceServiceRequestIsBeingDiscarded() {
+    void streamShouldDiscardEmptyExportTraceServiceRequest() {
       var exportTraceServiceRequestMock = mock(ExportTraceServiceRequest.class);
       doReturn(0).when(exportTraceServiceRequestMock).getResourceSpansCount();
       doReturn(exportTraceServiceRequestMock)
@@ -116,6 +130,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
         .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
 
       sendEventsAndAssert(
+        "1e355574-46c2-4a17-a58e-55efc38f84a2",
         ExportTraceServiceRequest.getDefaultInstance(),
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
@@ -130,7 +145,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
     @ParameterizedTest
     @MethodSource("resourceSpansWithoutContent")
-    void exportTraceServiceRequestWithoutContentIsBeingDiscarded(
+    void streamShouldDiscardExportTraceServiceRequestWithoutContent(
       ResourceSpans resourceSpans
     ) {
       doReturn(wrapResourceSpans(resourceSpans))
@@ -138,12 +153,27 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
         .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
 
       sendEventsAndAssert(
+        "81446e59-8de1-4276-a970-a960323c5208",
+        ExportTraceServiceRequest.getDefaultInstance(),
+        outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
+      );
+    }
+
+    @Test
+    void streamShouldBeResilientAgainstServiceFailure() {
+      doThrow(IllegalArgumentException.class)
+        .when(otelInformationFilteringServiceMock)
+        .filterUnknownSpecifications(any(ExportTraceServiceRequest.class));
+
+      sendEventsAndAssert(
+        "a73e2be9-0600-4ff4-980a-9e465114aa21",
         ExportTraceServiceRequest.getDefaultInstance(),
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
     }
 
     private void sendEventsAndAssert(
+      String requestId,
       ExportTraceServiceRequest exportTraceServiceRequest,
       Consumer<TestOutputTopic<String, ExportTraceServiceRequest>> eventAssert
     ) {
@@ -170,10 +200,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
           jsonSerde.deserializer()
         );
 
-        inputTopic.pipeInput(
-          "eb647b01-a002-4d8a-862b-6f687636fa80",
-          exportTraceServiceRequest
-        );
+        inputTopic.pipeInput(requestId, exportTraceServiceRequest);
 
         eventAssert.accept(outputTopic);
       }

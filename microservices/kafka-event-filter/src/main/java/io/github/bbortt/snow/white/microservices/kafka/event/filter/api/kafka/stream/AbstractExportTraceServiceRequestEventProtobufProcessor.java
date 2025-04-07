@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream;
 
+import static java.util.Objects.nonNull;
 import static org.apache.kafka.streams.KeyValue.pair;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
@@ -37,11 +38,24 @@ public abstract class AbstractExportTraceServiceRequestEventProtobufProcessor {
 
     stream
       .peek((key, value) -> logger.debug("Handling message id '{}'", key))
-      .map((key, value) ->
-        pair(
-          key,
-          otelInformationFilteringService.filterUnknownSpecifications(value)
-        )
+      .mapValues((key, value) -> {
+        try {
+          return otelInformationFilteringService.filterUnknownSpecifications(
+            value
+          );
+        } catch (Exception e) {
+          logger.error(
+            "Failed to process message with key {}: {}",
+            key,
+            e.getMessage(),
+            e
+          );
+
+          return null;
+        }
+      })
+      .filter((key, exportTraceServiceRequest) ->
+        nonNull(exportTraceServiceRequest)
       )
       .filter((key, exportTraceServiceRequest) ->
         (exportTraceServiceRequest.getResourceSpansCount() > 0 &&
