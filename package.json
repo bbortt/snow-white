@@ -37,6 +37,6 @@
     "prettier-plugin-java": "2.6.7"
   },
   "optionalDependencies": {
-    "npm-check-updates": "17.1.16"
+    "npm-check-updates": "17.1.18"
   }
 }
