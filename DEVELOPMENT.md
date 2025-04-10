@@ -99,12 +99,33 @@ Create a token with a name of your choice, but select "No expiration date".
 Afterward, you're able to analyze the project using your token:
 
 ```shell
-./mvnw verify sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+./mvnw verify -T 1C
+./mvnw jacoco:report-aggregate sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+```
+
+You can also combine these two commands, but for faster builds it's recommended to build in parallel first.
+
+## Native Build
+
+The following microservices support native compilation (and are delivered as suche):
+
+- `kafka-event-filter`
+- `quality-gate-api`
+- `report-coordination-service`
+
+You can build a native image for each of these microservices with the `native` profile enabled.
+Podman is supported using the `podman` profile as well.
+
+**Example build for the `kafka-event-filter` microservice:**
+
+```shell
+./mvnw -pl :kafka-event-filter -am install
+./mvnw -Pnative,podman -pl :kafka-event-filter -DskipTests spring-boot:build-image
 ```
 
 ## Maven Proxy Setup
 
-The following proxies are required in order to build `snow-white` behind corporate proxies:
+The following proxies are required to build `snow-white` behind corporate proxies:
 
 ```xml
 <settings>

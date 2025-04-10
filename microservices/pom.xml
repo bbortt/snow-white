@@ -38,6 +38,9 @@
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.projectlombok.version>1.18.38</org.projectlombok.version>
     <org.springdoc.version>2.8.8</org.springdoc.version>
+
+    <!-- Podman socket connection `$ id` -->
+    <user.id>1000</user.id>
   </properties>
 
   <dependencyManagement>
@@ -153,4 +156,25 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>podman</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <docker>
+                <host>unix:///run/user/${user.id}/podman/podman.sock</host>
+                <bindHostToBuilder>true</bindHostToBuilder>
+              </docker>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
