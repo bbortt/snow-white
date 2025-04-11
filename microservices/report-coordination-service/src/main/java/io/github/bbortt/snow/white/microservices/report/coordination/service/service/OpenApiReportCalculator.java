@@ -1,10 +1,19 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.math.BigDecimal.ONE;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCoverageReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.OpenApiCoverageConfig;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
+import jakarta.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,69 +21,74 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OpenApiReportCalculator {
 
-  private final OpenApiCoverageResponseEvent openApiCoverageResponseEvent;
-  private final OpenApiCoverageConfig openApiCoverageConfig;
+  private final QualityGateReport qualityGateReport;
+  private final @Nullable List<String> includedOpenApiCriteria;
+  private final Set<OpenApiCriterionResult> openApiCriterionResults;
 
-  public OpenApiCoverageReport calculate() {
-    var openApiCoverageReport = OpenApiCoverageReport.builder()
-      .pathCoverage(openApiCoverageResponseEvent.getPathCoverage())
-      .pathCoverageMet(
-        !openApiCoverageConfig.getIncludesPathCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getPathCoverage())
-      )
-      .responseCodeCoverage(
-        openApiCoverageResponseEvent.getResponseCodeCoverage()
-      )
-      .responseCodeCoverageMet(
-        !openApiCoverageConfig.getIncludesResponseCodeCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getResponseCodeCoverage())
-      )
-      .errorResponseCoverage(
-        openApiCoverageResponseEvent.getErrorResponseCoverage()
-      )
-      .errorResponseCoverageMet(
-        !openApiCoverageConfig.getIncludesErrorResponseCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getErrorResponseCoverage())
-      )
-      .requiredParameterCoverage(
-        openApiCoverageResponseEvent.getRequiredParameterCoverage()
-      )
-      .requiredParameterCoverageMet(
-        !openApiCoverageConfig.getIncludesRequiredParameterCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getRequiredParameterCoverage())
-      )
-      .headerParameterCoverage(
-        openApiCoverageResponseEvent.getHeaderParameterCoverage()
-      )
-      .headerParameterCoverageMet(
-        !openApiCoverageConfig.getIncludesHeaderParameterCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getHeaderParameterCoverage())
-      )
-      .queryParameterCoverage(
-        openApiCoverageResponseEvent.getQueryParameterCoverage()
-      )
-      .queryParameterCoverageMet(
-        !openApiCoverageConfig.getIncludesQueryParameterCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getQueryParameterCoverage())
-      )
-      .requestBodySchemaCoverage(
-        openApiCoverageResponseEvent.getRequestBodySchemaCoverage()
-      )
-      .requestBodySchemaCoverageMet(
-        !openApiCoverageConfig.getIncludesRequestBodySchemaCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getRequestBodySchemaCoverage())
-      )
-      .contentTypeCoverage(
-        openApiCoverageResponseEvent.getContentTypeCoverage()
-      )
-      .contentTypeCoverageMet(
-        !openApiCoverageConfig.getIncludesContentTypeCoverage() ||
-        ONE.equals(openApiCoverageResponseEvent.getContentTypeCoverage())
-      )
-      .build();
+  public CalculationResult calculate() {
+    var updatedOpenApiCriteria = updateQualityGateReportInformation();
 
-    logger.debug("Calculated OpenAPI coverage: {}", openApiCoverageReport);
+    var reportStatus = new AtomicReference<>(PASSED);
+    if (nonNull(includedOpenApiCriteria)) {
+      assertThatEachOpenApiCriterionIsCovered(
+        updatedOpenApiCriteria,
+        reportStatus
+      );
+    }
 
-    return openApiCoverageReport;
+    logger.debug(
+      "Calculated OpenAPI coverage ({}): {}",
+      reportStatus.get(),
+      updatedOpenApiCriteria
+    );
+
+    return new CalculationResult(reportStatus.get(), updatedOpenApiCriteria);
   }
+
+  private void assertThatEachOpenApiCriterionIsCovered(
+    Set<OpenApiCriterionResult> updatedOpenApiCriteria,
+    AtomicReference<ReportStatus> reportStatus
+  ) {
+    requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
+      boolean criterionFound = false;
+      for (OpenApiCriterionResult result : updatedOpenApiCriteria) {
+        if (result.getName().equals(criterionName)) {
+          criterionFound = true;
+          if (ONE.compareTo(result.getCoverage()) != 0) {
+            logger.trace(
+              "Criterion {} has insufficient coverage: {}",
+              criterionName,
+              result.getCoverage()
+            );
+            reportStatus.set(FAILED);
+          }
+          break;
+        }
+      }
+
+      if (!criterionFound) {
+        logger.trace("Required criterion is missing: {}", criterionName);
+        reportStatus.set(FAILED);
+      }
+    });
+  }
+
+  private Set<OpenApiCriterionResult> updateQualityGateReportInformation() {
+    return openApiCriterionResults
+      .parallelStream()
+      .map(openApiCriterionResult ->
+        openApiCriterionResult
+          .withIncludedInReport(
+            nonNull(includedOpenApiCriteria) &&
+            includedOpenApiCriteria.contains(openApiCriterionResult.getName())
+          )
+          .withQualityGateReport(qualityGateReport)
+      )
+      .collect(toSet());
+  }
+
+  public record CalculationResult(
+    ReportStatus status,
+    Set<OpenApiCriterionResult> openApiCriterionResults
+  ) {}
 }

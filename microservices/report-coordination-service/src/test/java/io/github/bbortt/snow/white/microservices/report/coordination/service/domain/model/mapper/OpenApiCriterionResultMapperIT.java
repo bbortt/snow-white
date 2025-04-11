@@ -8,13 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 @IntegrationTest
-class QualityGateReportMapperIT {
+class OpenApiCriterionResultMapperIT {
 
   @Autowired
   private ApplicationContext applicationContext;
 
   @Test
   void isRegisteredWithinSpringComponentModel() {
-    assertThat(applicationContext.getBean(ReportMapper.class)).isNotNull();
+    assertThat(
+      applicationContext.getBean(OpenApiCriterionResultMapper.class)
+    ).isNotNull();
   }
 }
