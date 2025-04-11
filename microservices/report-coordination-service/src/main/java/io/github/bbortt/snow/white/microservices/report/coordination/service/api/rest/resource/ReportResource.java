@@ -7,7 +7,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.ReportApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportResource implements ReportApi {
 
   private final ReportService reportService;
-  private final ReportMapper reportMapper;
+  private final QualityGateReportMapper qualityGateReportMapper;
 
   @Override
   public ResponseEntity getReportByCalculationId(UUID calculationId) {
@@ -37,9 +37,11 @@ public class ReportResource implements ReportApi {
     var report = optionalReport.get();
 
     if (IN_PROGRESS.equals(report.getReportStatus())) {
-      return ResponseEntity.status(ACCEPTED).body(reportMapper.toDto(report));
+      return ResponseEntity.status(ACCEPTED).body(
+        qualityGateReportMapper.toDto(report)
+      );
     }
 
-    return ResponseEntity.ok(reportMapper.toDto(report));
+    return ResponseEntity.ok(qualityGateReportMapper.toDto(report));
   }
 }

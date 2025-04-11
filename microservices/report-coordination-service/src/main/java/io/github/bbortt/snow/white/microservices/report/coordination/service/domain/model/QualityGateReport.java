@@ -1,7 +1,9 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.reportStatusFromBooleanValue;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.EAGER;
@@ -14,18 +16,21 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
-import org.springframework.lang.Nullable;
 
 @Entity
 @Table
@@ -36,7 +41,13 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor(access = PRIVATE)
 public class QualityGateReport {
 
+  private static final List<ReportStatus> STATUS_FOR_PROPAGATION = List.of(
+    FAILED,
+    PASSED
+  );
+
   @Id
+  @NotNull
   @Column(nullable = false, updatable = false)
   private UUID calculationId;
 
@@ -48,8 +59,15 @@ public class QualityGateReport {
   @OneToOne(cascade = ALL, fetch = EAGER, optional = false)
   private ReportParameters reportParameters;
 
-  @OneToOne(cascade = ALL, fetch = EAGER)
-  private @Nullable OpenApiCoverageReport openApiCoverageReport;
+  @NotNull
+  @Builder.Default
+  @Column(nullable = false, updatable = false)
+  private ReportStatus openApiCoverageStatus = NOT_STARTED;
+
+  @NotNull
+  @Builder.Default
+  @OneToMany(mappedBy = "qualityGateReport")
+  private Set<OpenApiCriterionResult> openApiCriterionResults = new HashSet<>();
 
   @Builder.Default
   @Enumerated(STRING)
@@ -63,10 +81,10 @@ public class QualityGateReport {
   public QualityGateReport withUpdatedReportStatus() {
     ReportStatus updatedStatus = IN_PROGRESS;
 
-    if (nonNull(openApiCoverageReport)) {
-      updatedStatus = reportStatusFromBooleanValue(
-        openApiCoverageReport.passed()
-      );
+    if (nonNull(openApiCoverageStatus)) {
+      if (STATUS_FOR_PROPAGATION.contains(openApiCoverageStatus)) {
+        updatedStatus = openApiCoverageStatus;
+      }
     }
 
     return withReportStatus(updatedStatus);
