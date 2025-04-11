@@ -83,12 +83,12 @@ public class ReportService {
     kafkaTemplate.send(
       calculationRequestTopic,
       qualityGateReport.getCalculationId().toString(),
-      new QualityGateCalculationRequestEvent(
-        reportParameters.getServiceName(),
-        reportParameters.getApiName(),
-        reportParameters.getApiVersion(),
-        reportParameters.getLookbackWindow()
-      )
+      QualityGateCalculationRequestEvent.builder()
+        .serviceName(reportParameters.getServiceName())
+        .apiName(reportParameters.getApiName())
+        .apiVersion(reportParameters.getApiVersion())
+        .lookbackWindow(reportParameters.getLookbackWindow())
+        .build()
     );
   }
 

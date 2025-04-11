@@ -7,7 +7,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateCalculationRequest;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class QualityGateResource implements QualityGateApi {
 
   private final ReportService reportService;
-  private final ReportMapper reportMapper;
+  private final QualityGateReportMapper qualityGateReportMapper;
   private final ReportParameterMapper reportParameterMapper;
 
   @Override
@@ -34,7 +34,9 @@ public class QualityGateResource implements QualityGateApi {
         reportParameterMapper.fromDto(qualityGateCalculationRequest)
       );
 
-      return ResponseEntity.status(ACCEPTED).body(reportMapper.toDto(report));
+      return ResponseEntity.status(ACCEPTED).body(
+        qualityGateReportMapper.toDto(report)
+      );
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
         Error.builder()

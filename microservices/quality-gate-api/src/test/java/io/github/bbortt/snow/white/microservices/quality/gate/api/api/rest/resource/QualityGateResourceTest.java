@@ -294,7 +294,7 @@ class QualityGateResourceTest {
     }
 
     @Test
-    void shouldReturnConflictResponse_whenConfigurationDoesNotExists()
+    void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
       throws ConfigurationDoesNotExistException {
       doThrow(new ConfigurationDoesNotExistException(NAME))
         .when(qualityGateServiceMock)

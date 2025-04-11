@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = SPRING)
-public interface ReportMapper {
+public interface QualityGateReportMapper {
   @Mapping(target = "calculationRequest", ignore = true)
   @Mapping(target = "initiatedAt", source = "createdAt")
   @Mapping(target = "status", source = "reportStatus")
@@ -27,7 +27,8 @@ public interface ReportMapper {
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {
-      case IN_PROGRESS -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.IN_PROGRESS;
+      case NOT_STARTED,
+        IN_PROGRESS -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.IN_PROGRESS;
       case FAILED -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.FAILED;
       case PASSED -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.PASSED;
     };

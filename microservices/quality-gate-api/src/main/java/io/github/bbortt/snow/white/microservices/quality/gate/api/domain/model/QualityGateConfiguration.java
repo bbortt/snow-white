@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.lang.Nullable;
 public class QualityGateConfiguration {
 
   @Id
+  @NotEmpty
   @Column(nullable = false, updatable = false)
   private String name;
 

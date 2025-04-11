@@ -1,7 +1,9 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,9 +11,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class QualityGateConfig {
 
-  @Nonnull
+  @NotEmpty
   private final String name;
 
-  @Nullable
-  private OpenApiCoverageConfig openApiCoverageConfig;
+  @Nonnull
+  private List<String> openapiCriteria;
 }

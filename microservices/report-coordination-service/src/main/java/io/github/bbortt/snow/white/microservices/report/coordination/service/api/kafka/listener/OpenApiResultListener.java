@@ -7,11 +7,14 @@ import static java.lang.String.format;
 import static org.springframework.kafka.support.KafkaHeaders.RECEIVED_KEY;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.OpenApiCriterionResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.OpenApiReportCalculator;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OpenApiResultListener {
 
+  private final OpenApiCriterionResultMapper openApiCriterionResultMapper;
   private final QualityGateService qualityGateService;
   private final ReportService reportService;
 
@@ -54,28 +58,30 @@ public class OpenApiResultListener {
       .ifPresent(configurationParameters ->
         calculateAndPersistQualityGateReport(
           configurationParameters,
-          openApiCoverageResponseEvent
+          openApiCriterionResultMapper.map(
+            openApiCoverageResponseEvent.openApiCriteria()
+          )
         )
       );
   }
 
   private void calculateAndPersistQualityGateReport(
     QualityGateConfigurationParameters configurationParameters,
-    OpenApiCoverageResponseEvent openApiCoverageResponseEvent
+    Set<OpenApiCriterionResult> openApiCriterionResults
   ) {
-    reportService.update(
-      configurationParameters
-        .qualityGateReport()
-        .withOpenApiCoverageReport(
-          new OpenApiReportCalculator(
-            openApiCoverageResponseEvent,
-            configurationParameters
-              .qualityGateConfig()
-              .getOpenApiCoverageConfig()
-          ).calculate()
-        )
-        .withUpdatedReportStatus()
-    );
+    var qualityGateReport = configurationParameters.qualityGateReport();
+
+    var calculationResult = new OpenApiReportCalculator(
+      qualityGateReport,
+      configurationParameters.qualityGateConfig().getOpenapiCriteria(),
+      openApiCriterionResults
+    ).calculate();
+
+    qualityGateReport = qualityGateReport
+      .withOpenApiCoverageStatus(calculationResult.status())
+      .withOpenApiCriterionResults(calculationResult.openApiCriterionResults());
+
+    reportService.update(qualityGateReport.withUpdatedReportStatus());
   }
 
   private record QualityGateConfigurationParameters(
