@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -19,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.E
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.GetAllQualityGates200Response;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
@@ -93,8 +95,6 @@ class QualityGateResourceTest {
               .asInstanceOf(type(QualityGateConfig.class))
               .isEqualTo(responseEntity)
         );
-
-      verify(qualityGateServiceMock).persist(qualityGateConfiguration);
     }
 
     @Test
@@ -304,7 +304,42 @@ class QualityGateResourceTest {
 
       verifyResponseIsHttpNotFoundWithMessage(response, NAME);
 
-      verify(qualityGateServiceMock).findByName(NAME);
+      verifyNoMoreInteractions(qualityGateServiceMock);
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
+    }
+
+    @Test
+    void shouldReturnBadRequestResponse_whenInvalidOpenApiCriterionSupplied()
+      throws ConfigurationDoesNotExistException {
+      var criteriaName = "criteriaName";
+      doThrow(new OpenApiCriterionDoesNotExistException(criteriaName))
+        .when(qualityGateServiceMock)
+        .findByName(criteriaName);
+
+      var response = fixture.updateQualityGate(criteriaName, qualityGateConfig);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(BAD_REQUEST),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(Error.class))
+              .satisfies(
+                e ->
+                  assertThat(e.getCode()).isEqualTo(
+                    BAD_REQUEST.getReasonPhrase()
+                  ),
+                e ->
+                  assertThat(e.getMessage()).isEqualTo(
+                    format(
+                      "OpenApi Criterion '%s' does not exist!",
+                      criteriaName
+                    )
+                  )
+              )
+        );
+
       verifyNoMoreInteractions(qualityGateServiceMock);
       verifyNoInteractions(qualityGateConfigurationMapperMock);
     }
@@ -322,7 +357,8 @@ class QualityGateResourceTest {
           assertThat(r.getBody())
             .asInstanceOf(type(Error.class))
             .satisfies(
-              e -> assertThat(e.getCode()).isEqualTo("Not Found"),
+              e ->
+                assertThat(e.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
               e ->
                 assertThat(e.getMessage()).isEqualTo(
                   format(
