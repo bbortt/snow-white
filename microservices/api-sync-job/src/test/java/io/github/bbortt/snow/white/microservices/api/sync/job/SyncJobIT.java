@@ -28,9 +28,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.wiremock.spring.EnableWireMock;
 
+@Testcontainers
 @EnableWireMock
 @IntegrationTest
-@Testcontainers
 class SyncJobIT {
 
   private static final int REDIS_PORT = 6379;
@@ -40,12 +40,6 @@ class SyncJobIT {
     DockerImageName.parse("redis:7.4.1-alpine")
   ).withExposedPorts(REDIS_PORT);
 
-  @Value("${wiremock.server.baseUrl}")
-  private String wiremockServerBaseUrl;
-
-  @Autowired
-  private SyncJob fixture;
-
   @DynamicPropertySource
   static void redisProperties(DynamicPropertyRegistry registry) {
     registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
@@ -53,6 +47,12 @@ class SyncJobIT {
       REDIS_CONTAINER.getMappedPort(REDIS_PORT)
     );
   }
+
+  @Value("${wiremock.server.baseUrl}")
+  private String wiremockServerBaseUrl;
+
+  @Autowired
+  private SyncJob fixture;
 
   public static Stream<String> indexContentTypes() {
     return Stream.of(APPLICATION_JSON_VALUE, APPLICATION_OCTET_STREAM_VALUE);

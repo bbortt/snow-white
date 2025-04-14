@@ -14,10 +14,10 @@ import io.github.bbortt.snow.white.microservices.kafka.event.filter.IntegrationT
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 @IntegrationTest
-@SpringBootTest(
+@TestPropertySource(
   properties = {
     "io.github.bbortt.snow.white.kafka.event.filter.schema-registry-url=mock://KafkaEventFilterPropertiesIT",
   }

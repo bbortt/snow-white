@@ -12,13 +12,13 @@ import io.github.bbortt.snow.white.microservices.kafka.event.filter.IntegrationT
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 @Isolated
 @DirtiesContext
 @IntegrationTest
-@SpringBootTest(
+@TestPropertySource(
   properties = "io.github.bbortt.snow.white.kafka.event.filter.init-topics=true"
 )
 class KafkaTopicManagerEnabledIT {

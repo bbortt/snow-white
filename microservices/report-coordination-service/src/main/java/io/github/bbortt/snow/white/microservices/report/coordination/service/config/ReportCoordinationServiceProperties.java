@@ -28,6 +28,8 @@ public class ReportCoordinationServiceProperties implements InitializingBean {
 
   private String calculationRequestTopic;
 
+  private Boolean initTopics;
+
   private String publicApiGatewayUrl;
 
   private String qualityGateApiUrl;
