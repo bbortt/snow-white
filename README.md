@@ -51,3 +51,13 @@ end legend
 
 @enduml
 ```
+
+## License
+
+This project is licensed under the [Polyform Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0/).
+
+This means you can freely use, modify, and distribute the software **if your company generates less than $1 million USD in annual revenue** and meets other conditions in the license.
+
+For companies exceeding this threshold or for commercial/production use, a commercial license is required. Contact me at [timon.borter@gmx.ch] for more information.
+
+See the [LICENSE](./LICENSE) file for full details.
