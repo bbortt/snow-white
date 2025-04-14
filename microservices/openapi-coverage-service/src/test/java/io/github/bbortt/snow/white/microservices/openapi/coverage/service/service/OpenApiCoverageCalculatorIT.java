@@ -1,5 +1,8 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_ERROR_CODES_DOCUMENTED;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_NON_ERROR_CODES_DOCUMENTED;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_RESPONSE_CODES_DOCUMENTED;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS;
@@ -41,7 +44,10 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
       RESPONSE_CODE_COVERAGE,
       REQUIRED_PARAMETER_COVERAGE,
       PARAMETER_COVERAGE,
-      REQUIRED_ERROR_FIELDS
+      REQUIRED_ERROR_FIELDS,
+      ALL_RESPONSE_CODES_DOCUMENTED,
+      ALL_ERROR_CODES_DOCUMENTED,
+      ALL_NON_ERROR_CODES_DOCUMENTED
     );
   }
 }
