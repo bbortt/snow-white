@@ -10,6 +10,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.O
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
+import jakarta.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,8 @@ public abstract class QualityGateConfigurationMapper {
     target = "openApiCoverageConfigurations",
     expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenapiCriteria(), null))"
   )
-  public abstract QualityGateConfiguration toEntity(QualityGateConfig dto);
+  public abstract QualityGateConfiguration toEntity(QualityGateConfig dto)
+    throws OpenApiCriterionDoesNotExistException;
 
   /**
    * Helper method to convert OpenAPI coverage mappings to string list for the DTO.
@@ -63,8 +65,8 @@ public abstract class QualityGateConfigurationMapper {
    */
   protected Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
     List<String> openapiCriteria,
-    QualityGateConfiguration existingEntity
-  ) {
+    @Nullable QualityGateConfiguration existingEntity
+  ) throws OpenApiCriterionDoesNotExistException {
     if (isEmpty(openapiCriteria)) {
       return new HashSet<>();
     }
@@ -76,11 +78,7 @@ public abstract class QualityGateConfigurationMapper {
         openApiCoverageConfigurationRepository
           .findById(criteriaName)
           .orElseThrow(() ->
-            new IllegalArgumentException(
-              "OpenApiCoverageConfiguration with name '" +
-              criteriaName +
-              "' not found"
-            )
+            new OpenApiCriterionDoesNotExistException(criteriaName)
           );
 
       QualityGateOpenApiCoverageMapping mapping =

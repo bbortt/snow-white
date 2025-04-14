@@ -25,7 +25,8 @@ paths:
                     type: array
                     items:
                       type: string
-                    example: ['basic-coverage', 'full-feature', 'minimal']
+                    example:
+                      ['basic-coverage', 'full-feature', 'minimal', 'dry-run']
         '500':
           description: Internal server error
           content:
@@ -217,7 +218,7 @@ components:
           description: List of OpenAPI criteria IDs used in this configuration
           items:
             type: string
-          example: ['path-coverage', 'response-code-coverage']
+          example: ['PATH_COVERAGE']
     OpenApiCriterion:
       type: object
       required:
