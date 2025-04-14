@@ -4,11 +4,11 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka;
+package io.github.bbortt.snow.white.microservices.report.coordination.service.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.PREFIX;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,27 +25,30 @@ import org.springframework.kafka.config.TopicBuilder;
 )
 public class KafkaTopicManager {
 
-  private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
+  private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
   public KafkaTopicManager(
-    OpenApiCoverageServiceProperties openApiCoverageServiceProperties
+    ReportCoordinationServiceProperties reportCoordinationServiceProperties
   ) {
     logger.info("Creating topics...");
 
-    this.openApiCoverageServiceProperties = openApiCoverageServiceProperties;
+    this.reportCoordinationServiceProperties =
+      reportCoordinationServiceProperties;
   }
 
   @Bean
   public NewTopic calculationRequestTopic() {
     return TopicBuilder.name(
-      openApiCoverageServiceProperties.getCalculationRequestTopic()
+      reportCoordinationServiceProperties.getCalculationRequestTopic()
     ).build();
   }
 
   @Bean
   public NewTopic openapiCalculationResponseTopic() {
     return TopicBuilder.name(
-      openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic()
+      reportCoordinationServiceProperties
+        .getOpenapiCalculationResponse()
+        .getTopic()
     ).build();
   }
 }

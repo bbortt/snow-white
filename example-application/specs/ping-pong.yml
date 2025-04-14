@@ -95,7 +95,6 @@ components:
           format: date-time
           description: Time of the ping request
           example: '2025-02-25T12:00:00Z'
-
     PongResponse:
       type: object
       required:

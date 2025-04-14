@@ -4,11 +4,11 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka;
+package io.github.bbortt.snow.white.microservices.report.coordination.service.api.kafka;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.AbstractOpenApiCoverageServiceIT;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +17,13 @@ import org.springframework.test.context.TestPropertySource;
 
 @Isolated
 @DirtiesContext
+@IntegrationTest
 @TestPropertySource(
   properties = {
-    "io.github.bbortt.snow.white.microservices.openapi.coverage.service.init-topics=true",
+    "io.github.bbortt.snow.white.microservices.report.coordination.service.init-topics=true",
   }
 )
-class KafkaTopicManagerEnabledIT extends AbstractOpenApiCoverageServiceIT {
+class KafkaTopicManagerEnabledIT {
 
   @Autowired
   private KafkaTopicManager kafkaTopicManager;

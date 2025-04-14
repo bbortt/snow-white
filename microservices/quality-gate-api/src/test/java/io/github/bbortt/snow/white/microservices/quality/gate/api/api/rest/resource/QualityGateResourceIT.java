@@ -38,6 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class QualityGateResourceIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/quality-gates";
+  private static final String SINGLE_ENTITY_API_URL =
+    ENTITY_API_URL + "/{qualityGateName}";
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -94,7 +96,7 @@ class QualityGateResourceIT {
 
     mockMvc
       .perform(
-        delete(ENTITY_API_URL + "/" + qualityGateConfiguration.getName())
+        delete(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName())
       )
       .andExpect(status().isNoContent());
 
@@ -151,7 +153,7 @@ class QualityGateResourceIT {
     );
 
     mockMvc
-      .perform(get(ENTITY_API_URL + "/" + qualityGateConfiguration.getName()))
+      .perform(get(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.name").value(qualityGateConfiguration.getName()))
       .andExpect(
@@ -175,7 +177,7 @@ class QualityGateResourceIT {
 
     mockMvc
       .perform(
-        put(ENTITY_API_URL + "/" + qualityGateConfiguration.getName())
+        put(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName())
           .contentType(APPLICATION_JSON)
           .content(objectMapper.writeValueAsString(qualityGateConfiguration))
       )
