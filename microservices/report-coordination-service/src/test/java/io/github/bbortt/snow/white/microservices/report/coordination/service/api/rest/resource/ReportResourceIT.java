@@ -28,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class ReportResourceIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/reports";
+  private static final String SINGLE_ENTITY_API_URL =
+    ENTITY_API_URL + "/{calculationId}";
 
   @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
@@ -55,7 +57,7 @@ class ReportResourceIT {
     );
 
     mockMvc
-      .perform(get(ENTITY_API_URL + "/" + calculationId))
+      .perform(get(SINGLE_ENTITY_API_URL, calculationId))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.calculationId").value(calculationId.toString()))
       .andExpect(jsonPath("$.initiatedAt").value(not(nullValue())))
@@ -65,7 +67,7 @@ class ReportResourceIT {
   @Test
   void findReport_withoutRequiredCalculationId() throws Exception {
     mockMvc
-      .perform(get(ENTITY_API_URL + "/not-a-uuid"))
+      .perform(get(SINGLE_ENTITY_API_URL, "not-a-uuid"))
       .andExpect(status().isBadRequest());
   }
 }

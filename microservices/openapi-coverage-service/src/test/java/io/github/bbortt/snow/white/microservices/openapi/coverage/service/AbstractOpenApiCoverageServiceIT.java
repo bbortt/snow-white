@@ -44,7 +44,7 @@ public abstract class AbstractOpenApiCoverageServiceIT {
       .withExposedPorts(INFLUX_DB_PORT);
 
   @DynamicPropertySource
-  static void redisProperties(DynamicPropertyRegistry registry) {
+  static void influxDbProperties(DynamicPropertyRegistry registry) {
     registry.add("influxdb.url", () ->
       format(
         "http://%s:%s",
