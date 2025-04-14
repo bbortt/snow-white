@@ -2,7 +2,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.se
 
 import static java.lang.String.format;
 
-public class QualityGateNotFoundException extends Throwable {
+public class QualityGateNotFoundException extends Exception {
 
   public QualityGateNotFoundException(String qualityGateConfigName) {
     super(
