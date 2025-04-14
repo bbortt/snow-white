@@ -1,6 +1,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
@@ -95,7 +96,7 @@ class ReportServiceTest {
 
       var qualityGateConfig = new QualityGateConfig(
         qualityGateConfigName,
-        null
+        emptyList()
       );
 
       doReturn(Optional.of(qualityGateConfig))
@@ -162,7 +163,7 @@ class ReportServiceTest {
 
       var qualityGateConfig = new QualityGateConfig(
         qualityGateConfigName,
-        null
+        emptyList()
       );
 
       doReturn(Optional.of(qualityGateConfig))
