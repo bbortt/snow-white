@@ -62,9 +62,10 @@ class OpenApiCoverageConfigurationServiceTest {
       ArgumentCaptor<
         OpenApiCoverageConfiguration
       > openApiCoverageConfigurationArgumentCaptor = captor();
-      verify(openApiCoverageConfigurationRepositoryMock, times(7)).save(
-        openApiCoverageConfigurationArgumentCaptor.capture()
-      );
+      verify(
+        openApiCoverageConfigurationRepositoryMock,
+        times(OpenApiCriteria.values().length)
+      ).save(openApiCoverageConfigurationArgumentCaptor.capture());
 
       assertThat(openApiCoverageConfigurationArgumentCaptor.getAllValues())
         .isNotEmpty()
