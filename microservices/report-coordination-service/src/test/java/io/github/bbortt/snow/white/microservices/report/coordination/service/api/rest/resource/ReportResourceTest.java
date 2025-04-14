@@ -3,12 +3,16 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
@@ -98,6 +102,34 @@ class ReportResourceTest {
       var responseDto = configureServiceMock(calculationId);
 
       assertThatResponseIsStatusOkWithDto(FAILED, calculationId, responseDto);
+    }
+
+    @Test
+    void shouldReturnHttpNotFound_whenReportByCalculationIdNotFound() {
+      var calculationId = UUID.fromString(
+        "68fa43e1-df3a-4f52-a5d4-e8d88696c85e"
+      );
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(Error.class))
+              .satisfies(
+                e -> assertThat(e.getCode()).isEqualTo("Not Found"),
+                e ->
+                  assertThat(e.getMessage()).isEqualTo(
+                    format("No report by id '%s' exists!", calculationId)
+                  )
+              )
+        );
     }
 
     private void assertThatResponseIsStatusOkWithDto(
