@@ -3,6 +3,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -62,6 +63,8 @@ class QualityGateResourceIT {
       );
 
     assertThat(qualityGateConfigurationRepository.findById(name)).isNotEmpty();
+
+    qualityGateConfigurationRepository.deleteById(name);
   }
 
   @Test
@@ -97,6 +100,19 @@ class QualityGateResourceIT {
   }
 
   @Test
+  void findPredefinedQualityGateConfigs() throws Exception {
+    mockMvc
+      .perform(get(ENTITY_API_URL))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.names.length()").value(4))
+      .andExpect(
+        jsonPath("$.names").value(
+          contains("basic-coverage", "dry-run", "full-feature", "minimal")
+        )
+      );
+  }
+
+  @Test
   void findAllQualityGateConfigs() throws Exception {
     var qualityGateConfiguration = createAndSaveQualityGateConfig(
       "findAllQualityGateConfigs"
@@ -105,10 +121,12 @@ class QualityGateResourceIT {
     mockMvc
       .perform(get(ENTITY_API_URL))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.names.length()").value(1))
+      .andExpect(jsonPath("$.names.length()").value(5))
       .andExpect(
         jsonPath("$.names[0]").value(qualityGateConfiguration.getName())
       );
+
+    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   @Test
@@ -139,6 +157,8 @@ class QualityGateResourceIT {
       .andExpect(
         jsonPath("$.openapiCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
+
+    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   @Test
@@ -170,6 +190,8 @@ class QualityGateResourceIT {
       .get()
       .extracting(QualityGateConfiguration::getDescription)
       .isEqualTo(qualityGateConfiguration.getDescription());
+
+    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   private QualityGateConfiguration createAndSaveQualityGateConfig(

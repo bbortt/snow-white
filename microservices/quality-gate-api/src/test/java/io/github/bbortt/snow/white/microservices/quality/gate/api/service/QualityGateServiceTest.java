@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -192,6 +194,48 @@ class QualityGateServiceTest {
       assertThatThrownBy(() -> fixture.update(configuration)).isInstanceOf(
         ConfigurationDoesNotExistException.class
       );
+    }
+  }
+
+  @Nested
+  class InitPredefinedQualityGates {
+
+    @Test
+    void shouldInsertPredefinedQualityGateConfigurations() {
+      fixture.initPredefinedQualityGates();
+
+      ArgumentCaptor<
+        List<QualityGateConfiguration>
+      > defaultQualityGateConfigurationsCaptor = captor();
+      verify(qualityGateConfigurationRepositoryMock).saveAll(
+        defaultQualityGateConfigurationsCaptor.capture()
+      );
+
+      assertThat(defaultQualityGateConfigurationsCaptor.getValue())
+        .isNotEmpty()
+        .hasSize(4)
+        .satisfiesExactly(
+          qualityGateConfiguration ->
+            assertThat(qualityGateConfiguration).satisfies(
+              c -> assertThat(c.getName()).isEqualTo("basic-coverage"),
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(5)
+            ),
+          qualityGateConfiguration ->
+            assertThat(qualityGateConfiguration).satisfies(
+              c -> assertThat(c.getName()).isEqualTo("full-feature"),
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(10)
+            ),
+          qualityGateConfiguration ->
+            assertThat(qualityGateConfiguration).satisfies(
+              c -> assertThat(c.getName()).isEqualTo("minimal"),
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(1)
+            ),
+          qualityGateConfiguration ->
+            assertThat(qualityGateConfiguration).satisfies(
+              c -> assertThat(c.getName()).isEqualTo("dry-run"),
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).isEmpty()
+            )
+        );
     }
   }
 }

@@ -36,7 +36,7 @@ class CriteriaResourceIT {
     var content = mockMvc
       .perform(get(OPENAPI_ENTITY_API_URL))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$.length()").value(7))
+      .andExpect(jsonPath("$.length()").value(OpenApiCriteria.values().length))
       .andReturn()
       .getResponse()
       .getContentAsString();

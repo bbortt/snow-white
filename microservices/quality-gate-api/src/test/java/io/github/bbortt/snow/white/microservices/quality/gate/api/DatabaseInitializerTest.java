@@ -3,6 +3,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,11 +17,17 @@ class DatabaseInitializerTest {
   @Mock
   private OpenApiCoverageConfigurationService openApiCoverageConfigurationServiceMock;
 
+  @Mock
+  private QualityGateService qualityGateServiceMock;
+
   private DatabaseInitializer fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new DatabaseInitializer(openApiCoverageConfigurationServiceMock);
+    fixture = new DatabaseInitializer(
+      openApiCoverageConfigurationServiceMock,
+      qualityGateServiceMock
+    );
   }
 
   @Nested
@@ -31,6 +38,7 @@ class DatabaseInitializerTest {
       fixture.run();
 
       verify(openApiCoverageConfigurationServiceMock).initOpenApiCriteria();
+      verify(qualityGateServiceMock).initPredefinedQualityGates();
     }
   }
 }
