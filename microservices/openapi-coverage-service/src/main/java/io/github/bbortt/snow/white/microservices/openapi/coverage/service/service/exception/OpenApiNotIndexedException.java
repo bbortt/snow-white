@@ -2,7 +2,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
 
-public class OpenApiNotIndexedException extends Throwable {
+public class OpenApiNotIndexedException extends Exception {
 
   public OpenApiNotIndexedException(
     OpenApiService.OpenApiIdentifier openApiIdentifier

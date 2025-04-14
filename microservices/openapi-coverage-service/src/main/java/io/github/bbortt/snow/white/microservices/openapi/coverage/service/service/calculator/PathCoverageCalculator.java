@@ -57,7 +57,9 @@ public class PathCoverageCalculator implements OpenApiCoverageCalculator {
         uncoveredResources.contains(endpoint)
       ) {
         continue;
-      } else if (endpointList.contains(endpoint)) {
+      }
+
+      if (endpointList.contains(endpoint)) {
         logger.trace("Resource covered: {}", endpoint);
         coveredResources.add(endpoint);
       } else {

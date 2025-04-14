@@ -1,5 +1,6 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.service.impl.redis;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,7 +32,11 @@ public class RedisCachingService implements CachingService {
 
     var result = redisTemplate.hasKey(id);
 
-    logger.trace("ID '{}' {}", id, result ? "exists" : "does not exist");
+    logger.trace(
+      "ID '{}' {}",
+      id,
+      TRUE.equals(result) ? "exists" : "does not exist"
+    );
 
     return result;
   }
