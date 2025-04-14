@@ -1,10 +1,13 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.config;
 
 import static java.util.stream.Collectors.toMap;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.HashMap;
 import java.util.Properties;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = PRIVATE)
 final class PropertyUtils {
 
   static HashMap<String, String> propertiesToMap(Properties prop) {

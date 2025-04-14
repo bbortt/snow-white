@@ -9,6 +9,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 import com.google.protobuf.util.JsonFormat;
 import io.confluent.kafka.streams.serdes.protobuf.KafkaProtobufSerde;
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.exception.SerializationException;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -46,7 +47,10 @@ public class KafkaStreamsConfig {
         return printer.print(data).getBytes();
       } catch (Exception e) {
         logger.error("Error serializing protobuf message", e);
-        throw new RuntimeException("Error serializing protobuf message", e);
+        throw new SerializationException(
+          "Error serializing protobuf message",
+          e
+        );
       }
     };
 
@@ -60,7 +64,10 @@ public class KafkaStreamsConfig {
         return builder.build();
       } catch (Exception e) {
         logger.error("Error deserializing protobuf message", e);
-        throw new RuntimeException("Error deserializing protobuf message", e);
+        throw new SerializationException(
+          "Error deserializing protobuf message",
+          e
+        );
       }
     };
 

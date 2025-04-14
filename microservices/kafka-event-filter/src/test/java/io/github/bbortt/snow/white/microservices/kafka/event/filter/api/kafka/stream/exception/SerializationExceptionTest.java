@@ -1,0 +1,19 @@
+package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.exception;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
+class SerializationExceptionTest {
+
+  @Test
+  void constructorAssignsMessageAndCause() {
+    var message = "message";
+    var cause = new Exception();
+
+    var fixture = new SerializationException(message, cause);
+
+    assertThat(fixture.getMessage()).isEqualTo(message);
+    assertThat(fixture.getCause()).isEqualTo(cause);
+  }
+}

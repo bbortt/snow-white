@@ -81,10 +81,11 @@ public class QualityGateReport {
   public QualityGateReport withUpdatedReportStatus() {
     ReportStatus updatedStatus = IN_PROGRESS;
 
-    if (nonNull(openApiCoverageStatus)) {
-      if (STATUS_FOR_PROPAGATION.contains(openApiCoverageStatus)) {
-        updatedStatus = openApiCoverageStatus;
-      }
+    if (
+      nonNull(openApiCoverageStatus) &&
+      STATUS_FOR_PROPAGATION.contains(openApiCoverageStatus)
+    ) {
+      updatedStatus = openApiCoverageStatus;
     }
 
     return withReportStatus(updatedStatus);

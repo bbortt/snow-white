@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-public class ObjectUtilsTest {
+class ObjectUtilsTest {
 
   @Test
   void shouldCopyNonNullFields() {

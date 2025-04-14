@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,6 +61,7 @@ class OpenApiReportCalculatorTest {
         r -> assertThat(r.status()).isEqualTo(PASSED),
         r ->
           assertThat(r.openApiCriterionResults())
+            .isNotEmpty()
             .allSatisfy(criterionResult ->
               assertThat(criterionResult.getIncludedInReport()).isFalse()
             )
@@ -150,6 +150,7 @@ class OpenApiReportCalculatorTest {
         r -> assertThat(r.status()).isEqualTo(FAILED),
         r ->
           assertThat(r.openApiCriterionResults())
+            .isNotEmpty()
             .satisfies(criteriaResults ->
               assertThat(criteriaResults)
                 .map(OpenApiCriterionResult::getName)
@@ -197,18 +198,20 @@ class OpenApiReportCalculatorTest {
       assertThat(calculationResult).satisfies(
         r -> assertThat(r.status()).isEqualTo(PASSED),
         r ->
-          assertThat(r.openApiCriterionResults()).satisfies(criteriaResults -> {
-            criteriaResults.forEach(result -> {
-              if (result.getName().equals(pathCoverage)) {
-                assertThat(result.getIncludedInReport()).isTrue();
-              } else {
-                assertThat(result.getIncludedInReport()).isFalse();
-              }
-              assertThat(result.getQualityGateReport()).isEqualTo(
-                qualityGateReportMock
-              );
-            });
-          })
+          assertThat(r.openApiCriterionResults())
+            .isNotEmpty()
+            .satisfies(criteriaResults -> {
+              criteriaResults.forEach(result -> {
+                if (result.getName().equals(pathCoverage)) {
+                  assertThat(result.getIncludedInReport()).isTrue();
+                } else {
+                  assertThat(result.getIncludedInReport()).isFalse();
+                }
+                assertThat(result.getQualityGateReport()).isEqualTo(
+                  qualityGateReportMock
+                );
+              });
+            })
       );
     }
 
@@ -220,6 +223,7 @@ class OpenApiReportCalculatorTest {
         r -> assertThat(r.status()).isEqualTo(passed),
         r ->
           assertThat(r.openApiCriterionResults())
+            .isNotEmpty()
             .allSatisfy(criterionResult ->
               assertThat(criterionResult.getIncludedInReport()).isTrue()
             )

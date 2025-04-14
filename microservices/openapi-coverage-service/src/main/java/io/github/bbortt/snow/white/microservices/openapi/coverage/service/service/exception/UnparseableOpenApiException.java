@@ -5,7 +5,7 @@ import static java.util.Objects.isNull;
 
 import java.util.List;
 
-public class UnparseableOpenApiException extends Throwable {
+public class UnparseableOpenApiException extends Exception {
 
   public UnparseableOpenApiException(List<String> messages) {
     super(
