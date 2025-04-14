@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class QualityGateConfiguration {
 
   private @Nullable String description;
 
+  @NotNull
   @Builder.Default
   @OneToMany(
     cascade = { ALL },
