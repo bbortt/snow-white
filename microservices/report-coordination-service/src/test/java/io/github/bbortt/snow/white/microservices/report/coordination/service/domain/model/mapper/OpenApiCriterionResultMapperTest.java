@@ -6,28 +6,45 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
-import java.util.Set;
-import org.apache.commons.lang3.NotImplementedException;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith({ MockitoExtension.class })
 class OpenApiCriterionResultMapperTest {
+
+  @Mock
+  private OpenApiCriterionRepository openApiCriterionRepositoryMock;
+
+  private OpenApiCriterionResultMapper fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new OpenApiCriterionResultMapperImpl();
+    fixture.setOpenApiCriterionRepository(openApiCriterionRepositoryMock);
+  }
 
   @Nested
   class OpenApiCriteriaToIncludedInReport {
 
     @Test
     void shouldAlwaysReturnTrue() {
-      assertThat(
-        new OpenApiCriterionResultMapperImpl()
-          .openApiCriteriaToIncludedInReport(null)
-      )
+      assertThat(fixture.openApiCriteriaToIncludedInReport(null))
         .isNotNull()
         .isTrue();
     }
@@ -39,32 +56,36 @@ class OpenApiCriterionResultMapperTest {
     @ParameterizedTest
     @EnumSource(OpenApiCriteria.class)
     void shouldExtractName(OpenApiCriteria openApiCriteria) {
-      assertThat(
-        new OpenApiCriterionResultMapperImpl()
-          .openApiCriteriaToName(openApiCriteria)
+      doAnswer(invocationOnMock ->
+        Optional.of(
+          OpenApiCriterion.builder()
+            .name(invocationOnMock.getArgument(0))
+            .build()
+        )
       )
+        .when(openApiCriterionRepositoryMock)
+        .findByName(openApiCriteria.name());
+
+      assertThat(fixture.getOpenApiCriterionByName(openApiCriteria))
         .isNotNull()
+        .extracting(OpenApiCriterion::getName)
         .isEqualTo(openApiCriteria.name());
     }
-  }
 
-  private static class OpenApiCriterionResultMapperImpl
-    implements OpenApiCriterionResultMapper {
+    @Test
+    void shouldCreateNewEntity_whenOpenApiCriterionDoesNotExist() {
+      var openApiCriteria = PATH_COVERAGE;
 
-    @Override
-    public Set<OpenApiCriterionResult> map(
-      Set<
-        io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult
-      > openApiCriterionResults
-    ) {
-      throw new NotImplementedException();
-    }
+      doReturn(Optional.empty())
+        .when(openApiCriterionRepositoryMock)
+        .findByName(openApiCriteria.name());
 
-    @Override
-    public OpenApiCriterionResult map(
-      io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult source
-    ) {
-      throw new NotImplementedException();
+      assertThat(fixture.getOpenApiCriterionByName(openApiCriteria))
+        .isNotNull()
+        .satisfies(
+          c -> assertThat(c.getId()).isNull(),
+          c -> assertThat(c.getName()).isEqualTo(openApiCriteria.name())
+        );
     }
   }
 }

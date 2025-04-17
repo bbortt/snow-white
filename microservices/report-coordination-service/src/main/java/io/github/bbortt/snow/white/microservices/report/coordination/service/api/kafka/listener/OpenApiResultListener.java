@@ -23,11 +23,13 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.ser
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OpenApiResultListener {
@@ -72,6 +74,24 @@ public class OpenApiResultListener {
   }
 
   private void calculateAndPersistQualityGateReport(
+    QualityGateConfigurationParameters configurationParameters,
+    Set<OpenApiCriterionResult> openApiCriterionResults
+  ) {
+    try {
+      doCalculateAndPersistQualityGateReport(
+        configurationParameters,
+        openApiCriterionResults
+      );
+    } catch (Exception e) {
+      logger.error(
+        "Failed to persist quality-gate report: {}",
+        configurationParameters,
+        e
+      );
+    }
+  }
+
+  private void doCalculateAndPersistQualityGateReport(
     QualityGateConfigurationParameters configurationParameters,
     Set<OpenApiCriterionResult> openApiCriterionResults
   ) {
