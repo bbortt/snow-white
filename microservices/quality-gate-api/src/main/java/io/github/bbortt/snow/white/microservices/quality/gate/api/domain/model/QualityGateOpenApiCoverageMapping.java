@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,12 +38,14 @@ import lombok.With;
 public class QualityGateOpenApiCoverageMapping {
 
   @Id
-  @ManyToOne
+  @NotNull
+  @ManyToOne(optional = false, cascade = ALL, fetch = EAGER)
   @JoinColumn(name = "quality_gate_configuration", nullable = false)
   private QualityGateConfiguration qualityGateConfiguration;
 
   @Id
-  @ManyToOne
+  @NotNull
+  @ManyToOne(optional = false, cascade = ALL, fetch = EAGER)
   @JoinColumn(name = "open_api_coverage_configuration", nullable = false)
   private OpenApiCoverageConfiguration openApiCoverageConfiguration;
 

@@ -62,7 +62,7 @@ public class QualityGateReport {
   private String qualityGateConfigName;
 
   @NotNull
-  @OneToOne(cascade = ALL, fetch = EAGER, optional = false)
+  @OneToOne(cascade = { ALL }, fetch = EAGER, optional = false)
   private ReportParameters reportParameters;
 
   @NotNull
@@ -72,14 +72,16 @@ public class QualityGateReport {
 
   @NotNull
   @Builder.Default
-  @OneToMany(mappedBy = "qualityGateReport")
+  @OneToMany(mappedBy = "qualityGateReport", cascade = { ALL }, fetch = EAGER)
   private Set<OpenApiCriterionResult> openApiCriterionResults = new HashSet<>();
 
+  @NotNull
   @Builder.Default
   @Enumerated(STRING)
   @Column(nullable = false)
   private ReportStatus reportStatus = IN_PROGRESS;
 
+  @NotNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Instant createdAt = Instant.now();
