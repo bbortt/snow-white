@@ -18,31 +18,34 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.R
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QualityGateService {
 
+  private final OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
   private final QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
   public QualityGateConfiguration persist(
     @Nonnull QualityGateConfiguration qualityGateConfiguration
   ) throws ConfigurationNameAlreadyExistsException {
     if (
-      qualityGateConfigurationRepository.existsById(
+      qualityGateConfigurationRepository.existsByName(
         qualityGateConfiguration.getName()
       )
     ) {
@@ -56,11 +59,11 @@ public class QualityGateService {
 
   public void deleteByName(String name)
     throws ConfigurationDoesNotExistException {
-    if (!qualityGateConfigurationRepository.existsById(name)) {
+    if (!qualityGateConfigurationRepository.existsByName(name)) {
       throw new ConfigurationDoesNotExistException(name);
     }
 
-    qualityGateConfigurationRepository.deleteById(name);
+    qualityGateConfigurationRepository.deleteByName(name);
   }
 
   public Set<String> getAllQualityGateConfigNames() {
@@ -70,7 +73,7 @@ public class QualityGateService {
   public QualityGateConfiguration findByName(@Nullable String name)
     throws ConfigurationDoesNotExistException {
     return qualityGateConfigurationRepository
-      .findById(name)
+      .findByName(name)
       .orElseThrow(() -> new ConfigurationDoesNotExistException(name));
   }
 
@@ -78,7 +81,7 @@ public class QualityGateService {
     QualityGateConfiguration qualityGateConfiguration
   ) throws ConfigurationDoesNotExistException {
     if (
-      !qualityGateConfigurationRepository.existsById(
+      !qualityGateConfigurationRepository.existsByName(
         qualityGateConfiguration.getName()
       )
     ) {
@@ -90,13 +93,41 @@ public class QualityGateService {
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
   }
 
+  @Transactional
   public void initPredefinedQualityGates() {
+    logger.info("Updating quality-gate configuration table");
+
+    var missingQualityGateConfigurations = Stream.of(
+      getBasicCoverage(),
+      getFullFeature(),
+      getMinimal(),
+      getDryRun()
+    )
+      .filter(qualityGateConfiguration ->
+        !qualityGateConfigurationRepository.existsByName(
+          qualityGateConfiguration.getName()
+        )
+      )
+      .toList();
+
+    if (missingQualityGateConfigurations.isEmpty()) {
+      logger.debug(
+        "All quality-gate configurations are already present in database, nothing to do"
+      );
+      return;
+    }
+
+    logger.debug(
+      "The following quality-gate configurations are missing and will be persisted: {}",
+      missingQualityGateConfigurations
+    );
+
     qualityGateConfigurationRepository.saveAll(
-      List.of(getBasicCoverage(), getFullFeature(), getMinimal(), getDryRun())
+      missingQualityGateConfigurations
     );
   }
 
-  private static QualityGateConfiguration getBasicCoverage() {
+  private QualityGateConfiguration getBasicCoverage() {
     var qualityGateConfiguration = QualityGateConfiguration.builder()
       .name("basic-coverage")
       .description(
@@ -118,7 +149,7 @@ public class QualityGateService {
     return qualityGateConfiguration;
   }
 
-  private static QualityGateConfiguration getFullFeature() {
+  private QualityGateConfiguration getFullFeature() {
     var qualityGateConfiguration = QualityGateConfiguration.builder()
       .name("full-feature")
       .description(
@@ -145,7 +176,7 @@ public class QualityGateService {
     return qualityGateConfiguration;
   }
 
-  private static QualityGateConfiguration getMinimal() {
+  private QualityGateConfiguration getMinimal() {
     var qualityGateConfiguration = QualityGateConfiguration.builder()
       .name("minimal")
       .description(
@@ -167,15 +198,15 @@ public class QualityGateService {
       .build();
   }
 
-  private static void addAllOpenApiCriteria(
+  private void addAllOpenApiCriteria(
     QualityGateConfiguration qualityGateConfiguration,
     Stream<OpenApiCriteria> openApiCriteria
   ) {
     openApiCriteria
       .map(openApiCriterion ->
-        OpenApiCoverageConfiguration.builder()
-          .name(openApiCriterion.name())
-          .build()
+        openApiCoverageConfigurationRepository
+          .findByName(openApiCriterion.name())
+          .orElseThrow(IllegalStateException::new)
       )
       .map(openApiCoverageConfiguration ->
         QualityGateOpenApiCoverageMapping.builder()

@@ -6,10 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
+import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -33,8 +35,13 @@ import lombok.With;
 public class OpenApiCoverageConfiguration {
 
   @Id
-  @NotEmpty
+  @NotNull
+  @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
+  private Long id;
+
+  @NotEmpty
+  @Column(nullable = false, updatable = false, unique = true)
   private String name;
 
   @NotNull

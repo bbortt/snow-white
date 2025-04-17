@@ -25,13 +25,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @IntegrationTest
 @AutoConfigureMockMvc
@@ -48,9 +49,13 @@ class QualityGateResourceIT {
   private MockMvc mockMvc;
 
   @Autowired
+  private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
+
+  @Autowired
   private QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
   @Test
+  @Transactional
   void createQualityGateConfig() throws Exception {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder().name(name).build();
@@ -70,9 +75,11 @@ class QualityGateResourceIT {
         content().json(objectMapper.writeValueAsString(qualityGateConfig))
       );
 
-    assertThat(qualityGateConfigurationRepository.findById(name)).isNotEmpty();
+    assertThat(
+      qualityGateConfigurationRepository.findByName(name)
+    ).isNotEmpty();
 
-    qualityGateConfigurationRepository.deleteById(name);
+    qualityGateConfigurationRepository.deleteByName(name);
   }
 
   @Test
@@ -89,6 +96,7 @@ class QualityGateResourceIT {
   }
 
   @Test
+  @Transactional
   void deleteQualityGateConfig() throws Exception {
     var qualityGateConfiguration = createAndSaveQualityGateConfig(
       "deleteQualityGateConfig"
@@ -101,10 +109,10 @@ class QualityGateResourceIT {
       .andExpect(status().isNoContent());
 
     assertThat(
-      qualityGateConfigurationRepository.findById(
+      qualityGateConfigurationRepository.existsByName(
         qualityGateConfiguration.getName()
       )
-    ).isEmpty();
+    ).isFalse();
   }
 
   @Test
@@ -144,9 +152,9 @@ class QualityGateResourceIT {
     )
       .withDescription("This is a complete Quality-Gate Configuration.")
       .withOpenApiCoverageConfiguration(
-        OpenApiCoverageConfiguration.builder()
-          .name(PATH_COVERAGE.name())
-          .build()
+        openApiCoverageConfigurationRepository
+          .findByName(PATH_COVERAGE.name())
+          .orElseThrow(IllegalArgumentException::new)
       );
     qualityGateConfiguration = qualityGateConfigurationRepository.save(
       qualityGateConfiguration
@@ -190,7 +198,7 @@ class QualityGateResourceIT {
       );
 
     assertThat(
-      qualityGateConfigurationRepository.findById(
+      qualityGateConfigurationRepository.findByName(
         qualityGateConfiguration.getName()
       )
     )
@@ -203,12 +211,13 @@ class QualityGateResourceIT {
   }
 
   private QualityGateConfiguration createAndSaveQualityGateConfig(
-    String findAllQualityGateConfigs
+    String suffix
   ) {
-    var name = generateUniqueName(findAllQualityGateConfigs);
+    var name = generateUniqueName(suffix);
     var qualityGateConfiguration = QualityGateConfiguration.builder()
       .name(name)
       .build();
+
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
   }
 

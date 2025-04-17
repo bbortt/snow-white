@@ -48,7 +48,7 @@ public class QualityGateOpenApiCoverageMapping {
   public static class QualityGateOpenApiCoverageMappingId
     implements Serializable {
 
-    private String qualityGateConfiguration;
-    private String openApiCoverageConfiguration;
+    private Long qualityGateConfiguration;
+    private Long openApiCoverageConfiguration;
   }
 }
