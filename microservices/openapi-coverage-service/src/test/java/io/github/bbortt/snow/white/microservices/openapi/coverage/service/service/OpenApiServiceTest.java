@@ -89,7 +89,7 @@ class OpenApiServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenApiIsUnparseable() {
+    void shouldThrow_whenApiIsUnparseable() {
       var apiEndpointEntry = ApiEndpointEntry.builder()
         .apiName(API_NAME)
         .apiVersion(API_VERSION)
@@ -117,7 +117,7 @@ class OpenApiServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenApiEndpointNotFound() {
+    void shouldThrow_whenApiEndpointNotFound() {
       assertThatThrownBy(() -> fixture.findAndParseOpenApi(openApiIdentifier))
         .isInstanceOf(OpenApiNotIndexedException.class)
         .hasMessage(

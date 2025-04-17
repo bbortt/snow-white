@@ -58,7 +58,7 @@ public class OpenApiReportCalculator {
     requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
       boolean criterionFound = false;
       for (OpenApiCriterionResult result : updatedOpenApiCriteria) {
-        if (result.getName().equals(criterionName)) {
+        if (result.getOpenApiCriterion().getName().equals(criterionName)) {
           criterionFound = true;
           if (ONE.compareTo(result.getCoverage()) != 0) {
             logger.trace(
@@ -86,7 +86,9 @@ public class OpenApiReportCalculator {
         openApiCriterionResult
           .withIncludedInReport(
             nonNull(includedOpenApiCriteria) &&
-            includedOpenApiCriteria.contains(openApiCriterionResult.getName())
+            includedOpenApiCriteria.contains(
+              openApiCriterionResult.getOpenApiCriterion().getName()
+            )
           )
           .withQualityGateReport(qualityGateReport)
       )

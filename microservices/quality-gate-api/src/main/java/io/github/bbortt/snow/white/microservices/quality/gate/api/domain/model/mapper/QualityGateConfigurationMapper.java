@@ -7,6 +7,8 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static lombok.AccessLevel.PACKAGE;
 import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -16,10 +18,13 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.O
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Null;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +33,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class QualityGateConfigurationMapper {
 
   @Autowired
+  @Setter(PACKAGE)
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
-  /**
-   * Maps from entity to DTO.
-   */
   @Mapping(
     target = "openapiCriteria",
     expression = "java(mapOpenApiCriteriaToStringList(entity))"
   )
   public abstract QualityGateConfig toDto(QualityGateConfiguration entity);
 
-  /**
-   * Maps from DTO to entity (for creation).
-   */
+  @Mapping(target = "id", ignore = true)
   @Mapping(
     target = "openApiCoverageConfigurations",
     expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenapiCriteria(), null))"
@@ -49,11 +50,8 @@ public abstract class QualityGateConfigurationMapper {
   public abstract QualityGateConfiguration toEntity(QualityGateConfig dto)
     throws OpenApiCriterionDoesNotExistException;
 
-  /**
-   * Helper method to convert OpenAPI coverage mappings to string list for the DTO.
-   */
   protected List<String> mapOpenApiCriteriaToStringList(
-    QualityGateConfiguration entity
+    @Nonnull QualityGateConfiguration entity
   ) {
     if (isNull(entity.getOpenApiCoverageConfigurations())) {
       return List.of();
@@ -62,15 +60,13 @@ public abstract class QualityGateConfigurationMapper {
     return entity
       .getOpenApiCoverageConfigurations()
       .stream()
+      .filter(mapping -> nonNull(mapping.getOpenApiCoverageConfiguration()))
       .map(mapping -> mapping.getOpenApiCoverageConfiguration().getName())
       .toList();
   }
 
-  /**
-   * Helper method to convert string list from DTO to OpenAPI coverage mappings.
-   */
   protected Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
-    List<String> openapiCriteria,
+    @Null List<String> openapiCriteria,
     @Nullable QualityGateConfiguration existingEntity
   ) throws OpenApiCriterionDoesNotExistException {
     if (isEmpty(openapiCriteria)) {
@@ -87,11 +83,10 @@ public abstract class QualityGateConfigurationMapper {
             new OpenApiCriterionDoesNotExistException(criteriaName)
           );
 
-      QualityGateOpenApiCoverageMapping mapping =
-        QualityGateOpenApiCoverageMapping.builder()
-          .openApiCoverageConfiguration(coverage)
-          .qualityGateConfiguration(existingEntity)
-          .build();
+      var mapping = QualityGateOpenApiCoverageMapping.builder()
+        .openApiCoverageConfiguration(coverage)
+        .qualityGateConfiguration(existingEntity)
+        .build();
 
       mappings.add(mapping);
     }

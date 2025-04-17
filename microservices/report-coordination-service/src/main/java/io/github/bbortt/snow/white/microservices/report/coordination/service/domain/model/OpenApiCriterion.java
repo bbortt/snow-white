@@ -6,10 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
-import static jakarta.persistence.CascadeType.DETACH;
-import static jakarta.persistence.CascadeType.MERGE;
-import static jakarta.persistence.CascadeType.PERSIST;
-import static jakarta.persistence.CascadeType.REFRESH;
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
@@ -18,12 +15,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,20 +29,13 @@ import lombok.NoArgsConstructor;
 import lombok.With;
 
 @Entity
+@Table
 @With
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-@Table(
-  uniqueConstraints = {
-    @UniqueConstraint(
-      name = "unique_name_per_report",
-      columnNames = { "calculation_id", "open_api_criterion" }
-    ),
-  }
-)
-public class OpenApiCriterionResult {
+public class OpenApiCriterion {
 
   @Id
   @NotNull
@@ -52,26 +43,12 @@ public class OpenApiCriterionResult {
   @Column(nullable = false, updatable = false)
   private Long id;
 
-  @NotNull
-  @ManyToOne(
-    optional = false,
-    cascade = { PERSIST, MERGE, REFRESH, DETACH },
-    fetch = EAGER
-  )
-  @JoinColumn(name = "open_api_criterion", nullable = false)
-  private OpenApiCriterion openApiCriterion;
-
-  @NotNull
+  @NotEmpty
   @Column(nullable = false, updatable = false)
-  private BigDecimal coverage;
+  private String name;
 
   @NotNull
-  @Column(nullable = false, updatable = false)
-  private Boolean includedInReport;
-
-  @Id
-  @NotNull
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "calculation_id", nullable = false)
-  private QualityGateReport qualityGateReport;
+  @Builder.Default
+  @OneToMany(mappedBy = "openApiCriterion")
+  private Set<OpenApiCriterionResult> openApiCriteria = new HashSet<>();
 }

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.OpenApiCriterionResultMapper;
@@ -109,7 +110,9 @@ class OpenApiResultListenerTest {
 
       OpenApiCriterionResult openApiCriterionResult =
         OpenApiCriterionResult.builder()
-          .name("test-criterion")
+          .openApiCriterion(
+            OpenApiCriterion.builder().name("test-criterion").build()
+          )
           .coverage(BigDecimal.valueOf(85.0))
           .build();
       Set<OpenApiCriterionResult> mappedResults = Set.of(
@@ -163,7 +166,7 @@ class OpenApiResultListenerTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenQualityGateConfigDoesNotExist() {
+    void shouldThrow_whenQualityGateConfigDoesNotExist() {
       QualityGateReport report = QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName(qualityGateConfigName)
@@ -231,12 +234,16 @@ class OpenApiResultListenerTest {
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
       OpenApiCriterionResult criterion1Result = OpenApiCriterionResult.builder()
-        .name(PATH_COVERAGE.name())
+        .openApiCriterion(
+          OpenApiCriterion.builder().name(PATH_COVERAGE.name()).build()
+        )
         .coverage(ONE)
         .build();
 
       OpenApiCriterionResult criterion2Result = OpenApiCriterionResult.builder()
-        .name(HTTP_METHOD_COVERAGE.name())
+        .openApiCriterion(
+          OpenApiCriterion.builder().name(HTTP_METHOD_COVERAGE.name()).build()
+        )
         .coverage(ONE)
         .build();
 
@@ -307,12 +314,16 @@ class OpenApiResultListenerTest {
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
       OpenApiCriterionResult criterion1Result = OpenApiCriterionResult.builder()
-        .name(PATH_COVERAGE.name())
+        .openApiCriterion(
+          OpenApiCriterion.builder().name(PATH_COVERAGE.name()).build()
+        )
         .coverage(ONE)
         .build();
 
       OpenApiCriterionResult criterion2Result = OpenApiCriterionResult.builder()
-        .name(HTTP_METHOD_COVERAGE.name())
+        .openApiCriterion(
+          OpenApiCriterion.builder().name(HTTP_METHOD_COVERAGE.name()).build()
+        )
         .coverage(BigDecimal.valueOf(85.0))
         .build();
 

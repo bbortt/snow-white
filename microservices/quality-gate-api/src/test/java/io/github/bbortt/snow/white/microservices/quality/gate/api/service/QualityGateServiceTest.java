@@ -79,7 +79,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationAlreadyExists() {
+    void shouldThrow_whenConfigurationAlreadyExists() {
       var configuration = QualityGateConfiguration.builder()
         .name("ExistingConfig")
         .build();
@@ -115,7 +115,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationDoesNotExist()
+    void shouldThrow_whenConfigurationDoesNotExist()
       throws ConfigurationDoesNotExistException {
       var name = "NonExistingConfig";
       doReturn(false)
@@ -164,7 +164,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationDoesNotExists() {
+    void shouldThrow_whenConfigurationDoesNotExists() {
       var name = "NonExistingConfig";
 
       doReturn(Optional.empty())
@@ -201,7 +201,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrowException_whenConfigurationDoesNotExists() {
+    void shouldThrow_whenConfigurationDoesNotExists() {
       var name = "NonExistingConfig";
       doReturn(false)
         .when(qualityGateConfigurationRepositoryMock)
