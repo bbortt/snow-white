@@ -8,10 +8,12 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
+import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -38,8 +40,13 @@ import org.springframework.lang.Nullable;
 public class QualityGateConfiguration {
 
   @Id
-  @NotEmpty
+  @NotNull
+  @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
+  private Long id;
+
+  @NotEmpty
+  @Column(nullable = false, updatable = false, unique = true)
   private String name;
 
   private @Nullable String description;

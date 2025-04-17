@@ -10,13 +10,16 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -62,18 +65,21 @@ class OpenApiCoverageConfigurationServiceTest {
   class InitOpenApiCriteria {
 
     @Test
-    void shouldAddEachOpenApiCriteriaToDatabase() {
+    void shouldAddEachMissingOpenApiCriteriaToDatabase() {
+      doReturn(false)
+        .when(openApiCoverageConfigurationRepositoryMock)
+        .existsByName(anyString());
+
       fixture.initOpenApiCriteria();
 
       ArgumentCaptor<
-        OpenApiCoverageConfiguration
+        List<OpenApiCoverageConfiguration>
       > openApiCoverageConfigurationArgumentCaptor = captor();
-      verify(
-        openApiCoverageConfigurationRepositoryMock,
-        times(OpenApiCriteria.values().length)
-      ).save(openApiCoverageConfigurationArgumentCaptor.capture());
+      verify(openApiCoverageConfigurationRepositoryMock).saveAll(
+        openApiCoverageConfigurationArgumentCaptor.capture()
+      );
 
-      assertThat(openApiCoverageConfigurationArgumentCaptor.getAllValues())
+      assertThat(openApiCoverageConfigurationArgumentCaptor.getValue())
         .isNotEmpty()
         .map(OpenApiCoverageConfiguration::getName)
         .containsExactlyInAnyOrder(
@@ -81,6 +87,26 @@ class OpenApiCoverageConfigurationServiceTest {
             .map(OpenApiCriteria::name)
             .toArray(String[]::new)
         );
+
+      verify(
+        openApiCoverageConfigurationRepositoryMock,
+        times(OpenApiCriteria.values().length)
+      ).existsByName(anyString());
+    }
+
+    @Test
+    void shouldNotAddAnyOpenApiCriteriaToDatabase_whenAllAreAlreadyPresent() {
+      doReturn(true)
+        .when(openApiCoverageConfigurationRepositoryMock)
+        .existsByName(anyString());
+
+      fixture.initOpenApiCriteria();
+
+      verify(
+        openApiCoverageConfigurationRepositoryMock,
+        times(OpenApiCriteria.values().length)
+      ).existsByName(anyString());
+      verifyNoMoreInteractions(openApiCoverageConfigurationRepositoryMock);
     }
   }
 }
