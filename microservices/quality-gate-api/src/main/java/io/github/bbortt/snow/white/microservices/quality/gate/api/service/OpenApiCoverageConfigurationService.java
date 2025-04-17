@@ -35,12 +35,31 @@ public class OpenApiCoverageConfigurationService {
   public void initOpenApiCriteria() {
     logger.info("Updating OpenAPI criteria table");
 
-    stream(OpenApiCriteria.values())
+    var missingOpenApiCriteria = stream(OpenApiCriteria.values())
+      .filter(openApiCriterion ->
+        !openApiCoverageConfigurationRepository.existsByName(
+          openApiCriterion.name()
+        )
+      )
       .map(openApiCriteria ->
         OpenApiCoverageConfiguration.builder()
           .name(openApiCriteria.name())
           .build()
       )
-      .forEach(openApiCoverageConfigurationRepository::save);
+      .toList();
+
+    if (missingOpenApiCriteria.isEmpty()) {
+      logger.debug(
+        "All OpenApi criteria are already present in database, nothing to do"
+      );
+      return;
+    }
+
+    logger.debug(
+      "The following OpenAPI criteria are missing and will be persisted: {}",
+      missingOpenApiCriteria
+    );
+
+    openApiCoverageConfigurationRepository.saveAll(missingOpenApiCriteria);
   }
 }

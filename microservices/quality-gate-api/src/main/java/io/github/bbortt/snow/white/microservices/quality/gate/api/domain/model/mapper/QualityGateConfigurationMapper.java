@@ -82,7 +82,7 @@ public abstract class QualityGateConfigurationMapper {
     for (var criteriaName : openapiCriteria) {
       OpenApiCoverageConfiguration coverage =
         openApiCoverageConfigurationRepository
-          .findById(criteriaName)
+          .findByName(criteriaName)
           .orElseThrow(() ->
             new OpenApiCriterionDoesNotExistException(criteriaName)
           );

@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,7 @@ import lombok.With;
 public class ReportParameters {
 
   @Id
+  @NotNull
   @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
   private Long id;
