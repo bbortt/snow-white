@@ -50,6 +50,15 @@ class QualityGateApiIT {
   }
 
   @Test
+  void openApiCriteriaResourceShouldBeForwarded() {
+    stubFor(get("/api/rest/v1/criteria/openapi").willReturn(ok()));
+
+    when().get("/api/rest/v1/criteria/openapi").then().statusCode(200);
+
+    verify(getRequestedFor(urlEqualTo("/api/rest/v1/criteria/openapi")));
+  }
+
+  @Test
   void qualityGatesResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/quality-gates").willReturn(ok()));
 
