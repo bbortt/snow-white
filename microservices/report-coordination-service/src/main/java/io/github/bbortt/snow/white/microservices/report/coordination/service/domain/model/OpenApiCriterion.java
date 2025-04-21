@@ -6,8 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
-import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -17,7 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
