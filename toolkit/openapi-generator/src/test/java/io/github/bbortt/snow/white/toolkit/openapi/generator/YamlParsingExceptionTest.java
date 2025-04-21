@@ -4,22 +4,20 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.exception;
+package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class SerializationExceptionTest {
+class YamlParsingExceptionTest {
 
   @Test
-  void constructorAssignsMessageAndCause() {
-    var message = "message";
+  void constructorAssignsCause() {
     var cause = new Exception();
 
-    var fixture = new SerializationException(message, cause);
+    var fixture = new YamlParsingException(cause);
 
-    assertThat(fixture).hasMessage(message);
     assertThat(fixture.getCause()).isEqualTo(cause);
   }
 }
