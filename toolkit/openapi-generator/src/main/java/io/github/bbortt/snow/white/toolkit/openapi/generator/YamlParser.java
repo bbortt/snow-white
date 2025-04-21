@@ -28,7 +28,7 @@ class YamlParser {
 
       return new ObjectMapper().writeValueAsString(yamlData);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new YamlParsingException(e);
     }
   }
 }

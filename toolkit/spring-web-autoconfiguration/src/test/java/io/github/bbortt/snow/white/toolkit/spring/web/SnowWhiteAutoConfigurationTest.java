@@ -15,8 +15,8 @@ class SnowWhiteAutoConfigurationTest {
 
   @Test
   void prefixIsPackageName() {
-    assertThat(PROPERTY_PREFIX).isEqualTo(
-      SnowWhiteAutoConfiguration.class.getPackageName()
+    assertThat(SnowWhiteAutoConfiguration.class.getPackageName()).isEqualTo(
+      PROPERTY_PREFIX
     );
   }
 }

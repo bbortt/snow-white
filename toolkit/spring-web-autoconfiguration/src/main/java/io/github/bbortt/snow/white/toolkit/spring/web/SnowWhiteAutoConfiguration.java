@@ -38,7 +38,7 @@ public class SnowWhiteAutoConfiguration {
     "io.github.bbortt.snow.white.toolkit.spring.web";
   static final String PROPERTY = "enabled";
 
-  public SnowWhiteAutoConfiguration() {
+  private SnowWhiteAutoConfiguration() {
     logger.info("Enhancing OTEL Spans with Snow-White information ✅");
   }
 }

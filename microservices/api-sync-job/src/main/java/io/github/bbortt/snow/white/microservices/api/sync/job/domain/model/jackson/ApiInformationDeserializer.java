@@ -40,10 +40,10 @@ public class ApiInformationDeserializer
   private static final String PROPERTIES_PROPERTY = "properties";
   public static final String SOURCE_PROPERTY = "source";
 
-  private final ApiProperty serviceNameProperty;
+  private final transient ApiProperty serviceNameProperty;
 
-  private @Nullable ApiProperty apiNameProperty;
-  private @Nullable ApiProperty apiVersionProperty;
+  private transient @Nullable ApiProperty apiNameProperty;
+  private transient @Nullable ApiProperty apiVersionProperty;
 
   public ApiInformationDeserializer(ApiSyncJobProperties apiSyncJobProperties) {
     super(ApiInformation.class);
@@ -89,9 +89,10 @@ public class ApiInformationDeserializer
     ApiInformation.ApiInformationBuilder apiInformationBuilder,
     JsonNode node
   ) throws JsonParseException {
-    ArrayNode properties = (ArrayNode) node.get(PROPERTIES_PROPERTY);
-    if (properties != null) {
-      Map<String, String> propertyLookup = createPropertyLookup(properties);
+    if (node.has(PROPERTIES_PROPERTY)) {
+      var propertyLookup = createPropertyLookup(
+        (ArrayNode) node.get(PROPERTIES_PROPERTY)
+      );
 
       try {
         assignProperty(

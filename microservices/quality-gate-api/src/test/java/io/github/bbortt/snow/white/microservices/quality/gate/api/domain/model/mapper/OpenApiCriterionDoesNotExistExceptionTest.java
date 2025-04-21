@@ -16,8 +16,6 @@ class OpenApiCriterionDoesNotExistExceptionTest {
   void constructorShouldCreateMessageFromLabel() {
     var fixture = new OpenApiCriterionDoesNotExistException("label");
 
-    assertThat(fixture.getMessage()).isEqualTo(
-      "OpenApi Criterion 'label' does not exist!"
-    );
+    assertThat(fixture).hasMessage("OpenApi Criterion 'label' does not exist!");
   }
 }

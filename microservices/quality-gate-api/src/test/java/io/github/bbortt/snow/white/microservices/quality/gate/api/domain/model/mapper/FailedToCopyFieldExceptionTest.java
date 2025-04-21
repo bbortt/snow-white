@@ -4,22 +4,22 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.exception;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class SerializationExceptionTest {
+class FailedToCopyFieldExceptionTest {
 
   @Test
   void constructorAssignsMessageAndCause() {
     var message = "message";
     var cause = new Exception();
 
-    var fixture = new SerializationException(message, cause);
+    var fixture = new FailedToCopyFieldException(message, cause);
 
-    assertThat(fixture).hasMessage(message);
+    assertThat(fixture).hasMessage("Failed to copy field: %s", message);
     assertThat(fixture.getCause()).isEqualTo(cause);
   }
 }

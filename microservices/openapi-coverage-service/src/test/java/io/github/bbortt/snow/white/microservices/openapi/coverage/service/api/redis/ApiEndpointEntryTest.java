@@ -66,7 +66,7 @@ class ApiEndpointEntryTest {
       ApiEndpointEntry entry1 = ApiEndpointEntry.builder().id(ID).build();
       ApiEndpointEntry entry2 = ApiEndpointEntry.builder().id(ID).build();
 
-      assertThat(entry1.hashCode()).isEqualTo(entry2.hashCode());
+      assertThat(entry1).hasSameHashCodeAs(entry2);
     }
 
     @Test

@@ -26,30 +26,31 @@ public final class ObjectUtils {
       Field[] fields = sourceClass.getDeclaredFields();
 
       for (Field sourceField : fields) {
-        try {
-          sourceField.setAccessible(true);
-          Object value = sourceField.get(source);
-          if (value != null) {
-            Field targetField;
-            try {
-              targetField = targetClass.getDeclaredField(sourceField.getName());
-            } catch (NoSuchFieldException e) {
-              continue; // target doesn't have this field
-            }
-
-            targetField.setAccessible(true);
-            targetField.set(target, value);
-          }
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(
-            "Failed to copy field: " + sourceField.getName(),
-            e
-          );
-        }
+        copyField(source, target, sourceField, targetClass);
       }
 
       sourceClass = sourceClass.getSuperclass();
       targetClass = targetClass.getSuperclass();
+    }
+  }
+
+  private static void copyField(
+    Object source,
+    Object target,
+    Field sourceField,
+    Class<?> targetClass
+  ) {
+    try {
+      sourceField.setAccessible(true);
+      Object value = sourceField.get(source);
+      if (value != null) {
+        Field targetField = targetClass.getDeclaredField(sourceField.getName());
+
+        targetField.setAccessible(true);
+        targetField.set(target, value);
+      }
+    } catch (IllegalAccessException | NoSuchFieldException e) {
+      throw new FailedToCopyFieldException(sourceField.getName(), e);
     }
   }
 }

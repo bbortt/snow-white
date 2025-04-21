@@ -25,8 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = SPRING, injectionStrategy = CONSTRUCTOR)
 public abstract class OpenApiCriterionResultMapper {
 
-  final String INCLUDED_REPORT_MAPPER = "openApiCriteriaToIncludedInReport";
-  final String OPENAPI_CRITERION_MAPPER = "getOpenApiCriterionByName";
+  private static final String INCLUDED_REPORT_MAPPER =
+    "openApiCriteriaToIncludedInReport";
+  private static final String OPENAPI_CRITERION_MAPPER =
+    "getOpenApiCriterionByName";
 
   @Autowired
   @Setter(PACKAGE)
