@@ -1,6 +1,10 @@
 <h1 align="center">Snow-White 🍎</h1>
 
 <p align="center">
+    <img src=".github/logo.png" alt="Snow-White Logo" width="100px" />
+</p>
+
+<p align="center">
     <i>An awesome pairing with, well.. do you know Snow White and the Jaeger?</i>
 </p>
 
