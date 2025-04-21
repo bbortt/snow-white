@@ -35,7 +35,7 @@ public class RoutingConfig {
       )
       .route("quality-gate-api", r ->
         r
-          .path("/api/rest/v1/quality-gates/**")
+          .path("/api/rest/v1/criteria/**", "/api/rest/v1/quality-gates/**")
           .uri(apiGatewayProperties.getQualityGateApiUrl())
       )
       .route("quality-gate-api-swagger", r ->
