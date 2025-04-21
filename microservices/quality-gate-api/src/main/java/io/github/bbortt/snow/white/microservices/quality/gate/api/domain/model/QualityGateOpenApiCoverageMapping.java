@@ -7,6 +7,10 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.CascadeType.DETACH;
+import static jakarta.persistence.CascadeType.MERGE;
+import static jakarta.persistence.CascadeType.PERSIST;
+import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -39,13 +43,17 @@ public class QualityGateOpenApiCoverageMapping {
 
   @Id
   @NotNull
-  @ManyToOne(optional = false, cascade = ALL, fetch = EAGER)
+  @ManyToOne(optional = false, cascade = { ALL }, fetch = EAGER)
   @JoinColumn(name = "quality_gate_configuration", nullable = false)
   private QualityGateConfiguration qualityGateConfiguration;
 
   @Id
   @NotNull
-  @ManyToOne(optional = false, cascade = ALL, fetch = EAGER)
+  @ManyToOne(
+    optional = false,
+    cascade = { PERSIST, MERGE, REFRESH, DETACH },
+    fetch = EAGER
+  )
   @JoinColumn(name = "open_api_coverage_configuration", nullable = false)
   private OpenApiCoverageConfiguration openApiCoverageConfiguration;
 
