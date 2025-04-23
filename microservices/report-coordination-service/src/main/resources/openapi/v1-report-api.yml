@@ -46,3 +46,44 @@ paths:
             application/json:
               schema:
                 $ref: './components/Error.yml'
+  /api/rest/v1/reports/{calculationId}/junit:
+    get:
+      operationId: getReportByCalculationIdAsJUnit
+      summary: 'Get Quality-Gate calculation results in JUnit XML format'
+      description: 'Retrieves the status and results of an asynchronous Quality-Gate calculation formatted as JUnit XML'
+      tags:
+        - report
+      parameters:
+        - name: calculationId
+          in: path
+          description: 'The UUID of the calculation job returned from the POST request'
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Quality-Gate calculation completed successfully'
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '202':
+          description: 'Calculation is still in progress'
+          content:
+            application/json:
+              schema:
+                $ref: './components/QualityGateReport.yml'
+        '404':
+          description: 'Calculation ID not found'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
