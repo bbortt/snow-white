@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.CalculatorUtils.getStartedStopWatch;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -38,6 +40,8 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
+    var stopWatch = getStartedStopWatch();
+
     var coveredPaths = new AtomicInteger(0);
     var uncoveredPaths = new ArrayList<String>();
 
@@ -59,6 +63,7 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
     return new OpenApiCriterionResult(
       HTTP_METHOD_COVERAGE,
       pathCoverage,
+      stopWatch.getDuration(),
       getAdditionalInformationOrNull(uncoveredPaths)
     );
   }

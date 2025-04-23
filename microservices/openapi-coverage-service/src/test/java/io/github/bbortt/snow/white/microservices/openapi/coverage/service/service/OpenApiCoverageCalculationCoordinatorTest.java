@@ -18,6 +18,7 @@ import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
       var openApiCriteriaResult = new OpenApiCriterionResult(
         PATH_COVERAGE,
         coverage,
+        Duration.ofSeconds(1),
         "additionalInformation"
       );
 

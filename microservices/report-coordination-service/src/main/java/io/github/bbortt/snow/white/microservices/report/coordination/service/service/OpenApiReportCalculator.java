@@ -57,17 +57,21 @@ public class OpenApiReportCalculator {
   ) {
     requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
       boolean criterionFound = false;
+
       for (OpenApiCriterionResult result : updatedOpenApiCriteria) {
         if (result.getOpenApiCriterion().getName().equals(criterionName)) {
           criterionFound = true;
+
           if (ONE.compareTo(result.getCoverage()) != 0) {
             logger.trace(
               "Criterion {} has insufficient coverage: {}",
               criterionName,
               result.getCoverage()
             );
+
             reportStatus.set(FAILED);
           }
+
           break;
         }
       }

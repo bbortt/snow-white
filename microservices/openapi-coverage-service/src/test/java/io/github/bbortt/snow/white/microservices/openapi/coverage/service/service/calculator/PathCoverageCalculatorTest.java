@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
@@ -17,6 +18,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.servic
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +96,12 @@ class PathCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -118,6 +126,12 @@ class PathCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -138,6 +152,12 @@ class PathCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following resources (ignoring request methods) are uncovered: /api/v1/users"
@@ -162,6 +182,12 @@ class PathCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }

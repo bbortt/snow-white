@@ -52,6 +52,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QualityGateConfig'
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: uri
+              description: URI to the newly created Quality-Gate Configuration
         '400':
           description: Invalid request
           content:
@@ -228,7 +235,7 @@ components:
         id:
           type: string
           description: Unique ID of the criterion
-          example: path-coverage
+          example: PATH_COVERAGE
         name:
           type: string
           description: Human-readable name

@@ -11,9 +11,11 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.P
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
@@ -93,6 +95,12 @@ class OpenApiReportCalculatorTest {
             OpenApiCriterion.builder().name(pathCoverage).build()
           )
           .coverage(ONE)
+          .build(),
+        OpenApiCriterionResult.builder()
+          .openApiCriterion(
+            OpenApiCriterion.builder().name(HTTP_METHOD_COVERAGE.name()).build()
+          )
+          .coverage(ZERO)
           .build()
       );
 
@@ -105,6 +113,17 @@ class OpenApiReportCalculatorTest {
       var calculationResult = fixture.calculate();
 
       assertThatCalculationResultHasStatus(calculationResult, PASSED);
+
+      assertThat(calculationResult)
+        .extracting(
+          OpenApiReportCalculator.CalculationResult::openApiCriterionResults
+        )
+        .asInstanceOf(SET)
+        .satisfiesOnlyOnce(criterionResult ->
+          assertThat(
+            ((OpenApiCriterionResult) criterionResult).getIncludedInReport()
+          ).isTrue()
+        );
     }
 
     @Test
@@ -185,7 +204,6 @@ class OpenApiReportCalculatorTest {
     @Test
     void shouldCorrectlySetIncludedInReportFlag() {
       var pathCoverage = PATH_COVERAGE.name();
-      var httpMethodCoverage = HTTP_METHOD_COVERAGE.name();
 
       // Only include pathCoverage in the included criteria
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
@@ -245,7 +263,7 @@ class OpenApiReportCalculatorTest {
         r ->
           assertThat(r.openApiCriterionResults())
             .isNotEmpty()
-            .allSatisfy(criterionResult ->
+            .satisfiesOnlyOnce(criterionResult ->
               assertThat(criterionResult.getIncludedInReport()).isTrue()
             )
             .allSatisfy(criterionResult ->
