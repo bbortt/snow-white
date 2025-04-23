@@ -67,6 +67,7 @@ public class QualityGateReport {
 
   @NotNull
   @Builder.Default
+  @Enumerated(STRING)
   @Column(nullable = false, updatable = false)
   private ReportStatus openApiCoverageStatus = NOT_STARTED;
 

@@ -9,8 +9,8 @@ paths:
   /api/rest/v1/reports/{calculationId}:
     get:
       operationId: getReportByCalculationId
-      summary: 'Get quality gate calculation results'
-      description: 'Retrieves the status and results of an asynchronous quality gate calculation'
+      summary: 'Get Quality-Gate calculation results'
+      description: 'Retrieves the status and results of an asynchronous Quality-Gate calculation'
       tags:
         - report
       parameters:
@@ -23,7 +23,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: 'Quality gate calculation completed successfully'
+          description: 'Quality-Gate calculation completed successfully'
           content:
             application/json:
               schema:

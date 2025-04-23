@@ -35,6 +35,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.ser
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +104,8 @@ class OpenApiResultListenerTest {
       > openApiCriteria = Set.of(
         new io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult(
           PATH_COVERAGE,
-          BigDecimal.valueOf(85.0)
+          BigDecimal.valueOf(85.0),
+          Duration.ofSeconds(1)
         )
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
@@ -224,11 +226,13 @@ class OpenApiResultListenerTest {
       > openApiCriteria = Set.of(
         new io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult(
           PATH_COVERAGE,
-          ONE
+          ONE,
+          Duration.ofSeconds(1)
         ),
         new io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult(
           HTTP_METHOD_COVERAGE,
-          ONE
+          ONE,
+          Duration.ofSeconds(1)
         )
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
@@ -304,11 +308,13 @@ class OpenApiResultListenerTest {
       > openApiCriteria = Set.of(
         new io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult(
           PATH_COVERAGE,
-          ONE
+          ONE,
+          Duration.ofSeconds(1)
         ),
         new io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult(
           HTTP_METHOD_COVERAGE,
-          BigDecimal.valueOf(85.0)
+          BigDecimal.valueOf(85.0),
+          Duration.ofSeconds(1)
         )
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);

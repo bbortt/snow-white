@@ -124,7 +124,8 @@ class QualityGateResourceIT {
   }
 
   @Test
-  void postRequestShouldTriggerABasicCoverageCalculation() throws Exception {
+  void postRequest_withAllParameters_shouldTriggerABasicCoverageCalculation()
+    throws Exception {
     var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
 
     var qualityGateCalculationRequest = QualityGateCalculationRequest.builder()
@@ -156,6 +157,77 @@ class QualityGateResourceIT {
 
     assertThat(qualityGateReportRepository.findById(calculationId)).isPresent();
 
+    assertThatKafkaEventHasBeenPublished(
+      calculationIdStr,
+      qualityGateCalculationRequest,
+      qualityGateCalculationRequest.getLookbackWindow()
+    );
+
+    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  @Test
+  void postRequest_withRequiredParameters_shouldTriggerABasicCoverageCalculation()
+    throws Exception {
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
+
+    var qualityGateCalculationRequest = QualityGateCalculationRequest.builder()
+      .serviceName("star-wars")
+      .apiName("yoda")
+      .lookbackWindow(null)
+      .build();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(CALCULATION_REQUEST_API_URL, "basic-coverage")
+          .contentType(APPLICATION_JSON)
+          .content(
+            objectMapper.writeValueAsString(qualityGateCalculationRequest)
+          )
+      )
+      .andExpect(status().isAccepted())
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = objectMapper.readTree(contentAsString);
+    String calculationIdStr = responseJson.get("calculationId").asText();
+
+    assertThat(calculationIdStr).isNotEmpty();
+    var calculationId = assertDoesNotThrow(() ->
+      UUID.fromString(calculationIdStr)
+    );
+
+    assertThat(qualityGateReportRepository.findById(calculationId)).isPresent();
+
+    assertThatKafkaEventHasBeenPublished(
+      calculationIdStr,
+      qualityGateCalculationRequest,
+      "1h"
+    );
+
+    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  private @NotNull String createQualityGateApiWiremockStub()
+    throws JsonProcessingException {
+    var qualityGateConfig = new QualityGateConfig().name("basic-coverage");
+
+    var qualityGateByNameEndpoint = "/api/rest/v1/quality-gates/basic-coverage";
+    stubFor(
+      get(qualityGateByNameEndpoint).willReturn(
+        okJson(objectMapper.writeValueAsString(qualityGateConfig))
+      )
+    );
+
+    return qualityGateByNameEndpoint;
+  }
+
+  private void assertThatKafkaEventHasBeenPublished(
+    String calculationIdStr,
+    QualityGateCalculationRequest qualityGateCalculationRequest,
+    String lookbackWindow
+  ) {
     await()
       .atMost(5, SECONDS)
       .untilAsserted(
@@ -184,26 +256,10 @@ class QualityGateResourceIT {
                   ),
                 event ->
                   assertThat(event.getLookbackWindow()).isEqualTo(
-                    qualityGateCalculationRequest.getLookbackWindow()
+                    lookbackWindow
                   )
               )
           )
       );
-
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
-  }
-
-  private @NotNull String createQualityGateApiWiremockStub()
-    throws JsonProcessingException {
-    var qualityGateConfig = new QualityGateConfig().name("basic-coverage");
-
-    var qualityGateByNameEndpoint = "/api/rest/v1/quality-gates/basic-coverage";
-    stubFor(
-      get(qualityGateByNameEndpoint).willReturn(
-        okJson(objectMapper.writeValueAsString(qualityGateConfig))
-      )
-    );
-
-    return qualityGateByNameEndpoint;
   }
 }

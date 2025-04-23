@@ -1,4 +1,9 @@
 type: object
+required:
+  - calculationId
+  - status
+  - calculationRequest
+  - initiatedAt
 properties:
   calculationId:
     type: string
@@ -15,3 +20,7 @@ properties:
     type: string
     format: date-time
     description: 'When the calculation was initiated'
+  openApiCriterionResults:
+    type: array
+    items:
+      $ref: './OpenApiCriterionReport.yml'
