@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
@@ -17,9 +18,12 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.servic
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.assertj.core.api.InstanceOfAssertFactory;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -95,6 +99,12 @@ class MethodCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(HTTP_METHOD_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -119,6 +129,12 @@ class MethodCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(HTTP_METHOD_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: GET_/api/v1/comments"
@@ -147,6 +163,12 @@ class MethodCoverageCalculatorTest {
         r -> assertThat(r.openApiCriteria()).isEqualTo(HTTP_METHOD_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
         r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
+        r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: POST_/api/v1/users"
           )
@@ -169,6 +191,12 @@ class MethodCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(HTTP_METHOD_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: POST_/api/v1/users, GET_/api/v1/users"
@@ -193,6 +221,12 @@ class MethodCoverageCalculatorTest {
       assertThat(result).satisfies(
         r -> assertThat(r.openApiCriteria()).isEqualTo(HTTP_METHOD_COVERAGE),
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isGreaterThan(0),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }

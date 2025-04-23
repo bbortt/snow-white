@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.CalculatorUtils.getStartedStopWatch;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -43,6 +44,8 @@ public class PathCoverageCalculator implements OpenApiCoverageCalculator {
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
+    var stopWatch = getStartedStopWatch();
+
     var availableResources = pathToOpenAPIOperationMap
       .keySet()
       .stream()
@@ -82,6 +85,7 @@ public class PathCoverageCalculator implements OpenApiCoverageCalculator {
     return new OpenApiCriterionResult(
       PATH_COVERAGE,
       pathCoverage,
+      stopWatch.getDuration(),
       getAdditionalInformationOrNull(uncoveredResources)
     );
   }

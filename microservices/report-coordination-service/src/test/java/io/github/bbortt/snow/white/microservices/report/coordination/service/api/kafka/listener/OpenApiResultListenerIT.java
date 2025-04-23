@@ -13,8 +13,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static java.math.RoundingMode.HALF_UP;
+import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -23,15 +27,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -68,15 +79,100 @@ class OpenApiResultListenerIT {
   private ObjectMapper objectMapper;
 
   @Autowired
+  private OpenApiCriterionRepository openApiCriterionRepository;
+
+  @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
 
   @Autowired
   private ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
+  @BeforeEach
+  void beforeEachSetup() {
+    var missingOpenApiCriteria = stream(OpenApiCriteria.values())
+      .map(openApiCriteria ->
+        OpenApiCriterion.builder().name(openApiCriteria.name()).build()
+      )
+      .filter(openApiCriterion ->
+        openApiCriterionRepository
+          .findByName(openApiCriterion.getName())
+          .isEmpty()
+      )
+      .toList();
+
+    // This ensures that entity merging is done properly
+    openApiCriterionRepository.saveAll(missingOpenApiCriteria);
+  }
+
   @Test
-  void calculateAndPersistQualityGateReport() throws JsonProcessingException {
+  void kafkaEvent_withCoveredCriteria_shouldBePersisted()
+    throws JsonProcessingException {
     var calculationId = UUID.fromString("6fa77498-a7aa-48d2-8f1d-dee93eb45780");
 
+    var qualityGateConfigName = persistInitialQualityGateReport(calculationId);
+
+    var openApiCriterion = PATH_COVERAGE;
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub(
+      qualityGateConfigName,
+      openApiCriterion
+    );
+
+    var duration = Duration.ofMillis(1234);
+    kafkaTemplate.send(
+      reportCoordinationServiceProperties
+        .getOpenapiCalculationResponse()
+        .getTopic(),
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        Set.of(new OpenApiCriterionResult(openApiCriterion, ONE, duration))
+      )
+    );
+
+    assertThatEntityHasBeenUpdated(
+      calculationId,
+      PASSED,
+      ONE.setScale(2, HALF_UP),
+      duration
+    );
+
+    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  @Test
+  void kafkaEvent_withUncoveredCriteria_shouldBePersisted()
+    throws JsonProcessingException {
+    var calculationId = UUID.fromString("dc296f73-8124-4bd3-bc09-5518bdb5be6e");
+
+    var qualityGateConfigName = persistInitialQualityGateReport(calculationId);
+
+    var openApiCriterion = PATH_COVERAGE;
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub(
+      qualityGateConfigName,
+      openApiCriterion
+    );
+
+    var duration = Duration.ofMillis(1234);
+    kafkaTemplate.send(
+      reportCoordinationServiceProperties
+        .getOpenapiCalculationResponse()
+        .getTopic(),
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        Set.of(new OpenApiCriterionResult(openApiCriterion, ZERO, duration))
+      )
+    );
+
+    assertThatEntityHasBeenUpdated(
+      calculationId,
+      FAILED,
+      ZERO.setScale(2, HALF_UP),
+      duration
+    );
+
+    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  private @NotNull String persistInitialQualityGateReport(UUID calculationId) {
     var qualityGateConfigName = "minimal";
     qualityGateReportRepository.save(
       QualityGateReport.builder()
@@ -92,40 +188,16 @@ class OpenApiResultListenerIT {
         )
         .build()
     );
-
-    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub(
-      qualityGateConfigName
-    );
-
-    kafkaTemplate.send(
-      reportCoordinationServiceProperties
-        .getOpenapiCalculationResponse()
-        .getTopic(),
-      calculationId.toString(),
-      new OpenApiCoverageResponseEvent(
-        Set.of(new OpenApiCriterionResult(PATH_COVERAGE, ONE))
-      )
-    );
-
-    await()
-      .atMost(5, SECONDS)
-      .untilAsserted(
-        () -> qualityGateReportRepository.findById(calculationId),
-        qualityGateReport ->
-          assertThat(qualityGateReport)
-            .isPresent()
-            .get()
-            .extracting(QualityGateReport::getReportStatus)
-            .isEqualTo(PASSED)
-      );
-
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+    return qualityGateConfigName;
   }
 
   private @NotNull String createQualityGateApiWiremockStub(
-    String qualityGateConfigName
+    String qualityGateConfigName,
+    OpenApiCriteria openApiCriterion
   ) throws JsonProcessingException {
-    var qualityGateConfig = new QualityGateConfig().name(qualityGateConfigName);
+    var qualityGateConfig = new QualityGateConfig()
+      .name(qualityGateConfigName)
+      .addOpenapiCriteriaItem(openApiCriterion.name());
 
     var qualityGateByNameEndpoint =
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;
@@ -136,5 +208,51 @@ class OpenApiResultListenerIT {
     );
 
     return qualityGateByNameEndpoint;
+  }
+
+  private void assertThatEntityHasBeenUpdated(
+    UUID calculationId,
+    ReportStatus reportStatus,
+    BigDecimal coverage,
+    Duration duration
+  ) {
+    await()
+      .atMost(5, SECONDS)
+      .untilAsserted(
+        () -> qualityGateReportRepository.findById(calculationId),
+        qualityGateReport ->
+          assertThat(qualityGateReport)
+            .isPresent()
+            .get()
+            .satisfies(
+              report ->
+                assertThat(report.getReportStatus()).isEqualTo(reportStatus),
+              report ->
+                assertThat(report.getOpenApiCriterionResults())
+                  .hasSize(1)
+                  .first()
+                  .satisfies(
+                    openApiResult ->
+                      assertThat(openApiResult.getOpenApiCriterion())
+                        .isNotNull()
+                        .extracting(OpenApiCriterion::getName)
+                        .isEqualTo(PATH_COVERAGE.name()),
+                    openApiResult ->
+                      assertThat(openApiResult.getCoverage()).isEqualTo(
+                        coverage
+                      ),
+                    openApiResult ->
+                      assertThat(openApiResult.getIncludedInReport()).isTrue(),
+                    openApiResult ->
+                      assertThat(openApiResult.getDuration()).isEqualTo(
+                        duration
+                      ),
+                    openApiResult ->
+                      assertThat(
+                        openApiResult.getAdditionalInformation()
+                      ).isNull()
+                  )
+            )
+      );
   }
 }

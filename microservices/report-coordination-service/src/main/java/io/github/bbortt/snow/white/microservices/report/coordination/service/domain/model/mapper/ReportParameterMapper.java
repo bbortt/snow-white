@@ -16,6 +16,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = SPRING)
 public interface ReportParameterMapper {
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "lookbackWindow", defaultValue = "1h")
   ReportParameters fromDto(
     QualityGateCalculationRequest qualityGateCalculationRequest
   );

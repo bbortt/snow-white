@@ -40,7 +40,6 @@ public abstract class OpenApiCriterionResultMapper {
     > openApiCriterionResults
   );
 
-  @Mapping(target = "id", ignore = true)
   @Mapping(
     target = "openApiCriterion",
     source = "openApiCriteria",
@@ -70,8 +69,6 @@ public abstract class OpenApiCriterionResultMapper {
     String criterionName = openApiCriteria.name();
     return openApiCriterionRepository
       .findByName(criterionName)
-      .orElseGet(() ->
-        OpenApiCriterion.builder().name(openApiCriteria.name()).build()
-      );
+      .orElseGet(() -> OpenApiCriterion.builder().name(criterionName).build());
   }
 }

@@ -56,8 +56,9 @@ public class ReportParameters {
   private @Nullable String apiVersion;
 
   @NotEmpty
+  @Builder.Default
   @Column(nullable = false, updatable = false)
-  private String lookbackWindow;
+  private String lookbackWindow = "1h";
 
   @Builder.Default
   @ElementCollection
