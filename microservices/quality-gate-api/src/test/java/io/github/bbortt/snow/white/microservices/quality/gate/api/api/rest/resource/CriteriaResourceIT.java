@@ -8,7 +8,10 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +45,7 @@ class CriteriaResourceIT {
     var content = mockMvc
       .perform(get(OPENAPI_ENTITY_API_URL))
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.length()").value(OpenApiCriteria.values().length))
       .andReturn()
       .getResponse()

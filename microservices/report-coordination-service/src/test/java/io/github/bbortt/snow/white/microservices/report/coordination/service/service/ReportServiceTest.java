@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +25,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.dom
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -192,13 +195,28 @@ class ReportServiceTest {
         reportParameters
       );
 
-      QualityGateReport capturedReport = reportCaptor.getValue();
-      assertThat(capturedReport.getQualityGateConfigName()).isEqualTo(
-        qualityGateConfigName
+      List<QualityGateReport> savedQualityGateReports =
+        reportCaptor.getAllValues();
+      assertThat(savedQualityGateReports).hasSize(2);
+
+      assertThat(savedQualityGateReports.getFirst()).satisfies(
+        capturedReport ->
+          assertThat(capturedReport.getQualityGateConfigName()).isEqualTo(
+            qualityGateConfigName
+          ),
+        capturedReport ->
+          assertThat(capturedReport.getReportParameters()).isEqualTo(
+            reportParameters
+          ),
+        capturedReport ->
+          assertThat(capturedReport.getOpenApiCoverageStatus()).isEqualTo(
+            NOT_STARTED
+          )
       );
-      assertThat(capturedReport.getReportParameters()).isEqualTo(
-        reportParameters
-      );
+
+      assertThat(savedQualityGateReports.getLast())
+        .extracting(QualityGateReport::getOpenApiCoverageStatus)
+        .isEqualTo(IN_PROGRESS);
     }
   }
 
