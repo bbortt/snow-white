@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<testsuites name="TransformToJUnitReport" tests="0" failures="0" errors="0" skipped="0" time="0" timestamp="2025-04-24T22:30:00Z">
+    <testsuite name="OpenAPI Specification" time="0"/>
+</testsuites>

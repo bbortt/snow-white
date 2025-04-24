@@ -12,7 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -67,6 +69,7 @@ class QualityGateResourceIT {
           .content(objectMapper.writeValueAsString(qualityGateConfig))
       )
       .andExpect(status().isCreated())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(
         header()
           .string("location", format("/api/rest/v1/quality-gates/%s", name))
@@ -120,6 +123,7 @@ class QualityGateResourceIT {
     mockMvc
       .perform(get(ENTITY_API_URL))
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.names.length()").value(4))
       .andExpect(
         jsonPath("$.names").value(
@@ -137,6 +141,7 @@ class QualityGateResourceIT {
     mockMvc
       .perform(get(ENTITY_API_URL))
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.names.length()").value(5))
       .andExpect(
         jsonPath("$.names[0]").value(qualityGateConfiguration.getName())
@@ -163,6 +168,7 @@ class QualityGateResourceIT {
     mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName()))
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.name").value(qualityGateConfiguration.getName()))
       .andExpect(
         jsonPath("$.description").value(
@@ -190,6 +196,7 @@ class QualityGateResourceIT {
           .content(objectMapper.writeValueAsString(qualityGateConfiguration))
       )
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.name").value(qualityGateConfiguration.getName()))
       .andExpect(
         jsonPath("$.description").value(

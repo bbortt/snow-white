@@ -9,14 +9,22 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.lang.Boolean.TRUE;
+import static java.math.BigDecimal.ONE;
 import static java.math.RoundingMode.HALF_UP;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.util.StreamUtils.copyToString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
@@ -42,6 +50,8 @@ class ReportResourceIT {
   private static final String ENTITY_API_URL = "/api/rest/v1/reports";
   private static final String SINGLE_ENTITY_API_URL =
     ENTITY_API_URL + "/{calculationId}";
+  private static final String JUNIT_REPORT_API_URL =
+    ENTITY_API_URL + "/{calculationId}/junit";
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -83,6 +93,7 @@ class ReportResourceIT {
     mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, calculationId))
       .andExpect(status().isAccepted())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.calculationId").value(calculationId.toString()))
       .andExpect(jsonPath("$.status").value(IN_PROGRESS.name()))
       .andExpect(
@@ -146,6 +157,7 @@ class ReportResourceIT {
     var responseAsString = mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, calculationId))
       .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andReturn()
       .getResponse()
       .getContentAsString();
@@ -195,5 +207,59 @@ class ReportResourceIT {
     mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, "not-a-uuid"))
       .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
+    throws Exception {
+    var openApiCriterion = openApiCriterionRepository.save(
+      OpenApiCriterion.builder().name(PATH_COVERAGE.name()).build()
+    );
+
+    var calculationId = UUID.fromString("aaac28e5-2d0e-4ea6-8fef-4dc85169759e");
+
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .reportParameters(
+          ReportParameters.builder()
+            .serviceName("serviceName")
+            .apiName("apiName")
+            .build()
+        )
+        .reportStatus(PASSED)
+        .build()
+    );
+
+    var openApiCriterionResult = OpenApiCriterionResult.builder()
+      .openApiCriterion(openApiCriterion)
+      .qualityGateReport(qualityGateReport)
+      .coverage(ONE)
+      .includedInReport(TRUE)
+      .duration(Duration.ofSeconds(1))
+      .build();
+
+    qualityGateReport = qualityGateReport.withOpenApiCriterionResults(
+      Set.of(openApiCriterionResult)
+    );
+    qualityGateReportRepository.save(qualityGateReport);
+
+    var jUnitReport = mockMvc
+      .perform(get(JUNIT_REPORT_API_URL, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_XML_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    assertThat(jUnitReport).isEqualTo(
+      copyToString(
+        getClass()
+          .getClassLoader()
+          .getResourceAsStream("ReportResourceIT/JUnitReport.xml"),
+        UTF_8
+      )
+    );
   }
 }

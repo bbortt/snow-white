@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 @IntegrationTest
-class QualityGateQualityGateReportMapperIT {
+class QualityGateReportMapperIT {
 
   @Autowired
   private ApplicationContext applicationContext;

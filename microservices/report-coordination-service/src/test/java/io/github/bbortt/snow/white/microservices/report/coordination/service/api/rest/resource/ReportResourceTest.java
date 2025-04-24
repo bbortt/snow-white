@@ -13,8 +13,10 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -22,6 +24,8 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReportCreationException;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,11 +35,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith({ MockitoExtension.class })
 class ReportResourceTest {
+
+  @Mock
+  private JUnitReporter jUnitReporterMock;
 
   @Mock
   private ReportService reportServiceMock;
@@ -48,6 +56,7 @@ class ReportResourceTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new ReportResource(
+      jUnitReporterMock,
       reportServiceMock,
       qualityGateReportMapperMock
     );
@@ -129,7 +138,10 @@ class ReportResourceTest {
             assertThat(r.getBody())
               .asInstanceOf(type(Error.class))
               .satisfies(
-                e -> assertThat(e.getCode()).isEqualTo("Not Found"),
+                e ->
+                  assertThat(e.getCode()).isEqualTo(
+                    NOT_FOUND.getReasonPhrase()
+                  ),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
                     format("No report by id '%s' exists!", calculationId)
@@ -160,6 +172,105 @@ class ReportResourceTest {
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(ok),
           r -> assertThat(r.getBody()).isEqualTo(responseDto)
+        );
+    }
+  }
+
+  @Nested
+  class GetReportByCalculationIdAsJUnit {
+
+    @Mock
+    private QualityGateReport qualityGateReport;
+
+    @Test
+    void shouldReturnJUnitReport() throws JUnitReportCreationException {
+      var calculationId = UUID.fromString(
+        "81699bec-99a0-4c8f-a9d0-06729477fe00"
+      );
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+
+      var junitReport = mock(Resource.class);
+      doReturn(junitReport)
+        .when(jUnitReporterMock)
+        .transformToJUnitReport(qualityGateReport);
+
+      var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+          r -> assertThat(r.getBody()).isEqualTo(junitReport)
+        );
+    }
+
+    @Test
+    void shouldReturnHttpNotFound_whenReportByCalculationIdNotFound() {
+      var calculationId = UUID.fromString(
+        "12cfbdd4-f2f2-4b16-98fa-5dde81be1541"
+      );
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+
+      var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(Error.class))
+              .satisfies(
+                e ->
+                  assertThat(e.getCode()).isEqualTo(
+                    NOT_FOUND.getReasonPhrase()
+                  ),
+                e ->
+                  assertThat(e.getMessage()).isEqualTo(
+                    format("No report by id '%s' exists!", calculationId)
+                  )
+              )
+        );
+    }
+
+    @Test
+    void shouldReturnInternalServerError_whenJUnitReportCreationFails()
+      throws JUnitReportCreationException {
+      var calculationId = UUID.fromString(
+        "1797354a-4230-4dd2-b1d2-2923f6424d05"
+      );
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+
+      var cause = mock(JUnitReportCreationException.class);
+      doThrow(cause)
+        .when(jUnitReporterMock)
+        .transformToJUnitReport(qualityGateReport);
+
+      var message = "some error message";
+      doReturn(message).when(cause).getMessage();
+
+      var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(Error.class))
+              .satisfies(
+                e ->
+                  assertThat(e.getCode()).isEqualTo(
+                    INTERNAL_SERVER_ERROR.getReasonPhrase()
+                  ),
+                e -> assertThat(e.getMessage()).isEqualTo(message)
+              )
         );
     }
   }
