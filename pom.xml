@@ -51,7 +51,7 @@
     </sonar.jacoco.reportPaths>
 
     <!-- Dependency Management -->
-    <spring-boot.version>3.4.4</spring-boot.version>
+    <spring-boot.version>3.4.5</spring-boot.version>
   </properties>
 
   <dependencyManagement>
