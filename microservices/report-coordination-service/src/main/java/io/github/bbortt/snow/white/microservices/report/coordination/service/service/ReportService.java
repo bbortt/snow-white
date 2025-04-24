@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
@@ -64,9 +66,7 @@ public class ReportService {
       reportParameters
     );
 
-    dispatchOpenApiCoverageCalculation(qualityGateReport);
-
-    return qualityGateReport;
+    return dispatchOpenApiCoverageCalculation(qualityGateReport);
   }
 
   private QualityGateReport createInitialReport(
@@ -81,7 +81,7 @@ public class ReportService {
     );
   }
 
-  private void dispatchOpenApiCoverageCalculation(
+  private QualityGateReport dispatchOpenApiCoverageCalculation(
     QualityGateReport qualityGateReport
   ) {
     var reportParameters = qualityGateReport.getReportParameters();
@@ -95,6 +95,10 @@ public class ReportService {
         .apiVersion(reportParameters.getApiVersion())
         .lookbackWindow(reportParameters.getLookbackWindow())
         .build()
+    );
+
+    return qualityGateReportRepository.save(
+      qualityGateReport.withOpenApiCoverageStatus(IN_PROGRESS)
     );
   }
 
