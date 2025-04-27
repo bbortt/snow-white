@@ -8,8 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.OpenApiCriterionReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import java.time.Instant;
@@ -27,8 +26,10 @@ public interface QualityGateReportMapper {
     QualityGateReport qualityGateReport
   );
 
-  @Mapping(target = "id", source = "openApiCriterion.name")
-  OpenApiCriterionReport toDto(OpenApiCriterionResult openApiCriterionResult);
+  @Mapping(target = "id", source = "openApiTestCriteria.name")
+  io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.OpenApiTestResult toDto(
+    OpenApiTestResult openApiTestResult
+  );
 
   default OffsetDateTime map(Instant instant) {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());

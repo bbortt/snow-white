@@ -74,7 +74,7 @@ public class QualityGateReport {
   @NotNull
   @Builder.Default
   @OneToMany(mappedBy = "qualityGateReport", cascade = { ALL }, fetch = EAGER)
-  private Set<OpenApiCriterionResult> openApiCriterionResults = new HashSet<>();
+  private Set<OpenApiTestResult> openApiTestResults = new HashSet<>();
 
   @NotNull
   @Builder.Default

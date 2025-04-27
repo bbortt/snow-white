@@ -40,8 +40,8 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-@IdClass(OpenApiCriterionResult.OpenApiCriterionResultId.class)
-public class OpenApiCriterionResult {
+@IdClass(OpenApiTestResult.OpenApiCriterionResultId.class)
+public class OpenApiTestResult {
 
   @Id
   @NotNull
@@ -51,7 +51,7 @@ public class OpenApiCriterionResult {
     fetch = EAGER
   )
   @JoinColumn(name = "open_api_criterion", nullable = false)
-  private OpenApiCriterion openApiCriterion;
+  private OpenApiTestCriteria openApiTestCriteria;
 
   @NotNull
   @Column(nullable = false, updatable = false)
@@ -77,7 +77,7 @@ public class OpenApiCriterionResult {
   @Data
   public static class OpenApiCriterionResultId implements Serializable {
 
-    private Long openApiCriterion;
+    private Long openApiTestCriteria;
     private UUID qualityGateReport;
   }
 }

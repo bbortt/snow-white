@@ -20,7 +20,7 @@ properties:
     type: string
     format: date-time
     description: 'When the calculation was initiated'
-  openApiCriterionResults:
+  openApiTestResults:
     type: array
     items:
-      $ref: './OpenApiCriterionReport.yml'
+      $ref: './OpenApiTestResult.yml'

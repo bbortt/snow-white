@@ -28,14 +28,15 @@ import static org.springframework.util.StreamUtils.copyToString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -111,7 +112,7 @@ class ReportResourceIT {
   @Test
   void findReport_withOpenApiResults_byCalculationId() throws Exception {
     var openApiCriterion = openApiCriterionRepository.save(
-      OpenApiCriterion.builder().name(PATH_COVERAGE.name()).build()
+      OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
     );
 
     var calculationId = UUID.fromString("3130fae9-e67c-43cd-9c2d-23aee9920736");
@@ -140,8 +141,8 @@ class ReportResourceIT {
     var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
     var additionalInformation = "some additional information";
 
-    var openApiCriterionResult = OpenApiCriterionResult.builder()
-      .openApiCriterion(openApiCriterion)
+    var openApiCriterionResult = OpenApiTestResult.builder()
+      .openApiTestCriteria(openApiCriterion)
       .qualityGateReport(qualityGateReport)
       .coverage(coverage)
       .includedInReport(TRUE)
@@ -149,7 +150,7 @@ class ReportResourceIT {
       .additionalInformation(additionalInformation)
       .build();
 
-    qualityGateReport = qualityGateReport.withOpenApiCriterionResults(
+    qualityGateReport = qualityGateReport.withOpenApiTestResults(
       Set.of(openApiCriterionResult)
     );
     qualityGateReportRepository.save(qualityGateReport);
@@ -187,7 +188,7 @@ class ReportResourceIT {
           ),
       report -> assertThat(report.getInitiatedAt()).isNotNull(),
       report ->
-        assertThat(report.getOpenApiCriterionResults())
+        assertThat(report.getOpenApiTestResults())
           .hasSize(1)
           .first()
           .satisfies(
@@ -213,7 +214,7 @@ class ReportResourceIT {
   void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
     throws Exception {
     var openApiCriterion = openApiCriterionRepository.save(
-      OpenApiCriterion.builder().name(PATH_COVERAGE.name()).build()
+      OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
     );
 
     var calculationId = UUID.fromString("aaac28e5-2d0e-4ea6-8fef-4dc85169759e");
@@ -229,18 +230,19 @@ class ReportResourceIT {
             .build()
         )
         .reportStatus(PASSED)
+        .createdAt(Instant.parse("2025-04-28T08:00:00.00Z"))
         .build()
     );
 
-    var openApiCriterionResult = OpenApiCriterionResult.builder()
-      .openApiCriterion(openApiCriterion)
+    var openApiCriterionResult = OpenApiTestResult.builder()
+      .openApiTestCriteria(openApiCriterion)
       .qualityGateReport(qualityGateReport)
       .coverage(ONE)
       .includedInReport(TRUE)
       .duration(Duration.ofSeconds(1))
       .build();
 
-    qualityGateReport = qualityGateReport.withOpenApiCriterionResults(
+    qualityGateReport = qualityGateReport.withOpenApiTestResults(
       Set.of(openApiCriterionResult)
     );
     qualityGateReportRepository.save(qualityGateReport);

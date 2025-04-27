@@ -22,7 +22,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -42,7 +42,7 @@ public class OpenApiCoverageService {
   private final OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinator;
   private final OpenTelemetryService openTelemetryService;
 
-  public Set<OpenApiCriterionResult> gatherDataAndCalculateCoverage(
+  public Set<OpenApiTestResult> gatherDataAndCalculateCoverage(
     OpenApiService.OpenApiCoverageRequest openApiCoverageRequest
   ) {
     var openTelemetryData = openTelemetryService.findTracingData(
@@ -62,7 +62,7 @@ public class OpenApiCoverageService {
     );
   }
 
-  private Set<OpenApiCriterionResult> calculateCoverage(
+  private Set<OpenApiTestResult> calculateCoverage(
     OpenAPI openApi,
     List<OpenTelemetryData> telemetryData
   ) {

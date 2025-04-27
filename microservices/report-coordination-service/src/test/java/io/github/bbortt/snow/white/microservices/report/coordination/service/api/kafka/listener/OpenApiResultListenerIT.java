@@ -26,12 +26,12 @@ import static org.awaitility.Awaitility.await;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
@@ -91,7 +91,7 @@ class OpenApiResultListenerIT {
   void beforeEachSetup() {
     var missingOpenApiCriteria = stream(OpenApiCriteria.values())
       .map(openApiCriteria ->
-        OpenApiCriterion.builder().name(openApiCriteria.name()).build()
+        OpenApiTestCriteria.builder().name(openApiCriteria.name()).build()
       )
       .filter(openApiCriterion ->
         openApiCriterionRepository
@@ -124,7 +124,7 @@ class OpenApiResultListenerIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
-        Set.of(new OpenApiCriterionResult(openApiCriterion, ONE, duration))
+        Set.of(new OpenApiTestResult(openApiCriterion, ONE, duration))
       )
     );
 
@@ -158,7 +158,7 @@ class OpenApiResultListenerIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
-        Set.of(new OpenApiCriterionResult(openApiCriterion, ZERO, duration))
+        Set.of(new OpenApiTestResult(openApiCriterion, ZERO, duration))
       )
     );
 
@@ -228,14 +228,14 @@ class OpenApiResultListenerIT {
               report ->
                 assertThat(report.getReportStatus()).isEqualTo(reportStatus),
               report ->
-                assertThat(report.getOpenApiCriterionResults())
+                assertThat(report.getOpenApiTestResults())
                   .hasSize(1)
                   .first()
                   .satisfies(
                     openApiResult ->
-                      assertThat(openApiResult.getOpenApiCriterion())
+                      assertThat(openApiResult.getOpenApiTestCriteria())
                         .isNotNull()
-                        .extracting(OpenApiCriterion::getName)
+                        .extracting(OpenApiTestCriteria::getName)
                         .isEqualTo(PATH_COVERAGE.name()),
                     openApiResult ->
                       assertThat(openApiResult.getCoverage()).isEqualTo(

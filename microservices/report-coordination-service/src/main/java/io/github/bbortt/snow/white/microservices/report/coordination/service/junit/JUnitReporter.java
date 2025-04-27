@@ -13,7 +13,7 @@ import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -21,7 +21,6 @@ import jakarta.xml.bind.Marshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -74,17 +73,17 @@ public class JUnitReporter {
         .timestamp(qualityGateReport.getCreatedAt().toString())
         .build();
 
-      if (nonNull(qualityGateReport.getOpenApiCriterionResults())) {
+      if (nonNull(qualityGateReport.getOpenApiTestResults())) {
         var openApiTestSuite = TestSuite.builder()
           .name("OpenAPI Specification")
           .build();
 
         qualityGateReport
-          .getOpenApiCriterionResults()
+          .getOpenApiTestResults()
           .stream()
           .sorted(
             comparing(openApiCriterionResult ->
-              openApiCriterionResult.getOpenApiCriterion().getName()
+              openApiCriterionResult.getOpenApiTestCriteria().getName()
             )
           )
           .map(this::generateOpenApiTestCase)
@@ -100,30 +99,29 @@ public class JUnitReporter {
     }
 
     private TestCase generateOpenApiTestCase(
-      OpenApiCriterionResult openApiCriterionResult
+      OpenApiTestResult openApiTestResult
     ) {
       var openApiCriteria = OpenApiCriteria.valueOf(
-        openApiCriterionResult.getOpenApiCriterion().getName()
+        openApiTestResult.getOpenApiTestCriteria().getName()
       );
 
       var testCase = TestCase.builder()
         .name(openApiCriteria.getLabel())
         .classname(openApiCriteria.name())
-        .time(toSecondsWithPrecision(openApiCriterionResult.getDuration()))
+        .time(toSecondsWithPrecision(openApiTestResult.getDuration()))
         .build();
 
       tests.getAndIncrement();
-      time.getAndUpdate(current ->
-        current.plus(openApiCriterionResult.getDuration())
+      time.getAndUpdate(current -> current.plus(openApiTestResult.getDuration())
       );
 
-      if (openApiCriterionResult.getCoverage().compareTo(ONE) < 0) {
+      if (openApiTestResult.getCoverage().compareTo(ONE) < 0) {
         failures.getAndIncrement();
 
         return testCase.withFailure(
           Failure.builder()
             .type("coverage")
-            .message(openApiCriterionResult.getAdditionalInformation())
+            .message(openApiTestResult.getAdditionalInformation())
             .build()
         );
       }

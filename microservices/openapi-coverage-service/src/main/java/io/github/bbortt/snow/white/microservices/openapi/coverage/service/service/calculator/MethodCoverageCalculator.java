@@ -12,7 +12,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.service
 import static java.lang.String.format;
 import static java.lang.String.join;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -36,7 +35,7 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
   }
 
   @Override
-  public OpenApiCriterionResult calculate(
+  public OpenApiTestResult calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
@@ -60,7 +59,7 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
       pathToOpenAPIOperationMap.size()
     );
 
-    return new OpenApiCriterionResult(
+    return new OpenApiTestResult(
       HTTP_METHOD_COVERAGE,
       pathCoverage,
       stopWatch.getDuration(),

@@ -11,13 +11,13 @@ import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 
-public record OpenApiCriterionResult(
+public record OpenApiTestResult(
   OpenApiCriteria openApiCriteria,
   BigDecimal coverage,
   Duration duration,
   @Nullable String additionalInformation
 ) {
-  public OpenApiCriterionResult(
+  public OpenApiTestResult(
     OpenApiCriteria openApiCriteria,
     BigDecimal coverage,
     Duration duration
