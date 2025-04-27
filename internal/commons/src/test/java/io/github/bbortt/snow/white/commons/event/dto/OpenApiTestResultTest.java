@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-class OpenApiCriterionResultTest {
+class OpenApiTestResultTest {
 
   @Test
   void allArgsConstructor() {
@@ -21,12 +21,7 @@ class OpenApiCriterionResultTest {
     var additionalInformation = "additionalInformation";
 
     assertThat(
-      new OpenApiCriterionResult(
-        PATH_COVERAGE,
-        ONE,
-        duration,
-        additionalInformation
-      )
+      new OpenApiTestResult(PATH_COVERAGE, ONE, duration, additionalInformation)
     ).satisfies(
       r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
       r -> assertThat(r.coverage()).isEqualTo(ONE),
@@ -40,9 +35,7 @@ class OpenApiCriterionResultTest {
   void requiredArgsConstructor() {
     var duration = Duration.ofSeconds(1);
 
-    assertThat(
-      new OpenApiCriterionResult(PATH_COVERAGE, ONE, duration)
-    ).satisfies(
+    assertThat(new OpenApiTestResult(PATH_COVERAGE, ONE, duration)).satisfies(
       r -> assertThat(r.openApiCriteria()).isEqualTo(PATH_COVERAGE),
       r -> assertThat(r.coverage()).isEqualTo(ONE),
       r -> assertThat(r.duration()).isEqualTo(duration),

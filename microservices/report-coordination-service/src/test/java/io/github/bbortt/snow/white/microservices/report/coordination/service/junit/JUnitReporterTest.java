@@ -16,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.util.StreamUtils.copyToString;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
@@ -31,6 +31,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 
 class JUnitReporterTest {
+
+  private static OpenApiTestResult createOpenApiTestResult(
+    String openApiCriterionName,
+    BigDecimal coverage,
+    Duration duration,
+    String additionalInformation
+  ) {
+    return OpenApiTestResult.builder()
+      .openApiTestCriteria(
+        OpenApiTestCriteria.builder().name(openApiCriterionName).build()
+      )
+      .coverage(coverage.setScale(2, HALF_UP))
+      .duration(duration)
+      .additionalInformation(additionalInformation)
+      .build();
+  }
 
   private JUnitReporter fixture;
 
@@ -59,15 +75,15 @@ class JUnitReporterTest {
     void shouldTransformReport_withPassedOpenApiCoverages()
       throws IOException, JUnitReportCreationException {
       var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiCriterionResults(
+        .withOpenApiTestResults(
           Set.of(
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               PATH_COVERAGE.name(),
               ONE,
               Duration.ofMillis(12345),
               null
             ),
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               HTTP_METHOD_COVERAGE.name(),
               ONE,
               Duration.ofMillis(111213),
@@ -88,15 +104,15 @@ class JUnitReporterTest {
     void shouldTransformReport_withFailedOpenApiCoverages()
       throws IOException, JUnitReportCreationException {
       var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiCriterionResults(
+        .withOpenApiTestResults(
           Set.of(
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               PATH_COVERAGE.name(),
               ZERO,
               Duration.ofMillis(54321),
               "This failed because it can."
             ),
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               HTTP_METHOD_COVERAGE.name(),
               BigDecimal.valueOf(0.5),
               Duration.ofMillis(131211),
@@ -117,15 +133,15 @@ class JUnitReporterTest {
     void shouldTransformReport_withMixedOpenApiCoverages()
       throws IOException, JUnitReportCreationException {
       var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiCriterionResults(
+        .withOpenApiTestResults(
           Set.of(
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               PATH_COVERAGE.name(),
               ONE,
               Duration.ofMillis(4321),
               null
             ),
-            createOpenApiCriterionResult(
+            createOpenApiTestResult(
               HTTP_METHOD_COVERAGE.name(),
               BigDecimal.valueOf(0.5),
               Duration.ofMillis(1234),
@@ -146,11 +162,11 @@ class JUnitReporterTest {
     void shouldThrow_whenOpenApiCriterionIsInvalid() {
       var invalidName = "invalid";
       var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiCriterionResults(
+        .withOpenApiTestResults(
           Set.of(
-            OpenApiCriterionResult.builder()
-              .openApiCriterion(
-                OpenApiCriterion.builder().name(invalidName).build()
+            OpenApiTestResult.builder()
+              .openApiTestCriteria(
+                OpenApiTestCriteria.builder().name(invalidName).build()
               )
               .build()
           )
@@ -167,22 +183,6 @@ class JUnitReporterTest {
       return QualityGateReport.builder()
         .qualityGateConfigName(getClass().getSimpleName())
         .createdAt(Instant.parse("2025-04-24T22:30:00.00Z"))
-        .build();
-    }
-
-    private static OpenApiCriterionResult createOpenApiCriterionResult(
-      String openApiCriterionName,
-      BigDecimal coverage,
-      Duration duration,
-      String additionalInformation
-    ) {
-      return OpenApiCriterionResult.builder()
-        .openApiCriterion(
-          OpenApiCriterion.builder().name(openApiCriterionName).build()
-        )
-        .coverage(coverage.setScale(2, HALF_UP))
-        .duration(duration)
-        .additionalInformation(additionalInformation)
         .build();
     }
 

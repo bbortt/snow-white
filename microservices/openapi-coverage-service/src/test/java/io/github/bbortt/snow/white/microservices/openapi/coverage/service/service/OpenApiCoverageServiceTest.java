@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -102,23 +102,24 @@ class OpenApiCoverageServiceTest {
 
       doReturn(paths).when(openAPIMock).getPaths();
 
-      Set<OpenApiCriterionResult> openApiCriterionResults = emptySet();
+      Set<OpenApiTestResult> openApiTestResults = emptySet();
       ArgumentCaptor<Map<String, Operation>> pathToOpenAPIOperationMapCaptor =
         captor();
       ArgumentCaptor<
         Map<String, List<OpenTelemetryData>>
       > pathToTelemetryMapCaptor = captor();
-      doReturn(openApiCriterionResults)
+      doReturn(openApiTestResults)
         .when(openApiCoverageCalculationCoordinatorMock)
         .calculate(
           pathToOpenAPIOperationMapCaptor.capture(),
           pathToTelemetryMapCaptor.capture()
         );
 
-      Set<OpenApiCriterionResult> result =
-        fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
+      Set<OpenApiTestResult> result = fixture.gatherDataAndCalculateCoverage(
+        openedApiCoverageRequest
+      );
 
-      assertThat(result).isEqualTo(openApiCriterionResults);
+      assertThat(result).isEqualTo(openApiTestResults);
 
       assertThat(pathToOpenAPIOperationMapCaptor.getValue())
         .isNotNull()
@@ -146,8 +147,9 @@ class OpenApiCoverageServiceTest {
         .when(openTelemetryServiceMock)
         .findTracingData(eq(OTEL_SERVICE_NAME), eq(LOOKBACK_WINDOW), anyList());
 
-      Set<OpenApiCriterionResult> result =
-        fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
+      Set<OpenApiTestResult> result = fixture.gatherDataAndCalculateCoverage(
+        openedApiCoverageRequest
+      );
 
       assertThat(result).isEmpty();
 

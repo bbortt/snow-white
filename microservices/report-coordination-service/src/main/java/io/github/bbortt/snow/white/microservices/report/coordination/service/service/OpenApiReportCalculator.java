@@ -13,7 +13,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import jakarta.annotation.Nullable;
@@ -29,7 +29,7 @@ public class OpenApiReportCalculator {
 
   private final QualityGateReport qualityGateReport;
   private final @Nullable List<String> includedOpenApiCriteria;
-  private final Set<OpenApiCriterionResult> openApiCriterionResults;
+  private final Set<OpenApiTestResult> openApiTestCriteria;
 
   public CalculationResult calculate() {
     var updatedOpenApiCriteria = updateQualityGateReportInformation();
@@ -52,14 +52,14 @@ public class OpenApiReportCalculator {
   }
 
   private void assertThatEachOpenApiCriterionIsCovered(
-    Set<OpenApiCriterionResult> updatedOpenApiCriteria,
+    Set<OpenApiTestResult> updatedOpenApiCriteria,
     AtomicReference<ReportStatus> reportStatus
   ) {
     requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
       boolean criterionFound = false;
 
-      for (OpenApiCriterionResult result : updatedOpenApiCriteria) {
-        if (result.getOpenApiCriterion().getName().equals(criterionName)) {
+      for (OpenApiTestResult result : updatedOpenApiCriteria) {
+        if (result.getOpenApiTestCriteria().getName().equals(criterionName)) {
           criterionFound = true;
 
           if (ONE.compareTo(result.getCoverage()) != 0) {
@@ -83,15 +83,15 @@ public class OpenApiReportCalculator {
     });
   }
 
-  private Set<OpenApiCriterionResult> updateQualityGateReportInformation() {
-    return openApiCriterionResults
+  private Set<OpenApiTestResult> updateQualityGateReportInformation() {
+    return openApiTestCriteria
       .parallelStream()
       .map(openApiCriterionResult ->
         openApiCriterionResult
           .withIncludedInReport(
             nonNull(includedOpenApiCriteria) &&
             includedOpenApiCriteria.contains(
-              openApiCriterionResult.getOpenApiCriterion().getName()
+              openApiCriterionResult.getOpenApiTestCriteria().getName()
             )
           )
           .withQualityGateReport(qualityGateReport)
@@ -101,6 +101,6 @@ public class OpenApiReportCalculator {
 
   public record CalculationResult(
     ReportStatus status,
-    Set<OpenApiCriterionResult> openApiCriterionResults
+    Set<OpenApiTestResult> openApiTestResults
   ) {}
 }

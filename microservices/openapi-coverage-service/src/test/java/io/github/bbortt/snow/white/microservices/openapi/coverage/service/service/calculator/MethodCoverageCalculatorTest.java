@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.mockito.Mockito.mock;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -22,8 +22,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.assertj.core.api.InstanceOfAssertFactories;
-import org.assertj.core.api.InstanceOfAssertFactory;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -91,7 +89,7 @@ class MethodCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriterionResult result = fixture.calculate(
+      OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -121,7 +119,7 @@ class MethodCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriterionResult result = fixture.calculate(
+      OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -154,7 +152,7 @@ class MethodCoverageCalculatorTest {
         singletonList(mock(OpenTelemetryData.class))
       );
 
-      OpenApiCriterionResult result = fixture.calculate(
+      OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );
@@ -183,7 +181,7 @@ class MethodCoverageCalculatorTest {
 
       Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
 
-      OpenApiCriterionResult result = fixture.calculate(
+      OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
       );

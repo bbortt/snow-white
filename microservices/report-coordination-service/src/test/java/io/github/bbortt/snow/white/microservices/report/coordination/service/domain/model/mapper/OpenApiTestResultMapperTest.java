@@ -8,12 +8,11 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,16 +25,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
-class OpenApiCriterionResultMapperTest {
+class OpenApiTestResultMapperTest {
 
   @Mock
   private OpenApiCriterionRepository openApiCriterionRepositoryMock;
 
-  private OpenApiCriterionResultMapper fixture;
+  private OpenApiTestResultMapper fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new OpenApiCriterionResultMapperImpl();
+    fixture = new OpenApiTestResultMapperImpl();
     fixture.setOpenApiCriterionRepository(openApiCriterionRepositoryMock);
   }
 
@@ -58,7 +57,7 @@ class OpenApiCriterionResultMapperTest {
     void shouldExtractName(OpenApiCriteria openApiCriteria) {
       doAnswer(invocationOnMock ->
         Optional.of(
-          OpenApiCriterion.builder()
+          OpenApiTestCriteria.builder()
             .name(invocationOnMock.getArgument(0))
             .build()
         )
@@ -66,9 +65,9 @@ class OpenApiCriterionResultMapperTest {
         .when(openApiCriterionRepositoryMock)
         .findByName(openApiCriteria.name());
 
-      assertThat(fixture.getOpenApiCriterionByName(openApiCriteria))
+      assertThat(fixture.getOpenApiTestCriteriaByName(openApiCriteria))
         .isNotNull()
-        .extracting(OpenApiCriterion::getName)
+        .extracting(OpenApiTestCriteria::getName)
         .isEqualTo(openApiCriteria.name());
     }
 
@@ -80,7 +79,7 @@ class OpenApiCriterionResultMapperTest {
         .when(openApiCriterionRepositoryMock)
         .findByName(openApiCriteria.name());
 
-      assertThat(fixture.getOpenApiCriterionByName(openApiCriteria))
+      assertThat(fixture.getOpenApiTestCriteriaByName(openApiCriteria))
         .isNotNull()
         .satisfies(
           c -> assertThat(c.getId()).isNull(),

@@ -32,7 +32,7 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-public class OpenApiCriterion {
+public class OpenApiTestCriteria {
 
   @Id
   @NotNull
@@ -46,6 +46,6 @@ public class OpenApiCriterion {
 
   @NotNull
   @Builder.Default
-  @OneToMany(mappedBy = "openApiCriterion")
-  private Set<OpenApiCriterionResult> openApiCriteria = new HashSet<>();
+  @OneToMany(mappedBy = "openApiTestCriteria")
+  private Set<OpenApiTestResult> openApiCriteria = new HashSet<>();
 }

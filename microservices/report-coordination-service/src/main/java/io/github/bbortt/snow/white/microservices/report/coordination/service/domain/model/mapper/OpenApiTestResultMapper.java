@@ -12,8 +12,8 @@ import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterion;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import java.util.Set;
 import lombok.Setter;
@@ -23,25 +23,25 @@ import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = SPRING, injectionStrategy = CONSTRUCTOR)
-public abstract class OpenApiCriterionResultMapper {
+public abstract class OpenApiTestResultMapper {
 
   private static final String INCLUDED_REPORT_MAPPER =
     "openApiCriteriaToIncludedInReport";
   private static final String OPENAPI_CRITERION_MAPPER =
-    "getOpenApiCriterionByName";
+    "getOpenApiTestCriteriaByName";
 
   @Autowired
   @Setter(PACKAGE)
   private OpenApiCriterionRepository openApiCriterionRepository;
 
-  public abstract Set<OpenApiCriterionResult> map(
+  public abstract Set<OpenApiTestResult> fromDto(
     Set<
-      io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult
-    > openApiCriterionResults
+      io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult
+    > openApiTestResults
   );
 
   @Mapping(
-    target = "openApiCriterion",
+    target = "openApiTestCriteria",
     source = "openApiCriteria",
     qualifiedByName = OPENAPI_CRITERION_MAPPER
   )
@@ -51,8 +51,8 @@ public abstract class OpenApiCriterionResultMapper {
     qualifiedByName = INCLUDED_REPORT_MAPPER
   )
   @Mapping(target = "qualityGateReport", ignore = true)
-  public abstract OpenApiCriterionResult map(
-    io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult source
+  public abstract OpenApiTestResult fromDto(
+    io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult source
   );
 
   @Named(INCLUDED_REPORT_MAPPER)
@@ -63,12 +63,13 @@ public abstract class OpenApiCriterionResultMapper {
   }
 
   @Named(OPENAPI_CRITERION_MAPPER)
-  protected OpenApiCriterion getOpenApiCriterionByName(
+  protected OpenApiTestCriteria getOpenApiTestCriteriaByName(
     OpenApiCriteria openApiCriteria
   ) {
     String criterionName = openApiCriteria.name();
     return openApiCriterionRepository
       .findByName(criterionName)
-      .orElseGet(() -> OpenApiCriterion.builder().name(criterionName).build());
+      .orElseGet(() -> OpenApiTestCriteria.builder().name(criterionName).build()
+      );
   }
 }

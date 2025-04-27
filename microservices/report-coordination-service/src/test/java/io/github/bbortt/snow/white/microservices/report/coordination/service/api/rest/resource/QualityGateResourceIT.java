@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.consumerProps;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -156,7 +155,7 @@ class QualityGateResourceIT {
           )
       )
       .andExpect(status().isAccepted())
-      .andExpect(header().string(CONTENT_TYPE, APPLICATION_XML_VALUE))
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andReturn()
       .getResponse()
       .getContentAsString();

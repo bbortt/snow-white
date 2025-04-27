@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 @IntegrationTest
-class OpenApiCriterionResultMapperIT {
+class OpenApiTestResultMapperIT {
 
   @Autowired
   private ApplicationContext applicationContext;
@@ -22,7 +22,7 @@ class OpenApiCriterionResultMapperIT {
   @Test
   void isRegisteredWithinSpringComponentModel() {
     assertThat(
-      applicationContext.getBean(OpenApiCriterionResultMapper.class)
+      applicationContext.getBean(OpenApiTestResultMapper.class)
     ).isNotNull();
   }
 }
