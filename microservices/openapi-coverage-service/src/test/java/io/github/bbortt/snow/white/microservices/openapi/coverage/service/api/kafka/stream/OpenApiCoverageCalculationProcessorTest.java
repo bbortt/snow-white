@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiCriterionResult;
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageService;
@@ -95,10 +95,10 @@ class OpenApiCoverageCalculationProcessorTest {
         .when(openApiServiceMock)
         .findAndParseOpenApi(any(OpenApiService.OpenApiIdentifier.class));
 
-      Set<OpenApiCriterionResult> openApiCriterionResults = Set.of(
-        new OpenApiCriterionResult(PATH_COVERAGE, BigDecimal.ONE, null)
+      Set<OpenApiTestResult> openApiTestResults = Set.of(
+        new OpenApiTestResult(PATH_COVERAGE, BigDecimal.ONE, null)
       );
-      doReturn(openApiCriterionResults)
+      doReturn(openApiTestResults)
         .when(openApiCoverageServiceMock)
         .gatherDataAndCalculateCoverage(
           any(OpenApiService.OpenApiCoverageRequest.class)
@@ -121,7 +121,7 @@ class OpenApiCoverageCalculationProcessorTest {
                   .isInstanceOf(OpenApiCoverageResponseEvent.class)
                   .satisfies(c ->
                     assertThat(c.openApiCriteria()).isEqualTo(
-                      openApiCriterionResults
+                      openApiTestResults
                     )
                   )
             )
@@ -138,8 +138,8 @@ class OpenApiCoverageCalculationProcessorTest {
         .when(openApiServiceMock)
         .findAndParseOpenApi(any(OpenApiService.OpenApiIdentifier.class));
 
-      Set<OpenApiCriterionResult> openApiCriterionResults = emptySet();
-      doReturn(openApiCriterionResults)
+      Set<OpenApiTestResult> openApiTestResults = emptySet();
+      doReturn(openApiTestResults)
         .when(openApiCoverageServiceMock)
         .gatherDataAndCalculateCoverage(
           any(OpenApiService.OpenApiCoverageRequest.class)
