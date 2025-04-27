@@ -17,7 +17,6 @@ import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.InfluxDBClient;
@@ -91,7 +90,8 @@ class OpenTelemetryServiceTest {
     void withoutAttributeFilters_shouldBuildCorrectQuery(
       List<AttributeFilter> attributeFilters
     ) {
-      doReturn(emptyList()).when(queryApi).query(anyString());
+      ArgumentCaptor<String> queryCaptor = captor();
+      doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
       List<OpenTelemetryData> result = fixture.findTracingData(
         SERVICE_NAME,
@@ -100,9 +100,6 @@ class OpenTelemetryServiceTest {
       );
 
       assertThat(result).isEmpty();
-
-      ArgumentCaptor<String> queryCaptor = captor();
-      verify(queryApi).query(queryCaptor.capture());
 
       var capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
@@ -125,7 +122,8 @@ class OpenTelemetryServiceTest {
       );
       List<AttributeFilter> attributeFilters = List.of(filter1, filter2);
 
-      doReturn(emptyList()).when(queryApi).query(anyString());
+      ArgumentCaptor<String> queryCaptor = captor();
+      doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
       List<OpenTelemetryData> result = fixture.findTracingData(
         SERVICE_NAME,
@@ -134,9 +132,6 @@ class OpenTelemetryServiceTest {
       );
 
       assertThat(result).isEmpty();
-
-      ArgumentCaptor<String> queryCaptor = captor();
-      verify(queryApi).query(queryCaptor.capture());
 
       String capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(

@@ -12,11 +12,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
@@ -122,9 +119,10 @@ class QualityGateConfigurationMapperTest {
       var openApiCoverageConfigurationMock = mock(
         OpenApiCoverageConfiguration.class
       );
+      ArgumentCaptor<String> nameCaptor = captor();
       doReturn(Optional.of(openApiCoverageConfigurationMock))
         .when(openApiCoverageConfigurationRepositoryMock)
-        .findByName(anyString());
+        .findByName(nameCaptor.capture());
 
       Set<
         QualityGateOpenApiCoverageMapping
@@ -147,10 +145,6 @@ class QualityGateConfigurationMapperTest {
           )
         );
 
-      ArgumentCaptor<String> nameCaptor = captor();
-      verify(openApiCoverageConfigurationRepositoryMock, times(2)).findByName(
-        nameCaptor.capture()
-      );
       assertThat(nameCaptor.getAllValues())
         .hasSize(2)
         .containsExactly("foo", "bar");
