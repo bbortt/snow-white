@@ -11,12 +11,10 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -105,25 +103,22 @@ class OpenApiCoverageServiceTest {
       doReturn(paths).when(openAPIMock).getPaths();
 
       Set<OpenApiCriterionResult> openApiCriterionResults = emptySet();
-      doReturn(openApiCriterionResults)
-        .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(Map.class), any(Map.class));
-
-      Set<OpenApiCriterionResult> result =
-        fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
-
-      assertThat(result).isEqualTo(openApiCriterionResults);
-
       ArgumentCaptor<Map<String, Operation>> pathToOpenAPIOperationMapCaptor =
         captor();
       ArgumentCaptor<
         Map<String, List<OpenTelemetryData>>
       > pathToTelemetryMapCaptor = captor();
+      doReturn(openApiCriterionResults)
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(
+          pathToOpenAPIOperationMapCaptor.capture(),
+          pathToTelemetryMapCaptor.capture()
+        );
 
-      verify(openApiCoverageCalculationCoordinatorMock).calculate(
-        pathToOpenAPIOperationMapCaptor.capture(),
-        pathToTelemetryMapCaptor.capture()
-      );
+      Set<OpenApiCriterionResult> result =
+        fixture.gatherDataAndCalculateCoverage(openedApiCoverageRequest);
+
+      assertThat(result).isEqualTo(openApiCriterionResults);
 
       assertThat(pathToOpenAPIOperationMapCaptor.getValue())
         .isNotNull()
