@@ -170,47 +170,56 @@ class OpenApiCoverageCalculationProcessorTest {
     @Test
     void shouldReturnEmptyStream_IfOpenapiIsNull()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      ArgumentCaptor<
+        OpenApiService.OpenApiIdentifier
+      > openApiIdentifierArgumentCaptor = captor();
+
       doReturn(null)
         .when(openApiServiceMock)
-        .findAndParseOpenApi(any(OpenApiService.OpenApiIdentifier.class));
+        .findAndParseOpenApi(openApiIdentifierArgumentCaptor.capture());
 
-      sendValidRequestAndExpectEmptyResponse();
+      sendValidRequestAndExpectEmptyResponse(openApiIdentifierArgumentCaptor);
     }
 
     @Test
     void shouldReturnEmptyStream_IfOpenApiIsNotIndexed()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      ArgumentCaptor<
+        OpenApiService.OpenApiIdentifier
+      > openApiIdentifierArgumentCaptor = captor();
+
       doThrow(OpenApiNotIndexedException.class)
         .when(openApiServiceMock)
-        .findAndParseOpenApi(any(OpenApiService.OpenApiIdentifier.class));
+        .findAndParseOpenApi(openApiIdentifierArgumentCaptor.capture());
 
-      sendValidRequestAndExpectEmptyResponse();
+      sendValidRequestAndExpectEmptyResponse(openApiIdentifierArgumentCaptor);
     }
 
     @Test
     void shouldReturnEmptyStream_IfOpenApiIsUnparseable()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      ArgumentCaptor<
+        OpenApiService.OpenApiIdentifier
+      > openApiIdentifierArgumentCaptor = captor();
+
       doThrow(UnparseableOpenApiException.class)
         .when(openApiServiceMock)
-        .findAndParseOpenApi(any(OpenApiService.OpenApiIdentifier.class));
+        .findAndParseOpenApi(openApiIdentifierArgumentCaptor.capture());
 
-      sendValidRequestAndExpectEmptyResponse();
+      sendValidRequestAndExpectEmptyResponse(openApiIdentifierArgumentCaptor);
     }
 
-    private void sendValidRequestAndExpectEmptyResponse()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+    private void sendValidRequestAndExpectEmptyResponse(
+      ArgumentCaptor<
+        OpenApiService.OpenApiIdentifier
+      > openApiIdentifierArgumentCaptor
+    ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
       sendEventsAndAssert(
         "981900ba-bce2-4147-99c0-c52d12ec9575",
         getQualityGateCalculationRequestEvent("1h"),
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
 
-      ArgumentCaptor<
-        OpenApiService.OpenApiIdentifier
-      > openApiIdentifierArgumentCaptor = captor();
-      verify(openApiServiceMock).findAndParseOpenApi(
-        openApiIdentifierArgumentCaptor.capture()
-      );
       assertThat(openApiIdentifierArgumentCaptor.getValue())
         .isNotNull()
         .satisfies(

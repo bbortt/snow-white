@@ -179,7 +179,6 @@ class ReportServiceTest {
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 
-      // Capture the QualityGateReport being saved
       ArgumentCaptor<QualityGateReport> reportCaptor = captor();
 
       var savedQualityGateReport = QualityGateReport.builder()
