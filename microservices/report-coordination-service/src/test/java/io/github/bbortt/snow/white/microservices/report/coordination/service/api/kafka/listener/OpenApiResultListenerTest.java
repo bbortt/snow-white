@@ -11,7 +11,6 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.P
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
-import static java.lang.String.format;
 import static java.math.BigDecimal.ONE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -189,10 +188,8 @@ class OpenApiResultListenerTest {
       )
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
-          format(
-            "Unreachable state, Quality-Gate configuration '%s' must exist at this point!",
-            qualityGateConfigName
-          )
+          "Unreachable state, Quality-Gate configuration '%s' must exist at this point!",
+          qualityGateConfigName
         );
 
       verifyNoInteractions(openApiTestResultMapperMock);

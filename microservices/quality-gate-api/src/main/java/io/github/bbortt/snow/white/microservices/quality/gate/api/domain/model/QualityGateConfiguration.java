@@ -53,6 +53,11 @@ public class QualityGateConfiguration {
 
   @NotNull
   @Builder.Default
+  @Column(nullable = false, updatable = false)
+  private Boolean isPredefined = false;
+
+  @NotNull
+  @Builder.Default
   @OneToMany(
     cascade = { ALL },
     fetch = EAGER,

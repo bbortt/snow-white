@@ -16,6 +16,8 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.P
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -24,6 +26,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposit
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.util.Set;
@@ -54,13 +57,22 @@ public class QualityGateService {
       );
     }
 
-    return qualityGateConfigurationRepository.save(qualityGateConfiguration);
+    return qualityGateConfigurationRepository.save(
+      qualityGateConfiguration.withIsPredefined(FALSE)
+    );
   }
 
   public void deleteByName(String name)
-    throws ConfigurationDoesNotExistException {
+    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
     if (!qualityGateConfigurationRepository.existsByName(name)) {
       throw new ConfigurationDoesNotExistException(name);
+    } else if (
+      qualityGateConfigurationRepository
+        .findByName(name)
+        .map(QualityGateConfiguration::getIsPredefined)
+        .orElse(FALSE)
+    ) {
+      throw new UnmodifiableConfigurationException(name);
     }
 
     qualityGateConfigurationRepository.deleteByName(name);
@@ -79,15 +91,18 @@ public class QualityGateService {
 
   public QualityGateConfiguration update(
     QualityGateConfiguration qualityGateConfiguration
-  ) throws ConfigurationDoesNotExistException {
-    if (
-      !qualityGateConfigurationRepository.existsByName(
-        qualityGateConfiguration.getName()
-      )
+  )
+    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+    var name = qualityGateConfiguration.getName();
+    if (!qualityGateConfigurationRepository.existsByName(name)) {
+      throw new ConfigurationDoesNotExistException(name);
+    } else if (
+      qualityGateConfigurationRepository
+        .findByName(name)
+        .map(QualityGateConfiguration::getIsPredefined)
+        .orElse(FALSE)
     ) {
-      throw new ConfigurationDoesNotExistException(
-        qualityGateConfiguration.getName()
-      );
+      throw new UnmodifiableConfigurationException(name);
     }
 
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
@@ -133,6 +148,7 @@ public class QualityGateService {
       .description(
         "A pragmatic balance of common expectations without requiring deep error validation."
       )
+      .isPredefined(TRUE)
       .build();
 
     addAllOpenApiCriteria(
@@ -155,6 +171,7 @@ public class QualityGateService {
       .description(
         "The most complete and strict configuration, useful for production-readiness or auditing."
       )
+      .isPredefined(TRUE)
       .build();
 
     addAllOpenApiCriteria(
@@ -182,6 +199,7 @@ public class QualityGateService {
       .description(
         "Just enough to ensure the API is reachable at all expected endpoints."
       )
+      .isPredefined(TRUE)
       .build();
 
     addAllOpenApiCriteria(qualityGateConfiguration, Stream.of(PATH_COVERAGE));
@@ -195,6 +213,7 @@ public class QualityGateService {
       .description(
         "Doesn’t enforce any rules, but may be used to generate reports or test tooling."
       )
+      .isPredefined(TRUE)
       .build();
   }
 
