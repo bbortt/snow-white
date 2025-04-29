@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -31,6 +30,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.m
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.net.URI;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +51,54 @@ class QualityGateResourceTest {
   private QualityGateService qualityGateServiceMock;
 
   private QualityGateResource fixture;
+
+  private static void verifyResponseIsHttpNotFoundWithMessage(
+    ResponseEntity response,
+    String name
+  ) {
+    assertThat(response)
+      .isNotNull()
+      .satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+        r ->
+          assertThat(r.getBody())
+            .asInstanceOf(type(Error.class))
+            .satisfies(
+              e ->
+                assertThat(e.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
+              e ->
+                assertThat(e.getMessage()).isEqualTo(
+                  "Quality-Gate configuration '%s' does not exist!",
+                  name
+                )
+            )
+      );
+  }
+
+  private static void verifyResponseIsHttpBadRequestWithMessage(
+    ResponseEntity response,
+    String name
+  ) {
+    assertThat(response)
+      .isNotNull()
+      .satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(BAD_REQUEST),
+        r ->
+          assertThat(r.getBody())
+            .asInstanceOf(type(Error.class))
+            .satisfies(
+              e ->
+                assertThat(e.getCode()).isEqualTo(
+                  BAD_REQUEST.getReasonPhrase()
+                ),
+              e ->
+                assertThat(e.getMessage()).isEqualTo(
+                  "The Quality-Gate configuration '%s' is not modifiable!",
+                  name
+                )
+            )
+      );
+  }
 
   @BeforeEach
   void beforeEachSetup() {
@@ -106,7 +154,9 @@ class QualityGateResourceTest {
     @Test
     void shouldReturnConflictResponse_whenConfigurationAlreadyExists()
       throws ConfigurationNameAlreadyExistsException {
-      var qualityGateConfiguration = new QualityGateConfiguration();
+      var qualityGateConfiguration = QualityGateConfiguration.builder()
+        .name(qualityGateConfig.getName())
+        .build();
 
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
@@ -132,7 +182,8 @@ class QualityGateResourceTest {
                 e -> assertThat(e.getCode()).isEqualTo("Conflict"),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
-                    "Quality-Gate configuration with name 'TestQualityGate' already exists"
+                    "Quality-Gate configuration '%s' does already exist!",
+                    qualityGateConfig.getName()
                   )
               )
         );
@@ -157,7 +208,8 @@ class QualityGateResourceTest {
   class DeleteQualityGate {
 
     @Test
-    void shouldDeleteConfiguration() throws ConfigurationDoesNotExistException {
+    void shouldDeleteConfiguration()
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
       var name = "TestQualityGate";
 
       var response = fixture.deleteQualityGate(name);
@@ -172,7 +224,7 @@ class QualityGateResourceTest {
 
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationAlreadyExists()
-      throws ConfigurationDoesNotExistException {
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
       var name = "NonExistingConfiguration";
       doThrow(new ConfigurationDoesNotExistException(name))
         .when(qualityGateServiceMock)
@@ -181,6 +233,19 @@ class QualityGateResourceTest {
       var response = fixture.deleteQualityGate(name);
 
       verifyResponseIsHttpNotFoundWithMessage(response, name);
+    }
+
+    @Test
+    void shouldReturnNotFoundResponse_whenConfigurationIsUnmodifiable()
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      var name = "UnmodifiableConfiguration";
+      doThrow(new UnmodifiableConfigurationException(name))
+        .when(qualityGateServiceMock)
+        .deleteByName(name);
+
+      var response = fixture.deleteQualityGate(name);
+
+      verifyResponseIsHttpBadRequestWithMessage(response, name);
     }
   }
 
@@ -265,7 +330,7 @@ class QualityGateResourceTest {
 
     @Test
     void shouldReturnUpdatedResponse()
-      throws ConfigurationDoesNotExistException {
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateServiceMock)
@@ -315,6 +380,28 @@ class QualityGateResourceTest {
     }
 
     @Test
+    void shouldReturnNotFoundResponse_whenConfigurationIsUnmodifiable()
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(qualityGateConfiguration)
+        .when(qualityGateServiceMock)
+        .findByName(NAME);
+
+      var qualityGateConfigurationWithUpdates = new QualityGateConfiguration();
+      doReturn(qualityGateConfigurationWithUpdates)
+        .when(qualityGateConfigurationMapperMock)
+        .toEntity(qualityGateConfig);
+
+      doThrow(new UnmodifiableConfigurationException(NAME))
+        .when(qualityGateServiceMock)
+        .update(qualityGateConfiguration);
+
+      var response = fixture.updateQualityGate(NAME, qualityGateConfig);
+
+      verifyResponseIsHttpBadRequestWithMessage(response, NAME);
+    }
+
+    @Test
     void shouldReturnBadRequestResponse_whenInvalidOpenApiCriterionSupplied()
       throws ConfigurationDoesNotExistException {
       var criteriaName = "criteriaName";
@@ -338,10 +425,8 @@ class QualityGateResourceTest {
                   ),
                 e ->
                   assertThat(e.getMessage()).isEqualTo(
-                    format(
-                      "OpenApi Criterion '%s' does not exist!",
-                      criteriaName
-                    )
+                    "OpenApi Criterion '%s' does not exist!",
+                    criteriaName
                   )
               )
         );
@@ -349,30 +434,5 @@ class QualityGateResourceTest {
       verifyNoMoreInteractions(qualityGateServiceMock);
       verifyNoInteractions(qualityGateConfigurationMapperMock);
     }
-  }
-
-  private static void verifyResponseIsHttpNotFoundWithMessage(
-    ResponseEntity response,
-    String name
-  ) {
-    assertThat(response)
-      .isNotNull()
-      .satisfies(
-        r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
-        r ->
-          assertThat(r.getBody())
-            .asInstanceOf(type(Error.class))
-            .satisfies(
-              e ->
-                assertThat(e.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
-              e ->
-                assertThat(e.getMessage()).isEqualTo(
-                  format(
-                    "Quality-Gate configuration with name '%s' does not exist",
-                    name
-                  )
-                )
-            )
-      );
   }
 }

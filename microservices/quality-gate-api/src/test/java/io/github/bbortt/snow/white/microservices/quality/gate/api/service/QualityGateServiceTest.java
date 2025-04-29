@@ -6,9 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -25,10 +26,12 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposit
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.swing.text.html.Option;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,7 +63,8 @@ class QualityGateServiceTest {
   class Persist {
 
     @Test
-    void shouldSaveNewConfiguration() {
+    void shouldSaveNewConfiguration()
+      throws ConfigurationNameAlreadyExistsException {
       var configuration = QualityGateConfiguration.builder()
         .name("NonExistingConfig")
         .build();
@@ -69,13 +73,26 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .existsByName(configuration.getName());
 
-      assertThatCode(() -> fixture.persist(configuration)
-      ).doesNotThrowAnyException();
+      var persistedQualityGateConfiguration = new QualityGateConfiguration();
+      ArgumentCaptor<
+        QualityGateConfiguration
+      > qualityGateConfigurationArgumentCaptor = captor();
+      doReturn(persistedQualityGateConfiguration)
+        .when(qualityGateConfigurationRepositoryMock)
+        .save(qualityGateConfigurationArgumentCaptor.capture());
+
+      var result = fixture.persist(configuration);
+
+      assertThat(result).isEqualTo(persistedQualityGateConfiguration);
 
       verify(qualityGateConfigurationRepositoryMock).existsByName(
         configuration.getName()
       );
-      verify(qualityGateConfigurationRepositoryMock).save(configuration);
+
+      assertThat(qualityGateConfigurationArgumentCaptor.getValue())
+        .isNotNull()
+        .extracting(QualityGateConfiguration::getIsPredefined)
+        .isEqualTo(FALSE);
     }
 
     @Test
@@ -103,7 +120,7 @@ class QualityGateServiceTest {
 
     @Test
     void shouldRemoveExistingConfiguration()
-      throws ConfigurationDoesNotExistException {
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
       var name = "ExistingConfig";
       doReturn(true)
         .when(qualityGateConfigurationRepositoryMock)
@@ -115,8 +132,7 @@ class QualityGateServiceTest {
     }
 
     @Test
-    void shouldThrow_whenConfigurationDoesNotExist()
-      throws ConfigurationDoesNotExistException {
+    void shouldThrow_whenConfigurationDoesNotExist() {
       var name = "NonExistingConfig";
       doReturn(false)
         .when(qualityGateConfigurationRepositoryMock)
@@ -124,6 +140,28 @@ class QualityGateServiceTest {
 
       assertThatThrownBy(() -> fixture.deleteByName(name)).isInstanceOf(
         ConfigurationDoesNotExistException.class
+      );
+    }
+
+    @Test
+    void shouldThrow_whenConfigurationIsPredefined() {
+      var name = "PredefinedConfig";
+      doReturn(true)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsByName(name);
+      doReturn(
+        Optional.of(
+          QualityGateConfiguration.builder()
+            .name(name)
+            .isPredefined(TRUE)
+            .build()
+        )
+      )
+        .when(qualityGateConfigurationRepositoryMock)
+        .findByName(name);
+
+      assertThatThrownBy(() -> fixture.deleteByName(name)).isInstanceOf(
+        UnmodifiableConfigurationException.class
       );
     }
   }
@@ -182,7 +220,7 @@ class QualityGateServiceTest {
 
     @Test
     void shouldUpdateExistingConfiguration()
-      throws ConfigurationDoesNotExistException {
+      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
       var name = "ExistingConfig";
       var configuration = QualityGateConfiguration.builder().name(name).build();
 
@@ -211,6 +249,30 @@ class QualityGateServiceTest {
 
       assertThatThrownBy(() -> fixture.update(configuration)).isInstanceOf(
         ConfigurationDoesNotExistException.class
+      );
+    }
+
+    @Test
+    void shouldThrow_whenConfigurationIsPredefined() {
+      var name = "PredefinedConfig";
+      doReturn(true)
+        .when(qualityGateConfigurationRepositoryMock)
+        .existsByName(name);
+      doReturn(
+        Optional.of(
+          QualityGateConfiguration.builder()
+            .name(name)
+            .isPredefined(TRUE)
+            .build()
+        )
+      )
+        .when(qualityGateConfigurationRepositoryMock)
+        .findByName(name);
+
+      var configuration = QualityGateConfiguration.builder().name(name).build();
+
+      assertThatThrownBy(() -> fixture.update(configuration)).isInstanceOf(
+        UnmodifiableConfigurationException.class
       );
     }
   }

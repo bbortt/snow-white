@@ -106,7 +106,7 @@ class ReportResourceIT {
         jsonPath("$.calculationRequest.lookbackWindow").value(lookbackWindow)
       )
       .andExpect(jsonPath("$.initiatedAt").value(not(nullValue())))
-      .andExpect(jsonPath("$.openApiCriterionResults").isArray());
+      .andExpect(jsonPath("$.openApiTestResults").isArray());
   }
 
   @Test
