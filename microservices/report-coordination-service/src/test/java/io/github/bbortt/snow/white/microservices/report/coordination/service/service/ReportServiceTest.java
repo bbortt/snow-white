@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.se
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -152,10 +151,8 @@ class ReportServiceTest {
       )
         .isInstanceOf(QualityGateNotFoundException.class)
         .hasMessage(
-          format(
-            "No Quality-Gate configuration with ID '%s' exists!",
-            qualityGateConfigName
-          )
+          "No Quality-Gate configuration with ID '%s' exists!",
+          qualityGateConfigName
         );
     }
 

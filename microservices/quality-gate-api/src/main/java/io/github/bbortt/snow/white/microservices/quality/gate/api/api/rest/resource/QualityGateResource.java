@@ -21,6 +21,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.m
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.net.URI;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,33 @@ public class QualityGateResource implements QualityGateApi {
 
   private final QualityGateConfigurationMapper qualityGateConfigurationMapper;
   private final QualityGateService qualityGateService;
+
+  private static ResponseEntity<
+    Error
+  > newHttpBadRequestResponseQualityGateConfigUnmodifiable(String message) {
+    return ResponseEntity.status(BAD_REQUEST).body(
+      Error.builder()
+        .code(BAD_REQUEST.getReasonPhrase())
+        .message(message)
+        .build()
+    );
+  }
+
+  private static ResponseEntity<
+    Error
+  > newHttpConflictResponseQualityGateConfigNameAlreadyExists(String message) {
+    return ResponseEntity.status(CONFLICT).body(
+      Error.builder().code(CONFLICT.getReasonPhrase()).message(message).build()
+    );
+  }
+
+  private static ResponseEntity<
+    Error
+  > newHttpNotFoundResponseQualityGateConfigDoesNotExist(String message) {
+    return ResponseEntity.status(NOT_FOUND).body(
+      Error.builder().code(NOT_FOUND.getReasonPhrase()).message(message).build()
+    );
+  }
 
   @Override
   public ResponseEntity createQualityGate(QualityGateConfig qualityGateConfig) {
@@ -50,27 +78,9 @@ public class QualityGateResource implements QualityGateApi {
       );
     } catch (ConfigurationNameAlreadyExistsException e) {
       return newHttpConflictResponseQualityGateConfigNameAlreadyExists(
-        qualityGateConfig
+        e.getMessage()
       );
     }
-  }
-
-  private static ResponseEntity<
-    Error
-  > newHttpConflictResponseQualityGateConfigNameAlreadyExists(
-    QualityGateConfig qualityGateConfig
-  ) {
-    return ResponseEntity.status(CONFLICT).body(
-      Error.builder()
-        .code(CONFLICT.getReasonPhrase())
-        .message(
-          format(
-            "Quality-Gate configuration with name '%s' already exists",
-            qualityGateConfig.getName()
-          )
-        )
-        .build()
-    );
   }
 
   @Override
@@ -78,7 +88,13 @@ public class QualityGateResource implements QualityGateApi {
     try {
       qualityGateService.deleteByName(name);
     } catch (ConfigurationDoesNotExistException e) {
-      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(name);
+      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(
+        e.getMessage()
+      );
+    } catch (UnmodifiableConfigurationException e) {
+      return newHttpBadRequestResponseQualityGateConfigUnmodifiable(
+        e.getMessage()
+      );
     }
 
     return ResponseEntity.noContent().build();
@@ -105,7 +121,9 @@ public class QualityGateResource implements QualityGateApi {
         )
       );
     } catch (ConfigurationDoesNotExistException e) {
-      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(name);
+      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(
+        e.getMessage()
+      );
     }
   }
 
@@ -128,7 +146,9 @@ public class QualityGateResource implements QualityGateApi {
         qualityGateConfigurationMapper.toDto(updatedQualityGateConfiguration)
       );
     } catch (ConfigurationDoesNotExistException e) {
-      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(name);
+      return newHttpNotFoundResponseQualityGateConfigDoesNotExist(
+        e.getMessage()
+      );
     } catch (OpenApiCriterionDoesNotExistException e) {
       return ResponseEntity.status(BAD_REQUEST).body(
         Error.builder()
@@ -136,22 +156,10 @@ public class QualityGateResource implements QualityGateApi {
           .message(e.getMessage())
           .build()
       );
+    } catch (UnmodifiableConfigurationException e) {
+      return newHttpBadRequestResponseQualityGateConfigUnmodifiable(
+        e.getMessage()
+      );
     }
-  }
-
-  private static ResponseEntity<
-    Error
-  > newHttpNotFoundResponseQualityGateConfigDoesNotExist(String name) {
-    return ResponseEntity.status(NOT_FOUND).body(
-      Error.builder()
-        .code(NOT_FOUND.getReasonPhrase())
-        .message(
-          format(
-            "Quality-Gate configuration with name '%s' does not exist",
-            name
-          )
-        )
-        .build()
-    );
   }
 }

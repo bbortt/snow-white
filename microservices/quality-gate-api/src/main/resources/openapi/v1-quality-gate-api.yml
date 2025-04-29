@@ -210,6 +210,7 @@ components:
       type: object
       required:
         - name
+        - isPredefined
         - openapiCriteria
       properties:
         name:
@@ -220,6 +221,10 @@ components:
           type: string
           description: Optional description of the Quality-Gate Configuration
           example: 'Basic coverage criteria for API testing'
+        isPredefined:
+          type: boolean
+          description: Whether the Quality-Gate Configuration is predefined or not
+          default: false
         openapiCriteria:
           type: array
           description: List of OpenAPI criteria IDs used in this configuration
