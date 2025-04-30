@@ -6,14 +6,16 @@
 
 package io.github.bbortt.snow.white.commons;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class PropertyUtilsTest {
 
@@ -44,11 +46,20 @@ class PropertyUtilsTest {
         .hasMessageContaining("property2");
     }
 
-    @Test
-    void shouldThrowException_whenPropertyValueIsEmpty() {
+    public static Stream<
+      String
+    > shouldThrowException_whenPropertyValueIsNullOrEmpty() {
+      return Stream.of(null, "", " ");
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldThrowException_whenPropertyValueIsNullOrEmpty(
+      String propertyValue
+    ) {
       Map<String, String> properties = new HashMap<>();
       properties.put("property1", "value1");
-      properties.put("property2", "");
+      properties.put("property2", propertyValue);
 
       assertThatThrownBy(() ->
         PropertyUtils.assertRequiredProperties(properties)
@@ -56,41 +67,6 @@ class PropertyUtilsTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("All properties must be configured")
         .hasMessageContaining("property2");
-    }
-
-    @Test
-    void shouldThrowException_whenPropertyValueContainsOnlyWhitespace() {
-      Map<String, String> properties = new HashMap<>();
-      properties.put("property1", "value1");
-      properties.put("property2", "   ");
-
-      assertThatThrownBy(() ->
-        PropertyUtils.assertRequiredProperties(properties)
-      )
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("All properties must be configured")
-        .hasMessageContaining("property2");
-    }
-
-    @Test
-    void shouldThrowException_withAllMissingPropertiesInMessage() {
-      Map<String, String> properties = new HashMap<>();
-      properties.put("property1", "");
-      properties.put("property2", null);
-      properties.put("property3", "  ");
-      properties.put("property4", "value4");
-
-      assertThatThrownBy(() ->
-        PropertyUtils.assertRequiredProperties(properties)
-      )
-        .isInstanceOf(IllegalArgumentException.class)
-        .message()
-        .satisfies(
-          message -> assertThat(message).contains("property1"),
-          message -> assertThat(message).contains("property2"),
-          message -> assertThat(message).contains("property3"),
-          message -> assertThat(message).doesNotContain("property4")
-        );
     }
   }
 }

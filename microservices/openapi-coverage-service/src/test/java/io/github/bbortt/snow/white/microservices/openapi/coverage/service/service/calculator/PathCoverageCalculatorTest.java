@@ -101,7 +101,7 @@ class PathCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -131,7 +131,7 @@ class PathCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -157,7 +157,7 @@ class PathCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following resources (ignoring request methods) are uncovered: /api/v1/users"
@@ -187,7 +187,7 @@ class PathCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
