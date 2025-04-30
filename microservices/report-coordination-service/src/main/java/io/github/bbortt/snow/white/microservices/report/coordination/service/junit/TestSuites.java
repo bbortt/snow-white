@@ -56,9 +56,9 @@ public class TestSuites {
 
   @Builder.Default
   @XmlElement(name = "testsuite")
-  private List<TestSuite> testSuites = new ArrayList<>();
+  private List<TestSuite> containedSuites = new ArrayList<>();
 
   public void addTestSuite(TestSuite suite) {
-    this.testSuites.add(suite);
+    this.containedSuites.add(suite);
   }
 }

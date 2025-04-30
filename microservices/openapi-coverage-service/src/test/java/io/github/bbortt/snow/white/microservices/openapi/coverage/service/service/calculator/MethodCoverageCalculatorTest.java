@@ -102,7 +102,7 @@ class MethodCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
@@ -132,7 +132,7 @@ class MethodCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: GET_/api/v1/comments"
@@ -165,7 +165,7 @@ class MethodCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: POST_/api/v1/users"
@@ -194,7 +194,7 @@ class MethodCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
             "The following paths are uncovered: POST_/api/v1/users, GET_/api/v1/users"
@@ -224,7 +224,7 @@ class MethodCoverageCalculatorTest {
             .isNotNull()
             .extracting(Duration::getNano)
             .asInstanceOf(INTEGER)
-            .isGreaterThan(0),
+            .isPositive(),
         r -> assertThat(r.additionalInformation()).isNull()
       );
     }
