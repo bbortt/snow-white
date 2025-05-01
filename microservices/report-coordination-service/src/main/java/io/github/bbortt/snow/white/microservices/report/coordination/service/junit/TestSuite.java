@@ -39,6 +39,8 @@ public class TestSuite {
 
   public TestSuite(String name) {
     this.name = name;
+    this.time = "0";
+    this.testCases = new ArrayList<>();
   }
 
   public void addTestCase(TestCase testCase) {
