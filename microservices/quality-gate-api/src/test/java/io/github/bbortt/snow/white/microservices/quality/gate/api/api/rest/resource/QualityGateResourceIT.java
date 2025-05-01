@@ -175,9 +175,9 @@ class QualityGateResourceIT {
           qualityGateConfiguration.getDescription()
         )
       )
-      .andExpect(jsonPath("$.openapiCriteria").value(hasSize(1)))
+      .andExpect(jsonPath("$.openApiCriteria").value(hasSize(1)))
       .andExpect(
-        jsonPath("$.openapiCriteria[0]").value(is(PATH_COVERAGE.name()))
+        jsonPath("$.openApiCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
 
     qualityGateConfigurationRepository.delete(qualityGateConfiguration);
