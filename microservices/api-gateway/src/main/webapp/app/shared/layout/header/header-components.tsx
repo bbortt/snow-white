@@ -1,3 +1,5 @@
+import './header-component.scss';
+
 import React from 'react';
 import { Translate } from 'react-jhipster';
 
@@ -7,7 +9,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const BrandIcon = props => (
   <div {...props} className="brand-icon">
-    <img src="content/images/logo.png" alt="Logo" />
+    <div className="logo-wrapper">
+      <img src="content/images/logo.png" alt="Logo" />
+    </div>
   </div>
 );
 
