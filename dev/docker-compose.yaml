@@ -156,7 +156,7 @@ services:
       microservices.report-coordination-service:
         condition: service_healthy
     healthcheck:
-      test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
+      test: wget -O - http://localhost:8090/management/health | grep UP || exit 1
       interval: 1s
       timeout: 5s
       retries: 12

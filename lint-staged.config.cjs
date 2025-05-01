@@ -5,6 +5,6 @@
  */
 
 module.exports = {
-  '{,**/}*.{java,js,json,md,xml,yaml,yml}': ['prettier --write'],
+  '{,**/}*.{java,js,json,md,xml,yaml,yml}': ['prettier --write --config prettier.config.js'],
   'microservices/api-gateway/{,**/}*.{js,cjs,mjs,ts,cts,mts,html,tsx,css,scss}': ['prettier --write --config microservices/api-gateway/prettier.config.js'],
 };

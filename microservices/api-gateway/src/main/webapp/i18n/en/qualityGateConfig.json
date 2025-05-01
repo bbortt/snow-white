@@ -1,0 +1,27 @@
+{
+  "snowWhiteApp": {
+    "qualityGateConfig": {
+      "home": {
+        "title": "Quality-Gates",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Quality-Gate",
+        "createOrEditLabel": "Create or edit a Quality-Gate",
+        "notFound": "No Quality-Gates found"
+      },
+      "created": "A new Quality-Gate with identifier {{ param }} created",
+      "updated": "A Quality-Gate with identifier {{ param }} updated",
+      "deleted": "A Quality-Gate with identifier {{ param }} deleted",
+      "delete": {
+        "question": "Are you sure you want to delete Quality-Gate {{ id }}?"
+      },
+      "detail": {
+        "title": "Quality-Gate"
+      },
+      "id": "ID",
+      "name": "Name",
+      "description": "Description",
+      "isPredefined": "Is Predefined",
+      "openApiCriteria": "Open Api Criteria"
+    }
+  }
+}

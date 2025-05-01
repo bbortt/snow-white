@@ -1,0 +1,23 @@
+import React from 'react';
+import { Route } from 'react-router-dom';
+
+import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
+
+import QualityGateConfig from './quality-gate-config';
+import QualityGateConfigDetail from './quality-gate-config-detail';
+import QualityGateConfigUpdate from './quality-gate-config-update';
+import QualityGateConfigDeleteDialog from './quality-gate-config-delete-dialog';
+
+const QualityGateConfigRoutes = () => (
+  <ErrorBoundaryRoutes>
+    <Route index element={<QualityGateConfig />} />
+    <Route path="new" element={<QualityGateConfigUpdate />} />
+    <Route path=":id">
+      <Route index element={<QualityGateConfigDetail />} />
+      <Route path="edit" element={<QualityGateConfigUpdate />} />
+      <Route path="delete" element={<QualityGateConfigDeleteDialog />} />
+    </Route>
+  </ErrorBoundaryRoutes>
+);
+
+export default QualityGateConfigRoutes;

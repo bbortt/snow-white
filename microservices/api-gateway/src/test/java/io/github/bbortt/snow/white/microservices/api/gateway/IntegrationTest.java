@@ -1,0 +1,19 @@
+package io.github.bbortt.snow.white.microservices.api.gateway;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@SpringBootTest(
+  classes = { Main.class },
+  properties = {
+    "io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url=http://localhost:8081",
+    "io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url=http://localhost:8084",
+  }
+)
+public @interface IntegrationTest {
+}

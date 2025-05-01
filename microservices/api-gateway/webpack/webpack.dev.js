@@ -10,7 +10,7 @@ const commonConfig = require('./webpack.common.js');
 
 const ENV = 'development';
 
-module.exports = async options =>
+module.exports = async (options) =>
   webpackMerge(await commonConfig({ env: ENV }), {
     devtool: 'cheap-module-source-map', // https://reactjs.org/docs/cross-origin-errors.html
     mode: ENV,
@@ -52,8 +52,8 @@ module.exports = async options =>
       port: 9060,
       proxy: [
         {
-          context: ['/api', '/v3/api-docs'],
-          target: `http${options.tls ? 's' : ''}://localhost:8090`,
+          context: ['/api', '/management', '/swagger-ui', '/v3/api-docs'],
+          target: `http${options.tls ? 's' : ''}://localhost:9080`,
           secure: false,
           changeOrigin: options.tls,
         },

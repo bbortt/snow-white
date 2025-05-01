@@ -211,7 +211,7 @@ components:
       required:
         - name
         - isPredefined
-        - openapiCriteria
+        - openApiCriteria
       properties:
         name:
           type: string
@@ -225,7 +225,7 @@ components:
           type: boolean
           description: Whether the Quality-Gate Configuration is predefined or not
           default: false
-        openapiCriteria:
+        openApiCriteria:
           type: array
           description: List of OpenAPI criteria IDs used in this configuration
           items:

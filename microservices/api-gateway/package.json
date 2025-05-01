@@ -101,7 +101,6 @@
     "sass-loader": "16.0.5",
     "simple-progress-webpack-plugin": "2.0.0",
     "style-loader": "4.0.0",
-    "swagger-ui-dist": "5.21.0",
     "terser-webpack-plugin": "5.3.14",
     "thread-loader": "4.0.4",
     "ts-loader": "9.5.2",

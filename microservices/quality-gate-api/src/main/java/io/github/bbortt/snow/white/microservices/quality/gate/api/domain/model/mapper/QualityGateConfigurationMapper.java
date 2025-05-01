@@ -37,7 +37,7 @@ public abstract class QualityGateConfigurationMapper {
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
   @Mapping(
-    target = "openapiCriteria",
+    target = "openApiCriteria",
     expression = "java(mapOpenApiCriteriaToStringList(entity))"
   )
   public abstract QualityGateConfig toDto(QualityGateConfiguration entity);
@@ -45,7 +45,7 @@ public abstract class QualityGateConfigurationMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(
     target = "openApiCoverageConfigurations",
-    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenapiCriteria(), null))"
+    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCriteria(), null))"
   )
   public abstract QualityGateConfiguration toEntity(QualityGateConfig dto)
     throws OpenApiCriterionDoesNotExistException;
@@ -66,16 +66,16 @@ public abstract class QualityGateConfigurationMapper {
   }
 
   protected Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
-    @Null List<String> openapiCriteria,
+    @Null List<String> openApiCriteria,
     @Nullable QualityGateConfiguration existingEntity
   ) throws OpenApiCriterionDoesNotExistException {
-    if (isEmpty(openapiCriteria)) {
+    if (isEmpty(openApiCriteria)) {
       return new HashSet<>();
     }
 
     Set<QualityGateOpenApiCoverageMapping> mappings = new HashSet<>();
 
-    for (var criteriaName : openapiCriteria) {
+    for (var criteriaName : openApiCriteria) {
       OpenApiCoverageConfiguration coverage =
         openApiCoverageConfigurationRepository
           .findByName(criteriaName)

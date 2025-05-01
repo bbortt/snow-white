@@ -7,29 +7,13 @@
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
         "main": "Entitäten",
-        "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
+        "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
+        "openApiCriterion": "OpenApi Kriterien",
+        "qualityGateConfig": "Quality-Gates"
       },
-      "account": {
-        "main": "Zugang",
-        "settings": "Einstellungen",
-        "password": "Passwort",
-        "sessions": "Sitzungen",
-        "login": "Anmelden",
-        "logout": "Abmelden",
-        "register": "Registrierung"
-      },
-      "admin": {
-        "main": "Administration",
-        "gateway": "Gateway",
-        "userManagement": "Benutzerverwaltung",
-        "tracker": "Benutzer Aktivitäten",
-        "metrics": "Metriken",
-        "health": "Status",
-        "configuration": "Konfiguration",
-        "logs": "Protokoll",
-        "apidocs": "API",
-        "database": "Datenbank",
-        "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
+      "resources": {
+        "main": "Ressourcen",
+        "swagger": "Swagger UI"
       },
       "language": "Sprache"
     },

@@ -9,6 +9,7 @@ import { useAppDispatch } from 'app/config/store';
 import { setLocale } from 'app/shared/reducers/locale';
 import { EntitiesMenu, LocaleMenu } from '../menus';
 import { Brand, Home } from './header-components';
+import { ResourcesMenu } from 'app/shared/layout/menus/resources';
 
 export interface IHeaderProps {
   ribbonEnv: string;
@@ -53,6 +54,7 @@ const Header = (props: IHeaderProps) => {
             <Home />
             <EntitiesMenu />
             <LocaleMenu currentLocale={props.currentLocale} onClick={handleLocaleChange} />
+            <ResourcesMenu />
           </Nav>
         </Collapse>
       </Navbar>
