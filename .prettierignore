@@ -1,3 +1,4 @@
+.git/
 .husky/
 .idea/
 .mvn/
@@ -7,6 +8,8 @@ node_modules/
 opentelemetry-proto/
 
 package-lock.json
+
+target/
 
 # Test Resources with Exact Formatting
 microservices/report-coordination-service/src/test/resources/JUnitReporterTest/withFailedOpenApiCoverages.xml
