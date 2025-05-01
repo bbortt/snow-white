@@ -1,0 +1,18 @@
+import React from 'react';
+import { Route } from 'react-router-dom';
+
+import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
+
+import OpenApiCriterion from './open-api-criterion';
+import OpenApiCriterionDetail from './open-api-criterion-detail';
+
+const OpenApiCriterionRoutes = () => (
+  <ErrorBoundaryRoutes>
+    <Route index element={<OpenApiCriterion />} />
+    <Route path=":id">
+      <Route index element={<OpenApiCriterionDetail />} />
+    </Route>
+  </ErrorBoundaryRoutes>
+);
+
+export default OpenApiCriterionRoutes;
