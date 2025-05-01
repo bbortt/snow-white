@@ -22,7 +22,95 @@ $border-radius: 0.15rem;
 $border-radius-lg: 0.125rem;
 $border-radius-sm: 0.1rem;
 
-// Body:
-// Settings for the `<body>` element.
+// Custom color scheme based on Adobe Color Wheel selections
+// Base colors: #D91828, #400101, #F2F2F2, #8C8C8C, #0D0D0D
 
-$body-bg: #ffffff;
+// Map Adobe Color Wheel colors to custom variables
+$ruby-red: #d91828; // Vibrant red from palette
+$deep-burgundy: #400101; // Dark burgundy from palette
+$off-white: #f2f2f2; // Light gray/off-white from palette
+$medium-gray: #8c8c8c; // Medium gray from palette
+$near-black: #0d0d0d; // Near black from palette
+
+// Additional complementary colors derived from palette
+$burgundy-light: #8c2a2f; // Lighter version of burgundy for accents
+$burgundy-muted: #592327; // Muted burgundy for secondary elements
+$ruby-dark: #a91320; // Darker version of ruby red
+$ruby-muted: #c14853; // Muted/softer version of ruby
+$success-green: #245c45; // Deep green that complements the red tones
+$info-blue: #1a4566; // Deep blue that works with palette
+$warning-amber: #d9861a; // Amber warning color that matches the palette's warmth
+$gray-lighter: #cfcfcf; // Lighter gray variant
+$gray-darker: #404040; // Darker gray variant
+
+// Map these to Bootstrap's default color variables
+$primary: $ruby-red; // Vibrant red as primary color
+$secondary: $burgundy-muted; // Muted burgundy as secondary color
+$success: $success-green; // Deep green that complements reds
+$info: $info-blue; // Deep blue for information elements
+$warning: $warning-amber; // Amber for warnings
+$danger: $ruby-dark; // Dark ruby for danger/error states
+$light: $off-white; // Off-white for light elements
+$dark: $near-black; // Near-black for dark elements
+
+// Additional Bootstrap variables that should be updated for consistency
+$body-bg: $off-white;
+$body-color: $near-black;
+
+// Links
+$link-color: $primary;
+$link-hover-color: darken($primary, 15%);
+
+// Gray color variants for various UI elements
+$gray-100: mix($off-white, $medium-gray, 90%); // #EAEAEA
+$gray-200: mix($off-white, $medium-gray, 75%); // #DADADA
+$gray-300: mix($off-white, $medium-gray, 60%); // #CACACA
+$gray-400: mix($off-white, $medium-gray, 45%); // #B5B5B5
+$gray-500: $medium-gray; // #8C8C8C
+$gray-600: mix($medium-gray, $near-black, 70%); // #646464
+$gray-700: mix($medium-gray, $near-black, 50%); // #4D4D4D
+$gray-800: mix($medium-gray, $near-black, 30%); // #333333
+$gray-900: $near-black; // #0D0D0D
+
+// Component specific colors
+$component-active-bg: $primary;
+$component-active-color: $off-white;
+
+// Button hover and active states adjustments
+$btn-hover-bg-shade-amount: 20%;
+$btn-hover-bg-tint-amount: 20%;
+$btn-hover-border-shade-amount: 25%;
+$btn-hover-border-tint-amount: 10%;
+$btn-active-bg-shade-amount: 30%;
+$btn-active-bg-tint-amount: 30%;
+$btn-active-border-shade-amount: 35%;
+$btn-active-border-tint-amount: 20%;
+
+// Form input focus state
+$input-focus-border-color: rgba($ruby-red, 0.25);
+$input-focus-box-shadow: 0 0 0 0.25rem rgba($ruby-red, 0.25);
+
+// Navbar colors
+$navbar-dark-color: rgba($off-white, 0.75);
+$navbar-dark-hover-color: $off-white;
+$navbar-dark-active-color: $off-white;
+$navbar-light-color: rgba($near-black, 0.7);
+$navbar-light-hover-color: rgba($near-black, 0.9);
+$navbar-light-active-color: rgba($near-black, 1);
+
+// Card colors
+$card-border-color: rgba($near-black, 0.125);
+$card-cap-bg: rgba($off-white, 0.03);
+
+// For toast components
+$toast-header-color: $gray-700;
+$toast-header-bg: rgba($off-white, 0.85);
+$toast-header-border-color: rgba($near-black, 0.05);
+
+// Table colors
+$table-striped-bg: rgba($ruby-red, 0.05);
+$table-hover-bg: rgba($ruby-red, 0.075);
+$table-border-color: $gray-300;
+
+// Badge colors could use primary color family
+$badge-color: $off-white;
