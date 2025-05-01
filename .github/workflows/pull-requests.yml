@@ -53,4 +53,4 @@ jobs:
       - name: Version Report
         run: ./mvnw --version
       - name: Build with Maven
-        run: ./mvnw verify
+        run: ./mvnw -Pprod verify
