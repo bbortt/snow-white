@@ -1,8 +1,10 @@
-import axios from 'axios';
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { cleanEntity } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { IQualityGateConfig, defaultValue } from 'app/shared/model/quality-gate-config.model';
+import { QualityGateApi, QualityGateConfig } from 'app/clients/quality-gate-api';
+import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import { AxiosResponse } from 'axios';
 
 const initialState: EntityState<IQualityGateConfig> = {
   loading: false,
@@ -14,20 +16,51 @@ const initialState: EntityState<IQualityGateConfig> = {
   updateSuccess: false,
 };
 
-const apiUrl = 'api/rest/v1/quality-gates';
+const qualityGateApi = new QualityGateApi(null, SERVER_API_URL);
+
+const toDto = (entity: IQualityGateConfig): QualityGateConfig => {
+  const { name, description, openApiCriteria } = entity;
+  return {
+    name,
+    description,
+    isPredefined: false,
+    openApiCriteria: openApiCriteria.map(openApiCriterion => openApiCriterion.name),
+  };
+};
+
+const fromDto = (dto: QualityGateConfig): IQualityGateConfig => {
+  const { name, description, isPredefined, openApiCriteria } = dto;
+  return {
+    name,
+    description,
+    isPredefined,
+    openApiCriteria: openApiCriteria.map(openApiCriterion => ({ name: openApiCriterion }) as IOpenApiCriterion),
+  };
+};
 
 // Actions
 
-export const getEntities = createAsyncThunk('qualityGateConfig/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
-  return axios.get<IQualityGateConfig[]>(requestUrl);
-});
+export const getEntities = createAsyncThunk(
+  'qualityGateConfig/fetch_entity_list',
+  async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<IQualityGateConfig[]>> => {
+    return qualityGateApi
+      .getAllQualityGates({
+        // TODO: sort ? `page=${page}&size=${size}&sort=${sort}
+      })
+      .then(response => ({
+        ...response,
+        data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
+      }));
+  },
+);
 
 export const getEntity = createAsyncThunk(
   'qualityGateConfig/fetch_entity',
-  async (id: string | number) => {
-    const requestUrl = `${apiUrl}/${id}`;
-    return axios.get<IQualityGateConfig>(requestUrl);
+  async (name: string): Promise<AxiosResponse<IQualityGateConfig>> => {
+    return qualityGateApi.getQualityGateByName(name).then(response => ({
+      ...response,
+      data: fromDto(response.data),
+    }));
   },
   { serializeError: serializeAxiosError },
 );
@@ -35,7 +68,10 @@ export const getEntity = createAsyncThunk(
 export const createEntity = createAsyncThunk(
   'qualityGateConfig/create_entity',
   async (entity: IQualityGateConfig, thunkAPI) => {
-    const result = await axios.post<IQualityGateConfig>(apiUrl, cleanEntity(entity));
+    const result = await qualityGateApi.createQualityGate(toDto(entity)).then(qualityGateConfig => {
+      cleanEntity(entity);
+      return qualityGateConfig;
+    });
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -45,17 +81,10 @@ export const createEntity = createAsyncThunk(
 export const updateEntity = createAsyncThunk(
   'qualityGateConfig/update_entity',
   async (entity: IQualityGateConfig, thunkAPI) => {
-    const result = await axios.put<IQualityGateConfig>(`${apiUrl}/${entity.name}`, cleanEntity(entity));
-    thunkAPI.dispatch(getEntities({}));
-    return result;
-  },
-  { serializeError: serializeAxiosError },
-);
-
-export const partialUpdateEntity = createAsyncThunk(
-  'qualityGateConfig/partial_update_entity',
-  async (entity: IQualityGateConfig, thunkAPI) => {
-    const result = await axios.patch<IQualityGateConfig>(`${apiUrl}/${entity.name}`, cleanEntity(entity));
+    const result = await qualityGateApi.updateQualityGate(entity.name, toDto(entity)).then(qualityGateConfig => {
+      cleanEntity(entity);
+      return qualityGateConfig;
+    });
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -64,9 +93,8 @@ export const partialUpdateEntity = createAsyncThunk(
 
 export const deleteEntity = createAsyncThunk(
   'qualityGateConfig/delete_entity',
-  async (id: string | number, thunkAPI) => {
-    const requestUrl = `${apiUrl}/${id}`;
-    const result = await axios.delete<IQualityGateConfig>(requestUrl);
+  async (name: string, thunkAPI) => {
+    const result = await qualityGateApi.deleteQualityGate(name);
     thunkAPI.dispatch(getEntities({}));
     return result;
   },
@@ -99,18 +127,18 @@ export const QualityGateConfigSlice = createEntitySlice({
           totalItems: parseInt(headers['x-total-count'], 10),
         };
       })
-      .addMatcher(isFulfilled(createEntity, updateEntity, partialUpdateEntity), (state, action) => {
+      .addMatcher(isFulfilled(createEntity, updateEntity), (state, action) => {
         state.updating = false;
         state.loading = false;
         state.updateSuccess = true;
-        state.entity = action.payload.data;
+        state.entity = fromDto(action.payload.data);
       })
       .addMatcher(isPending(getEntities, getEntity), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;
       })
-      .addMatcher(isPending(createEntity, updateEntity, partialUpdateEntity, deleteEntity), state => {
+      .addMatcher(isPending(createEntity, updateEntity, deleteEntity), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.updating = true;

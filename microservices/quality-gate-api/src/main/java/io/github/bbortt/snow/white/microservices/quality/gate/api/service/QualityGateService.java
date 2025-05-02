@@ -29,7 +29,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,8 +78,8 @@ public class QualityGateService {
     qualityGateConfigurationRepository.deleteByName(name);
   }
 
-  public Set<String> getAllQualityGateConfigNames() {
-    return qualityGateConfigurationRepository.findAllNames();
+  public List<QualityGateConfiguration> getAllQualityGateConfigurations() {
+    return qualityGateConfigurationRepository.findAllByOrderByIsPredefinedDescNameAsc();
   }
 
   public QualityGateConfiguration findByName(@Nullable String name)

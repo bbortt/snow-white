@@ -9,24 +9,19 @@ paths:
   /api/rest/v1/quality-gates:
     get:
       operationId: getAllQualityGates
-      summary: Retrieve all Quality-Gate Configuration names
-      description: Returns a list of all available Quality-Gate Configuration names
+      summary: Retrieve all Quality-Gate Configurations
+      description: Returns a list of all available Quality-Gate Configurations
       tags:
         - quality-gate
       responses:
         '200':
-          description: A list of Quality-Gate Configuration names
+          description: A list of Quality-Gate Configurations
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  names:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                      ['basic-coverage', 'full-feature', 'minimal', 'dry-run']
+                type: array
+                items:
+                  $ref: '#/components/schemas/QualityGateConfig'
         '500':
           description: Internal server error
           content:
