@@ -124,9 +124,9 @@ class QualityGateResourceIT {
       .perform(get(ENTITY_API_URL))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-      .andExpect(jsonPath("$.names.length()").value(4))
+      .andExpect(jsonPath("$.length()").value(4))
       .andExpect(
-        jsonPath("$.names").value(
+        jsonPath("$[*].name").value(
           contains("basic-coverage", "dry-run", "full-feature", "minimal")
         )
       );
@@ -142,9 +142,9 @@ class QualityGateResourceIT {
       .perform(get(ENTITY_API_URL))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-      .andExpect(jsonPath("$.names.length()").value(5))
+      .andExpect(jsonPath("$.length()").value(5))
       .andExpect(
-        jsonPath("$.names[0]").value(qualityGateConfiguration.getName())
+        jsonPath("$[4].name").value(qualityGateConfiguration.getName())
       );
 
     qualityGateConfigurationRepository.delete(qualityGateConfiguration);

@@ -38,7 +38,7 @@ export const QualityGateConfigUpdate = () => {
       dispatch(getEntity(id));
     }
 
-    dispatch(getOpenApiCriteria({}));
+    dispatch(getOpenApiCriteria());
   }, []);
 
   useEffect(() => {

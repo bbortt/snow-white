@@ -62,6 +62,8 @@ For rapid development, follow these steps:
 | [`quality-gate-api`](./microservices/quality-gate-api)                       | `8081`                      | `8081`                                 |
 | [`report-coordination-service`](./microservices/report-coordination-service) | `8084`                      | `8084`                                 |
 
+The UI Development Server (of `api-gateway`) is running on port 9001.
+
 ### Additional Services
 
 The following services are only mapped in [`dev/docker-compose.yaml`](dev/docker-compose.yaml):

@@ -27,11 +27,8 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposit
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import javax.swing.text.html.Option;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -167,19 +164,19 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class GetAllQualityGateConfigNames {
+  class GetAllQualityGateConfigurations {
 
     @Test
     void shouldReturnAllConfigurationNames() {
-      var name = "TestConfig";
-
-      doReturn(new HashSet<>(singletonList(name)))
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(singletonList(qualityGateConfiguration))
         .when(qualityGateConfigurationRepositoryMock)
-        .findAllNames();
+        .findAllByOrderByIsPredefinedDescNameAsc();
 
-      Set<String> result = fixture.getAllQualityGateConfigNames();
+      List<QualityGateConfiguration> result =
+        fixture.getAllQualityGateConfigurations();
 
-      assertThat(result).containsExactly(name);
+      assertThat(result).containsExactly(qualityGateConfiguration);
     }
   }
 

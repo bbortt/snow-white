@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -22,7 +22,6 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.GetAllQualityGates200Response;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
@@ -32,7 +31,6 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.net.URI;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -254,10 +252,15 @@ class QualityGateResourceTest {
 
     @Test
     void returnsAllQualityGates() {
-      var name = "TestQualityGate";
-      doReturn(Set.of(name))
+      var qualityGateConfiguration = new QualityGateConfiguration();
+      doReturn(singletonList(qualityGateConfiguration))
         .when(qualityGateServiceMock)
-        .getAllQualityGateConfigNames();
+        .getAllQualityGateConfigurations();
+
+      var qualityGateConfig = new QualityGateConfig();
+      doReturn(qualityGateConfig)
+        .when(qualityGateConfigurationMapperMock)
+        .toDto(qualityGateConfiguration);
 
       var response = fixture.getAllQualityGates();
 
@@ -265,12 +268,7 @@ class QualityGateResourceTest {
         .isNotNull()
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-          r ->
-            assertThat(r.getBody())
-              .isInstanceOf(GetAllQualityGates200Response.class)
-              .extracting(GetAllQualityGates200Response::getNames)
-              .asInstanceOf(LIST)
-              .containsExactly(name)
+          r -> assertThat(r.getBody()).containsExactly(qualityGateConfig)
         );
     }
   }
