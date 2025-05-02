@@ -9,6 +9,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './quality-gate-config.reducer';
+import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 
 export const QualityGateConfig = () => {
   const dispatch = useAppDispatch();
@@ -20,7 +21,7 @@ export const QualityGateConfig = () => {
     overridePaginationStateWithQueryParams(getPaginationState(location, ITEMS_PER_PAGE, 'id'), location.search),
   );
 
-  const qualityGateConfigList = useAppSelector(state => state.snowwhite.qualityGateConfig.entities);
+  const qualityGateConfigList: IQualityGateConfig[] = useAppSelector(state => state.snowwhite.qualityGateConfig.entities);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGateConfig.totalItems);
 
@@ -115,10 +116,6 @@ export const QualityGateConfig = () => {
           <Table responsive>
             <thead>
               <tr>
-                <th className="hand" onClick={sort('id')}>
-                  <Translate contentKey="snowWhiteApp.qualityGateConfig.id">ID</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('id')} />
-                </th>
                 <th className="hand" onClick={sort('name')}>
                   <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
@@ -135,21 +132,20 @@ export const QualityGateConfig = () => {
               </tr>
             </thead>
             <tbody>
-              {qualityGateConfigList.map((qualityGateConfig, i) => (
+              {qualityGateConfigList.map((qualityGateConfig: IQualityGateConfig, i) => (
                 <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
-                    <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.id}`} color="link" size="sm">
-                      {qualityGateConfig.id}
+                    <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
+                      {qualityGateConfig.name}
                     </Button>
                   </td>
-                  <td>{qualityGateConfig.name}</td>
                   <td>{qualityGateConfig.description}</td>
                   <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
                       <Button
                         tag={Link}
-                        to={`/quality-gate-config/${qualityGateConfig.id}`}
+                        to={`/quality-gate-config/${qualityGateConfig.name}`}
                         color="info"
                         size="sm"
                         data-cy="entityDetailsButton"
@@ -161,7 +157,7 @@ export const QualityGateConfig = () => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`/quality-gate-config/${qualityGateConfig.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="primary"
                         size="sm"
                         data-cy="entityEditButton"
@@ -173,7 +169,7 @@ export const QualityGateConfig = () => {
                       </Button>
                       <Button
                         tag={Link}
-                        to={`/quality-gate-config/${qualityGateConfig.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="danger"
                         size="sm"
                         data-cy="entityDeleteButton"

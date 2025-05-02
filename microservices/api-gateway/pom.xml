@@ -172,6 +172,58 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-quality-gate-api-v1</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
+              </inputSpec>
+              <generatorName>typescript-axios</generatorName>
+              <output>
+                ${project.build.directory}/generated-sources/openapi/quality-gate-api
+              </output>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-quality-gate-api</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>
+                ${project.basedir}/src/main/webapp/app/clients/quality-gate-api
+              </outputDirectory>
+              <resources>
+                <resource>
+                  <directory>
+                    ${project.build.directory}/generated-sources/openapi/quality-gate-api
+                  </directory>
+                  <includes>
+                    <include>*.ts</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -219,7 +271,7 @@
                 <goals>
                   <goal>corepack</goal>
                 </goals>
-                <phase>pnpm test</phase>
+                <phase>test</phase>
                 <configuration>
                   <arguments>run webapp:test</arguments>
                   <npmInheritsProxyConfigFromMaven>

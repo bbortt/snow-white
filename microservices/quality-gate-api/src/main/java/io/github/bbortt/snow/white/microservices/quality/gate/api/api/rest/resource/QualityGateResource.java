@@ -14,7 +14,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.GetAllQualityGates200Response;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.QualityGateConfigurationMapper;
@@ -23,7 +22,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -101,14 +100,15 @@ public class QualityGateResource implements QualityGateApi {
   }
 
   @Override
-  public ResponseEntity<GetAllQualityGates200Response> getAllQualityGates() {
-    var qualityGateConfigNames =
-      qualityGateService.getAllQualityGateConfigNames();
+  public ResponseEntity<List<QualityGateConfig>> getAllQualityGates() {
+    var qualityGateConfigurations =
+      qualityGateService.getAllQualityGateConfigurations();
 
     return ResponseEntity.ok(
-      GetAllQualityGates200Response.builder()
-        .names(new ArrayList<>(qualityGateConfigNames))
-        .build()
+      qualityGateConfigurations
+        .stream()
+        .map(qualityGateConfigurationMapper::toDto)
+        .toList()
     );
   }
 

@@ -25,13 +25,7 @@ export const OpenApiCriterion = () => {
   const totalItems = useAppSelector(state => state.snowwhite.openApiCriterion.totalItems);
 
   const getAllEntities = () => {
-    dispatch(
-      getEntities({
-        page: paginationState.activePage - 1,
-        size: paginationState.itemsPerPage,
-        sort: `${paginationState.sort},${paginationState.order}`,
-      }),
-    );
+    dispatch(getEntities());
   };
 
   const sortEntities = () => {

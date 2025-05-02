@@ -1,7 +1,9 @@
-import axios from 'axios';
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
-import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { IOpenApiCriterion, defaultValue } from 'app/shared/model/open-api-criterion.model';
+import { CriteriaApi } from 'app/clients/quality-gate-api';
+import { AxiosResponse } from 'axios';
+import { SnowWhiteState } from 'app/entities/reducers';
 
 const initialState: EntityState<IOpenApiCriterion> = {
   loading: false,
@@ -13,20 +15,37 @@ const initialState: EntityState<IOpenApiCriterion> = {
   updateSuccess: false,
 };
 
-const apiUrl = 'api/rest/v1/criteria/openapi';
+const criteriaApi = new CriteriaApi(null, SERVER_API_URL);
 
 // Actions
 
-export const getEntities = createAsyncThunk('openApiCriterion/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  const requestUrl = `${apiUrl}?${sort ? `page=${page}&size=${size}&sort=${sort}&` : ''}cacheBuster=${new Date().getTime()}`;
-  return axios.get<IOpenApiCriterion[]>(requestUrl);
+export const getEntities = createAsyncThunk('openApiCriterion/fetch_entity_list', async (): Promise<AxiosResponse<IOpenApiCriterion[]>> => {
+  return criteriaApi.listOpenApiCriteria().then(response => ({
+    ...response,
+    data: response.data.map(openApiCriterion => {
+      const { id, name, description } = openApiCriterion;
+      return { name: id, label: name, description } as IOpenApiCriterion;
+    }),
+  }));
 });
 
 export const getEntity = createAsyncThunk(
   'openApiCriterion/fetch_entity',
-  async (id: string | number) => {
-    const requestUrl = `${apiUrl}/${id}`;
-    return axios.get<IOpenApiCriterion>(requestUrl);
+  async (name: string, { dispatch, getState }) => {
+    const state = (getState() as { snowwhite: SnowWhiteState }).snowwhite;
+
+    if (state.openApiCriterion.entities.length === 0) {
+      await dispatch(getEntities());
+    }
+
+    const updatedState = (getState() as { snowwhite: SnowWhiteState }).snowwhite;
+    const entity = updatedState.openApiCriterion.entities.find(openApiCriterion => openApiCriterion.name === name);
+
+    if (!entity) {
+      throw new Error(`Entity with name "${name}" not found`);
+    }
+
+    return entity;
   },
   { serializeError: serializeAxiosError },
 );
@@ -40,7 +59,7 @@ export const OpenApiCriterionSlice = createEntitySlice({
     builder
       .addCase(getEntity.fulfilled, (state, action) => {
         state.loading = false;
-        state.entity = action.payload.data;
+        state.entity = action.payload;
       })
       .addMatcher(isFulfilled(getEntities), (state, action) => {
         const { data, headers } = action.payload;

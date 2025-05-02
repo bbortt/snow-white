@@ -35,3 +35,14 @@ export const Home = () => (
     </NavLink>
   </NavItem>
 );
+
+export const QualityGates = () => (
+  <NavItem>
+    <NavLink tag={Link} to="/quality-gate-config" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="list-check" />
+      <span>
+        <Translate contentKey="global.menu.entities.qualityGateConfig">Quality Gates</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);

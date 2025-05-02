@@ -18,6 +18,7 @@ export const OpenApiCriterionDetail = () => {
   }, []);
 
   const openApiCriterionEntity = useAppSelector(state => state.snowwhite.openApiCriterion.entity);
+
   return (
     <Row>
       <Col md="8">

@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Button, Row, Col } from 'reactstrap';
+import { Button, Col, Row } from 'reactstrap';
 import { Translate } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntity } from './quality-gate-config.reducer';
+import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import OpenApiCriterionBadge from 'app/entities/quality-gate-config/open-api-criterion-badge';
 
 export const QualityGateConfigDetail = () => {
   const dispatch = useAppDispatch();
@@ -17,7 +19,8 @@ export const QualityGateConfigDetail = () => {
     dispatch(getEntity(id));
   }, []);
 
-  const qualityGateConfigEntity = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
+  const qualityGateConfigEntity: IQualityGateConfig = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
+
   return (
     <Row>
       <Col md="8">
@@ -25,12 +28,6 @@ export const QualityGateConfigDetail = () => {
           <Translate contentKey="snowWhiteApp.qualityGateConfig.detail.title">QualityGateConfig</Translate>
         </h2>
         <dl className="jh-entity-details">
-          <dt>
-            <span id="id">
-              <Translate contentKey="global.field.id">ID</Translate>
-            </span>
-          </dt>
-          <dd>{qualityGateConfigEntity.id}</dd>
           <dt>
             <span id="name">
               <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>
@@ -54,12 +51,7 @@ export const QualityGateConfigDetail = () => {
           </dt>
           <dd>
             {qualityGateConfigEntity.openApiCriteria
-              ? qualityGateConfigEntity.openApiCriteria.map((val, i) => (
-                  <span key={val.id}>
-                    <a>{val.name}</a>
-                    {qualityGateConfigEntity.openApiCriteria && i === qualityGateConfigEntity.openApiCriteria.length - 1 ? '' : ', '}
-                  </span>
-                ))
+              ? qualityGateConfigEntity.openApiCriteria.map((val, i) => <OpenApiCriterionBadge openApiCriterion={val} key={i} />)
               : null}
           </dd>
         </dl>
@@ -70,7 +62,7 @@ export const QualityGateConfigDetail = () => {
           </span>
         </Button>
         &nbsp;
-        <Button tag={Link} to={`/quality-gate-config/${qualityGateConfigEntity.id}/edit`} replace color="primary">
+        <Button tag={Link} to={`/quality-gate-config/${qualityGateConfigEntity.name}/edit`} replace color="primary">
           <FontAwesomeIcon icon="pencil-alt" />{' '}
           <span className="d-none d-md-inline">
             <Translate contentKey="entity.action.edit">Edit</Translate>
