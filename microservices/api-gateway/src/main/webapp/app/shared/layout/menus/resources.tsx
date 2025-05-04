@@ -16,8 +16,8 @@ export const ResourcesMenu = () => (
     icon="th-list"
     name={translate('global.menu.resources.main')}
     id="entity-menu"
-    data-cy="entity"
     style={{ maxHeight: '80vh', overflow: 'auto' }}
+    data-testid="resources-menu"
   >
     <DropdownItem key="swagger-ui">
       <a href="/swagger-ui/index.html" target="_blank" className="dropdown-item link-no-style">

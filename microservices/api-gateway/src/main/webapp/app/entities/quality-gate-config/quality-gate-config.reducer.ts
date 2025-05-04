@@ -8,9 +8,10 @@ import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { cleanEntity } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { IQualityGateConfig, defaultValue } from 'app/shared/model/quality-gate-config.model';
-import { QualityGateApi, QualityGateConfig } from 'app/clients/quality-gate-api';
+import { QualityGateConfig } from 'app/clients/quality-gate-api';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { AxiosResponse } from 'axios';
+import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 
 const initialState: EntityState<IQualityGateConfig> = {
   loading: false,
@@ -22,15 +23,13 @@ const initialState: EntityState<IQualityGateConfig> = {
   updateSuccess: false,
 };
 
-const qualityGateApi = new QualityGateApi(null, SERVER_API_URL);
-
 const toDto = (entity: IQualityGateConfig): QualityGateConfig => {
   const { name, description, openApiCriteria } = entity;
   return {
     name,
     description,
     isPredefined: false,
-    openApiCriteria: openApiCriteria.map(openApiCriterion => openApiCriterion.name),
+    openApiCriteria: openApiCriteria?.map(openApiCriterion => openApiCriterion.name),
   };
 };
 
@@ -40,7 +39,7 @@ const fromDto = (dto: QualityGateConfig): IQualityGateConfig => {
     name,
     description,
     isPredefined,
-    openApiCriteria: openApiCriteria.map(openApiCriterion => ({ name: openApiCriterion }) as IOpenApiCriterion),
+    openApiCriteria: openApiCriteria?.map(openApiCriterion => ({ name: openApiCriterion }) as IOpenApiCriterion),
   };
 };
 
@@ -58,6 +57,7 @@ export const getEntities = createAsyncThunk(
         data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
       }));
   },
+  { serializeError: serializeAxiosError },
 );
 
 export const getEntity = createAsyncThunk(

@@ -15,14 +15,14 @@ export interface IMenuItem {
   icon: IconProp;
   to: string;
   id?: string;
-  'data-cy'?: string;
+  'data-testid'?: string;
 }
 
 const MenuItem: React.FC<IMenuItem> = (props: IMenuItem) => {
   const { to, icon, id, children } = props;
 
   return (
-    <DropdownItem tag={Link} to={to} id={id} data-cy={props['data-cy']}>
+    <DropdownItem tag={Link} to={to} id={id} data-testid={props['data-testid']}>
       <FontAwesomeIcon icon={icon} fixedWidth /> {children}
     </DropdownItem>
   );

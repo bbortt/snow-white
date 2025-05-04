@@ -28,7 +28,7 @@ export const OpenApiCriterionDetail = () => {
   return (
     <Row>
       <Col md="8">
-        <h2 data-cy="openApiCriterionDetailsHeading">
+        <h2 data-testid="openApiCriterionDetailsHeading">
           <Translate contentKey="snowWhiteApp.openApiCriterion.detail.title">OpenApiCriterion</Translate>
         </h2>
         <dl className="jh-entity-details">
@@ -51,7 +51,7 @@ export const OpenApiCriterionDetail = () => {
           </dt>
           <dd>{openApiCriterionEntity.description}</dd>
         </dl>
-        <Button tag={Link} to="/open-api-criterion" replace color="info" data-cy="entityDetailsBackButton">
+        <Button tag={Link} to="/open-api-criterion" replace color="info" data-testid="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}
           <span className="d-none d-md-inline">
             <Translate contentKey="entity.action.back">Back</Translate>

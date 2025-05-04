@@ -98,7 +98,7 @@ export const QualityGateConfig = () => {
 
   return (
     <div>
-      <h2 id="quality-gate-config-heading" data-cy="QualityGateConfigHeading">
+      <h2 id="quality-gate-config-heading" data-testid="QualityGateConfigHeading">
         <Translate contentKey="snowWhiteApp.qualityGateConfig.home.title">Quality Gate Configs</Translate>
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
@@ -109,7 +109,7 @@ export const QualityGateConfig = () => {
             to="/quality-gate-config/new"
             className="btn btn-primary jh-create-entity"
             id="jh-create-entity"
-            data-cy="entityCreateButton"
+            data-testid="entityCreateButton"
           >
             <FontAwesomeIcon icon="plus" />
             &nbsp;
@@ -139,7 +139,7 @@ export const QualityGateConfig = () => {
             </thead>
             <tbody>
               {qualityGateConfigList.map((qualityGateConfig: IQualityGateConfig, i) => (
-                <tr key={`entity-${i}`} data-cy="entityTable">
+                <tr key={`entity-${i}`} data-testid="entityTable">
                   <td>
                     <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
                       {qualityGateConfig.name}
@@ -154,7 +154,7 @@ export const QualityGateConfig = () => {
                         to={`/quality-gate-config/${qualityGateConfig.name}`}
                         color="info"
                         size="sm"
-                        data-cy="entityDetailsButton"
+                        data-testid="entityDetailsButton"
                       >
                         <FontAwesomeIcon icon="eye" />{' '}
                         <span className="d-none d-md-inline">
@@ -166,7 +166,7 @@ export const QualityGateConfig = () => {
                         to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="primary"
                         size="sm"
-                        data-cy="entityEditButton"
+                        data-testid="entityEditButton"
                       >
                         <FontAwesomeIcon icon="pencil-alt" />{' '}
                         <span className="d-none d-md-inline">
@@ -178,7 +178,7 @@ export const QualityGateConfig = () => {
                         to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
                         color="danger"
                         size="sm"
-                        data-cy="entityDeleteButton"
+                        data-testid="entityDeleteButton"
                       >
                         <FontAwesomeIcon icon="trash" />{' '}
                         <span className="d-none d-md-inline">

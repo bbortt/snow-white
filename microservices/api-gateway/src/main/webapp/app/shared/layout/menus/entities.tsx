@@ -14,7 +14,7 @@ export const EntitiesMenu = () => (
     icon="th-list"
     name={translate('global.menu.entities.main')}
     id="entity-menu"
-    data-cy="entity"
+    data-testid="entity"
     style={{ maxHeight: '80vh', overflow: 'auto' }}
   >
     <EntitiesMenuItems />

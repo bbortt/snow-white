@@ -8,6 +8,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
+import { screen } from '@testing-library/dom';
 
 import initStore from 'app/config/store';
 import Header from './header';
@@ -57,60 +58,40 @@ describe('Header', () => {
     mountedWrapper = undefined;
   });
 
-  // All tests will go here
   it('Renders a Header component in dev profile with LoadingBar, Navbar, Nav and dev ribbon.', () => {
-    const html = wrapper();
+    wrapper();
 
-    // Find Navbar component
-    expect(html).toContain('navbar');
-    // Find AdminMenu component
-    expect(html).toContain('admin-menu');
-    // Find EntitiesMenu component
-    expect(html).toContain('entity-menu');
-    // Find AccountMenu component
-    expect(html).toContain('account-menu');
     // Ribbon
-    expect(html).toContain('ribbon');
+    expect(screen.getByTestId('dev-ribbon')).toBeVisible();
+    // Find Navbar component
+    expect(screen.getByTestId('navbar')).toBeVisible();
+    // Language Menu
+    expect(screen.getByTestId('locale-menu')).toBeVisible();
+
+    // Basic Nav Items
+    expect(screen.getByTestId('quality-gates-menu')).toBeVisible();
+    expect(screen.getByTestId('criteria-menu')).toBeVisible();
+
+    // Resources Menu
+    expect(screen.getByTestId('resources-menu')).toBeVisible();
   });
 
   it('Renders a Header component in prod profile with LoadingBar, Navbar, Nav.', () => {
-    const html = wrapper(prodProps);
+    wrapper(prodProps);
+
+    // Ribbon should *not* be displayed
+    expect(screen.queryByTestId('dev-ribbon')).toBeNull();
 
     // Find Navbar component
-    expect(html).toContain('navbar');
-    // Find AdminMenu component
-    expect(html).toContain('admin-menu');
-    // Find EntitiesMenu component
-    expect(html).toContain('entity-menu');
-    // Find AccountMenu component
-    expect(html).toContain('account-menu');
-    // No Ribbon
-    expect(html).not.toContain('ribbon');
-  });
+    expect(screen.getByTestId('navbar')).toBeVisible();
+    // Language Menu
+    expect(screen.getByTestId('locale-menu')).toBeVisible();
 
-  it('Renders a Header component in prod profile with logged in User', () => {
-    const html = wrapper(userProps);
+    // Basic Nav Items
+    expect(screen.getByTestId('quality-gates-menu')).toBeVisible();
+    expect(screen.getByTestId('criteria-menu')).toBeVisible();
 
-    // Find Navbar component
-    expect(html).toContain('navbar');
-    // Not find AdminMenu component
-    expect(html).not.toContain('admin-menu');
-    // Find EntitiesMenu component
-    expect(html).toContain('entity-menu');
-    // Find AccountMenu component
-    expect(html).toContain('account-menu');
-  });
-
-  it('Renders a Header component in prod profile with no logged in User', () => {
-    const html = wrapper(guestProps);
-
-    // Find Navbar component
-    expect(html).toContain('navbar');
-    // Not find AdminMenu component
-    expect(html).not.toContain('admin-menu');
-    // Not find EntitiesMenu component
-    expect(html).not.toContain('entity-menu');
-    // Find AccountMenu component
-    expect(html).toContain('account-menu');
+    // Resources Menu
+    expect(screen.getByTestId('resources-menu')).toBeVisible();
   });
 });
