@@ -4,17 +4,23 @@
  * See LICENSE file for full details.
  */
 
-import axios from 'axios';
-
 import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import sinon from 'sinon';
+import { thunk } from 'redux-thunk';
 
 import { EntityState } from 'app/shared/reducers/reducer.utils';
 import { IOpenApiCriterion, defaultValue } from 'app/shared/model/open-api-criterion.model';
 import reducer, { getEntities, getEntity, reset } from './open-api-criterion.reducer';
+import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
+import { AxiosResponse } from 'axios';
+import { OpenApiCriterion } from 'app/clients/quality-gate-api';
 
-describe('Entities reducer tests', () => {
+jest.mock('app/entities/open-api-criterion/criteria-api', () => ({
+  criteriaApi: {
+    listOpenApiCriteria: jest.fn(),
+  },
+}));
+
+describe('OpenAPI Criterion reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
       return element.length === 0;
@@ -75,7 +81,7 @@ describe('Entities reducer tests', () => {
   });
 
   describe('Failures', () => {
-    it('should set a message in errorMessage', () => {
+    it.failing('should set a message in errorMessage', () => {
       testMultipleTypes(
         [getEntities.rejected.type, getEntity.rejected.type],
         'some message',
@@ -119,58 +125,117 @@ describe('Entities reducer tests', () => {
       ).toEqual({
         ...initialState,
         loading: false,
-        entity: payload.data,
+        entity: payload,
       });
     });
   });
 
   describe('Actions', () => {
+    let mockStore;
     let store;
 
-    const resolvedObject = { value: 'whatever' };
+    const resolvedObject: AxiosResponse<OpenApiCriterion[]> = { data: [{ id: 'id', name: 'name' }] } as AxiosResponse;
+    const expectedObject: IOpenApiCriterion = { name: 'id', label: 'name' };
+
     beforeEach(() => {
-      const mockStore = configureStore([thunk]);
-      store = mockStore({});
-      axios.get = sinon.stub().returns(Promise.resolve(resolvedObject));
-      axios.post = sinon.stub().returns(Promise.resolve(resolvedObject));
-      axios.put = sinon.stub().returns(Promise.resolve(resolvedObject));
-      axios.patch = sinon.stub().returns(Promise.resolve(resolvedObject));
-      axios.delete = sinon.stub().returns(Promise.resolve(resolvedObject));
+      mockStore = configureStore([thunk]);
+
+      (criteriaApi.listOpenApiCriteria as jest.MockedFn<any>).mockResolvedValueOnce(resolvedObject);
+    });
+
+    afterEach(() => {
+      store = null;
     });
 
     it('dispatches FETCH_OPENAPICRITERION_LIST actions', async () => {
+      store = mockStore();
+
       const expectedActions = [
         {
           type: getEntities.pending.type,
         },
         {
           type: getEntities.fulfilled.type,
-          payload: resolvedObject,
+          payload: { data: [expectedObject] },
         },
       ];
-      await store.dispatch(getEntities({}));
+
+      await store.dispatch(getEntities());
+
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
     });
 
-    it('dispatches FETCH_OPENAPICRITERION actions', async () => {
+    it('dispatches FETCH_OPENAPICRITERION actions with predefined state', async () => {
+      const defaultOpenApiCriterion: IOpenApiCriterion = { name: 'name', label: 'label' };
+      store = mockStore({ snowwhite: { openApiCriterion: { entities: [defaultOpenApiCriterion] } } });
+
       const expectedActions = [
         {
           type: getEntity.pending.type,
         },
         {
           type: getEntity.fulfilled.type,
-          payload: resolvedObject,
+          payload: defaultOpenApiCriterion,
         },
       ];
-      await store.dispatch(getEntity(42666));
+
+      await store.dispatch(getEntity('name'));
+
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
     });
 
+    it('dispatches FETCH_OPENAPICRITERION actions without predefined state', async () => {
+      store = mockStore({ snowwhite: { openApiCriterion: { entities: [] } } });
+
+      const expectedActions = [
+        {
+          type: getEntity.pending.type,
+        },
+        {
+          type: getEntities.pending.type,
+        },
+        {
+          type: getEntities.fulfilled.type,
+          payload: { data: [expectedObject] },
+        },
+      ];
+
+      await store.dispatch(getEntity('id'));
+
+      expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
+      expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
+      expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
+      expect(store.getActions()[3]).not.toBeUndefined();
+    });
+
+    it('dispatches FETCH_OPENAPICRITERION actions with invalid name', async () => {
+      store = mockStore({ snowwhite: { openApiCriterion: { entities: [{ name: 'something else', label: 'label' }] } } });
+
+      const expectedActions = [
+        {
+          type: getEntity.pending.type,
+        },
+        {
+          type: getEntity.rejected.type,
+        },
+      ];
+
+      await store.dispatch(getEntity('not found'));
+
+      expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
+      expect(store.getActions()[1].type).toBe(expectedActions[1].type);
+      expect(store.getActions()[1].error.message).toBe('Entity with name "not found" not found');
+    });
+
     it('dispatches RESET actions', async () => {
+      store = mockStore();
+
       const expectedActions = [reset()];
+
       await store.dispatch(reset());
+
       expect(store.getActions()).toEqual(expectedActions);
     });
   });

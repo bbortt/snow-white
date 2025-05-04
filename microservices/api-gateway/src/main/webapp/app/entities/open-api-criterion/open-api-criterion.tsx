@@ -91,7 +91,7 @@ export const OpenApiCriterion = () => {
 
   return (
     <div>
-      <h2 id="open-api-criterion-heading" data-cy="OpenApiCriterionHeading">
+      <h2 id="open-api-criterion-heading" data-testid="OpenApiCriterionHeading">
         <Translate contentKey="snowWhiteApp.openApiCriterion.home.title">Open Api Criteria</Translate>
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
@@ -117,7 +117,7 @@ export const OpenApiCriterion = () => {
             </thead>
             <tbody>
               {openApiCriterionList.map((openApiCriterion, i) => (
-                <tr key={`entity-${i}`} data-cy="entityTable">
+                <tr key={`entity-${i}`} data-testid="entityTable">
                   <td>{openApiCriterion.name}</td>
                   <td>{openApiCriterion.description}</td>
                 </tr>

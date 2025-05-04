@@ -47,7 +47,7 @@ export const QualityGateConfigDeleteDialog = () => {
 
   return (
     <Modal isOpen toggle={handleClose}>
-      <ModalHeader toggle={handleClose} data-cy="qualityGateConfigDeleteDialogHeading">
+      <ModalHeader toggle={handleClose} data-testid="qualityGateConfigDeleteDialogHeading">
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
       <ModalBody id="snowWhiteApp.qualityGateConfig.delete.question">
@@ -61,7 +61,7 @@ export const QualityGateConfigDeleteDialog = () => {
           &nbsp;
           <Translate contentKey="entity.action.cancel">Cancel</Translate>
         </Button>
-        <Button id="jhi-confirm-delete-qualityGateConfig" data-cy="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
+        <Button id="jhi-confirm-delete-qualityGateConfig" data-testid="entityConfirmDeleteButton" color="danger" onClick={confirmDelete}>
           <FontAwesomeIcon icon="trash" />
           &nbsp;
           <Translate contentKey="entity.action.delete">Delete</Translate>

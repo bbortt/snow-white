@@ -30,7 +30,7 @@ export const QualityGateConfigDetail = () => {
   return (
     <Row>
       <Col md="8">
-        <h2 data-cy="qualityGateConfigDetailsHeading">
+        <h2 data-testid="qualityGateConfigDetailsHeading">
           <Translate contentKey="snowWhiteApp.qualityGateConfig.detail.title">QualityGateConfig</Translate>
         </h2>
         <dl className="jh-entity-details">
@@ -61,7 +61,7 @@ export const QualityGateConfigDetail = () => {
               : null}
           </dd>
         </dl>
-        <Button tag={Link} to="/quality-gate-config" replace color="info" data-cy="entityDetailsBackButton">
+        <Button tag={Link} to="/quality-gate-config" replace color="info" data-testid="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}
           <span className="d-none d-md-inline">
             <Translate contentKey="entity.action.back">Back</Translate>

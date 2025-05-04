@@ -79,7 +79,7 @@ export const QualityGateConfigUpdate = () => {
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="snowWhiteApp.qualityGateConfig.home.createOrEditLabel" data-cy="QualityGateConfigCreateUpdateHeading">
+          <h2 id="snowWhiteApp.qualityGateConfig.home.createOrEditLabel" data-testid="QualityGateConfigCreateUpdateHeading">
             <Translate contentKey="snowWhiteApp.qualityGateConfig.home.createOrEditLabel">Create or edit a QualityGateConfig</Translate>
           </h2>
         </Col>
@@ -104,7 +104,7 @@ export const QualityGateConfigUpdate = () => {
                 label={translate('snowWhiteApp.qualityGateConfig.name')}
                 id="quality-gate-config-name"
                 name="name"
-                data-cy="name"
+                data-testid="name"
                 type="text"
                 validate={{
                   required: { value: true, message: translate('entity.validation.required') },
@@ -114,21 +114,21 @@ export const QualityGateConfigUpdate = () => {
                 label={translate('snowWhiteApp.qualityGateConfig.description')}
                 id="quality-gate-config-description"
                 name="description"
-                data-cy="description"
+                data-testid="description"
                 type="text"
               />
               <ValidatedField
                 label={translate('snowWhiteApp.qualityGateConfig.isPredefined')}
                 id="quality-gate-config-isPredefined"
                 name="isPredefined"
-                data-cy="isPredefined"
+                data-testid="isPredefined"
                 check
                 type="checkbox"
               />
               <ValidatedField
                 label={translate('snowWhiteApp.qualityGateConfig.openApiCriteria')}
                 id="quality-gate-config-openApiCriteria"
-                data-cy="openApiCriteria"
+                data-testid="openApiCriteria"
                 type="select"
                 multiple
                 name="openApiCriteria"
@@ -142,7 +142,7 @@ export const QualityGateConfigUpdate = () => {
                     ))
                   : null}
               </ValidatedField>
-              <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/quality-gate-config" replace color="info">
+              <Button tag={Link} id="cancel-save" data-testid="entityCreateCancelButton" to="/quality-gate-config" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;
                 <span className="d-none d-md-inline">
@@ -150,7 +150,7 @@ export const QualityGateConfigUpdate = () => {
                 </span>
               </Button>
               &nbsp;
-              <Button color="primary" id="save-entity" data-cy="entityCreateSaveButton" type="submit" disabled={updating}>
+              <Button color="primary" id="save-entity" data-testid="entityCreateSaveButton" type="submit" disabled={updating}>
                 <FontAwesomeIcon icon="save" />
                 &nbsp;
                 <Translate contentKey="entity.action.save">Save</Translate>

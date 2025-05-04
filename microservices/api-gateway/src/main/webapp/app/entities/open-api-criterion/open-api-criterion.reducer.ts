@@ -6,10 +6,10 @@
 
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { IOpenApiCriterion, defaultValue } from 'app/shared/model/open-api-criterion.model';
-import { CriteriaApi } from 'app/clients/quality-gate-api';
+import { defaultValue, IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { AxiosResponse } from 'axios';
-import { SnowWhiteState } from 'app/entities/reducers';
+import { getSnowWhiteState } from 'app/entities/reducers';
+import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
 
 const initialState: EntityState<IOpenApiCriterion> = {
   loading: false,
@@ -21,30 +21,32 @@ const initialState: EntityState<IOpenApiCriterion> = {
   updateSuccess: false,
 };
 
-const criteriaApi = new CriteriaApi(null, SERVER_API_URL);
-
 // Actions
 
-export const getEntities = createAsyncThunk('openApiCriterion/fetch_entity_list', async (): Promise<AxiosResponse<IOpenApiCriterion[]>> => {
-  return criteriaApi.listOpenApiCriteria().then(response => ({
-    ...response,
-    data: response.data.map(openApiCriterion => {
-      const { id, name, description } = openApiCriterion;
-      return { name: id, label: name, description } as IOpenApiCriterion;
-    }),
-  }));
-});
+export const getEntities = createAsyncThunk(
+  'openApiCriterion/fetch_entity_list',
+  async (): Promise<AxiosResponse<IOpenApiCriterion[]>> => {
+    return criteriaApi.listOpenApiCriteria().then(response => ({
+      ...response,
+      data: response.data.map(openApiCriterion => {
+        const { id, name, description } = openApiCriterion;
+        return { name: id, label: name, description } as IOpenApiCriterion;
+      }),
+    }));
+  },
+  { serializeError: serializeAxiosError },
+);
 
 export const getEntity = createAsyncThunk(
   'openApiCriterion/fetch_entity',
-  async (name: string, { dispatch, getState }) => {
-    const state = (getState() as { snowwhite: SnowWhiteState }).snowwhite;
+  async (name: string, { dispatch, getState }): Promise<IOpenApiCriterion> => {
+    const state = getSnowWhiteState(getState);
 
     if (state.openApiCriterion.entities.length === 0) {
       await dispatch(getEntities());
     }
 
-    const updatedState = (getState() as { snowwhite: SnowWhiteState }).snowwhite;
+    const updatedState = getSnowWhiteState(getState);
     const entity = updatedState.openApiCriterion.entities.find(openApiCriterion => openApiCriterion.name === name);
 
     if (!entity) {

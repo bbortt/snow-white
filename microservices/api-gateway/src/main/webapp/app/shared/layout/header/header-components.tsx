@@ -43,7 +43,7 @@ export const Home = () => (
 );
 
 export const QualityGates = () => (
-  <NavItem>
+  <NavItem data-testid="quality-gates-menu">
     <NavLink tag={Link} to="/quality-gate-config" className="d-flex align-items-center">
       <FontAwesomeIcon icon="list-check" />
       <span>

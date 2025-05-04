@@ -49,6 +49,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: ['<rootDir>/node_modules/'],
   setupFiles: ['<rootDir>/src/main/webapp/app/setup-tests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/main/webapp/app/setup-testing-library.ts'],
   globals: {
     I18N_HASH: 'generated_hash',
     ...require('./webpack/environment'),
