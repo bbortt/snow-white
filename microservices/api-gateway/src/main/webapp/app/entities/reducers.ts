@@ -17,6 +17,10 @@ export interface SnowWhiteState {
   qualityGateConfig: EntityState<IQualityGateConfig>;
 }
 
+export const getSnowWhiteState = (getState): SnowWhiteState => {
+  return (getState() as { snowwhite: SnowWhiteState }).snowwhite;
+};
+
 const entitiesReducers = {
   openApiCriterion,
   qualityGateConfig,

@@ -14,7 +14,7 @@ export const CriteriaMenu = () => (
     icon="cogs"
     name={translate('global.menu.criteria')}
     id="entity-menu"
-    data-cy="entity"
+    data-testid="criteria-menu"
     style={{ maxHeight: '80vh', overflow: 'auto' }}
   >
     <MenuItem icon="th-list" to="/open-api-criterion">
