@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
 /**
  * Problem details defined in RFC 7807.
  * @see https://datatracker.ietf.org/doc/html/rfc7807#section-3.1
