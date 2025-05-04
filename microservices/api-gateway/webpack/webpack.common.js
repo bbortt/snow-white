@@ -37,16 +37,13 @@ const getTsLoaderRule = () => {
   ];
 };
 
-module.exports = async (options) => {
+module.exports = async options => {
   const development = options.env === 'development';
-  const languagesHash = await hashElement(
-    path.resolve(__dirname, '../src/main/webapp/i18n'),
-    {
-      algo: 'md5',
-      encoding: 'hex',
-      files: { include: ['*.json'] },
-    },
-  );
+  const languagesHash = await hashElement(path.resolve(__dirname, '../src/main/webapp/i18n'), {
+    algo: 'md5',
+    encoding: 'hex',
+    files: { include: ['*.json'] },
+  });
 
   return merge(
     {
@@ -58,10 +55,7 @@ module.exports = async (options) => {
           // 2. Add your config as buildDependency to get cache invalidation on config change
           config: [
             __filename,
-            path.resolve(
-              __dirname,
-              `webpack.${development ? 'dev' : 'prod'}.js`,
-            ),
+            path.resolve(__dirname, `webpack.${development ? 'dev' : 'prod'}.js`),
             path.resolve(__dirname, 'environment.js'),
             path.resolve(__dirname, 'utils.js'),
             path.resolve(__dirname, '../postcss.config.js'),
