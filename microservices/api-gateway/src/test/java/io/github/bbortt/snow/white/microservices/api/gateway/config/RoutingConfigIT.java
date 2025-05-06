@@ -47,46 +47,34 @@ class RoutingConfigIT {
 
     @Test
     void configuresEndpoints() {
-      RouteLocator routeLocator = fixture.snowWhiteRouteLocator(
-        new RouteLocatorBuilder(applicationContextMock)
-      );
+      RouteLocator routeLocator = fixture.snowWhiteRouteLocator(new RouteLocatorBuilder(applicationContextMock));
 
-      var routes = routeLocator
-        .getRoutes()
-        .collectList()
-        .block(Duration.ofSeconds(5));
+      var routes = routeLocator.getRoutes().collectList().block(Duration.ofSeconds(5));
 
       assertThat(routes)
         .hasSize(4)
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("quality-gate-api"),
-            r ->
-              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
+            r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
           )
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("quality-gate-api-swagger"),
-            r ->
-              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
+            r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8081"))
           )
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
             r -> assertThat(r.getId()).isEqualTo("report-coordination-service"),
-            r ->
-              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
+            r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
-            r ->
-              assertThat(r.getId()).isEqualTo(
-                "report-coordination-service-swagger"
-              ),
-            r ->
-              assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
+            r -> assertThat(r.getId()).isEqualTo("report-coordination-service-swagger"),
+            r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         );
     }

@@ -8,6 +8,7 @@ node_modules/
 opentelemetry-proto/
 
 package-lock.json
+microservices/api-gateway/pnpm-lock.yaml
 
 target/
 

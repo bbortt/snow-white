@@ -56,30 +56,14 @@ class ReportCoordinationServiceIT {
     var qualityGateConfigName = "report-coordination-service";
 
     stubFor(
-      post(
-        urlPathTemplate(
-          "/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate"
-        )
-      )
+      post(urlPathTemplate("/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate"))
         .withPathParam("qualityGateConfigName", equalTo(qualityGateConfigName))
         .willReturn(ok())
     );
 
-    when()
-      .post(
-        "/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate",
-        qualityGateConfigName
-      )
-      .then()
-      .statusCode(200);
+    when().post("/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate", qualityGateConfigName).then().statusCode(200);
 
-    verify(
-      postRequestedFor(
-        urlEqualTo(
-          "/api/rest/v1/quality-gates/" + qualityGateConfigName + "/calculate"
-        )
-      )
-    );
+    verify(postRequestedFor(urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName + "/calculate")));
   }
 
   @Test
@@ -95,16 +79,9 @@ class ReportCoordinationServiceIT {
   void reportByIdResourceRequestShouldBeForwarded() {
     var reportId = "report-id";
 
-    stubFor(
-      get(urlPathTemplate("/api/rest/v1/reports/{reportId}"))
-        .withPathParam("reportId", equalTo(reportId))
-        .willReturn(ok())
-    );
+    stubFor(get(urlPathTemplate("/api/rest/v1/reports/{reportId}")).withPathParam("reportId", equalTo(reportId)).willReturn(ok()));
 
-    when()
-      .get("/api/rest/v1/reports/{reportId}", reportId)
-      .then()
-      .statusCode(200);
+    when().get("/api/rest/v1/reports/{reportId}", reportId).then().statusCode(200);
 
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/reports/" + reportId)));
   }
@@ -113,10 +90,7 @@ class ReportCoordinationServiceIT {
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 
-    when()
-      .get("/v3/api-docs/report-coordination-service")
-      .then()
-      .statusCode(200);
+    when().get("/v3/api-docs/report-coordination-service").then().statusCode(200);
 
     verify(getRequestedFor(urlEqualTo("/v3/api-docs")));
   }

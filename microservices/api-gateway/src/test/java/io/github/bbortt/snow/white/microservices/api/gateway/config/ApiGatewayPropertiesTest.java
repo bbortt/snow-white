@@ -87,9 +87,7 @@ class ApiGatewayPropertiesTest {
         );
     }
 
-    public static Stream<
-      String
-    > throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {
+    public static Stream<String> throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {
       return Stream.of("", null, " ");
     }
 
@@ -104,9 +102,7 @@ class ApiGatewayPropertiesTest {
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.public-url]."
-        );
+        .hasMessage("All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.api.gateway.public-url].");
     }
 
     @Test

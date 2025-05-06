@@ -77,16 +77,9 @@ class QualityGateApiIT {
         .willReturn(ok())
     );
 
-    when()
-      .get("/api/rest/v1/quality-gates/{reportId}", qualityGateConfigName)
-      .then()
-      .statusCode(200);
+    when().get("/api/rest/v1/quality-gates/{reportId}", qualityGateConfigName).then().statusCode(200);
 
-    verify(
-      getRequestedFor(
-        urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName)
-      )
-    );
+    verify(getRequestedFor(urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName)));
   }
 
   @Test

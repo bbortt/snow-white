@@ -27,22 +27,14 @@ public class RoutingConfig {
       .routes()
       .route("report-coordination-service", r ->
         r
-          .path(
-            "/api/rest/v1/quality-gates/*/calculate",
-            "/api/rest/v1/reports/**"
-          )
+          .path("/api/rest/v1/quality-gates/*/calculate", "/api/rest/v1/reports/**")
           .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
       )
       .route("quality-gate-api", r ->
-        r
-          .path("/api/rest/v1/criteria/**", "/api/rest/v1/quality-gates/**")
-          .uri(apiGatewayProperties.getQualityGateApiUrl())
+        r.path("/api/rest/v1/criteria/**", "/api/rest/v1/quality-gates/**").uri(apiGatewayProperties.getQualityGateApiUrl())
       )
       .route("quality-gate-api-swagger", r ->
-        r
-          .path("/v3/api-docs/quality-gate-api")
-          .filters(apiDocsRewriteTarget())
-          .uri(apiGatewayProperties.getQualityGateApiUrl())
+        r.path("/v3/api-docs/quality-gate-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getQualityGateApiUrl())
       )
       .route("report-coordination-service-swagger", r ->
         r
@@ -54,7 +46,6 @@ public class RoutingConfig {
   }
 
   private static Function<GatewayFilterSpec, UriSpec> apiDocsRewriteTarget() {
-    return filterSpec ->
-      filterSpec.rewritePath("/v3/api-docs/.+", "/v3/api-docs");
+    return filterSpec -> filterSpec.rewritePath("/v3/api-docs/.+", "/v3/api-docs");
   }
 }

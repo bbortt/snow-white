@@ -30,31 +30,19 @@ public class SecurityConfig {
   private final ApiGatewayProperties apiGatewayProperties;
 
   @Bean
-  public SecurityWebFilterChain springSecurityFilterChain(
-    ServerHttpSecurity http
-  ) {
+  public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
     http
       .securityMatcher(
-        new NegatedServerWebExchangeMatcher(
-          new OrServerWebExchangeMatcher(
-            pathMatchers("/app/**", "/i18n/**", "/content/**")
-          )
-        )
+        new NegatedServerWebExchangeMatcher(new OrServerWebExchangeMatcher(pathMatchers("/app/**", "/i18n/**", "/content/**")))
       )
       .cors(withDefaults())
       .csrf(ServerHttpSecurity.CsrfSpec::disable)
       .addFilterAfter(new SpaWebFilter(), HTTPS_REDIRECT)
       .headers(headers ->
         headers
-          .contentSecurityPolicy(csp ->
-            csp.policyDirectives(
-              apiGatewayProperties.getContentSecurityPolicy()
-            )
-          )
+          .contentSecurityPolicy(csp -> csp.policyDirectives(apiGatewayProperties.getContentSecurityPolicy()))
           .frameOptions(frameOptions -> frameOptions.mode(DENY))
-          .referrerPolicy(referrer ->
-            referrer.policy(STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-          )
+          .referrerPolicy(referrer -> referrer.policy(STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
           .permissionsPolicy(permissions ->
             permissions.policy(
               "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
