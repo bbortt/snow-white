@@ -37,14 +37,7 @@ class SpaWebFilterIT {
 
   @Test
   void testFilterDoesNotForwardToIndexForApi() {
-    webTestClient
-      .get()
-      .uri("/api/test")
-      .exchange()
-      .expectStatus()
-      .isOk()
-      .expectBody(String.class)
-      .isEqualTo("Hello World");
+    webTestClient.get().uri("/api/test").exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("Hello World");
   }
 
   @Test
@@ -162,21 +155,11 @@ class SpaWebFilterIT {
    */
   @Test
   void getUnmappedSecondLevelFile() {
-    webTestClient
-      .get()
-      .uri("/foo/bar.js")
-      .exchange()
-      .expectStatus()
-      .isUnauthorized();
+    webTestClient.get().uri("/foo/bar.js").exchange().expectStatus().isUnauthorized();
   }
 
   @Test
   void getUnmappedThirdLevelFile() {
-    webTestClient
-      .get()
-      .uri("/foo/another/bar.js")
-      .exchange()
-      .expectStatus()
-      .isUnauthorized();
+    webTestClient.get().uri("/foo/another/bar.js").exchange().expectStatus().isUnauthorized();
   }
 }
