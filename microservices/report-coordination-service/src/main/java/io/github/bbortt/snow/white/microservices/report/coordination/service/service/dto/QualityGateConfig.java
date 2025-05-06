@@ -20,5 +20,5 @@ public class QualityGateConfig {
   private final String name;
 
   @Nonnull
-  private List<String> openapiCriteria;
+  private List<String> openApiCriteria;
 }

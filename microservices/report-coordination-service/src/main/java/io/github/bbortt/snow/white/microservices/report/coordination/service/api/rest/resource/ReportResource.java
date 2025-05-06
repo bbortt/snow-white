@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.generatePaginationHttpHeaders;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.toPageable;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.ReportResource.ReportOrErrorResponse.errorResponse;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.ReportResource.ReportOrErrorResponse.qualityGateReport;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
@@ -23,6 +25,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.jun
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import jakarta.annotation.Nullable;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +71,23 @@ public class ReportResource implements ReportApi {
             .build()
         );
     }
+  }
+
+  @Override
+  public ResponseEntity<
+    List<
+      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
+    >
+  > listQualityGateReports(Integer page, Integer size, String sort) {
+    var qualityGateReports = reportService.findAllFinishedReports(
+      toPageable(page, size, sort)
+    );
+
+    return ResponseEntity.ok()
+      .headers(generatePaginationHttpHeaders(qualityGateReports))
+      .body(
+        qualityGateReports.get().map(qualityGateReportMapper::toDto).toList()
+      );
   }
 
   private ReportOrErrorResponse getReportByCalculationIdOrErrorResponse(

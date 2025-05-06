@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -69,4 +70,7 @@ public class ReportParameters {
     joinColumns = @JoinColumn(name = "report_parameter_id")
   )
   private Map<String, String> attributeFilters = new HashMap<>();
+
+  @OneToOne(mappedBy = "reportParameters", optional = false)
+  private QualityGateReport qualityGateReport;
 }

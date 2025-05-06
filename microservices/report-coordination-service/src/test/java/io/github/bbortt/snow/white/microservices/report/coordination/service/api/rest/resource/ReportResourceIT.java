@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -65,6 +66,11 @@ class ReportResourceIT {
 
   @Autowired
   private MockMvc mockMvc;
+
+  @AfterEach
+  void afterEachTeardown() {
+    qualityGateReportRepository.deleteAll();
+  }
 
   @Test
   void findReport_IN_PROGRESS_byCalculationId() throws Exception {
@@ -150,10 +156,9 @@ class ReportResourceIT {
       .additionalInformation(additionalInformation)
       .build();
 
-    qualityGateReport = qualityGateReport.withOpenApiTestResults(
-      Set.of(openApiCriterionResult)
+    qualityGateReportRepository.save(
+      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
     );
-    qualityGateReportRepository.save(qualityGateReport);
 
     var responseAsString = mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, calculationId))
@@ -242,10 +247,9 @@ class ReportResourceIT {
       .duration(Duration.ofSeconds(1))
       .build();
 
-    qualityGateReport = qualityGateReport.withOpenApiTestResults(
-      Set.of(openApiCriterionResult)
+    qualityGateReportRepository.save(
+      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
     );
-    qualityGateReportRepository.save(qualityGateReport);
 
     var jUnitReport = mockMvc
       .perform(get(JUNIT_REPORT_API_URL, calculationId))
@@ -263,5 +267,46 @@ class ReportResourceIT {
         UTF_8
       )
     );
+  }
+
+  @Test
+  void findAllReports() throws Exception {
+    qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(UUID.fromString("b30bb84b-7bf6-4744-8bfc-ac05b8a85991"))
+        .qualityGateConfigName("nameA")
+        .reportParameters(
+          ReportParameters.builder()
+            .serviceName("serviceName")
+            .apiName("apiName")
+            .build()
+        )
+        .reportStatus(PASSED)
+        .createdAt(Instant.parse("2025-05-07T18:00:00.00Z"))
+        .build()
+    );
+
+    qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(UUID.fromString("99635525-27a5-43ee-ae46-1cedf2ba4c35"))
+        .qualityGateConfigName("nameB")
+        .reportParameters(
+          ReportParameters.builder()
+            .serviceName("serviceName")
+            .apiName("apiName")
+            .build()
+        )
+        .reportStatus(PASSED)
+        .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
+        .build()
+    );
+
+    mockMvc
+      .perform(get(ENTITY_API_URL).queryParam("sort", "createdAt,desc"))
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"));
   }
 }
