@@ -6,15 +6,18 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -27,8 +30,10 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.dom
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,6 +41,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -272,6 +279,94 @@ class ReportResourceTest {
                 e -> assertThat(e.getMessage()).isEqualTo(message)
               )
         );
+    }
+  }
+
+  @Nested
+  class ListQualityGateReports {
+
+    @Test
+    void shouldReturnListOfQualityGateReports() {
+      var page = 0;
+      var size = 10;
+      var sort = "createdAt,desc";
+
+      var report1 = mock(QualityGateReport.class);
+      var report2 = mock(QualityGateReport.class);
+
+      Page<QualityGateReport> qualityGateReportsPage = mock();
+      doReturn(qualityGateReportsPage)
+        .when(reportServiceMock)
+        .findAllFinishedReports(any(Pageable.class));
+
+      List<QualityGateReport> reportList = List.of(report1, report2);
+      doReturn(reportList.stream()).when(qualityGateReportsPage).get();
+
+      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport dto1 =
+        mock(
+          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
+        );
+      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport dto2 =
+        mock(
+          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
+        );
+
+      doReturn(dto1).when(qualityGateReportMapperMock).toDto(report1);
+      doReturn(dto2).when(qualityGateReportMapperMock).toDto(report2);
+
+      ResponseEntity<
+        List<
+          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
+        >
+      > response = fixture.listQualityGateReports(page, size, sort);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+          r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
+          r ->
+            assertThat(r.getHeaders())
+              .hasSize(1)
+              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
+                assertThat(value).containsExactly("0")
+              )
+        );
+    }
+
+    @Test
+    void shouldHandleEmptyListOfQualityGateReports() {
+      var page = 0;
+      var size = 10;
+      var sort = "createdAt,desc";
+
+      Page<QualityGateReport> qualityGateReportsPage = mock();
+      doReturn(qualityGateReportsPage)
+        .when(reportServiceMock)
+        .findAllFinishedReports(any(Pageable.class));
+
+      doReturn(Stream.empty()).when(qualityGateReportsPage).get();
+
+      ResponseEntity<
+        List<
+          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
+        >
+      > response = fixture.listQualityGateReports(page, size, sort);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+          r -> assertThat(r.getBody()).isEmpty(),
+          r ->
+            assertThat(r.getHeaders())
+              .hasSize(1)
+              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
+                assertThat(value).containsExactly("0")
+              )
+        );
+
+      verifyNoInteractions(qualityGateReportMapperMock);
     }
   }
 }

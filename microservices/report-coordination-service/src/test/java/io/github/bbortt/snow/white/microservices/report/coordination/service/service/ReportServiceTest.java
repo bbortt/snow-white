@@ -6,8 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,6 +23,7 @@ import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEv
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
@@ -34,6 +37,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @ExtendWith({ MockitoExtension.class })
@@ -231,6 +236,32 @@ class ReportServiceTest {
       var result = fixture.update(qualityGateReport);
 
       assertThat(result).isEqualTo(updatedQualityGateReport);
+    }
+  }
+
+  @Nested
+  class FindAllFinishedReports {
+
+    @Test
+    void shouldQueryRepository() {
+      var pageable = Pageable.unpaged();
+
+      var qualityGateReports = Page.empty();
+      ArgumentCaptor<List<ReportStatus>> reportStatusArgumentCaptor = captor();
+      doReturn(qualityGateReports)
+        .when(qualityGateReportRepositoryMock)
+        .findByReportStatusIn(
+          reportStatusArgumentCaptor.capture(),
+          eq(pageable)
+        );
+
+      Page<QualityGateReport> result = fixture.findAllFinishedReports(pageable);
+
+      assertThat(result).isEqualTo(qualityGateReports);
+
+      assertThat(reportStatusArgumentCaptor.getValue())
+        .isNotEmpty()
+        .containsExactly(FAILED, PASSED);
     }
   }
 }

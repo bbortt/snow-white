@@ -163,7 +163,9 @@
           </binaryMavenPlugins>
           <ignoreProjectDependencies>true</ignoreProjectDependencies>
           <sourceDirectories>
-            <sourceDirectory>../../opentelemetry-proto</sourceDirectory>
+            <sourceDirectory>
+              ${maven.multiModuleProjectDirectory}/opentelemetry-proto
+            </sourceDirectory>
           </sourceDirectories>
         </configuration>
 

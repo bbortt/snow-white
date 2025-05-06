@@ -17,6 +17,7 @@ import org.mapstruct.Mapping;
 public interface ReportParameterMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "lookbackWindow", defaultValue = "1h")
+  @Mapping(target = "qualityGateReport", ignore = true)
   ReportParameters fromDto(
     QualityGateCalculationRequest qualityGateCalculationRequest
   );
