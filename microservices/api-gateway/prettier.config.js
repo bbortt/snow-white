@@ -6,7 +6,7 @@
 
 module.exports = {
   endOfLine: 'lf',
-  plugins: ['@prettier/plugin-xml', 'prettier-plugin-packagejson'],
+  plugins: ['@prettier/plugin-xml', 'prettier-plugin-java', 'prettier-plugin-packagejson'],
   printWidth: 140,
   singleQuote: true,
   tabWidth: 2,

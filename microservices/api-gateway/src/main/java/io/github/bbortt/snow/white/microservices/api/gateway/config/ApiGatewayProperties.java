@@ -26,11 +26,9 @@ import org.springframework.core.env.Profiles;
 @Setter
 @Configuration
 @ConfigurationProperties(PREFIX)
-public class ApiGatewayProperties
-  implements InitializingBean, EnvironmentAware {
+public class ApiGatewayProperties implements InitializingBean, EnvironmentAware {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.api.gateway";
+  public static final String PREFIX = "io.github.bbortt.snow.white.microservices.api.gateway";
 
   private @Nullable Environment environment;
 
@@ -45,14 +43,9 @@ public class ApiGatewayProperties
   public void afterPropertiesSet() {
     Map<String, String> fields = new HashMap<>();
     fields.put(PREFIX + ".quality-gate-api-url", qualityGateApiUrl);
-    fields.put(
-      PREFIX + ".report-coordination-service-url",
-      reportCoordinationServiceUrl
-    );
+    fields.put(PREFIX + ".report-coordination-service-url", reportCoordinationServiceUrl);
 
-    if (
-      nonNull(environment) && environment.acceptsProfiles(Profiles.of("prod"))
-    ) {
+    if (nonNull(environment) && environment.acceptsProfiles(Profiles.of("prod"))) {
       fields.put(PREFIX + ".public-url", publicUrl);
     }
 
