@@ -197,7 +197,7 @@ class OpenApiResultListenerIT {
   ) throws JsonProcessingException {
     var qualityGateConfig = new QualityGateConfig()
       .name(qualityGateConfigName)
-      .addOpenapiCriteriaItem(openApiCriterion.name());
+      .addOpenApiCriteriaItem(openApiCriterion.name());
 
     var qualityGateByNameEndpoint =
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;

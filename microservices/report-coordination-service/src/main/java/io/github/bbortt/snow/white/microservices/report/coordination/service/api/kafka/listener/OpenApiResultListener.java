@@ -99,7 +99,7 @@ public class OpenApiResultListener {
 
     var calculationResult = new OpenApiReportCalculator(
       qualityGateReport,
-      configurationParameters.qualityGateConfig().getOpenapiCriteria(),
+      configurationParameters.qualityGateConfig().getOpenApiCriteria(),
       openApiTestCriteria
     ).calculate();
 
