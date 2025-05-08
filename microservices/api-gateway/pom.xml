@@ -251,7 +251,7 @@
         </goals>
         <phase>test</phase>
         <configuration>
-          <arguments>run webapp:test</arguments>
+          <arguments>pnpm run webapp:test</arguments>
           <npmInheritsProxyConfigFromMaven>
             false
           </npmInheritsProxyConfigFromMaven>
