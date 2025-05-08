@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
@@ -295,23 +295,24 @@ class ReportResourceTest {
       var report2 = mock(QualityGateReport.class);
 
       Page<QualityGateReport> qualityGateReportsPage = mock();
+      doReturn(2L).when(qualityGateReportsPage).getTotalElements();
+
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
         .findAllFinishedReports(any(Pageable.class));
 
-      List<QualityGateReport> reportList = List.of(report1, report2);
-      doReturn(reportList.stream()).when(qualityGateReportsPage).get();
+      doReturn(Stream.of(report1, report2))
+        .when(qualityGateReportsPage)
+        .stream();
 
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport dto1 =
-        mock(
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-        );
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport dto2 =
-        mock(
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-        );
-
+      var dto1 = mock(
+        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
+      );
       doReturn(dto1).when(qualityGateReportMapperMock).toDto(report1);
+
+      var dto2 = mock(
+        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
+      );
       doReturn(dto2).when(qualityGateReportMapperMock).toDto(report2);
 
       ResponseEntity<
@@ -329,7 +330,7 @@ class ReportResourceTest {
             assertThat(r.getHeaders())
               .hasSize(1)
               .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("0")
+                assertThat(value).containsExactly("2")
               )
         );
     }
@@ -345,7 +346,7 @@ class ReportResourceTest {
         .when(reportServiceMock)
         .findAllFinishedReports(any(Pageable.class));
 
-      doReturn(Stream.empty()).when(qualityGateReportsPage).get();
+      doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 
       ResponseEntity<
         List<

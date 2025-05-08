@@ -6,11 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
-import static java.util.Collections.singletonList;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -31,12 +33,16 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith({ MockitoExtension.class })
@@ -251,24 +257,79 @@ class QualityGateResourceTest {
   class GetAllQualityGates {
 
     @Test
-    void returnsAllQualityGates() {
-      var qualityGateConfiguration = new QualityGateConfiguration();
-      doReturn(singletonList(qualityGateConfiguration))
+    void shouldReturnListOfQualityGates() {
+      var page = 0;
+      var size = 10;
+      var sort = "createdAt,desc";
+
+      var qualityGateConfiguration1 = mock(QualityGateConfiguration.class);
+      var qualityGateConfiguration2 = mock(QualityGateConfiguration.class);
+
+      Page<QualityGateConfiguration> qualityGateConfigurationPage = mock();
+      doReturn(2L).when(qualityGateConfigurationPage).getTotalElements();
+
+      doReturn(qualityGateConfigurationPage)
         .when(qualityGateServiceMock)
-        .getAllQualityGateConfigurations();
+        .findAllQualityGateConfigurations(any(Pageable.class));
 
-      var qualityGateConfig = new QualityGateConfig();
-      doReturn(qualityGateConfig)
+      doReturn(Stream.of(qualityGateConfiguration1, qualityGateConfiguration2))
+        .when(qualityGateConfigurationPage)
+        .stream();
+
+      var dto1 = mock(QualityGateConfig.class);
+      doReturn(dto1)
         .when(qualityGateConfigurationMapperMock)
-        .toDto(qualityGateConfiguration);
+        .toDto(qualityGateConfiguration1);
 
-      var response = fixture.getAllQualityGates();
+      var dto2 = mock(QualityGateConfig.class);
+      doReturn(dto2)
+        .when(qualityGateConfigurationMapperMock)
+        .toDto(qualityGateConfiguration2);
+
+      ResponseEntity<List<QualityGateConfig>> response =
+        fixture.getAllQualityGates(page, size, sort);
 
       assertThat(response)
         .isNotNull()
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-          r -> assertThat(r.getBody()).containsExactly(qualityGateConfig)
+          r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
+          r ->
+            assertThat(r.getHeaders())
+              .hasSize(1)
+              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
+                assertThat(value).containsExactly("2")
+              )
+        );
+    }
+
+    @Test
+    void shouldHandleEmptyListOfQualityGates() {
+      var page = 0;
+      var size = 10;
+      var sort = "createdAt,desc";
+
+      Page<QualityGateConfiguration> qualityGateConfigurationPage = mock();
+      doReturn(qualityGateConfigurationPage)
+        .when(qualityGateServiceMock)
+        .findAllQualityGateConfigurations(any(Pageable.class));
+
+      doReturn(Stream.empty()).when(qualityGateConfigurationPage).stream();
+
+      ResponseEntity<List<QualityGateConfig>> response =
+        fixture.getAllQualityGates(page, size, sort);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+          r -> assertThat(r.getBody()).isEmpty(),
+          r ->
+            assertThat(r.getHeaders())
+              .hasSize(1)
+              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
+                assertThat(value).containsExactly("0")
+              )
         );
     }
   }

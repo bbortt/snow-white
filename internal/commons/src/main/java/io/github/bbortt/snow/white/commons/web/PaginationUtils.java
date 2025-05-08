@@ -4,11 +4,10 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
+package io.github.bbortt.snow.white.commons.web;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import jakarta.annotation.Nullable;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,12 +17,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 
 @NoArgsConstructor(access = PRIVATE)
-final class PaginationUtils {
+public final class PaginationUtils {
 
-  @VisibleForTesting
-  static final String HEADER_X_TOTAL_COUNT = "X-Total-Count";
+  public static final String HEADER_X_TOTAL_COUNT = "X-Total-Count";
 
-  static Pageable toPageable(
+  public static Pageable toPageable(
     @Nullable Integer page,
     @Nullable Integer size,
     @Nullable String sort
@@ -49,7 +47,7 @@ final class PaginationUtils {
     return PageRequest.of(safePage, safeSize, sortObj);
   }
 
-  static <T> HttpHeaders generatePaginationHttpHeaders(Page<T> page) {
+  public static <T> HttpHeaders generatePaginationHttpHeaders(Page<T> page) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HEADER_X_TOTAL_COUNT, Long.toString(page.getTotalElements()));
     return headers;

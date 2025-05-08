@@ -36,6 +36,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateServiceTest {
@@ -164,19 +166,22 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class GetAllQualityGateConfigurations {
+  class FindAllQualityGateConfigurations {
+
+    @Mock
+    private Pageable pageable;
 
     @Test
     void shouldReturnAllConfigurationNames() {
-      var qualityGateConfiguration = new QualityGateConfiguration();
-      doReturn(singletonList(qualityGateConfiguration))
+      var qualityGateConfigurations = Page.empty();
+      doReturn(qualityGateConfigurations)
         .when(qualityGateConfigurationRepositoryMock)
-        .findAllByOrderByIsPredefinedDescNameAsc();
+        .findAll(pageable);
 
-      List<QualityGateConfiguration> result =
-        fixture.getAllQualityGateConfigurations();
+      Page<QualityGateConfiguration> result =
+        fixture.findAllQualityGateConfigurations(pageable);
 
-      assertThat(result).containsExactly(qualityGateConfiguration);
+      assertThat(result).isEqualTo(qualityGateConfigurations);
     }
   }
 

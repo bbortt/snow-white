@@ -4,11 +4,12 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
+package io.github.bbortt.snow.white.commons.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -26,33 +27,33 @@ class PaginationUtilsTest {
     void shouldReturnDefaultPageableForNullInputs() {
       Pageable pageable = PaginationUtils.toPageable(null, null, null);
 
-      assertThat(pageable.getPageNumber()).isEqualTo(0);
-      assertThat(pageable.getPageSize()).isEqualTo(20);
-      assertThat(pageable.getSort().isUnsorted()).isTrue();
+      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(0);
+      Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
+      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
     }
 
     @Test
     void shouldApplyPageAndSize() {
       Pageable pageable = PaginationUtils.toPageable(2, 50, null);
 
-      assertThat(pageable.getPageNumber()).isEqualTo(2);
-      assertThat(pageable.getPageSize()).isEqualTo(50);
-      assertThat(pageable.getSort().isUnsorted()).isTrue();
+      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(2);
+      Assertions.assertThat(pageable.getPageSize()).isEqualTo(50);
+      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
     }
 
     @Test
     void shouldFallbackToDefaultsOnNegativeValues() {
       Pageable pageable = PaginationUtils.toPageable(-5, -10, null);
 
-      assertThat(pageable.getPageNumber()).isEqualTo(0);
-      assertThat(pageable.getPageSize()).isEqualTo(20);
+      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(0);
+      Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
     }
 
     @Test
     void shouldParseAscendingSort() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, "name,asc");
 
-      assertThat(pageable.getSort().getOrderFor("name"))
+      Assertions.assertThat(pageable.getSort().getOrderFor("name"))
         .isNotNull()
         .extracting(Sort.Order::getDirection)
         .isEqualTo(Sort.Direction.ASC);
@@ -62,7 +63,7 @@ class PaginationUtilsTest {
     void shouldParseDescendingSort() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, "createdAt,desc");
 
-      assertThat(pageable.getSort().getOrderFor("createdAt"))
+      Assertions.assertThat(pageable.getSort().getOrderFor("createdAt"))
         .isNotNull()
         .extracting(Sort.Order::getDirection)
         .isEqualTo(Sort.Direction.DESC);
@@ -72,14 +73,14 @@ class PaginationUtilsTest {
     void shouldIgnoreMalformedSortString() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, "badformat");
 
-      assertThat(pageable.getSort().isUnsorted()).isTrue();
+      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
     }
 
     @Test
     void shouldIgnoreEmptySort() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, "   ");
 
-      assertThat(pageable.getSort().isUnsorted()).isTrue();
+      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
     }
   }
 

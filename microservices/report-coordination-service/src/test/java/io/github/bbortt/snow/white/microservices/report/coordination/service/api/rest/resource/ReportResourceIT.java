@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
@@ -305,6 +306,7 @@ class ReportResourceIT {
       .perform(get(ENTITY_API_URL).queryParam("sort", "createdAt,desc"))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
       .andExpect(jsonPath("$.length()").value(2))
       .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
       .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"));
