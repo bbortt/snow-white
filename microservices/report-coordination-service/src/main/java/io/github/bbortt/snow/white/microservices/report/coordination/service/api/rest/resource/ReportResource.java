@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.generatePaginationHttpHeaders;
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.PaginationUtils.toPageable;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.ReportResource.ReportOrErrorResponse.errorResponse;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource.ReportResource.ReportOrErrorResponse.qualityGateReport;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
@@ -86,7 +86,7 @@ public class ReportResource implements ReportApi {
     return ResponseEntity.ok()
       .headers(generatePaginationHttpHeaders(qualityGateReports))
       .body(
-        qualityGateReports.get().map(qualityGateReportMapper::toDto).toList()
+        qualityGateReports.stream().map(qualityGateReportMapper::toDto).toList()
       );
   }
 

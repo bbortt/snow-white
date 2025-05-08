@@ -9,8 +9,8 @@ paths:
   /api/rest/v1/reports:
     get:
       operationId: listQualityGateReports
-      summary: 'List all Quality-Gate reports'
-      description: 'Returns a paginated list of all Quality-Gate reports'
+      summary: 'List all Quality-Gate Reports'
+      description: 'Returns a paginated list of all Quality-Gate Reports'
       tags:
         - report
       parameters:
@@ -37,10 +37,10 @@ paths:
             example: initiatedAt,desc
       responses:
         '200':
-          description: 'Paginated list of Quality-Gate reports'
+          description: 'Paginated list of Quality-Gate Reports'
           headers:
             X-Total-Count:
-              description: 'Total number of Quality-Gate reports available'
+              description: 'Total number of Quality-Gate Reports available'
               schema:
                 type: integer
           content:

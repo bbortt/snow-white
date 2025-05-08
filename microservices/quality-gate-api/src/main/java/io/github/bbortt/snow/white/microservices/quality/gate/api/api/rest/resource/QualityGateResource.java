@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
 import static io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.ObjectUtils.copyNonNullFields;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -100,16 +102,24 @@ public class QualityGateResource implements QualityGateApi {
   }
 
   @Override
-  public ResponseEntity<List<QualityGateConfig>> getAllQualityGates() {
+  public ResponseEntity<List<QualityGateConfig>> getAllQualityGates(
+    Integer page,
+    Integer size,
+    String sort
+  ) {
     var qualityGateConfigurations =
-      qualityGateService.getAllQualityGateConfigurations();
+      qualityGateService.findAllQualityGateConfigurations(
+        toPageable(page, size, sort)
+      );
 
-    return ResponseEntity.ok(
-      qualityGateConfigurations
-        .stream()
-        .map(qualityGateConfigurationMapper::toDto)
-        .toList()
-    );
+    return ResponseEntity.ok()
+      .headers(generatePaginationHttpHeaders(qualityGateConfigurations))
+      .body(
+        qualityGateConfigurations
+          .stream()
+          .map(qualityGateConfigurationMapper::toDto)
+          .toList()
+      );
   }
 
   @Override
