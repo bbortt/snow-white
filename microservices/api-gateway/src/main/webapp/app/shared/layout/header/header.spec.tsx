@@ -29,15 +29,6 @@ describe('Header', () => {
     isInProduction: true,
     isOpenAPIEnabled: false,
   };
-  const userProps = {
-    ...prodProps,
-    isAdmin: false,
-  };
-  const guestProps = {
-    ...prodProps,
-    isAdmin: false,
-    isAuthenticated: false,
-  };
 
   const wrapper = (props = devProps) => {
     if (!mountedWrapper) {
@@ -51,6 +42,7 @@ describe('Header', () => {
       );
       mountedWrapper = container.innerHTML;
     }
+
     return mountedWrapper;
   };
 
