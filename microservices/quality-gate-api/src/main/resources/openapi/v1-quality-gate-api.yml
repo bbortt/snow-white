@@ -13,9 +13,36 @@ paths:
       description: Returns a list of all available Quality-Gate Configurations
       tags:
         - quality-gate
+      parameters:
+        - name: page
+          in: query
+          description: 'Page number (0-based index)'
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          description: 'Number of items per page'
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: sort
+          in: query
+          description: 'Sorting criteria in the format: property,(asc|desc). Defaults to initiatedAt,desc'
+          required: false
+          schema:
+            type: string
+            example: initiatedAt,desc
       responses:
         '200':
           description: A list of Quality-Gate Configurations
+          headers:
+            X-Total-Count:
+              description: 'Total number of Quality-Gate Configurations available'
+              schema:
+                type: integer
           content:
             application/json:
               schema:

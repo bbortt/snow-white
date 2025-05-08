@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +18,4 @@ public interface QualityGateConfigurationRepository
   boolean existsByName(@Param("name") String name);
   Optional<QualityGateConfiguration> findByName(@Param("name") String name);
   void deleteByName(@Param("name") String name);
-
-  List<QualityGateConfiguration> findAllByOrderByIsPredefinedDescNameAsc();
 }

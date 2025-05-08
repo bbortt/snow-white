@@ -48,14 +48,10 @@ const fromDto = (dto: QualityGateConfig): IQualityGateConfig => {
 export const getEntities = createAsyncThunk(
   'qualityGateConfig/fetch_entity_list',
   async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<IQualityGateConfig[]>> => {
-    return qualityGateApi
-      .getAllQualityGates({
-        // TODO: sort ? `page=${page}&size=${size}&sort=${sort}
-      })
-      .then(response => ({
-        ...response,
-        data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
-      }));
+    return qualityGateApi.getAllQualityGates(page, size, sort).then(response => ({
+      ...response,
+      data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
+    }));
   },
   { serializeError: serializeAxiosError },
 );

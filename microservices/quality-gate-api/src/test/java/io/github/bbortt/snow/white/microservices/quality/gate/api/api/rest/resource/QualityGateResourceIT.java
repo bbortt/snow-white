@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -121,9 +122,10 @@ class QualityGateResourceIT {
   @Test
   void findPredefinedQualityGateConfigs() throws Exception {
     mockMvc
-      .perform(get(ENTITY_API_URL))
+      .perform(get(ENTITY_API_URL).param("sort", "name,asc"))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "4"))
       .andExpect(jsonPath("$.length()").value(4))
       .andExpect(
         jsonPath("$[*].name").value(
@@ -139,9 +141,10 @@ class QualityGateResourceIT {
     );
 
     mockMvc
-      .perform(get(ENTITY_API_URL))
+      .perform(get(ENTITY_API_URL).param("sort", "isPredefined,desc"))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "5"))
       .andExpect(jsonPath("$.length()").value(5))
       .andExpect(
         jsonPath("$[4].name").value(qualityGateConfiguration.getName())
