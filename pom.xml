@@ -37,6 +37,19 @@
     <sonar.projectName>Snow White</sonar.projectName>
     <sonar.host.url>http://localhost:9000</sonar.host.url>
 
+    <sonar.sources>src</sonar.sources>
+    <sonar.tests>src</sonar.tests>
+    <sonar.test.inclusions>
+      src/test/**/*.*,
+      src/main/webapp/app/**/*.spec.ts,
+      src/main/webapp/app/**/*.spec.tsx
+    </sonar.test.inclusions>
+    <sonar.exclusions>
+      src/main/webapp/content/**/*.*,
+      src/main/webapp/i18n/*.js,
+      target/classes/static/**/*.*
+    </sonar.exclusions>
+
     <sonar.coverage.exclusions>
       example-application/**,
       **/Main.java
@@ -49,6 +62,18 @@
     <sonar.jacoco.reportPaths>
       ${maven.multiModuleProjectDirectory}/target/jacoco.exec
     </sonar.jacoco.reportPaths>
+    <sonar.junit.reportPaths>
+      target/surefire-reports,
+      target/failsafe-reports
+    </sonar.junit.reportPaths>
+
+    <!-- Jest configuration -->
+    <sonar.javascript.lcov.reportPaths>
+      target/test-results/lcov.info
+    </sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>
+      target/test-results/jest/TESTS-results-sonar.xml
+    </sonar.testExecutionReportPaths>
 
     <!-- Dependency Management -->
     <spring-boot.version>3.4.5</spring-boot.version>
