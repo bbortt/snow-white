@@ -37,18 +37,13 @@
     <sonar.projectName>Snow White</sonar.projectName>
     <sonar.host.url>http://localhost:9000</sonar.host.url>
 
-    <sonar.sources>src</sonar.sources>
-    <sonar.tests>src</sonar.tests>
-    <sonar.test.inclusions>
-      src/test/**/*.*,
-      src/main/webapp/app/**/*.spec.ts,
-      src/main/webapp/app/**/*.spec.tsx
-    </sonar.test.inclusions>
-    <sonar.exclusions>
-      src/main/webapp/content/**/*.*,
-      src/main/webapp/i18n/*.js,
-      target/classes/static/**/*.*
-    </sonar.exclusions>
+    <sonar.sources>src/main</sonar.sources>
+    <sonar.tests>src/test</sonar.tests>
+
+    <sonar.inclusions>src/main/**/*.java</sonar.inclusions>
+    <sonar.exclusions>src/main/resources/**</sonar.exclusions>
+
+    <sonar.test.inclusions>src/test/**/*.java</sonar.test.inclusions>
 
     <sonar.coverage.exclusions>
       example-application/**,
@@ -58,22 +53,14 @@
     <!-- JaCoCo properties -->
     <jacoco.version>0.8.13</jacoco.version>
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      ${maven.multiModuleProjectDirectory}/target/jacoco-aggregate/jacoco.xml
+    </sonar.coverage.jacoco.xmlReportPaths>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-    <sonar.jacoco.reportPaths>
-      ${maven.multiModuleProjectDirectory}/target/jacoco.exec
-    </sonar.jacoco.reportPaths>
     <sonar.junit.reportPaths>
       target/surefire-reports,
       target/failsafe-reports
     </sonar.junit.reportPaths>
-
-    <!-- Jest configuration -->
-    <sonar.javascript.lcov.reportPaths>
-      target/test-results/lcov.info
-    </sonar.javascript.lcov.reportPaths>
-    <sonar.testExecutionReportPaths>
-      target/test-results/jest/TESTS-results-sonar.xml
-    </sonar.testExecutionReportPaths>
 
     <!-- Dependency Management -->
     <spring-boot.version>3.4.5</spring-boot.version>
@@ -184,21 +171,6 @@
               </outputDirectory>
             </configuration>
           </execution>
-          <execution>
-            <id>report-aggregate</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report-aggregate</goal>
-            </goals>
-            <configuration>
-              <dataFileIncludes>
-                <dataFileInclude>**/jacoco.exec</dataFileInclude>
-              </dataFileIncludes>
-              <outputDirectory>
-                ${maven.multiModuleProjectDirectory}/target/jacoco-aggregate
-              </outputDirectory>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
@@ -209,4 +181,43 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>sonar</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+              <execution>
+                <id>report-aggregate</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+                <configuration>
+                  <dataFileIncludes>
+                    <dataFileInclude>**/jacoco.exec</dataFileInclude>
+                  </dataFileIncludes>
+                  <outputDirectory>
+                    ${maven.multiModuleProjectDirectory}/target/jacoco-aggregate
+                  </outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>5.1.0.4751</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

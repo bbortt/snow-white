@@ -23,8 +23,7 @@ const initialState: EntityState<IQualityGateConfig> = {
   updateSuccess: false,
 };
 
-const toDto = (entity: IQualityGateConfig): QualityGateConfig => {
-  const { name, description, openApiCriteria } = entity;
+const toDto = ({ name, description, openApiCriteria }: IQualityGateConfig): QualityGateConfig => {
   return {
     name,
     description,
@@ -33,8 +32,7 @@ const toDto = (entity: IQualityGateConfig): QualityGateConfig => {
   };
 };
 
-const fromDto = (dto: QualityGateConfig): IQualityGateConfig => {
-  const { name, description, isPredefined, openApiCriteria } = dto;
+const fromDto = ({ name, description, isPredefined, openApiCriteria }: QualityGateConfig): IQualityGateConfig => {
   return {
     name,
     description,
@@ -48,10 +46,14 @@ const fromDto = (dto: QualityGateConfig): IQualityGateConfig => {
 export const getEntities = createAsyncThunk(
   'qualityGateConfig/fetch_entity_list',
   async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<IQualityGateConfig[]>> => {
-    return qualityGateApi.getAllQualityGates(page, size, sort).then(response => ({
-      ...response,
-      data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
-    }));
+    return qualityGateApi.getAllQualityGates(page, size, sort).then(response => {
+      // eslint-disable-next-line no-console
+      console.log('response from gateway:', response);
+      return {
+        ...response,
+        data: response.data.map(qualityGateConfig => fromDto(qualityGateConfig)),
+      };
+    });
   },
   { serializeError: serializeAxiosError },
 );

@@ -18,9 +18,9 @@
         "title": "Quality-Gate"
       },
       "name": "Name",
-      "description": "Description",
-      "isPredefined": "Is Predefined",
-      "openApiCriteria": "Open Api Criteria"
+      "description": "Beschreibung",
+      "isPredefined": "Vordefiniert",
+      "openApiCriteria": "OpenAPI Kriterien"
     }
   }
 }

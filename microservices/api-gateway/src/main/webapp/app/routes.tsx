@@ -11,8 +11,14 @@ import Home from 'app/modules/home/home';
 import EntitiesRoutes from 'app/entities/routes';
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import PageNotFound from 'app/shared/error/page-not-found';
+import getStore from 'app/config/store';
+import { ReducersMapObject, combineReducers } from '@reduxjs/toolkit';
+import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';
 
 const AppRoutes = () => {
+  const store = getStore();
+  store.injectReducer('snowwhite', combineReducers({ qualityGate } as ReducersMapObject));
+
   return (
     <div className="view-routes">
       <ErrorBoundaryRoutes>
