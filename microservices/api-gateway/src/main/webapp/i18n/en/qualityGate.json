@@ -1,0 +1,20 @@
+{
+  "snowWhiteApp": {
+    "qualityGate": {
+      "home": {
+        "title": "Quality-Gates",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Quality-Gates found"
+      },
+      "detail": {
+        "title": "Quality-Gate"
+      },
+      "id": "ID",
+      "calculationId": "Calculation Id",
+      "status": "Status",
+      "createdAt": "Created At",
+      "calculationRequest": "Calculation Request Parameter",
+      "openApiTestResult": "OpenAPI Test Result"
+    }
+  }
+}

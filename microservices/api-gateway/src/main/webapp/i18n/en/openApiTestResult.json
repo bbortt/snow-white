@@ -1,0 +1,19 @@
+{
+  "snowWhiteApp": {
+    "openApiTestResult": {
+      "home": {
+        "title": "OpenAPI Test Results",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No OpenAPI Test Results found"
+      },
+      "detail": {
+        "title": "OpenAPI Test Result"
+      },
+      "id": "ID",
+      "openApiCriterionName": "OpenAPI Criterion",
+      "coverage": "Coverage",
+      "additionalInformation": "Additional Information",
+      "qualityGate": "Quality-Gate"
+    }
+  }
+}

@@ -31,6 +31,33 @@
     <!-- Node.js & NPM -->
     <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
     <node.version>v22.15.0</node.version>
+
+    <!-- SonarQube properties -->
+    <sonar.inclusions>
+      src/main/**/*.java
+      src/main/webapp/**/*.ts,
+      src/main/webapp/**/*.tsx
+    </sonar.inclusions>
+    <sonar.exclusions>
+      node_modules/**,
+      src/main/webapp/app/clients/**,
+      src/main/webapp/content/**,
+      src/main/webapp/i18n/*.js,
+      target/classes/static/**
+    </sonar.exclusions>
+
+    <sonar.test.inclusions>
+      src/test/**/*.java,
+      src/main/webapp/app/**/*.spec.ts,
+      src/main/webapp/app/**/*.spec.tsx
+    </sonar.test.inclusions>
+
+    <sonar.javascript.lcov.reportPaths>
+      target/test-results/jest/lcov.info
+    </sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>
+      target/test-results/jest/TESTS-results-sonar.xml
+    </sonar.testExecutionReportPaths>
   </properties>
 
   <dependencyManagement>
@@ -178,7 +205,7 @@
         <artifactId>openapi-generator-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>generate-quality-gate-api-v1</id>
+            <id>generate-v1-quality-gate-api</id>
             <goals>
               <goal>generate</goal>
             </goals>
@@ -192,6 +219,21 @@
               </output>
             </configuration>
           </execution>
+          <execution>
+            <id>generate-v1-report-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml
+              </inputSpec>
+              <generatorName>typescript-axios</generatorName>
+              <output>
+                ${project.build.directory}/generated-sources/openapi/report-api
+              </output>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -201,19 +243,20 @@
         <version>3.3.1</version>
         <executions>
           <execution>
-            <id>copy-quality-gate-api</id>
+            <id>copy-generated-clients</id>
             <phase>process-sources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
             <configuration>
               <outputDirectory>
-                ${project.basedir}/src/main/webapp/app/clients/quality-gate-api
+                ${project.basedir}/src/main/webapp/app/clients
               </outputDirectory>
+              <overwrite>true</overwrite>
               <resources>
                 <resource>
                   <directory>
-                    ${project.build.directory}/generated-sources/openapi/quality-gate-api
+                    ${project.build.directory}/generated-sources/openapi
                   </directory>
                   <includes>
                     <include>*.ts</include>
