@@ -180,7 +180,16 @@ describe('Quality-Gate Config reducer tests', () => {
   describe('Actions', () => {
     let store;
 
-    const resolvedObject: AxiosResponse<QualityGateConfig> = { data: { name: 'name', isPredefined: true } } as AxiosResponse;
+    const resolvedObject: AxiosResponse<QualityGateConfig> = {
+      data: { name: 'name', isPredefined: true, openApiCriteria: ['test_openapi_criterion'] },
+    } as AxiosResponse;
+
+    const epxectedObject: IQualityGateConfig = {
+      name: 'name',
+      isPredefined: true,
+      openApiCriteria: [{ name: 'test_openapi_criterion' }],
+    };
+
     beforeEach(() => {
       const mockStore = configureStore([thunk]);
       store = mockStore({});
@@ -199,7 +208,7 @@ describe('Quality-Gate Config reducer tests', () => {
         },
         {
           type: getEntities.fulfilled.type,
-          payload: { data: [resolvedObject.data] },
+          payload: { data: [epxectedObject] },
         },
       ];
 
@@ -216,14 +225,17 @@ describe('Quality-Gate Config reducer tests', () => {
         },
         {
           type: getEntity.fulfilled.type,
-          payload: resolvedObject,
+          payload: { data: epxectedObject },
         },
       ];
 
-      await store.dispatch(getEntity('name'));
+      const name = 'name';
+      await store.dispatch(getEntity(name));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
+
+      expect(qualityGateApi.getQualityGateByName).toHaveBeenCalledWith(name);
     });
 
     it('dispatches CREATE_QUALITYGATECONFIG actions', async () => {
@@ -240,11 +252,20 @@ describe('Quality-Gate Config reducer tests', () => {
         },
       ];
 
-      await store.dispatch(createEntity({ name: 'name' }));
+      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCriteria: [{ name: 'test_openapi_criterion' }] };
+      await store.dispatch(createEntity(qualityGateConfig));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
+
+      expect(qualityGateApi.createQualityGate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...qualityGateConfig,
+          isPredefined: false,
+          openApiCriteria: ['test_openapi_criterion'],
+        }),
+      );
     });
 
     it('dispatches UPDATE_QUALITYGATECONFIG actions', async () => {
@@ -261,11 +282,21 @@ describe('Quality-Gate Config reducer tests', () => {
         },
       ];
 
-      await store.dispatch(updateEntity({ name: 'name' }));
+      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCriteria: [{ name: 'test_openapi_criterion' }] };
+      await store.dispatch(updateEntity(qualityGateConfig));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
+
+      expect(qualityGateApi.updateQualityGate).toHaveBeenCalledWith(
+        qualityGateConfig.name,
+        expect.objectContaining({
+          ...qualityGateConfig,
+          isPredefined: false,
+          openApiCriteria: ['test_openapi_criterion'],
+        }),
+      );
     });
 
     it('dispatches DELETE_QUALITYGATECONFIG actions', async () => {
@@ -282,11 +313,14 @@ describe('Quality-Gate Config reducer tests', () => {
         },
       ];
 
-      await store.dispatch(deleteEntity('name'));
+      const name = 'name';
+      await store.dispatch(deleteEntity(name));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
       expect(store.getActions()[2]).toMatchObject(expectedActions[2]);
+
+      expect(qualityGateApi.deleteQualityGate).toHaveBeenCalledWith(name);
     });
 
     it('dispatches RESET actions', async () => {

@@ -21,7 +21,7 @@
       "name": "Name",
       "description": "Description",
       "isPredefined": "Is Predefined",
-      "openApiCriteria": "Open Api Criteria"
+      "openApiCriteria": "OpenAPI Criteria"
     }
   }
 }

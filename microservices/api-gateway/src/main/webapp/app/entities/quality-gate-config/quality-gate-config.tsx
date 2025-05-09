@@ -24,7 +24,7 @@ export const QualityGateConfig = () => {
   const navigate = useNavigate();
 
   const [paginationState, setPaginationState] = useState(
-    overridePaginationStateWithQueryParams(getPaginationState(location, ITEMS_PER_PAGE, 'id'), location.search),
+    overridePaginationStateWithQueryParams(getPaginationState(location, ITEMS_PER_PAGE, 'name'), location.search),
   );
 
   const qualityGateConfigList: IQualityGateConfig[] = useAppSelector(state => state.snowwhite.qualityGateConfig.entities);

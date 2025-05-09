@@ -9,11 +9,14 @@ import qualityGateConfig from 'app/entities/quality-gate-config/quality-gate-con
 import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 import { EntityState } from 'app/shared/reducers/reducer.utils';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import { IQualityGate } from 'app/shared/model/quality-gate.model';
+import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';
 
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
 export interface SnowWhiteState {
   openApiCriterion: EntityState<IOpenApiCriterion>;
+  qualityGate: EntityState<IQualityGate>;
   qualityGateConfig: EntityState<IQualityGateConfig>;
 }
 
@@ -23,6 +26,7 @@ export const getSnowWhiteState = (getState): SnowWhiteState => {
 
 const entitiesReducers = {
   openApiCriterion,
+  qualityGate,
   qualityGateConfig,
   /* jhipster-needle-add-reducer-combine - JHipster will add reducer here */
 };

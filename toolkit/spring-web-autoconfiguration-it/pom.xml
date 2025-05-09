@@ -23,6 +23,9 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
+
+    <!-- SonarQube properties -->
+    <sonar.sources />
   </properties>
 
   <dependencies>

@@ -4,6 +4,12 @@
  * See LICENSE file for full details.
  */
 
-import { CriteriaApi } from 'app/clients/quality-gate-api';
+export enum ReportStatus {
+  NOT_STARTED = 'NOT_STARTED',
 
-export const criteriaApi = new CriteriaApi(null, SERVER_API_URL);
+  IN_PROGRESS = 'IN_PROGRESS',
+
+  FAILED = 'FAILED',
+
+  PASSED = 'PASSED',
+}

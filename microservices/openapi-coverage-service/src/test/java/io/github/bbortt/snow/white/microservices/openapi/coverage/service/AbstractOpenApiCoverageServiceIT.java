@@ -39,7 +39,7 @@ public abstract class AbstractOpenApiCoverageServiceIT {
 
   @Container
   static final InfluxDBContainer<?> INFLUX_DB_CONTAINER =
-    new InfluxDBContainer<>(DockerImageName.parse("influxdb:2.0.7"))
+    new InfluxDBContainer<>(DockerImageName.parse("influxdb:2.7.11-alpine"))
       .withAdminToken(ADMIN_TOKEN)
       .withExposedPorts(INFLUX_DB_PORT);
 

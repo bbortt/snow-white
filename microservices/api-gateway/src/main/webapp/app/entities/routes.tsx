@@ -19,9 +19,10 @@ import OpenApiCriterion from './open-api-criterion';
 import QualityGateConfig from './quality-gate-config';
 /* jhipster-needle-add-route-import - JHipster will add routes here */
 
-export default () => {
+export const EntitiesRoutes = () => {
   const store = getStore();
   store.injectReducer('snowwhite', combineReducers(entitiesReducers as ReducersMapObject));
+
   return (
     <div>
       <ErrorBoundaryRoutes>
@@ -33,3 +34,5 @@ export default () => {
     </div>
   );
 };
+
+export default EntitiesRoutes;
