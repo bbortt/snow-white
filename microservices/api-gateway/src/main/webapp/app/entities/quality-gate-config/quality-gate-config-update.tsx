@@ -4,22 +4,17 @@
  * See LICENSE file for full details.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Row, Col, FormText } from 'reactstrap';
-import { isNumber, Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
+import { Button, Col, Row } from 'reactstrap';
+import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-
-import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { getEntities as getOpenApiCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
-import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
-import { getEntity, updateEntity, createEntity, reset } from './quality-gate-config.reducer';
+import { createEntity, getEntity, reset, updateEntity } from './quality-gate-config.reducer';
 
-export const QualityGateConfigUpdate = () => {
+export const QualityGateUpdate = () => {
   const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
@@ -57,6 +52,7 @@ export const QualityGateConfigUpdate = () => {
     const entity = {
       ...qualityGateConfigEntity,
       ...values,
+      isPredefined: false,
       openApiCriteria: mapIdList(values.openApiCriteria),
     };
 
@@ -72,6 +68,7 @@ export const QualityGateConfigUpdate = () => {
       ? {}
       : {
           ...qualityGateConfigEntity,
+          isPredefined: false,
           openApiCriteria: qualityGateConfigEntity?.openApiCriteria?.map(e => e.id.toString()),
         };
 
@@ -79,8 +76,12 @@ export const QualityGateConfigUpdate = () => {
     <div>
       <Row className="justify-content-center">
         <Col md="8">
-          <h2 id="snowWhiteApp.qualityGateConfig.home.createOrEditLabel" data-testid="QualityGateConfigCreateUpdateHeading">
-            <Translate contentKey="snowWhiteApp.qualityGateConfig.home.createOrEditLabel">Create or edit a QualityGateConfig</Translate>
+          <h2 id="snowWhiteApp.qualityGateConfig.heading" data-testid="Quality-GateCreateUpdateHeading">
+            {isNew ? (
+              <Translate contentKey="snowWhiteApp.qualityGateConfig.home.createLabel">Create a new Quality-Gate</Translate>
+            ) : (
+              <Translate contentKey="snowWhiteApp.qualityGateConfig.home.editLabl">Edit Quality-Gate</Translate>
+            )}
           </h2>
         </Col>
       </Row>
@@ -124,6 +125,7 @@ export const QualityGateConfigUpdate = () => {
                 data-testid="isPredefined"
                 check
                 type="checkbox"
+                readOnly={true}
               />
               <ValidatedField
                 label={translate('snowWhiteApp.qualityGateConfig.openApiCriteria')}
@@ -163,4 +165,4 @@ export const QualityGateConfigUpdate = () => {
   );
 };
 
-export default QualityGateConfigUpdate;
+export default QualityGateUpdate;
