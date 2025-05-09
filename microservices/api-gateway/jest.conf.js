@@ -25,7 +25,7 @@ module.exports = {
   coverageDirectory: '<rootDir>/target/test-results/',
   testMatch: ['<rootDir>/src/main/webapp/app/**/@(*.)@(spec.ts?(x))'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  coveragePathIgnorePatterns: ['<rootDir>/src/test/javascript/'],
+  coveragePathIgnorePatterns: ['<rootDir>/src/main/webapp/app/clients/', '<rootDir>/src/test/javascript/'],
   moduleNameMapper: mapTypescriptAliasToJestAlias({
     '\\.(css|scss)$': 'identity-obj-proxy',
     sinon: require.resolve('sinon/pkg/sinon.js'),
