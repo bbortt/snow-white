@@ -2,20 +2,20 @@
   "snowWhiteApp": {
     "qualityGateConfig": {
       "home": {
-        "title": "Quality-Gate Konfiguration",
+        "title": "Quality-Gates",
         "refreshListLabel": "Liste aktualisieren",
-        "createLabel": "Quality-Gate Konfiguration erstellen",
-        "createOrEditLabel": "Quality-Gate Konfiguration erstellen oder bearbeiten",
-        "notFound": "Keine Quality-Gate Konfigurationen gefunden"
+        "createLabel": "Quality-Gate erstellen",
+        "editLabel": "Quality-Gate bearbeiten",
+        "notFound": "Keine Quality-Gates gefunden"
       },
-      "created": "Quality-Gate Konfiguration mit ID {{ param }} erstellt",
-      "updated": "Quality-Gate Konfiguration mit ID {{ param }} aktualisiert",
-      "deleted": "Quality-Gate Konfiguration mit ID {{ param }} gelöscht",
+      "created": "Quality-Gate mit ID {{ param }} erstellt",
+      "updated": "Quality-Gate mit ID {{ param }} aktualisiert",
+      "deleted": "Quality-Gate mit ID {{ param }} gelöscht",
       "delete": {
-        "question": "Soll Quality-Gate Konfiguration {{ id }} wirklich dauerhaft gelöscht werden?"
+        "question": "Soll Quality-Gate {{ id }} wirklich dauerhaft gelöscht werden?"
       },
       "detail": {
-        "title": "Quality-Gate Konfigurationen"
+        "title": "Quality-Gate"
       },
       "name": "Name",
       "description": "Description",
