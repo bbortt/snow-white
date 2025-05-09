@@ -5,7 +5,7 @@
         "title": "Quality-Gates",
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Quality-Gate",
-        "createOrEditLabel": "Create or edit a Quality-Gate",
+        "editLabel": "Edit Quality-Gate",
         "notFound": "No Quality-Gates found"
       },
       "created": "A new Quality-Gate with identifier {{ param }} created",
