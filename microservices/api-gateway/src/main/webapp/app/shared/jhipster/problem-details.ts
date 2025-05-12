@@ -8,7 +8,7 @@
  * Problem details defined in RFC 7807.
  * @see https://datatracker.ietf.org/doc/html/rfc7807#section-3.1
  */
-export type ProblemDetails = {
+export interface ProblemDetails {
   /** A URI reference that identifies the problem type */
   type: string;
   /** A short, human-readable summary of the problem type */
@@ -19,11 +19,15 @@ export type ProblemDetails = {
   detail: string;
   /** A URI reference that identifies the specific occurrence of the problem */
   instance: string;
-};
+}
 
 export const ProblemWithMessageType = 'https://www.jhipster.tech/problem/problem-with-message';
 
-export type FieldErrorVM = { message: string; objectName: string; field: string };
+export interface FieldErrorVM {
+  message: string;
+  objectName: string;
+  field: string;
+}
 
 export type ProblemWithMessage = ProblemDetails & {
   type: typeof ProblemWithMessageType;

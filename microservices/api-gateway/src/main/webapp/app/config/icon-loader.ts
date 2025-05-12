@@ -4,6 +4,7 @@
  * See LICENSE file for full details.
  */
 
+import { library } from '@fortawesome/fontawesome-svg-core';
 import {
   faArrowLeft,
   faAsterisk,
@@ -40,8 +41,6 @@ import {
   faUsersCog,
   faWrench,
 } from '@fortawesome/free-solid-svg-icons';
-
-import { library } from '@fortawesome/fontawesome-svg-core';
 
 export const loadIcons = () => {
   library.add(

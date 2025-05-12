@@ -6,20 +6,45 @@
 
 import './home.scss';
 
+import QualityGate from 'app/entities/quality-gate/quality-gate';
 import React from 'react';
 import { Translate } from 'react-jhipster';
-import { Col, Row } from 'reactstrap';
-import QualityGate from 'app/entities/quality-gate/quality-gate';
+import { Card, CardBody, Col, Row } from 'reactstrap';
 
 export const Home = () => {
   return (
     <Row>
       <Col md="4">
-        <h1 className="display-4">
-          <Translate contentKey="home.title">Welcome, Java Hipster!</Translate>
-        </h1>
+        <Card className="mt-4">
+          <CardBody>
+            <div className="text-center mb-3">
+              <img src="content/images/logo.png" alt="Snow-White Logo" width="80" />
+            </div>
+            <h5>
+              <Translate contentKey="home.title">Welcome to Snow-White</Translate>
+            </h5>
+            <p>
+              <Translate contentKey="home.introduction">
+                Snow-White makes API testing effortless by leveraging API specifications and OpenTelemetry (OTEL) data. It works with both
+                test environments and live production to analyze:
+              </Translate>
+            </p>
+            <ul>
+              <li>
+                <Translate contentKey="home.coverage">API Coverage</Translate>
+              </li>
+              <li>
+                <Translate contentKey="home.performance">Performance</Translate>
+              </li>
+              <li>
+                <Translate contentKey="home.insights">And more insights</Translate>
+              </li>
+            </ul>
+          </CardBody>
+        </Card>
       </Col>
-        <Col md="6">
+
+      <Col md="8">
         <QualityGate />
       </Col>
     </Row>

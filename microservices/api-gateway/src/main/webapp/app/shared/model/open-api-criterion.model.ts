@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 
 export interface IOpenApiCriterion {
   name?: string;

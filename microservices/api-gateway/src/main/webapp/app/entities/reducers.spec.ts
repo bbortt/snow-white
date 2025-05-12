@@ -4,7 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import { getSnowWhiteState, SnowWhiteState } from 'app/entities/reducers';
+import type { SnowWhiteState } from 'app/entities/reducers';
+
+import { getSnowWhiteState } from 'app/entities/reducers';
 
 describe('reducers', () => {
   describe('getSnowWhiteState', () => {

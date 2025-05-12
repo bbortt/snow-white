@@ -4,14 +4,15 @@
  * See LICENSE file for full details.
  */
 
-import React, { useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Col, Row } from 'reactstrap';
-import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities as getOpenApiCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
+import { mapIdList } from 'app/shared/util/entity-utils';
+import React, { useEffect } from 'react';
+import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Button, Col, Row } from 'reactstrap';
+
 import { createEntity, getEntity, reset, updateEntity } from './quality-gate-config.reducer';
 
 export const QualityGateUpdate = () => {
@@ -29,7 +30,7 @@ export const QualityGateUpdate = () => {
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
 
   const handleClose = () => {
-    navigate('/quality-gate-config' + location.search);
+    navigate(`/quality-gate-config${location.search}`);
   };
 
   useEffect(() => {

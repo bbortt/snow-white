@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
 import static java.util.Arrays.stream;
+import static java.util.Comparator.comparing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -21,6 +22,7 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -56,7 +58,7 @@ class CriteriaResourceIT {
       new TypeReference<List<OpenApiCriterion>>() {}
     );
 
-    assertThat(openApiCriteria).containsExactlyInAnyOrderElementsOf(
+    assertThat(openApiCriteria).containsExactly(
       stream(OpenApiCriteria.values())
         .map(c ->
           OpenApiCriterion.builder()
@@ -65,7 +67,8 @@ class CriteriaResourceIT {
             .description(c.getDescription())
             .build()
         )
-        .toList()
+        .sorted(comparing(OpenApiCriterion::getName))
+        .toArray(OpenApiCriterion[]::new)
     );
   }
 }

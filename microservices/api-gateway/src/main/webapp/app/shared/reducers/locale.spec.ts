@@ -4,12 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import axios from 'axios';
-import sinon from 'sinon';
 import { configureStore, createReducer } from '@reduxjs/toolkit';
-import { TranslatorContext } from 'react-jhipster';
-
 import locale, { addTranslationSourcePrefix, loaded, setLocale, updateLocale } from 'app/shared/reducers/locale';
+import axios from 'axios';
+import { TranslatorContext } from 'react-jhipster';
+import sinon from 'sinon';
 
 const defaultLocale = 'en';
 const dispatch = jest.fn();

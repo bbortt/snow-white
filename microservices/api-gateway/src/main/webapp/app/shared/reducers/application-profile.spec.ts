@@ -4,9 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import { configureStore } from '@reduxjs/toolkit';
 import axios from 'axios';
 import sinon from 'sinon';
-import { configureStore } from '@reduxjs/toolkit';
 
 import profile, { getProfile } from './application-profile';
 

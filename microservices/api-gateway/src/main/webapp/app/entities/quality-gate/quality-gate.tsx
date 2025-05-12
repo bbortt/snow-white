@@ -4,16 +4,16 @@
  * See LICENSE file for full details.
  */
 
+import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { APP_DATE_FORMAT } from 'app/config/constants';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { useEffect, useState } from 'react';
+import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Table } from 'reactstrap';
-import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
-import { APP_DATE_FORMAT } from 'app/config/constants';
-import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
-import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
-import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './quality-gate.reducer';
 
@@ -76,11 +76,12 @@ export const QualityGate = () => {
     });
   };
 
-  const handlePagination = currentPage =>
+  const handlePagination = currentPage => {
     setPaginationState({
       ...paginationState,
       activePage: currentPage,
     });
+  };
 
   const handleSyncList = () => {
     sortEntities();
@@ -111,9 +112,6 @@ export const QualityGate = () => {
           <Table responsive>
             <thead>
               <tr>
-                <th className="hand" onClick={sort('id')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.id">ID</Translate> <FontAwesomeIcon icon={getSortIconByFieldName('id')} />
-                </th>
                 <th className="hand" onClick={sort('calculationId')}>
                   <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('calculationId')} />
@@ -137,11 +135,10 @@ export const QualityGate = () => {
               {qualityGateList.map((qualityGate, i) => (
                 <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
-                    <Button tag={Link} to={`/quality-gate/${qualityGate.id}`} color="link" size="sm">
-                      {qualityGate.id}
+                    <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
+                      {qualityGate.calculationId}
                     </Button>
                   </td>
-                  <td>{qualityGate.calculationId}</td>
                   <td>
                     <Translate contentKey={`snowWhiteApp.ReportStatus.${qualityGate.status}`} />
                   </td>

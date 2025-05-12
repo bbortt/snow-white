@@ -4,13 +4,12 @@
  * See LICENSE file for full details.
  */
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect } from 'react';
+import { Translate } from 'react-jhipster';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Row, Col } from 'reactstrap';
-import { Translate } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntity } from './open-api-criterion.reducer';
 
@@ -20,7 +19,7 @@ export const OpenApiCriterionDetail = () => {
   const { id } = useParams<'id'>();
 
   useEffect(() => {
-    dispatch(getEntity(id));
+    dispatch(getEntity(id!));
   }, []);
 
   const openApiCriterionEntity = useAppSelector(state => state.snowwhite.openApiCriterion.entity);
