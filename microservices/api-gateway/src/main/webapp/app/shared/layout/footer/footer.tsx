@@ -18,8 +18,13 @@ const Footer = () => {
       <Row className="py-3">
         <Col md="4" className="text-center text-md-start mb-2 mb-md-0">
           <h5>Snow-White</h5>
-          <p className="small text-muted mb-0">&copy; {currentYear} Timon Borter. All rights reserved.</p>
-          <p className="small text-muted">Licensed under PolyForm Small Business License 1.0.0</p>
+          <p className="small text-muted mb-0">
+            &copy; {currentYear} Timon Borter. &nbsp;
+            <Translate contentKey="footer.rights">All rights reserved.</Translate>
+          </p>
+          <p className="small text-muted">
+            <Translate contentKey="footer.license">Licensed under PolyForm Small Business License 1.0.0</Translate>
+          </p>
         </Col>
         <Col md="4" className="text-center mb-2 mb-md-0">
           <h5>Links</h5>
