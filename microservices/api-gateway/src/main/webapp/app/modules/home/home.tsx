@@ -43,7 +43,6 @@ export const Home = () => {
           </CardBody>
         </Card>
       </Col>
-
       <Col md="8">
         <QualityGate />
       </Col>

@@ -87,6 +87,8 @@
   },
   "footer": {
     "issues": "Fehler Melden",
+    "license": "lizenziert unter PolyForm Small Business License 1.0.0",
+    "rights": "Alle Rechte vorbehalten.",
     "sources": "Quellcode",
     "version": "Version"
   }
