@@ -4,7 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import axios, { type AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
+
+import axios from 'axios';
 import { Storage } from 'react-jhipster';
 
 const TIMEOUT = 1 * 60 * 1000;

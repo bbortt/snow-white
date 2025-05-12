@@ -4,12 +4,15 @@
  * See LICENSE file for full details.
  */
 
-import { AxiosResponse } from 'axios';
+import type { QualityGateReport } from 'app/clients/report-api';
+import type { IQualityGate } from 'app/shared/model/quality-gate.model';
+import type { EntityState, IQueryParams } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
-import { createEntitySlice, EntityState, IQueryParams, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { defaultValue, IQualityGate } from 'app/shared/model/quality-gate.model';
 import { reportApi } from 'app/entities/quality-gate/report-api';
-import { QualityGateReport } from 'app/clients/report-api';
+import { defaultValue } from 'app/shared/model/quality-gate.model';
+import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import dayjs from 'dayjs';
 
 const initialState: EntityState<IQualityGate> = {
@@ -41,7 +44,7 @@ const fromDto = ({
   })),
 });
 
-export const joinAttributeFilters = (attributeFilters?: { [key: string]: string }): string => {
+export const joinAttributeFilters = (attributeFilters?: Record<string, string>): string => {
   if (!attributeFilters || Object.keys(attributeFilters).length === 0) {
     return '';
   }

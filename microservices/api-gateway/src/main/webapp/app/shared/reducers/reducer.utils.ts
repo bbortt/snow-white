@@ -4,21 +4,28 @@
  * See LICENSE file for full details.
  */
 
-import {
+import type {
   ActionReducerMapBuilder,
   AsyncThunk,
   SerializedError,
   SliceCaseReducers,
   UnknownAction,
   ValidateSliceCaseReducers,
-  createSlice,
 } from '@reduxjs/toolkit';
-import { AxiosError, isAxiosError } from 'axios';
+import type { AxiosError } from 'axios';
+
+import { createSlice } from '@reduxjs/toolkit';
+import { isAxiosError } from 'axios';
 
 /**
  * Model for redux actions with pagination
  */
-export type IQueryParams = { query?: string; page?: number; size?: number; sort?: string };
+export interface IQueryParams {
+  query?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
 
 /**
  * Useful types for working with actions
@@ -49,7 +56,7 @@ export function isFulfilledAction(action: UnknownAction) {
   return action.type.endsWith('/fulfilled');
 }
 
-const commonErrorProperties: Array<keyof SerializedError> = ['name', 'message', 'stack', 'code'];
+const commonErrorProperties: (keyof SerializedError)[] = ['name', 'message', 'stack', 'code'];
 
 /**
  * serialize function used for async action errors,
@@ -75,7 +82,7 @@ export const serializeAxiosError = (value: any): AxiosError | SerializedError =>
 export interface EntityState<T> {
   loading: boolean;
   errorMessage: string | null;
-  entities: ReadonlyArray<T>;
+  entities: readonly T[];
   entity: T;
   links?: any;
   updating: boolean;

@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import React from 'react';
 import { render } from '@testing-library/react';
-
 import ErrorBoundary from 'app/shared/error/error-boundary';
+import React from 'react';
 
 const ErrorComp = () => {
   throw new Error('test');

@@ -4,18 +4,20 @@
  * See LICENSE file for full details.
  */
 
-import { translate } from 'react-jhipster';
-import { toast } from 'react-toastify';
+import type { FieldErrorVM } from 'app/shared/jhipster/problem-details';
+
+import { getMessageFromHeaders } from 'app/shared/jhipster/headers';
+import { isProblemWithMessage } from 'app/shared/jhipster/problem-details';
 import { isFulfilledAction, isRejectedAction } from 'app/shared/reducers/reducer.utils';
 import { isAxiosError } from 'axios';
-import { FieldErrorVM, isProblemWithMessage } from 'app/shared/jhipster/problem-details';
-import { getMessageFromHeaders } from 'app/shared/jhipster/headers';
+import { translate } from 'react-jhipster';
+import { toast } from 'react-toastify';
 
-type ToastMessage = {
+interface ToastMessage {
   message?: string;
   key?: string;
   data?: any;
-};
+}
 
 const addErrorAlert = (message: ToastMessage) => {
   toast.error(message.key ? (translate(message.key, message.data) ?? message.message) : message.message);
@@ -27,12 +29,11 @@ const getFieldErrorsToasts = (fieldErrors: FieldErrorVM[]): ToastMessage[] =>
       fieldError.message = 'Size';
     }
     // convert 'something[14].other[4].id' to 'something[].other[].id' so translations can be written to it
-    const convertedField = fieldError.field.replace(/\[\d*\]/g, '[]');
+    const convertedField = fieldError.field.replaceAll(/\[\d*\]/g, '[]');
     const fieldName = translate(`snowWhiteApp.${fieldError.objectName}.${convertedField}`);
     return { message: `Error on field "${fieldName}"`, key: `error.${fieldError.message}`, data: { fieldName } };
   });
 
-// eslint-disable-next-line complexity
 export default () => next => action => {
   const { error, payload } = action;
 
@@ -50,11 +51,7 @@ export default () => next => action => {
   if (isRejectedAction(action) && isAxiosError(error)) {
     if (error.response) {
       const { response } = error;
-      if (response.status === 401) {
-        // Ignore, page will be redirected to login.
-      } else if (error.config?.url?.endsWith('api/account') || error.config?.url?.endsWith('api/authenticate')) {
-        // Ignore, authentication status check and authentication are treated differently.
-      } else if (response.status === 0) {
+      if (response.status === 0) {
         // connection refused, server not reachable
         addErrorAlert({
           message: 'Server not reachable',
@@ -84,9 +81,6 @@ export default () => next => action => {
           }
         }
       }
-    } else if (error.config?.url?.endsWith('api/account') && error.config?.method === 'get') {
-      /* eslint-disable no-console */
-      console.log('Authentication Error: Trying to access url api/account with GET.');
     } else {
       addErrorAlert({ message: error.message ?? 'Unknown error!' });
     }

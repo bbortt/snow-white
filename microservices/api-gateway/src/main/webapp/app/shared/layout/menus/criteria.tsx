@@ -4,10 +4,11 @@
  * See LICENSE file for full details.
  */
 
+import MenuItem from 'app/shared/layout/menus/menu-item';
 import React from 'react';
 import { Translate, translate } from 'react-jhipster';
+
 import { NavDropdown } from './menu-components';
-import MenuItem from 'app/shared/layout/menus/menu-item';
 
 export const CriteriaMenu = () => (
   <NavDropdown

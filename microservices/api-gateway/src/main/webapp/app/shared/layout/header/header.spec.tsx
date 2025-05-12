@@ -4,13 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import React from 'react';
+import { screen } from '@testing-library/dom';
 import { render } from '@testing-library/react';
+import initStore from 'app/config/store';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
-import { screen } from '@testing-library/dom';
 
-import initStore from 'app/config/store';
 import Header from './header';
 
 describe('Header', () => {

@@ -6,13 +6,13 @@
 
 import './open-api-criterion-badge.scss';
 
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
 import { Badge, Tooltip } from 'reactstrap';
 
-import { useAppDispatch, useAppSelector } from 'app/config/store';
-
 import { getEntity } from '../open-api-criterion/open-api-criterion.reducer';
-import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
 export interface OpenApiCriterionBadgeProps {
   openApiCriterion: IOpenApiCriterion;
@@ -23,7 +23,9 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
 
   const dispatch = useAppDispatch();
 
-  const toggle = () => setTooltipOpen(!tooltipOpen);
+  const toggle = () => {
+    setTooltipOpen(!tooltipOpen);
+  };
 
   useEffect(() => {
     dispatch(getEntity(openApiCriterion.name));

@@ -4,7 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import { ReducersMapObject } from '@reduxjs/toolkit';
+import type { ReducersMapObject } from '@reduxjs/toolkit';
+
 import { loadingBarReducer as loadingBar } from 'react-redux-loading-bar';
 
 import applicationProfile from './application-profile';

@@ -5,20 +5,20 @@
  */
 
 import 'react-toastify/dist/ReactToastify.css';
-import './app.scss';
-import 'app/config/dayjs';
 
+import './app.scss';
+
+import 'app/config/dayjs';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+import AppRoutes from 'app/routes';
+import ErrorBoundary from 'app/shared/error/error-boundary';
+import Footer from 'app/shared/layout/footer/footer';
+import Header from 'app/shared/layout/header/header';
+import { getProfile } from 'app/shared/reducers/application-profile';
 import React, { useEffect } from 'react';
-import { Card } from 'reactstrap';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-
-import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getProfile } from 'app/shared/reducers/application-profile';
-import Header from 'app/shared/layout/header/header';
-import Footer from 'app/shared/layout/footer/footer';
-import ErrorBoundary from 'app/shared/error/error-boundary';
-import AppRoutes from 'app/routes';
+import { Card } from 'reactstrap';
 
 const baseHref = document.querySelector('base').getAttribute('href').replace(/\/$/, '');
 

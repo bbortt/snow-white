@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-
 import { TranslatorContext } from 'react-jhipster';
 
 const initialState = {
@@ -51,11 +50,9 @@ export const addTranslationSourcePrefix = createAsyncThunk(
   async (sourcePrefix: string, thunkAPI: any) => {
     const { currentLocale, loadedKeys, sourcePrefixes } = thunkAPI.getState().locale;
     const key = `${sourcePrefix}${currentLocale}`;
-    if (!sourcePrefixes.includes(sourcePrefix)) {
-      if (!loadedKeys.includes(key)) {
-        await loadLocaleAndRegisterLocaleFile(currentLocale, sourcePrefix);
-        thunkAPI.dispatch(loaded({ sourcePrefix, keys: [key] }));
-      }
+    if (!sourcePrefixes.includes(sourcePrefix) && !loadedKeys.includes(key)) {
+      await loadLocaleAndRegisterLocaleFile(currentLocale, sourcePrefix);
+      thunkAPI.dispatch(loaded({ sourcePrefix, keys: [key] }));
     }
     return key;
   },

@@ -4,14 +4,17 @@
  * See LICENSE file for full details.
  */
 
+import type { QualityGateConfig } from 'app/clients/quality-gate-api';
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import type { IQueryParams, EntityState } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
-import { cleanEntity } from 'app/shared/util/entity-utils';
-import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { IQualityGateConfig, defaultValue } from 'app/shared/model/quality-gate-config.model';
-import { QualityGateConfig } from 'app/clients/quality-gate-api';
-import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
-import { AxiosResponse } from 'axios';
 import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
+import { defaultValue } from 'app/shared/model/quality-gate-config.model';
+import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { cleanEntity } from 'app/shared/util/entity-utils';
 
 const initialState: EntityState<IQualityGateConfig> = {
   loading: false,

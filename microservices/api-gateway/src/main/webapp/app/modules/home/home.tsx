@@ -6,10 +6,10 @@
 
 import './home.scss';
 
+import QualityGate from 'app/entities/quality-gate/quality-gate';
 import React from 'react';
 import { Translate } from 'react-jhipster';
 import { Col, Row } from 'reactstrap';
-import QualityGate from 'app/entities/quality-gate/quality-gate';
 
 export const Home = () => {
   return (
@@ -19,7 +19,7 @@ export const Home = () => {
           <Translate contentKey="home.title">Welcome, Java Hipster!</Translate>
         </h1>
       </Col>
-        <Col md="6">
+      <Col md="8">
         <QualityGate />
       </Col>
     </Row>

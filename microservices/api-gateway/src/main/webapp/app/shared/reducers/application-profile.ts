@@ -4,9 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { serializeAxiosError } from './reducer.utils';
 
 const initialState = {
@@ -17,7 +17,7 @@ const initialState = {
 
 export type ApplicationProfileState = Readonly<typeof initialState>;
 
-export const getProfile = createAsyncThunk('applicationProfile/get_profile', async () => axios.get<any>('management/info'), {
+export const getProfile = createAsyncThunk('applicationProfile/get_profile', async () => axios.get('management/info'), {
   serializeError: serializeAxiosError,
 });
 

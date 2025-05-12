@@ -6,12 +6,11 @@
 
 import './header-component.scss';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Translate } from 'react-jhipster';
-
-import { NavItem, NavLink, NavbarBrand } from 'reactstrap';
 import { NavLink as Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { NavItem, NavLink, NavbarBrand } from 'reactstrap';
 
 export const BrandIcon = props => (
   <div {...props} className="brand-icon">

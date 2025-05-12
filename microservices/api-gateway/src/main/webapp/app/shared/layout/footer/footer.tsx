@@ -4,10 +4,11 @@
  * See LICENSE file for full details.
  */
 
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Translate } from 'react-jhipster';
 import { Col, Row } from 'reactstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -25,14 +26,15 @@ const Footer = () => {
           <ul className="list-unstyled">
             <li>
               <a href="https://github.com/bbortt/snow-white" target="_blank" rel="noopener noreferrer">
-                <FontAwesomeIcon icon="github" />
-                Source Code
+                <FontAwesomeIcon icon={faGithub} />
+                &ensp; Source Code
               </a>
             </li>
             <li>
               <a href="https://github.com/bbortt/snow-white/issues" target="_blank" rel="noopener noreferrer">
                 <FontAwesomeIcon icon="bug" />
-                Report Issues
+                &ensp;
+                <Translate contentKey="footer.issues">Report Issues</Translate>
               </a>
             </li>
           </ul>

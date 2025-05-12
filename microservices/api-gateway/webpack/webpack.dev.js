@@ -6,10 +6,10 @@
 
 const webpackMerge = require('webpack-merge').merge;
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
-const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
-const WebpackNotifierPlugin = require('webpack-notifier');
 const path = require('node:path');
 const sass = require('sass');
+const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
+const WebpackNotifierPlugin = require('webpack-notifier');
 
 const utils = require('./utils.js');
 const commonConfig = require('./webpack.common.js');
@@ -82,7 +82,7 @@ module.exports = async options =>
             target: `http${options.tls ? 's' : ''}://localhost:${options.watch ? '8090' : '9060'}`,
             ws: true,
             proxyOptions: {
-              changeOrigin: false, //pass the Host header to the backend unchanged https://github.com/Browsersync/browser-sync/issues/430
+              changeOrigin: false, // pass the Host header to the backend unchanged https://github.com/Browsersync/browser-sync/issues/430
             },
           },
           socket: {

@@ -8,8 +8,9 @@ import './resources.scss';
 
 import React from 'react';
 import { Translate, translate } from 'react-jhipster';
-import { NavDropdown } from './menu-components';
 import { DropdownItem } from 'reactstrap';
+
+import { NavDropdown } from './menu-components';
 
 export const ResourcesMenu = () => (
   <NavDropdown

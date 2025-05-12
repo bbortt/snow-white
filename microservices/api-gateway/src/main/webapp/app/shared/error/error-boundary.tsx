@@ -30,7 +30,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
     if (errorInfo) {
       const errorDetails = DEVELOPMENT ? (
         <details className="preserve-space">
-          {error && error.toString()}
+          {error?.toString()}
           <br />
           {errorInfo.componentStack}
         </details>

@@ -86,6 +86,7 @@
     }
   },
   "footer": {
+    "issues": "Fehler Melden",
     "version": "Version"
   }
 }

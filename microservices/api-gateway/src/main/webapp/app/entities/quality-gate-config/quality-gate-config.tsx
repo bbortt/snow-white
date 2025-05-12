@@ -4,18 +4,19 @@
  * See LICENSE file for full details.
  */
 
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+
+import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { useState, useEffect } from 'react';
+import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Table } from 'reactstrap';
-import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
-import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
-import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
-import { useAppDispatch, useAppSelector } from 'app/config/store';
 
 import { getEntities } from './quality-gate-config.reducer';
-import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 
 export const QualityGateConfig = () => {
   const dispatch = useAppDispatch();
@@ -76,11 +77,12 @@ export const QualityGateConfig = () => {
     });
   };
 
-  const handlePagination = currentPage =>
+  const handlePagination = currentPage => {
     setPaginationState({
       ...paginationState,
       activePage: currentPage,
     });
+  };
 
   const handleSyncList = () => {
     sortEntities();
@@ -91,9 +93,8 @@ export const QualityGateConfig = () => {
     const order = paginationState.order;
     if (sortFieldName !== fieldName) {
       return faSort;
-    } else {
-      return order === ASC ? faSortUp : faSortDown;
     }
+    return order === ASC ? faSortUp : faSortDown;
   };
 
   return (
