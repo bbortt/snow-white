@@ -4,20 +4,20 @@
  * See LICENSE file for full details.
  */
 
+import type { ReducersMapObject } from '@reduxjs/toolkit';
+
+import { combineReducers } from '@reduxjs/toolkit';
+import getStore from 'app/config/store';
+import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router-dom';
 
-import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
-
-import { ReducersMapObject, combineReducers } from '@reduxjs/toolkit';
-
-import getStore from 'app/config/store';
-
+/* eslint-disable */
+// entitiesReducers must be imported upfront!
 import entitiesReducers from './reducers';
-
 import OpenApiCriterion from './open-api-criterion';
 import QualityGateConfig from './quality-gate-config';
-/* jhipster-needle-add-route-import - JHipster will add routes here */
+/* eslint-enable */
 
 export const EntitiesRoutes = () => {
   const store = getStore();

@@ -4,11 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import dayjs from 'dayjs';
-import { ICalculationRequestParameters } from 'app/shared/model/calculation-request-parameters.model';
-import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
-import { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import type { ICalculationRequestParameters } from 'app/shared/model/calculation-request-parameters.model';
+import type { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
+import type { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import type dayjs from 'dayjs';
 
 export interface IQualityGate {
   calculationId?: string;

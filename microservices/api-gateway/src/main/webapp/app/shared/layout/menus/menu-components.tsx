@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import React from 'react';
-
-import { DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import { DropdownMenu, DropdownToggle, UncontrolledDropdown } from 'reactstrap';
 
 export const NavDropdown = props => (
   <UncontrolledDropdown nav inNavbar id={props.id} data-testid={props['data-testid']}>

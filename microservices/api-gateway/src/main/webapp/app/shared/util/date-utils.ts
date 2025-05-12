@@ -4,9 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import dayjs from 'dayjs';
-
 import { APP_LOCAL_DATETIME_FORMAT } from 'app/config/constants';
+import dayjs from 'dayjs';
 
 export const convertDateTimeFromServer = date => (date ? dayjs(date).format(APP_LOCAL_DATETIME_FORMAT) : null);
 

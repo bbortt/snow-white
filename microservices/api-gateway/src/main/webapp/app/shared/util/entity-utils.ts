@@ -4,8 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import type { IPaginationBaseState, ISortBaseState } from 'react-jhipster';
+
 import pick from 'lodash/pick';
-import { IPaginationBaseState, ISortBaseState } from 'react-jhipster';
 
 /**
  * Removes fields with an 'id' field that equals ''.
@@ -26,7 +27,7 @@ export const cleanEntity = entity => {
  * @param idList Elements to map.
  * @returns The list of objects with mapped ids.
  */
-export const mapIdList = (idList: ReadonlyArray<any>) => idList.filter((id: any) => id !== '').map((id: any) => ({ id }));
+export const mapIdList = (idList: readonly any[]) => idList.filter((id: any) => id !== '').map((id: any) => ({ id }));
 
 export const overrideSortStateWithQueryParams = (paginationBaseState: ISortBaseState, locationSearch: string) => {
   const params = new URLSearchParams(locationSearch);
@@ -40,9 +41,10 @@ export const overrideSortStateWithQueryParams = (paginationBaseState: ISortBaseS
 };
 
 export const overridePaginationStateWithQueryParams = (paginationBaseState: IPaginationBaseState, locationSearch: string) => {
-  const sortedPaginationState: IPaginationBaseState = <IPaginationBaseState>(
-    overrideSortStateWithQueryParams(paginationBaseState, locationSearch)
-  );
+  const sortedPaginationState: IPaginationBaseState = overrideSortStateWithQueryParams(
+    paginationBaseState,
+    locationSearch,
+  ) as IPaginationBaseState;
   const params = new URLSearchParams(locationSearch);
   const page = params.get('page');
   if (page) {

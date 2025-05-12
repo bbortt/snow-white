@@ -4,16 +4,18 @@
  * See LICENSE file for full details.
  */
 
+import type { QualityGateReport } from 'app/clients/report-api';
+import type { IQualityGate } from 'app/shared/model/quality-gate.model';
+import type { EntityState } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
+import { reportApi } from 'app/entities/quality-gate/report-api';
+import { defaultValue } from 'app/shared/model/quality-gate.model';
+import dayjs from 'dayjs';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
-import { EntityState } from 'app/shared/reducers/reducer.utils';
-import { defaultValue, IQualityGate } from 'app/shared/model/quality-gate.model';
 import reducer, { getEntities, getEntity, reset } from './quality-gate.reducer';
-import { reportApi } from 'app/entities/quality-gate/report-api';
-import { AxiosResponse } from 'axios';
-import { QualityGateReport } from 'app/clients/report-api';
-import dayjs from 'dayjs';
 
 jest.mock('app/entities/quality-gate/report-api', () => ({
   reportApi: {

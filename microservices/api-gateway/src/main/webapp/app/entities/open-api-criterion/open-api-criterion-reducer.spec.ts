@@ -4,15 +4,17 @@
  * See LICENSE file for full details.
  */
 
+import type { OpenApiCriterion } from 'app/clients/quality-gate-api';
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import type { EntityState } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
+import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
+import { defaultValue } from 'app/shared/model/open-api-criterion.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
-import { EntityState } from 'app/shared/reducers/reducer.utils';
-import { IOpenApiCriterion, defaultValue } from 'app/shared/model/open-api-criterion.model';
 import reducer, { getEntities, getEntity, reset } from './open-api-criterion.reducer';
-import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
-import { AxiosResponse } from 'axios';
-import { OpenApiCriterion } from 'app/clients/quality-gate-api';
 
 jest.mock('app/entities/open-api-criterion/criteria-api', () => ({
   criteriaApi: {
@@ -24,9 +26,8 @@ describe('OpenAPI Criterion reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
       return element.length === 0;
-    } else {
-      return Object.keys(element).length === 0;
     }
+    return Object.keys(element).length === 0;
   }
 
   const initialState: EntityState<IOpenApiCriterion> = {

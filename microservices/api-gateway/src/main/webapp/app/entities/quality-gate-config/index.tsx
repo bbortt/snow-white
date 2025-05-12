@@ -4,15 +4,14 @@
  * See LICENSE file for full details.
  */
 
+import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router-dom';
 
-import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
-
 import QualityGateConfig from './quality-gate-config';
+import QualityGateConfigDeleteDialog from './quality-gate-config-delete-dialog';
 import QualityGateConfigDetail from './quality-gate-config-detail';
 import QualityGateConfigUpdate from './quality-gate-config-update';
-import QualityGateConfigDeleteDialog from './quality-gate-config-delete-dialog';
 
 const QualityGateConfigRoutes = () => (
   <ErrorBoundaryRoutes>

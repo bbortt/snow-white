@@ -86,6 +86,8 @@
     }
   },
   "footer": {
+    "issues": "Report Issues",
+    "sources": "Source Code",
     "version": "Version"
   }
 }

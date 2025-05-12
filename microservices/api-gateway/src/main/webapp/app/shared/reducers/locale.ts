@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-
 import { TranslatorContext } from 'react-jhipster';
 
 const initialState = {
@@ -51,11 +50,9 @@ export const addTranslationSourcePrefix = createAsyncThunk(
   async (sourcePrefix: string, thunkAPI: any) => {
     const { currentLocale, loadedKeys, sourcePrefixes } = thunkAPI.getState().locale;
     const key = `${sourcePrefix}${currentLocale}`;
-    if (!sourcePrefixes.includes(sourcePrefix)) {
-      if (!loadedKeys.includes(key)) {
-        await loadLocaleAndRegisterLocaleFile(currentLocale, sourcePrefix);
-        thunkAPI.dispatch(loaded({ sourcePrefix, keys: [key] }));
-      }
+    if (!sourcePrefixes.includes(sourcePrefix) && !loadedKeys.includes(key)) {
+      await loadLocaleAndRegisterLocaleFile(currentLocale, sourcePrefix);
+      thunkAPI.dispatch(loaded({ sourcePrefix, keys: [key] }));
     }
     return key;
   },
@@ -75,9 +72,11 @@ export const LocaleSlice = createSlice({
     },
     loaded(state, action) {
       const { keys, locale, sourcePrefix } = action.payload;
+      // @ts-expect-error TS2345: Argument of type any is not assignable to parameter of type never
       if (sourcePrefix && !state.sourcePrefixes.includes(sourcePrefix)) {
         state.sourcePrefixes = state.sourcePrefixes.concat(sourcePrefix);
       }
+      // @ts-expect-error TS2345: Argument of type any is not assignable to parameter of type never
       if (locale && !state.loadedLocales.includes(locale)) {
         state.loadedLocales = state.loadedLocales.concat(locale);
       }

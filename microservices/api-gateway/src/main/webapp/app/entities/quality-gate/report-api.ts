@@ -6,4 +6,4 @@
 
 import { ReportApi } from 'app/clients/report-api';
 
-export const reportApi = new ReportApi(null, SERVER_API_URL);
+export const reportApi = new ReportApi(undefined, SERVER_API_URL);

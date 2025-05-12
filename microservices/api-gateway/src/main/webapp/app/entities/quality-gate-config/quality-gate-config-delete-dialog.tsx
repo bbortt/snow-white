@@ -4,13 +4,13 @@
  * See LICENSE file for full details.
  */
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
+import { Translate } from 'react-jhipster';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { Translate } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './quality-gate-config.reducer';
 
 export const QualityGateConfigDeleteDialog = () => {
@@ -23,7 +23,7 @@ export const QualityGateConfigDeleteDialog = () => {
   const [loadModal, setLoadModal] = useState(false);
 
   useEffect(() => {
-    dispatch(getEntity(id));
+    dispatch(getEntity(id!));
     setLoadModal(true);
   }, []);
 
@@ -31,7 +31,7 @@ export const QualityGateConfigDeleteDialog = () => {
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
 
   const handleClose = () => {
-    navigate('/quality-gate-config' + location.search);
+    navigate(`/quality-gate-config${location.search}`);
   };
 
   useEffect(() => {

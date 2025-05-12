@@ -6,4 +6,4 @@
 
 import { CriteriaApi } from 'app/clients/quality-gate-api';
 
-export const criteriaApi = new CriteriaApi(null, SERVER_API_URL);
+export const criteriaApi = new CriteriaApi(undefined, SERVER_API_URL);

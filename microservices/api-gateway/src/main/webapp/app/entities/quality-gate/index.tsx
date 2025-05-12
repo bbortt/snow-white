@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router';
-
-import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 
 import QualityGate from './quality-gate';
 import QualityGateDetail from './quality-gate-detail';

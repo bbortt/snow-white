@@ -4,9 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import dayjs from 'dayjs';
 import * as React from 'react';
 import { TranslatorContext } from 'react-jhipster';
-import dayjs from 'dayjs';
 
 export interface IDurationFormat {
   value: any;

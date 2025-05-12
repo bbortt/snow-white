@@ -11,9 +11,28 @@ import prettier from 'eslint-plugin-prettier/recommended';
 import tseslint from 'typescript-eslint';
 import eslint from '@eslint/js';
 import react from 'eslint-plugin-react/configs/recommended.js';
-// jhipster-needle-eslint-add-import - JHipster will add additional import here
+import perfectionistPlugin from 'eslint-plugin-perfectionist';
 
 export default tseslint.config(
+  // register all of the plugins up-front
+  {
+    // note - intentionally uses computed syntax to make it easy to sort the keys
+
+    plugins: {
+      ['@typescript-eslint']: tseslint.plugin,
+      ['perfectionist']: perfectionistPlugin,
+    },
+
+    settings: {
+      perfectionist: {
+        order: 'asc',
+        partitionByComment: true,
+        type: 'natural',
+      },
+    },
+  },
+
+  // language options
   {
     languageOptions: {
       globals: {
@@ -21,19 +40,33 @@ export default tseslint.config(
       },
     },
   },
+
+  // config with just ignores is the replacement for `.eslintignore`
   {
-    ignores: ['node_modules/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      '**/__snapshots__/**',
+      '**/build/**',
+      '**/target/**',
+      // Files copied as part of the build
+      'src/main/webapp/app/clients/**',
+      // Docker files
+      'src/main/docker/**',
+    ],
   },
-  { ignores: ['src/main/docker/**'] },
-  { ignores: ['target/classes/static/**', 'target/**'] },
-  { ignores: ['src/main/webapp/app/clients/**'] },
+
+  // extends ...
   eslint.configs.recommended,
+
   {
     files: ['**/*.{js,cjs,mjs}'],
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+
   {
     files: ['src/main/webapp/**/*.{ts,tsx}'],
     extends: [...tseslint.configs.recommendedTypeChecked, react],
@@ -95,14 +128,18 @@ export default tseslint.config(
       'no-invalid-this': 'off',
       'react/prop-types': 'off',
       'react/display-name': 'off',
+
+      // enforce a sort order across the codebase
+      'perfectionist/sort-imports': 'error',
     },
   },
+
   {
     files: ['src/main/webapp/**/*.spec.ts'],
     rules: {
       '@typescript-eslint/no-empty-function': 'off',
     },
   },
-  // jhipster-needle-eslint-add-config - JHipster will add additional config here
+
   prettier,
 );

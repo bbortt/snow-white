@@ -4,8 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { QualityGateApi } from 'app/clients/quality-gate-api';
+import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 
 jest.mock('app/clients/quality-gate-api', () => ({
   QualityGateApi: jest.fn(),

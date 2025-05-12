@@ -4,9 +4,10 @@
  * See LICENSE file for full details.
  */
 
+import EntitiesMenuItems from 'app/entities/menu';
 import React from 'react';
 import { translate } from 'react-jhipster';
-import EntitiesMenuItems from 'app/entities/menu';
+
 import { NavDropdown } from './menu-components';
 
 export const EntitiesMenu = () => (

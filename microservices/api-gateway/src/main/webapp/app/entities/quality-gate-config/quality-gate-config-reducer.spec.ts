@@ -4,15 +4,17 @@
  * See LICENSE file for full details.
  */
 
+import type { QualityGateConfig } from 'app/clients/quality-gate-api';
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+import type { EntityState } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
+import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
+import { defaultValue } from 'app/shared/model/quality-gate-config.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
-import { EntityState } from 'app/shared/reducers/reducer.utils';
-import { IQualityGateConfig, defaultValue } from 'app/shared/model/quality-gate-config.model';
 import reducer, { createEntity, deleteEntity, getEntities, getEntity, updateEntity, reset } from './quality-gate-config.reducer';
-import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
-import { AxiosResponse } from 'axios';
-import { QualityGateConfig } from 'app/clients/quality-gate-api';
 
 jest.mock('app/entities/quality-gate-config/quality-gate-api', () => ({
   qualityGateApi: {
@@ -28,9 +30,8 @@ describe('Quality-Gate Config reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
       return element.length === 0;
-    } else {
-      return Object.keys(element).length === 0;
     }
+    return Object.keys(element).length === 0;
   }
 
   const initialState: EntityState<IQualityGateConfig> = {

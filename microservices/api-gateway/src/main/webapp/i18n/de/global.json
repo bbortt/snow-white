@@ -86,6 +86,8 @@
     }
   },
   "footer": {
+    "issues": "Fehler Melden",
+    "sources": "Quellcode",
     "version": "Version"
   }
 }

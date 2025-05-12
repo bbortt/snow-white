@@ -4,12 +4,15 @@
  * See LICENSE file for full details.
  */
 
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import type { EntityState } from 'app/shared/reducers/reducer.utils';
+import type { AxiosResponse } from 'axios';
+
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
-import { createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import { defaultValue, IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
-import { AxiosResponse } from 'axios';
-import { getSnowWhiteState } from 'app/entities/reducers';
 import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
+import { getSnowWhiteState } from 'app/entities/reducers';
+import { defaultValue } from 'app/shared/model/open-api-criterion.model';
+import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 
 const initialState: EntityState<IOpenApiCriterion> = {
   loading: false,

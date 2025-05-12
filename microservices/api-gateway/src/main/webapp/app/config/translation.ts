@@ -4,9 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import { Storage, TranslatorContext } from 'react-jhipster';
-
 import { setLocale } from 'app/shared/reducers/locale';
+import { Storage, TranslatorContext } from 'react-jhipster';
 
 TranslatorContext.setDefaultLocale('en');
 TranslatorContext.setRenderInnerTextForMissingKeys(false);
