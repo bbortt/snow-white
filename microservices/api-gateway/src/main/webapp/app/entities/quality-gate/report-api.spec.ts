@@ -17,6 +17,6 @@ describe('Report API', () => {
   });
 
   it('should be constructed', () => {
-    expect(ReportApi).toHaveBeenCalledWith(null, SERVER_API_URL);
+    expect(ReportApi).toHaveBeenCalledWith(undefined, SERVER_API_URL);
   });
 });

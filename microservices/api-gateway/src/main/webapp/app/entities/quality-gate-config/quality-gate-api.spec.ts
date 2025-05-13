@@ -17,6 +17,6 @@ describe('Quality-Gate API', () => {
   });
 
   it('should be constructed', () => {
-    expect(QualityGateApi).toHaveBeenCalledWith(null, SERVER_API_URL);
+    expect(QualityGateApi).toHaveBeenCalledWith(undefined, SERVER_API_URL);
   });
 });

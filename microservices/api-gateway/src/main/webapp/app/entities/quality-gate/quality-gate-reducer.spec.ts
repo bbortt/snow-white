@@ -24,7 +24,7 @@ jest.mock('app/entities/quality-gate/report-api', () => ({
   },
 }));
 
-describe('Entities reducer tests', () => {
+describe('Quality-Gate reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
       return element.length === 0;
@@ -147,7 +147,7 @@ describe('Entities reducer tests', () => {
           serviceName: 'test service',
           attributeFilters: { foo: 'bar', traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' },
         },
-        createdAt: '2025-05-07T18:00:00.00Z',
+        initiatedAt: '2025-05-07T18:00:00.00Z',
         openApiTestResults: [{ id: 'test_openapi_criterion' }],
       },
     } as AxiosResponse;

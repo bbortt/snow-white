@@ -259,7 +259,7 @@
                     ${project.build.directory}/generated-sources/openapi
                   </directory>
                   <includes>
-                    <include>*.ts</include>
+                    <include>**/*.ts</include>
                   </includes>
                 </resource>
               </resources>
