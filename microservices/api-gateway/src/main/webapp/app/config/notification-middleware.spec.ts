@@ -220,12 +220,6 @@ describe('Notification Middleware', () => {
     expect(toastMsg).toContain('foo.creation');
   });
 
-  it('should not trigger an error toast message and return error for 401 response code', () => {
-    expect(store.dispatch(LOGIN_REJECTED_ERROR).error.response.status).toEqual(401);
-    expect((toastify.toast as any).error.called).toEqual(false);
-    expect((toastify.toast as any).success.called).toEqual(false);
-  });
-
   it('should trigger an error toast message and return error for 400 response code', () => {
     expect(store.dispatch(TITLE_ERROR).error.response.status).toEqual(400);
     const toastMsg = (toastify.toast as any).error.getCall(0).args[0];

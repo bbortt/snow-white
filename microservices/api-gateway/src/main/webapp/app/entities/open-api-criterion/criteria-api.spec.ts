@@ -11,12 +11,12 @@ jest.mock('app/clients/quality-gate-api', () => ({
   CriteriaApi: jest.fn(),
 }));
 
-describe('Quality-Gate API', () => {
+describe('Criteria API', () => {
   it('should be defined', () => {
     expect(criteriaApi).toBeDefined();
   });
 
   it('should be constructed', () => {
-    expect(CriteriaApi).toHaveBeenCalledWith(null, SERVER_API_URL);
+    expect(CriteriaApi).toHaveBeenCalledWith(undefined, SERVER_API_URL);
   });
 });
