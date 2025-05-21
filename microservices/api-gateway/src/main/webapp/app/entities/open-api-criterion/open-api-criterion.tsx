@@ -6,10 +6,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { SORT } from 'app/shared/util/pagination.constants';
 import React, { useEffect } from 'react';
-import { Translate } from 'react-jhipster';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Translate, translate } from 'react-jhipster';
 import { Button, Table } from 'reactstrap';
 
 import { getEntities } from './open-api-criterion.reducer';
@@ -35,7 +33,7 @@ export const OpenApiCriterion = () => {
   return (
     <div>
       <h2 id="open-api-criterion-heading" data-testid="OpenApiCriterionHeading">
-        <Translate contentKey="snowWhiteApp.openApiCriterion.home.title">Open Api Criteria</Translate>
+        <Translate contentKey="snowWhiteApp.openApiCriterion.home.title">OpenApi Criteria</Translate>
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
@@ -49,20 +47,22 @@ export const OpenApiCriterion = () => {
             <thead>
               <tr>
                 <th>
-                  <Translate contentKey="snowWhiteApp.openApiCriterion.name">Name</Translate>{' '}
+                  <Translate contentKey="snowWhiteApp.openApiCriterion.name">Name</Translate>
                 </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.openApiCriterion.description">Description</Translate>{' '}
-                </th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {openApiCriterionList.map((openApiCriterion, i) => (
-                <tr key={`entity-${i}`} data-testid="entityTable">
-                  <td>{openApiCriterion.name}</td>
-                  <td>{openApiCriterion.description}</td>
-                </tr>
-              ))}
+              {openApiCriterionList.map((openApiCriterion, i) => {
+                const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}`);
+
+                return (
+                  <tr key={`entity-${i}`} data-testid="entityTable">
+                    <td>{openApiCriterion.name}</td>
+                    <td>{translation.startsWith('translation-not-found') ? openApiCriterion.description : translation}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
         ) : (
