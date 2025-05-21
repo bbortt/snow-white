@@ -18,7 +18,6 @@ import static io.github.bbortt.snow.white.microservices.report.coordination.serv
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
-import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -35,14 +34,12 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.dom
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -79,30 +76,10 @@ class OpenApiResultListenerIT {
   private ObjectMapper objectMapper;
 
   @Autowired
-  private OpenApiCriterionRepository openApiCriterionRepository;
-
-  @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
 
   @Autowired
   private ReportCoordinationServiceProperties reportCoordinationServiceProperties;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    var missingOpenApiCriteria = stream(OpenApiCriteria.values())
-      .map(openApiCriteria ->
-        OpenApiTestCriteria.builder().name(openApiCriteria.name()).build()
-      )
-      .filter(openApiCriterion ->
-        openApiCriterionRepository
-          .findByName(openApiCriterion.getName())
-          .isEmpty()
-      )
-      .toList();
-
-    // This ensures that entity merging is done properly
-    openApiCriterionRepository.saveAll(missingOpenApiCriteria);
-  }
 
   @Test
   void kafkaEvent_withCoveredCriteria_shouldBePersisted()

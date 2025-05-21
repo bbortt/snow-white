@@ -15,5 +15,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OpenApiCriterionRepository
   extends JpaRepository<OpenApiTestCriteria, Long> {
+  boolean existsByName(@Param("name") String name);
   Optional<OpenApiTestCriteria> findByName(@Param("name") String name);
 }
