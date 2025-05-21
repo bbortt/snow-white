@@ -16,6 +16,7 @@ import { Route } from 'react-router-dom';
 // entitiesReducers must be imported upfront!
 import entitiesReducers from './reducers';
 import OpenApiCriterion from './open-api-criterion';
+import QualityGate from 'app/entities/quality-gate';
 import QualityGateConfig from './quality-gate-config';
 /* eslint-enable */
 
@@ -28,6 +29,7 @@ export const EntitiesRoutes = () => {
       <ErrorBoundaryRoutes>
         {/* prettier-ignore */}
         <Route path="open-api-criterion/*" element={<OpenApiCriterion />} />
+        <Route path="quality-gate/*" element={<QualityGate />} />
         <Route path="quality-gate-config/*" element={<QualityGateConfig />} />
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
       </ErrorBoundaryRoutes>
