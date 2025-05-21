@@ -28,6 +28,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -38,6 +39,7 @@ public class OpenApiResultListener {
   private final QualityGateService qualityGateService;
   private final ReportService reportService;
 
+  @Transactional
   @KafkaListener(
     groupId = "${" + CONSUMER_GROUP_ID + ":" + DEFAULT_CONSUMER_GROUP_ID + "}",
     topics = { "${" + OPENAPI_CALCULATION_RESPONSE_TOPIC + "}" }
