@@ -13,4 +13,5 @@ module.exports = {
   useTabs: false,
   arrowParens: 'avoid',
   bracketSameLine: false,
+  xmlWhitespaceSensitivity: 'ignore',
 };
