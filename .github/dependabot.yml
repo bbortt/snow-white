@@ -29,6 +29,16 @@ updates:
       - 'lang:typescript'
       - 'severity:low'
       - 'status:ready-for-review'
+  - package-ecosystem: 'npm'
+    directory: '/toolkit/cli/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'lang:typescript'
+      - 'severity:low'
+      - 'status:ready-for-review'
   - package-ecosystem: 'maven'
     directory: '/'
     schedule:
