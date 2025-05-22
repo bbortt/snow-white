@@ -24,10 +24,15 @@
 
   <modules>
     <module>annotation-api</module>
+    <module>cli</module>
     <module>openapi-generator</module>
     <module>spring-web-autoconfiguration</module>
     <module>spring-web-autoconfiguration-it</module>
   </modules>
+
+  <properties>
+      <openapi-generator.version>7.14.0</openapi-generator.version>
+  </properties>
 
   <dependencies>
     <dependency>

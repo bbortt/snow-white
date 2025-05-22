@@ -21,10 +21,6 @@
   <artifactId>openapi-generator</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <openapi-generator.version>7.14.0</openapi-generator.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.github.bbortt.snow-white</groupId>
