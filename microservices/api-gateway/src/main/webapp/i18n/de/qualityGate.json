@@ -4,7 +4,8 @@
       "home": {
         "title": "Resultate",
         "refreshListLabel": "Liste aktualisieren",
-        "notFound": "Keine Resultate von Quality-Gates gefunden"
+        "notFound": "Keine Resultate von Quality-Gates gefunden",
+        "noOpenApiTestResultsFound": "Keine OpenAPI Test Resultate gefunden"
       },
       "detail": {
         "title": "Quality-Gate Resultat"
@@ -13,8 +14,19 @@
       "calculationId": "Berechnungs ID",
       "status": "Status",
       "createdAt": "Erstellt am",
+      "serviceName": "Service Name",
+      "apiName": "API Name",
+      "apiVersion": "API Version",
       "calculationRequest": "Anfrage-Details",
-      "openApiTestResult": "OpenAPI Test Result"
+      "openApiTestResult": {
+        "title": "OpenAPI Test Resultate",
+        "name": "Name",
+        "coverage": "Abdeckung",
+        "additionalInformation": "Zusätzliche Information"
+      },
+      "action": {
+        "junitDownload": "JUnit Report Herunterladen"
+      }
     }
   }
 }
