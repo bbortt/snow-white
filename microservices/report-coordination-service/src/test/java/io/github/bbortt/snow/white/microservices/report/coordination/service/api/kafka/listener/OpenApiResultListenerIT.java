@@ -30,7 +30,6 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
@@ -212,7 +211,6 @@ class OpenApiResultListenerIT {
                     openApiResult ->
                       assertThat(openApiResult.getOpenApiTestCriteria())
                         .isNotNull()
-                        .extracting(OpenApiTestCriteria::getName)
                         .isEqualTo(PATH_COVERAGE.name()),
                     openApiResult ->
                       assertThat(openApiResult.getCoverage()).isEqualTo(

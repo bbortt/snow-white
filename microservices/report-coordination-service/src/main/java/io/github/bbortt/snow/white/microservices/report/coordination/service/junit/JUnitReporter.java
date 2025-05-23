@@ -81,11 +81,7 @@ public class JUnitReporter {
         qualityGateReport
           .getOpenApiTestResults()
           .stream()
-          .sorted(
-            comparing(openApiCriterionResult ->
-              openApiCriterionResult.getOpenApiTestCriteria().getName()
-            )
-          )
+          .sorted(comparing(OpenApiTestResult::getOpenApiTestCriteria))
           .map(this::generateOpenApiTestCase)
           .forEach(openApiTestSuite::addTestCase);
 
@@ -102,7 +98,7 @@ public class JUnitReporter {
       OpenApiTestResult openApiTestResult
     ) {
       var openApiCriteria = OpenApiCriteria.valueOf(
-        openApiTestResult.getOpenApiTestCriteria().getName()
+        openApiTestResult.getOpenApiTestCriteria()
       );
 
       var testCase = TestCase.builder()

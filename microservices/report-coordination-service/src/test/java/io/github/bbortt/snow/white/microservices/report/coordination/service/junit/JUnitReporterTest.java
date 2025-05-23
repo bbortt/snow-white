@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.util.StreamUtils.copyToString;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import jakarta.xml.bind.JAXBException;
@@ -39,9 +38,7 @@ class JUnitReporterTest {
     String additionalInformation
   ) {
     return OpenApiTestResult.builder()
-      .openApiTestCriteria(
-        OpenApiTestCriteria.builder().name(openApiCriterionName).build()
-      )
+      .openApiTestCriteria(openApiCriterionName)
       .coverage(coverage.setScale(2, HALF_UP))
       .duration(duration)
       .additionalInformation(additionalInformation)
@@ -164,11 +161,7 @@ class JUnitReporterTest {
       var qualityGateReport = createInitialQualityGateReport()
         .withOpenApiTestResults(
           Set.of(
-            OpenApiTestResult.builder()
-              .openApiTestCriteria(
-                OpenApiTestCriteria.builder().name(invalidName).build()
-              )
-              .build()
+            OpenApiTestResult.builder().openApiTestCriteria(invalidName).build()
           )
         );
 
