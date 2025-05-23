@@ -57,7 +57,7 @@ export const OpenApiCriterion = () => {
                 const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}`);
 
                 return (
-                  <tr key={`entity-${i}`} data-testid="entityTable">
+                  <tr key={`entity-${i}`} data-testid="openApiCriteriaTable">
                     <td>{openApiCriterion.name}</td>
                     <td>{translation.startsWith('translation-not-found') ? openApiCriterion.description : translation}</td>
                   </tr>

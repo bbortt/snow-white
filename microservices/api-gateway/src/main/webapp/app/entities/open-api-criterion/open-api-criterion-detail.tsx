@@ -26,7 +26,7 @@ export const OpenApiCriterionDetail = () => {
 
   return (
     <Row>
-      <Col md="8">
+      <Col>
         <h2 data-testid="openApiCriterionDetailsHeading">
           <Translate contentKey="snowWhiteApp.openApiCriterion.detail.title">OpenApiCriterion</Translate>
         </h2>
