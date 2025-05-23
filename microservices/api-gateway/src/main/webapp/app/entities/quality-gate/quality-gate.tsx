@@ -125,15 +125,20 @@ export const QualityGate = () => {
                   <FontAwesomeIcon icon={getSortIconByFieldName('createdAt')} />
                 </th>
                 <th>
-                  <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>{' '}
-                  <FontAwesomeIcon icon="sort" />
+                  <Translate contentKey="snowWhiteApp.qualityGate.serviceName">Service Name</Translate>
+                </th>
+                <th>
+                  <Translate contentKey="snowWhiteApp.qualityGate.apiName">API Name</Translate>
+                </th>
+                <th>
+                  <Translate contentKey="snowWhiteApp.qualityGate.apiVersion">API Version</Translate>
                 </th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {qualityGateList.map((qualityGate, i) => (
-                <tr key={`entity-${i}`} data-cy="entityTable">
+                <tr key={`entity-${i}`} data-cy="qualityGateTable">
                   <td>
                     <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
                       {qualityGate.calculationId}
@@ -145,18 +150,18 @@ export const QualityGate = () => {
                   <td>
                     {qualityGate.createdAt ? <TextFormat type="date" value={qualityGate.createdAt} format={APP_DATE_FORMAT} /> : null}
                   </td>
-                  <td>
-                    {qualityGate.calculationRequest ? (
-                      <Link to={`/calculation-request-parameters/${qualityGate.calculationRequest.id}`}>
-                        {qualityGate.calculationRequest.apiName}
-                      </Link>
-                    ) : (
-                      ''
-                    )}
-                  </td>
+                  <td>{qualityGate.calculationRequest?.serviceName}</td>
+                  <td>{qualityGate.calculationRequest?.apiName}</td>
+                  <td>{qualityGate.calculationRequest?.apiVersion}</td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
-                      <Button tag={Link} to={`/quality-gate/${qualityGate.id}`} color="info" size="sm" data-cy="entityDetailsButton">
+                      <Button
+                        tag={Link}
+                        to={`/quality-gate/${qualityGate.calculationId}`}
+                        color="info"
+                        size="sm"
+                        data-cy="entityDetailsButton"
+                      >
                         <FontAwesomeIcon icon="eye" />{' '}
                         <span className="d-none d-md-inline">
                           <Translate contentKey="entity.action.view">View</Translate>

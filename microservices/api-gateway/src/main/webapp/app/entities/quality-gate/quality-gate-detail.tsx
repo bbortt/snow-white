@@ -7,6 +7,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import OpenapiTestResultTable from 'app/entities/quality-gate/openapi-test-result-table';
 import React, { useEffect } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
 import { Link, useParams } from 'react-router-dom';
@@ -24,9 +25,10 @@ export const QualityGateDetail = () => {
   }, []);
 
   const qualityGateEntity = useAppSelector(state => state.snowwhite.qualityGate.entity);
+
   return (
     <Row>
-      <Col md="8">
+      <Col>
         <h2 data-cy="qualityGateDetailsHeading">
           <Translate contentKey="snowWhiteApp.qualityGate.detail.title">QualityGate</Translate>
         </h2>
@@ -60,7 +62,32 @@ export const QualityGateDetail = () => {
           <dt>
             <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
           </dt>
-          <dd>{qualityGateEntity.calculationRequest ? qualityGateEntity.calculationRequest.apiName : ''}</dd>
+          <dd>
+            {qualityGateEntity.calculationRequest ? (
+              <pre
+                className="mb-0 p-3"
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  border: 'none',
+                  fontSize: '0.875rem',
+                  maxHeight: '400px',
+                  overflow: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
+                <code style={{ color: '#495057' }}>{JSON.stringify(qualityGateEntity.calculationRequest)}</code>
+              </pre>
+            ) : (
+              ''
+            )}
+          </dd>
+          <dt>
+            <Translate contentKey="snowWhiteApp.qualityGate.openApiTestResult.title">OpenAPI Test Results</Translate>
+          </dt>
+          <dd>
+            <OpenapiTestResultTable openapiTestResults={qualityGateEntity.openApiTestResults} />
+          </dd>
         </dl>
         <Button tag={Link} to="/quality-gate" replace color="info" data-cy="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}
@@ -69,12 +96,14 @@ export const QualityGateDetail = () => {
           </span>
         </Button>
         &nbsp;
-        <Button tag={Link} to={`/quality-gate/${qualityGateEntity.id}/edit`} replace color="primary">
-          <FontAwesomeIcon icon="pencil-alt" />{' '}
-          <span className="d-none d-md-inline">
-            <Translate contentKey="entity.action.edit">Edit</Translate>
-          </span>
-        </Button>
+        <a href={`/api/rest/v1/reports/${qualityGateEntity.calculationId}/junit`}>
+          <Button replace color="primary">
+            <FontAwesomeIcon icon="file-arrow-down" />{' '}
+            <span className="d-none d-md-inline">
+              <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
+            </span>
+          </Button>
+        </a>
       </Col>
     </Row>
   );

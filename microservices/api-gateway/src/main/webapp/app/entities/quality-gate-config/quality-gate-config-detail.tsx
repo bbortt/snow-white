@@ -29,7 +29,7 @@ export const QualityGateConfigDetail = () => {
 
   return (
     <Row>
-      <Col md="8">
+      <Col>
         <h2 data-testid="qualityGateConfigDetailsHeading">
           <Translate contentKey="snowWhiteApp.qualityGateConfig.detail.title">QualityGateConfig</Translate>
         </h2>
