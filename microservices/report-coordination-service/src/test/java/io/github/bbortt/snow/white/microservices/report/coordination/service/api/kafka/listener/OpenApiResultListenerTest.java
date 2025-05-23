@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.OpenApiTestResultMapper;
@@ -110,9 +109,7 @@ class OpenApiResultListenerTest {
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
       OpenApiTestResult openApiTestResult = OpenApiTestResult.builder()
-        .openApiTestCriteria(
-          OpenApiTestCriteria.builder().name("test-criterion").build()
-        )
+        .openApiTestCriteria("test-criterion")
         .coverage(BigDecimal.valueOf(85.0))
         .build();
       Set<OpenApiTestResult> mappedResults = Set.of(openApiTestResult);
@@ -232,18 +229,12 @@ class OpenApiResultListenerTest {
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
       OpenApiTestResult criterion1Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(
-          OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
-        )
+        .openApiTestCriteria(PATH_COVERAGE.name())
         .coverage(ONE)
         .build();
 
       OpenApiTestResult criterion2Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(
-          OpenApiTestCriteria.builder()
-            .name(HTTP_METHOD_COVERAGE.name())
-            .build()
-        )
+        .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
         .coverage(ONE)
         .build();
 
@@ -316,18 +307,12 @@ class OpenApiResultListenerTest {
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
       OpenApiTestResult criterion1Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(
-          OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
-        )
+        .openApiTestCriteria(PATH_COVERAGE.name())
         .coverage(ONE)
         .build();
 
       OpenApiTestResult criterion2Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(
-          OpenApiTestCriteria.builder()
-            .name(HTTP_METHOD_COVERAGE.name())
-            .build()
-        )
+        .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
         .coverage(BigDecimal.valueOf(85.0))
         .build();
 

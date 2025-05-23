@@ -17,7 +17,6 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
@@ -53,9 +52,7 @@ class OpenApiReportCalculatorTest {
     ) {
       Set<OpenApiTestResult> openApiTestCriteria = Set.of(
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
-          )
+          .openApiTestCriteria(PATH_COVERAGE.name())
           .coverage(ONE)
           .build()
       );
@@ -91,17 +88,11 @@ class OpenApiReportCalculatorTest {
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
       Set<OpenApiTestResult> openApiTestCriteria = Set.of(
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(pathCoverage).build()
-          )
+          .openApiTestCriteria(pathCoverage)
           .coverage(ONE)
           .build(),
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder()
-              .name(HTTP_METHOD_COVERAGE.name())
-              .build()
-          )
+          .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
           .coverage(ZERO)
           .build()
       );
@@ -135,9 +126,7 @@ class OpenApiReportCalculatorTest {
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
       Set<OpenApiTestResult> openApiTestCriteria = Set.of(
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(pathCoverage).build()
-          )
+          .openApiTestCriteria(pathCoverage)
           .coverage(BigDecimal.valueOf(0.99))
           .build()
       );
@@ -167,9 +156,7 @@ class OpenApiReportCalculatorTest {
       // But only provide one in the results
       Set<OpenApiTestResult> openApiTestCriteria = Set.of(
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(pathCoverage).build()
-          )
+          .openApiTestCriteria(pathCoverage)
           .coverage(ONE)
           .build()
       );
@@ -189,7 +176,7 @@ class OpenApiReportCalculatorTest {
             .isNotEmpty()
             .satisfies(criteriaResults ->
               assertThat(criteriaResults)
-                .map(result -> result.getOpenApiTestCriteria().getName())
+                .map(OpenApiTestResult::getOpenApiTestCriteria)
                 .containsExactly(pathCoverage)
             )
             .allSatisfy(criterionResult ->
@@ -213,15 +200,11 @@ class OpenApiReportCalculatorTest {
       // Provide both criteria in the results
       Set<OpenApiTestResult> openApiTestCriteria = Set.of(
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(pathCoverage).build()
-          )
+          .openApiTestCriteria(pathCoverage)
           .coverage(ONE)
           .build(),
         OpenApiTestResult.builder()
-          .openApiTestCriteria(
-            OpenApiTestCriteria.builder().name(pathCoverage).build()
-          )
+          .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
           .coverage(ONE)
           .build()
       );
@@ -241,9 +224,7 @@ class OpenApiReportCalculatorTest {
             .isNotEmpty()
             .satisfies(criteriaResults -> {
               criteriaResults.forEach(result -> {
-                if (
-                  result.getOpenApiTestCriteria().getName().equals(pathCoverage)
-                ) {
+                if (result.getOpenApiTestCriteria().equals(pathCoverage)) {
                   assertThat(result.getIncludedInReport()).isTrue();
                 } else {
                   assertThat(result.getIncludedInReport()).isFalse();

@@ -29,11 +29,9 @@ import static org.springframework.util.StreamUtils.copyToString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.OpenApiCriterionRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -58,9 +56,6 @@ class ReportResourceIT {
 
   @Autowired
   private ObjectMapper objectMapper;
-
-  @Autowired
-  private OpenApiCriterionRepository openApiCriterionRepository;
 
   @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
@@ -118,10 +113,6 @@ class ReportResourceIT {
 
   @Test
   void findReport_withOpenApiResults_byCalculationId() throws Exception {
-    var openApiCriterion = openApiCriterionRepository.save(
-      OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
-    );
-
     var calculationId = UUID.fromString("3130fae9-e67c-43cd-9c2d-23aee9920736");
 
     var serviceName = "serviceName";
@@ -149,7 +140,7 @@ class ReportResourceIT {
     var additionalInformation = "some additional information";
 
     var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(openApiCriterion)
+      .openApiTestCriteria(PATH_COVERAGE.name())
       .qualityGateReport(qualityGateReport)
       .coverage(coverage)
       .includedInReport(TRUE)
@@ -219,10 +210,6 @@ class ReportResourceIT {
   @Test
   void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
     throws Exception {
-    var openApiCriterion = openApiCriterionRepository.save(
-      OpenApiTestCriteria.builder().name(PATH_COVERAGE.name()).build()
-    );
-
     var calculationId = UUID.fromString("aaac28e5-2d0e-4ea6-8fef-4dc85169759e");
 
     var qualityGateReport = qualityGateReportRepository.save(
@@ -241,7 +228,7 @@ class ReportResourceIT {
     );
 
     var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(openApiCriterion)
+      .openApiTestCriteria(PATH_COVERAGE.name())
       .qualityGateReport(qualityGateReport)
       .coverage(ONE)
       .includedInReport(TRUE)

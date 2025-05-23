@@ -26,7 +26,7 @@ public interface QualityGateReportMapper {
     QualityGateReport qualityGateReport
   );
 
-  @Mapping(target = "id", source = "openApiTestCriteria.name")
+  @Mapping(target = "id", source = "openApiTestCriteria")
   io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.OpenApiTestResult toDto(
     OpenApiTestResult openApiTestResult
   );
