@@ -6,11 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
-import static jakarta.persistence.CascadeType.DETACH;
-import static jakarta.persistence.CascadeType.MERGE;
-import static jakarta.persistence.CascadeType.PERSIST;
-import static jakarta.persistence.CascadeType.REFRESH;
-import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.annotation.Nullable;
@@ -45,13 +40,7 @@ public class OpenApiTestResult {
 
   @Id
   @NotNull
-  @ManyToOne(
-    optional = false,
-    cascade = { PERSIST, MERGE, REFRESH, DETACH },
-    fetch = EAGER
-  )
-  @JoinColumn(name = "open_api_criterion", nullable = false)
-  private OpenApiTestCriteria openApiTestCriteria;
+  private String openApiTestCriteria;
 
   @NotNull
   @Column(nullable = false, updatable = false)
@@ -77,7 +66,7 @@ public class OpenApiTestResult {
   @Data
   public static class OpenApiCriterionResultId implements Serializable {
 
-    private Long openApiTestCriteria;
+    private String openApiTestCriteria;
     private UUID qualityGateReport;
   }
 }
