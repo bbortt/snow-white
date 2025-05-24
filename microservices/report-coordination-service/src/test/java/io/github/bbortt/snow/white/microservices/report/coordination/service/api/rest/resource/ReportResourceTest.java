@@ -18,6 +18,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -199,6 +200,8 @@ class ReportResourceTest {
         .findReportByCalculationId(calculationId);
 
       var junitReport = mock(Resource.class);
+      var filename = "junit-report.xml";
+      doReturn(filename).when(junitReport).getFilename();
       doReturn(junitReport)
         .when(jUnitReporterMock)
         .transformToJUnitReport(qualityGateReport);
@@ -209,6 +212,14 @@ class ReportResourceTest {
         .isNotNull()
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+          r ->
+            assertThat(r.getHeaders())
+              .hasSize(1)
+              .hasEntrySatisfying(CONTENT_DISPOSITION, value ->
+                assertThat(value).containsExactly(
+                  "attachment; filename=\"junit-report.xml\""
+                )
+              ),
           r -> assertThat(r.getBody()).isEqualTo(junitReport)
         );
     }

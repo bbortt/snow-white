@@ -18,6 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
@@ -242,6 +243,13 @@ class ReportResourceIT {
     var jUnitReport = mockMvc
       .perform(get(JUNIT_REPORT_API_URL, calculationId))
       .andExpect(status().isOk())
+      .andExpect(
+        header()
+          .string(
+            CONTENT_DISPOSITION,
+            "attachment; filename=\"snow-white-junit.xml\""
+          )
+      )
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_XML_VALUE))
       .andReturn()
       .getResponse()
