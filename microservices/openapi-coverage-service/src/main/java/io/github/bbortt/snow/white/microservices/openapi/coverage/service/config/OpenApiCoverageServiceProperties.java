@@ -30,7 +30,7 @@ public class OpenApiCoverageServiceProperties implements InitializingBean {
 
   private String openapiCalculationResponseTopic;
 
-  private Boolean initTopics;
+  private Boolean initTopics = false;
 
   @Override
   public void afterPropertiesSet() {

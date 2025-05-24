@@ -13,6 +13,8 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
+import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.Setter;

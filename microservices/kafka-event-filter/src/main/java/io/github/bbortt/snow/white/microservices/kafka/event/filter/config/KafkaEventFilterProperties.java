@@ -35,7 +35,7 @@ public class KafkaEventFilterProperties implements InitializingBean {
     PREFIX + ".outbound-topic-name";
   private String outboundTopicName;
 
-  private Boolean initTopics;
+  private Boolean initTopics = false;
 
   public static final String DEFAULT_CONSUMER_GROUP_NAME = "kafka-event-filter";
   private String consumerGroupName = DEFAULT_CONSUMER_GROUP_NAME;

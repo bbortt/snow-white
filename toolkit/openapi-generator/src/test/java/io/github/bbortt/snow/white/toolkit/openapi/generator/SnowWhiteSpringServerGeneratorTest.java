@@ -19,6 +19,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.openapitools.codegen.CodegenType.SERVER;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
+import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
+import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.ArrayList;
 import java.util.List;

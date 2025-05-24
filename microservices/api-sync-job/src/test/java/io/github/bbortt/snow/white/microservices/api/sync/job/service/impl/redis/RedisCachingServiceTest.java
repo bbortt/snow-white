@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
+import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.RedisCachingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
