@@ -17,20 +17,27 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VA
 import com.redis.testcontainers.RedisContainer;
 import java.io.IOException;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.wiremock.spring.EnableWireMock;
 
 @Testcontainers
-@EnableWireMock
 @IntegrationTest
+@SpringBootTest(
+  classes = { Main.class },
+  properties = {
+    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
+    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.index-uri=/sir/index",
+  }
+)
 class SyncJobIT {
 
   private static final int REDIS_PORT = 6379;
@@ -58,19 +65,17 @@ class SyncJobIT {
     return Stream.of(APPLICATION_JSON_VALUE, APPLICATION_OCTET_STREAM_VALUE);
   }
 
-  @MethodSource("indexContentTypes")
   @ParameterizedTest
-  void queryAndSafeApiCatalogArtifacts(String contentType) throws IOException {
-    var exampleResponse = getResourceContent(
+  @MethodSource("indexContentTypes")
+  void shouldSyncCatalog(String contentType) throws IOException {
+    var sirResponse = getResourceContent(
       "sir/full-example-response.json"
     ).replace("${wiremock.server.baseUrl}", wiremockServerBaseUrl);
 
     stubFor(
-      get("/sir/index").willReturn(
-        okForContentType(contentType, exampleResponse)
-      )
+      get("/sir/index").willReturn(okForContentType(contentType, sirResponse))
     );
 
-    assertDoesNotThrow(() -> fixture.queryAndSafeApiCatalogArtifacts());
+    assertDoesNotThrow(() -> fixture.syncCatalog());
   }
 }

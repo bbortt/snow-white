@@ -28,7 +28,7 @@ public class ReportCoordinationServiceProperties implements InitializingBean {
 
   private String calculationRequestTopic;
 
-  private Boolean initTopics;
+  private Boolean initTopics = false;
 
   private String publicApiGatewayUrl;
 

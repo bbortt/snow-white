@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.toolkit.openapi.generator;
+package io.github.bbortt.snow.white.commons.openapi;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -12,13 +12,13 @@ import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-class InformationExtractor {
+public class InformationExtractor {
 
   private final String apiNameJsonPath;
   private final String apiVersionJsonPath;
   private final String serviceNameJsonPath;
 
-  OpenApiInformation extractFromOpenApi(String openApi) {
+  public OpenApiInformation extractFromOpenApi(String openApi) {
     return new OpenApiInformation(
       extractApiName(openApi),
       extractApiVersion(openApi),

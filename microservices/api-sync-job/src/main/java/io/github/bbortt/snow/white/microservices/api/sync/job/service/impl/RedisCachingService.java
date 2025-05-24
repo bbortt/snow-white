@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.redis;
+package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointRepository;

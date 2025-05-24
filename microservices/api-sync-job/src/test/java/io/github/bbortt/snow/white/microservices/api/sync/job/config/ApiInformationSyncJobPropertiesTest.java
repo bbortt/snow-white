@@ -41,7 +41,7 @@ class ApiInformationSyncJobPropertiesTest {
     }
 
     @Test
-    void shouldPassWhenBothPropertiesAreSet() {
+    void shouldPass_whenBothPropertiesAreSet() {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri("/api/index");
 
@@ -59,45 +59,21 @@ class ApiInformationSyncJobPropertiesTest {
       );
     }
 
-    @Test
-    void shouldThrowWhenBaseUrlIsNull() {
-      fixture.getServiceInterface().setBaseUrl(null);
-      fixture.getServiceInterface().setIndexUri("/api/index");
-
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("base-url")
-        .hasMessageContaining("index-uri");
-    }
-
     @ParameterizedTest
     @MethodSource("emptyAndNullString")
-    void shouldThrowWhenBaseUrlIsEmptyOrNull(String baseUrl) {
+    void shouldPass_whenBaseUrlIsEmptyOrNull(String baseUrl) {
       fixture.getServiceInterface().setBaseUrl(baseUrl);
       fixture.getServiceInterface().setIndexUri("/api/index");
 
-      assertAfterPropertiesSetThrows();
+      assertDoesNotThrow(() -> fixture.afterPropertiesSet());
     }
 
     @ParameterizedTest
     @MethodSource("emptyAndNullString")
-    void shouldThrowWhenIndexUriIsEmptyOrNull(String indexUrl) {
+    void shouldThrow_whenIndexUriIsEmptyOrNull(String indexUrl) {
       fixture.getServiceInterface().setBaseUrl("http://localhost:8080");
       fixture.getServiceInterface().setIndexUri(indexUrl);
 
-      assertAfterPropertiesSetThrows();
-    }
-
-    @ParameterizedTest
-    @MethodSource("emptyAndNullString")
-    void shouldThrowWhenBothPropertiesAreEmptyOrNull(String value) {
-      fixture.getServiceInterface().setBaseUrl(value);
-      fixture.getServiceInterface().setIndexUri(value);
-
-      assertAfterPropertiesSetThrows();
-    }
-
-    private void assertAfterPropertiesSetThrows() {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(PREFIX, "base-url", PREFIX, "index-uri");

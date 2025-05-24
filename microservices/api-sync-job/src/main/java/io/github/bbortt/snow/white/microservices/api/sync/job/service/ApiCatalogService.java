@@ -12,5 +12,5 @@ import java.util.Set;
 public interface ApiCatalogService {
   Set<ApiInformation> fetchApiIndex();
 
-  ApiInformation validateApiInformationFromIndex(ApiInformation apiInformation);
+  ApiInformation validateApiInformation(ApiInformation apiInformation);
 }

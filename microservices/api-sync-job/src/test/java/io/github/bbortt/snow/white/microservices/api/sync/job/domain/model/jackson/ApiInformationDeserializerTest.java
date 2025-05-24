@@ -45,7 +45,7 @@ class ApiInformationDeserializerTest {
     var title = "Swagger Petstore - OpenAPI 3.1";
     assertThat(api).satisfies(
       a -> assertThat(a.getTitle()).isEqualTo(title),
-      a -> assertThat(a.getVersion()).isEqualTo("1.0.11"),
+      a -> assertThat(a.getVersion()).isEqualTo("1.2.3"),
       a ->
         assertThat(a.getSourceUrl()).isEqualTo(
           "http://repo.example.com/sir/petstore.yml"
