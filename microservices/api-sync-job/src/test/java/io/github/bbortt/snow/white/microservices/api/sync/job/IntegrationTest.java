@@ -13,16 +13,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.wiremock.spring.EnableWireMock;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-@SpringBootTest(
-  classes = { Main.class },
-  properties = {
-    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.index-uri=/sir/index",
-  }
-)
+@EnableWireMock
+@SpringBootTest(classes = { Main.class })
 @ActiveProfiles("test")
 public @interface IntegrationTest {
 }

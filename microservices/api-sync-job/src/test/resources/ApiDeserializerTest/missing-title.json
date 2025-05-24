@@ -1,12 +1,12 @@
 {
-  "name": "swagger-petstore-1.0.11.tgz",
+  "name": "swagger-petstore-1.2.3.tgz",
   "properties": [
     {
       "key": "stage"
     },
     {
       "key": "oas.info.version",
-      "value": "1.0.11"
+      "value": "1.2.3"
     },
     {
       "key": "oas.info.x-api-name",

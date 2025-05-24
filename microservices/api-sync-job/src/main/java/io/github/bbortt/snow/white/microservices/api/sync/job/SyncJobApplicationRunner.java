@@ -21,6 +21,6 @@ public class SyncJobApplicationRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    syncJob.queryAndSafeApiCatalogArtifacts();
+    syncJob.syncCatalog();
   }
 }

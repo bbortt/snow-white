@@ -21,6 +21,12 @@
   <artifactId>api-sync-job</artifactId>
   <packaging>jar</packaging>
 
+  <properties>
+    <baseClientPackage>
+      io.github.bbortt.snow.white.microservices.api.sync.job.api.client
+    </baseClientPackage>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -38,6 +44,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
       <artifactId>opentelemetry-javaagent</artifactId>
       <scope>compile</scope>
@@ -46,6 +58,24 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>2.19.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.swagger.parser.v3</groupId>
+      <artifactId>swagger-parser</artifactId>
+      <version>2.1.28</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>0.2.6</version>
     </dependency>
 
     <dependency>
@@ -62,15 +92,21 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <optional>true</optional>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>8.5.17</version>
     </dependency>
 
     <dependency>
       <groupId>com.redis.testcontainers</groupId>
       <artifactId>testcontainers-redis-junit</artifactId>
       <version>1.6.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>minio</artifactId>
+      <version>1.21.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -115,6 +151,32 @@
             <goals>
               <goal>repackage</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-backstage-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                backstage/plugins/catalog-backend/src/schema/openapi.yaml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.backstage.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.backstage</invokerPackage>
+              <modelPackage>${baseClientPackage}.backstage.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJakartaEe>true</useJakartaEe>
+              </configOptions>
+            </configuration>
           </execution>
         </executions>
       </plugin>
