@@ -13,6 +13,7 @@ import static io.github.bbortt.snow.white.microservices.report.coordination.serv
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -59,9 +60,15 @@ public class ReportResource implements ReportApi {
     }
 
     try {
-      return ResponseEntity.ok(
-        jUnitReporter.transformToJUnitReport(reportOrError.qualityGateReport())
+      var jUnitReport = jUnitReporter.transformToJUnitReport(
+        reportOrError.qualityGateReport()
       );
+      return ResponseEntity.ok()
+        .header(
+          CONTENT_DISPOSITION,
+          format("attachment; filename=\"%s\"", jUnitReport.getFilename())
+        )
+        .body(jUnitReport);
     } catch (JUnitReportCreationException e) {
       return ResponseEntity.internalServerError()
         .body(

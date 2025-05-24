@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
@@ -46,14 +45,9 @@ public class JUnitReporter {
     var testSuites = new TestSuitesFactory()
       .buildForQualityGateReport(qualityGateReport);
 
-    try (var out = new ByteArrayOutputStream()) {
-      marshaller.marshal(testSuites, out);
-      return new ByteArrayResource(out.toByteArray()) {
-        @Override
-        public String getFilename() {
-          return "snow-white-junit.xml";
-        }
-      };
+    try (var byteArrayOutputStream = new ByteArrayOutputStream()) {
+      marshaller.marshal(testSuites, byteArrayOutputStream);
+      return new JUnitReportResource(byteArrayOutputStream.toByteArray());
     } catch (IOException | JAXBException e) {
       throw new JUnitReportCreationException(e);
     }
