@@ -25,7 +25,7 @@
     <confluent.version>7.9.1</confluent.version>
     <!-- DON'T UPGRADE! See https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/serdes-protobuf.html#limitations-and-developer-notes -->
     <google-protobuf.version>3.25.5</google-protobuf.version>
-    <grpc.version>1.72.0</grpc.version>
+    <grpc.version>1.73.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
     <protobuf-maven-plugin.version>3.2.3</protobuf-maven-plugin.version>
