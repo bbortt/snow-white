@@ -1,20 +1,35 @@
 # Developer Setup Guide
 
-## Local Environment Setup
+Welcome, and thank you for considering to contribute to **Snow-White**!
+This guide walks you through setting up your development environment and building the services.
+If you run into any issues, please open an issue or contact the maintainers.
 
-To start the required services locally using [Docker](https://www.docker.com/), run:
+## Quick Start
+
+### 1. Prerequisites
+
+- Java 21 installed
+- Node.js 22 installed
+- Docker or Podman (with Compose) installed
+
+### 2. Launch the Development Environment
+
+Start all required services using Docker/Podman Compose:
 
 ```shell
 docker compose -f dev/docker-compose.yaml up -d
 ```
 
-For details on the microservices and their respective ports, see the [Microservices and Ports](#microservices-and-ports)
-section.
+This includes InfluxDB, Kafka, OTEL Collector, Redis, and supporting UI tools.
+For more on which services are running and their ports, see [Mapped Ports](#mapped-ports).
 
-### Setting Up InfluxDB
+### 3. Configure InfluxDB Access
 
-Once the services are running, you need to extract an InfluxDB token and store it in the [`dev/.env`](dev/.env) file.
-The token must have **Read and Write** access to the `raw-data` bucket.
+You'll need a **Read/Write token** for the raw-data bucket in InfluxDB.
+
+1. Visit the InfluxDB UI (port 8086)
+2. Create a token with the required permissions
+3. Add the token to your `dev/.env` file:
 
 ```ini
 INFLUXDB_TOKEN=[YOUR_TOKEN_GOES_HERE]
@@ -22,51 +37,156 @@ INFLUXDB_TOKEN=[YOUR_TOKEN_GOES_HERE]
 
 ![InfluxDB Token](dev/influxdb-token.png)
 
-After saving the token, restart the Docker Compose environment for changes to take effect.
+Restart the environment for changes to take effect:
 
 ```shell
 docker compose -f dev/docker-compose.yaml down && docker compose -f dev/docker-compose.yaml up -d
 ```
 
-## Microservices and Ports
+## Architecture Overview
 
-The application consists of several microservices running on different ports.
-For rapid development, follow these steps:
+**Snow-White** follows an event-driven architecture.
+The below diagram includes all microservices and their connections.
 
-1. Run the following command to package the application:
+```plantuml
+@startuml
+
+' Stylin'
+
+!theme vibrant
+left to right direction
+
+package "Snow-White" {
+
+    ' Snow-White components first
+
+    component "API Gateway" as gate #Darkorange {
+        component "Webapplication (UI)" #Darkorange
+    }
+
+    component "API Sync Job" as sync #Darkorange
+    component "Kafka Event Filter" as filter #Darkorange
+    component "OpenAPI Coverage Service" as coverage #Darkorange
+    component "Quality-Gate API" as qgate #Darkorange
+    component "Report-Coordination Service" as coordination #Darkorange
+
+    ' Third-party components next
+
+    database "InfluxDB" as influx #Teal
+
+    component "Kafka" #Teal {
+        queue "Inbound Topic" as inbound
+        queue "Outbound Topic" as outbound
+        queue "Request Topic" as request
+        queue "Response Topic" as response
+    }
+
+    component "Otel Collector" as otel #Teal
+    component "Redis" as redis #Teal
+}
+
+component "Backstage" as backstage #Teal
+component "Service Interface Repository" as sir #Teal
+
+' User connections (aka UI)
+
+actor User as user
+
+user <--> gate: HTTP/S
+gate <--> qgate
+gate <--> coordination
+
+' API Sync Job
+
+sync ---> backstage : Fetch API Index
+sync ---> sir : Fetch API Index
+sync --> redis : Store API Meta Information
+
+' Kafka Event Filter
+
+component "Example-Application" as app
+
+app --> otel: gRPC or Protobuf
+
+otel ..> inbound
+inbound .down.> filter
+filter <--> redis: Query API Meta Information
+filter .up.> outbound
+outbound ..> otel
+otel --> influx: Persist Telemetry Data
+
+' Report Coordination Service
+
+coordination .down.> request
+response .up.> coordination
+
+' OpenAPI Coverage Service
+
+request .down.> coverage
+coverage <--> redis: Query API Meta Information
+coverage <-up-> influx: Query Telemetry Data
+coverage .up.> response
+
+legend right
+<back:Darkorange>+</back> Snow-White
+<back:Teal>+</back> Third Party
+end legend
+
+@enduml
+```
+
+### Microservices
+
+Each microservice completes a specific task.
+
+| Microservice                                                               | Intent                                                                                                                                                                                |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [API Gateway](./microservices/api-gateway)                                 | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
+| [API Sync Job](./microservices/api-sync-job)                               | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
+| [Kafka Event Filter](./microservices/kafka-event-filter)                   | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
+| [OpenAPI Coverage Service](./microservices/openapi-coverage-service)       | Analyzes OpenAPI specs vs. runtime traffic to calculate Quality-Gate results.                                                                                                         |
+| [Quality-Gate API](./microservices/quality-gate-api)                       | Exposes an API for managing Quality-Gate rules (e.g., endpoint coverage, spec compliance).                                                                                            |
+| [Report Coordination Service](./microservices/report-coordination-service) | Orchestrates Quality-Gate calculation, triggering analysis jobs and compiling results.                                                                                                |
+
+### Building and Running Services
+
+Use the following steps for rapid local development:
+
+1. Build all modules:
 
    ```shell
-   ./mvnw package
+   ./mvnw package -T1C
    ```
 
-   Optionally add the `-T1C` argument to run a parallel build using one thread per CPU core.
-
-2. Start all microservices and dependencies using Docker Compose:
+2. Start the Docker environment (if not already running):
 
    ```shell
    docker compose -f dev/docker-compose.yaml up -d
    ```
 
-3. Stop the specific microservice you want to develop and start it manually using Spring Boot.
+3. Stop the microservice you want to develop and run it manually:
 
-4. Optionally, you can run multiple services natively if needed.
+   ```shell
+   ./mvnw spring-boot:run -pl :<microservice-name>
+   ```
 
 ### Mapped Ports
 
-| Service                                                                      | Spring Boot (`dev` profile) | Docker Compose (`docker-compose.yaml`) |
-| ---------------------------------------------------------------------------- | --------------------------- | -------------------------------------- |
-| [`example-application`](./example-application)                               | `8080`                      | `8080`                                 |
-| [`api-gateway`](./microservices/api-gateway)                                 | `9080`                      | `80`                                   |
-| [`kafka-event-filter`](./microservices/kafka-event-filter)                   | -                           | -                                      |
-| [`openapi-coverage-service`](./microservices/openapi-coverage-service)       | -                           | -                                      |
-| [`quality-gate-api`](./microservices/quality-gate-api)                       | `8081`                      | `8081`                                 |
-| [`report-coordination-service`](./microservices/report-coordination-service) | `8084`                      | `8084`                                 |
+| Service                                                                      | Spring Boot (`dev` profile) | Docker (or Podman) Compose (`docker-compose.yaml`) |
+| ---------------------------------------------------------------------------- | --------------------------- | -------------------------------------------------- |
+| [`example-application`](./example-application)                               | `8080`                      | `8080`                                             |
+| [`api-gateway`](./microservices/api-gateway)                                 | `9080`                      | `80`                                               |
+| [`api-sync-job`](./microservices/api-sync-job)                               | -                           | -                                                  |
+| [`kafka-event-filter`](./microservices/kafka-event-filter)                   | -                           | -                                                  |
+| [`openapi-coverage-service`](./microservices/openapi-coverage-service)       | -                           | -                                                  |
+| [`quality-gate-api`](./microservices/quality-gate-api)                       | `8081`                      | `8081`                                             |
+| [`report-coordination-service`](./microservices/report-coordination-service) | `8084`                      | `8084`                                             |
 
-The UI Development Server (of `api-gateway`) is running on port `9001`.
+The UI Development Server (used by `api-gateway`) is available on port `9001`.
 
 ### Additional Services
 
-The following services are only mapped in [`dev/docker-compose.yaml`](dev/docker-compose.yaml):
+These services are only available inside Docker (or Podman) Compose:
 
 | Service                      | Ports                                                    |
 | ---------------------------- | -------------------------------------------------------- |
@@ -78,54 +198,58 @@ The following services are only mapped in [`dev/docker-compose.yaml`](dev/docker
 | InfluxDB                     | `8086`                                                   |
 | Service Interface Repository | `3000`                                                   |
 
-This guide ensures a structured and efficient development setup. Happy coding!
+## Running Tests and Code Quality
 
-## Sonar Analysis
-
-You can start a local [SonarQube](https://www.sonarsource.com/) service using Docker Compose:
-
-```shell
-docker compose -f dev/sonar.yaml up -d
-```
-
-The initial login on http://localhost:9000 can be done with `admin:admin`.
-The password must be changed at first login.
-
-Enter into SonarQube and add a new project called `snow-white`.
-Choose manual setup with a local build environment.
-This will lead you up to the token generation.
-Create a token with a name of your choice, but select "No expiration date".
-
-Afterward, you're able to analyze the project using your token:
+Run all unit/integration tests and aggregate coverage:
 
 ```shell
 ./mvnw verify -T 1C
-./mvnw jacoco:report-aggregate sonar:sonar -Dsonar.login=${SONAR_TOKEN}
 ```
 
-You can also combine these two commands, but for faster builds it's recommended to build in parallel first.
+To run a [SonarQube](https://www.sonarsource.com/) analysis:
 
-## Native Build
+1. Start Sonar:
 
-The following microservices support native compilation (and are delivered as suche):
+   ```shell
+   docker compose -f dev/sonar.yaml up -d
+   ```
+
+2. Create a new Sonar project (`snow-white`) and token.
+
+   The initial login to http://localhost:9000 can be done with `admin:admin`.
+   The password must be changed at first login.
+
+   Enter into SonarQube and add a new project called `snow-white`.
+   Choose manual setup with a local build environment.
+   This will lead you up to the token generation.
+   Create a token with a name of your choice, but select "No expiration date".
+
+3. Run the analysis:
+
+   ```shell
+   ./mvnw jacoco:report-aggregate sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+   ```
+
+## Native Builds
+
+These microservices support native image builds:
 
 - `kafka-event-filter`
 - `quality-gate-api`
 - `report-coordination-service`
 
-You can build a native image for each of these microservices with the `native` profile enabled.
-Podman is supported using the `podman` profile as well.
-
-**Example build for the `kafka-event-filter` microservice:**
+Build an image using:
 
 ```shell
-./mvnw -pl :kafka-event-filter -am install
-./mvnw -Pnative,podman -pl :kafka-event-filter -DskipTests spring-boot:build-image
+./mvnw -pl :<maven-module> -am install
+./mvnw -Pnative -pl :<maven-module> -DskipTests spring-boot:build-image
 ```
+
+Podman is supported using the `podman` profile as well.
 
 ## Maven Proxy Setup
 
-The following proxies are required to build `snow-white` behind corporate proxies:
+If you're behind a corporate proxy, use the following snippet in `.mvn/settings.xml`:
 
 ```xml
 <settings>
@@ -146,4 +270,4 @@ The following proxies are required to build `snow-white` behind corporate proxie
 </settings>
 ```
 
-You should add them to [`.mvn/settings.xml`](./.mvn/settings.xml) which is being ignored by `git`.
+Make sure to add this to `.mvn/settings.xml` (this file is gitignored).

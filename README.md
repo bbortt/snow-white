@@ -20,41 +20,32 @@ Snow-White provides valuable insights on:
 - API Performance
 - And more.
 
-## Architecture
+## Development & Contributing
 
-```plantuml
-@startuml
+We welcome contributions!
+Whether you're fixing a bug, adding a feature, or improving the documentation – thank you 🙌
 
-!theme vibrant
+To get started:
 
-component "API Sync Job" as ApiSyncJob #Darkorange
-component "Service Interface Repository" as sir
-component "Redis" #Teal
-component "Kafka" #Teal {
-    queue "Inbound Topic" as InboundTopic
-    queue "Outbound Topic" as OutboundTopic
-}
-component "Otel Collector" as otel #Teal
-component "Kafka Event Filter" as EventFilter #Darkorange
-component "InfluxDB" #Teal
+1. Read our [`DEVELOPMENT.md`](./DEVELOPMENT.md) for a step-by-step guide on setting up your local environment.
+2. Open a Pull Request or file an issue if you’ve found something worth improving.
+3. Make sure to follow the coding style and commit conventions described in [`DEVELOPMENT.md`](./DEVELOPMENT.md).
 
-ApiSyncJob --> sir : Synchronizes APIs via HTTP/S
-ApiSyncJob --> Redis : Stores meta information
+### Local Setup (Quick Start)
 
-otel --> InboundTopic : Sends traces
-InboundTopic --> EventFilter : Delivers traces
-EventFilter --> Redis : Fetches meta information
-EventFilter --> OutboundTopic : Sends filtered traces
-OutboundTopic --> otel : Delivers filtered traces
-otel --> InfluxDB : Persists filtered traces
+```shell
+git clone https://github.com/bbortt/snow-white.git
+cd snow-white
 
-legend right
-<back:Darkorange>+</back> Snow-White
-<back:Teal>+</back> Third Party
-end legend
-
-@enduml
+# Download dependencies and pack application
+./mvnw -Pnode package
 ```
+
+### Contributing Guidelines
+
+<!-- TODO: Add these -->
+
+Please review our contributing guide and code of conduct before submitting a PR.
 
 ## License
 
