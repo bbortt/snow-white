@@ -64,6 +64,11 @@
 
     <!-- Dependency Management -->
     <spring-boot.version>3.5.0</spring-boot.version>
+
+    <!-- Node.js & NPM -->
+    <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
+    <node.downloadRoot>https://nodejs.org/dist/</node.downloadRoot>
+    <node.version>v22.15.0</node.version>
   </properties>
 
   <dependencyManagement>
@@ -101,6 +106,16 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>${frontend-maven-plugin.version}</version>
+          <configuration>
+            <installDirectory>target</installDirectory>
+            <nodeVersion>${node.version}</nodeVersion>
+          </configuration>
+        </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
@@ -183,6 +198,32 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>node</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+
+            <executions>
+              <execution>
+                <id>install-node-and-npm</id>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+                <configuration>
+                  <nodeVersion>${node.version}</nodeVersion>
+                  <downloadRoot>${node.downloadRoot}</downloadRoot>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <id>sonar</id>
 
