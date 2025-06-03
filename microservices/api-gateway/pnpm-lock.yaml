@@ -226,11 +226,11 @@ importers:
         specifier: 6.0.1
         version: 6.0.1
       sass:
-        specifier: 1.89.0
-        version: 1.89.0
+        specifier: 1.89.1
+        version: 1.89.1
       sass-loader:
         specifier: 16.0.5
-        version: 16.0.5(sass@1.89.0)(webpack@5.99.9)
+        version: 16.0.5(sass@1.89.1)(webpack@5.99.9)
       simple-progress-webpack-plugin:
         specifier: 2.0.0
         version: 2.0.0(webpack@5.99.9)
@@ -935,10 +935,6 @@ packages:
 
   '@eslint/eslintrc@3.3.1':
     resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.27.0':
-    resolution: {integrity: sha512-G5JD9Tu5HJEu4z2Uo4aHY2sLV64B7CDMXxFzqzjl3NKd6RVzSXNoE80jk7Y0lJkTTkjiIhBAqmlYwjuBY3tvpA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.28.0':
@@ -3292,8 +3288,8 @@ packages:
     resolution: {integrity: sha512-15gZoQ38eYjEjxkorfbcgBKBL6R7T459OuK+CpcWt7O3KF4uPCx2tD0uFETlUDIyo+1789crbMhTvQBSR5yBMg==}
     engines: {node: '>=0.10.0'}
 
-  immutable@5.1.1:
-    resolution: {integrity: sha512-3jatXi9ObIsPGr3N5hGw/vWWcTkq6hUYhpQz4k0wLC+owqWi/LiugIw9x0EdNZ2yGedKN/HzePiBvaJRXa0Ujg==}
+  immutable@5.1.2:
+    resolution: {integrity: sha512-qHKXW1q6liAk1Oys6umoaZbDRqjcjgSrbnrifHsfsttza7zcvRAsL7mMV6xWcyhwQy7Xj5v4hhbr6b+iDYwlmQ==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -4935,8 +4931,8 @@ packages:
       webpack:
         optional: true
 
-  sass@1.89.0:
-    resolution: {integrity: sha512-ld+kQU8YTdGNjOLfRWBzewJpU5cwEv/h5yyqlSeJcj6Yh8U4TDA9UA5FPicqDz/xgRPWRSYIQNiFks21TbA9KQ==}
+  sass@1.89.1:
+    resolution: {integrity: sha512-eMLLkl+qz7tx/0cJ9wI+w09GQ2zodTkcE/aVfywwdlRcI3EO19xGnbmJwg/JMIm+5MxVJ6outddLZ4Von4E++Q==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -6667,8 +6663,6 @@ snapshots:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
-
-  '@eslint/js@9.27.0': {}
 
   '@eslint/js@9.28.0': {}
 
@@ -9506,7 +9500,7 @@ snapshots:
 
   immutable@3.8.2: {}
 
-  immutable@5.1.1: {}
+  immutable@5.1.2: {}
 
   import-fresh@3.3.1:
     dependencies:
@@ -11269,17 +11263,17 @@ snapshots:
       parse-srcset: 1.0.2
       postcss: 8.5.3
 
-  sass-loader@16.0.5(sass@1.89.0)(webpack@5.99.9):
+  sass-loader@16.0.5(sass@1.89.1)(webpack@5.99.9):
     dependencies:
       neo-async: 2.6.2
     optionalDependencies:
-      sass: 1.89.0
+      sass: 1.89.1
       webpack: 5.99.9(webpack-cli@6.0.1)
 
-  sass@1.89.0:
+  sass@1.89.1:
     dependencies:
       chokidar: 4.0.3
-      immutable: 5.1.1
+      immutable: 5.1.2
       source-map-js: 1.2.1
     optionalDependencies:
       '@parcel/watcher': 2.5.1
