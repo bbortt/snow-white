@@ -15,8 +15,9 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateCalculationRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202Response;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
@@ -60,7 +61,7 @@ class QualityGateResourceTest {
       "qualityGateConfigName";
 
     @Mock
-    private QualityGateCalculationRequest qualityGateCalculationRequestMock;
+    private CalculateQualityGateRequest qualityGateCalculationRequestMock;
 
     @Test
     void shouldInitializeQualityGateCalculation()
@@ -78,12 +79,10 @@ class QualityGateResourceTest {
           reportParameters
         );
 
-      var responseDto = mock(
-        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-      );
+      var responseDto = mock(CalculateQualityGate202Response.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toDto(qualityGateReport);
+        .toCalculateQualityGateResponse(qualityGateReport);
 
       var response = fixture.calculateQualityGate(
         QUALITY_GATE_CONFIG_NAME,
@@ -124,7 +123,7 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(Error.class))
+              .asInstanceOf(type(CalculateQualityGate400Response.class))
               .satisfies(
                 e -> assertThat(e.getCode()).isEqualTo("Not Found"),
                 e ->

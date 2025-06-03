@@ -8,6 +8,10 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202Response;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202ResponseOpenApiTestResultsInner;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInnerOpenApiTestResultsInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
@@ -22,12 +26,24 @@ public interface QualityGateReportMapper {
   @Mapping(target = "calculationRequest", source = "reportParameters")
   @Mapping(target = "initiatedAt", source = "createdAt")
   @Mapping(target = "status", source = "reportStatus")
-  io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport toDto(
+  CalculateQualityGate202Response toCalculateQualityGateResponse(
     QualityGateReport qualityGateReport
   );
 
   @Mapping(target = "id", source = "openApiTestCriteria")
-  io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.OpenApiTestResult toDto(
+  CalculateQualityGate202ResponseOpenApiTestResultsInner toCalculateQualityGateResponse(
+    OpenApiTestResult openApiTestResult
+  );
+
+  @Mapping(target = "calculationRequest", source = "reportParameters")
+  @Mapping(target = "initiatedAt", source = "createdAt")
+  @Mapping(target = "status", source = "reportStatus")
+  ListQualityGateReports200ResponseInner toListQualityGateReportsResponse(
+    QualityGateReport qualityGateReport
+  );
+
+  @Mapping(target = "id", source = "openApiTestCriteria")
+  ListQualityGateReports200ResponseInnerOpenApiTestResultsInner toListQualityGateReportsResponse(
     OpenApiTestResult openApiTestResult
   );
 
@@ -35,14 +51,25 @@ public interface QualityGateReportMapper {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
   }
 
-  default io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum map(
+  default CalculateQualityGate202Response.StatusEnum toCalculateQualityGateResponse(
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {
       case NOT_STARTED,
-        IN_PROGRESS -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.IN_PROGRESS;
-      case FAILED -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.FAILED;
-      case PASSED -> io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.PASSED;
+        IN_PROGRESS -> CalculateQualityGate202Response.StatusEnum.IN_PROGRESS;
+      case FAILED -> CalculateQualityGate202Response.StatusEnum.FAILED;
+      case PASSED -> CalculateQualityGate202Response.StatusEnum.PASSED;
+    };
+  }
+
+  default ListQualityGateReports200ResponseInner.StatusEnum toListQualityGateReportsResponse(
+    ReportStatus reportStatus
+  ) {
+    return switch (reportStatus) {
+      case NOT_STARTED,
+        IN_PROGRESS -> ListQualityGateReports200ResponseInner.StatusEnum.IN_PROGRESS;
+      case FAILED -> ListQualityGateReports200ResponseInner.StatusEnum.FAILED;
+      case PASSED -> ListQualityGateReports200ResponseInner.StatusEnum.PASSED;
     };
   }
 }
