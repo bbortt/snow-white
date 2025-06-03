@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateCalculationRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.time.Duration;
@@ -137,7 +137,7 @@ class QualityGateResourceIT {
     var apiVersion = "1.2.3";
     var lookbackWindow = "1000years";
 
-    var qualityGateCalculationRequest = QualityGateCalculationRequest.builder()
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .serviceName(serviceName)
       .apiName(apiName)
       .apiVersion(apiVersion)
@@ -208,7 +208,7 @@ class QualityGateResourceIT {
     throws Exception {
     var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
 
-    var qualityGateCalculationRequest = QualityGateCalculationRequest.builder()
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .serviceName("star-wars")
       .apiName("yoda")
       .apiVersion(null)
@@ -265,7 +265,7 @@ class QualityGateResourceIT {
 
   private void assertThatKafkaEventHasBeenPublished(
     String calculationIdStr,
-    QualityGateCalculationRequest qualityGateCalculationRequest,
+    CalculateQualityGateRequest qualityGateCalculationRequest,
     String lookbackWindow
   ) {
     await()

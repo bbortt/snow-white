@@ -19,7 +19,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.ReportApi;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReportCreationException;
@@ -48,7 +49,9 @@ public class ReportResource implements ReportApi {
     }
 
     return ResponseEntity.ok(
-      qualityGateReportMapper.toDto(reportOrError.qualityGateReport())
+      qualityGateReportMapper.toListQualityGateReportsResponse(
+        reportOrError.qualityGateReport()
+      )
     );
   }
 
@@ -72,7 +75,7 @@ public class ReportResource implements ReportApi {
     } catch (JUnitReportCreationException e) {
       return ResponseEntity.internalServerError()
         .body(
-          Error.builder()
+          ListQualityGateReports500Response.builder()
             .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
             .message(e.getMessage())
             .build()
@@ -82,9 +85,7 @@ public class ReportResource implements ReportApi {
 
   @Override
   public ResponseEntity<
-    List<
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
-    >
+    List<ListQualityGateReports200ResponseInner>
   > listQualityGateReports(Integer page, Integer size, String sort) {
     var qualityGateReports = reportService.findAllFinishedReports(
       toPageable(page, size, sort)
@@ -93,7 +94,10 @@ public class ReportResource implements ReportApi {
     return ResponseEntity.ok()
       .headers(generatePaginationHttpHeaders(qualityGateReports))
       .body(
-        qualityGateReports.stream().map(qualityGateReportMapper::toDto).toList()
+        qualityGateReports
+          .stream()
+          .map(qualityGateReportMapper::toListQualityGateReportsResponse)
+          .toList()
       );
   }
 
@@ -105,7 +109,7 @@ public class ReportResource implements ReportApi {
     if (optionalReport.isEmpty()) {
       return errorResponse(
         ResponseEntity.status(NOT_FOUND).body(
-          Error.builder()
+          ListQualityGateReports500Response.builder()
             .code(NOT_FOUND.getReasonPhrase())
             .message(format("No report by id '%s' exists!", calculationId))
             .build()
@@ -118,7 +122,7 @@ public class ReportResource implements ReportApi {
     if (IN_PROGRESS.equals(report.getReportStatus())) {
       return errorResponse(
         ResponseEntity.status(ACCEPTED).body(
-          qualityGateReportMapper.toDto(report)
+          qualityGateReportMapper.toListQualityGateReportsResponse(report)
         )
       );
     }

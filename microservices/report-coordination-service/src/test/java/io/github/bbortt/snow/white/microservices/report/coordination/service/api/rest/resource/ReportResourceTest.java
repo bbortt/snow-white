@@ -24,7 +24,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
@@ -76,19 +77,17 @@ class ReportResourceTest {
     @Mock
     private QualityGateReport qualityGateReport;
 
-    io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport configureServiceMock(
+    ListQualityGateReports200ResponseInner configureServiceMock(
       UUID calculationId
     ) {
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
         .findReportByCalculationId(calculationId);
 
-      var responseDto = mock(
-        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-      );
+      var responseDto = mock(ListQualityGateReports200ResponseInner.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toDto(qualityGateReport);
+        .toListQualityGateReportsResponse(qualityGateReport);
 
       return responseDto;
     }
@@ -144,7 +143,7 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(Error.class))
+              .asInstanceOf(type(ListQualityGateReports500Response.class))
               .satisfies(
                 e ->
                   assertThat(e.getCode()).isEqualTo(
@@ -161,7 +160,7 @@ class ReportResourceTest {
     private void assertThatResponseIsStatusOkWithDto(
       ReportStatus failed,
       UUID calculationId,
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport responseDto
+      ListQualityGateReports200ResponseInner responseDto
     ) {
       doReturn(failed).when(qualityGateReport).getReportStatus();
 
@@ -173,7 +172,7 @@ class ReportResourceTest {
     private static void assertThatResponseHasBody(
       ResponseEntity response,
       HttpStatus ok,
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport responseDto
+      ListQualityGateReports200ResponseInner responseDto
     ) {
       assertThat(response)
         .isNotNull()
@@ -241,7 +240,7 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(Error.class))
+              .asInstanceOf(type(ListQualityGateReports500Response.class))
               .satisfies(
                 e ->
                   assertThat(e.getCode()).isEqualTo(
@@ -281,7 +280,7 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(Error.class))
+              .asInstanceOf(type(ListQualityGateReports500Response.class))
               .satisfies(
                 e ->
                   assertThat(e.getCode()).isEqualTo(
@@ -316,21 +315,18 @@ class ReportResourceTest {
         .when(qualityGateReportsPage)
         .stream();
 
-      var dto1 = mock(
-        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-      );
-      doReturn(dto1).when(qualityGateReportMapperMock).toDto(report1);
+      var dto1 = mock(ListQualityGateReports200ResponseInner.class);
+      doReturn(dto1)
+        .when(qualityGateReportMapperMock)
+        .toListQualityGateReportsResponse(report1);
 
-      var dto2 = mock(
-        io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
-      );
-      doReturn(dto2).when(qualityGateReportMapperMock).toDto(report2);
+      var dto2 = mock(ListQualityGateReports200ResponseInner.class);
+      doReturn(dto2)
+        .when(qualityGateReportMapperMock)
+        .toListQualityGateReportsResponse(report2);
 
-      ResponseEntity<
-        List<
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
-        >
-      > response = fixture.listQualityGateReports(page, size, sort);
+      ResponseEntity<List<ListQualityGateReports200ResponseInner>> response =
+        fixture.listQualityGateReports(page, size, sort);
 
       assertThat(response)
         .isNotNull()
@@ -359,11 +355,8 @@ class ReportResourceTest {
 
       doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 
-      ResponseEntity<
-        List<
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport
-        >
-      > response = fixture.listQualityGateReports(page, size, sort);
+      ResponseEntity<List<ListQualityGateReports200ResponseInner>> response =
+        fixture.listQualityGateReports(page, size, sort);
 
       assertThat(response)
         .isNotNull()

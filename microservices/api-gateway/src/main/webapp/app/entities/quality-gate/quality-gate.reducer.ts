@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import type { QualityGateReport } from 'app/clients/report-api';
+import type { ListQualityGateReports200ResponseInner } from 'app/clients/report-api';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState, IQueryParams } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
@@ -32,7 +32,7 @@ const fromDto = ({
   calculationRequest,
   initiatedAt,
   openApiTestResults,
-}: QualityGateReport): IQualityGate => ({
+}: ListQualityGateReports200ResponseInner): IQualityGate => ({
   calculationId,
   qualityGateConfig: { name: qualityGateConfigName },
   status,

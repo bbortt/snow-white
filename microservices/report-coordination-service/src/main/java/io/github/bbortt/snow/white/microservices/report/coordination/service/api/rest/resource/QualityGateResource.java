@@ -11,8 +11,8 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.QualityGateApi;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateCalculationRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
@@ -32,20 +32,20 @@ public class QualityGateResource implements QualityGateApi {
   @Override
   public ResponseEntity calculateQualityGate(
     String qualityGateConfigName,
-    QualityGateCalculationRequest qualityGateCalculationRequest
+    CalculateQualityGateRequest calculateQualityGateRequest
   ) {
     try {
       var report = reportService.initializeQualityGateCalculation(
         qualityGateConfigName,
-        reportParameterMapper.fromDto(qualityGateCalculationRequest)
+        reportParameterMapper.fromDto(calculateQualityGateRequest)
       );
 
       return ResponseEntity.status(ACCEPTED).body(
-        qualityGateReportMapper.toDto(report)
+        qualityGateReportMapper.toCalculateQualityGateResponse(report)
       );
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
-        Error.builder()
+        CalculateQualityGate400Response.builder()
           .code(NOT_FOUND.getReasonPhrase())
           .message(
             format(
