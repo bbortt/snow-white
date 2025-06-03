@@ -30,6 +30,7 @@ import static org.springframework.util.StreamUtils.copyToString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
@@ -163,14 +164,14 @@ class ReportResourceIT {
 
     var resultingQualityGateReport = objectMapper.readValue(
       responseAsString,
-      io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.class
+      ListQualityGateReports200ResponseInner.class
     );
 
     assertThat(resultingQualityGateReport).satisfies(
       report -> assertThat(report.getCalculationId()).isEqualTo(calculationId),
       report ->
         assertThat(report.getStatus()).isEqualTo(
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.QualityGateReport.StatusEnum.FAILED
+          ListQualityGateReports200ResponseInner.StatusEnum.FAILED
         ),
       report ->
         assertThat(report.getCalculationRequest())
