@@ -85,7 +85,8 @@ public class SyncJob {
       return apiInformation
         .parallelStream()
         .map(indexedApi ->
-          supplyAsync(() -> apiCatalogService.validateApiInformation(indexedApi)
+          supplyAsync(() ->
+            apiCatalogService.validateApiInformation(indexedApi)
           )
         )
         .toList();

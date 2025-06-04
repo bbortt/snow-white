@@ -92,7 +92,8 @@ class MinioBucketConfigTest {
       .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)
       .withBean(io.minio.MinioClient.class, () -> minioClientMock)
       .withPropertyValues(PREFIX + ".minio.init-bucket=true")
-      .run(context -> assertThat(context).hasSingleBean(MinioBucketConfig.class)
+      .run(context ->
+        assertThat(context).hasSingleBean(MinioBucketConfig.class)
       );
   }
 
