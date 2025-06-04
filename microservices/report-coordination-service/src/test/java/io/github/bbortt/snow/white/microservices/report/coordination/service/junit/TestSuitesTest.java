@@ -40,8 +40,8 @@ class TestSuitesTest {
       assertThat(testSuites)
         .isNotNull()
         .satisfies(
-          s -> assertThat(s.getErrors()).isEqualTo(0L),
-          s -> assertThat(s.getSkipped()).isEqualTo(0L),
+          s -> assertThat(s.getErrors()).isZero(),
+          s -> assertThat(s.getSkipped()).isZero(),
           s -> assertThat(s.getTime()).isEqualTo("0"),
           s -> assertThat(s.getContainedSuites()).isNotNull().isEmpty()
         );

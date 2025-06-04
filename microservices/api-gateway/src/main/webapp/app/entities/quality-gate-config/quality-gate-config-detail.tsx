@@ -57,7 +57,9 @@ export const QualityGateConfigDetail = () => {
           </dt>
           <dd>
             {qualityGateConfigEntity.openApiCriteria
-              ? qualityGateConfigEntity.openApiCriteria.map((val, i) => <OpenApiCriterionBadge openApiCriterion={val} key={i} />)
+              ? qualityGateConfigEntity.openApiCriteria.map((openApiCriterion, i) => (
+                  <OpenApiCriterionBadge openApiCriterion={openApiCriterion} key={openApiCriterion.name} />
+                ))
               : null}
           </dd>
         </dl>

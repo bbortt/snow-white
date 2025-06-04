@@ -8,6 +8,7 @@ import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { useEffect, useState } from 'react';
@@ -27,7 +28,7 @@ export const QualityGate = () => {
     overridePaginationStateWithQueryParams(getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt'), pageLocation.search),
   );
 
-  const qualityGateList = useAppSelector(state => state.snowwhite.qualityGate.entities);
+  const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGate.totalItems);
 
@@ -138,7 +139,7 @@ export const QualityGate = () => {
             </thead>
             <tbody>
               {qualityGateList.map((qualityGate, i) => (
-                <tr key={`entity-${i}`} data-cy="qualityGateTable">
+                <tr key={`entity-${qualityGate.calculationId}`} data-cy="qualityGateTable">
                   <td>
                     <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
                       {qualityGate.calculationId}
@@ -148,7 +149,9 @@ export const QualityGate = () => {
                     <Translate contentKey={`snowWhiteApp.ReportStatus.${qualityGate.status}`} />
                   </td>
                   <td>
-                    {qualityGate.createdAt ? <TextFormat type="date" value={qualityGate.createdAt} format={APP_DATE_FORMAT} /> : null}
+                    {qualityGate.createdAt ? (
+                      <TextFormat type="date" value={qualityGate.createdAt.toISOString()} format={APP_DATE_FORMAT} />
+                    ) : null}
                   </td>
                   <td>{qualityGate.calculationRequest?.serviceName}</td>
                   <td>{qualityGate.calculationRequest?.apiName}</td>

@@ -29,6 +29,7 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
 
   private final SpringWebInterceptorProperties springWebInterceptorProperties;
 
+  @Override
   public boolean preHandle(
     HttpServletRequest request,
     HttpServletResponse response,
@@ -42,9 +43,7 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
     }
 
     var method = handlerMethod.getMethod();
-    if (
-      nonNull(method) && method.isAnnotationPresent(SnowWhiteInformation.class)
-    ) {
+    if (method.isAnnotationPresent(SnowWhiteInformation.class)) {
       var snowWhiteInformation = method.getAnnotation(
         SnowWhiteInformation.class
       );

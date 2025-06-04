@@ -6,6 +6,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import React, { useEffect } from 'react';
 import { Translate, translate } from 'react-jhipster';
 import { Button, Table } from 'reactstrap';
@@ -15,7 +16,7 @@ import { getEntities } from './open-api-criterion.reducer';
 export const OpenApiCriterion = () => {
   const dispatch = useAppDispatch();
 
-  const openApiCriterionList = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+  const openApiCriterionList: IOpenApiCriterion[] = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
   const loading = useAppSelector(state => state.snowwhite.openApiCriterion.loading);
 
   const getAllEntities = () => {
@@ -57,7 +58,7 @@ export const OpenApiCriterion = () => {
                 const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}`);
 
                 return (
-                  <tr key={`entity-${i}`} data-testid="openApiCriteriaTable">
+                  <tr key={`entity-${openApiCriterion.name}`} data-testid="openApiCriteriaTable">
                     <td>{openApiCriterion.name}</td>
                     <td>{translation.startsWith('translation-not-found') ? openApiCriterion.description : translation}</td>
                   </tr>

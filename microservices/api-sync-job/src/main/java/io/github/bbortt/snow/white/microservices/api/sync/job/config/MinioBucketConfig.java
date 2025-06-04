@@ -22,9 +22,13 @@ import io.minio.errors.XmlParserException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 
 @Slf4j
 @Configuration
@@ -32,7 +36,8 @@ import org.springframework.context.annotation.Configuration;
   value = PREFIX + ".minio.init-bucket",
   havingValue = "true"
 )
-public class MinioBucketConfig {
+public class MinioBucketConfig
+  implements ApplicationListener<ApplicationReadyEvent> {
 
   @VisibleForTesting
   static final String PUBLIC_BUCKET_POLICY_TEMPLATE =
@@ -50,15 +55,41 @@ public class MinioBucketConfig {
     }
     """;
 
+  private final MinioClient minioClient;
+
+  private final String bucketName;
+
   public MinioBucketConfig(
     ApiSyncJobProperties apiSyncJobProperties,
     MinioClient minioClient
-  )
-    throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-    var bucketName = apiSyncJobProperties.getMinio().getBucketName();
+  ) {
+    this.minioClient = minioClient;
+    bucketName = apiSyncJobProperties.getMinio().getBucketName();
+  }
 
+  @Override
+  public void onApplicationEvent(ApplicationReadyEvent event) {
     logger.info("Initializing bucket '{}'", bucketName);
 
+    try {
+      initializeMinioBucketIfNotExists();
+    } catch (
+      ErrorResponseException
+      | InsufficientDataException
+      | InternalException
+      | InvalidKeyException
+      | InvalidResponseException
+      | IOException
+      | NoSuchAlgorithmException
+      | ServerException
+      | XmlParserException e
+    ) {
+      throw new MinioBucketInitializationException(bucketName, e);
+    }
+  }
+
+  private void initializeMinioBucketIfNotExists()
+    throws ErrorResponseException, InsufficientDataException, InternalException, InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException, ServerException, XmlParserException {
     if (
       !minioClient.bucketExists(
         BucketExistsArgs.builder().bucket(bucketName).build()
