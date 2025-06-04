@@ -63,7 +63,8 @@ public class ReportService {
   ) throws QualityGateNotFoundException {
     var qualityGateConfig = qualityGateService
       .findQualityGateConfigByName(qualityGateConfigName)
-      .orElseThrow(() -> new QualityGateNotFoundException(qualityGateConfigName)
+      .orElseThrow(() ->
+        new QualityGateNotFoundException(qualityGateConfigName)
       );
 
     var qualityGateReport = createInitialReport(
