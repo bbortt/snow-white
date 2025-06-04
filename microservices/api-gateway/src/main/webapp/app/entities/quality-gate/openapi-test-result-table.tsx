@@ -39,7 +39,7 @@ export const OpenapiTestResultTable: React.FC<OpenapiTestResultTableProps> = ({ 
                 .slice()
                 .sort((a, b) => a.openApiCriterionName!.localeCompare(b.openApiCriterionName!))
                 .map((openapiTestResult: IOpenApiTestResult, i: number) => (
-                  <tr key={`entity-${i}`} data-cy="openApiTestResultTable">
+                  <tr key={`entity-${openapiTestResult.openApiCriterionName}`} data-cy="openApiTestResultTable">
                     <td>{openapiTestResult.openApiCriterionName}</td>
                     <td>{openapiTestResult.coverage}</td>
                     <td>{openapiTestResult.additionalInformation}</td>
