@@ -165,7 +165,8 @@ class JUnitReporterTest {
           )
         );
 
-      assertThatThrownBy(() -> fixture.transformToJUnitReport(qualityGateReport)
+      assertThatThrownBy(() ->
+        fixture.transformToJUnitReport(qualityGateReport)
       )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageStartingWith("No enum constant")

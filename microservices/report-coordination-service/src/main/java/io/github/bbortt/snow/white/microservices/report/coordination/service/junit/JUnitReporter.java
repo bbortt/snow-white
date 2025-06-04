@@ -102,7 +102,8 @@ public class JUnitReporter {
         .build();
 
       tests.getAndIncrement();
-      time.getAndUpdate(current -> current.plus(openApiTestResult.getDuration())
+      time.getAndUpdate(current ->
+        current.plus(openApiTestResult.getDuration())
       );
 
       if (openApiTestResult.getCoverage().compareTo(ONE) < 0) {
