@@ -20,6 +20,14 @@ services:
       - '4317:4317' # OTLP gRPC receiver
       - '4318:4318' # OTLP http receiver
       - '55679:55679' # zpages extension
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
     depends_on:
       kafka:
         condition: service_healthy
@@ -60,6 +68,14 @@ services:
     ports:
       - '9092:9092'
       - '9094:9094'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.5'
+          memory: '1g'
+        limits:
+          cpus: '1'
+          memory: '2g'
     healthcheck:
       test: kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1
       interval: 1s
@@ -150,6 +166,14 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
     ports:
       - '80:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
     depends_on:
       microservices.quality-gate-api:
         condition: service_healthy
@@ -176,6 +200,14 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
     depends_on:
       service-interface-repository:
         condition: service_healthy
@@ -195,6 +227,14 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
     depends_on:
       kafka:
         condition: service_healthy
@@ -218,6 +258,14 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
     depends_on:
       redis:
         condition: service_healthy
@@ -240,6 +288,14 @@ services:
       SPRING_DATASOURCE_PASSWORD: 'password'
     ports:
       - '8081:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
     healthcheck:
       test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
       interval: 1s
@@ -264,6 +320,14 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
     ports:
       - '8084:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
     depends_on:
       microservices.quality-gate-api:
         condition: service_healthy
