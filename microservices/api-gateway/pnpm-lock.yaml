@@ -118,8 +118,8 @@ importers:
         specifier: 10.4.21
         version: 10.4.21(postcss@8.5.3)
       browser-sync-webpack-plugin:
-        specifier: 2.3.0
-        version: 2.3.0(browser-sync@2.29.3)(webpack@5.99.9)
+        specifier: 2.4.0
+        version: 2.4.0(browser-sync@2.29.3)(webpack@5.99.9)
       copy-webpack-plugin:
         specifier: 13.0.0
         version: 13.0.0(webpack@5.99.9)
@@ -1917,10 +1917,11 @@ packages:
   browser-sync-ui@2.29.3:
     resolution: {integrity: sha512-kBYOIQjU/D/3kYtUIJtj82e797Egk1FB2broqItkr3i4eF1qiHbFCG6srksu9gWhfmuM/TNG76jMfzAdxEPakg==}
 
-  browser-sync-webpack-plugin@2.3.0:
-    resolution: {integrity: sha512-MDvuRrTCtoL11dTdwMymo9CNJvYxJoW67gOO61cThfzHNX40S5WcBU+0bVQ86ll7r7aNpNgyzxF7RtnXMTDbyA==}
+  browser-sync-webpack-plugin@2.4.0:
+    resolution: {integrity: sha512-YtMW31SKo4t/32qC0GOA4ZS26W5r7W33VDS494Tn3bERX/3YbbUpBaLrUuumZpfx78fVSnODBhIDS4iN+QCqmg==}
+    engines: {node: '>=4'}
     peerDependencies:
-      browser-sync: ^2
+      browser-sync: ^2 || ^3
       webpack: ^1 || ^2 || ^3 || ^4 || ^5
 
   browser-sync@2.29.3:
@@ -7928,7 +7929,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  browser-sync-webpack-plugin@2.3.0(browser-sync@2.29.3)(webpack@5.99.9):
+  browser-sync-webpack-plugin@2.4.0(browser-sync@2.29.3)(webpack@5.99.9):
     dependencies:
       browser-sync: 2.29.3
       lodash: 4.17.21
