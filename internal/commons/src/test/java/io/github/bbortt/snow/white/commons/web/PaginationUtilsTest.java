@@ -27,7 +27,7 @@ class PaginationUtilsTest {
     void shouldReturnDefaultPageableForNullInputs() {
       Pageable pageable = PaginationUtils.toPageable(null, null, null);
 
-      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(0);
+      Assertions.assertThat(pageable.getPageNumber()).isZero();
       Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
       Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
     }
@@ -45,7 +45,7 @@ class PaginationUtilsTest {
     void shouldFallbackToDefaultsOnNegativeValues() {
       Pageable pageable = PaginationUtils.toPageable(-5, -10, null);
 
-      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(0);
+      Assertions.assertThat(pageable.getPageNumber()).isZero();
       Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
     }
 
@@ -101,7 +101,7 @@ class PaginationUtilsTest {
 
       assertThat(headers).isNotNull();
       assertThat(headers.getFirst("X-Total-Count")).isEqualTo("123");
-      assertThat(headers.keySet()).containsOnly("X-Total-Count");
+      assertThat(headers).containsOnlyKeys("X-Total-Count");
     }
 
     @Test
@@ -113,7 +113,7 @@ class PaginationUtilsTest {
       );
 
       assertThat(headers.getFirst("X-Total-Count")).isEqualTo("0");
-      assertThat(headers.keySet()).containsOnly("X-Total-Count");
+      assertThat(headers).containsOnlyKeys("X-Total-Count");
     }
   }
 }

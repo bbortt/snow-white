@@ -139,7 +139,7 @@ export const QualityGateConfig = () => {
             </thead>
             <tbody>
               {qualityGateConfigList.map((qualityGateConfig: IQualityGateConfig, i) => (
-                <tr key={`entity-${i}`} data-testid="qualityGateConfigTable">
+                <tr key={`entity-${qualityGateConfig.name}`} data-testid="qualityGateConfigTable">
                   <td>
                     <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
                       {qualityGateConfig.name}
