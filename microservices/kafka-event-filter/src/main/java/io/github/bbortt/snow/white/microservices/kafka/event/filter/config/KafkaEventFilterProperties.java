@@ -24,8 +24,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(PREFIX)
 public class KafkaEventFilterProperties implements InitializingBean {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.kafka.event.filter";
+  public static final String PREFIX = "snow.white.kafka.event.filter";
 
   public static final String INBOUND_TOPIC_PROPERTY_NAME =
     PREFIX + ".inbound-topic-name";

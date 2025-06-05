@@ -159,9 +159,9 @@ services:
       context: ../microservices/api-gateway
     hostname: api-gateway
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_GATEWAY_PUBLIC-URL: 'http://localhost'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL: 'http://report-coordination-service:8080'
+      SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
+      SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL: 'http://report-coordination-service:8080'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
     ports:
@@ -194,9 +194,9 @@ services:
       context: ../microservices/api-sync-job
     hostname: api-sync-job
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
@@ -223,9 +223,9 @@ services:
     image: snow-white/kafka-event-filter
     hostname: kafka-event-filter
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
-      IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS: 'true'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS: 'true'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
@@ -254,9 +254,9 @@ services:
       INFLUXDB_URL: 'http://influxdb:8086'
       INFLUXDB_ORG: 'snow-white'
       INFLUXDB_BUCKET: 'raw-data'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_INIT-TOPICS: 'true'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_OPENAPI_COVERAGE_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_INIT-TOPICS: 'true'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATA_REDIS_HOST: 'redis'
@@ -286,7 +286,7 @@ services:
     image: snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
+      SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'
@@ -320,10 +320,11 @@ services:
     hostname: report-coordination-service
     env_file: .env
     environment:
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
-      IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_INIT-TOPICS: 'true'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'

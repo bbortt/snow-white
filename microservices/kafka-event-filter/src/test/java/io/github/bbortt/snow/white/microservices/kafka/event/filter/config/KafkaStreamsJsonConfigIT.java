@@ -25,9 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 @DirtiesContext
 @IntegrationTest
 @TestPropertySource(
-  properties = {
-    "io.github.bbortt.snow.white.kafka.event.filter.consumer-mode=json",
-  }
+  properties = { "snow.white.kafka.event.filter.consumer-mode=json" }
 )
 class KafkaStreamsJsonConfigIT {
 

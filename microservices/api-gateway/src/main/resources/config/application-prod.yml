@@ -3,7 +3,7 @@ springdoc:
     urls:
       - name: quality-gate-api
         display-name: Quality-Gate API
-        url: '${io.github.bbortt.snow.white.microservices.api.gateway.public-url}/v3/api-docs/quality-gate-api'
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/quality-gate-api'
       - name: report-coordination-service
         display-name: Report Coordination Service
-        url: '${io.github.bbortt.snow.white.microservices.api.gateway.public-url}/v3/api-docs/report-coordination-service'
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/report-coordination-service'
