@@ -216,8 +216,11 @@ services:
       - internal
 
   microservices.kafka-event-filter:
-    build:
-      context: ../microservices/kafka-event-filter
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/kafka-event-filter
+    # Native image:
+    image: snow-white/kafka-event-filter
     hostname: kafka-event-filter
     environment:
       IO_GITHUB_BBORTT_SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
@@ -276,8 +279,11 @@ services:
       - internal
 
   microservices.quality-gate-api:
-    build:
-      context: ../microservices/quality-gate-api
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/quality-gate-api
+    # Native image:
+    image: snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
       IO_GITHUB_BBORTT_SNOW_WHITE_MICROSERVICES_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
@@ -306,8 +312,11 @@ services:
       - internal
 
   microservices.report-coordination-service:
-    build:
-      context: ../microservices/report-coordination-service
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/report-coordination-service
+    # Native image:
+    image: snow-white/report-coordination-service
     hostname: report-coordination-service
     env_file: .env
     environment:
