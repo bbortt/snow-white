@@ -36,11 +36,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "io.github.bbortt.snow.white.microservices.api.sync.job.backstage.base-url=${wiremock.server.baseUrl}",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.minio.bucket-name=backstage-catalog-service-it",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.minio.init-bucket=true",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.minio.access-key=minioadmin",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.minio.secret-key=minioadmin",
+    "snow.white.api.sync.job.backstage.base-url=${wiremock.server.baseUrl}",
+    "snow.white.api.sync.job.minio.bucket-name=backstage-catalog-service-it",
+    "snow.white.api.sync.job.minio.init-bucket=true",
+    "snow.white.api.sync.job.minio.access-key=minioadmin",
+    "snow.white.api.sync.job.minio.secret-key=minioadmin",
   }
 )
 public class BackstageCatalogServiceIT extends AbstractApiCatalogServiceIT {
@@ -54,14 +54,12 @@ public class BackstageCatalogServiceIT extends AbstractApiCatalogServiceIT {
 
   @DynamicPropertySource
   static void redisProperties(DynamicPropertyRegistry registry) {
-    registry.add(
-      "io.github.bbortt.snow.white.microservices.api.sync.job.minio.endpoint",
-      () ->
-        format(
-          "http://%s:%S",
-          MINIO_CONTAINER.getHost(),
-          MINIO_CONTAINER.getMappedPort(MINIO_S3_PORT)
-        )
+    registry.add("snow.white.api.sync.job.minio.endpoint", () ->
+      format(
+        "http://%s:%S",
+        MINIO_CONTAINER.getHost(),
+        MINIO_CONTAINER.getMappedPort(MINIO_S3_PORT)
+      )
     );
   }
 

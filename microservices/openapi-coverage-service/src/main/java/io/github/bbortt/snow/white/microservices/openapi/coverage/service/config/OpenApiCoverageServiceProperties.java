@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = PREFIX)
 public class OpenApiCoverageServiceProperties implements InitializingBean {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.openapi.coverage.service";
+  public static final String PREFIX = "snow.white.openapi.coverage.service";
 
   private String calculationRequestTopic;
 

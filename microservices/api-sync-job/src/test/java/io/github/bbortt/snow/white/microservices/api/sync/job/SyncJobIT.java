@@ -34,8 +34,8 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.index-uri=/sir/index",
+    "snow.white.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
+    "snow.white.api.sync.job.service-interface.index-uri=/sir/index",
   }
 )
 class SyncJobIT {
