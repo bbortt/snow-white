@@ -303,6 +303,7 @@
   <profiles>
     <profile>
       <id>native</id>
+
       <properties>
         <repackage.classifier>exec</repackage.classifier>
         <modernizer.skip>true</modernizer.skip>
@@ -330,12 +331,13 @@
 
             <configuration>
               <image>
-                <builder>paketobuildpacks/builder:tiny</builder>
                 <env>
                   <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
-                  <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
                 </env>
               </image>
+              <imageName>
+                snow-white/report-coordination-service:${image.tag}
+              </imageName>
             </configuration>
 
             <executions>
@@ -359,7 +361,6 @@
               <classesDirectory>
                 ${project.build.outputDirectory}
               </classesDirectory>
-              <imageName>snow-white/report-coordination-service</imageName>
               <mainClass>${basePackage}.Main</mainClass>
               <metadataRepository>
                 <enabled>true</enabled>
