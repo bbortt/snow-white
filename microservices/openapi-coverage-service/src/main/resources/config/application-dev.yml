@@ -2,17 +2,13 @@ influxdb:
   url: http://localhost:8086
   org: snow-white
   bucket: raw-data
-io:
-  github:
-    bbortt:
-      snow:
-        white:
-          microservices:
-            openapi:
-              coverage:
-                service:
-                  calculation-request-topic: snow-white-coverage-request
-                  init-topics: true
-                  openapi-calculation-response-topic: snow-white-openapi-calculation-response
+snow:
+  white:
+    openapi:
+      coverage:
+        service:
+          calculation-request-topic: snow-white-coverage-request
+          init-topics: true
+          openapi-calculation-response-topic: snow-white-openapi-calculation-response
 server:
   port: 8083

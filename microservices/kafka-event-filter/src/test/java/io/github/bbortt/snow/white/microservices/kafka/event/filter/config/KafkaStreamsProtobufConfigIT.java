@@ -26,8 +26,8 @@ import org.springframework.test.context.TestPropertySource;
 @IntegrationTest
 @TestPropertySource(
   properties = {
-    "io.github.bbortt.snow.white.kafka.event.filter.consumer-mode=protobuf",
-    "io.github.bbortt.snow.white.kafka.event.filter.schema-registry-url=mock://KafkaStreamsConfigIT",
+    "snow.white.kafka.event.filter.consumer-mode=protobuf",
+    "snow.white.kafka.event.filter.schema-registry-url=mock://KafkaStreamsConfigIT",
   }
 )
 class KafkaStreamsProtobufConfigIT {

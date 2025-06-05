@@ -66,7 +66,7 @@ class ApiSyncJobPropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "Both 'io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.base-url' and 'io.github.bbortt.snow.white.microservices.api.sync.job.service-interface.index-uri' must be set!"
+          "Both 'snow.white.api.sync.job.service-interface.base-url' and 'snow.white.api.sync.job.service-interface.index-uri' must be set!"
         );
     }
 

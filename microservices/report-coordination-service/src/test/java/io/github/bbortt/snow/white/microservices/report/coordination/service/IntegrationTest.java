@@ -23,13 +23,13 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "io.github.bbortt.snow.white.microservices.report.coordination.service.calculation-request-topic=" +
+    "snow.white.report.coordination.service.calculation-request-topic=" +
     CALCULATION_REQUEST_TOPIC,
-    "io.github.bbortt.snow.white.microservices.report.coordination.service.init-topics=true",
-    "io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response.topic=" +
+    "snow.white.report.coordination.service.init-topics=true",
+    "snow.white.report.coordination.service.openapi-calculation-response.topic=" +
     OPENAPI_CALCULATION_RESPONSE_TOPIC,
-    "io.github.bbortt.snow.white.microservices.report.coordination.service.public-api-gateway-url=http://localhost:9080",
-    "io.github.bbortt.snow.white.microservices.report.coordination.service.quality-gate-api-url=${wiremock.server.baseUrl:http://localhost:8081}",
+    "snow.white.report.coordination.service.public-api-gateway-url=http://localhost:9080",
+    "snow.white.report.coordination.service.quality-gate-api-url=${wiremock.server.baseUrl:http://localhost:8081}",
   }
 )
 @ActiveProfiles("test")

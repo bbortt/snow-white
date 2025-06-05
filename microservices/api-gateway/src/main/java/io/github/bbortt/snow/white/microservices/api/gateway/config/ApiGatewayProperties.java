@@ -28,7 +28,7 @@ import org.springframework.core.env.Profiles;
 @ConfigurationProperties(PREFIX)
 public class ApiGatewayProperties implements InitializingBean, EnvironmentAware {
 
-  public static final String PREFIX = "io.github.bbortt.snow.white.microservices.api.gateway";
+  public static final String PREFIX = "snow.white.api.gateway";
 
   private @Nullable Environment environment;
 

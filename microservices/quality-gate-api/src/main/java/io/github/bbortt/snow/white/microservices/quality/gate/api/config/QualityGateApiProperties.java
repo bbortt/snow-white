@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = PREFIX)
 public class QualityGateApiProperties implements InitializingBean {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.quality.gate.api";
+  public static final String PREFIX = "snow.white.quality.gate.api";
 
   private String publicApiGatewayUrl;
 

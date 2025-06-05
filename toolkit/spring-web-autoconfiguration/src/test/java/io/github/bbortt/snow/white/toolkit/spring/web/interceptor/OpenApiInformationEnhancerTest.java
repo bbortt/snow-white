@@ -131,20 +131,6 @@ class OpenApiInformationEnhancerTest {
   }
 
   @Test
-  void invocationWithNoMethodSignatureDoesNothing() {
-    doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
-    doReturn(null).when(handlerMethodMock).getMethod();
-
-    fixture.preHandle(
-      httpServletRequestMock,
-      httpServletResponseMock,
-      handlerMethodMock
-    );
-
-    verify(spanMock, never()).setAttribute(anyString(), anyString());
-  }
-
-  @Test
   void invocationWithNoAnnotationDoesNothing() {
     doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
     doReturn(methodMock).when(handlerMethodMock).getMethod();

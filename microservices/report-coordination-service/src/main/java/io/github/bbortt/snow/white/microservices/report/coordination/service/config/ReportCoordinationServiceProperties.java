@@ -23,8 +23,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(PREFIX)
 public class ReportCoordinationServiceProperties implements InitializingBean {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.report.coordination.service";
+  public static final String PREFIX = "snow.white.report.coordination.service";
 
   private String calculationRequestTopic;
 

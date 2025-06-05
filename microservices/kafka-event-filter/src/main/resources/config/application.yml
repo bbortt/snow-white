@@ -1,12 +1,9 @@
-io:
-  github:
-    bbortt:
-      snow:
-        white:
-          kafka:
-            event:
-              filter:
-                consumer-mode: json
+snow:
+  white:
+    kafka:
+      event:
+        filter:
+          consumer-mode: json
 spring:
   kafka:
     consumer:

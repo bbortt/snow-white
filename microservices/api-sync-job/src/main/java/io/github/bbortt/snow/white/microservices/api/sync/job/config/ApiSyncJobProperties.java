@@ -25,8 +25,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(PREFIX)
 public class ApiSyncJobProperties implements InitializingBean {
 
-  public static final String PREFIX =
-    "io.github.bbortt.snow.white.microservices.api.sync.job";
+  public static final String PREFIX = "snow.white.api.sync.job";
 
   private final BackstageProperties backstage = new BackstageProperties();
   private final ServiceInterfaceProperties serviceInterface =

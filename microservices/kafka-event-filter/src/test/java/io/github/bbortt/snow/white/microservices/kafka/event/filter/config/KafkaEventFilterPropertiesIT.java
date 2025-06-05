@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 @IntegrationTest
 @TestPropertySource(
   properties = {
-    "io.github.bbortt.snow.white.kafka.event.filter.schema-registry-url=mock://KafkaEventFilterPropertiesIT",
+    "snow.white.kafka.event.filter.schema-registry-url=mock://KafkaEventFilterPropertiesIT",
   }
 )
 class KafkaEventFilterPropertiesIT {

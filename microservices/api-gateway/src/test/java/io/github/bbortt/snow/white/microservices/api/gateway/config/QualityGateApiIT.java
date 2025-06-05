@@ -34,8 +34,8 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "io.github.bbortt.snow.white.microservices.api.gateway.quality-gate-api-url=${wiremock.server.baseUrl}",
-    "io.github.bbortt.snow.white.microservices.api.gateway.report-coordination-service-url=http://localhost:8084",
+    "snow.white.api.gateway.quality-gate-api-url=${wiremock.server.baseUrl}",
+    "snow.white.api.gateway.report-coordination-service-url=http://localhost:8084",
   },
   webEnvironment = RANDOM_PORT
 )

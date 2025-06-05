@@ -55,7 +55,7 @@ class QualityGateReportCoordinationServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.calculation-request-topic]."
+          "All properties must be configured - missing: [snow.white.report.coordination.service.calculation-request-topic]."
         );
     }
 
@@ -68,7 +68,7 @@ class QualityGateReportCoordinationServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.openapi-calculation-response.topic]."
+          "All properties must be configured - missing: [snow.white.report.coordination.service.openapi-calculation-response.topic]."
         );
     }
 
@@ -83,7 +83,7 @@ class QualityGateReportCoordinationServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.public-api-gateway-url]."
+          "All properties must be configured - missing: [snow.white.report.coordination.service.public-api-gateway-url]."
         );
     }
 
@@ -98,7 +98,7 @@ class QualityGateReportCoordinationServicePropertiesTest {
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [io.github.bbortt.snow.white.microservices.report.coordination.service.quality-gate-api-url]."
+          "All properties must be configured - missing: [snow.white.report.coordination.service.quality-gate-api-url]."
         );
     }
   }
