@@ -241,10 +241,18 @@ These microservices support native image builds:
 Build an image using:
 
 ```shell
-./mvnw -pl :<maven-module> -am install
-./mvnw -Pnative -pl :<maven-module> -DskipTests spring-boot:build-image
+./mvnw -am -pl :<maven-module> -T1C install
+./mvnw -DskipTests -Pnative -pl :<maven-module> spring-boot:build-image
 ```
 
+Build all native microservices:
+
+```shell
+./mvnw -T1C install
+./mvnw -DskipTests -Pnative -T1C -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
+```
+
+For development, override `-Dimage.tag=latest` to build a "latest" image for usage with [Docker/Podman Compose](#quick-start).
 Podman is supported using the `podman` profile as well.
 
 ## Maven Proxy Setup
