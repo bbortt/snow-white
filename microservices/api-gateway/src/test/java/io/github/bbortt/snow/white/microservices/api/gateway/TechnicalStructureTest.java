@@ -18,7 +18,7 @@ import com.tngtech.archunit.lang.ArchRule;
 @AnalyzeClasses(packagesOf = Main.class, importOptions = DoNotIncludeTests.class)
 class TechnicalStructureTest {
 
-    // prettier-ignore
+  // prettier-ignore
     @ArchTest
     static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
         .consideringAllDependencies()

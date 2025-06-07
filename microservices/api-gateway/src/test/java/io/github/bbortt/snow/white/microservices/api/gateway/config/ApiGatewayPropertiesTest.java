@@ -71,9 +71,7 @@ class ApiGatewayPropertiesTest {
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-          "All properties must be configured - missing: [snow.white.api.gateway.report-coordination-service-url]."
-        );
+        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.report-coordination-service-url].");
     }
 
     @Test
@@ -82,9 +80,7 @@ class ApiGatewayPropertiesTest {
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-          "All properties must be configured - missing: [snow.white.api.gateway.quality-gate-api-url]."
-        );
+        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.quality-gate-api-url].");
     }
 
     public static Stream<String> throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {
