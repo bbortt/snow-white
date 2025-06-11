@@ -44,7 +44,8 @@ services:
     ports:
       - '8080:8080'
     depends_on:
-      - otel-collector
+      otel-collector:
+        condition: service_started
     restart: on-failure
     networks:
       - default
@@ -175,6 +176,10 @@ services:
           cpus: '0.5'
           memory: '1g'
     depends_on:
+      otel-collector:
+        condition: service_started
+      microservices.api-sync-job:
+        condition: service_completed_successfully
       microservices.quality-gate-api:
         condition: service_healthy
       microservices.report-coordination-service:
@@ -209,6 +214,8 @@ services:
           cpus: '0.5'
           memory: '1g'
     depends_on:
+      otel-collector:
+        condition: service_started
       service-interface-repository:
         condition: service_healthy
     restart: on-failure
@@ -241,6 +248,10 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
+      microservices.api-sync-job:
+        condition: service_completed_successfully
     restart: on-failure
     networks:
       - internal
@@ -270,6 +281,8 @@ services:
           cpus: '0.5'
           memory: '1g'
     depends_on:
+      otel-collector:
+        condition: service_started
       redis:
         condition: service_healthy
       microservices.api-sync-job:
@@ -302,6 +315,9 @@ services:
         limits:
           cpus: '0.2'
           memory: '512m'
+    depends_on:
+      otel-collector:
+        condition: service_started
     healthcheck:
       test: wget -O - http://localhost:8090/actuator/health | grep UP || exit 1
       interval: 1s
@@ -339,6 +355,10 @@ services:
           cpus: '0.2'
           memory: '512m'
     depends_on:
+      kafka:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
       microservices.quality-gate-api:
         condition: service_healthy
     healthcheck:
