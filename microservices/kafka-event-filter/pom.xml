@@ -22,7 +22,7 @@
   <packaging>jar</packaging>
 
   <properties>
-    <confluent.version>7.9.1</confluent.version>
+    <confluent.version>8.0.0</confluent.version>
     <!-- DON'T UPGRADE! See https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/serdes-protobuf.html#limitations-and-developer-notes -->
     <google-protobuf.version>3.25.5</google-protobuf.version>
     <grpc.version>1.73.0</grpc.version>
