@@ -1,4 +1,10 @@
 version: 2
+assignees:
+  - bbortt
+labels:
+  - 'severity:medium'
+  - 'status:ready-for-review '
+  - 'type:deps'
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
