@@ -7,58 +7,55 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.kafka;
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.PREFIX;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.core.env.Environment;
 
+@ExtendWith({ MockitoExtension.class })
 class KafkaTopicManagerTest {
 
-  public static final String TEST_RESPONSE_TOPIC =
-    "KafkaTopicManagerTest:response";
-  public static final String TEST_REQUEST_TOPIC =
-    "KafkaTopicManagerTest:request";
+  @Mock
+  private Environment environmentMock;
+
+  @Mock
+  private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
+
+  @Mock
+  private ReportCoordinationServiceProperties.OpenapiCalculationResponse openapiCalculationResponseMock;
 
   private KafkaTopicManager fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    var openApiCoverageServiceProperties =
-      new ReportCoordinationServiceProperties();
-    openApiCoverageServiceProperties.setCalculationRequestTopic(
-      TEST_REQUEST_TOPIC
+    fixture = new KafkaTopicManager(
+      environmentMock,
+      reportCoordinationServicePropertiesMock
     );
-    openApiCoverageServiceProperties
-      .getOpenapiCalculationResponse()
-      .setTopic(TEST_RESPONSE_TOPIC);
-
-    fixture = new KafkaTopicManager(openApiCoverageServiceProperties);
   }
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
-
-    var reportCoordinationServicePropertiesMock = mock(
-      ReportCoordinationServiceProperties.class
-    );
-
-    var openapiCalculationResponse = mock(
-      ReportCoordinationServiceProperties.OpenapiCalculationResponse.class
-    );
-
-    doReturn(openapiCalculationResponse)
+    doReturn(openapiCalculationResponseMock)
       .when(reportCoordinationServicePropertiesMock)
       .getOpenapiCalculationResponse();
+
+    var contextRunner = new ApplicationContextRunner()
+      .withUserConfiguration(KafkaTopicManager.class);
 
     contextRunner
       .withBean(ReportCoordinationServiceProperties.class, () ->
@@ -84,30 +81,71 @@ class KafkaTopicManagerTest {
     verify(
       reportCoordinationServicePropertiesMock
     ).getCalculationRequestTopic();
-    verify(openapiCalculationResponse).getTopic();
+    verify(
+      reportCoordinationServicePropertiesMock
+    ).getCalculationRequestTopic();
+    verify(openapiCalculationResponseMock).getTopic();
   }
 
-  @Test
-  void shouldNotBeEnabled_ifPropertyIsNotSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+  @Nested
+  class CalculationRequestTopic {
 
-    contextRunner.run(context ->
-      assertThat(context).doesNotHaveBean(KafkaTopicManager.class)
-    );
+    @Test
+    void shouldReturnBean() {
+      doReturn(TRUE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      var testRequestTopic = "KafkaTopicManagerTest:request";
+      doReturn(testRequestTopic)
+        .when(reportCoordinationServicePropertiesMock)
+        .getCalculationRequestTopic();
+
+      var inboundTopic = fixture.calculationRequestTopic();
+
+      assertThat(inboundTopic.name()).isEqualTo(testRequestTopic);
+    }
+
+    @Test
+    void shouldReturnNullBean_whenNotEnabled() {
+      doReturn(FALSE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      assertThat(fixture.calculationRequestTopic()).isNull();
+    }
   }
 
-  @Test
-  void testInboundTopicCreation() {
-    var inboundTopic = fixture.calculationRequestTopic();
+  @Nested
+  class OpenapiCalculationResponseTopic {
 
-    assertThat(inboundTopic.name()).isEqualTo(TEST_REQUEST_TOPIC);
-  }
+    @Test
+    void shouldReturnBean() {
+      doReturn(TRUE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
 
-  @Test
-  void testOutboundTopicCreation() {
-    var outboundTopic = fixture.openapiCalculationResponseTopic();
+      doReturn(openapiCalculationResponseMock)
+        .when(reportCoordinationServicePropertiesMock)
+        .getOpenapiCalculationResponse();
 
-    assertThat(outboundTopic.name()).isEqualTo(TEST_RESPONSE_TOPIC);
+      var testResponseTopic = "KafkaTopicManagerTest:response";
+      doReturn(testResponseTopic)
+        .when(openapiCalculationResponseMock)
+        .getTopic();
+
+      var outboundTopic = fixture.openapiCalculationResponseTopic();
+
+      assertThat(outboundTopic.name()).isEqualTo(testResponseTopic);
+    }
+
+    @Test
+    void shouldReturnNullBean_whenNotEnabled() {
+      doReturn(FALSE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      assertThat(fixture.openapiCalculationResponseTopic()).isNull();
+    }
   }
 }

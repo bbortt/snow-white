@@ -7,42 +7,48 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka;
 
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.PREFIX;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.core.env.Environment;
 
+@ExtendWith({ MockitoExtension.class })
 class KafkaTopicManagerTest {
 
-  public static final String TEST_INBOUND_TOPIC =
-    "KafkaTopicManagerTest:inbound";
-  public static final String TEST_OUTBOUND_TOPIC =
-    "KafkaTopicManagerTest:outbound";
+  @Mock
+  private Environment environmentMock;
+
+  @Mock
+  private KafkaEventFilterProperties kafkaEventFilterPropertiesMock;
 
   private KafkaTopicManager fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    var kafkaEventFilterProperties = new KafkaEventFilterProperties();
-    kafkaEventFilterProperties.setInboundTopicName(TEST_INBOUND_TOPIC);
-    kafkaEventFilterProperties.setOutboundTopicName(TEST_OUTBOUND_TOPIC);
-
-    fixture = new KafkaTopicManager(kafkaEventFilterProperties);
+    fixture = new KafkaTopicManager(
+      environmentMock,
+      kafkaEventFilterPropertiesMock
+    );
   }
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {
     var contextRunner = new ApplicationContextRunner()
       .withUserConfiguration(KafkaTopicManager.class);
-
-    var kafkaEventFilterPropertiesMock = mock(KafkaEventFilterProperties.class);
 
     contextRunner
       .withBean(KafkaEventFilterProperties.class, () ->
@@ -65,27 +71,61 @@ class KafkaTopicManagerTest {
     verify(kafkaEventFilterPropertiesMock).getOutboundTopicName();
   }
 
-  @Test
-  void shouldNotBeEnabled_ifPropertyIsNotSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+  @Nested
+  class InboundTopic {
 
-    contextRunner.run(context ->
-      assertThat(context).doesNotHaveBean(KafkaTopicManager.class)
-    );
+    @Test
+    void shouldReturnBean() {
+      doReturn(TRUE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      var testInboundTopic = "KafkaTopicManagerTest:inbound";
+      doReturn(testInboundTopic)
+        .when(kafkaEventFilterPropertiesMock)
+        .getInboundTopicName();
+
+      NewTopic inboundTopic = fixture.inboundTopic();
+
+      assertThat(inboundTopic.name()).isEqualTo(testInboundTopic);
+    }
+
+    @Test
+    void shouldReturnNullBean_whenNotEnabled() {
+      doReturn(FALSE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      assertThat(fixture.inboundTopic()).isNull();
+    }
   }
 
-  @Test
-  void testInboundTopicCreation() {
-    NewTopic inboundTopic = fixture.inboundTopic();
+  @Nested
+  class OutboundTopic {
 
-    assertThat(inboundTopic.name()).isEqualTo(TEST_INBOUND_TOPIC);
-  }
+    @Test
+    void shouldReturnBean() {
+      doReturn(TRUE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
 
-  @Test
-  void testOutboundTopicCreation() {
-    NewTopic outboundTopic = fixture.outboundTopic();
+      var testOutboundTopic = "KafkaTopicManagerTest:outbound";
+      doReturn(testOutboundTopic)
+        .when(kafkaEventFilterPropertiesMock)
+        .getOutboundTopicName();
 
-    assertThat(outboundTopic.name()).isEqualTo(TEST_OUTBOUND_TOPIC);
+      NewTopic outboundTopic = fixture.outboundTopic();
+
+      assertThat(outboundTopic.name()).isEqualTo(testOutboundTopic);
+    }
+
+    @Test
+    void shouldReturnNullBean_whenNotEnabled() {
+      doReturn(FALSE)
+        .when(environmentMock)
+        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+
+      assertThat(fixture.outboundTopic()).isNull();
+    }
   }
 }

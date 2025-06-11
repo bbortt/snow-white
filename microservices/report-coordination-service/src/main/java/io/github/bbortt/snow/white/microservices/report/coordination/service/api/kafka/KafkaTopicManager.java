@@ -7,48 +7,74 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.kafka;
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.PREFIX;
+import static java.lang.Boolean.FALSE;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Slf4j
 @Configuration
-@ConditionalOnProperty(
-  prefix = PREFIX,
-  value = "init-topics",
-  havingValue = "true"
-)
 public class KafkaTopicManager {
 
+  private final Environment environment;
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
   public KafkaTopicManager(
+    Environment environment,
     ReportCoordinationServiceProperties reportCoordinationServiceProperties
   ) {
-    logger.info("Creating topics...");
-
+    this.environment = environment;
     this.reportCoordinationServiceProperties =
       reportCoordinationServiceProperties;
   }
 
   @Bean
   public NewTopic calculationRequestTopic() {
-    return TopicBuilder.name(
-      reportCoordinationServiceProperties.getCalculationRequestTopic()
-    ).build();
+    var initTopics = environment.getProperty(
+      PREFIX + ".init-topics",
+      Boolean.class,
+      FALSE
+    );
+    if (!initTopics) {
+      return null;
+    }
+
+    var calculationRequestTopic =
+      reportCoordinationServiceProperties.getCalculationRequestTopic();
+
+    logger.info(
+      "Creating calculation request topic '{}'...",
+      calculationRequestTopic
+    );
+
+    return TopicBuilder.name(calculationRequestTopic).build();
   }
 
   @Bean
   public NewTopic openapiCalculationResponseTopic() {
-    return TopicBuilder.name(
-      reportCoordinationServiceProperties
-        .getOpenapiCalculationResponse()
-        .getTopic()
-    ).build();
+    var initTopics = environment.getProperty(
+      PREFIX + ".init-topics",
+      Boolean.class,
+      FALSE
+    );
+    if (!initTopics) {
+      return null;
+    }
+
+    var calculationResponseTopic = reportCoordinationServiceProperties
+      .getOpenapiCalculationResponse()
+      .getTopic();
+
+    logger.info(
+      "Creating calculation response topic '{}'...",
+      calculationResponseTopic
+    );
+
+    return TopicBuilder.name(calculationResponseTopic).build();
   }
 }
