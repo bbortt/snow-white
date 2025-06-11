@@ -12,12 +12,5 @@ microservices/api-gateway/pnpm-lock.yaml
 
 target/
 
-# Test Resources with Exact Formatting
-microservices/report-coordination-service/src/test/resources/JUnitReporterTest/withFailedOpenApiCoverages.xml
-microservices/report-coordination-service/src/test/resources/JUnitReporterTest/withMixedOpenApiCoverages.xml
-microservices/report-coordination-service/src/test/resources/JUnitReporterTest/withoutOpenApiCoverage.xml
-microservices/report-coordination-service/src/test/resources/JUnitReporterTest/withPassedOpenApiCoverages.xml
-microservices/report-coordination-service/src/test/resources/ReportResourceIT/JUnitReport.xml
-
 # Must have no newline at end of file
 tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openapitools.codegen.CodegenConfig

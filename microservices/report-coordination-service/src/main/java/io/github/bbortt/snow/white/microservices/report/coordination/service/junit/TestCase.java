@@ -8,10 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,19 +18,18 @@ import lombok.With;
 @Getter
 @Builder
 @AllArgsConstructor(access = PRIVATE)
-@XmlAccessorType(XmlAccessType.FIELD)
 public class TestCase {
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private String name;
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private String classname;
 
-  @XmlAttribute
   @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
   private String time = "0";
 
-  @XmlElement
+  @JacksonXmlProperty
   private Failure failure;
 }

@@ -12,13 +12,12 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.springframework.util.StreamUtils.copyToString;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -28,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
+import org.xml.sax.SAXException;
 
 class JUnitReporterTest {
 
@@ -48,7 +48,7 @@ class JUnitReporterTest {
   private JUnitReporter fixture;
 
   @BeforeEach
-  void beforeEachSetup() throws JAXBException {
+  void beforeEachSetup() {
     fixture = new JUnitReporter();
   }
 
@@ -57,7 +57,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withoutOpenApiCoverage()
-      throws IOException, JUnitReportCreationException {
+      throws IOException, JUnitReportCreationException, SAXException {
       var qualityGateReport = createInitialQualityGateReport();
 
       var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
@@ -70,7 +70,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withPassedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException {
+      throws IOException, JUnitReportCreationException, SAXException {
       var qualityGateReport = createInitialQualityGateReport()
         .withOpenApiTestResults(
           Set.of(
@@ -99,7 +99,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withFailedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException {
+      throws IOException, JUnitReportCreationException, SAXException {
       var qualityGateReport = createInitialQualityGateReport()
         .withOpenApiTestResults(
           Set.of(
@@ -128,7 +128,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withMixedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException {
+      throws IOException, JUnitReportCreationException, SAXException {
       var qualityGateReport = createInitialQualityGateReport()
         .withOpenApiTestResults(
           Set.of(
@@ -183,12 +183,13 @@ class JUnitReporterTest {
     private void verifyJUnitReportEqualsExpectedContent(
       Resource jUnitReport,
       String resourceName
-    ) throws IOException {
-      assertThat(jUnitReport.getContentAsString(UTF_8)).isEqualTo(
+    ) throws IOException, SAXException {
+      assertXMLEqual(
         copyToString(
           getClass().getClassLoader().getResourceAsStream(resourceName),
           UTF_8
-        )
+        ),
+        jUnitReport.getContentAsString(UTF_8)
       );
     }
   }

@@ -16,6 +16,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.RoundingMode.HALF_UP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -256,13 +257,14 @@ class ReportResourceIT {
       .getResponse()
       .getContentAsString();
 
-    assertThat(jUnitReport).isEqualTo(
+    assertXMLEqual(
       copyToString(
         getClass()
           .getClassLoader()
           .getResourceAsStream("ReportResourceIT/JUnitReport.xml"),
         UTF_8
-      )
+      ),
+      jUnitReport
     );
   }
 

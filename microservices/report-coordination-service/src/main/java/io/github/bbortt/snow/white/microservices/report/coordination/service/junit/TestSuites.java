@@ -8,11 +8,9 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -26,36 +24,36 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-@XmlRootElement(name = "testsuites")
-@XmlAccessorType(XmlAccessType.FIELD)
+@JacksonXmlRootElement(localName = "testsuites")
 public class TestSuites {
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private String name;
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private Long tests;
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private Long failures;
 
-  @XmlAttribute
   @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
   private Long errors = 0L;
 
-  @XmlAttribute
   @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
   private Long skipped = 0L;
 
-  @XmlAttribute
   @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
   private String time = "0";
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private String timestamp;
 
   @Builder.Default
-  @XmlElement(name = "testsuite")
+  @JacksonXmlProperty(localName = "testsuite")
+  @JacksonXmlElementWrapper(useWrapping = false)
   private List<TestSuite> containedSuites = new ArrayList<>();
 
   public void addTestSuite(TestSuite suite) {
