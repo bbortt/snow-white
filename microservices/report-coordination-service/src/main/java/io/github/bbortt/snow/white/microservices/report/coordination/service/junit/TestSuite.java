@@ -8,10 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -23,18 +21,18 @@ import lombok.With;
 @Getter
 @Builder
 @AllArgsConstructor(access = PRIVATE)
-@XmlAccessorType(XmlAccessType.FIELD)
 public class TestSuite {
 
-  @XmlAttribute
+  @JacksonXmlProperty(isAttribute = true)
   private String name;
 
-  @XmlAttribute
   @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
   private String time = "0";
 
   @Builder.Default
-  @XmlElement(name = "testcase")
+  @JacksonXmlProperty(localName = "testcase")
+  @JacksonXmlElementWrapper(useWrapping = false)
   private List<TestCase> testCases = new ArrayList<>();
 
   public TestSuite(String name) {

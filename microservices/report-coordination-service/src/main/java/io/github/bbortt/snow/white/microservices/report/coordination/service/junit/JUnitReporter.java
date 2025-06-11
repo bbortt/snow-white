@@ -6,18 +6,20 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.junit;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_STANDALONE_YES_TO_XML_DECLARATION;
+import static com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_XML_DECLARATION;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ONE;
 import static java.time.Duration.ZERO;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Duration;
@@ -32,12 +34,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class JUnitReporter {
 
-  private final Marshaller marshaller;
+  private static final XmlMapper xmlMapper = new XmlMapper();
 
-  public JUnitReporter() throws JAXBException {
-    var context = JAXBContext.newInstance(TestSuites.class);
-    marshaller = context.createMarshaller();
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+  static {
+    xmlMapper.enable(INDENT_OUTPUT);
+    xmlMapper.enable(WRITE_XML_DECLARATION);
+    xmlMapper.enable(WRITE_STANDALONE_YES_TO_XML_DECLARATION);
+    xmlMapper.setSerializationInclusion(NON_EMPTY);
   }
 
   public Resource transformToJUnitReport(QualityGateReport qualityGateReport)
@@ -46,9 +49,9 @@ public class JUnitReporter {
       .buildForQualityGateReport(qualityGateReport);
 
     try (var byteArrayOutputStream = new ByteArrayOutputStream()) {
-      marshaller.marshal(testSuites, byteArrayOutputStream);
+      xmlMapper.writeValue(byteArrayOutputStream, testSuites);
       return new JUnitReportResource(byteArrayOutputStream.toByteArray());
-    } catch (IOException | JAXBException e) {
+    } catch (IOException e) {
       throw new JUnitReportCreationException(e);
     }
   }
