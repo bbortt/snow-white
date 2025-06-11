@@ -1,32 +1,68 @@
 version: 2
-assignees:
-  - bbortt
-labels:
-  - 'severity:medium'
-  - 'status:ready-for-review '
-  - 'type:deps'
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:medium'
+      - 'status:ready-for-review'
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'lang:typescript'
+      - 'severity:medium'
+      - 'status:ready-for-review'
   - package-ecosystem: 'npm'
     directory: '/microservices/api-gateway/'
     schedule:
       interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'lang:typescript'
+      - 'severity:low'
+      - 'status:ready-for-review'
   - package-ecosystem: 'maven'
     directory: '/'
     schedule:
       interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'lang:java'
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/backstage'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
   - package-ecosystem: 'gitsubmodule'
     directory: '/opentelemetry-proto'
     schedule:
       interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
   - package-ecosystem: 'docker-compose'
     directory: '/dev'
     schedule:
       interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
