@@ -117,7 +117,7 @@
     "sass": "1.89.2",
     "sass-loader": "16.0.5",
     "simple-progress-webpack-plugin": "2.0.0",
-    "sinon": "20.0.0",
+    "sinon": "21.0.0",
     "style-loader": "4.0.0",
     "terser-webpack-plugin": "5.3.14",
     "thread-loader": "4.0.4",
