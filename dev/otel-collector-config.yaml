@@ -2,9 +2,12 @@ receivers:
   kafka/snow-white:
     brokers:
       - kafka:9094
-    encoding: otlp_json
-    protocol_version: 3.9.0
+    protocol_version: 4.0.0
     topic: snow-white_outbound
+    traces:
+      encoding: otlp_json
+      # TODO https://github.com/bbortt/snow-white/issues/287
+      # encoding: otlp_proto
   otlp:
     protocols:
       grpc:
@@ -71,10 +74,13 @@ exporters:
   kafka/snow-white:
     brokers:
       - kafka:9094
-    encoding: otlp_json
     partition_traces_by_id: true
-    protocol_version: 3.9.0
+    protocol_version: 4.0.0
     topic: snow-white_inbound
+    traces:
+      encoding: otlp_json
+      # TODO https://github.com/bbortt/snow-white/issues/287
+      # encoding: otlp_proto
   influxdb:
     endpoint: http://influxdb:8086
     org: snow-white

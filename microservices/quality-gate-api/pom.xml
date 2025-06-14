@@ -249,6 +249,7 @@
             <configuration>
               <buildArgs>
                 <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>-Dspring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}

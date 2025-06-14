@@ -23,8 +23,7 @@
 
   <properties>
     <confluent.version>8.0.0</confluent.version>
-    <!-- DON'T UPGRADE! See https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/serdes-protobuf.html#limitations-and-developer-notes -->
-    <google-protobuf.version>3.25.5</google-protobuf.version>
+    <google-protobuf.version>4.31.1</google-protobuf.version>
     <grpc.version>1.73.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
@@ -118,6 +117,11 @@
       <artifactId>spring-kafka</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
@@ -251,6 +255,7 @@
             <configuration>
               <buildArgs>
                 <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>-Dspring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}

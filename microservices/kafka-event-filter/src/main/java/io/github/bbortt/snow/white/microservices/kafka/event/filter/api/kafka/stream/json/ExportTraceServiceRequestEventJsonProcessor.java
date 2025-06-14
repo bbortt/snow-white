@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.json;
 
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.AbstractExportTraceServiceRequestEventProtobufProcessor;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
@@ -18,26 +18,17 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
-@ConditionalOnProperty(name = CONSUMER_MODE_PROPERTY_NAME, havingValue = "json")
 public class ExportTraceServiceRequestEventJsonProcessor
   extends AbstractExportTraceServiceRequestEventProtobufProcessor {
 
-  public final Serde<ExportTraceServiceRequest> jsonSerde;
-
   public ExportTraceServiceRequestEventJsonProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties,
-    Serde<ExportTraceServiceRequest> jsonSerde
+    KafkaEventFilterProperties kafkaEventFilterProperties
   ) {
     super(otelInformationFilteringService, kafkaEventFilterProperties);
-    this.jsonSerde = jsonSerde;
-
     logger.info("Enabled JSON processing mode");
   }
 
@@ -56,12 +47,12 @@ public class ExportTraceServiceRequestEventJsonProcessor
   ) {
     return streamsBuilder.stream(
       inboundTopicName,
-      Consumed.with(Serdes.String(), jsonSerde)
+      Consumed.with(Serdes.String(), JsonSerde())
     );
   }
 
   @Override
   protected Serde<ExportTraceServiceRequest> outboundValueSerde() {
-    return jsonSerde;
+    return JsonSerde();
   }
 }

@@ -13,6 +13,7 @@ import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestD
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.wrapResourceSpans;
+import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,7 +21,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
-import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.OtelInformationFilteringService;
@@ -29,7 +29,6 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -55,7 +54,6 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
     getClass().getSimpleName() + ":outbound";
 
   private Properties snowWhiteKafkaProperties;
-  private Serde<ExportTraceServiceRequest> jsonSerde;
 
   @Mock
   private OtelInformationFilteringService otelInformationFilteringServiceMock;
@@ -75,12 +73,10 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
     snowWhiteKafkaProperties = kafkaStreamsConfig.snowWhiteKafkaProperties(
       kafkaEventFilterProperties
     );
-    jsonSerde = kafkaStreamsConfig.jsonSerde();
 
     fixture = new ExportTraceServiceRequestEventJsonProcessor(
       otelInformationFilteringServiceMock,
-      kafkaEventFilterProperties,
-      jsonSerde
+      kafkaEventFilterProperties
     );
   }
 
@@ -197,13 +193,13 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
         var inputTopic = topologyTestDriver.createInputTopic(
           inboundTopicName,
           new StringSerializer(),
-          jsonSerde.serializer()
+          JsonSerde().serializer()
         );
 
         var outputTopic = topologyTestDriver.createOutputTopic(
           outboundTopicName,
           new StringDeserializer(),
-          jsonSerde.deserializer()
+          JsonSerde().deserializer()
         );
 
         inputTopic.pipeInput(requestId, exportTraceServiceRequest);

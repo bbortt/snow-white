@@ -102,6 +102,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>4.3.0</version>
@@ -368,6 +373,7 @@
             <configuration>
               <buildArgs>
                 <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>-Dspring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}

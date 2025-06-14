@@ -6,8 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.protobuf;
 
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
-
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.AbstractExportTraceServiceRequestEventProtobufProcessor;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.OtelInformationFilteringService;
@@ -18,16 +16,9 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
-@ConditionalOnProperty(
-  name = CONSUMER_MODE_PROPERTY_NAME,
-  havingValue = "protobuf"
-)
 public class ExportTraceServiceRequestEventProtobufProcessor
   extends AbstractExportTraceServiceRequestEventProtobufProcessor {
 
