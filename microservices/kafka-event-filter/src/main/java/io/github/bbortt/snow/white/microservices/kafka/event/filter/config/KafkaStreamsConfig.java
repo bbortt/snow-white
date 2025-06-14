@@ -34,12 +34,7 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 @EnableKafkaStreams
 public class KafkaStreamsConfig {
 
-  @Bean
-  @ConditionalOnProperty(
-    name = CONSUMER_MODE_PROPERTY_NAME,
-    havingValue = "json"
-  )
-  public Serde<ExportTraceServiceRequest> jsonSerde() {
+  public static Serde<ExportTraceServiceRequest> JsonSerde() {
     var parser = JsonFormat.parser().ignoringUnknownFields();
     var printer = JsonFormat.printer();
 
@@ -52,9 +47,9 @@ public class KafkaStreamsConfig {
       try {
         return printer.print(data).getBytes();
       } catch (Exception e) {
-        logger.error("Error serializing protobuf message", e);
+        logger.error("Error serializing protobuf JSON message", e);
         throw new SerializationException(
-          "Error serializing protobuf message",
+          "Error serializing protobuf JSON message",
           e
         );
       }
@@ -69,9 +64,9 @@ public class KafkaStreamsConfig {
         parser.merge(new String(data), builder);
         return builder.build();
       } catch (Exception e) {
-        logger.error("Error deserializing protobuf message", e);
+        logger.error("Error deserializing protobuf JSON message", e);
         throw new SerializationException(
-          "Error deserializing protobuf message",
+          "Error deserializing protobuf JSON message",
           e
         );
       }

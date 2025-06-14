@@ -15,7 +15,6 @@ import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
 import java.util.stream.Stream;
-import org.apache.kafka.common.serialization.Serde;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,20 +35,19 @@ class KafkaStreamsConfigTest {
 
     @Test
     void serializationAndDeserializationLoop() {
-      Serde<ExportTraceServiceRequest> jsonSerde = fixture.jsonSerde();
-
       var originalMessage = ExportTraceServiceRequest.newBuilder()
         .addResourceSpans(TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL)
         .build();
 
-      byte[] serializedData = jsonSerde
+      byte[] serializedData = KafkaStreamsConfig.JsonSerde()
         .serializer()
         .serialize("test-topic", originalMessage);
       assertThat(serializedData).isNotNull();
 
-      ExportTraceServiceRequest deserializedMessage = jsonSerde
-        .deserializer()
-        .deserialize("test-topic", serializedData);
+      ExportTraceServiceRequest deserializedMessage =
+        KafkaStreamsConfig.JsonSerde()
+          .deserializer()
+          .deserialize("test-topic", serializedData);
       assertThat(deserializedMessage).isNotNull().isEqualTo(originalMessage);
     }
   }

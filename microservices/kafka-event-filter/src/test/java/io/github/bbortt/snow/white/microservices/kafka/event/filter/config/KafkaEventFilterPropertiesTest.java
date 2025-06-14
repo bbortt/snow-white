@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.config;
 
+import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.ConsumerMode.JSON;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.INBOUND_TOPIC_PROPERTY_NAME;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,15 @@ class KafkaEventFilterPropertiesTest {
   @Test
   void isInitializingBean() {
     assertThat(fixture).isInstanceOf(InitializingBean.class);
+  }
+
+  @Nested
+  class consumerMode {
+
+    @Test
+    void shouldDefaultToProtobuf() {
+      assertThat(fixture.getConsumerMode()).isEqualTo(JSON);
+    }
   }
 
   @Nested
