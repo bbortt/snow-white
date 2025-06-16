@@ -24,8 +24,8 @@ importers:
         specifier: 2.8.2
         version: 2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)
       axios:
-        specifier: 1.9.0
-        version: 1.9.0
+        specifier: 1.10.0
+        version: 1.10.0
       bootstrap:
         specifier: 5.3.6
         version: 5.3.6(@popperjs/core@2.11.8)
@@ -46,7 +46,7 @@ importers:
         version: 7.57.0(react@19.1.0)
       react-jhipster:
         specifier: 0.25.3
-        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.9.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.57.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.10.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.57.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       react-loadable:
         specifier: 5.5.0
         version: 5.5.0(react@19.1.0)
@@ -1498,8 +1498,8 @@ packages:
   '@types/node@24.0.0':
     resolution: {integrity: sha512-yZQa2zm87aRVcqDyH5+4Hv9KYgSdgwX1rFnGvpbzMaC7YAljmhBET93TPiTd3ObwTL+gSpIzPKg5BqVxdCvxKg==}
 
-  '@types/node@24.0.1':
-    resolution: {integrity: sha512-MX4Zioh39chHlDJbKmEgydJDS3tspMP/lnQC67G3SWsTnb9NeYVWOjkxpOSy4oMfPs4StcWHwBrvUb4ybfnuaw==}
+  '@types/node@24.0.3':
+    resolution: {integrity: sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==}
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -1899,8 +1899,8 @@ packages:
   axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
 
-  axios@1.9.0:
-    resolution: {integrity: sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==}
+  axios@1.10.0:
+    resolution: {integrity: sha512-/1xYAC4MP/HEG+3duIhFr4ZQXR4sQXOIe+o6sdqzeykGLx6Upp/1p8MHqhINOvGeP7xyNHe7tsiJByc4SSVUxw==}
 
   babel-jest@29.7.0:
     resolution: {integrity: sha512-BrvGY3xZSwEcCzKvKsCi2GgHqDqsYkOP4/by5xCgIwGXQxIEh+8ew3gmrE1y7XRR6LHZIj6yLYnUi/mm2KXKBg==}
@@ -3069,8 +3069,8 @@ packages:
       typescript: '>3.6.0'
       webpack: ^5.11.0
 
-  form-data@4.0.2:
-    resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
+  form-data@4.0.3:
+    resolution: {integrity: sha512-qsITQPfmvMOSAdeyZ+12I1c+CKSstAFAwu+97zrnWAbIr5u8wfsExUzCesVLC8NgHuRUqNN4Zy6UPWUTRGslcA==}
     engines: {node: '>= 6'}
 
   forwarded@0.2.0:
@@ -7361,7 +7361,7 @@ snapshots:
 
   '@types/cors@2.8.19':
     dependencies:
-      '@types/node': 24.0.1
+      '@types/node': 24.0.3
 
   '@types/eslint-scope@3.7.7':
     dependencies:
@@ -7445,7 +7445,7 @@ snapshots:
     dependencies:
       undici-types: 7.8.0
 
-  '@types/node@24.0.1':
+  '@types/node@24.0.3':
     dependencies:
       undici-types: 7.8.0
 
@@ -7938,10 +7938,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.9.0:
+  axios@1.10.0:
     dependencies:
       follow-redirects: 1.15.9(debug@4.3.2)
-      form-data: 4.0.2
+      form-data: 4.0.3
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -8774,7 +8774,7 @@ snapshots:
   engine.io@6.6.4:
     dependencies:
       '@types/cors': 2.8.19
-      '@types/node': 24.0.1
+      '@types/node': 24.0.3
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.7.2
@@ -9366,11 +9366,12 @@ snapshots:
       typescript: 5.8.3
       webpack: 5.99.9(webpack-cli@6.0.1)
 
-  form-data@4.0.2:
+  form-data@4.0.3:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
       mime-types: 2.1.35
 
   forwarded@0.2.0: {}
@@ -11166,9 +11167,9 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.9.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.57.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
+  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.10.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.57.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
     dependencies:
-      axios: 1.9.0
+      axios: 1.10.0
       dayjs: 1.11.13
       lodash: 4.17.21
       numeral: 2.0.6
