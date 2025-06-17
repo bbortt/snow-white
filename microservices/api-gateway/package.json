@@ -46,7 +46,7 @@
     "@fortawesome/react-fontawesome": "0.2.2",
     "@reduxjs/toolkit": "2.8.2",
     "axios": "1.10.0",
-    "bootstrap": "5.3.6",
+    "bootstrap": "5.3.7",
     "dayjs": "1.11.13",
     "lodash": "4.17.21",
     "react": "19.1.0",
