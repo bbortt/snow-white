@@ -57,14 +57,15 @@ jobs:
         run: ./mvnw -Pprod verify
   prettier-post-release:
     name: Run Prettier on Release PR
-    if: startsWith(github.head_ref, 'release-please-')
+    if: ${{ startsWith(github.head_ref, 'release-please-') }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
+    environment: release
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -76,8 +77,8 @@ jobs:
         run: npm run prettier:format
       - name: Commit changes if any
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "bbortt"
+          git config user.email "timon.borter@gmx.ch"
           if [ -n "$(git status --porcelain)" ]; then
             git commit -am "chore: apply prettier formatting"
             git push
