@@ -229,7 +229,9 @@
                   <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
                 </env>
               </image>
-              <imageName>snow-white/quality-gate-api:${image.tag}</imageName>
+              <imageName>
+                ${container.registry}/bbortt/snow-white/quality-gate-api:${image.tag}
+              </imageName>
             </configuration>
 
             <executions>
