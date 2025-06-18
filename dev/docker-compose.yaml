@@ -244,7 +244,7 @@ services:
     #    build:
     #      context: ../microservices/kafka-event-filter
     # Native image:
-    image: snow-white/kafka-event-filter
+    image: ghcr.io/bbortt/snow-white/kafka-event-filter
     hostname: kafka-event-filter
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
@@ -315,7 +315,7 @@ services:
     #    build:
     #      context: ../microservices/quality-gate-api
     # Native image:
-    image: snow-white/quality-gate-api
+    image: ghcr.io/bbortt/snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
@@ -346,7 +346,7 @@ services:
     #    build:
     #      context: ../microservices/report-coordination-service
     # Native image:
-    image: snow-white/report-coordination-service
+    image: ghcr.io/bbortt/snow-white/report-coordination-service
     hostname: report-coordination-service
     env_file: .env
     environment:

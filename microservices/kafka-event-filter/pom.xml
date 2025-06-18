@@ -235,7 +235,9 @@
                   <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
                 </env>
               </image>
-              <imageName>snow-white/kafka-event-filter:${image.tag}</imageName>
+              <imageName>
+                ${container.registry}/bbortt/snow-white/kafka-event-filter:${image.tag}
+              </imageName>
             </configuration>
 
             <executions>

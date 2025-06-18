@@ -352,7 +352,7 @@
                 </env>
               </image>
               <imageName>
-                snow-white/report-coordination-service:${image.tag}
+                ${container.registry}/bbortt/snow-white/report-coordination-service:${image.tag}
               </imageName>
             </configuration>
 
