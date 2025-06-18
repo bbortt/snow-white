@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-please:
     name: 'Release Please'
