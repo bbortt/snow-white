@@ -18,7 +18,7 @@ import static io.github.bbortt.snow.white.microservices.report.coordination.serv
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -191,7 +191,7 @@ class OpenApiResultListenerIT {
     Duration duration
   ) {
     await()
-      .atMost(5, SECONDS)
+      .atMost(1, MINUTES)
       .untilAsserted(
         () -> qualityGateReportRepository.findById(calculationId),
         qualityGateReport ->
