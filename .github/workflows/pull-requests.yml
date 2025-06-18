@@ -12,10 +12,11 @@ concurrency:
 jobs:
   labeler:
     name: 'Pull-Request Labels'
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') }}
     permissions:
       contents: read
       pull-requests: write
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/labeler@v5
   lint:
