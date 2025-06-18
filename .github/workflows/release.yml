@@ -16,8 +16,7 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          prerelease: true
-          release-type: maven
+          manifest-file: .release-please-manifest.json
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
       - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
