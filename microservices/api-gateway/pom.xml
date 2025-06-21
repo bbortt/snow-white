@@ -29,29 +29,25 @@
     <!-- SonarQube properties -->
     <sonar.inclusions>
       src/main/**/*.java
-      src/main/webapp/**/*.ts,
-      src/main/webapp/**/*.tsx
+            src/main/webapp/**/*.ts,
+            src/main/webapp/**/*.tsx
     </sonar.inclusions>
     <sonar.exclusions>
       node_modules/**,
-      src/main/webapp/app/clients/**,
-      src/main/webapp/content/**,
-      src/main/webapp/i18n/*.js,
-      target/classes/static/**
+            src/main/webapp/app/clients/**,
+            src/main/webapp/content/**,
+            src/main/webapp/i18n/*.js,
+            target/classes/static/**
     </sonar.exclusions>
 
     <sonar.test.inclusions>
       src/test/**/*.java,
-      src/main/webapp/app/**/*.spec.ts,
-      src/main/webapp/app/**/*.spec.tsx
+            src/main/webapp/app/**/*.spec.ts,
+            src/main/webapp/app/**/*.spec.tsx
     </sonar.test.inclusions>
 
-    <sonar.javascript.lcov.reportPaths>
-      target/test-results/jest/lcov.info
-    </sonar.javascript.lcov.reportPaths>
-    <sonar.testExecutionReportPaths>
-      target/test-results/jest/TESTS-results-sonar.xml
-    </sonar.testExecutionReportPaths>
+    <sonar.javascript.lcov.reportPaths>target/test-results/jest/lcov.info</sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>target/test-results/jest/TESTS-results-sonar.xml</sonar.testExecutionReportPaths>
   </properties>
 
   <dependencyManagement>
@@ -135,9 +131,7 @@
             <generateGitPropertiesFile>true</generateGitPropertiesFile>
             <includeOnlyProperties>
               <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
-              <includeOnlyProperty>
-                ^git.commit.id.describe$
-              </includeOnlyProperty>
+              <includeOnlyProperty>^git.commit.id.describe$</includeOnlyProperty>
               <includeOnlyProperty>^git.branch$</includeOnlyProperty>
             </includeOnlyProperties>
           </configuration>
@@ -159,9 +153,7 @@
             <configuration>
               <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
               <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
-              <outputDirectory>
-                ${project.build.directory}/opentelemetry-javaagent
-              </outputDirectory>
+              <outputDirectory>${project.build.directory}/opentelemetry-javaagent</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -193,13 +185,9 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>
-                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
-              </inputSpec>
+              <inputSpec>microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml</inputSpec>
               <generatorName>typescript-axios</generatorName>
-              <output>
-                ${project.build.directory}/generated-sources/openapi/quality-gate-api
-              </output>
+              <output>${project.build.directory}/generated-sources/openapi/quality-gate-api</output>
             </configuration>
           </execution>
           <execution>
@@ -208,13 +196,9 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>
-                microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml
-              </inputSpec>
+              <inputSpec>microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml</inputSpec>
               <generatorName>typescript-axios</generatorName>
-              <output>
-                ${project.build.directory}/generated-sources/openapi/report-api
-              </output>
+              <output>${project.build.directory}/generated-sources/openapi/report-api</output>
             </configuration>
           </execution>
         </executions>
@@ -232,15 +216,11 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>
-                ${project.basedir}/src/main/webapp/app/clients
-              </outputDirectory>
+              <outputDirectory>${project.basedir}/src/main/webapp/app/clients</outputDirectory>
               <overwrite>true</overwrite>
               <resources>
                 <resource>
-                  <directory>
-                    ${project.build.directory}/generated-sources/openapi
-                  </directory>
+                  <directory>${project.build.directory}/generated-sources/openapi</directory>
                   <includes>
                     <include>**/*.ts</include>
                   </includes>
@@ -252,38 +232,35 @@
       </plugin>
 
       <plugin>
-      <groupId>com.github.eirslett</groupId>
-      <artifactId>frontend-maven-plugin</artifactId>
-      <executions>
-      <execution>
-        <id>install-node-and-corepack</id>
-        <goals>
-          <goal>install-node-and-corepack</goal>
-        </goals>
-      </execution>
-      <execution>
-        <id>pnpm install</id>
-        <goals>
-          <goal>corepack</goal>
-        </goals>
-        <configuration>
-          <arguments>pnpm install</arguments>
-        </configuration>
-      </execution>
-      <execution>
-        <id>webapp build test</id>
-        <goals>
-          <goal>corepack</goal>
-        </goals>
-        <phase>test</phase>
-        <configuration>
-          <arguments>pnpm run webapp:test</arguments>
-          <npmInheritsProxyConfigFromMaven>
-            false
-          </npmInheritsProxyConfigFromMaven>
-        </configuration>
-      </execution>
-      </executions>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>install-node-and-corepack</id>
+            <goals>
+              <goal>install-node-and-corepack</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>pnpm-install</id>
+            <goals>
+              <goal>corepack</goal>
+            </goals>
+            <configuration>
+              <arguments>pnpm install</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>webapp-test</id>
+            <goals>
+              <goal>corepack</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>pnpm run webapp:test</arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -301,6 +278,12 @@
                 <fileset>
                   <directory>target/classes/static/</directory>
                 </fileset>
+                <fileset>
+                  <directory>src/main/webapp/app/clients/</directory>
+                  <includes>
+                    <include>**/*.ts</include>
+                  </includes>
+                </fileset>
               </filesets>
             </configuration>
           </plugin>
@@ -313,7 +296,7 @@
             <artifactId>frontend-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>webapp build prod</id>
+                <id>webapp-build-prod</id>
                 <goals>
                   <goal>corepack</goal>
                 </goals>
@@ -323,9 +306,6 @@
                   <environmentVariables>
                     <APP_VERSION>${project.version}</APP_VERSION>
                   </environmentVariables>
-                  <npmInheritsProxyConfigFromMaven>
-                    false
-                  </npmInheritsProxyConfigFromMaven>
                 </configuration>
               </execution>
             </executions>
@@ -346,7 +326,7 @@
             <artifactId>frontend-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>webapp build dev</id>
+                <id>webapp-build-dev</id>
                 <goals>
                   <goal>corepack</goal>
                 </goals>
@@ -356,9 +336,6 @@
                   <environmentVariables>
                     <APP_VERSION>${project.version}</APP_VERSION>
                   </environmentVariables>
-                  <npmInheritsProxyConfigFromMaven>
-                    false
-                  </npmInheritsProxyConfigFromMaven>
                 </configuration>
               </execution>
             </executions>

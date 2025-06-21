@@ -28,6 +28,8 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
+
+    <openapi-generator.version>7.13.0</openapi-generator.version>
   </properties>
 
   <dependencies>
@@ -152,7 +154,7 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.13.0</version>
+        <version>${openapi-generator.version}</version>
         <dependencies>
           <dependency>
             <groupId>io.github.bbortt.snow-white.toolkit</groupId>
