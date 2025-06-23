@@ -1,0 +1,16 @@
+.git/
+.husky/
+.idea/
+.mvn/
+.npm/
+
+node_modules/
+opentelemetry-proto/
+
+package-lock.json
+microservices/api-gateway/pnpm-lock.yaml
+
+target/
+
+# Must have no newline at end of file
+tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openapitools.codegen.CodegenConfig
