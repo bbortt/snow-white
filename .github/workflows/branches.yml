@@ -29,9 +29,21 @@ jobs:
           cache: maven
           distribution: 'temurin'
           java-version: 21
+      - name: Cache SonarQube Packages
+        uses: actions/cache@v4
+        if: '!steps.check.outputs.number'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
       - name: Version Report
         if: '!steps.check.outputs.number'
         run: ./mvnw --version
       - name: Build with Maven
         if: '!steps.check.outputs.number'
-        run: ./mvnw -Pprod verify
+        run: ./mvnw -B -Pprod verify
+      - name: Sonar Analysis
+        if: '!steps.check.outputs.number'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B sonar:sonar -Dsonar.organization=bbortt-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=bbortt_snow-white
