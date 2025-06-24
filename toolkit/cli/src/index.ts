@@ -4,6 +4,8 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 
 import { calculate } from './actions/calculate';
+import { getQualityGateApi } from './api/quality-gate-api';
+import type { CalculateOptions } from './actions/calculate.options';
 
 const program = new Command();
 
@@ -30,6 +32,6 @@ program
   .requiredOption('--apiName <apiName>', 'API name')
   .requiredOption('--apiVersion <version>', 'API version')
   .option('--url <baseUrl>', 'Base URL for Snow-White', 'http://localhost:8090')
-  .action(calculate);
+  .action(async (options: CalculateOptions)=>await calculate(getQualityGateApi(options.url), options));
 
 program.parse();
