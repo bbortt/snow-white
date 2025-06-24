@@ -4,17 +4,18 @@
  * See LICENSE file for full details.
  */
 
-import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { afterAll, beforeEach, describe, expect, it, mock, spyOn, jest } from 'bun:test';
 import { AxiosError, AxiosResponse } from 'axios';
 import { calculate } from './calculate';
-
-const getApiClient = mock();
-mock.module('../api/quality-gate-api', () => ({
-  getApiClient,
-}));
+import type { QualityGateApi } from '../clients/quality-gate-api';
+import { CalculateOptions } from './calculate.options';
 
 const mockConsoleLog = spyOn(console, 'log');
 const mockConsoleError = spyOn(console, 'error');
+
+const getQualityGateApi = (qualityGateApiMock: unknown): QualityGateApi => {
+  return qualityGateApiMock as QualityGateApi;
+};
 
 describe('calculate', () => {
   let qualityGateApiMock = {
@@ -30,14 +31,14 @@ describe('calculate', () => {
   };
 
   beforeEach(() => {
-    getApiClient.mockReset();
-
     mockConsoleLog.mockReset();
     mockConsoleError.mockReset();
 
     qualityGateApiMock.calculateQualityGate.mockReset();
+  });
 
-    getApiClient.mockReturnValueOnce(qualityGateApiMock);
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
   describe('successful calculation', () => {
@@ -62,9 +63,7 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
 
-      await calculate(defaultOptions);
-
-      expect(getApiClient).toHaveBeenCalledWith(defaultOptions.url);
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
         serviceName: defaultOptions.serviceName,
@@ -100,14 +99,14 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
 
-      await calculate(defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleLog).not.toHaveBeenCalledWith(expect.stringContaining('Location:'));
       expect(mockConsoleLog).toHaveBeenNthCalledWith(8, expect.stringContaining('✅ Quality gate calculation initiated successfully!'));
     });
 
     it('should work with default URL when not provided', async () => {
-      const optionsWithoutUrl = {
+      const optionsWithoutUrl: Omit<CalculateOptions, 'url'> = {
         qualityGate: 'test-gate',
         serviceName: 'test-service',
         apiName: 'test-api',
@@ -124,9 +123,8 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
 
-      await calculate(optionsWithoutUrl);
+      await calculate(getQualityGateApi(qualityGateApiMock), optionsWithoutUrl);
 
-      expect(getApiClient).toHaveBeenCalledWith(undefined);
       expect(mockConsoleLog).toHaveBeenNthCalledWith(6, expect.stringContaining('Base URL: undefined'));
     });
   });
@@ -145,7 +143,7 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
@@ -169,7 +167,7 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
@@ -181,7 +179,7 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
@@ -192,7 +190,7 @@ describe('calculate', () => {
       const genericError = new Error('Something went wrong');
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(genericError);
 
-      expect(calculate(defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
@@ -202,7 +200,7 @@ describe('calculate', () => {
       const unknownError = { custom: 'error object' };
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(unknownError);
 
-      expect(calculate(defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));

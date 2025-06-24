@@ -6,4 +6,4 @@
 
 import { QualityGateApi } from '../clients/quality-gate-api';
 
-export const getApiClient = (baseUrl: string): QualityGateApi => new QualityGateApi(undefined, baseUrl);
+export const getQualityGateApi = (baseUrl: string): QualityGateApi => new QualityGateApi(undefined, baseUrl);

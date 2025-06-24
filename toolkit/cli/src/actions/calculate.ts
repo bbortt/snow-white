@@ -2,18 +2,10 @@ import { AxiosError, AxiosResponse } from 'axios';
 
 import chalk from 'chalk';
 
-import { CalculateQualityGate202Response } from '../clients/quality-gate-api';
-import { getApiClient } from '../api/quality-gate-api';
+import { CalculateQualityGate202Response, QualityGateApi } from '../clients/quality-gate-api';
+import type { CalculateOptions } from './calculate.options';
 
-interface calculateOptions {
-  qualityGate: string;
-  serviceName: string;
-  apiName: string;
-  apiVersion: string;
-  url: string;
-}
-
-const calculateQualityGate = async (options: calculateOptions): Promise<void> => {
+const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: Omit<CalculateOptions, 'url'>): Promise<void> => {
   console.log(chalk.blue('🚀 Starting quality gate calculation...'));
   console.log(chalk.gray(`Gate: ${options.qualityGate}`));
   console.log(chalk.gray(`Service: ${options.serviceName}`));
@@ -22,15 +14,13 @@ const calculateQualityGate = async (options: calculateOptions): Promise<void> =>
   console.log(chalk.gray(`Base URL: ${options.url}`));
   console.log('');
 
-  const apiClient = getApiClient(options.url);
-
   const calculationRequest = {
     serviceName: options.serviceName,
     apiName: options.apiName,
     apiVersion: options.apiVersion,
   };
 
-  const response: AxiosResponse<CalculateQualityGate202Response> = await apiClient.calculateQualityGate(
+  const response: AxiosResponse<CalculateQualityGate202Response> = await qualityGateApi.calculateQualityGate(
     options.qualityGate,
     calculationRequest,
   );
@@ -46,9 +36,9 @@ const calculateQualityGate = async (options: calculateOptions): Promise<void> =>
   console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
 };
 
-export const calculate = async (options: calculateOptions) => {
+export const calculate = async (qualityGateApi: QualityGateApi, options: Omit<CalculateOptions, 'url'>) => {
   try {
-    await calculateQualityGate(options);
+    await calculateQualityGate(qualityGateApi, options);
   } catch (error: unknown) {
     console.error(chalk.red('❌ Failed to trigger quality gate calculation!'));
     console.log('');
