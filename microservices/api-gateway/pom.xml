@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white.microservices</groupId>
+    <artifactId>microservices</artifactId>
+    <version>1.0.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>api-gateway</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <!-- Dependency Management -->
+    <git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
+    <spring-cloud.version>2025.0.0-RC1</spring-cloud.version>
+
+    <!-- SonarQube properties -->
+    <sonar.inclusions>
+      src/main/**/*.java
+      src/main/webapp/**/*.ts,
+      src/main/webapp/**/*.tsx
+    </sonar.inclusions>
+    <sonar.exclusions>
+      node_modules/**,
+      src/main/webapp/app/clients/**,
+      src/main/webapp/content/**,
+      src/main/webapp/i18n/*.js,
+      target/classes/static/**
+    </sonar.exclusions>
+
+    <sonar.test.inclusions>
+      src/test/**/*.java,
+      src/main/webapp/app/**/*.spec.ts,
+      src/main/webapp/app/**/*.spec.tsx
+    </sonar.test.inclusions>
+
+    <sonar.javascript.lcov.reportPaths>
+      target/test-results/jest/lcov.info
+    </sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>
+      target/test-results/jest/TESTS-results-sonar.xml
+    </sonar.testExecutionReportPaths>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+      <version>${org.springdoc.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>5.5.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.github.git-commit-id</groupId>
+          <artifactId>git-commit-id-maven-plugin</artifactId>
+          <version>${git-commit-id-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>revision</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <failOnNoGitDirectory>false</failOnNoGitDirectory>
+            <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+            <generateGitPropertiesFile>true</generateGitPropertiesFile>
+            <includeOnlyProperties>
+              <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+              <includeOnlyProperty>
+                ^git.commit.id.describe$
+              </includeOnlyProperty>
+              <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+            </includeOnlyProperties>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-otel-agent</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
+              <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
+              <outputDirectory>
+                ${project.build.directory}/opentelemetry-javaagent
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <classifier>executable</classifier>
+            </configuration>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-v1-quality-gate-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
+              </inputSpec>
+              <generatorName>typescript-axios</generatorName>
+              <output>
+                ${project.build.directory}/generated-sources/openapi/quality-gate-api
+              </output>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-v1-report-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml
+              </inputSpec>
+              <generatorName>typescript-axios</generatorName>
+              <output>
+                ${project.build.directory}/generated-sources/openapi/report-api
+              </output>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-generated-clients</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>
+                ${project.basedir}/src/main/webapp/app/clients
+              </outputDirectory>
+              <overwrite>true</overwrite>
+              <resources>
+                <resource>
+                  <directory>
+                    ${project.build.directory}/generated-sources/openapi
+                  </directory>
+                  <includes>
+                    <include>**/*.ts</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+      <groupId>com.github.eirslett</groupId>
+      <artifactId>frontend-maven-plugin</artifactId>
+      <executions>
+      <execution>
+        <id>install-node-and-corepack</id>
+        <goals>
+          <goal>install-node-and-corepack</goal>
+        </goals>
+      </execution>
+      <execution>
+        <id>pnpm install</id>
+        <goals>
+          <goal>corepack</goal>
+        </goals>
+        <configuration>
+          <arguments>pnpm install</arguments>
+        </configuration>
+      </execution>
+      <execution>
+        <id>webapp build test</id>
+        <goals>
+          <goal>corepack</goal>
+        </goals>
+        <phase>test</phase>
+        <configuration>
+          <arguments>pnpm run webapp:test</arguments>
+          <npmInheritsProxyConfigFromMaven>
+            false
+          </npmInheritsProxyConfigFromMaven>
+        </configuration>
+      </execution>
+      </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>target/classes/static/</directory>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>io.github.git-commit-id</groupId>
+            <artifactId>git-commit-id-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>webapp build prod</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <arguments>pnpm run webapp:prod</arguments>
+                  <environmentVariables>
+                    <APP_VERSION>${project.version}</APP_VERSION>
+                  </environmentVariables>
+                  <npmInheritsProxyConfigFromMaven>
+                    false
+                  </npmInheritsProxyConfigFromMaven>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>webapp</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>webapp build dev</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <arguments>pnpm run webapp:build</arguments>
+                  <environmentVariables>
+                    <APP_VERSION>${project.version}</APP_VERSION>
+                  </environmentVariables>
+                  <npmInheritsProxyConfigFromMaven>
+                    false
+                  </npmInheritsProxyConfigFromMaven>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>spring-milestones</id>
+      <url>https://repo.spring.io/milestone/</url>
+    </repository>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+  </repositories>
+</project>
