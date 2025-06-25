@@ -4,8 +4,8 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 
 import { calculate } from './actions/calculate';
-import { getQualityGateApi } from './api/quality-gate-api';
 import type { CalculateOptions } from './actions/calculate.options';
+import { getQualityGateApi } from './api/quality-gate-api';
 
 const program = new Command();
 

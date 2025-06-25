@@ -5,6 +5,7 @@
  */
 
 import { describe, expect, it } from 'bun:test';
+
 import { getQualityGateApi } from './quality-gate-api';
 
 describe('quality-gate-api', () => {

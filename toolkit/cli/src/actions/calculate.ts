@@ -1,11 +1,11 @@
-import { AxiosError, AxiosResponse } from 'axios';
-
+import type { AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import chalk from 'chalk';
 
-import { CalculateQualityGate202Response, QualityGateApi } from '../clients/quality-gate-api';
+import type { CalculateQualityGate202Response, QualityGateApi } from '../clients/quality-gate-api';
 import type { CalculateOptions } from './calculate.options';
 
-const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: Omit<CalculateOptions, 'url'>): Promise<void> => {
+const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: CalculateOptions): Promise<void> => {
   console.log(chalk.blue('🚀 Starting quality gate calculation...'));
   console.log(chalk.gray(`Gate: ${options.qualityGate}`));
   console.log(chalk.gray(`Service: ${options.serviceName}`));
@@ -36,7 +36,7 @@ const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: Omi
   console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
 };
 
-export const calculate = async (qualityGateApi: QualityGateApi, options: Omit<CalculateOptions, 'url'>) => {
+export const calculate = async (qualityGateApi: QualityGateApi, options: CalculateOptions): Promise<void> => {
   try {
     await calculateQualityGate(qualityGateApi, options);
   } catch (error: unknown) {
@@ -46,8 +46,8 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Omit<Ca
     if (error instanceof AxiosError && error.response) {
       console.error(chalk.red(`Status: ${error.response.status}`));
 
-      if (error.response.data) {
-        console.error(chalk.red(`Details: ${error.response.data.message}`));
+      if (error.response.data && Object.prototype.hasOwnProperty.call(error.response.data, 'message')) {
+        console.error(chalk.red(`Details: ${(error.response.data as { message: string }).message}`));
       } else {
         console.error(chalk.red(`Error: ${error.response.statusText}`));
       }

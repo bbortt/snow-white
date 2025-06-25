@@ -29,21 +29,21 @@
     <!-- SonarQube properties -->
     <sonar.inclusions>
       src/main/**/*.java
-            src/main/webapp/**/*.ts,
-            src/main/webapp/**/*.tsx
+      src/main/webapp/**/*.ts,
+      src/main/webapp/**/*.tsx
     </sonar.inclusions>
     <sonar.exclusions>
       node_modules/**,
-            src/main/webapp/app/clients/**,
-            src/main/webapp/content/**,
-            src/main/webapp/i18n/*.js,
-            target/classes/static/**
+      src/main/webapp/app/clients/**,
+      src/main/webapp/content/**,
+      src/main/webapp/i18n/*.js,
+      target/classes/static/**
     </sonar.exclusions>
 
     <sonar.test.inclusions>
       src/test/**/*.java,
-            src/main/webapp/app/**/*.spec.ts,
-            src/main/webapp/app/**/*.spec.tsx
+      src/main/webapp/app/**/*.spec.ts,
+      src/main/webapp/app/**/*.spec.tsx
     </sonar.test.inclusions>
 
     <sonar.javascript.lcov.reportPaths>target/test-results/jest/lcov.info</sonar.javascript.lcov.reportPaths>
