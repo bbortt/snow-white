@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<testsuites
+  name="TransformToJUnitReport"
+  tests="2"
+  failures="1"
+  errors="0"
+  skipped="0"
+  time="5.55500"
+  timestamp="2025-04-24T22:30:00Z"
+>
+  <testsuite name="OpenAPI Specification" time="0">
+    <testcase
+      name="HTTP Method Coverage"
+      classname="HTTP_METHOD_COVERAGE"
+      time="1.23400"
+    >
+      <failure message="Additional Information." type="coverage" />
+    </testcase>
+    <testcase name="Path Coverage" classname="PATH_COVERAGE" time="4.32100" />
+  </testsuite>
+</testsuites>
