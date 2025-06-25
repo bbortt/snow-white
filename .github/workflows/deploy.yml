@@ -1,0 +1,39 @@
+name: Deployments
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish-images:
+    name: 'Publish Images'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build with Maven
+        run: ./mvnw -DskipTests -Pprod package
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build JDK Images
+        run: .github/scripts/build-oci-images.sh "${{  github.ref_name }}" "ghcr.io" "--push"
+      - name: Build Native Images
+        run: ./mvnw -DskipTests -Pnative,prod -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
+      - name: Push Native Images
+        run: |
+          docker image push "ghcr.io/bbortt/snow-white/kafka-event-filter:${{ steps.release.outputs.tag_name }}"
+          docker image push "ghcr.io/bbortt/snow-white/quality-gate-api:${{ steps.release.outputs.tag_name }}"
+          docker image push "ghcr.io/bbortt/snow-white/report-coordination-service:${{ steps.release.outputs.tag_name }}"

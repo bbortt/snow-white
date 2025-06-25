@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: Ping-Pong API
+  description: A simple API for ping-pong interactions to demonstrate OpenAPI coverage calculation
+  version: 1.0.0
+  x-api-name: ping-pong
+  x-service-name: example-application
+tags:
+  - name: ping
+    description: Ping operations
+  - name: pong
+    description: Pong operations
+paths:
+  /ping:
+    get:
+      summary: Send a ping request
+      description: Returns a pong response
+      operationId: getPing
+      tags:
+        - ping
+      parameters:
+        - name: message
+          in: query
+          description: Optional message to include with the ping
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful ping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PongResponse'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pong:
+    post:
+      summary: Send a pong request
+      description: Send a pong directly (usually in response to a ping)
+      operationId: postPong
+      tags:
+        - pong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PingRequest'
+      responses:
+        '201':
+          description: Pong successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PingRequest:
+      type: object
+      required:
+        - timestamp
+      properties:
+        message:
+          type: string
+          description: Message to include with the ping
+          example: 'Hello server!'
+        timestamp:
+          type: string
+          format: date-time
+          description: Time of the ping request
+          example: '2025-02-25T12:00:00Z'
+    PongResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+        - latency
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: 'Pong! Hello server!'
+        timestamp:
+          type: string
+          format: date-time
+          description: Time of the response
+          example: '2025-02-25T12:00:01Z'
+        latency:
+          type: integer
+          description: Response time in milliseconds
+          example: 42
+
+    SuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the operation was successful
+          example: true
+        message:
+          type: string
+          description: Success message
+          example: 'Operation completed successfully'
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: 'Invalid request parameters'
+        code:
+          type: string
+          description: Error code
+          example: 'INVALID_PARAMS'
+        details:
+          type: object
+          description: Additional error details
