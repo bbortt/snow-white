@@ -29,7 +29,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
-      <openapi-generator.version>7.14.0</openapi-generator.version>
+    <openapi-generator.version>7.14.0</openapi-generator.version>
   </properties>
 
   <dependencies>
@@ -154,11 +154,7 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-<<<<<<< HEAD
-        <version>7.14.0</version>
-=======
         <version>${openapi-generator.version}</version>
->>>>>>> 6cb8c06 (feat(cli): with this it's possible to trigger quality-gate calculation from command line)
         <dependencies>
           <dependency>
             <groupId>io.github.bbortt.snow-white.toolkit</groupId>

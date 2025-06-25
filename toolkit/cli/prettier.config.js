@@ -6,7 +6,7 @@
 
 module.exports = {
   endOfLine: 'lf',
-  plugins: ['prettier-plugin-packagejson'],
+  plugins: ['@prettier/plugin-xml', 'prettier-plugin-packagejson'],
   printWidth: 140,
   singleQuote: true,
   tabWidth: 2,
@@ -14,4 +14,12 @@ module.exports = {
   arrowParens: 'avoid',
   bracketSameLine: false,
   xmlWhitespaceSensitivity: 'ignore',
+  overrides: [
+    {
+      files: '**/*.{ts,tsx}',
+      options: {
+        parser: 'typescript',
+      },
+    },
+  ],
 };
