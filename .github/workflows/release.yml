@@ -1,0 +1,24 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-please:
+    name: 'Release Please'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          release-type: maven
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}

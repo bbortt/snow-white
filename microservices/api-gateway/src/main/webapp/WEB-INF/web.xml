@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<web-app
+  xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+  version="3.0"
+>
+  <mime-mapping>
+    <extension>html</extension>
+    <mime-type>text/html;charset=utf-8</mime-type>
+  </mime-mapping>
+</web-app>
