@@ -5,8 +5,10 @@
  */
 
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
-import { type ChildProcess, spawn } from 'child_process';
-import { IWireMockRequest, IWireMockResponse, MatchingAttributes, WireMock } from 'wiremock-captain';
+import type { ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
+import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
+import { MatchingAttributes, WireMock } from 'wiremock-captain';
 
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
 
@@ -60,7 +62,7 @@ describe('CLI', () => {
   let wiremock: WireMock;
   let WIREMOCK_URL: string;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     WIREMOCK_URL = `http://localhost:${WIREMOCK_PORT}`;
 
     wiremock = new WireMock(WIREMOCK_URL);

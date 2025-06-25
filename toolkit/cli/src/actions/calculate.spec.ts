@@ -4,11 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import { afterAll, beforeEach, describe, expect, it, mock, spyOn, jest } from 'bun:test';
-import { AxiosError, AxiosResponse } from 'axios';
-import { calculate } from './calculate';
+import type { AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
+import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+
 import type { QualityGateApi } from '../clients/quality-gate-api';
-import { CalculateOptions } from './calculate.options';
+import { calculate } from './calculate';
+import type { CalculateOptions } from './calculate.options';
 
 const mockConsoleLog = spyOn(console, 'log');
 const mockConsoleError = spyOn(console, 'error');
@@ -18,7 +20,7 @@ const getQualityGateApi = (qualityGateApiMock: unknown): QualityGateApi => {
 };
 
 describe('calculate', () => {
-  let qualityGateApiMock = {
+  const qualityGateApiMock = {
     calculateQualityGate: mock(),
   };
 

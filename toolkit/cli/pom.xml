@@ -29,6 +29,18 @@
     <bun.version>v1.2.14</bun.version>
     <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
     <node.version>v22.15.0</node.version>
+
+    <!-- SonarQube properties -->
+    <sonar.inclusions>src/**/*.ts,</sonar.inclusions>
+    <sonar.exclusions>
+      node_modules/**,
+      src/clients/**,
+    </sonar.exclusions>
+
+    <sonar.test.inclusions>src/**/*.spec.ts,</sonar.test.inclusions>
+
+    <sonar.javascript.lcov.reportPaths>target/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>target/test-results/bun/junit.xml</sonar.testExecutionReportPaths>
   </properties>
 
   <build>
@@ -40,9 +52,7 @@
           <version>${frontend-maven-plugin.version}</version>
           <configuration>
             <bunVersion>${bun.version}</bunVersion>
-            <bunInheritsProxyConfigFromMaven>
-              false
-            </bunInheritsProxyConfigFromMaven>
+            <bunInheritsProxyConfigFromMaven>false</bunInheritsProxyConfigFromMaven>
             <installDirectory>target</installDirectory>
             <nodeVersion>${node.version}</nodeVersion>
           </configuration>
@@ -94,13 +104,9 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>
-                microservices/report-coordination-service/src/main/resources/openapi/v1-quality-gate-api.yml
-              </inputSpec>
+              <inputSpec>microservices/report-coordination-service/src/main/resources/openapi/v1-quality-gate-api.yml</inputSpec>
               <generatorName>typescript-axios</generatorName>
-              <output>
-                ${project.build.directory}/generated-sources/openapi/quality-gate-api
-              </output>
+              <output>${project.build.directory}/generated-sources/openapi/quality-gate-api</output>
             </configuration>
           </execution>
         </executions>
@@ -122,9 +128,7 @@
               <overwrite>true</overwrite>
               <resources>
                 <resource>
-                  <directory>
-                    ${project.build.directory}/generated-sources/openapi
-                  </directory>
+                  <directory>${project.build.directory}/generated-sources/openapi</directory>
                   <includes>
                     <include>**/*.ts</include>
                   </includes>
