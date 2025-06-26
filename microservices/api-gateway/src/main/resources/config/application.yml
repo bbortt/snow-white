@@ -1,0 +1,16 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+      base-path: /management
+  endpoint:
+    health:
+      access: read_only
+    info:
+      access: read_only
+spring:
+  profiles:
+    include: api-docs

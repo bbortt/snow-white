@@ -1,0 +1,136 @@
+receivers:
+  kafka/snow-white:
+    brokers:
+      - kafka:9094
+    protocol_version: 4.0.0
+    topic: snow-white_outbound
+    traces:
+      encoding: otlp_json
+      # TODO https://github.com/bbortt/snow-white/issues/287
+      # encoding: otlp_proto
+  otlp:
+    protocols:
+      grpc:
+        endpoint: '0.0.0.0:4317'
+      http:
+        endpoint: '0.0.0.0:4318'
+        cors:
+          allowed_origins:
+            - 'http://localhost:*'
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+  batch:
+    send_batch_size: 512
+    send_batch_max_size: 1024
+  filter/openapi-traces:
+    error_mode: ignore
+    traces:
+      span:
+        - attributes["http.request.method"] == nil
+        - attributes["openapi.name"] == nil or attributes["openapi.version"] == nil
+  filter/snow-white:
+    error_mode: propagate
+    spans:
+      exclude:
+        match_type: strict
+        services:
+          - api-gateway
+          - api-sync-job
+          - kafka-event-filter
+          - openapi-coverage-service
+          - quality-gate-api
+          - report-coordination-service
+  groupbyattrs/service:
+    keys:
+      - service.name
+      - service.namespace
+      - service.version
+  groupbytrace:
+    wait_duration: 5s
+    num_traces: 512
+  resource/cleanup:
+    attributes:
+      - action: delete
+        pattern: ^process\..+
+      - action: delete
+        pattern: ^telemetry\..+
+extensions:
+  health_check:
+    endpoint: '0.0.0.0:13133'
+    check_collector_pipeline:
+      enabled: true
+      interval: 30s
+  zpages: {}
+exporters:
+  debug/basic:
+    verbosity: basic
+    sampling_initial: 5
+  debug/detailed:
+    verbosity: detailed
+    sampling_initial: 5
+  kafka/snow-white:
+    brokers:
+      - kafka:9094
+    partition_traces_by_id: true
+    protocol_version: 4.0.0
+    topic: snow-white_inbound
+    traces:
+      encoding: otlp_json
+      # TODO https://github.com/bbortt/snow-white/issues/287
+      # encoding: otlp_proto
+  influxdb:
+    endpoint: http://influxdb:8086
+    org: snow-white
+    bucket: raw-data
+    token: ${INFLUXDB_TOKEN}
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
+  prometheus:
+    endpoint: '0.0.0.0:8090'
+    send_timestamps: true
+    metric_expiration: 10m
+    enable_open_metrics: true
+    resource_to_telemetry_conversion:
+      enabled: true
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    logs/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug/basic]
+    metrics/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, groupbyattrs/service, batch]
+      exporters: [debug/basic]
+    traces/snow-white:
+      receivers: [otlp]
+      processors:
+        [
+          memory_limiter,
+          filter/snow-white,
+          filter/openapi-traces,
+          groupbytrace,
+          resource/cleanup,
+          batch,
+        ]
+      exporters: [debug/basic, kafka/snow-white]
+    traces/infra:
+      receivers: [kafka/snow-white]
+      processors: [memory_limiter, groupbytrace, batch]
+      exporters: [debug/basic, influxdb]
+  telemetry:
+    logs:
+      level: INFO # DEBUG
+      sampling:
+        initial: 100
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: '0.0.0.0'
+                port: 8888
