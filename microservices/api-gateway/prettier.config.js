@@ -14,4 +14,12 @@ module.exports = {
   arrowParens: 'avoid',
   bracketSameLine: false,
   xmlWhitespaceSensitivity: 'ignore',
+  overrides: [
+    {
+      files: ['**/*.{ts,tsx}'],
+      options: {
+        parser: 'typescript',
+      },
+    },
+  ],
 };
