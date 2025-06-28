@@ -1,0 +1,9 @@
+springdoc:
+  swagger-ui:
+    urls:
+      - name: quality-gate-api
+        display-name: Quality-Gate API
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/quality-gate-api'
+      - name: report-coordination-service
+        display-name: Report Coordination Service
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/report-coordination-service'
