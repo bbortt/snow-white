@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.util.StreamUtils.copyToString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
@@ -47,9 +47,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
-@IntegrationTest
 @AutoConfigureMockMvc
-class ReportResourceIT {
+class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/reports";
   private static final String SINGLE_ENTITY_API_URL =

@@ -15,6 +15,11 @@ spring:
     jdbc-url: jdbc:h2:mem:report-coordination;MODE=PostgreSQL
     username: sa
     password: password
+  flyway:
+    enabled: false
   h2:
     console:
       enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

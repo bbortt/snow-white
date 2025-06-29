@@ -30,6 +30,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -114,36 +115,29 @@ public class QualityGateService {
 
   @Transactional
   public void initPredefinedQualityGates() {
-    logger.info("Updating quality-gate configuration table");
+    logger.info(
+      "Updating Quality-Gate configuration table with default values"
+    );
 
-    var missingQualityGateConfigurations = Stream.of(
+    var qualityGateConfigurations = Stream.of(
       getBasicCoverage(),
       getFullFeature(),
       getMinimal(),
       getDryRun()
     )
-      .filter(qualityGateConfiguration ->
-        !qualityGateConfigurationRepository.existsByName(
-          qualityGateConfiguration.getName()
-        )
+      .map(qualityGateConfiguration ->
+        qualityGateConfigurationRepository
+          .findByName(qualityGateConfiguration.getName())
+          .map(existingQualityGateConfiguration ->
+            qualityGateConfiguration.withId(
+              existingQualityGateConfiguration.getId()
+            )
+          )
+          .orElse(qualityGateConfiguration)
       )
       .toList();
 
-    if (missingQualityGateConfigurations.isEmpty()) {
-      logger.debug(
-        "All quality-gate configurations are already present in database, nothing to do"
-      );
-      return;
-    }
-
-    logger.debug(
-      "The following quality-gate configurations are missing and will be persisted: {}",
-      missingQualityGateConfigurations
-    );
-
-    qualityGateConfigurationRepository.saveAll(
-      missingQualityGateConfigurations
-    );
+    qualityGateConfigurationRepository.saveAll(qualityGateConfigurations);
   }
 
   private QualityGateConfiguration getBasicCoverage() {

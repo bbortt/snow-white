@@ -8,13 +8,12 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-@IntegrationTest
-class QualityGateConfigurationMapperIT {
+class QualityGateConfigurationMapperIT extends AbstractQualityGateApiIT {
 
   @Autowired
   private ApplicationContext applicationContext;

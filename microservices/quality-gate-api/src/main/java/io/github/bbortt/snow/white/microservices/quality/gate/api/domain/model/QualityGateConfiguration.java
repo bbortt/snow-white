@@ -16,7 +16,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -30,7 +32,14 @@ import lombok.With;
 import org.springframework.lang.Nullable;
 
 @Entity
-@Table
+@Table(
+  uniqueConstraints = {
+    @UniqueConstraint(
+      name = "uk_quality_gate_configuration_name",
+      columnNames = { "name" }
+    ),
+  }
+)
 @With
 @Getter
 @Builder
@@ -41,8 +50,15 @@ public class QualityGateConfiguration {
 
   @Id
   @NotNull
-  @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
+  @SequenceGenerator(
+    name = "quality_gate_configuration_id_seq",
+    allocationSize = 1
+  )
+  @GeneratedValue(
+    strategy = SEQUENCE,
+    generator = "quality_gate_configuration_id_seq"
+  )
   private Long id;
 
   @NotEmpty
@@ -65,6 +81,14 @@ public class QualityGateConfiguration {
   )
   private Set<QualityGateOpenApiCoverageMapping> openApiCoverageConfigurations =
     new HashSet<>();
+
+  public QualityGateConfiguration withId(Long id) {
+    setId(id);
+    openApiCoverageConfigurations.forEach(mapping ->
+      mapping.withQualityGateConfiguration(this)
+    );
+    return this;
+  }
 
   public QualityGateConfiguration withOpenApiCoverageConfiguration(
     OpenApiCoverageConfiguration openApiCoverageConfiguration

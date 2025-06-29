@@ -8,13 +8,13 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-@IntegrationTest
-class QualityGateReportParameterMapperIT {
+class QualityGateReportParameterMapperIT
+  extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private ApplicationContext applicationContext;

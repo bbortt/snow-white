@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
@@ -42,29 +42,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
 
-@Testcontainers
-@IntegrationTest
-class OpenApiResultListenerIT {
-
-  @Container
-  static final ConfluentKafkaContainer KAFKA_CONTAINER =
-    new ConfluentKafkaContainer("confluentinc/cp-kafka:7.8.2").withExposedPorts(
-      9092
-    );
-
-  @DynamicPropertySource
-  static void kafkaProperties(DynamicPropertyRegistry registry) {
-    registry.add(
-      "spring.kafka.bootstrap-servers",
-      KAFKA_CONTAINER::getBootstrapServers
-    );
-  }
+class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private KafkaTemplate<String, OpenApiCoverageResponseEvent> kafkaTemplate;

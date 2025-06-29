@@ -14,11 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.InfluxDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
 @ActiveProfiles("test")
 @SpringBootTest(
   classes = { Main.class },
@@ -37,11 +34,14 @@ public abstract class AbstractOpenApiCoverageServiceIT {
 
   private static final int INFLUX_DB_PORT = 8086;
 
-  @Container
   static final InfluxDBContainer<?> INFLUX_DB_CONTAINER =
     new InfluxDBContainer<>(DockerImageName.parse("influxdb:2.7.11-alpine"))
       .withAdminToken(ADMIN_TOKEN)
       .withExposedPorts(INFLUX_DB_PORT);
+
+  static {
+    INFLUX_DB_CONTAINER.start();
+  }
 
   @DynamicPropertySource
   static void influxDbProperties(DynamicPropertyRegistry registry) {
