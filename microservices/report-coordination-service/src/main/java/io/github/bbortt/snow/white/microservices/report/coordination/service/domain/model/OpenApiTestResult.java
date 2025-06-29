@@ -43,7 +43,7 @@ public class OpenApiTestResult {
   private String openApiTestCriteria;
 
   @NotNull
-  @Column(nullable = false, updatable = false)
+  @Column(nullable = false, updatable = false, precision = 3, scale = 2)
   private BigDecimal coverage;
 
   @NotNull

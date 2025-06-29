@@ -19,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -41,7 +42,8 @@ public class ReportParameters {
 
   @Id
   @NotNull
-  @GeneratedValue(strategy = SEQUENCE)
+  @SequenceGenerator(name = "report_parameters_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = SEQUENCE, generator = "report_parameters_id_seq")
   @Column(nullable = false, updatable = false)
   private Long id;
 

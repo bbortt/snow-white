@@ -14,7 +14,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -26,18 +28,29 @@ import lombok.NoArgsConstructor;
 import lombok.With;
 
 @Entity
-@Table
 @With
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
+@Table(
+  uniqueConstraints = {
+    @UniqueConstraint(name = "uk_open_api_coverage", columnNames = { "name" }),
+  }
+)
 public class OpenApiCoverageConfiguration {
 
   @Id
   @NotNull
-  @GeneratedValue(strategy = SEQUENCE)
   @Column(nullable = false, updatable = false)
+  @SequenceGenerator(
+    name = "open_api_coverage_configuration_id_seq",
+    allocationSize = 1
+  )
+  @GeneratedValue(
+    strategy = SEQUENCE,
+    generator = "open_api_coverage_configuration_id_seq"
+  )
   private Long id;
 
   @NotEmpty

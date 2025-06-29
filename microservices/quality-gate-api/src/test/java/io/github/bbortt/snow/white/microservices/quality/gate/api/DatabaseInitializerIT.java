@@ -17,8 +17,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposit
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@IntegrationTest
-class DatabaseInitializerIT {
+class DatabaseInitializerIT extends AbstractQualityGateApiIT {
 
   @Autowired
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;

@@ -9,14 +9,13 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@IntegrationTest
-class QualityGateServiceIT {
+class QualityGateServiceIT extends AbstractQualityGateApiIT {
 
   @Autowired
   private QualityGateConfigurationRepository qualityGateConfigurationRepository;

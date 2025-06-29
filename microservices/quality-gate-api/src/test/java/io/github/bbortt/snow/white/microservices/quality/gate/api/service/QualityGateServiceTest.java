@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
@@ -18,7 +17,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -29,6 +27,8 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -283,12 +283,19 @@ class QualityGateServiceTest {
   class InitPredefinedQualityGates {
 
     @Test
-    void shouldInsertEachMissingPredefinedQualityGateConfigurations() {
-      doReturn(false)
-        .when(qualityGateConfigurationRepositoryMock)
-        .existsByName(anyString());
-
+    void shouldUpdatePersistedQualityGateConfigurations() {
       doReturnOpenApiCoverageConfigurationByNameUponMockInvocation();
+
+      doAnswer(invocationOnMock ->
+        Optional.of(
+          QualityGateConfiguration.builder()
+            .id(ThreadLocalRandom.current().nextLong())
+            .name(invocationOnMock.getArgument(0))
+            .build()
+        )
+      )
+        .when(qualityGateConfigurationRepositoryMock)
+        .findByName(anyString());
 
       fixture.initPredefinedQualityGates();
 
@@ -299,8 +306,71 @@ class QualityGateServiceTest {
         defaultQualityGateConfigurationsCaptor.capture()
       );
 
-      assertThat(defaultQualityGateConfigurationsCaptor.getValue())
-        .isNotEmpty()
+      assertThatAllStandardQualityGateConfigurationsWerePersisted(
+        assertThat(defaultQualityGateConfigurationsCaptor.getValue())
+          .isNotEmpty()
+          .allSatisfy(qualityGateConfiguration ->
+            assertThat(qualityGateConfiguration.getId()).isNotNull()
+          )
+      );
+
+      verify(qualityGateConfigurationRepositoryMock, times(4)).findByName(
+        anyString()
+      );
+
+      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
+        anyString()
+      );
+    }
+
+    @Test
+    void shouldPersistQualityGateConfigurationsIfNoneExistYet() {
+      doReturnOpenApiCoverageConfigurationByNameUponMockInvocation();
+
+      doReturn(Optional.empty())
+        .when(qualityGateConfigurationRepositoryMock)
+        .findByName(anyString());
+
+      fixture.initPredefinedQualityGates();
+
+      ArgumentCaptor<
+        List<QualityGateConfiguration>
+      > defaultQualityGateConfigurationsCaptor = captor();
+      verify(qualityGateConfigurationRepositoryMock).saveAll(
+        defaultQualityGateConfigurationsCaptor.capture()
+      );
+
+      assertThatAllStandardQualityGateConfigurationsWerePersisted(
+        assertThat(
+          defaultQualityGateConfigurationsCaptor.getValue()
+        ).isNotEmpty()
+      );
+
+      verify(qualityGateConfigurationRepositoryMock, times(4)).findByName(
+        anyString()
+      );
+
+      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
+        anyString()
+      );
+    }
+
+    private void doReturnOpenApiCoverageConfigurationByNameUponMockInvocation() {
+      doAnswer(invocationOnMock ->
+        Optional.of(
+          OpenApiCoverageConfiguration.builder()
+            .name(invocationOnMock.getArgument(0))
+            .build()
+        )
+      )
+        .when(openApiCoverageConfigurationRepositoryMock)
+        .findByName(anyString());
+    }
+
+    private void assertThatAllStandardQualityGateConfigurationsWerePersisted(
+      ListAssert<QualityGateConfiguration> qualityGateConfigurationListAssert
+    ) {
+      qualityGateConfigurationListAssert
         .hasSize(4)
         .satisfiesExactly(
           qualityGateConfiguration ->
@@ -324,46 +394,6 @@ class QualityGateServiceTest {
               c -> assertThat(c.getOpenApiCoverageConfigurations()).isEmpty()
             )
         );
-
-      verify(qualityGateConfigurationRepositoryMock, times(4)).existsByName(
-        anyString()
-      );
-
-      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
-        anyString()
-      );
-    }
-
-    @Test
-    void shouldNotAddAnyQualityGateConfigurationToDatabase_whenAllAreAlreadyPresent() {
-      doReturnOpenApiCoverageConfigurationByNameUponMockInvocation();
-
-      doReturn(true)
-        .when(qualityGateConfigurationRepositoryMock)
-        .existsByName(anyString());
-
-      fixture.initPredefinedQualityGates();
-
-      verify(qualityGateConfigurationRepositoryMock, times(4)).existsByName(
-        anyString()
-      );
-      verifyNoMoreInteractions(qualityGateConfigurationRepositoryMock);
-
-      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
-        anyString()
-      );
-    }
-
-    private void doReturnOpenApiCoverageConfigurationByNameUponMockInvocation() {
-      doAnswer(invocationOnMock ->
-        Optional.of(
-          OpenApiCoverageConfiguration.builder()
-            .name(invocationOnMock.getArgument(0))
-            .build()
-        )
-      )
-        .when(openApiCoverageConfigurationRepositoryMock)
-        .findByName(anyString());
     }
   }
 }

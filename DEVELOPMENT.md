@@ -196,6 +196,7 @@ These services are only available inside Docker (or Podman) Compose:
 | Redis                        | `6379`                                                   |
 | Redis Insight                | `5540`                                                   |
 | InfluxDB                     | `8086`                                                   |
+| PostgreSQL                   | `5432`                                                   |
 | Service Interface Repository | `3000`                                                   |
 
 ## Running Tests and Code Quality
