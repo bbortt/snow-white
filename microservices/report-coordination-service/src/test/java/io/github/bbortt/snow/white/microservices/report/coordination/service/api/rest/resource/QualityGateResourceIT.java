@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.IntegrationTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
@@ -47,37 +47,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
 
-@Testcontainers
-@IntegrationTest
 @AutoConfigureMockMvc
-class QualityGateResourceIT {
+class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/quality-gates";
   private static final String CALCULATION_REQUEST_API_URL =
     ENTITY_API_URL + "/{qualityGateName}/calculate";
 
   private static final String QUALITY_GATE_CONFIG_NAME = "basic-coverage";
-
-  @Container
-  static final ConfluentKafkaContainer KAFKA_CONTAINER =
-    new ConfluentKafkaContainer("confluentinc/cp-kafka:7.8.2").withExposedPorts(
-      9092
-    );
-
-  @DynamicPropertySource
-  static void kafkaProperties(DynamicPropertyRegistry registry) {
-    registry.add(
-      "spring.kafka.bootstrap-servers",
-      KAFKA_CONTAINER::getBootstrapServers
-    );
-  }
 
   @Autowired
   private ObjectMapper objectMapper;

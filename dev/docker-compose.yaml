@@ -156,6 +156,26 @@ services:
       - default
       - internal
 
+  postgres:
+    image: 'postgres:17.5-alpine'
+    shm_size: 128mb
+    volumes:
+      - postgres/data/:/var/lib/postgresql/data/
+      - postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: 'snow-white'
+      POSTGRES_PASSWORD: 'snow-white'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U snow-white -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+    networks:
+      - internal
+
   service-interface-repository:
     build:
       context: ./sir
@@ -321,9 +341,11 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
-      SPRING_DATASOURCE_JDBC_URL: 'jdbc:h2:mem:quality-gate;MODE=PostgreSQL'
-      SPRING_DATASOURCE_USERNAME: 'sa'
-      SPRING_DATASOURCE_PASSWORD: 'password'
+      SPRING_DATASOURCE_JDBC-URL: 'jdbc:postgres://postgres:5432/quality-gate-api'
+      SPRING_DATASOURCE_USERNAME: 'quality_gate_app'
+      SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
+      SPRING_FLYWAY_USERNAME: 'quality_gate_flyway'
+      SPRING_FLYWAY_PASSWORD: 'strongpassword1'
     ports:
       - '8081:8080'
     deploy:
@@ -337,6 +359,8 @@ services:
     depends_on:
       otel-collector:
         condition: service_started
+      postgres:
+        condition: service_healthy
     restart: on-failure
     networks:
       - internal
@@ -357,6 +381,11 @@ services:
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SPRING_DATASOURCE_JDBC-URL: 'jdbc:postgres://postgres:5432/report-coordination-service'
+      SPRING_DATASOURCE_USERNAME: 'report_coord_app'
+      SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
+      SPRING_FLYWAY_USERNAME: 'report_coord_flyway'
+      SPRING_FLYWAY_PASSWORD: 'strongpassword1'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
     ports:
       - '8084:8080'
@@ -373,6 +402,8 @@ services:
         condition: service_healthy
       otel-collector:
         condition: service_started
+      postgres:
+        condition: service_healthy
       microservices.quality-gate-api:
         condition: service_started
     restart: on-failure
