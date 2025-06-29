@@ -4,6 +4,7 @@
 .mvn/
 .npm/
 
+backstage/
 node_modules/
 opentelemetry-proto/
 
