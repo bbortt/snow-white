@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 

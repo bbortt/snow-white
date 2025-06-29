@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
 
+#
+# Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+# Licensed under the Polyform Small Business License 1.0.0
+# See LICENSE file for full details.
+#
+
 image_tag="$1"
 registry="${2:-ghcr.io}"
 additional_args="$3"
