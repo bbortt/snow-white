@@ -142,7 +142,7 @@ services:
       - internal
 
   influxdb:
-    image: influxdb:2.7.11-alpine
+    image: influxdb:2.7.12-alpine
     ports:
       - '8086:8086'
     environment:
