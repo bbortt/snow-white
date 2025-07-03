@@ -42,9 +42,8 @@ public class OpenApiService {
     return parseOpenApiSource(apiEndpointEntry);
   }
 
-  private OpenAPI parseOpenApiSource(
-    @NotNull ApiEndpointEntry apiEndpointEntry
-  ) throws UnparseableOpenApiException {
+  private OpenAPI parseOpenApiSource(@NotNull ApiEndpointEntry apiEndpointEntry)
+    throws UnparseableOpenApiException {
     SwaggerParseResult swaggerParseResult = openAPIV3Parser.readLocation(
       apiEndpointEntry.getSourceUrl(),
       emptyList(),

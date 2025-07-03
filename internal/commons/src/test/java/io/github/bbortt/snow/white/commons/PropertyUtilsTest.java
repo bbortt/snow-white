@@ -28,8 +28,9 @@ class PropertyUtilsTest {
       properties.put("property1", "value1");
       properties.put("property2", "value2");
 
-      assertThatNoException()
-        .isThrownBy(() -> PropertyUtils.assertRequiredProperties(properties));
+      assertThatNoException().isThrownBy(() ->
+        PropertyUtils.assertRequiredProperties(properties)
+      );
     }
 
     @Test

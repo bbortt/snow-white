@@ -70,8 +70,9 @@ class MinioBucketConfigTest {
 
   @Test
   void isNotEnabled_withoutProperties() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioBucketConfig.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioBucketConfig.class
+    );
 
     contextRunner.run(context ->
       assertThat(context).doesNotHaveBean(MinioBucketConfig.class)
@@ -85,8 +86,9 @@ class MinioBucketConfigTest {
   @MethodSource
   @ParameterizedTest
   void isNotEnabled_withInvalidProperty(String propertyValue) {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioBucketConfig.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioBucketConfig.class
+    );
 
     contextRunner
       .withPropertyValues(PREFIX + ".minio.init-bucket=" + propertyValue)
@@ -102,8 +104,9 @@ class MinioBucketConfigTest {
       .getBucketName();
     doReturn(minIOPropertiesMock).when(apiSyncJobPropertiesMock).getMinio();
 
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioBucketConfig.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioBucketConfig.class
+    );
 
     contextRunner
       .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)

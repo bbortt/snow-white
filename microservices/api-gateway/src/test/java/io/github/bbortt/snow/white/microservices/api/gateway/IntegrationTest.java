@@ -21,5 +21,4 @@ import org.springframework.boot.test.context.SpringBootTest;
     "snow.white.api.gateway.report-coordination-service-url=http://localhost:8084",
   }
 )
-public @interface IntegrationTest {
-}
+public @interface IntegrationTest {}

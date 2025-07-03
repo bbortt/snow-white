@@ -44,8 +44,8 @@ class NoSpringConditionalsArchitectureTest {
   private static final String BASE_PACKAGE =
     NoSpringConditionalsArchitectureTest.class.getPackageName();
 
-  private final JavaClasses importedClasses = new ClassFileImporter()
-    .importPackages(BASE_PACKAGE);
+  private final JavaClasses importedClasses =
+    new ClassFileImporter().importPackages(BASE_PACKAGE);
 
   @Test
   void classes_should_not_use_conditional_on_bean_annotation() {

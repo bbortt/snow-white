@@ -43,8 +43,9 @@ class MinioServiceTest {
 
   @Test
   void exists_ifMinIOClientBeanExists() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioService.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioService.class
+    );
 
     doReturn(minIOPropertiesMock).when(apiSyncJobPropertiesMock).getMinio();
 

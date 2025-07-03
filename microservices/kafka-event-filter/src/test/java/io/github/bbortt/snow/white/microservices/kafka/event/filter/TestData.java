@@ -100,59 +100,55 @@ public class TestData {
   public static final ResourceSpans RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES =
     ResourceSpans.newBuilder()
       .addScopeSpans(
-        ScopeSpans.newBuilder()
-          .addSpans(
-            Span.newBuilder()
-              .addAttributes(
-                KeyValue.newBuilder()
-                  .setKey(API_NAME_PROPERTY)
-                  .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
-              )
-              .addAttributes(
-                KeyValue.newBuilder()
-                  .setKey(API_VERSION_PROPERTY)
-                  .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
-              )
-              .addAttributes(
-                KeyValue.newBuilder()
-                  .setKey(SERVICE_NAME_PROPERTY)
-                  .setValue(
-                    AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
-                  )
-              )
-          )
+        ScopeSpans.newBuilder().addSpans(
+          Span.newBuilder()
+            .addAttributes(
+              KeyValue.newBuilder()
+                .setKey(API_NAME_PROPERTY)
+                .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
+            )
+            .addAttributes(
+              KeyValue.newBuilder()
+                .setKey(API_VERSION_PROPERTY)
+                .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
+            )
+            .addAttributes(
+              KeyValue.newBuilder()
+                .setKey(SERVICE_NAME_PROPERTY)
+                .setValue(
+                  AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
+                )
+            )
+        )
       )
       .build();
 
   public static final ResourceSpans RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL =
     ResourceSpans.newBuilder()
       .setResource(
-        Resource.newBuilder()
-          .addAttributes(
-            KeyValue.newBuilder()
-              .setKey(API_NAME_PROPERTY)
-              .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
-          )
+        Resource.newBuilder().addAttributes(
+          KeyValue.newBuilder()
+            .setKey(API_NAME_PROPERTY)
+            .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
+        )
       )
       .addScopeSpans(
         ScopeSpans.newBuilder()
           .setScope(
-            InstrumentationScope.newBuilder()
-              .addAttributes(
-                KeyValue.newBuilder()
-                  .setKey(API_VERSION_PROPERTY)
-                  .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
-              )
+            InstrumentationScope.newBuilder().addAttributes(
+              KeyValue.newBuilder()
+                .setKey(API_VERSION_PROPERTY)
+                .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
+            )
           )
           .addSpans(
-            Span.newBuilder()
-              .addAttributes(
-                KeyValue.newBuilder()
-                  .setKey(SERVICE_NAME_PROPERTY)
-                  .setValue(
-                    AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
-                  )
-              )
+            Span.newBuilder().addAttributes(
+              KeyValue.newBuilder()
+                .setKey(SERVICE_NAME_PROPERTY)
+                .setValue(
+                  AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
+                )
+            )
           )
       )
       .build();

@@ -57,7 +57,8 @@ class QualityGateApiConfigTest {
       assertThat(fixture.qualityGateApi(builderMock))
         .isNotNull()
         .extracting(
-          io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api.QualityGateApi::getApiClient
+          io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api
+            .QualityGateApi::getApiClient
         )
         .extracting(ApiClient::getBasePath)
         .isEqualTo(BASE_URL);

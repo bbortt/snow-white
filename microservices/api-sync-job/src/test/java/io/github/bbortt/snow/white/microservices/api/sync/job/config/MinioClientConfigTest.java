@@ -44,8 +44,9 @@ class MinioClientConfigTest {
 
   @Test
   void isNotEnabledWithoutProperties() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioClientConfig.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioClientConfig.class
+    );
 
     contextRunner.run(context ->
       assertThat(context).doesNotHaveBean(MinioClientConfig.class)
@@ -59,8 +60,9 @@ class MinioClientConfigTest {
 
     doReturn(minIOPropertiesMock).when(apiSyncJobPropertiesMock).getMinio();
 
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(MinioClientConfig.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      MinioClientConfig.class
+    );
 
     contextRunner
       .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)
