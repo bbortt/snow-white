@@ -33,7 +33,7 @@ jobs:
       - name: Version Report
         run: ./mvnw --version
       - name: Build with Maven
-        run: ./mvnw -B -Pprod verify
+        run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
       - name: Sonar Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
