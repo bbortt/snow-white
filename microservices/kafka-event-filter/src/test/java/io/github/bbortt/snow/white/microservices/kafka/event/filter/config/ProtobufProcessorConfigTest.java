@@ -51,8 +51,9 @@ class ProtobufProcessorConfigTest {
 
     @Test
     void shouldBePresent_whenConsumerModeIsJson() {
-      var contextRunner = new ApplicationContextRunner()
-        .withUserConfiguration(ProtobufProcessorConfig.class);
+      var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+        ProtobufProcessorConfig.class
+      );
 
       doReturn("inboundTopicName")
         .when(kafkaEventFilterPropertiesMock)
@@ -101,8 +102,9 @@ class ProtobufProcessorConfigTest {
 
     @Test
     void shouldBePresent_whenConsumerModeIsJson() {
-      var contextRunner = new ApplicationContextRunner()
-        .withUserConfiguration(ProtobufProcessorConfig.class);
+      var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+        ProtobufProcessorConfig.class
+      );
 
       doReturn("inboundTopicName")
         .when(kafkaEventFilterPropertiesMock)

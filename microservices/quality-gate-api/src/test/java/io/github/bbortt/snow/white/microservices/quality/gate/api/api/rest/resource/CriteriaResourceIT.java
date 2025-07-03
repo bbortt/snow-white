@@ -57,16 +57,16 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
     );
 
     assertThat(openApiCriteria).containsExactly(
-      stream(OpenApiCriteria.values())
-        .map(c ->
-          OpenApiCriterion.builder()
-            .id(c.name())
-            .name(c.getLabel())
-            .description(c.getDescription())
-            .build()
-        )
-        .sorted(comparing(OpenApiCriterion::getName))
-        .toArray(OpenApiCriterion[]::new)
-    );
+        stream(OpenApiCriteria.values())
+          .map(c ->
+            OpenApiCriterion.builder()
+              .id(c.name())
+              .name(c.getLabel())
+              .description(c.getDescription())
+              .build()
+          )
+          .sorted(comparing(OpenApiCriterion::getName))
+          .toArray(OpenApiCriterion[]::new)
+      );
   }
 }

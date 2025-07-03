@@ -24,8 +24,9 @@ public class MinioClientConfig {
   public MinioClient minioClient(ApiSyncJobProperties apiSyncJobProperties) {
     var minio = apiSyncJobProperties.getMinio();
 
-    var minioClientBuilder = MinioClient.builder()
-      .endpoint(minio.getEndpoint());
+    var minioClientBuilder = MinioClient.builder().endpoint(
+      minio.getEndpoint()
+    );
 
     if (hasText(minio.getAccessKey()) && hasText(minio.getSecretKey())) {
       minioClientBuilder = minioClientBuilder.credentials(

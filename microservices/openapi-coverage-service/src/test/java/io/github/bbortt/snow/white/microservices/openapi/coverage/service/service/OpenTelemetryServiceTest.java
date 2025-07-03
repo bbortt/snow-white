@@ -154,8 +154,8 @@ class OpenTelemetryServiceTest {
       var attributesValue1 =
         // language=json
         """
-        {"http.method":"GET","http.path":"/api/v1/test"}
-        """;
+          {"http.method":"GET","http.path":"/api/v1/test"}
+          """;
 
       var fluxRecord1 = mock(FluxRecord.class);
       doReturn(spanId1).when(fluxRecord1).getValueByKey(SPAN_ID_KEY);
@@ -168,8 +168,8 @@ class OpenTelemetryServiceTest {
       var attributesValue2 =
         // language=json
         """
-        {"http.method":"POST","http.path":"/api/v1/create"}
-        """;
+          {"http.method":"POST","http.path":"/api/v1/create"}
+          """;
 
       var fluxRecord2 = mock(FluxRecord.class);
       doReturn(spanId2).when(fluxRecord2).getValueByKey(SPAN_ID_KEY);

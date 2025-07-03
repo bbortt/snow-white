@@ -110,8 +110,8 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
 
     var openApi = yamlParser.readSpecToJson(getInputSpec());
 
-    var extractedApiInformation = getOrCreateInformationExtractor()
-      .extractFromOpenApi(openApi);
+    var extractedApiInformation =
+      getOrCreateInformationExtractor().extractFromOpenApi(openApi);
 
     if (extractedApiInformation.isIncomplete()) {
       try {
@@ -153,8 +153,8 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
     if (nonNull(operations)) {
       @SuppressWarnings("unchecked")
       List<CodegenOperation> operationList = (List<
-          CodegenOperation
-        >) operations.get("operation");
+        CodegenOperation
+      >) operations.get("operation");
       for (CodegenOperation operation : operationList) {
         operation.vendorExtensions.put(
           "x-operation-extra-annotation",

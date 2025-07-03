@@ -54,8 +54,9 @@ class KafkaTopicManagerTest {
       .when(reportCoordinationServicePropertiesMock)
       .getOpenapiCalculationResponse();
 
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      KafkaTopicManager.class
+    );
 
     contextRunner
       .withBean(ReportCoordinationServiceProperties.class, () ->

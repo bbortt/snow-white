@@ -55,7 +55,8 @@ public interface QualityGateReportMapper {
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {
-      case NOT_STARTED,
+      case
+        NOT_STARTED,
         IN_PROGRESS -> CalculateQualityGate202Response.StatusEnum.IN_PROGRESS;
       case FAILED -> CalculateQualityGate202Response.StatusEnum.FAILED;
       case PASSED -> CalculateQualityGate202Response.StatusEnum.PASSED;
@@ -66,7 +67,8 @@ public interface QualityGateReportMapper {
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {
-      case NOT_STARTED,
+      case
+        NOT_STARTED,
         IN_PROGRESS -> ListQualityGateReports200ResponseInner.StatusEnum.IN_PROGRESS;
       case FAILED -> ListQualityGateReports200ResponseInner.StatusEnum.FAILED;
       case PASSED -> ListQualityGateReports200ResponseInner.StatusEnum.PASSED;

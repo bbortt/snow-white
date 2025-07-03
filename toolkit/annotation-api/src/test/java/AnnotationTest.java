@@ -20,8 +20,8 @@ class AnnotationTest {
   void annotationIsValid() throws NoSuchMethodException {
     assertThat(
       AnnotationTest.class.getDeclaredMethod(
-          "annotationIsValid"
-        ).getAnnotations()
+        "annotationIsValid"
+      ).getAnnotations()
     ).hasSize(2);
   }
 }

@@ -45,8 +45,9 @@ public class JUnitReporter {
 
   public Resource transformToJUnitReport(QualityGateReport qualityGateReport)
     throws JUnitReportCreationException {
-    var testSuites = new TestSuitesFactory()
-      .buildForQualityGateReport(qualityGateReport);
+    var testSuites = new TestSuitesFactory().buildForQualityGateReport(
+      qualityGateReport
+    );
 
     try (var byteArrayOutputStream = new ByteArrayOutputStream()) {
       xmlMapper.writeValue(byteArrayOutputStream, testSuites);

@@ -73,13 +73,12 @@ public class ReportResource implements ReportApi {
         )
         .body(jUnitReport);
     } catch (JUnitReportCreationException e) {
-      return ResponseEntity.internalServerError()
-        .body(
-          ListQualityGateReports500Response.builder()
-            .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
-            .message(e.getMessage())
-            .build()
-        );
+      return ResponseEntity.internalServerError().body(
+        ListQualityGateReports500Response.builder()
+          .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
+          .message(e.getMessage())
+          .build()
+      );
     }
   }
 
@@ -137,6 +136,7 @@ public class ReportResource implements ReportApi {
     static ReportOrErrorResponse errorResponse(ResponseEntity errorResponse) {
       return new ReportOrErrorResponse(null, errorResponse);
     }
+
     static ReportOrErrorResponse qualityGateReport(
       QualityGateReport qualityGateReport
     ) {

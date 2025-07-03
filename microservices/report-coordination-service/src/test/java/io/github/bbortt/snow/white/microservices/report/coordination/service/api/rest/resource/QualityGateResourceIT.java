@@ -229,8 +229,9 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
   private @NotNull String createQualityGateApiWiremockStub()
     throws JsonProcessingException {
-    var qualityGateConfig = new QualityGateConfig()
-      .name(QUALITY_GATE_CONFIG_NAME);
+    var qualityGateConfig = new QualityGateConfig().name(
+      QUALITY_GATE_CONFIG_NAME
+    );
 
     var qualityGateByNameEndpoint = "/api/rest/v1/quality-gates/basic-coverage";
     stubFor(

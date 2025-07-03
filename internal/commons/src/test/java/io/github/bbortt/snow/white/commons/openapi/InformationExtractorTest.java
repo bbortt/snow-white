@@ -38,15 +38,16 @@ class InformationExtractorTest {
 
     @Test
     void returnsCompleteInformationWithAllFieldsPresent() {
-      String openApi = // language=json
+      String openApi =
+        // language=json
         """
-        {
-            "info": {
-                "title": "%s",
-                "version": "%s",
-                "x-service-name": "%s"
-            }
-        }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
+          {
+              "info": {
+                  "title": "%s",
+                  "version": "%s",
+                  "x-service-name": "%s"
+              }
+          }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);
 
@@ -60,13 +61,14 @@ class InformationExtractorTest {
 
     @Test
     void returnsIncompleteInformationWithMissingFields() {
-      String openApi = // language=json
+      String openApi =
+        // language=json
         """
-        {
-            "info": {
-                "title": "%s"
-            }
-        }""".formatted(VALID_API_NAME);
+          {
+              "info": {
+                  "title": "%s"
+              }
+          }""".formatted(VALID_API_NAME);
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);
 
@@ -80,7 +82,8 @@ class InformationExtractorTest {
 
     @Test
     void returnsAllNullValuesWithEmptyObject() {
-      String openApi = // language=json
+      String openApi =
+        // language=json
         "{}";
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);
@@ -101,15 +104,16 @@ class InformationExtractorTest {
         "customInfo.serviceName"
       );
 
-      var openApi = // language=json
+      var openApi =
+        // language=json
         """
-        {
-            "customInfo": {
-                "apiName": "%s",
-                "apiVersion": "%s",
-                "serviceName": "%s"
-            }
-        }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
+          {
+              "customInfo": {
+                  "apiName": "%s",
+                  "apiVersion": "%s",
+                  "serviceName": "%s"
+              }
+          }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);
 
@@ -129,17 +133,18 @@ class InformationExtractorTest {
         "deep.nested.serviceName"
       );
 
-      var openApi = // language=json
+      var openApi =
+        // language=json
         """
-        {
-            "deep": {
-                "nested": {
-                    "apiName": "%s",
-                    "apiVersion": "%s",
-                    "serviceName": "%s"
-                }
-            }
-        }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
+          {
+              "deep": {
+                  "nested": {
+                      "apiName": "%s",
+                      "apiVersion": "%s",
+                      "serviceName": "%s"
+                  }
+              }
+          }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);
 

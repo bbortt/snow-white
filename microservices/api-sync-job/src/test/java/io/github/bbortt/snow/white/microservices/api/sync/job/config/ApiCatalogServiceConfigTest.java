@@ -60,7 +60,8 @@ class ApiCatalogServiceConfigTest {
               c -> assertThat(c).hasSingleBean(ApiCatalogService.class),
               c ->
                 assertThat(c.getBean(ApiCatalogService.class)).isInstanceOf(
-                  io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.ServiceInterfaceCatalogService.class
+                  io.github.bbortt.snow.white.microservices.api.sync.job.service.impl
+                    .ServiceInterfaceCatalogService.class
                 ),
               c ->
                 assertThat(c)
@@ -116,7 +117,8 @@ class ApiCatalogServiceConfigTest {
               c -> assertThat(c).hasSingleBean(ApiCatalogService.class),
               c ->
                 assertThat(c.getBean(ApiCatalogService.class)).isInstanceOf(
-                  io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.BackstageCatalogService.class
+                  io.github.bbortt.snow.white.microservices.api.sync.job.service.impl
+                    .BackstageCatalogService.class
                 ),
               c ->
                 assertThat(c)

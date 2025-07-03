@@ -34,10 +34,9 @@ class ApiInformationDeserializerTest {
 
   @Test
   void testSuccessfulApiDeserialization() throws IOException {
-    var objectMapper = new ObjectMapper()
-      .registerModule(
-        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-      );
+    var objectMapper = new ObjectMapper().registerModule(
+      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+    );
 
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
     var api = objectMapper.readValue(content, ApiInformation.class);
@@ -66,10 +65,9 @@ class ApiInformationDeserializerTest {
 
     fixture = new ApiInformationDeserializer(apiSyncJobProperties);
 
-    var objectMapper = new ObjectMapper()
-      .registerModule(
-        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-      );
+    var objectMapper = new ObjectMapper().registerModule(
+      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+    );
 
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
     var api = objectMapper.readValue(content, ApiInformation.class);
@@ -91,10 +89,9 @@ class ApiInformationDeserializerTest {
 
     fixture = new ApiInformationDeserializer(apiSyncJobProperties);
 
-    var objectMapper = new ObjectMapper()
-      .registerModule(
-        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-      );
+    var objectMapper = new ObjectMapper().registerModule(
+      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+    );
 
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
     var api = objectMapper.readValue(content, ApiInformation.class);
@@ -108,10 +105,9 @@ class ApiInformationDeserializerTest {
   @Test
   void testSuccessfulApiArrayDeserializationOfMultipleApis()
     throws IOException {
-    var objectMapper = new ObjectMapper()
-      .registerModule(
-        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-      );
+    var objectMapper = new ObjectMapper().registerModule(
+      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+    );
 
     var content = getResourceContent("ApiDeserializerTest/multiple-apis.json");
     var apis = objectMapper.readValue(content, ApiInformation[].class);
@@ -123,10 +119,9 @@ class ApiInformationDeserializerTest {
   @ValueSource(strings = { "title", "otel-service-name", "version" })
   void testMissingPropertyApiSerialization(String missingProperty)
     throws IOException {
-    var objectMapper = new ObjectMapper()
-      .registerModule(
-        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-      );
+    var objectMapper = new ObjectMapper().registerModule(
+      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+    );
 
     var content = getResourceContent(
       "ApiDeserializerTest/missing-" + missingProperty + ".json"

@@ -51,7 +51,7 @@ public class SecurityConfig {
       )
       .authorizeExchange(authz ->
         // prettier-ignore
-                        authz
+        authz
                                 .pathMatchers("/").permitAll()
                                 .pathMatchers("/*.*").permitAll()
                                 .pathMatchers("/api/**").permitAll()

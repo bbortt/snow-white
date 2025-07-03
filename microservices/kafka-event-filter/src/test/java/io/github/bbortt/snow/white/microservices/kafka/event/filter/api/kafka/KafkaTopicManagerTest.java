@@ -47,8 +47,9 @@ class KafkaTopicManagerTest {
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      KafkaTopicManager.class
+    );
 
     contextRunner
       .withBean(KafkaEventFilterProperties.class, () ->

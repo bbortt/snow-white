@@ -52,13 +52,14 @@ class SnowWhiteSpringServerGeneratorTest {
 
   private static final String INPUT_SPEC =
     "SnowWhiteSpringServerGeneratorIT/valid-specification.yml";
-  private static final String VALID_YAML = // language=yaml
+  private static final String VALID_YAML =
+    // language=yaml
     """
-    info:
-      title: Test API
-      version: 1.0.0
-      x-service-name: test-service
-    """;
+      info:
+        title: Test API
+        version: 1.0.0
+        x-service-name: test-service
+      """;
 
   @Mock
   private InformationExtractor informationExtractorMock;

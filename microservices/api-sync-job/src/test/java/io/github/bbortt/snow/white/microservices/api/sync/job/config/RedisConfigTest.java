@@ -27,8 +27,9 @@ class RedisConfigTest {
 
     @Test
     void isBean() {
-      var runner = new ApplicationContextRunner()
-        .withUserConfiguration(RedisConfig.class);
+      var runner = new ApplicationContextRunner().withUserConfiguration(
+        RedisConfig.class
+      );
 
       runner
         .withBean(RedisConnectionFactory.class, () -> connectionFactoryMock)

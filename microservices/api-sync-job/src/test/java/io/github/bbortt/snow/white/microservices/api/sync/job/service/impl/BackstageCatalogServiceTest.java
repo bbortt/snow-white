@@ -146,21 +146,15 @@ class BackstageCatalogServiceTest {
       );
 
       doReturn(
-        new EntitiesQueryResponse()
-          .items(
-            singletonList(
-              new Entity()
-                .metadata(
-                  new EntityMeta()
-                    .annotations(
-                      Map.of(
-                        "customAnnotation",
-                        "customLocation1\ncustomLocation2"
-                      )
-                    )
-                )
+        new EntitiesQueryResponse().items(
+          singletonList(
+            new Entity().metadata(
+              new EntityMeta().annotations(
+                Map.of("customAnnotation", "customLocation1\ncustomLocation2")
+              )
             )
           )
+        )
       )
         .when(backstageEntityApiMock)
         .getEntitiesByQuery(
@@ -226,21 +220,15 @@ class BackstageCatalogServiceTest {
       );
 
       doReturn(
-        new EntitiesQueryResponse()
-          .items(
-            singletonList(
-              new Entity()
-                .metadata(
-                  new EntityMeta()
-                    .annotations(
-                      Map.of(
-                        "customAnnotation",
-                        "customLocation1\ncustomLocation2"
-                      )
-                    )
-                )
+        new EntitiesQueryResponse().items(
+          singletonList(
+            new Entity().metadata(
+              new EntityMeta().annotations(
+                Map.of("customAnnotation", "customLocation1\ncustomLocation2")
+              )
             )
           )
+        )
       )
         .when(backstageEntityApiMock)
         .getEntitiesByQuery(
@@ -289,8 +277,9 @@ class BackstageCatalogServiceTest {
         openApiDefinition
       );
       doReturn(
-        new EntitiesQueryResponse()
-          .items(singletonList(new Entity().spec(spec)))
+        new EntitiesQueryResponse().items(
+          singletonList(new Entity().spec(spec))
+        )
       )
         .when(backstageEntityApiMock)
         .getEntitiesByQuery(
@@ -360,8 +349,9 @@ class BackstageCatalogServiceTest {
         openApiDefinition
       );
       doReturn(
-        new EntitiesQueryResponse()
-          .items(singletonList(new Entity().spec(spec)))
+        new EntitiesQueryResponse().items(
+          singletonList(new Entity().spec(spec))
+        )
       )
         .when(backstageEntityApiMock)
         .getEntitiesByQuery(
@@ -404,10 +394,9 @@ class BackstageCatalogServiceTest {
       );
 
       doReturn(
-        new EntitiesQueryResponse()
-          .items(
-            singletonList(new Entity().spec(Map.of("type", "not-openapi")))
-          )
+        new EntitiesQueryResponse().items(
+          singletonList(new Entity().spec(Map.of("type", "not-openapi")))
+        )
       )
         .when(backstageEntityApiMock)
         .getEntitiesByQuery(

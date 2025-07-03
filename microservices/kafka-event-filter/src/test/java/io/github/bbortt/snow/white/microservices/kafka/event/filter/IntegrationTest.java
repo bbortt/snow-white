@@ -18,5 +18,4 @@ import org.springframework.test.context.ActiveProfiles;
 @Retention(RUNTIME)
 @SpringBootTest
 @ActiveProfiles("test")
-public @interface IntegrationTest {
-}
+public @interface IntegrationTest {}

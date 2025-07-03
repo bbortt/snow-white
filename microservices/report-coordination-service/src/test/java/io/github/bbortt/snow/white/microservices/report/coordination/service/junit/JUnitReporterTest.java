@@ -71,8 +71,8 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withPassedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiTestResults(
+      var qualityGateReport =
+        createInitialQualityGateReport().withOpenApiTestResults(
           Set.of(
             createOpenApiTestResult(
               PATH_COVERAGE.name(),
@@ -100,8 +100,8 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withFailedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiTestResults(
+      var qualityGateReport =
+        createInitialQualityGateReport().withOpenApiTestResults(
           Set.of(
             createOpenApiTestResult(
               PATH_COVERAGE.name(),
@@ -129,8 +129,8 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withMixedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiTestResults(
+      var qualityGateReport =
+        createInitialQualityGateReport().withOpenApiTestResults(
           Set.of(
             createOpenApiTestResult(
               PATH_COVERAGE.name(),
@@ -158,8 +158,8 @@ class JUnitReporterTest {
     @Test
     void shouldThrow_whenOpenApiCriterionIsInvalid() {
       var invalidName = "invalid";
-      var qualityGateReport = createInitialQualityGateReport()
-        .withOpenApiTestResults(
+      var qualityGateReport =
+        createInitialQualityGateReport().withOpenApiTestResults(
           Set.of(
             OpenApiTestResult.builder().openApiTestCriteria(invalidName).build()
           )

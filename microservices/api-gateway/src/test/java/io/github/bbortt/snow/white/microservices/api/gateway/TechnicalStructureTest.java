@@ -19,7 +19,7 @@ import com.tngtech.archunit.lang.ArchRule;
 class TechnicalStructureTest {
 
   // prettier-ignore
-    @ArchTest
+  @ArchTest
     static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
         .consideringAllDependencies()
         .layer("Config").definedBy("..config..")

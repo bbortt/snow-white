@@ -40,8 +40,7 @@ public class MinioBucketConfig
   implements ApplicationListener<ApplicationReadyEvent> {
 
   @VisibleForTesting
-  static final String PUBLIC_BUCKET_POLICY_TEMPLATE =
-    """
+  static final String PUBLIC_BUCKET_POLICY_TEMPLATE = """
     {
         "Version": "2012-10-17",
         "Statement": [

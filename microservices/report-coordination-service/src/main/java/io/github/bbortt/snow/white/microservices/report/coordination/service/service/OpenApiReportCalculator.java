@@ -56,31 +56,31 @@ public class OpenApiReportCalculator {
     AtomicReference<ReportStatus> reportStatus
   ) {
     requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
-      boolean criterionFound = false;
+        boolean criterionFound = false;
 
-      for (OpenApiTestResult result : updatedOpenApiCriteria) {
-        if (result.getOpenApiTestCriteria().equals(criterionName)) {
-          criterionFound = true;
+        for (OpenApiTestResult result : updatedOpenApiCriteria) {
+          if (result.getOpenApiTestCriteria().equals(criterionName)) {
+            criterionFound = true;
 
-          if (ONE.compareTo(result.getCoverage()) != 0) {
-            logger.trace(
-              "Criterion {} has insufficient coverage: {}",
-              criterionName,
-              result.getCoverage()
-            );
+            if (ONE.compareTo(result.getCoverage()) != 0) {
+              logger.trace(
+                "Criterion {} has insufficient coverage: {}",
+                criterionName,
+                result.getCoverage()
+              );
 
-            reportStatus.set(FAILED);
+              reportStatus.set(FAILED);
+            }
+
+            break;
           }
-
-          break;
         }
-      }
 
-      if (!criterionFound) {
-        logger.trace("Required criterion is missing: {}", criterionName);
-        reportStatus.set(FAILED);
-      }
-    });
+        if (!criterionFound) {
+          logger.trace("Required criterion is missing: {}", criterionName);
+          reportStatus.set(FAILED);
+        }
+      });
   }
 
   private Set<OpenApiTestResult> updateQualityGateReportInformation() {

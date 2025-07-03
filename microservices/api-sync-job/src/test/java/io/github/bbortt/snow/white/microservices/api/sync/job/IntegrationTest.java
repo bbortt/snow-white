@@ -20,5 +20,4 @@ import org.wiremock.spring.EnableWireMock;
 @EnableWireMock
 @SpringBootTest(classes = { Main.class })
 @ActiveProfiles("test")
-public @interface IntegrationTest {
-}
+public @interface IntegrationTest {}
