@@ -38,8 +38,9 @@ class SyncJobConfigTest {
 
     @Test
     void isBean() {
-      var runner = new ApplicationContextRunner()
-        .withUserConfiguration(SyncJobConfig.class);
+      var runner = new ApplicationContextRunner().withUserConfiguration(
+        SyncJobConfig.class
+      );
 
       runner
         .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)

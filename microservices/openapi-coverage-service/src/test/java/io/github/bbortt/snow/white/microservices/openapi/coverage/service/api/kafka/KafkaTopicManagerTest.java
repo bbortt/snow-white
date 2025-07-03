@@ -44,8 +44,9 @@ class KafkaTopicManagerTest {
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      KafkaTopicManager.class
+    );
 
     var openApiCoverageServicePropertiesMock = mock(
       OpenApiCoverageServiceProperties.class
@@ -80,8 +81,9 @@ class KafkaTopicManagerTest {
 
   @Test
   void shouldNotBeEnabled_ifPropertyIsNotSet() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(KafkaTopicManager.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      KafkaTopicManager.class
+    );
 
     contextRunner.run(context ->
       assertThat(context).doesNotHaveBean(KafkaTopicManager.class)

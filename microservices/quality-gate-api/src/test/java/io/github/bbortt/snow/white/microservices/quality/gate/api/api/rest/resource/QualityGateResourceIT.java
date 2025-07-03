@@ -71,8 +71,10 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .andExpect(status().isCreated())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(
-        header()
-          .string("location", format("/api/rest/v1/quality-gates/%s", name))
+        header().string(
+          "location",
+          format("/api/rest/v1/quality-gates/%s", name)
+        )
       )
       .andExpect(
         content().json(objectMapper.writeValueAsString(qualityGateConfig))

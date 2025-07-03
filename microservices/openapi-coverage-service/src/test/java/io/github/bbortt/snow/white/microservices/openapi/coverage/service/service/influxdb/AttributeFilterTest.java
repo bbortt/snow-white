@@ -52,8 +52,8 @@ class AttributeFilterTest {
 
     @Test
     void shouldReturnEmptyList_whenNoFiltersAdded() {
-      List<AttributeFilter> filters = AttributeFilter.attributeFilters()
-        .build();
+      List<AttributeFilter> filters =
+        AttributeFilter.attributeFilters().build();
 
       assertThat(filters).isEmpty();
     }

@@ -30,7 +30,8 @@ public class NativeRuntimeHintsConfiguration {
           io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class
         )
         .registerType(
-          io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer.class
+          io.confluent.kafka.serializers.protobuf
+            .KafkaProtobufDeserializer.class
         )
         .registerType(
           io.confluent.kafka.streams.serdes.protobuf.KafkaProtobufSerde.class

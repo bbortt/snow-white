@@ -66,19 +66,19 @@ class OpenApiReportCalculatorTest {
       var calculationResult = fixture.calculate();
 
       assertThat(calculationResult).satisfies(
-        r -> assertThat(r.status()).isEqualTo(PASSED),
-        r ->
-          assertThat(r.openApiTestResults())
-            .isNotEmpty()
-            .allSatisfy(criterionResult ->
-              assertThat(criterionResult.getIncludedInReport()).isFalse()
-            )
-            .allSatisfy(criterionResult ->
-              assertThat(criterionResult.getQualityGateReport()).isEqualTo(
-                qualityGateReportMock
+          r -> assertThat(r.status()).isEqualTo(PASSED),
+          r ->
+            assertThat(r.openApiTestResults())
+              .isNotEmpty()
+              .allSatisfy(criterionResult ->
+                assertThat(criterionResult.getIncludedInReport()).isFalse()
               )
-            )
-      );
+              .allSatisfy(criterionResult ->
+                assertThat(criterionResult.getQualityGateReport()).isEqualTo(
+                  qualityGateReportMock
+                )
+              )
+        );
     }
 
     @Test
@@ -170,24 +170,24 @@ class OpenApiReportCalculatorTest {
       var calculationResult = fixture.calculate();
 
       assertThat(calculationResult).satisfies(
-        r -> assertThat(r.status()).isEqualTo(FAILED),
-        r ->
-          assertThat(r.openApiTestResults())
-            .isNotEmpty()
-            .satisfies(criteriaResults ->
-              assertThat(criteriaResults)
-                .map(OpenApiTestResult::getOpenApiTestCriteria)
-                .containsExactly(pathCoverage)
-            )
-            .allSatisfy(criterionResult ->
-              assertThat(criterionResult.getIncludedInReport()).isTrue()
-            )
-            .allSatisfy(criterionResult ->
-              assertThat(criterionResult.getQualityGateReport()).isEqualTo(
-                qualityGateReportMock
+          r -> assertThat(r.status()).isEqualTo(FAILED),
+          r ->
+            assertThat(r.openApiTestResults())
+              .isNotEmpty()
+              .satisfies(criteriaResults ->
+                assertThat(criteriaResults)
+                  .map(OpenApiTestResult::getOpenApiTestCriteria)
+                  .containsExactly(pathCoverage)
               )
-            )
-      );
+              .allSatisfy(criterionResult ->
+                assertThat(criterionResult.getIncludedInReport()).isTrue()
+              )
+              .allSatisfy(criterionResult ->
+                assertThat(criterionResult.getQualityGateReport()).isEqualTo(
+                  qualityGateReportMock
+                )
+              )
+        );
     }
 
     @Test
@@ -218,23 +218,23 @@ class OpenApiReportCalculatorTest {
       var calculationResult = fixture.calculate();
 
       assertThat(calculationResult).satisfies(
-        r -> assertThat(r.status()).isEqualTo(PASSED),
-        r ->
-          assertThat(r.openApiTestResults())
-            .isNotEmpty()
-            .satisfies(criteriaResults -> {
-              criteriaResults.forEach(result -> {
-                if (result.getOpenApiTestCriteria().equals(pathCoverage)) {
-                  assertThat(result.getIncludedInReport()).isTrue();
-                } else {
-                  assertThat(result.getIncludedInReport()).isFalse();
-                }
-                assertThat(result.getQualityGateReport()).isEqualTo(
-                  qualityGateReportMock
-                );
-              });
-            })
-      );
+          r -> assertThat(r.status()).isEqualTo(PASSED),
+          r ->
+            assertThat(r.openApiTestResults())
+              .isNotEmpty()
+              .satisfies(criteriaResults -> {
+                criteriaResults.forEach(result -> {
+                  if (result.getOpenApiTestCriteria().equals(pathCoverage)) {
+                    assertThat(result.getIncludedInReport()).isTrue();
+                  } else {
+                    assertThat(result.getIncludedInReport()).isFalse();
+                  }
+                  assertThat(result.getQualityGateReport()).isEqualTo(
+                    qualityGateReportMock
+                  );
+                });
+              })
+        );
     }
 
     private void assertThatCalculationResultHasStatus(
@@ -242,19 +242,19 @@ class OpenApiReportCalculatorTest {
       ReportStatus passed
     ) {
       assertThat(calculationResult).satisfies(
-        r -> assertThat(r.status()).isEqualTo(passed),
-        r ->
-          assertThat(r.openApiTestResults())
-            .isNotEmpty()
-            .satisfiesOnlyOnce(criterionResult ->
-              assertThat(criterionResult.getIncludedInReport()).isTrue()
-            )
-            .allSatisfy(criterionResult ->
-              assertThat(criterionResult.getQualityGateReport()).isEqualTo(
-                qualityGateReportMock
+          r -> assertThat(r.status()).isEqualTo(passed),
+          r ->
+            assertThat(r.openApiTestResults())
+              .isNotEmpty()
+              .satisfiesOnlyOnce(criterionResult ->
+                assertThat(criterionResult.getIncludedInReport()).isTrue()
               )
-            )
-      );
+              .allSatisfy(criterionResult ->
+                assertThat(criterionResult.getQualityGateReport()).isEqualTo(
+                  qualityGateReportMock
+                )
+              )
+        );
     }
   }
 }

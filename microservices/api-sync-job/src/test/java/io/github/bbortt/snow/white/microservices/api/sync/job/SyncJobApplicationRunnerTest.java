@@ -34,8 +34,9 @@ class SyncJobApplicationRunnerTest {
 
   @Test
   void shouldBePresent_whenProfileIsNotTest() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(SyncJobApplicationRunner.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      SyncJobApplicationRunner.class
+    );
 
     contextRunner
       .withBean(SyncJob.class, () -> syncJobMock)
@@ -46,8 +47,9 @@ class SyncJobApplicationRunnerTest {
 
   @Test
   void shouldBeDisabled_whenInTestProfile() {
-    var contextRunner = new ApplicationContextRunner()
-      .withUserConfiguration(SyncJobApplicationRunner.class);
+    var contextRunner = new ApplicationContextRunner().withUserConfiguration(
+      SyncJobApplicationRunner.class
+    );
 
     contextRunner
       .withBean(SyncJob.class, () -> syncJobMock)

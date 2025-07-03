@@ -27,8 +27,9 @@ public class OpenApiConfig {
       .info(new Info().title("Report Coordination Service"))
       .servers(
         singletonList(
-          new Server()
-            .url(reportCoordinationServiceProperties.getPublicApiGatewayUrl())
+          new Server().url(
+            reportCoordinationServiceProperties.getPublicApiGatewayUrl()
+          )
         )
       );
   }

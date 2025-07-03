@@ -168,38 +168,41 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     assertThat(resultingQualityGateReport).satisfies(
-      report -> assertThat(report.getCalculationId()).isEqualTo(calculationId),
-      report ->
-        assertThat(report.getStatus()).isEqualTo(
-          ListQualityGateReports200ResponseInner.StatusEnum.FAILED
-        ),
-      report ->
-        assertThat(report.getCalculationRequest())
-          .isNotNull()
-          .satisfies(
-            request ->
-              assertThat(request.getServiceName()).isEqualTo(serviceName),
-            request -> assertThat(request.getApiName()).isEqualTo(apiName),
-            request ->
-              assertThat(request.getApiVersion()).isEqualTo(apiVersion),
-            request ->
-              assertThat(request.getLookbackWindow()).isEqualTo(lookbackWindow)
+        report ->
+          assertThat(report.getCalculationId()).isEqualTo(calculationId),
+        report ->
+          assertThat(report.getStatus()).isEqualTo(
+            ListQualityGateReports200ResponseInner.StatusEnum.FAILED
           ),
-      report -> assertThat(report.getInitiatedAt()).isNotNull(),
-      report ->
-        assertThat(report.getOpenApiTestResults())
-          .hasSize(1)
-          .first()
-          .satisfies(
-            result ->
-              assertThat(result.getId()).isEqualTo(PATH_COVERAGE.name()),
-            result -> assertThat(result.getCoverage()).isEqualTo(coverage),
-            result ->
-              assertThat(result.getAdditionalInformation()).isEqualTo(
-                additionalInformation
-              )
-          )
-    );
+        report ->
+          assertThat(report.getCalculationRequest())
+            .isNotNull()
+            .satisfies(
+              request ->
+                assertThat(request.getServiceName()).isEqualTo(serviceName),
+              request -> assertThat(request.getApiName()).isEqualTo(apiName),
+              request ->
+                assertThat(request.getApiVersion()).isEqualTo(apiVersion),
+              request ->
+                assertThat(request.getLookbackWindow()).isEqualTo(
+                  lookbackWindow
+                )
+            ),
+        report -> assertThat(report.getInitiatedAt()).isNotNull(),
+        report ->
+          assertThat(report.getOpenApiTestResults())
+            .hasSize(1)
+            .first()
+            .satisfies(
+              result ->
+                assertThat(result.getId()).isEqualTo(PATH_COVERAGE.name()),
+              result -> assertThat(result.getCoverage()).isEqualTo(coverage),
+              result ->
+                assertThat(result.getAdditionalInformation()).isEqualTo(
+                  additionalInformation
+                )
+            )
+      );
   }
 
   @Test
@@ -245,11 +248,10 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .perform(get(JUNIT_REPORT_API_URL, calculationId))
       .andExpect(status().isOk())
       .andExpect(
-        header()
-          .string(
-            CONTENT_DISPOSITION,
-            "attachment; filename=\"snow-white-junit.xml\""
-          )
+        header().string(
+          CONTENT_DISPOSITION,
+          "attachment; filename=\"snow-white-junit.xml\""
+        )
       )
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_XML_VALUE))
       .andReturn()
