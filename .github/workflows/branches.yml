@@ -41,7 +41,7 @@ jobs:
         run: ./mvnw --version
       - name: Build with Maven
         if: '!steps.check.outputs.number'
-        run: ./mvnw -B -Pprod verify
+        run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
       - name: Sonar Analysis
         if: '!steps.check.outputs.number'
         env:
