@@ -1,0 +1,99 @@
+name: Pull-Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  labeler:
+    name: 'Pull-Request Labels'
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+  lint:
+    name: 'Lint'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+      - name: Install Dependencies
+        run: npm ci --cache .npm
+      - name: Check Formatting
+        run: npm run prettier:check
+  ci:
+    name: 'Build and Test'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 21
+      - name: Cache SonarQube Packages
+        uses: actions/cache@v4
+        if: '!steps.check.outputs.number'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Version Report
+        run: ./mvnw --version
+      - name: Build with Maven
+        run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
+      - name: Sonar Analysis
+        if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B sonar:sonar -Dsonar.organization=bbortt-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=bbortt_snow-white
+  prettier-post-release:
+    name: Run Prettier on Release PR
+    if: ${{ startsWith(github.head_ref, 'release-please-') }}
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run prettier:format
+        run: npm run prettier:format
+      - name: Git Configuration
+        run: |
+          git config user.name "bbortt"
+          git config user.email "timon.borter@gmx.ch"
+      - name: Commit Changes (if any)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit --amend -a --no-edit
+            git push --force-with-lease
+          fi

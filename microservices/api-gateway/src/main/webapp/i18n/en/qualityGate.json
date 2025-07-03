@@ -1,0 +1,32 @@
+{
+  "snowWhiteApp": {
+    "qualityGate": {
+      "home": {
+        "title": "Quality-Gates",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Quality-Gates found",
+        "noOpenApiTestResultsFound": "No OpenAPI Test Results found"
+      },
+      "detail": {
+        "title": "Quality-Gate"
+      },
+      "id": "ID",
+      "calculationId": "Calculation Id",
+      "status": "Status",
+      "createdAt": "Initiated A",
+      "serviceName": "Service Name",
+      "apiName": "API Name",
+      "apiVersion": "API Version",
+      "calculationRequest": "Calculation Request Parameters",
+      "openApiTestResult": {
+        "title": "OpenAPI Test Results",
+        "name": "Name",
+        "coverage": "Coverage",
+        "additionalInformation": "Additional Information"
+      },
+      "action": {
+        "junitDownload": "JUnit Report Herunterladen"
+      }
+    }
+  }
+}
