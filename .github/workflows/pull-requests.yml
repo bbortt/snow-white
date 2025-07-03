@@ -63,7 +63,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
       - name: Sonar Analysis
-        if: '!steps.check.outputs.number'
+        if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B sonar:sonar -Dsonar.organization=bbortt-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=bbortt_snow-white
