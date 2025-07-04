@@ -146,8 +146,14 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.wiremock.integrations</groupId>
-      <artifactId>wiremock-spring-boot</artifactId>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>${org.wiremock.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations.testcontainers</groupId>
+      <artifactId>wiremock-testcontainers-module</artifactId>
+      <version>1.0-alpha-13</version>
       <scope>test</scope>
     </dependency>
     <dependency>

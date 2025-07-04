@@ -9,15 +9,15 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT.CALCULATION_REQUEST_TOPIC;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT.OPENAPI_CALCULATION_RESPONSE_TOPIC;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.wiremock.spring.EnableWireMock;
+import org.wiremock.integrations.testcontainers.WireMockContainer;
 
-@EnableWireMock
 @ActiveProfiles("test")
 @SpringBootTest(
   classes = { Main.class },
@@ -28,13 +28,11 @@ import org.wiremock.spring.EnableWireMock;
     "snow.white.report.coordination.service.openapi-calculation-response.topic=" +
     OPENAPI_CALCULATION_RESPONSE_TOPIC,
     "snow.white.report.coordination.service.public-api-gateway-url=http://localhost:9080",
-    "snow.white.report.coordination.service.quality-gate-api-url=${wiremock.server.baseUrl:http://localhost:8081}",
   }
 )
 public abstract class AbstractReportCoordinationServiceIT {
 
   static final String CALCULATION_REQUEST_TOPIC = "snow-white-coverage-request";
-
   static final String OPENAPI_CALCULATION_RESPONSE_TOPIC =
     "snow-white-openapi-calculation-response";
 
@@ -48,9 +46,16 @@ public abstract class AbstractReportCoordinationServiceIT {
       "postgres:17.5-alpine"
     ).withExposedPorts(5432);
 
+  static final WireMockContainer WIRE_MOCK_CONTAINER = new WireMockContainer(
+    "wiremock/wiremock"
+  );
+
   static {
     KAFKA_CONTAINER.start();
     POSTGRESQL_CONTAINER.start();
+    WIRE_MOCK_CONTAINER.start();
+
+    WireMock.configureFor(WIRE_MOCK_CONTAINER.getPort());
   }
 
   @DynamicPropertySource
@@ -62,7 +67,7 @@ public abstract class AbstractReportCoordinationServiceIT {
   }
 
   @DynamicPropertySource
-  static void databaseProperties(DynamicPropertyRegistry registry) {
+  static void postgresqlProperties(DynamicPropertyRegistry registry) {
     registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
     registry.add(
       "spring.datasource.username",
@@ -71,6 +76,14 @@ public abstract class AbstractReportCoordinationServiceIT {
     registry.add(
       "spring.datasource.password",
       POSTGRESQL_CONTAINER::getPassword
+    );
+  }
+
+  @DynamicPropertySource
+  static void wireMockProperties(DynamicPropertyRegistry registry) {
+    registry.add(
+      "snow.white.report.coordination.service.quality-gate-api-url",
+      WIRE_MOCK_CONTAINER::getBaseUrl
     );
   }
 }

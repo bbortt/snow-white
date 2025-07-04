@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
-import java.util.Set;
 
 abstract class AbstractApiCatalogServiceIT {
 
