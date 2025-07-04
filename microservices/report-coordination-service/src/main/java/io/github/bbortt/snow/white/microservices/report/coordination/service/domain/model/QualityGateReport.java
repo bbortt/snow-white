@@ -27,6 +27,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +59,8 @@ public class QualityGateReport {
   private UUID calculationId;
 
   @NotEmpty
-  @Column(nullable = false, updatable = false)
+  @Size(min = 1, max = 64)
+  @Column(nullable = false, updatable = false, length = 64)
   private String qualityGateConfigName;
 
   @NotNull
@@ -68,7 +70,7 @@ public class QualityGateReport {
   @NotNull
   @Builder.Default
   @Enumerated(STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, length = 16)
   private ReportStatus openApiCoverageStatus = NOT_STARTED;
 
   @NotNull
@@ -79,7 +81,7 @@ public class QualityGateReport {
   @NotNull
   @Builder.Default
   @Enumerated(STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, length = 16)
   private ReportStatus reportStatus = IN_PROGRESS;
 
   @NotNull

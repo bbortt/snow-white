@@ -14,5 +14,6 @@ properties:
     example: 0.8
   additionalInformation:
     type: string
+    maxLength: 256
     description: Additional information of a coverage of 1.0 has not been met
     example: Path GET_/foo/bar not covered

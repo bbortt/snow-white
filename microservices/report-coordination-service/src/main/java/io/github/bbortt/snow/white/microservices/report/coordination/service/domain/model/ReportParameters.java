@@ -23,6 +23,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -48,19 +49,23 @@ public class ReportParameters {
   private Long id;
 
   @NotEmpty
-  @Column(nullable = false, updatable = false)
+  @Size(min = 1, max = 256)
+  @Column(nullable = false, updatable = false, length = 256)
   private String serviceName;
 
   @NotEmpty
-  @Column(nullable = false, updatable = false)
+  @Size(min = 1, max = 256)
+  @Column(nullable = false, updatable = false, length = 256)
   private String apiName;
 
-  @Column(updatable = false)
+  @Size(max = 16)
+  @Column(updatable = false, length = 16)
   private @Nullable String apiVersion;
 
   @NotEmpty
   @Builder.Default
-  @Column(nullable = false, updatable = false)
+  @Size(max = 8)
+  @Column(nullable = false, updatable = false, length = 8)
   private String lookbackWindow = "1h";
 
   @Builder.Default

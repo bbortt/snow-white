@@ -239,10 +239,13 @@ components:
           type: string
           description: Unique name for the Quality-Gate Configuration
           example: 'basic-coverage'
+          minLength: 1
+          maxLength: 64
         description:
           type: string
           description: Optional description of the Quality-Gate Configuration
           example: 'Basic coverage criteria for API testing'
+          maxLength: 256
         isPredefined:
           type: boolean
           description: Whether the Quality-Gate Configuration is predefined or not
@@ -252,6 +255,8 @@ components:
           description: List of OpenAPI criteria IDs used in this configuration
           items:
             type: string
+            minLength: 1
+            maxLength: 32
           example: ['PATH_COVERAGE']
     OpenApiCriterion:
       type: object
@@ -263,14 +268,20 @@ components:
           type: string
           description: Unique ID of the criterion
           example: PATH_COVERAGE
+          minLength: 1
+          maxLength: 32
         name:
           type: string
           description: Human-readable name
           example: Path Coverage
+          minLength: 1
+          maxLength: 64
         description:
           type: string
           description: Optional description of what the criterion checks
           example: Every API endpoint has at least one request
+          minLength: 1
+          maxLength: 256
     Error:
       type: object
       required:
