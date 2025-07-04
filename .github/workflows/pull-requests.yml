@@ -66,7 +66,11 @@ jobs:
         if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectKey=bbortt_snow-white
+        run: |
+          ./mvnw -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=bbortt-github \
+            -Dsonar.projectKey=bbortt_snow-white
   prettier-post-release:
     name: Run Prettier on Release PR
     if: ${{ startsWith(github.head_ref, 'release-please-') }}
