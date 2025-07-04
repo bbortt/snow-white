@@ -26,9 +26,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO report_co
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO report_coord_app;
 
 -- allow future tables to be accessible by app user
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR USER report_coord_flyway IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO report_coord_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR USER report_coord_flyway IN SCHEMA public
     GRANT USAGE, SELECT ON SEQUENCES TO report_coord_app;
 
 -- connect to the second database
@@ -41,7 +41,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO quality_g
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO quality_gate_app;
 
 -- allow future tables to be accessible by app user
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR USER quality_gate_flyway IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO quality_gate_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR USER quality_gate_flyway IN SCHEMA public
     GRANT USAGE, SELECT ON SEQUENCES TO quality_gate_app;
