@@ -17,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -40,6 +41,8 @@ public class OpenApiTestResult {
 
   @Id
   @NotNull
+  @Column(length = 32)
+  @Size(min = 1, max = 32)
   private String openApiTestCriteria;
 
   @NotNull
@@ -54,7 +57,8 @@ public class OpenApiTestResult {
   @Column(nullable = false, updatable = false)
   private Duration duration;
 
-  @Column(updatable = false)
+  @Size(max = 256)
+  @Column(updatable = false, length = 256)
   private @Nullable String additionalInformation;
 
   @Id

@@ -7,24 +7,32 @@ properties:
     type: string
     description: 'The service name for which the quality gate is being calculated'
     example: 'example-application'
+    minLength: 1
+    maxLength: 256
   apiName:
     type: string
     description: 'The name of the OpenAPI for which the quality gate is being calculated'
     example: 'ping-pong'
+    minLength: 1
+    maxLength: 256
   apiVersion:
     type: string
     description: 'The version of the OpenAPI for which the quality gate is being calculated - latest is being picked if non supplied'
     example: '1.0.0'
+    maxLength: 16
   lookbackWindow:
     type: string
     description: "The time window to consider for calculation (e.g., '1h', '24h', '7d')"
     default: '1h'
     example: '1h'
+    maxLength: 8
   attributeFilters:
     type: object
     description: 'Key-value map of attributes to filter data considered for calculation'
     additionalProperties:
       type: string
+      minLength: 1
+      maxLength: 64
     example:
       environment: 'production'
       region: 'us-west-1'

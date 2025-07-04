@@ -22,6 +22,8 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 64
       requestBody:
         required: true
         content:

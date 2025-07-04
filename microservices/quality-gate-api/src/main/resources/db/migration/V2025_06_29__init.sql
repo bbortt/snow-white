@@ -6,17 +6,17 @@
 
 CREATE TABLE open_api_coverage_configuration
 (
-    id   BIGSERIAL NOT NULL PRIMARY KEY,
-    name VARCHAR   NOT NULL,
+    id   BIGSERIAL   NOT NULL PRIMARY KEY,
+    name VARCHAR(32) NOT NULL,
     CONSTRAINT uk_open_api_coverage UNIQUE (name)
 );
 
 CREATE TABLE quality_gate_configuration
 (
-    id            BIGSERIAL NOT NULL PRIMARY KEY,
-    name          VARCHAR   NOT NULL,
-    description   VARCHAR,
-    is_predefined BOOLEAN   NOT NULL DEFAULT false,
+    id            BIGSERIAL   NOT NULL PRIMARY KEY,
+    name          VARCHAR(64) NOT NULL,
+    description   VARCHAR(256),
+    is_predefined BOOLEAN     NOT NULL DEFAULT false,
     CONSTRAINT uk_quality_gate_configuration_name UNIQUE (name)
 );
 

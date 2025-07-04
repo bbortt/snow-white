@@ -21,6 +21,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -62,9 +63,12 @@ public class QualityGateConfiguration {
   private Long id;
 
   @NotEmpty
-  @Column(nullable = false, updatable = false, unique = true)
+  @Size(min = 1, max = 64)
+  @Column(nullable = false, updatable = false, unique = true, length = 64)
   private String name;
 
+  @Size(max = 256)
+  @Column(length = 256)
   private @Nullable String description;
 
   @NotNull

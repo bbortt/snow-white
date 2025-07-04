@@ -13,11 +13,15 @@ properties:
   qualityGateConfigName:
     type: string
     description: 'The name of the Quality-Gate'
+    minLength: 1
+    maxLength: 64
   status:
     type: string
     enum: [IN_PROGRESS, FAILED, PASSED]
     default: 'IN_PROGRESS'
     description: 'Current status of the calculation'
+    minLength: 1
+    maxLength: 16
   calculationRequest:
     $ref: './QualityGateCalculationRequest.yml'
   initiatedAt:

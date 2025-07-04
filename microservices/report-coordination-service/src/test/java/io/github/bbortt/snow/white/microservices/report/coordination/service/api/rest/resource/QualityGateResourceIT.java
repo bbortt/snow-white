@@ -114,7 +114,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     var serviceName = "star-wars";
     var apiName = "yoda";
     var apiVersion = "1.2.3";
-    var lookbackWindow = "1000years";
+    var lookbackWindow = "1m";
 
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .serviceName(serviceName)
