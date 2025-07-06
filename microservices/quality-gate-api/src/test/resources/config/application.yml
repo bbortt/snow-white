@@ -1,0 +1,6 @@
+snow:
+  white:
+    quality:
+      gate:
+        api:
+          public-api-gateway-url: http://localhost:9080

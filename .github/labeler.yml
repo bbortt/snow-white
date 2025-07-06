@@ -1,0 +1,94 @@
+# 🔧 Modules
+module:cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'toolkit/cli/**/*'
+
+module:core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/**/*'
+
+module:example-application:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'example-application/**/*'
+
+module:snow-white:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'microservices/**/*'
+
+module:toolkit:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'toolkit/**/*'
+          - all-globs-to-all-files:
+              - '!toolkit/cli/**/*'
+
+# 🚨 Severity
+severity:critical:
+  - head-branch:
+      - '^hotfix'
+
+severity:high:
+  - head-branch:
+      - '^fix'
+      - '^bugfix'
+      - 'fix'
+
+# 📦 Types of Work (not technology-specific)
+type:bug:
+  - head-branch:
+      - '^fix'
+      - '^bugfix'
+      - 'fix'
+      - '^hotfix'
+
+type:ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+
+type:deps:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - '**/*-lock.*'
+              - '**/package*.json'
+              - '**/pom.xml'
+      - head-branch:
+          - '^renovate'
+
+type:docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+
+type:infra:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'dev/**/*'
+
+type:feature:
+  - head-branch:
+      - '^feat'
+      - 'feature'
+
+type:refactor:
+  - head-branch:
+      - '^refactor'
+      - 'refactor'
+
+# Languages
+lang:java:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.java'
+
+lang:typescript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.ts'
+          - '**/*.tsx'

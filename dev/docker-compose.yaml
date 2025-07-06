@@ -1,0 +1,411 @@
+name: 'snow-white'
+
+networks:
+  default:
+    name: podman
+  internal:
+    name: snow-white
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.128.0
+    env_file: .env
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - '1888:1888' # pprof extension
+      - '8888:8888' # Prometheus metrics exposed by the Collector
+      - '8889:8889' # Prometheus exporter metrics
+      - '13133:13133' # health_check extension
+      - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP http receiver
+      - '55679:55679' # zpages extension
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  example-application:
+    build:
+      context: ../example-application
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+    ports:
+      - '8080:8080'
+    depends_on:
+      otel-collector:
+        condition: service_started
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  kafka:
+    image: bitnami/kafka:4.0.0
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094'
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '1@127.0.0.1:9093'
+      KAFKA_CFG_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_NUM_PARTITIONS: 1
+      KAFKA_CFG_PROCESS_ROLES: 'broker,controller'
+      KAFKA_ENABLE_KRAFT: 'yes'
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.5'
+          memory: '1g'
+        limits:
+          cpus: '1'
+          memory: '2g'
+    healthcheck:
+      test: kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - internal
+
+  # TODO https://github.com/bbortt/snow-white/issues/287
+  #  kafka.schema-registry:
+  #    image: bitnami/schema-registry:7.9.1
+  #    hostname: kafka-schema-registry
+  #    ports:
+  #      - '9081:8081'
+  #    depends_on:
+  #      kafka:
+  #        condition: service_healthy
+  #    environment:
+  #      SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
+  #      SCHEMA_REGISTRY_KAFKA_BROKERS: 'PLAINTEXT://kafka:9094'
+  #    networks:
+  #      - internal
+
+  kafka.ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'snow-white'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9094'
+    ports:
+      - '8090:8080'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  redis:
+    image: redis/redis-stack-server:7.4.0-v1
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: on-failure
+    networks:
+      - internal
+
+  redis.insight:
+    image: redislabs/redisinsight:2.70.0
+    ports:
+      - '5540:5540'
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  influxdb:
+    image: influxdb:2.7.12-alpine
+    ports:
+      - '8086:8086'
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: 'setup'
+      DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
+      DOCKER_INFLUXDB_INIT_BUCKET: 'raw-data'
+      DOCKER_INFLUXDB_INIT_USERNAME: 'snow-white'
+      DOCKER_INFLUXDB_INIT_PASSWORD: 'snow-white'
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  postgres:
+    image: 'postgres:17.5-alpine'
+    shm_size: 128mb
+    volumes:
+      - postgres/data/:/var/lib/postgresql/data/
+      - postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: 'snow-white'
+      POSTGRES_PASSWORD: 'snow-white'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U snow-white -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+    networks:
+      - internal
+
+  service-interface-repository:
+    build:
+      context: ./sir
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: nc -z localhost 3000 || exit 1
+      interval: 1s
+      timeout: 60s
+      retries: 60
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.api-gateway:
+    build:
+      context: ../microservices/api-gateway
+    hostname: api-gateway
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
+      SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL: 'http://report-coordination-service:8080'
+      SPRING_PROFILES_ACTIVE: 'prod'
+    ports:
+      - '80:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      microservices.api-sync-job:
+        condition: service_completed_successfully
+      microservices.quality-gate-api:
+        condition: service_started
+      microservices.report-coordination-service:
+        condition: service_started
+    healthcheck:
+      test: wget -O - http://localhost:8090/management/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
+  microservices.api-sync-job:
+    build:
+      context: ../microservices/api-sync-job
+    hostname: api-sync-job
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
+      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
+      SPRING_DATA_REDIS_HOST: 'redis'
+      SPRING_PROFILES_ACTIVE: 'prod'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      service-interface-repository:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.kafka-event-filter:
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/kafka-event-filter
+    # Native image:
+    image: ghcr.io/bbortt/snow-white/kafka-event-filter
+    hostname: kafka-event-filter
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS: 'true'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
+      SNOW_WHITE_KAFKA_EVENT_FILTER_SCHEMA-REGISTRY-URL: 'http://kafka-schema-registry:9081'
+      SPRING_DATA_REDIS_HOST: 'redis'
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      kafka.schema-registry:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+      microservices.api-sync-job:
+        condition: service_completed_successfully
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.openapi-coverage-service:
+    build:
+      context: ../microservices/openapi-coverage-service
+    hostname: openapi-coverage-service
+    env_file: .env
+    environment:
+      INFLUXDB_URL: 'http://influxdb:8086'
+      INFLUXDB_ORG: 'snow-white'
+      INFLUXDB_BUCKET: 'raw-data'
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_INIT-TOPICS: 'true'
+      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
+      SPRING_DATA_REDIS_HOST: 'redis'
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+      SPRING_PROFILES_ACTIVE: 'prod'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: '512m'
+        limits:
+          cpus: '0.5'
+          memory: '1g'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      microservices.api-sync-job:
+        condition: service_completed_successfully
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.quality-gate-api:
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/quality-gate-api
+    # Native image:
+    image: ghcr.io/bbortt/snow-white/quality-gate-api
+    hostname: quality-gate-api
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
+      SPRING_DATASOURCE_JDBC-URL: 'jdbc:postgres://postgres:5432/quality-gate-api'
+      SPRING_DATASOURCE_USERNAME: 'quality_gate_app'
+      SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
+      SPRING_FLYWAY_USERNAME: 'quality_gate_flyway'
+      SPRING_FLYWAY_PASSWORD: 'strongpassword1'
+    ports:
+      - '8081:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.report-coordination-service:
+    # If not built natively:
+    #    build:
+    #      context: ../microservices/report-coordination-service
+    # Native image:
+    image: ghcr.io/bbortt/snow-white/report-coordination-service
+    hostname: report-coordination-service
+    env_file: .env
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_INIT-TOPICS: 'true'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
+      SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SPRING_DATASOURCE_JDBC-URL: 'jdbc:postgres://postgres:5432/report-coordination-service'
+      SPRING_DATASOURCE_USERNAME: 'report_coord_app'
+      SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
+      SPRING_FLYWAY_USERNAME: 'report_coord_flyway'
+      SPRING_FLYWAY_PASSWORD: 'strongpassword1'
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
+    ports:
+      - '8084:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      microservices.quality-gate-api:
+        condition: service_started
+    restart: on-failure
+    networks:
+      - internal
