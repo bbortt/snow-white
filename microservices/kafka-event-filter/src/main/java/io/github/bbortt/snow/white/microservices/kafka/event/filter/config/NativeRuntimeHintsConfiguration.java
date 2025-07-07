@@ -6,6 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.config;
 
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
+
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
+import io.opentelemetry.proto.trace.v1.Span;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +21,10 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 
 @Configuration
 @ImportRuntimeHints(
-  NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints.class
+  {
+    NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints.class,
+    NativeRuntimeHintsConfiguration.OtelRuntimeHints.class,
+  }
 )
 public class NativeRuntimeHintsConfiguration {
 
@@ -62,6 +73,26 @@ public class NativeRuntimeHintsConfiguration {
       } catch (ClassNotFoundException e) {
         // These classes might not be available in all versions
       }
+    }
+  }
+
+  static class OtelRuntimeHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+      hints
+        .reflection()
+        .registerType(ExportTraceServiceRequest.class, INVOKE_PUBLIC_METHODS)
+        .registerType(
+          ExportTraceServiceRequest.Builder.class,
+          INVOKE_PUBLIC_METHODS
+        )
+        .registerType(ResourceSpans.class, INVOKE_PUBLIC_METHODS)
+        .registerType(ResourceSpans.Builder.class, INVOKE_PUBLIC_METHODS)
+        .registerType(ScopeSpans.class, INVOKE_PUBLIC_METHODS)
+        .registerType(Span.class, INVOKE_PUBLIC_METHODS)
+        .registerType(AnyValue.class, INVOKE_PUBLIC_METHODS)
+        .registerType(KeyValue.class, INVOKE_PUBLIC_METHODS);
     }
   }
 }
