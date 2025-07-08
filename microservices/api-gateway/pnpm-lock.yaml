@@ -91,8 +91,8 @@ importers:
         specifier: 9.30.1
         version: 9.30.1
       '@prettier/plugin-xml':
-        specifier: 3.4.1
-        version: 3.4.1(prettier@3.6.2)
+        specifier: 3.4.2
+        version: 3.4.2(prettier@3.6.2)
       '@testing-library/dom':
         specifier: 10.4.0
         version: 10.4.0
@@ -1376,8 +1376,8 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@prettier/plugin-xml@3.4.1':
-    resolution: {integrity: sha512-Uf/6/+9ez6z/IvZErgobZ2G9n1ybxF5BhCd7eMcKqfoWuOzzNUxBipNo3QAP8kRC1VD18TIo84no7LhqtyDcTg==}
+  '@prettier/plugin-xml@3.4.2':
+    resolution: {integrity: sha512-/UyNlHfkuLXG6Ed85KB0WBF283xn2yavR+UtRibBRUcvEJId2DSLdGXwJ/cDa1X++SWDPzq3+GSFniHjkNy7yg==}
     peerDependencies:
       prettier: ^3.0.0
 
@@ -7637,7 +7637,7 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@prettier/plugin-xml@3.4.1(prettier@3.6.2)':
+  '@prettier/plugin-xml@3.4.2(prettier@3.6.2)':
     dependencies:
       '@xml-tools/parser': 1.0.11
       prettier: 3.6.2
