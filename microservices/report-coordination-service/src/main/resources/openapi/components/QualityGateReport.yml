@@ -1,0 +1,34 @@
+type: object
+required:
+  - calculationId
+  - qualityGateConfigName
+  - status
+  - calculationRequest
+  - initiatedAt
+properties:
+  calculationId:
+    type: string
+    format: uuid
+    description: 'UUID for the calculation job'
+  qualityGateConfigName:
+    type: string
+    description: 'The name of the Quality-Gate'
+    minLength: 1
+    maxLength: 64
+  status:
+    type: string
+    enum: [IN_PROGRESS, FAILED, PASSED]
+    default: 'IN_PROGRESS'
+    description: 'Current status of the calculation'
+    minLength: 1
+    maxLength: 16
+  calculationRequest:
+    $ref: './QualityGateCalculationRequest.yml'
+  initiatedAt:
+    type: string
+    format: date-time
+    description: 'When the calculation was initiated'
+  openApiTestResults:
+    type: array
+    items:
+      $ref: './OpenApiTestResult.yml'
