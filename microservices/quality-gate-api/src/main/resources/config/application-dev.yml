@@ -1,0 +1,21 @@
+snow:
+  white:
+    quality:
+      gate:
+        api:
+          public-api-gateway-url: http://localhost:8090
+spring:
+  datasource:
+    jdbc-url: jdbc:h2:mem:quality-gate;MODE=PostgreSQL
+    username: sa
+    password: password
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+server:
+  port: 8081

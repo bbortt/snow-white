@@ -1,0 +1,41 @@
+# Eclipse
+.classpath
+.project
+.settings/
+.temp-Rerun*
+
+# Intellij
+.idea/*
+!.idea/icon.svg
+*.iml
+*.iws
+**/.intelij/
+
+# Mac
+.DS_Store
+
+# Maven
+.mvn/jvm.config
+.mvn/settings.xml
+.mvn/wrapper/maven-wrapper.jar
+log/
+target/
+**/target/
+*.versionsBackup
+
+# Python
+.pydevproject
+
+# Node.js & npm
+node_modules/
+
+# Binaries
+bin/
+out/
+
+# VSCode
+.vscode/
+
+# Caches
+.m2/
+.npm/
