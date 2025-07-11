@@ -29,7 +29,7 @@ updates:
       - 'lang:typescript'
       - 'severity:low'
       - 'status:ready-for-review'
-  - package-ecosystem: 'npm'
+  - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:
       interval: 'daily'
