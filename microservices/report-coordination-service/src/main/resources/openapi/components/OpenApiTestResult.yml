@@ -1,0 +1,19 @@
+type: object
+required:
+  - id
+  - coverage
+properties:
+  id:
+    type: string
+    description: Unique ID of the criterion
+    example: PATH_COVERAGE
+  coverage:
+    type: number
+    format: decimal
+    description: The calculated coverage result for this criterion
+    example: 0.8
+  additionalInformation:
+    type: string
+    maxLength: 256
+    description: Additional information of a coverage of 1.0 has not been met
+    example: Path GET_/foo/bar not covered

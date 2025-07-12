@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: Report Coordination Service
+  description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.
+  version: 1.0.0
+  x-api-name: quality-gate
+  x-service-name: report-coordination-service
+paths:
+  /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate:
+    post:
+      operationId: calculateQualityGate
+      summary: 'Initiate asynchronous Quality-Gate calculation for a specific service and API'
+      description: >
+        Starts an asynchronous calculation of a previously configured Quality-Gate for a specified service.
+        Returns a UUID that can be used to query the status and results of the calculation.
+      tags:
+        - quality-gate
+      parameters:
+        - name: qualityGateConfigName
+          in: path
+          description: 'The name of the Quality-Gate that must be previously configured'
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/QualityGateCalculationRequest.yml'
+      responses:
+        '202':
+          description: 'Quality-Gate calculation initiated successfully'
+          content:
+            application/json:
+              schema:
+                $ref: './components/QualityGateReport.yml'
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: uri
+              description: URI to the Quality-Gate report
+        '400':
+          description: 'Bad request, such as missing required parameters or invalid format'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+        '404':
+          description: 'Quality-Gate name not found'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
