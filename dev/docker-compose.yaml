@@ -53,9 +53,9 @@ services:
 
   kafka:
     image: bitnami/kafka:4.0.0
+    volumes:
+      - ./kafka/data:/bitnami/kafka
     environment:
-      ALLOW_PLAINTEXT_LISTENER: 'yes'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_BROKER_ID: 1
       KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094'
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
@@ -63,9 +63,7 @@ services:
       KAFKA_CFG_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
       KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_CFG_NODE_ID: 1
-      KAFKA_CFG_NUM_PARTITIONS: 1
       KAFKA_CFG_PROCESS_ROLES: 'broker,controller'
-      KAFKA_ENABLE_KRAFT: 'yes'
     ports:
       - '9092:9092'
       - '9094:9094'
@@ -78,7 +76,7 @@ services:
           cpus: '1'
           memory: '2g'
     healthcheck:
-      test: kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1
+      test: kafka-cluster.sh cluster-id --bootstrap-server 127.0.0.1:9092 || exit 1
       interval: 1s
       timeout: 5s
       retries: 12
