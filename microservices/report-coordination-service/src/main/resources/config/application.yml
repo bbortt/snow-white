@@ -1,0 +1,10 @@
+springdoc:
+  packages-to-scan: io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource
+spring:
+  kafka:
+    consumer:
+      properties:
+        spring.json.trusted.packages: 'io.github.bbortt.snow.white.*'
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
