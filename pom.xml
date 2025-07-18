@@ -26,6 +26,7 @@
     <module>microservices</module>
     <module>toolkit</module>
     <module>internal</module>
+    <module>helm</module>
   </modules>
 
   <properties>

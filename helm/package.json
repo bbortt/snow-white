@@ -1,0 +1,23 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Snow-White API Gateway",
+  "license": "PolyForm-Small-Business-1.0.0",
+  "author": {
+    "name": "Timon Borter",
+    "email": "timon.borter@gmx.ch"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "execa": "9.6.0",
+    "tmp-promise": "3.0.3",
+    "yaml": "2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.14",
+    "vitest": "3.2.4"
+  }
+}
