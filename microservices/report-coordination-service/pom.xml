@@ -373,6 +373,30 @@
               <image>
                 <env>
                   <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
+                  <BP_IMAGE_LABELS>
+                    org.opencontainers.image.name=report-coordination-service
+                  </BP_IMAGE_LABELS>
+                  <BP_OCI_TITLE>
+                    snow-white Report Coordination Service
+                  </BP_OCI_TITLE>
+                  <BP_OCI_DESCRIPTION>
+                    Report Coordination Service of snow-white
+                  </BP_OCI_DESCRIPTION>
+                  <BP_OCI_URL>https://github.com/bbortt/snow-white</BP_OCI_URL>
+                  <BP_OCI_SOURCE>
+                    https://github.com/bbortt/snow-white/tree/main/microservices/report-coordination-service
+                  </BP_OCI_SOURCE>
+                  <BP_OCI_DOCUMENTATION>
+                    https://github.com/bbortt/snow-white#readme
+                  </BP_OCI_DOCUMENTATION>
+                  <BP_OCI_VERSION>${image.tag}</BP_OCI_VERSION>
+                  <BP_OCI_CREATED>${maven.build.timestamp}</BP_OCI_CREATED>
+                  <BP_OCI_AUTHORS>
+                    Timon Borter &lt; timon.borter@gmx.ch &gt;
+                  </BP_OCI_AUTHORS>
+                  <BP_OCI_LICENSES>
+                    https://polyformproject.org/licenses/small-business/1.0.0/
+                  </BP_OCI_LICENSES>
                 </env>
               </image>
               <imageName>
