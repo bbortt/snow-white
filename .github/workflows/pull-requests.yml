@@ -101,6 +101,6 @@ jobs:
       - name: Commit Changes (if any)
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            git commit --amend -a --no-edit
-            git push --force-with-lease
+            git commit -a -m "chore(release-please): release changes cleanup"
+            git push
           fi
