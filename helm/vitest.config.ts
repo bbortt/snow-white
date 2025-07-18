@@ -4,6 +4,11 @@
  * See LICENSE file for full details.
  */
 
-module.exports = {
-  '{,**/}*.{java,js,json,md,ts,xml,yaml,yml}': ['prettier --write'],
-};
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'node',
+    globals: true,
+  },
+});

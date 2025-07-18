@@ -1,0 +1,61 @@
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+import { describe, it, expect } from 'vitest';
+import { renderHelmChart } from './render-helm-chart';
+
+const getRedisMaster = (manifests: any[]) => {
+  const statefulSet = manifests.find(
+    (m) =>
+      m.kind === 'StatefulSet' &&
+      m.metadata.name === 'test-release-redis-master',
+  );
+  expect(statefulSet).toBeDefined();
+  return statefulSet;
+};
+
+const getRedisReplicas = (manifests: any[]) => {
+  const statefulSet = manifests.find(
+    (m) =>
+      m.kind === 'StatefulSet' &&
+      m.metadata.name === 'test-release-redis-replicas',
+  );
+  expect(statefulSet).toBeDefined();
+  return statefulSet;
+};
+
+describe('Redis', () => {
+  it('has enabled master by default', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const redisMaster = getRedisMaster(manifests);
+    expect(redisMaster.spec.template.spec.containers[0].image).toMatch(
+      /^docker.io\/bitnami\/redis:.*$/,
+    );
+  });
+
+  it('has enabled replicas by default', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const redisReplicas = getRedisReplicas(manifests);
+    expect(redisReplicas.spec.template.spec.containers[0].image).toMatch(
+      /^docker.io\/bitnami\/redis:.*$/,
+    );
+  });
+
+  it('is high-available default', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const redisReplicas = getRedisReplicas(manifests);
+    expect(redisReplicas.spec.replicas).toBe(3);
+  });
+});
