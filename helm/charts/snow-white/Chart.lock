@@ -1,0 +1,15 @@
+dependencies:
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 32.3.6
+- name: influxdb
+  repository: https://charts.bitnami.com/bitnami
+  version: 7.1.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.7.20
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 21.2.12
+digest: sha256:e54f6cf72fcbd76021cb0e90147646cf86978c51232dd152f2b97ef89503ec16
+generated: "2025-07-29T08:10:33.5601938+02:00"
