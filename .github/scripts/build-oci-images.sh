@@ -20,6 +20,8 @@ for service in $microservices; do
   docker build \
     -f "$root_dir/microservices/$service/Dockerfile" \
     -t "$registry/bbortt/snow-white/$service:$image_tag" \
+    --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    --build-arg PROJECT_VERSION="$image_tag" \
     $additional_args \
     "$root_dir/microservices/$service"
 done

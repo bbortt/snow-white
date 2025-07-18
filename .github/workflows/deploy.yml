@@ -31,9 +31,9 @@ jobs:
       - name: Build JDK Images
         run: .github/scripts/build-oci-images.sh "${{  github.ref_name }}" "ghcr.io" "--push"
       - name: Build Native Images
-        run: ./mvnw -B -DskipTests -Pnative,prod -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
+        run: ./mvnw -B -Dimage.tag="${{  github.ref_name }}" -DskipTests -Pnative,prod -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
       - name: Push Native Images
         run: |
-          docker image push "ghcr.io/bbortt/snow-white/kafka-event-filter:${{ steps.release.outputs.tag_name }}"
-          docker image push "ghcr.io/bbortt/snow-white/quality-gate-api:${{ steps.release.outputs.tag_name }}"
-          docker image push "ghcr.io/bbortt/snow-white/report-coordination-service:${{ steps.release.outputs.tag_name }}"
+          docker image push "ghcr.io/bbortt/snow-white/kafka-event-filter:${{  github.ref_name }}"
+          docker image push "ghcr.io/bbortt/snow-white/quality-gate-api:${{  github.ref_name }}"
+          docker image push "ghcr.io/bbortt/snow-white/report-coordination-service:${{  github.ref_name }}"
