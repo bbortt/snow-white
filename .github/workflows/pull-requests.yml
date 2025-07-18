@@ -72,7 +72,7 @@ jobs:
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
   prettier-post-release:
-    name: Run Prettier on Release PR
+    name: 'Run Prettier on Release PR'
     if: ${{ startsWith(github.head_ref, 'release-please-') }}
     runs-on: ubuntu-latest
     environment: release
@@ -99,5 +99,5 @@ jobs:
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git commit --amend -a --no-edit
-            git push --force-with-lease
+            git push
           fi
