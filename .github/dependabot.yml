@@ -16,8 +16,25 @@ updates:
     assignees:
       - bbortt
     labels:
-      - 'lang:typescript'
       - 'severity:medium'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'pnpm'
+    directory: '/helm'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'helm'
+    directory: '/helm/charts/snow-white'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'npm'
     directory: '/microservices/api-gateway/'
@@ -26,7 +43,6 @@ updates:
     assignees:
       - bbortt
     labels:
-      - 'lang:typescript'
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'bun'
@@ -36,7 +52,6 @@ updates:
     assignees:
       - bbortt
     labels:
-      - 'lang:typescript'
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'maven'
@@ -46,7 +61,6 @@ updates:
     assignees:
       - bbortt
     labels:
-      - 'lang:java'
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'gitsubmodule'

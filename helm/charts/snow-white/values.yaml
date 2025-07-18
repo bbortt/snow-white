@@ -1,0 +1,16 @@
+snow-white:
+  imageRegistry: ghcr.io
+
+kafka-event-filter:
+  image:
+    name: bbortt/snow-white/kafka-event-filter
+
+# Infrastructure
+kafka:
+  enabled: true
+
+postgresql:
+  enabled: true
+
+redis:
+  enabled: true
