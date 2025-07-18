@@ -59,7 +59,7 @@ type:deps:
               - '**/package*.json'
               - '**/pom.xml'
       - head-branch:
-          - '^renovate'
+          - '^dependabot'
 
 type:docs:
   - changed-files:
@@ -70,6 +70,7 @@ type:infra:
   - changed-files:
       - any-glob-to-any-file:
           - 'dev/**/*'
+          - 'helm/**/*'
 
 type:feature:
   - head-branch:
