@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white.microservices</groupId>
+    <artifactId>microservices</artifactId>
+    <version>1.0.1-ci.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>kafka-event-filter</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.build.timestamp.format>
+      yyyy-MM-dd'T'HH:mm:ss'Z'
+    </maven.build.timestamp.format>
+
+    <confluent.version>8.0.0</confluent.version>
+    <google-protobuf.version>4.31.1</google-protobuf.version>
+    <grpc.version>1.73.0</grpc.version>
+    <spring-cloud.version>4.1.4</spring-cloud.version>
+
+    <protobuf-maven-plugin.version>3.6.0</protobuf-maven-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>1.52.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.19.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>1.12.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${google-protobuf.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-streams-protobuf-serde</artifactId>
+      <version>${confluent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.semconv</groupId>
+      <artifactId>opentelemetry-semconv</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-otel-agent</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
+              <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
+              <outputDirectory>
+                ${project.build.directory}/opentelemetry-javaagent
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.github.ascopes</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>${protobuf-maven-plugin.version}</version>
+        <configuration>
+          <protocVersion>${google-protobuf.version}</protocVersion>
+          <binaryMavenPlugins>
+            <binaryMavenPlugin>
+              <groupId>io.grpc</groupId>
+              <artifactId>protoc-gen-grpc-java</artifactId>
+              <version>${grpc.version}</version>
+            </binaryMavenPlugin>
+          </binaryMavenPlugins>
+          <ignoreProjectDependencies>true</ignoreProjectDependencies>
+          <sourceDirectories>
+            <sourceDirectory>
+              ${maven.multiModuleProjectDirectory}/opentelemetry-proto
+            </sourceDirectory>
+          </sourceDirectories>
+        </configuration>
+
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <classifier>executable</classifier>
+            </configuration>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>native</id>
+
+      <properties>
+        <repackage.classifier>exec</repackage.classifier>
+        <modernizer.skip>true</modernizer.skip>
+      </properties>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <archive>
+                <manifestEntries>
+                  <Spring-Boot-Native-Processed>
+                    true
+                  </Spring-Boot-Native-Processed>
+                </manifestEntries>
+              </archive>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+
+            <configuration>
+              <image>
+                <env>
+                  <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
+                  <BP_IMAGE_LABELS>
+                    org.opencontainers.image.name=kafka-event-filter
+                  </BP_IMAGE_LABELS>
+                  <BP_OCI_TITLE>snow-white Kafka Event Filter</BP_OCI_TITLE>
+                  <BP_OCI_DESCRIPTION>
+                    Kafka Event Filter of snow-white
+                  </BP_OCI_DESCRIPTION>
+                  <BP_OCI_URL>https://github.com/bbortt/snow-white</BP_OCI_URL>
+                  <BP_OCI_SOURCE>
+                    https://github.com/bbortt/snow-white/tree/main/microservices/kafka-event-filter
+                  </BP_OCI_SOURCE>
+                  <BP_OCI_DOCUMENTATION>
+                    https://github.com/bbortt/snow-white#readme
+                  </BP_OCI_DOCUMENTATION>
+                  <BP_OCI_VERSION>${image.tag}</BP_OCI_VERSION>
+                  <BP_OCI_CREATED>${maven.build.timestamp}</BP_OCI_CREATED>
+                  <BP_OCI_AUTHORS>
+                    Timon Borter &lt; timon.borter@gmx.ch &gt;
+                  </BP_OCI_AUTHORS>
+                  <BP_OCI_LICENSES>
+                    https://polyformproject.org/licenses/small-business/1.0.0/
+                  </BP_OCI_LICENSES>
+                </env>
+              </image>
+              <imageName>
+                ${container.registry}/bbortt/snow-white/kafka-event-filter:${image.tag}
+              </imageName>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>process-aot</id>
+                <goals>
+                  <goal>process-aot</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+
+            <configuration>
+              <buildArgs>
+                <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>-Dspring.profiles.active=prod</buildArg>
+              </buildArgs>
+              <classesDirectory>
+                ${project.build.outputDirectory}
+              </classesDirectory>
+              <mainClass>
+                io.github.bbortt.snow.white.microservices.kafka.event.filter.Main
+              </mainClass>
+              <metadataRepository>
+                <enabled>true</enabled>
+              </metadataRepository>
+              <verbose>true</verbose>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>add-reachability-metadata</id>
+                <goals>
+                  <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+  </repositories>
+</project>
