@@ -22,6 +22,8 @@ jobs:
   lint:
     name: 'Lint'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +40,7 @@ jobs:
     name: 'Build and Test'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       checks: write
       pull-requests: write
     steps:
@@ -93,11 +96,11 @@ jobs:
         run: npm run prettier:format
       - name: Git Configuration
         run: |
-          git config user.name "bbortt"
+          git config user.name "Timon Borter"
           git config user.email "timon.borter@gmx.ch"
       - name: Commit Changes (if any)
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git commit --amend -a --no-edit
-            git push
+            git push --force-with-lease
           fi
