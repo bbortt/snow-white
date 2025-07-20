@@ -4,7 +4,9 @@ description: A Helm chart for deploying snow-white
 type: application
 version: 0.1.0
 appVersion: '1.0.0'
-
+maintainers:
+  - name: Timon Borter
+    email: timon.borter@gmx.ch
 dependencies:
   - name: kafka
     version: '32.3.6'
