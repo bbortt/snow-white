@@ -19,15 +19,17 @@ LABEL org.opencontainers.image.title="snow-white OpenAPI Coverage Service" \
 COPY target/*-executable.jar app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-ENV OTEL_SERVICE_NAME="openapi-coverage-service"
-ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
-ENV OTEL_SERVICE_VERSION="$PROJECT_VERSION"
-ENV OTEL_TRACES_EXPORTER="otlp"
-ENV OTEL_METRICS_EXPORTER="otlp"
-ENV OTEL_LOGS_EXPORTER="otlp"
-ENV SPRING_PROFILES_ACTIVE="prod"
+ENV JVM_ARGS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=50 -XX:MaxRAMPercentage=80" \
+    OTEL_SERVICE_NAME="openapi-coverage-service" \
+    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
+    OTEL_TRACES_EXPORTER="otlp" \
+    OTEL_METRICS_EXPORTER="otlp" \
+    OTEL_LOGS_EXPORTER="otlp" \
+    SPRING_PROFILES_ACTIVE="prod"
 
 ENTRYPOINT ["java", \
+    "$JVM_ARGS", \
     "-javaagent:/opt/opentelemetry-javaagent.jar", \
     "-jar", \
     "app.jar" \

@@ -1,9 +1,8 @@
 snow-white:
   imageRegistry: ghcr.io
-
-kafka-event-filter:
-  image:
-    name: bbortt/snow-white/kafka-event-filter
+  kafka-event-filter:
+    image:
+      name: bbortt/snow-white/kafka-event-filter
 
 # Infrastructure
 kafka:
@@ -14,3 +13,11 @@ postgresql:
 
 redis:
   enabled: true
+
+couchbase-operator:
+  enabled: true
+  install:
+    couchbaseOperator: true
+    admissionController: false
+    couchbaseCluster: true
+    syncGateway: false
