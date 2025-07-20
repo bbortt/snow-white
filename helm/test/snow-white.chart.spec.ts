@@ -10,13 +10,7 @@ import { renderHelmChart } from './render-helm-chart';
 describe('Helm Chart Rendering', () => {
   it('renders a deployment with the correct image', async () => {
     const manifests = await renderHelmChart({
-      chartPath: '../charts/my-chart',
-      values: {
-        image: {
-          repository: 'nginx',
-          tag: '1.25',
-        },
-      },
+      chartPath: 'charts/snow-white',
     });
 
     const deployment = manifests.find((m) => m.kind === 'Deployment');
