@@ -1,9 +1,8 @@
 snow-white:
   imageRegistry: ghcr.io
-
-kafka-event-filter:
-  image:
-    name: bbortt/snow-white/kafka-event-filter
+  kafka-event-filter:
+    image:
+      name: bbortt/snow-white/kafka-event-filter
 
 # Infrastructure
 kafka:
