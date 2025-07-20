@@ -16,4 +16,12 @@ module.exports = {
   tabWidth: 2,
   useTabs: false,
   xmlWhitespaceSensitivity: 'ignore',
+  overrides: [
+    {
+      files: '**/*.{ts,tsx}',
+      options: {
+        parser: 'typescript',
+      },
+    },
+  ],
 };

@@ -32,6 +32,43 @@ jobs:
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-arm64
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-x64
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-windows-x64.exe
+  publish-helm-chart:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract Version from Tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Dependencies
+        run: pnpm install
+        working-directory: 'helm'
+      - name: Bump Chart appVersion
+        run: npx --no-install ts-node scripts/bump-chart-version.ts "${{ steps.version.outputs.VERSION }}"
+        working-directory: 'helm'
+      - name: Add Helm Repos
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+      - name: Git Configuration
+        run: |
+          git config user.name "Timon Borter"
+          git config user.email "timon.borter@gmx.ch"
+      - name: Release Helm Chart
+        uses: helm/chart-releaser-action@v1.7.0
+        env:
+          CR_TOKEN: '${{ secrets.RELEASE_PLEASE_TOKEN }}'
+        with:
+          charts_dir: 'helm/charts'
   publish-images:
     name: 'Publish Images'
     runs-on: ubuntu-latest

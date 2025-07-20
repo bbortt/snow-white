@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jdk-alpine AS jlink-builder
 
-# Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
+# Essential modules that jdeps misses for Spring Boot + OpenTelemetry \
+    ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
 
 RUN apk add --no-cache binutils
 
@@ -56,24 +56,22 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelem
 
 RUN chown -R api-sync-job:api-sync-job /app /opt/java
 
-ENV JAVA_HOME="/opt/java"
-ENV OTEL_SERVICE_NAME="api-sync-job"
-ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
-ENV OTEL_SERVICE_VERSION="$PROJECT_VERSION"
-ENV OTEL_TRACES_EXPORTER="otlp"
-ENV OTEL_METRICS_EXPORTER="otlp"
-ENV OTEL_LOGS_EXPORTER="otlp"
-
-ENV JAVA_OPTS="-XX:+UseContainerSupport \
-    -XX:+TieredCompilation \
-    -XX:TieredStopAtLevel=1 \
-    -Xss256k \
-    -XX:+UseG1GC \
-    -XX:MaxGCPauseMillis=100 \
-    -XX:+UseStringDeduplication \
-    -XX:+UseCompressedOops"
-
-ENV PATH="$PATH:$JAVA_HOME/bin"
+ENV JAVA_HOME="/opt/java" \
+    OTEL_SERVICE_NAME="api-sync-job" \
+    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
+    OTEL_TRACES_EXPORTER="otlp" \
+    OTEL_METRICS_EXPORTER="otlp" \
+    OTEL_LOGS_EXPORTER="otlp" \
+    JAVA_OPTS="-XX:+UseContainerSupport \
+        -XX:+TieredCompilation \
+        -XX:TieredStopAtLevel=1 \
+        -Xss256k \
+        -XX:+UseG1GC \
+        -XX:MaxGCPauseMillis=100 \
+        -XX:+UseStringDeduplication \
+        -XX:+UseCompressedOops" \
+    PATH="$PATH:$JAVA_HOME/bin"
 
 USER api-sync-job
 
