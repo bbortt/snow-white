@@ -19,14 +19,16 @@ LABEL org.opencontainers.image.title="snow-white API Sync Job" \
 COPY target/*-executable.jar app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-ENV OTEL_SERVICE_NAME="api-sync-job"
-ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
-ENV OTEL_SERVICE_VERSION="$PROJECT_VERSION"
-ENV OTEL_TRACES_EXPORTER="otlp"
-ENV OTEL_METRICS_EXPORTER="otlp"
-ENV OTEL_LOGS_EXPORTER="otlp"
+ENV JVM_ARGS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=50 -XX:MaxRAMPercentage=80" \
+    OTEL_SERVICE_NAME="api-sync-job" \
+    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
+    OTEL_TRACES_EXPORTER="otlp" \
+    OTEL_METRICS_EXPORTER="otlp" \
+    OTEL_LOGS_EXPORTER="otlp"
 
 ENTRYPOINT ["java", \
+    "$JVM_ARGS", \
     "-javaagent:/opt/opentelemetry-javaagent.jar", \
     "-jar", \
     "app.jar" \

@@ -1,0 +1,15 @@
+dependencies:
+- name: couchbase-operator
+  repository: https://couchbase-partners.github.io/helm-charts
+  version: 2.81.1
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 32.3.6
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.7.20
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 21.2.12
+digest: sha256:72b16d4b9e24d193388c7e2faac4b6600f2ba00e72c122d07540a86dca4de0dc
+generated: "2025-07-21T18:08:38.2750895+02:00"
