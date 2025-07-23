@@ -56,25 +56,25 @@ public class NativeRuntimeHintsConfiguration {
           .reflection()
           .registerType(
             Class.forName(
-              "io.confluent.kafka.serializers.context.TopicNameStrategy"
+              "io.confluent.kafka.serializers.subject.TopicNameStrategy"
             )
           );
         hints
           .reflection()
           .registerType(
             Class.forName(
-              "io.confluent.kafka.serializers.context.TopicRecordNameStrategy"
+              "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy"
             )
           );
         hints
           .reflection()
           .registerType(
             Class.forName(
-              "io.confluent.kafka.serializers.context.RecordNameStrategy"
+              "io.confluent.kafka.serializers.subject.RecordNameStrategyy"
             )
           );
       } catch (ClassNotFoundException e) {
-        // These classes might not be available in all versions
+        logger.warn("Failed registering runtime hints!", e);
       }
     }
   }
