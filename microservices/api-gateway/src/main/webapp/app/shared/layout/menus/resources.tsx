@@ -22,8 +22,7 @@ export const ResourcesMenu = () => (
   >
     <DropdownItem key="swagger-ui">
       <a href="/swagger-ui/index.html" target="_blank" className="dropdown-item link-no-style">
-        <div className="img-svg img-svg-openapi svg-inline--fa"></div>
-        <Translate contentKey="global.menu.resources.swagger" />
+        <div className="img-svg img-svg-openapi svg-inline--fa"></div> <Translate contentKey="global.menu.resources.swagger" />
       </a>
     </DropdownItem>
   </NavDropdown>

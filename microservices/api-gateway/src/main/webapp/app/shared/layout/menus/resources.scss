@@ -18,6 +18,8 @@
   :hover > & {
     background-color: $navbar-dark-hover-color;
   }
+
+    filter: invert(1);
 }
 
 .img-svg-openapi {
