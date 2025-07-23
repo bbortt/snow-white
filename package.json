@@ -38,6 +38,6 @@
     "prettier-plugin-packagejson": "2.5.19"
   },
   "optionalDependencies": {
-    "npm-check-updates": "18.0.1"
+    "npm-check-updates": "18.0.2"
   }
 }
