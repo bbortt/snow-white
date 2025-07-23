@@ -40,12 +40,12 @@
     "packaging": "jar"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.7.2",
+    "@fortawesome/fontawesome-svg-core": "7.0.0",
     "@fortawesome/free-brands-svg-icons": "7.0.0",
-    "@fortawesome/free-solid-svg-icons": "6.7.2",
-    "@fortawesome/react-fontawesome": "0.2.2",
+    "@fortawesome/free-solid-svg-icons": "7.0.0",
+    "@fortawesome/react-fontawesome": "0.2.3",
     "@reduxjs/toolkit": "2.8.2",
-    "axios": "1.10.0",
+    "axios": "1.11.0",
     "bootstrap": "5.3.7",
     "dayjs": "1.11.13",
     "lodash": "4.17.21",
@@ -133,7 +133,7 @@
     "workbox-webpack-plugin": "7.3.0"
   },
   "optionalDependencies": {
-    "npm-check-updates": "18.0.1"
+    "npm-check-updates": "18.0.2"
   },
   "packageManager": "pnpm@10.13.1",
   "engines": {
