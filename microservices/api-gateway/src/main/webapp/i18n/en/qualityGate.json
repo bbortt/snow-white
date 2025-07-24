@@ -2,13 +2,13 @@
   "snowWhiteApp": {
     "qualityGate": {
       "home": {
-        "title": "Quality-Gates",
+        "title": "Quality-Gate Results",
         "refreshListLabel": "Refresh list",
         "notFound": "No Quality-Gates found",
         "noOpenApiTestResultsFound": "No OpenAPI Test Results found"
       },
       "detail": {
-        "title": "Quality-Gate"
+        "title": "Quality-Gate Result"
       },
       "id": "ID",
       "calculationId": "Calculation Id",

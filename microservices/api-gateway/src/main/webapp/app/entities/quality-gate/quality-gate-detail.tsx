@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import OpenapiTestResultTable from 'app/entities/quality-gate/openapi-test-result-table';
+import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import React, { useEffect } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
 import { Link, useParams } from 'react-router-dom';
@@ -24,7 +25,7 @@ export const QualityGateDetail = () => {
     dispatch(getEntity(id!));
   }, []);
 
-  const qualityGateEntity = useAppSelector(state => state.snowwhite.qualityGate.entity);
+  const qualityGate = useAppSelector(state => state.snowwhite.qualityGate.entity);
 
   return (
     <Row>
@@ -38,32 +39,32 @@ export const QualityGateDetail = () => {
               <Translate contentKey="global.field.id">ID</Translate>
             </span>
           </dt>
-          <dd>{qualityGateEntity.id}</dd>
+          <dd>{qualityGate.id}</dd>
           <dt>
             <span id="calculationId">
               <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>
             </span>
           </dt>
-          <dd>{qualityGateEntity.calculationId}</dd>
+          <dd>{qualityGate.calculationId}</dd>
           <dt>
             <span id="status">
               <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>
             </span>
           </dt>
-          <dd>{qualityGateEntity.status}</dd>
+          <dd>
+            <StatusBadge qualityGate={qualityGate} />
+          </dd>
           <dt>
             <span id="createdAt">
               <Translate contentKey="snowWhiteApp.qualityGate.createdAt">Created At</Translate>
             </span>
           </dt>
-          <dd>
-            {qualityGateEntity.createdAt ? <TextFormat value={qualityGateEntity.createdAt} type="date" format={APP_DATE_FORMAT} /> : null}
-          </dd>
+          <dd>{qualityGate.createdAt ? <TextFormat value={qualityGate.createdAt} type="date" format={APP_DATE_FORMAT} /> : null}</dd>
           <dt>
             <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
           </dt>
           <dd>
-            {qualityGateEntity.calculationRequest ? (
+            {qualityGate.calculationRequest ? (
               <pre
                 className="mb-0 p-3"
                 style={{
@@ -76,7 +77,7 @@ export const QualityGateDetail = () => {
                   wordBreak: 'break-word',
                 }}
               >
-                <code style={{ color: '#495057' }}>{JSON.stringify(qualityGateEntity.calculationRequest)}</code>
+                <code style={{ color: '#495057' }}>{JSON.stringify(qualityGate.calculationRequest)}</code>
               </pre>
             ) : (
               ''
@@ -86,7 +87,7 @@ export const QualityGateDetail = () => {
             <Translate contentKey="snowWhiteApp.qualityGate.openApiTestResult.title">OpenAPI Test Results</Translate>
           </dt>
           <dd>
-            <OpenapiTestResultTable openapiTestResults={qualityGateEntity.openApiTestResults} />
+            <OpenapiTestResultTable openapiTestResults={qualityGate.openApiTestResults} />
           </dd>
         </dl>
         <Button tag={Link} to="/quality-gate" replace color="info" data-cy="entityDetailsBackButton">
@@ -96,7 +97,7 @@ export const QualityGateDetail = () => {
           </span>
         </Button>
         &nbsp;
-        <a href={`/api/rest/v1/reports/${qualityGateEntity.calculationId}/junit`}>
+        <a href={`/api/rest/v1/reports/${qualityGate.calculationId}/junit`}>
           <Button replace color="primary">
             <FontAwesomeIcon icon="file-arrow-down" />{' '}
             <span className="d-none d-md-inline">
