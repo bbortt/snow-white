@@ -8,6 +8,7 @@ import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
@@ -25,7 +26,7 @@ export const QualityGate = () => {
   const navigate = useNavigate();
 
   const [paginationState, setPaginationState] = useState(
-    overridePaginationStateWithQueryParams(getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt'), pageLocation.search),
+    overridePaginationStateWithQueryParams(getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc'), pageLocation.search),
   );
 
   const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
@@ -100,7 +101,7 @@ export const QualityGate = () => {
   return (
     <div>
       <h2 id="quality-gate-heading" data-cy="QualityGateHeading">
-        <Translate contentKey="snowWhiteApp.qualityGate.home.title">Quality Gates</Translate>
+        <Translate contentKey="snowWhiteApp.qualityGate.home.title">Results</Translate>
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
@@ -146,7 +147,7 @@ export const QualityGate = () => {
                     </Button>
                   </td>
                   <td>
-                    <Translate contentKey={`snowWhiteApp.ReportStatus.${qualityGate.status}`} />
+                    <StatusBadge fill={true} qualityGate={qualityGate} />
                   </td>
                   <td>
                     {qualityGate.createdAt ? (
