@@ -17,3 +17,6 @@ properties:
     maxLength: 256
     description: Additional information of a coverage of 1.0 has not been met
     example: Path GET_/foo/bar not covered
+  isIncludedInQualityGate:
+    type: boolean
+    description: If this result was relevant for the final status, or not

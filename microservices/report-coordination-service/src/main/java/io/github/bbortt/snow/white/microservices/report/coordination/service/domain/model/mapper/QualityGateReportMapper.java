@@ -31,6 +31,7 @@ public interface QualityGateReportMapper {
   );
 
   @Mapping(target = "id", source = "openApiTestCriteria")
+  @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
   CalculateQualityGate202ResponseOpenApiTestResultsInner toCalculateQualityGateResponse(
     OpenApiTestResult openApiTestResult
   );
@@ -43,6 +44,7 @@ public interface QualityGateReportMapper {
   );
 
   @Mapping(target = "id", source = "openApiTestCriteria")
+  @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
   ListQualityGateReports200ResponseInnerOpenApiTestResultsInner toListQualityGateReportsResponse(
     OpenApiTestResult openApiTestResult
   );
