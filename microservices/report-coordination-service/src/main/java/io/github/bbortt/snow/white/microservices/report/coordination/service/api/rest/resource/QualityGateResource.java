@@ -7,12 +7,14 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
 import static java.lang.String.format;
+import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
@@ -26,8 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class QualityGateResource implements QualityGateApi {
 
   private final ReportService reportService;
+
   private final QualityGateReportMapper qualityGateReportMapper;
   private final ReportParameterMapper reportParameterMapper;
+
+  private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
   @Override
   public ResponseEntity calculateQualityGate(
@@ -40,9 +45,16 @@ public class QualityGateResource implements QualityGateApi {
         reportParameterMapper.fromDto(calculateQualityGateRequest)
       );
 
-      return ResponseEntity.status(ACCEPTED).body(
-        qualityGateReportMapper.toCalculateQualityGateResponse(report)
-      );
+      return ResponseEntity.status(ACCEPTED)
+        .header(
+          LOCATION,
+          format(
+            "%s/quality-gate/%s",
+            reportCoordinationServiceProperties.getPublicApiGatewayUrl(),
+            report.getCalculationId()
+          )
+        )
+        .body(qualityGateReportMapper.toCalculateQualityGateResponse(report));
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
         CalculateQualityGate400Response.builder()

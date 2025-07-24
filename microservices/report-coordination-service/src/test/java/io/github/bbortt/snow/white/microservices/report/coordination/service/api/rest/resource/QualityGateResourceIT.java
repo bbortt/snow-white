@@ -18,8 +18,10 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.consumerProps;
@@ -133,6 +135,12 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       )
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(
+        header().string(
+          LOCATION,
+          matchesRegex("http://localhost:9080/quality-gate/[0-9a-fA-F\\-]{36}")
+        )
+      )
       .andReturn()
       .getResponse()
       .getContentAsString();
@@ -204,6 +212,12 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       )
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(
+        header().string(
+          LOCATION,
+          matchesRegex("http://localhost:9080/quality-gate/[0-9a-fA-F\\-]{36}")
+        )
+      )
       .andReturn()
       .getResponse()
       .getContentAsString();

@@ -7,23 +7,27 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,6 +47,9 @@ class QualityGateResourceTest {
   @Mock
   private ReportParameterMapper reportParameterMapperMock;
 
+  @Mock
+  private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
+
   private QualityGateResource fixture;
 
   @BeforeEach
@@ -50,7 +57,8 @@ class QualityGateResourceTest {
     fixture = new QualityGateResource(
       reportServiceMock,
       qualityGateReportMapperMock,
-      reportParameterMapperMock
+      reportParameterMapperMock,
+      reportCoordinationServicePropertiesMock
     );
   }
 
@@ -72,6 +80,9 @@ class QualityGateResourceTest {
         .fromDto(qualityGateCalculationRequestMock);
 
       var qualityGateReport = mock(QualityGateReport.class);
+      doReturn(UUID.fromString("37809fff-2044-4341-b55e-f99202291478"))
+        .when(qualityGateReport)
+        .getCalculationId();
       doReturn(qualityGateReport)
         .when(reportServiceMock)
         .initializeQualityGateCalculation(
@@ -84,6 +95,11 @@ class QualityGateResourceTest {
         .when(qualityGateReportMapperMock)
         .toCalculateQualityGateResponse(qualityGateReport);
 
+      var apiGatewayHost = "http://my-api-gateway";
+      doReturn(apiGatewayHost)
+        .when(reportCoordinationServicePropertiesMock)
+        .getPublicApiGatewayUrl();
+
       var response = fixture.calculateQualityGate(
         QUALITY_GATE_CONFIG_NAME,
         qualityGateCalculationRequestMock
@@ -93,7 +109,14 @@ class QualityGateResourceTest {
         .isNotNull()
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(ACCEPTED),
-          r -> assertThat(r.getBody()).isEqualTo(responseDto)
+          r -> assertThat(r.getBody()).isEqualTo(responseDto),
+          r ->
+            assertThat(r.getHeaders()).containsEntry(
+              LOCATION,
+              singletonList(
+                "http://my-api-gateway/quality-gate/37809fff-2044-4341-b55e-f99202291478"
+              )
+            )
         );
     }
 
