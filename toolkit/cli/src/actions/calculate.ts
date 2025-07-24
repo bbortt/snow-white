@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import { exit } from 'node:process';
+
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import chalk from 'chalk';
@@ -64,6 +66,6 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Calcula
       console.error(chalk.red(`Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
     }
 
-    throw new Error('Failed to calculate quality-gate!');
+    exit(1);
   }
 };

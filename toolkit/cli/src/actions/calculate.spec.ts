@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import { exit } from 'node:process';
+
 import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
@@ -11,6 +13,11 @@ import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'b
 import type { QualityGateApi } from '../clients/quality-gate-api';
 import { calculate } from './calculate';
 import type { CalculateOptions } from './calculate.options';
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+mock.module('node:process', () => ({
+  exit: mock(),
+}));
 
 const mockConsoleLog = spyOn(console, 'log');
 const mockConsoleError = spyOn(console, 'error');
@@ -108,12 +115,12 @@ describe('calculate', () => {
     });
 
     it('should work with default URL when not provided', async () => {
-      const optionsWithoutUrl: Omit<CalculateOptions, 'url'> = {
+      const optionsWithoutUrl: CalculateOptions = {
         qualityGate: 'test-gate',
         serviceName: 'test-service',
         apiName: 'test-api',
         apiVersion: '1.0.0',
-      };
+      } as unknown as CalculateOptions;
 
       const mockResponse: AxiosResponse = {
         status: 202,
@@ -145,11 +152,13 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Details: ${mockErrorResponse.data.message}`));
+
+      expect(exit).toHaveBeenCalledWith(1);
     });
 
     it('should handle AxiosError with response but no data', () => {
@@ -169,11 +178,13 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Error: ${mockErrorResponse.statusText}`));
+
+      expect(exit).toHaveBeenCalledWith(1);
     });
 
     it('should handle AxiosError with no response (network error)', () => {
@@ -181,31 +192,37 @@ describe('calculate', () => {
 
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('Check if the service is running and accessible'));
+
+      expect(exit).toHaveBeenCalledWith(1);
     });
 
     it('should handle generic Error', () => {
       const genericError = new Error('Something went wrong');
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(genericError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
+
+      expect(exit).toHaveBeenCalledWith(1);
     });
 
     it('should handle non-Error objects', () => {
       const unknownError = { custom: 'error object' };
       qualityGateApiMock.calculateQualityGate.mockRejectedValue(unknownError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).rejects.toThrow('Failed to calculate quality-gate!');
+      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));
+
+      expect(exit).toHaveBeenCalledWith(1);
     });
   });
 });

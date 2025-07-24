@@ -46,8 +46,12 @@ const executeCLICommand = async (
       });
     });
 
-    child.on('error', error => {
-      reject(error);
+    child.on('error', _ => {
+      resolve({
+        exitCode: 1,
+        stdout,
+        stderr,
+      });
     });
 
     // Set timeout for the command execution
@@ -116,8 +120,8 @@ describe('CLI', () => {
       expect(cliResult.stdout).toContain('Version: 1.0.0');
     };
 
-    async function invokeCalculateCommand(serviceName: string, apiName: string, apiVersion: string) {
-      const cliResult = await executeCLICommand([
+    const invokeCalculateCommand = async (serviceName: string, apiName: string, apiVersion: string) =>
+      await executeCLICommand([
         'calculate',
         '--qualityGate',
         'test-quality-gate',
@@ -130,8 +134,6 @@ describe('CLI', () => {
         '--url',
         WIREMOCK_URL,
       ]);
-      return cliResult;
-    }
 
     it('should successfully trigger quality gate calculation', async () => {
       const { serviceName, apiName, apiVersion, wireMockRequest } = getWireMockRequest();
