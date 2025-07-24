@@ -28,8 +28,9 @@ For more on which services are running and their ports, see [Mapped Ports](#mapp
 You'll need a **Read/Write token** for the raw-data bucket in InfluxDB.
 
 1. Visit the InfluxDB UI (port 8086)
-2. Create a token with the required permissions
-3. Add the token to your `dev/.env` file:
+2. The login is `snow-white:snow-white`
+3. Create a token with both `read` and `write` into the `raw-data` bucket
+4. Add the token to your `dev/.env` file:
 
 ```ini
 INFLUXDB_TOKEN=[YOUR_TOKEN_GOES_HERE]
@@ -61,7 +62,7 @@ package "Snow-White" {
     ' Snow-White components first
 
     component "API Gateway" as gate #Darkorange {
-        component "Webapplication (UI)" #Darkorange
+        component "Webapplication (UI)" as ui #Orange
     }
 
     component "API Sync Job" as sync #Darkorange
@@ -91,8 +92,13 @@ component "Service Interface Repository" as sir #Teal
 ' User connections (aka UI)
 
 actor User as user
+component CLI as cli #Darkorange
 
-user <--> gate: HTTP/S
+user <--> ui: HTTP/S
+
+user ..> cli: uses
+cli --> gate: HTTP/S
+
 gate <--> qgate
 gate <--> coordination
 
