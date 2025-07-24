@@ -200,7 +200,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
               result ->
                 assertThat(result.getAdditionalInformation()).isEqualTo(
                   additionalInformation
-                )
+                ),
+              result -> assertThat(result.getIsIncludedInQualityGate()).isTrue()
             )
       );
   }
