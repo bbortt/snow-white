@@ -8,6 +8,7 @@ export interface IOpenApiTestResult {
   openApiCriterionName?: string;
   coverage?: number;
   additionalInformation?: string | null;
+  isIncludedInQualityGate: boolean;
 }
 
-export const defaultValue: Readonly<IOpenApiTestResult> = {};
+export const defaultValue: Readonly<IOpenApiTestResult> = { isIncludedInQualityGate: false };
