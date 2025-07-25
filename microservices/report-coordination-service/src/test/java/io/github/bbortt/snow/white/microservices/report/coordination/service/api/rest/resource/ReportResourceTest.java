@@ -309,7 +309,7 @@ class ReportResourceTest {
 
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllFinishedReports(any(Pageable.class));
+        .findAllReports(any(Pageable.class));
 
       doReturn(Stream.of(report1, report2))
         .when(qualityGateReportsPage)
@@ -351,7 +351,7 @@ class ReportResourceTest {
       Page<QualityGateReport> qualityGateReportsPage = mock();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllFinishedReports(any(Pageable.class));
+        .findAllReports(any(Pageable.class));
 
       doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 

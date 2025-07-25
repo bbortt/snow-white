@@ -10,6 +10,7 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.P
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
@@ -35,6 +36,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -43,6 +45,8 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -55,6 +59,12 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     ENTITY_API_URL + "/{calculationId}";
   private static final String JUNIT_REPORT_API_URL =
     ENTITY_API_URL + "/{calculationId}/junit";
+
+  private static String reportStatusAsString(ReportStatus reportStatus) {
+    return NOT_STARTED.equals(reportStatus)
+      ? "IN_PROGRESS"
+      : reportStatus.toString();
+  }
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -270,8 +280,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
   }
 
-  @Test
-  void findAllReports() throws Exception {
+  @ParameterizedTest
+  @EnumSource(ReportStatus.class)
+  void findAllReports(ReportStatus reportStatus) throws Exception {
     qualityGateReportRepository.save(
       QualityGateReport.builder()
         .calculationId(UUID.fromString("b30bb84b-7bf6-4744-8bfc-ac05b8a85991"))
@@ -282,7 +293,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
             .apiName("apiName")
             .build()
         )
-        .reportStatus(PASSED)
+        .reportStatus(reportStatus)
         .createdAt(Instant.parse("2025-05-07T18:00:00.00Z"))
         .build()
     );
@@ -297,7 +308,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
             .apiName("apiName")
             .build()
         )
-        .reportStatus(PASSED)
+        .reportStatus(reportStatus)
         .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
         .build()
     );
@@ -309,6 +320,12 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
       .andExpect(jsonPath("$.length()").value(2))
       .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
-      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"));
+      .andExpect(
+        jsonPath("$[0].status").value(reportStatusAsString(reportStatus))
+      )
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"))
+      .andExpect(
+        jsonPath("$[1].status").value(reportStatusAsString(reportStatus))
+      );
   }
 }
