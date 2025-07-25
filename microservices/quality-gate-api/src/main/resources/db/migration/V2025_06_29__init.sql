@@ -7,7 +7,7 @@
 CREATE TABLE open_api_coverage_configuration
 (
     id   BIGSERIAL   NOT NULL PRIMARY KEY,
-    name VARCHAR(32) NOT NULL,
+    name VARCHAR(64) NOT NULL,
     CONSTRAINT uk_open_api_coverage UNIQUE (name)
 );
 

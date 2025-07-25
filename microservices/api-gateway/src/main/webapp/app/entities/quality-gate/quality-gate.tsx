@@ -12,6 +12,7 @@ import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
+import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -118,6 +119,10 @@ export const QualityGate = () => {
                   <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('calculationId')} />
                 </th>
+                <th className="hand" onClick={sort('qualityGateConfigName')}>
+                  <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('qualityGateConfigName')} />
+                </th>
                 <th className="hand" onClick={sort('status')}>
                   <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('status')} />
@@ -147,11 +152,16 @@ export const QualityGate = () => {
                     </Button>
                   </td>
                   <td>
+                    <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
+                      {qualityGate.qualityGateConfig?.name}
+                    </Button>
+                  </td>
+                  <td>
                     <StatusBadge fill={true} qualityGate={qualityGate} />
                   </td>
                   <td>
                     {qualityGate.createdAt ? (
-                      <TextFormat type="date" value={qualityGate.createdAt.toISOString()} format={APP_DATE_FORMAT} />
+                      <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
                     ) : null}
                   </td>
                   <td>{qualityGate.calculationRequest?.serviceName}</td>

@@ -9,7 +9,8 @@ import './open-api-criterion-badge.scss';
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { translate } from 'react-jhipster';
 import { Badge, Tooltip } from 'reactstrap';
 
 import { getEntity } from '../open-api-criterion/open-api-criterion.reducer';
@@ -28,18 +29,42 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
   };
 
   useEffect(() => {
-    dispatch(getEntity(openApiCriterion.name!));
-  }, []);
+    if (openApiCriterion.name) {
+      dispatch(getEntity(openApiCriterion.name));
+    }
+  }, [openApiCriterion.name, dispatch]);
 
-  const openApiCriterionEntity = useAppSelector(state => state.snowwhite.openApiCriterion.entity);
+  const openApiCriterionEntity = useAppSelector(
+    state => state.snowwhite.openApiCriterion.entities?.[openApiCriterion.name!] || openApiCriterion,
+  );
+
+  const name = useMemo(() => {
+    const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterionEntity.name}.name`);
+    if (translation?.startsWith('translation-not-found')) {
+      return openApiCriterionEntity.name;
+    }
+    return translation;
+  }, [openApiCriterionEntity.name]);
+
+  const description = useMemo(() => {
+    const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterionEntity.name}.description`);
+    if (translation?.startsWith('translation-not-found')) {
+      return openApiCriterionEntity.description;
+    }
+    return translation;
+  }, [openApiCriterionEntity.name]);
+
+  if (!openApiCriterionEntity.name) {
+    return null;
+  }
 
   return (
     <>
       <Badge id={`badge-${openApiCriterionEntity.name}`}>
-        <a>{openApiCriterionEntity.name}</a>
+        <a>{name}</a>
       </Badge>
       <Tooltip target={`badge-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
-        {openApiCriterionEntity.description}
+        {description}
       </Tooltip>
     </>
   );

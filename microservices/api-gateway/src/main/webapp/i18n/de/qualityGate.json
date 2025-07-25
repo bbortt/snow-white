@@ -12,6 +12,7 @@
       },
       "id": "ID",
       "calculationId": "Berechnungs ID",
+      "qualityGateConfigName": "Quality-Gate",
       "status": "Status",
       "createdAt": "Erstellt am",
       "serviceName": "Service Name",
@@ -23,6 +24,10 @@
         "name": "Name",
         "coverage": "Abdeckung",
         "additionalInformation": "Zusätzliche Information"
+      },
+      "shapes": {
+        "qualityGateResults": "Status inkludierter Kriterien",
+        "allResults": "Status aller Kriterien"
       },
       "action": {
         "junitDownload": "JUnit Report Herunterladen"

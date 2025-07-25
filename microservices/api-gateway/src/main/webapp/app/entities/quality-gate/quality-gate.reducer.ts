@@ -13,7 +13,6 @@ import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { reportApi } from 'app/entities/quality-gate/report-api';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
-import dayjs from 'dayjs';
 
 const initialState: EntityState<IQualityGate> = {
   loading: false,
@@ -37,10 +36,11 @@ const fromDto = ({
   qualityGateConfig: { name: qualityGateConfigName },
   status,
   calculationRequest: { ...calculationRequest, attributeFilters: joinAttributeFilters(calculationRequest.attributeFilters) },
-  createdAt: dayjs(initiatedAt),
+  createdAt: initiatedAt,
   openApiTestResults: openApiTestResults?.map(openApiTestResult => ({
     ...openApiTestResult,
     openApiCriterionName: openApiTestResult.id,
+    isIncludedInQualityGate: openApiTestResult.isIncludedInQualityGate || false,
   })),
 });
 
