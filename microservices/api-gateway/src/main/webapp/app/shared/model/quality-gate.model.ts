@@ -14,7 +14,7 @@ export interface IQualityGate {
   calculationId?: string;
   qualityGateConfig?: IQualityGateConfig;
   status?: keyof typeof ReportStatus;
-  createdAt?: dayjs.Dayjs;
+  createdAt?: string;
   calculationRequest?: ICalculationRequestParameters;
   openApiTestResults?: IOpenApiTestResult[];
 }

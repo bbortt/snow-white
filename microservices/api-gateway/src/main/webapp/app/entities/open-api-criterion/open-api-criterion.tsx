@@ -48,19 +48,20 @@ export const OpenApiCriterion = () => {
             <thead>
               <tr>
                 <th>
-                  <Translate contentKey="snowWhiteApp.openApiCriterion.name">Name</Translate>
+                  <Translate contentKey="snowWhiteApp.openApiCriterion.name">Coverage Type</Translate>
                 </th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {openApiCriterionList.map((openApiCriterion, i) => {
-                const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}`);
+                const name = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.name`);
+                const description = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.description`);
 
                 return (
                   <tr key={`entity-${openApiCriterion.name}`} data-testid="openApiCriteriaTable">
-                    <td>{openApiCriterion.name}</td>
-                    <td>{translation.startsWith('translation-not-found') ? openApiCriterion.description : translation}</td>
+                    <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
+                    <td>{description.startsWith('translation-not-found') ? openApiCriterion.description : description}</td>
                   </tr>
                 );
               })}
