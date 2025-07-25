@@ -9,19 +9,49 @@
       "detail": {
         "title": "OpenAPI Kriterium"
       },
-      "name": "Name",
+      "name": "Abdeckungs-Typ",
       "description": {
         "header": "Beschreibung",
-        "PFAD_ABDECKUNG": "Jeder Pfad, der in der OpenAPI-Spezifikation definiert ist, wurde aufgerufen. Dies ist eine Teilmenge von `HTTP_METHOD_COVERAGE`.",
-        "HTTP_METHOD_COVERAGE": "Jede HTTP-Methode (`GET`, `POST`, `PUT`, `DELETE`, etc.) für jeden Pfad wurde getestet.",
-        "ERROR_RESPONSE_CODE_COVERAGE": "Jeder dokumentierte Fehlerantwortcode für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`.",
-        "RESPONSE_CODE_COVERAGE": "Jeder dokumentierte Antwortcode für jeden Endpunkt wird getestet.",
-        "ERFORDERLICHE_PARAMETER_ABDECKUNG": "Jeder erforderliche Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`.",
-        "PARAMETER_COVERAGE": "Jeder Parameter (in path, query) wurde mit gültigen Werten getestet.",
-        "REQUIRED_ERROR_FIELDS": "Fehlerantworten enthalten alle erforderlichen Felder.",
-        "ALL_RESPONSE_CODES_DOCUMENTED": "Alle aufgetretenen Antwortcodes (einschließlich Fehler) müssen in der OpenAPI-Spezifikation dokumentiert sein.",
-        "ALL_ERROR_CODES_DOCUMENTED": "Alle aufgetretenen Fehler-Response-Codes müssen in der OpenAPI-Spezifikation dokumentiert sein. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED`.",
-        "ALL_NON_ERROR_CODES_DOCUMENTED": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED`."
+        "PATH_COVERAGE": {
+          "name": "Pfad",
+          "description": "Jeder Pfad, der in der OpenAPI-Spezifikation definiert ist, wurde aufgerufen. Dies ist eine Teilmenge von `HTTP_METHOD_COVERAGE`."
+        },
+        "HTTP_METHOD_COVERAGE": {
+          "name": "HTTP Methode",
+          "description": "Jede HTTP-Methode (`GET`, `POST`, `PUT`, `DELETE`, etc.) für jeden Pfad wurde getestet."
+        },
+        "ERROR_RESPONSE_CODE_COVERAGE": {
+          "name": "Fehler Antwort-Code",
+          "description": "Jeder dokumentierte Fehlerantwortcode für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`."
+        },
+        "RESPONSE_CODE_COVERAGE": {
+          "name": "Antwort-Code",
+          "description": "Jeder dokumentierte Antwortcode für jeden Endpunkt wird getestet."
+        },
+        "REQUIRED_PARAMETER_COVERAGE": {
+          "name": "Erforderlicher Parameter",
+          "description": "Jeder erforderliche Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`."
+        },
+        "PARAMETER_COVERAGE": {
+          "name": "Parameter",
+          "description": "Jeder Parameter (in path, query) wurde mit gültigen Werten getestet."
+        },
+        "REQUIRED_ERROR_FIELDS_COVERAGE": {
+          "name": "Erfoderliche Fehler-Felder",
+          "description": "Fehlerantworten enthalten alle erforderlichen Felder."
+        },
+        "ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE": {
+          "name": "Alle Antwort-Codes Dokumentiert",
+          "description": "Alle aufgetretenen Antwortcodes (einschließlich Fehler) müssen in der OpenAPI-Spezifikation dokumentiert sein."
+        },
+        "ALL_ERROR_CODES_DOCUMENTED_COVERAGE": {
+          "name": "Alle Fehler-Codes Dokumentiert",
+          "description": "Alle aufgetretenen Fehler-Response-Codes müssen in der OpenAPI-Spezifikation dokumentiert sein. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+        },
+        "ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE": {
+          "name": "Alle Nicht-Fehler-Codes Dokumentiert",
+          "description": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+        }
       }
     }
   }

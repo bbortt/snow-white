@@ -55,8 +55,8 @@ public class OpenApiCoverageConfiguration {
   private Long id;
 
   @NotEmpty
-  @Size(min = 1, max = 32)
-  @Column(nullable = false, updatable = false, unique = true, length = 32)
+  @Size(min = 1, max = 64)
+  @Column(nullable = false, updatable = false, unique = true, length = 64)
   private String name;
 
   @NotNull

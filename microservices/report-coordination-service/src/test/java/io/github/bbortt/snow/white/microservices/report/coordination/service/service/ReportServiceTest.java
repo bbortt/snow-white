@@ -246,7 +246,7 @@ class ReportServiceTest {
       var qualityGateReports = Page.empty();
       doReturn(qualityGateReports)
         .when(qualityGateReportRepositoryMock)
-        .findAll(eq(pageable));
+        .findAll(pageable);
 
       Page<QualityGateReport> result = fixture.findAllReports(pageable);
 
