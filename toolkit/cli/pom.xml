@@ -162,7 +162,7 @@
                 </goals>
                 <phase>generate-resources</phase>
                 <configuration>
-                  <arguments>run build</arguments>
+                  <arguments>run build:dev</arguments>
                 </configuration>
               </execution>
             </executions>
@@ -202,7 +202,7 @@
                 </goals>
                 <phase>generate-resources</phase>
                 <configuration>
-                  <arguments>run build:all</arguments>
+                  <arguments>run build</arguments>
                 </configuration>
               </execution>
             </executions>
