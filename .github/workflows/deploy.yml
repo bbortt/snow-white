@@ -6,6 +6,32 @@ on:
       - v*
 
 jobs:
+  publish-cli:
+    name: 'Publish CLI'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 21
+      - name: Build with Maven
+        run: ./mvnw -B -DskipTests -Pprod -pl :cli -am install
+      - name: Upload CLI Artifacts
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-linux-arm64
+          gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-linux-x64
+          gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-arm64
+          gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-x64
+          gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-windows-x64.exe
   publish-images:
     name: 'Publish Images'
     runs-on: ubuntu-latest
@@ -23,7 +49,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Build with Maven
-        run: ./mvnw -B -DskipTests -Pprod install
+        run: ./mvnw -B -DskipTests -Pprod -pl '!:cli' install
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
         with:
