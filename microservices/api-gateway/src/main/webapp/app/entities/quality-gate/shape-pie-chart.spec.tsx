@@ -22,6 +22,10 @@ jest.mock('recharts', () => ({
   Tooltip: () => <div data-testid="tooltip" />,
 }));
 
+jest.mock('react-jhipster', () => ({
+  Translate: ({ contentKey }: { contentKey: string }) => <div data-testid="react-jhipster-translate">{contentKey}</div>,
+}));
+
 describe('ShapePieChart', () => {
   const createTestResult = (coverage: number, name?: string): IOpenApiTestResult => ({
     openApiCriterionName: name || 'Test Criterion',
@@ -31,14 +35,15 @@ describe('ShapePieChart', () => {
   });
 
   describe('Component rendering', () => {
-    it('should render nothing when openApiTestResults is undefined', () => {
-      const { container } = render(<ShapePieChart />);
-      expect(container.firstChild).toBeNull();
-    });
+    it.each([null, undefined])('should render alert when openApiTestResults is:', (openApiTestResults: null | undefined) => {
+      const { container } = render(<ShapePieChart openApiTestResults={openApiTestResults} />);
+      expect(container.tagName).toBe('DIV');
+      expect(container.firstChild).toHaveClass('alert');
+      expect(container.firstChild).toHaveClass('alert-warning');
 
-    it('should render nothing when openApiTestResults is null', () => {
-      const { container } = render(<ShapePieChart openApiTestResults={undefined} />);
-      expect(container.firstChild).toBeNull();
+      const translation = screen.getByTestId('react-jhipster-translate');
+      expect(translation).toBeInTheDocument();
+      expect(translation.textContent).toEqual('error.chart.noData');
     });
 
     it('should render chart components when data is provided', () => {
