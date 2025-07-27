@@ -1,6 +1,8 @@
 import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
 import { useMemo } from 'react';
 import React from 'react';
+import { Translate } from 'react-jhipster';
+import { Alert } from 'reactstrap';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 enum ResultType {
@@ -69,11 +71,18 @@ type ShapePieChartProps = {
 };
 
 export const ShapePieChart: React.FC<ShapePieChartProps> = ({ openApiTestResults }: ShapePieChartProps) => {
-  if (!openApiTestResults) {
-    return null;
-  }
+  const data: IGroupedTestResult[] = useMemo(
+    () => (openApiTestResults ? groupOpenApiTestResults(openApiTestResults) : []),
+    [openApiTestResults],
+  );
 
-  const data: IGroupedTestResult[] = useMemo(() => groupOpenApiTestResults(openApiTestResults), [openApiTestResults]);
+  if (!openApiTestResults) {
+    return (
+      <Alert color="warning">
+        <Translate contentKey="error.chart.noData">No data for chart available.</Translate>
+      </Alert>
+    );
+  }
 
   return (
     <>
