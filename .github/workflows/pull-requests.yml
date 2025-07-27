@@ -61,10 +61,10 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Version Report
-        run: ./mvnw --version
       - name: Build with Maven
         run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
+      - name: Fetch References
+        run: git fetch origin
       - name: Sonar Analysis
         if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
         env:

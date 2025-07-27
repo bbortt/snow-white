@@ -2,8 +2,8 @@ name: Application CI
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - '*'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -31,6 +31,8 @@ jobs:
           cache: maven
           distribution: 'temurin'
           java-version: 21
+      - name: Fetch References
+        run: git fetch origin
       - name: Cache SonarQube Packages
         uses: actions/cache@v4
         if: '!steps.check.outputs.number'
@@ -38,9 +40,6 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Version Report
-        if: '!steps.check.outputs.number'
-        run: ./mvnw --version
       - name: Build with Maven
         if: '!steps.check.outputs.number'
         run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
