@@ -46,8 +46,8 @@
       src/main/webapp/app/**/*.spec.tsx
     </sonar.test.inclusions>
 
-    <sonar.javascript.lcov.reportPaths>target/test-results/jest/lcov.info</sonar.javascript.lcov.reportPaths>
-    <sonar.testExecutionReportPaths>target/test-results/jest/TESTS-results-sonar.xml</sonar.testExecutionReportPaths>
+    <sonar.javascript.lcov.reportPaths>target/test-results/lcov.info</sonar.javascript.lcov.reportPaths>
+    <sonar.testExecutionReportPaths>target/test-results/TESTS-results-sonar.xml</sonar.testExecutionReportPaths>
   </properties>
 
   <dependencyManagement>
