@@ -42,7 +42,7 @@ module.exports = {
     [
       'jest-sonar',
       {
-        outputDirectory: './target/test-results/jest',
+        outputDirectory: './target/test-results/',
         outputName: 'TESTS-results-sonar.xml',
       },
     ],
