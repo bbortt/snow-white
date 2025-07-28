@@ -35,7 +35,7 @@ describe('ShapePieChart', () => {
   });
 
   describe('Component rendering', () => {
-    it.each([null, undefined])('should render alert when openApiTestResults is:', (openApiTestResults: null | undefined) => {
+    it.each([null, undefined, []])('should render alert when openApiTestResults is:', (openApiTestResults: null | undefined) => {
       const { container } = render(<ShapePieChart openApiTestResults={openApiTestResults} />);
       expect(container.tagName).toBe('DIV');
       expect(container.firstChild).toHaveClass('alert');
@@ -44,6 +44,7 @@ describe('ShapePieChart', () => {
       const translation = screen.getByTestId('react-jhipster-translate');
       expect(translation).toBeInTheDocument();
       expect(translation.textContent).toEqual('error.chart.noData');
+      expect(translation.closest('.alert')).toHaveClass('alert-warning');
     });
 
     it('should render chart components when data is provided', () => {
@@ -55,19 +56,6 @@ describe('ShapePieChart', () => {
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
       expect(screen.getByTestId('pie')).toBeInTheDocument();
       expect(screen.getByTestId('tooltip')).toBeInTheDocument();
-    });
-
-    it('should render empty chart when empty array is provided', () => {
-      const testResults: IOpenApiTestResult[] = [];
-
-      render(<ShapePieChart openApiTestResults={testResults} />);
-
-      expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
-      expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
-      expect(screen.getByTestId('pie')).toBeInTheDocument();
-
-      const pieElement = screen.getByTestId('pie');
-      expect(pieElement).toHaveAttribute('data-pie-data', '[]');
     });
   });
 

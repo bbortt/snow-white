@@ -88,15 +88,19 @@ public class OpenApiReportCalculator {
       .parallelStream()
       .map(openApiCriterionResult ->
         openApiCriterionResult
-          .withIncludedInReport(
-            nonNull(includedOpenApiCriteria) &&
-            includedOpenApiCriteria.contains(
-              openApiCriterionResult.getOpenApiTestCriteria()
-            )
-          )
+          .withIncludedInReport(isIncludedInReport(openApiCriterionResult))
           .withQualityGateReport(qualityGateReport)
       )
       .collect(toSet());
+  }
+
+  private boolean isIncludedInReport(OpenApiTestResult openApiCriterionResult) {
+    return (
+      nonNull(includedOpenApiCriteria) &&
+      includedOpenApiCriteria.contains(
+        openApiCriterionResult.getOpenApiTestCriteria()
+      )
+    );
   }
 
   public record CalculationResult(
