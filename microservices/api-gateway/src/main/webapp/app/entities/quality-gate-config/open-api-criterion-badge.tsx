@@ -60,9 +60,7 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
 
   return (
     <>
-      <Badge id={`badge-${openApiCriterionEntity.name}`}>
-        <a>{name}</a>
-      </Badge>
+      <Badge id={`badge-${openApiCriterionEntity.name}`}>{name}</Badge>
       <Tooltip target={`badge-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
         {description}
       </Tooltip>
