@@ -150,9 +150,9 @@ Each microservice completes a specific task.
 | [API Gateway](./microservices/api-gateway)                                 | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
 | [API Sync Job](./microservices/api-sync-job)                               | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
 | [Kafka Event Filter](./microservices/kafka-event-filter)                   | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
-| [OpenAPI Coverage Service](./microservices/openapi-coverage-service)       | Analyzes OpenAPI specs vs. runtime traffic to calculate Quality-Gate results.                                                                                                         |
-| [Quality-Gate API](./microservices/quality-gate-api)                       | Exposes an API for managing Quality-Gate rules (e.g., endpoint coverage, spec compliance).                                                                                            |
-| [Report Coordination Service](./microservices/report-coordination-service) | Orchestrates Quality-Gate calculation, triggering analysis jobs and compiling results.                                                                                                |
+| [OpenAPI Coverage Service](./microservices/openapi-coverage-service)       | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
+| [Quality-Gate API](./microservices/quality-gate-api)                       | Handles quality gate evaluations and criteria management.                                                                                                                             |
+| [Report Coordination Service](./microservices/report-coordination-service) | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
 
 ### Building and Running Services
 

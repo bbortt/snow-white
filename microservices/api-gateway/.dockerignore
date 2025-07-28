@@ -1,4 +1,5 @@
 **/*
 
 !target/*-executable.jar
+!target/dependencies
 !target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar
