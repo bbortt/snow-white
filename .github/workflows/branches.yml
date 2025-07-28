@@ -22,15 +22,12 @@ jobs:
         with:
           submodules: true
       - name: Check if PR exists
+        if: github.ref != 'refs/heads/main'
         uses: 8BitJonny/gh-get-current-pr@3.0.0
         id: check
         with:
           filterOutClosed: true
           filterOutDraft: true
-      - name: Base Branch Analysis
-        if: github.ref == 'refs/heads/main'
-        run: echo "pr_found=false" >> "$GITHUB_OUTPUT"
-        id: check
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         if: steps.check.outputs.pr_found == 'true'
