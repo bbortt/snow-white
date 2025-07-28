@@ -67,14 +67,14 @@ services:
     ports:
       - '9092:9092'
       - '9094:9094'
-    #    deploy:
-    #      resources:
-    #        reservations:
-    #          cpus: '0.5'
-    #          memory: '1g'
-    #        limits:
-    #          cpus: '1'
-    #          memory: '2g'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.5'
+          memory: '1g'
+        limits:
+          cpus: '1'
+          memory: '2g'
     healthcheck:
       test: kafka-cluster.sh cluster-id --bootstrap-server 127.0.0.1:9092 || exit 1
       interval: 1s
