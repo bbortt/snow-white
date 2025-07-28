@@ -1,6 +1,5 @@
 import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
-import { useMemo } from 'react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Translate } from 'react-jhipster';
 import { Alert } from 'reactstrap';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
@@ -85,17 +84,15 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ openApiTestResults
   }
 
   return (
-    <>
-      <ResponsiveContainer>
-        <PieChart>
-          <Pie data={data} innerRadius="50%" labelLine={false}>
-            {data.map((entry: IGroupedTestResult) => (
-              <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    </>
+    <ResponsiveContainer>
+      <PieChart>
+        <Pie data={data} innerRadius="50%" labelLine={false}>
+          {data.map((entry: IGroupedTestResult) => (
+            <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
   );
 };

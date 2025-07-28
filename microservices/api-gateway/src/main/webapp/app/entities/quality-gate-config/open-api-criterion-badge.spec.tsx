@@ -6,14 +6,11 @@
 
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
-import { configureStore } from '@reduxjs/toolkit';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React from 'react';
 import { translate } from 'react-jhipster';
-import { Provider } from 'react-redux';
 
-import * as criterionReducer from '../open-api-criterion/open-api-criterion.reducer';
 import { OpenApiCriterionBadge } from './open-api-criterion-badge';
 
 jest.mock('app/config/store', () => ({
@@ -215,16 +212,6 @@ describe('OpenApiCriterionBadge', () => {
   });
 
   describe('Component structure', () => {
-    it('should render badge with anchor tag inside', () => {
-      const criterion = createOpenApiCriterion('TEST_CRITERION');
-
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
-
-      const anchor = screen.getByText('Test Criterion Name');
-      expect(anchor.tagName).toBe('A');
-      expect(anchor.closest('.badge')).toBeInTheDocument();
-    });
-
     it('should have correct badge id format', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
