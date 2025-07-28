@@ -75,9 +75,9 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ openApiTestResults
     [openApiTestResults],
   );
 
-  if (!openApiTestResults) {
+  if (!openApiTestResults || openApiTestResults.length === 0) {
     return (
-      <Alert color="warning">
+      <Alert className="mt-5 text-center" color="warning">
         <Translate contentKey="error.chart.noData">No data for chart available.</Translate>
       </Alert>
     );

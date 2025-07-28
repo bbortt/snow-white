@@ -80,10 +80,11 @@ public class OpenApiResultListener {
     Set<OpenApiTestResult> openApiTestCriteria
   ) {
     try {
-      doCalculateAndPersistQualityGateReport(
+      var qualityGateReport = calculateQualityGateReport(
         configurationParameters,
         openApiTestCriteria
       );
+      reportService.update(qualityGateReport);
     } catch (Exception e) {
       logger.error(
         "Failed to persist quality-gate report: {}",
@@ -93,7 +94,7 @@ public class OpenApiResultListener {
     }
   }
 
-  private void doCalculateAndPersistQualityGateReport(
+  private QualityGateReport calculateQualityGateReport(
     QualityGateConfigurationParameters configurationParameters,
     Set<OpenApiTestResult> openApiTestCriteria
   ) {
@@ -109,7 +110,7 @@ public class OpenApiResultListener {
       .withOpenApiCoverageStatus(calculationResult.status())
       .withOpenApiTestResults(calculationResult.openApiTestResults());
 
-    reportService.update(qualityGateReport.withUpdatedReportStatus());
+    return qualityGateReport.withUpdatedReportStatus();
   }
 
   private record QualityGateConfigurationParameters(
