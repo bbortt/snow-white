@@ -24,9 +24,16 @@ jobs:
       - name: Check if PR exists
         uses: 8BitJonny/gh-get-current-pr@3.0.0
         id: check
+        with:
+          filterOutClosed: true
+          filterOutDraft: true
+      - name: Base Branch Analysis
+        if: github.ref == 'refs/heads/main'
+        run: echo "pr_found=false" >> "$GITHUB_OUTPUT"
+        id: check
       - name: Set up JDK 21
         uses: actions/setup-java@v4
-        if: '!steps.check.outputs.number'
+        if: steps.check.outputs.pr_found == 'true'
         with:
           cache: maven
           distribution: 'temurin'
@@ -35,16 +42,16 @@ jobs:
         run: git fetch origin
       - name: Cache SonarQube Packages
         uses: actions/cache@v4
-        if: '!steps.check.outputs.number'
+        if: steps.check.outputs.pr_found == 'true'
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Build with Maven
-        if: '!steps.check.outputs.number'
+        if: steps.check.outputs.pr_found == 'true'
         run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
       - name: Sonar Analysis
-        if: '!steps.check.outputs.number'
+        if: steps.check.outputs.pr_found == 'true'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
