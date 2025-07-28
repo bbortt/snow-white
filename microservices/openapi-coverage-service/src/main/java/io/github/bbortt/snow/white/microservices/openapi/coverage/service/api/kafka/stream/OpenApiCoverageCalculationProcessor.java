@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.k
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
@@ -79,7 +80,7 @@ public class OpenApiCoverageCalculationProcessor {
       )
       .mapValues((key, openApiCoverageRequest) ->
         openApiCoverageService.gatherDataAndCalculateCoverage(
-          openApiCoverageRequest
+          requireNonNull(openApiCoverageRequest)
         )
       )
       .flatMapValues((key, openApiCriteriaResult) ->

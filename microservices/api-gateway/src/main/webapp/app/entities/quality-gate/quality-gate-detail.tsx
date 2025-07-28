@@ -42,17 +42,21 @@ export const QualityGateDetail = () => {
               <Col md={6}>
                 <dl className="jh-entity-details">
                   <dt>
-                    <span id="id">
-                      <Translate contentKey="global.field.id">ID</Translate>
-                    </span>
-                  </dt>
-                  <dd>{qualityGate.id}</dd>
-                  <dt>
                     <span id="calculationId">
                       <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>
                     </span>
                   </dt>
                   <dd>{qualityGate.calculationId}</dd>
+                  <dt>
+                    <span id="qualityGateConfigName">
+                      <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>
+                    </span>
+                  </dt>
+                  <dd>
+                    <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
+                      {qualityGate.qualityGateConfig?.name}
+                    </Button>
+                  </dd>
                   <dt>
                     <span id="status">
                       <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>
@@ -98,17 +102,17 @@ export const QualityGateDetail = () => {
                 <h3 className="text-center" data-cy="qualityGateResultsHeading">
                   <Translate contentKey="snowWhiteApp.qualityGate.shapes.qualityGateResults">Included Criteria Status</Translate>
                 </h3>
-                <ShapePieChart openApiTestResults={qualityGate.openApiTestResults} />
-              </Col>
-              <Col md={3}>
-                <h3 className="text-center" data-cy="allResultsHeading">
-                  <Translate contentKey="snowWhiteApp.qualityGate.shapes.allResults">All Criteria Status</Translate>
-                </h3>
                 <ShapePieChart
                   openApiTestResults={(qualityGate.openApiTestResults ?? [])
                     .slice()
                     .filter((openApiTestResult: IOpenApiTestResult) => openApiTestResult.isIncludedInQualityGate)}
                 />
+              </Col>
+              <Col md={3}>
+                <h3 className="text-center" data-cy="allResultsHeading">
+                  <Translate contentKey="snowWhiteApp.qualityGate.shapes.allResults">All Criteria Status</Translate>
+                </h3>
+                <ShapePieChart openApiTestResults={qualityGate.openApiTestResults} />
               </Col>
             </Row>
           </dd>

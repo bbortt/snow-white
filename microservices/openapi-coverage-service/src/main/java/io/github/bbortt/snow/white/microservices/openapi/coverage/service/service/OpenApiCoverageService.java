@@ -48,7 +48,7 @@ public class OpenApiCoverageService {
     var openTelemetryData = openTelemetryService.findTracingData(
       openApiCoverageRequest.openApiIdentifier().otelServiceName(),
       openApiCoverageRequest.lookbackWindow(),
-      // TODO: Values should be extracted from stream
+      // TODO #145: Values should be extracted from stream
       attributeFilters().build()
     );
 
