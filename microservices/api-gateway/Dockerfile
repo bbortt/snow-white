@@ -56,25 +56,23 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelem
 
 RUN chown -R api-gateway:api-gateway /app /opt/java
 
-ENV JAVA_HOME="/opt/java"
-ENV OTEL_SERVICE_NAME="api-gateway"
-ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
-ENV OTEL_SERVICE_VERSION="$PROJECT_VERSION"
-ENV OTEL_TRACES_EXPORTER="otlp"
-ENV OTEL_METRICS_EXPORTER="otlp"
-ENV OTEL_LOGS_EXPORTER="otlp"
-ENV SPRING_PROFILES_ACTIVE="prod"
-
-ENV JAVA_OPTS="-XX:+UseContainerSupport \
-    -XX:+TieredCompilation \
-    -XX:TieredStopAtLevel=1 \
-    -Xss256k \
-    -XX:+UseG1GC \
-    -XX:MaxGCPauseMillis=100 \
-    -XX:+UseStringDeduplication \
-    -XX:+UseCompressedOops"
-
-ENV PATH="$PATH:$JAVA_HOME/bin"
+ENV JAVA_HOME="/opt/java" \
+    OTEL_SERVICE_NAME="api-gateway" \
+    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
+    OTEL_TRACES_EXPORTER="otlp" \
+    OTEL_METRICS_EXPORTER="otlp" \
+    OTEL_LOGS_EXPORTER="otlp" \
+    SPRING_PROFILES_ACTIVE="prod" \
+    JAVA_OPTS="-XX:+UseContainerSupport \
+        -XX:+TieredCompilation \
+        -XX:TieredStopAtLevel=1 \
+        -Xss256k \
+        -XX:+UseG1GC \
+        -XX:MaxGCPauseMillis=100 \
+        -XX:+UseStringDeduplication \
+        -XX:+UseCompressedOops" \
+    PATH="$PATH:$JAVA_HOME/bin"
 
 USER api-gateway
 

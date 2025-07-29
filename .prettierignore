@@ -15,3 +15,7 @@ target/
 
 # Must have no newline at end of file
 tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openapitools.codegen.CodegenConfig
+
+# Have their own prettier configurations
+microservices/api-gateway/**/*.ts
+toolkit/cli/**/*.ts
