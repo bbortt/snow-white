@@ -110,7 +110,7 @@
     "path-browserify": "1.0.1",
     "postcss-loader": "8.1.1",
     "prettier": "3.6.2",
-    "prettier-plugin-java": "2.7.3",
+    "prettier-plugin-java": "2.7.4",
     "prettier-plugin-packagejson": "2.5.19",
     "redux-mock-store": "1.5.5",
     "redux-thunk": "3.1.0",
