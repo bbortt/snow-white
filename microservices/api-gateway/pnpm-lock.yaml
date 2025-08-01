@@ -145,8 +145,8 @@ importers:
         specifier: 29.0.1
         version: 29.0.1(@typescript-eslint/eslint-plugin@8.38.0(@typescript-eslint/parser@8.38.0(eslint@9.32.0(jiti@1.21.7))(typescript@5.8.3))(eslint@9.32.0(jiti@1.21.7))(typescript@5.8.3))(eslint@9.32.0(jiti@1.21.7))(jest@30.0.5(@types/node@24.0.14)(node-notifier@9.0.1))(typescript@5.8.3)
       eslint-plugin-jsdoc:
-        specifier: 52.0.1
-        version: 52.0.1(eslint@9.32.0(jiti@1.21.7))
+        specifier: 52.0.2
+        version: 52.0.2(eslint@9.32.0(jiti@1.21.7))
       eslint-plugin-perfectionist:
         specifier: 4.15.0
         version: 4.15.0(eslint@9.32.0(jiti@1.21.7))(typescript@5.8.3)
@@ -3080,8 +3080,8 @@ packages:
       jest:
         optional: true
 
-  eslint-plugin-jsdoc@52.0.1:
-    resolution: {integrity: sha512-zJdjpC9z4x28BBdCoxH+/h0BdDLZ9KXQGVKU9gHt3TQJ9kMraep+DgfTIVaXu9u1wy0HyhK2eFMp3icQBV4dkw==}
+  eslint-plugin-jsdoc@52.0.2:
+    resolution: {integrity: sha512-fYrnc7OpRifxxKjH78Y9/D/EouQDYD3G++bpR1Y+A+fy+CMzKZAdGIiHTIxCd2U10hb2y1NxN5TJt9aupq1vmw==}
     engines: {node: '>=20.11.0'}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
@@ -9762,7 +9762,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jsdoc@52.0.1(eslint@9.32.0(jiti@1.21.7)):
+  eslint-plugin-jsdoc@52.0.2(eslint@9.32.0(jiti@1.21.7)):
     dependencies:
       '@es-joy/jsdoccomment': 0.52.0
       are-docs-informative: 0.0.2
