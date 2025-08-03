@@ -7,16 +7,15 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.CalculatorUtils.getStartedStopWatch;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Collections.sort;
 
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,22 +24,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+/**
+ * Calculator for the following criteria: Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested.
+ *
+ * @see OpenApiCriteria#ERROR_RESPONSE_CODE_COVERAGE
+ */
 @Slf4j
 @Component
-public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
+public class MethodCoverageCalculator
+  extends AbstractOpenApiCoverageCalculator {
 
   @Override
-  public boolean accepts(OpenApiCriteria openApiCriteria) {
-    return HTTP_METHOD_COVERAGE.equals(openApiCriteria);
+  protected @NotNull OpenApiCriteria getSupportedOpenApiCriteria() {
+    return HTTP_METHOD_COVERAGE;
   }
 
   @Override
-  public OpenApiTestResult calculate(
+  public CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
-    var stopWatch = getStartedStopWatch();
-
     var coveredPaths = new AtomicInteger(0);
     var uncoveredPaths = new ArrayList<String>();
 
@@ -59,20 +62,20 @@ public class MethodCoverageCalculator implements OpenApiCoverageCalculator {
       pathToOpenAPIOperationMap.size()
     );
 
-    return new OpenApiTestResult(
-      HTTP_METHOD_COVERAGE,
+    return new CoverageCalculationResult(
       pathCoverage,
-      stopWatch.getDuration(),
       getAdditionalInformationOrNull(uncoveredPaths)
     );
   }
 
-  private static String getAdditionalInformationOrNull(
+  private static @Nullable String getAdditionalInformationOrNull(
     @NotNull ArrayList<String> uncoveredPaths
   ) {
     if (uncoveredPaths.isEmpty()) {
       return null;
     }
+
+    sort(uncoveredPaths);
 
     return format(
       "The following paths are uncovered: %s",

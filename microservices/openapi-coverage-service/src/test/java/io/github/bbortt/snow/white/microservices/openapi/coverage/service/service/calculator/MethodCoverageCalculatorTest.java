@@ -197,7 +197,7 @@ class MethodCoverageCalculatorTest {
             .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following paths are uncovered: POST_/api/v1/users, GET_/api/v1/users"
+            "The following paths are uncovered: GET_/api/v1/users, POST_/api/v1/users"
           )
       );
     }
