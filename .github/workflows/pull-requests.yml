@@ -61,6 +61,11 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
       - name: Build with Maven
         run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
       - name: Fetch References
