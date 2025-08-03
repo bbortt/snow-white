@@ -6,14 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_ERROR_CODES_DOCUMENTED_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_PARAMETER_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,14 +44,12 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
     // TODO: I am not done yet!
     //  assertThat(uncoveredCriteria).isEmpty();
     assertThat(uncoveredCriteria).containsExactly(
-      ERROR_RESPONSE_CODE_COVERAGE,
-      RESPONSE_CODE_COVERAGE,
       REQUIRED_PARAMETER_COVERAGE,
       PARAMETER_COVERAGE,
       REQUIRED_ERROR_FIELDS_COVERAGE,
-      ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE,
-      ALL_ERROR_CODES_DOCUMENTED_COVERAGE,
-      ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE
+      NO_UNDOCUMENTED_RESPONSE_CODES,
+      NO_UNDOCUMENTED_ERROR_RESPONSE_CODES,
+      NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES
     );
   }
 }

@@ -40,17 +40,17 @@
           "name": "Required Error Fields",
           "description": "Error responses include all required fields."
         },
-        "ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE": {
-          "name": "All Response Codes Documented",
+        "NO_UNDOCUMENTED_RESPONSE_CODES": {
+          "name": "All Response Codes must be Specified",
           "description": "All response codes (including errors) that occurred must be documented in the OpenAPI specification."
         },
-        "ALL_ERROR_CODES_DOCUMENTED_COVERAGE": {
-          "name": "All Error Codes Documented",
-          "description": "All error response codes that occurred must be documented in the OpenAPI specification. This is a subset of `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+        "NO_UNDOCUMENTED_ERROR_RESPONSE_CODES": {
+          "name": "All Error Response Codes must be Specified",
+          "description": "All error response codes that occurred must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
         },
-        "ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE": {
-          "name": "All Error Codes Documented",
-          "description": "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+        "NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES": {
+          "name": "All Non-Erroneous Response Codes must be Specified",
+          "description": "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
         }
       }
     }
