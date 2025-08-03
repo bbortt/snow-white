@@ -6,11 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_ERROR_CODES_DOCUMENTED_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
@@ -156,7 +156,7 @@ public class QualityGateService {
         HTTP_METHOD_COVERAGE,
         RESPONSE_CODE_COVERAGE,
         REQUIRED_PARAMETER_COVERAGE,
-        ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE
+        NO_UNDOCUMENTED_RESPONSE_CODES
       )
     );
 
@@ -182,9 +182,9 @@ public class QualityGateService {
         REQUIRED_PARAMETER_COVERAGE,
         PARAMETER_COVERAGE,
         REQUIRED_ERROR_FIELDS_COVERAGE,
-        ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE,
-        ALL_ERROR_CODES_DOCUMENTED_COVERAGE,
-        ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE
+        NO_UNDOCUMENTED_RESPONSE_CODES,
+        NO_UNDOCUMENTED_ERROR_RESPONSE_CODES,
+        NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES
       )
     );
 

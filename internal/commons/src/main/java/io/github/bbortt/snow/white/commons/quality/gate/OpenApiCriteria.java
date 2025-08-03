@@ -38,17 +38,17 @@ public enum OpenApiCriteria {
     "Required Error Fields Coverage",
     "Error responses include all required fields."
   ),
-  ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE(
-    "All Response Codes are Documented",
+  NO_UNDOCUMENTED_RESPONSE_CODES(
+    "All Response Codes must be Specified",
     "All response codes (including errors) that occurred must be documented in the OpenAPI specification."
   ),
-  ALL_ERROR_CODES_DOCUMENTED_COVERAGE(
-    "All Error Response Codes are Documented",
-    "All error response codes that occurred must be documented in the OpenAPI specification. This is a subset of `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+  NO_UNDOCUMENTED_ERROR_RESPONSE_CODES(
+    "All Error Response Codes must be Specified",
+    "All error response codes that occurred must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
   ),
-  ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE(
-    "All Non-Erroneous Response Codes are Documented",
-    "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+  NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES(
+    "All Non-Erroneous Response Codes must be Specified",
+    "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
   );
 
   private final String label;

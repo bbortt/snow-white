@@ -40,17 +40,17 @@
           "name": "Erfoderliche Fehler-Felder",
           "description": "Fehlerantworten enthalten alle erforderlichen Felder."
         },
-        "ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE": {
+        "NO_UNDOCUMENTED_RESPONSE_CODES": {
           "name": "Alle Antwort-Codes Dokumentiert",
           "description": "Alle aufgetretenen Antwortcodes (einschließlich Fehler) müssen in der OpenAPI-Spezifikation dokumentiert sein."
         },
-        "ALL_ERROR_CODES_DOCUMENTED_COVERAGE": {
+        "NO_UNDOCUMENTED_ERROR_RESPONSE_CODES": {
           "name": "Alle Fehler-Codes Dokumentiert",
-          "description": "Alle aufgetretenen Fehler-Response-Codes müssen in der OpenAPI-Spezifikation dokumentiert sein. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+          "description": "Alle aufgetretenen Fehler-Response-Codes müssen in der OpenAPI-Spezifikation dokumentiert sein. Dies ist eine Untermenge von `NO_UNDOCUMENTED_RESPONSE_CODES`."
         },
-        "ALL_NON_ERROR_CODES_DOCUMENTED_COVERAGE": {
+        "NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES": {
           "name": "Alle Nicht-Fehler-Codes Dokumentiert",
-          "description": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `ALL_RESPONSE_CODES_DOCUMENTED_COVERAGE`."
+          "description": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `NO_UNDOCUMENTED_RESPONSE_CODES`."
         }
       }
     }
