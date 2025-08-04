@@ -30,12 +30,29 @@ describe('Kafka', () => {
     );
   });
 
-  it('is high-available default', async () => {
+  it('is high-available by default', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
     });
 
     const statefulSet = getKafkaStatefulSet(manifests);
     expect(statefulSet.spec.replicas).toBe(3);
+  });
+
+  it('can be disabled via properties', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+      values: {
+        kafka: {
+          enabled: false,
+        },
+      },
+    });
+
+    const kafkaResources = manifests.find((m) =>
+      m.metadata.name.startsWith('test-release-kafka'),
+    );
+
+    expect(kafkaResources).toBeUndefined();
   });
 });
