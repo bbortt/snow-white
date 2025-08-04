@@ -50,12 +50,29 @@ describe('Redis', () => {
     );
   });
 
-  it('is high-available default', async () => {
+  it('is high-available by default', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
     });
 
     const redisReplicas = getRedisReplicas(manifests);
     expect(redisReplicas.spec.replicas).toBe(3);
+  });
+
+  it('can be disabled via properties', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+      values: {
+        redis: {
+          enabled: false,
+        },
+      },
+    });
+
+    const redisResources = manifests.find((m) =>
+      m.metadata.name.startsWith('test-release-redis'),
+    );
+
+    expect(redisResources).toBeUndefined();
   });
 });
