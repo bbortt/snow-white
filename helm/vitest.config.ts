@@ -6,9 +6,21 @@
 
 import { defineConfig } from 'vitest/config';
 
+const reporters = ['default', 'junit'];
+if (process.env.CI) {
+  reporters.push('github-actions');
+}
+
 export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+    mockReset: true,
+    outputFile: 'target/vitest/JUnit-report.xml',
+    reporters,
   },
 });

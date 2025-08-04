@@ -50,4 +50,21 @@ describe('PostgreSQL', () => {
     );
     expect(readReplicas.spec.replicas).toBe(1);
   });
+
+  it('can be disabled via properties', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+      values: {
+        postgresql: {
+          enabled: false,
+        },
+      },
+    });
+
+    const postgresqlResources = manifests.find((m) =>
+      m.metadata.name.startsWith('test-release-postgresql'),
+    );
+
+    expect(postgresqlResources).toBeUndefined();
+  });
 });

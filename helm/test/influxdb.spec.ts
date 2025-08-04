@@ -29,13 +29,29 @@ describe('InfluxDB', () => {
     );
   });
 
-  it('is NOT high-available default', async () => {
+  it('is NOT high-available by default', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
-      debug: true,
     });
 
     const statefulSet = getInfluxDBDeployment(manifests);
     expect(statefulSet.spec.replicas).toBeUndefined();
+  });
+
+  it('can be disabled via properties', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+      values: {
+        influxdb: {
+          enabled: false,
+        },
+      },
+    });
+
+    const influxdbResources = manifests.find((m) =>
+      m.metadata.name.startsWith('test-release-influxdb'),
+    );
+
+    expect(influxdbResources).toBeUndefined();
   });
 });
