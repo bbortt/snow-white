@@ -42,11 +42,11 @@ importers:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
       react-hook-form:
-        specifier: 7.61.1
-        version: 7.61.1(react@19.1.0)
+        specifier: 7.62.0
+        version: 7.62.0(react@19.1.0)
       react-jhipster:
         specifier: 0.25.3
-        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.61.1(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.62.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       react-loadable:
         specifier: 5.5.0
         version: 5.5.0(react@19.1.0)
@@ -1622,8 +1622,8 @@ packages:
   '@types/node@24.0.4':
     resolution: {integrity: sha512-ulyqAkrhnuNq9pB76DRBTkcS6YsmDALy6Ua63V8OhrOBgbcYt6IOdzpw5P1+dyRIyMerzLkeYWBeOXPpA9GMAA==}
 
-  '@types/node@24.1.0':
-    resolution: {integrity: sha512-ut5FthK5moxFKH2T1CUOC6ctR67rQRvvHdFLCD2Ql6KXmMuCrjsSsRI9UsLCm9M18BMwClv4pn327UvB7eeO1w==}
+  '@types/node@24.2.0':
+    resolution: {integrity: sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==}
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -5030,8 +5030,8 @@ packages:
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
 
-  react-hook-form@7.61.1:
-    resolution: {integrity: sha512-2vbXUFDYgqEgM2RcXcAT2PwDW/80QARi+PKmHy5q2KhuKvOlG8iIYgf7eIlIANR5trW9fJbP4r5aub3a4egsew==}
+  react-hook-form@7.62.0:
+    resolution: {integrity: sha512-7KWFejc98xqG/F4bAxpL41NB3o1nnvQO1RWZT3TqRZYL8RryQETGfEdVnJN2fy1crCiBLLjkRBVK05j24FxJGA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -5920,6 +5920,9 @@ packages:
   unbox-primitive@1.1.0:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
+
+  undici-types@7.10.0:
+    resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
 
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
@@ -7916,7 +7919,7 @@ snapshots:
 
   '@types/cors@2.8.19':
     dependencies:
-      '@types/node': 24.1.0
+      '@types/node': 24.2.0
 
   '@types/d3-array@3.2.1': {}
 
@@ -8026,9 +8029,9 @@ snapshots:
     dependencies:
       undici-types: 7.8.0
 
-  '@types/node@24.1.0':
+  '@types/node@24.2.0':
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.10.0
 
   '@types/qs@6.14.0': {}
 
@@ -9492,7 +9495,7 @@ snapshots:
   engine.io@6.6.4:
     dependencies:
       '@types/cors': 2.8.19
-      '@types/node': 24.1.0
+      '@types/node': 24.2.0
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.7.2
@@ -11987,7 +11990,7 @@ snapshots:
 
   react-fast-compare@3.2.2: {}
 
-  react-hook-form@7.61.1(react@19.1.0):
+  react-hook-form@7.62.0(react@19.1.0):
     dependencies:
       react: 19.1.0
 
@@ -11997,7 +12000,7 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.61.1(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
+  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.13)(react-dom@19.1.0(react@19.1.0))(react-hook-form@7.62.0(react@19.1.0))(react@19.1.0)(reactstrap@9.2.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
     dependencies:
       axios: 1.11.0
       dayjs: 1.11.13
@@ -12005,7 +12008,7 @@ snapshots:
       numeral: 2.0.6
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-      react-hook-form: 7.61.1(react@19.1.0)
+      react-hook-form: 7.62.0(react@19.1.0)
       react-popper: 2.3.0(@popperjs/core@2.11.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-transition-group: 4.4.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       sanitize-html: 2.16.0
@@ -13011,6 +13014,8 @@ snapshots:
       has-bigints: 1.1.0
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
+
+  undici-types@7.10.0: {}
 
   undici-types@7.8.0: {}
 
