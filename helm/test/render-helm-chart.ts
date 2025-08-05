@@ -9,12 +9,21 @@ import { execa } from 'execa';
 import { writeFile } from 'node:fs/promises';
 import { stringify, parseAllDocuments } from 'yaml';
 
+const withDefaultValues = (values: object): object => {
+  return {
+    ingress: {
+      host: 'localhost',
+    },
+    ...values,
+  };
+};
+
 export async function renderHelmChart(options: {
   chartPath: string;
-  debug: boolean;
+  debug?: boolean;
   namespace?: string;
   releaseName?: string;
-  values?: Record<string, any>;
+  values?: object;
 }): Promise<any[]> {
   const {
     chartPath,
@@ -25,7 +34,7 @@ export async function renderHelmChart(options: {
   } = options;
 
   const { path: tmpValuesPath, cleanup } = await tmpFile();
-  await writeFile(tmpValuesPath, stringify(values));
+  await writeFile(tmpValuesPath, stringify(withDefaultValues(values)));
 
   try {
     const { stdout } = await execa('helm', [

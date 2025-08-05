@@ -20,3 +20,6 @@ tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openap
 # Have their own prettier configurations
 microservices/api-gateway/**/*.ts
 toolkit/cli/**/*.ts
+
+# Helm Templates with Go Templating Syntax
+helm/charts/snow-white/templates/*.yaml
