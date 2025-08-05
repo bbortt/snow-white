@@ -1,8 +1,22 @@
-snow-white:
+# Snow-White
+snowWhite:
   imageRegistry: ghcr.io
-  kafka-event-filter:
+  ingress:
+    enabled: true
+    className: 'nginx'
+    tls: true
+  apiGateway:
     image:
-      name: bbortt/snow-white/kafka-event-filter
+      name: bbortt/snow-white/api-gateway
+    service:
+      type: ClusterIP
+      port: 80
+
+# Ingress
+ingress:
+  enabled: true
+  className: 'nginx'
+  tls: true
 
 # Infrastructure
 kafka:
