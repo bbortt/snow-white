@@ -159,11 +159,7 @@ public class ResponseCodeCoverageCalculator
   protected boolean includeObservedResponseCodeInCalculation(
     @Nullable String statusCode
   ) {
-    if (isNull(statusCode)) {
-      return false;
-    }
-
-    return true;
+    return nonNull(statusCode);
   }
 
   private static @Nullable String extractStatusCodeFromAttributes(

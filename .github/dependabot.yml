@@ -66,6 +66,10 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: 'maven'
     directory: '/'
     schedule:
@@ -75,10 +79,6 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
-    groups:
-      npm-dependencies:
-        patterns:
-          - '*'
   - package-ecosystem: 'gitsubmodule'
     directory: '/backstage'
     schedule:
