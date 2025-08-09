@@ -1,7 +1,7 @@
 dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
-  version: 32.3.6
+  version: 32.3.14
 - name: influxdb
   repository: https://charts.bitnami.com/bitnami
   version: 7.1.10
@@ -11,5 +11,5 @@ dependencies:
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 22.0.1
-digest: sha256:0eb76b2de9129640af61312c95a65f6a7370dea08479a576749b06d2d2eec2b0
-generated: "2025-08-09T14:21:49.100420046Z"
+digest: sha256:0b05e95d3301317879be23d1995b2eddc3e133320eb5b6dbc8da2ea8ac09a57e
+generated: "2025-08-09T14:25:27.958609368Z"
