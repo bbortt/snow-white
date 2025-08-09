@@ -65,7 +65,7 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
               .description(c.getDescription())
               .build()
           )
-          .sorted(comparing(OpenApiCriterion::getName))
+          .sorted(comparing(OpenApiCriterion::getId))
           .toArray(OpenApiCriterion[]::new)
       );
   }
