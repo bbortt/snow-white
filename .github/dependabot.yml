@@ -18,7 +18,11 @@ updates:
     labels:
       - 'severity:medium'
       - 'status:ready-for-review'
-  - package-ecosystem: 'pnpm'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
+  - package-ecosystem: 'npm'
     directory: '/helm'
     schedule:
       interval: 'daily'
@@ -27,6 +31,10 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: 'helm'
     directory: '/helm/charts/snow-white'
     schedule:
@@ -45,6 +53,10 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:
@@ -63,6 +75,10 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: 'gitsubmodule'
     directory: '/backstage'
     schedule:
