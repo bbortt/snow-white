@@ -260,6 +260,9 @@ describe('runCLI', () => {
       ),
     ).toThrow('process.exit(2)');
 
+    expect(consoleSpy.error).toHaveBeenCalledWith(
+      'Failed to bump chart version: File not found',
+    );
     expect(processExitSpy).toHaveBeenCalledWith(2);
   });
 
