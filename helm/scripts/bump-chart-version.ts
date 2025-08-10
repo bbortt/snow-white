@@ -25,12 +25,12 @@ export interface ProcessExit {
 
 export class ChartVersionBumper {
   constructor(
-    private fs: FileSystem = {
+    private readonly fs: FileSystem = {
       readFileSync: (path, encoding) => readFileSync(path, encoding),
       writeFileSync: (path, data, encoding) =>
         writeFileSync(path, data, encoding),
     },
-    private logger: Logger = console,
+    private readonly logger: Logger = console,
   ) {}
 
   validateVersion(version: string | undefined): string {
@@ -90,6 +90,9 @@ export function runCLI(
   try {
     bumper.bumpChartVersion(newVersion);
   } catch (error) {
+    console.error(
+      `Failed to bump chart version: ${error instanceof Error ? error.message : String(error)}`,
+    );
     process.exit(2);
   }
 }
