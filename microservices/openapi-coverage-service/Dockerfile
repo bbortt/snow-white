@@ -75,8 +75,8 @@ ENV JAVA_HOME="/opt/java" \
         -XX:+UseG1GC \
         -XX:MaxGCPauseMillis=100 \
         -XX:+UseStringDeduplication \
-        -XX:+UseCompressedOops" \
-    PATH="$PATH:$JAVA_HOME/bin"
+        -XX:+UseCompressedOops"
+ENV PATH="$PATH:$JAVA_HOME/bin"
 
 USER openapi-coverage-service
 
