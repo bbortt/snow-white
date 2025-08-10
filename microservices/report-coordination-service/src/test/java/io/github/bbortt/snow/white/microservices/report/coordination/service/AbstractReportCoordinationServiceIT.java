@@ -47,7 +47,7 @@ public abstract class AbstractReportCoordinationServiceIT {
     ).withExposedPorts(5432);
 
   static final WireMockContainer WIRE_MOCK_CONTAINER = new WireMockContainer(
-    "wiremock/wiremock"
+    "wiremock/wiremock:3x-alpine"
   );
 
   static {
