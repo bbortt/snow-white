@@ -2,8 +2,10 @@
 # https://bun.sh/docs/test/coverage#coverage-reporters
 coverageDir = "target/coverage"
 coverageReporter = ["text", "lcov"]
+
 # https://bun.sh/docs/test/coverage#exclude-test-files-from-coverage
 coverageSkipTestFiles = true
+
 # https://bun.sh/docs/test/reporters#junit-xml-reporter
 [test.reporter]
 junit = "target/test-results/bun/junit.xml"

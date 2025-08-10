@@ -13,10 +13,18 @@ import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'b
 import type { QualityGateApi } from '../clients/quality-gate-api';
 import { calculate } from './calculate';
 import type { CalculateOptions } from './calculate.options';
+import { INVALID_CONFIG_FORMAT, QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
+import { resolveSnowWhiteConfig } from '../common/config';
+import { GlobalOptions } from './global.options';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
   exit: mock(),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+mock.module('../common/config', () => ({
+  resolveSnowWhiteConfig: mock(),
 }));
 
 const mockConsoleLog = spyOn(console, 'log');
@@ -138,6 +146,116 @@ describe('calculate', () => {
     });
   });
 
+  describe('configuration sanitation', () => {
+    const expectCombinationError = (options: CalculateOptions): void => {
+      expect(calculate(getQualityGateApi(qualityGateApiMock), options)).resolves.toBeUndefined();
+
+      expect(mockConsoleError).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('❌ You cannot use a config file in combination with these calculation parameters:'),
+      );
+      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- qualityGate'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- serviceName'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- apiName'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(5, expect.stringContaining('\t- apiVersion'));
+
+      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    };
+
+    it('should throw error if config and qualityGate is configured', () => {
+      const options: CalculateOptions = {
+        config: 'config',
+        qualityGate: 'quality-gate',
+      };
+
+      expectCombinationError(options);
+    });
+
+    it('should throw error if config and serviceName is configured', () => {
+      const options: CalculateOptions = {
+        config: 'config',
+        serviceName: 'test-service',
+      };
+
+      expectCombinationError(options);
+    });
+
+    it('should throw error if config and apiName is configured', () => {
+      const options: CalculateOptions = {
+        config: 'config',
+        apiName: 'test-api',
+      };
+
+      expectCombinationError(options);
+    });
+
+    it('should throw error if config and apiVersion is configured', () => {
+      const options: CalculateOptions = {
+        config: 'config',
+        apiVersion: 'test-version',
+      };
+
+      expectCombinationError(options);
+    });
+
+    it('resolves config from path', () => {
+      const options: CalculateOptions = {
+        config: 'config',
+      };
+
+      expect(calculate(getQualityGateApi(qualityGateApiMock), options)).resolves.toBeUndefined();
+
+      expect(resolveSnowWhiteConfig).toHaveBeenCalledWith('config');
+    });
+
+    const expectMissingConfigurationParameters = (options: CalculateOptions): void => {
+      expect(calculate(getQualityGateApi(qualityGateApiMock), options)).resolves.toBeUndefined();
+
+      expect(mockConsoleError).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('❌ Either define a config file or all of these calculation parameters:'),
+      );
+      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- qualityGate'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- serviceName'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- apiName'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(5, expect.stringContaining('\t- apiVersion'));
+
+      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    };
+
+    it('should throw error if qualityGate is undefined in direct configuration', () => {
+      const options: CalculateOptions = {
+        qualityGate: 'quality-gate',
+      };
+
+      expectMissingConfigurationParameters(options);
+    });
+
+    it('should throw error if serviceName is undefined in direct configuration', () => {
+      const options: CalculateOptions = {
+        serviceName: 'test-service',
+      };
+
+      expectMissingConfigurationParameters(options);
+    });
+
+    it('should throw error if apiName is undefined in direct configuration', () => {
+      const options: CalculateOptions = {
+        apiName: 'test-api',
+      };
+
+      expectMissingConfigurationParameters(options);
+    });
+
+    it('should throw error if apiVersion is undefined in direct configuration', () => {
+      const options: CalculateOptions = {
+        apiVersion: 'test-version',
+      };
+
+      expectMissingConfigurationParameters(options);
+    });
+  });
+
   describe('error handling', () => {
     it('should handle AxiosError with response', () => {
       const mockErrorResponse = {
@@ -158,7 +276,7 @@ describe('calculate', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Details: ${mockErrorResponse.data.message}`));
 
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
     it('should handle AxiosError with response but no data', () => {
@@ -184,7 +302,7 @@ describe('calculate', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Error: ${mockErrorResponse.statusText}`));
 
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
     it('should handle AxiosError with no response (network error)', () => {
@@ -198,7 +316,7 @@ describe('calculate', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('Check if the service is running and accessible'));
 
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
     it('should handle generic Error', () => {
@@ -210,7 +328,7 @@ describe('calculate', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
 
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
     it('should handle non-Error objects', () => {
@@ -222,7 +340,7 @@ describe('calculate', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger quality gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));
 
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
   });
 });
