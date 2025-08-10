@@ -3,7 +3,7 @@ name: Application CI
 on:
   push:
     branches:
-      - '*'
+      - '**'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -34,8 +34,6 @@ jobs:
           cache: maven
           distribution: 'temurin'
           java-version: 21
-      - name: Fetch References
-        run: git fetch origin
       - name: Cache SonarQube Packages
         uses: actions/cache@v4
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
@@ -52,6 +50,9 @@ jobs:
       - name: Build with Maven
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
+      - name: Fetch References
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        run: git fetch origin
       - name: Sonar Analysis
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         env:

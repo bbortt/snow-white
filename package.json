@@ -18,9 +18,11 @@
     "type": "git",
     "url": "git+ssh://git@github.com/bbortt/snow-white.git"
   },
-  "license": "Apache-2.0",
-  "author": "Timon Borter <timon.borter@gmx.ch>",
-  "main": "index.js",
+  "license": "PolyForm-Small-Business-1.0.0",
+  "author": {
+    "name": "Timon Borter",
+    "email": "timon.borter@gmx.ch"
+  },
   "scripts": {
     "prepare": "husky",
     "prettier": "prettier \"{,**/}*.{java,js,json,md,ts,xml,yaml,yml}\"",
@@ -40,5 +42,12 @@
   "optionalDependencies": {
     "npm-check-updates": "18.0.2"
   },
-  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
+  "packageManager": "pnpm@10.14.0",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ],
+  "licenseUrl": "https://polyformproject.org/licenses/small-business/1.0.0/"
 }

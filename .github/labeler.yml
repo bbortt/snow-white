@@ -93,3 +93,9 @@ lang:typescript:
       - any-glob-to-any-file:
           - '**/*.ts'
           - '**/*.tsx'
+
+# Trigger More Actions
+include:apptests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/Dockerfile'

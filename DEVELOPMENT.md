@@ -237,6 +237,11 @@ To run a [SonarQube](https://www.sonarsource.com/) analysis:
    ./mvnw jacoco:report-aggregate sonar:sonar -Dsonar.login=${SONAR_TOKEN}
    ```
 
+### Application Tests
+
+Application tests run tests against the fully built and running application.
+To run application tests within GitHub Actions, add the `include:apptests` label in your pull request.
+
 ## Native Builds
 
 These microservices support native image builds:
