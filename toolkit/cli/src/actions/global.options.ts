@@ -4,9 +4,6 @@
  * See LICENSE file for full details.
  */
 
-module.exports = {
-  '{,src/**/}*.{cjs,js,mjs,ts,tsx}': [
-    // 'eslint --fix',
-    'prettier --write --config prettier.config.js',
-  ],
-};
+export interface GlobalOptions {
+  config: string;
+}
