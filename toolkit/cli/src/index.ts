@@ -24,20 +24,21 @@ program
   .command('info')
   .description('Show system information')
   .action(() => {
-    console.log(chalk.blue('System Information:'));
-    console.log(`Platform: ${process.platform}`);
-    console.log(`Architecture: ${process.arch}`);
-    console.log(`Node.js version: ${process.version}`);
+    console.info(chalk.blue('System Information:'));
+    console.info(`Platform: ${process.platform}`);
+    console.info(`Architecture: ${process.arch}`);
+    console.info(`Node.js version: ${process.version}`);
   });
 
 program
   .command('calculate')
   .description('Trigger a Quality-Gate calculation')
-  .requiredOption('--qualityGate <gateName>', 'Quality-Cate configuration name')
-  .requiredOption('--serviceName <serviceName>', 'Service name')
-  .requiredOption('--apiName <apiName>', 'API name')
-  .requiredOption('--apiVersion <version>', 'API version')
+  .option('--config <path>', 'Path to config file')
+  .option('--qualityGate <gateName>', 'Quality-Cate configuration name')
+  .option('--serviceName <serviceName>', 'Service name')
+  .option('--apiName <apiName>', 'API name')
+  .option('--apiVersion <version>', 'API version')
   .option('--url <baseUrl>', 'Base URL for Snow-White', 'http://localhost:8090')
-  .action(async (options: CalculateOptions)=>await calculate(getQualityGateApi(options.url), options));
+  .action(async (options: CalculateOptions)=> await calculate(getQualityGateApi(options.url), options));
 
 program.parse();
