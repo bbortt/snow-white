@@ -4,10 +4,14 @@
  * See LICENSE file for full details.
  */
 
-export interface SanitizedOptions {
-  qualityGate: string;
+export interface ApiInformation {
   serviceName: string;
   apiName: string;
   apiVersion: string;
+}
+
+export interface SanitizedOptions {
+  apiInformation: ApiInformation[];
+  qualityGate: string;
   url: string;
 }
