@@ -38,7 +38,7 @@ program
   .option('--configFile <path>', 'Path to config file')
   // Read all OpenAPI specs matching the glob pattern
   .option('--openApiSpecs <pattner>', 'Glob pattern for OpenAPI specs')
-  // Exact configuration for the Quality-Gate calculation
+  // Explicit configuration for the Quality-Gate calculation
   .option('--qualityGate <gateName>', 'Quality-Cate configuration name')
   .option('--serviceName <serviceName>', 'Service name')
   .option('--apiName <apiName>', 'API name')
