@@ -4,10 +4,14 @@
  * See LICENSE file for full details.
  */
 
-import { cosmiconfigSync, type CosmiconfigResult } from 'cosmiconfig';
-import chalk from 'chalk';
 import { exit } from 'node:process';
-import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from './exit-codes';
+
+import chalk from 'chalk';
+import type { CosmiconfigResult } from 'cosmiconfig';
+import { cosmiconfigSync } from 'cosmiconfig';
+
+import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
+import type { CliOptions } from './cli-options';
 
 export interface ConfigExplorer {
   load(filepath: string): CosmiconfigResult;
@@ -23,10 +27,13 @@ export class CosmiconfigResolver implements ConfigResolver {
   }
 }
 
-export const resolveConfig = (
+/**
+ * !!Visible for testing!!
+ */
+export const resolveConfigInternal = (
   filepath: string,
   resolver: ConfigResolver = new CosmiconfigResolver(),
-  moduleName: string = 'snow-white',
+  moduleName = 'snow-white',
 ): CosmiconfigResult => {
   const explorer = resolver.createExplorer(moduleName);
 
@@ -34,15 +41,17 @@ export const resolveConfig = (
 
   try {
     const config = explorer.load(filepath);
-    if (!config) {
-      console.error(chalk.red(`⚙️ Configuration file not found at '${filepath}'`));
-      exit(CONFIG_FILE_NOT_FOUND);
+
+    if (config) {
+      return config;
     }
-    return config;
+
+    console.error(chalk.red(`⚙️ Configuration file not found at '${filepath}'`));
+    exit(CONFIG_FILE_NOT_FOUND);
   } catch (error) {
     console.error(chalk.red(`⚙️ Failed to load configuration from '${filepath}':`), error);
     exit(FAILED_LOADING_CONFIG_FILE);
   }
 };
 
-export const resolveSnowWhiteConfig = <T>(filepath: string): T => resolveConfig(filepath).config as unknown as T;
+export const resolveConfig = (filepath: string): CliOptions => resolveConfigInternal(filepath).config as unknown as CliOptions;
