@@ -4,9 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import { GlobalOptions } from './global.options';
-
-export interface CalculateOptions extends GlobalOptions {
+export interface SanitizedOptions {
   qualityGate: string;
   serviceName: string;
   apiName: string;

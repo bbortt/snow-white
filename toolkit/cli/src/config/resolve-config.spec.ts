@@ -4,17 +4,20 @@
  * See LICENSE file for full details.
  */
 
-import { beforeEach, describe, mock, expect, it, spyOn } from 'bun:test';
-import { resolveConfig, type ConfigExplorer, type ConfigResolver } from './config';
 import { exit } from 'node:process';
-import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from './exit-codes';
+
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+
+import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
+import type { ConfigExplorer, ConfigResolver } from './config';
+import { resolveConfig } from './config';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
   exit: mock(),
 }));
 
-const createMockExplorer = (loadResult: any = null, shouldThrow: boolean = false): ConfigExplorer => ({
+const createMockExplorer = (loadResult: any = null, shouldThrow = false): ConfigExplorer => ({
   load: (filepath: string) => {
     if (shouldThrow) {
       throw new Error(`Config file not found: ${filepath}`);
