@@ -10,8 +10,9 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 
 import { calculate } from './actions/calculate';
-import type { CalculateOptions } from './actions/calculate.options';
 import { getQualityGateApi } from './api/quality-gate-api';
+import type { CliOptions } from './config/cli-options';
+import { sanitizeConfiguration } from './config/sanitize-configuration';
 
 const program = new Command();
 
@@ -33,12 +34,20 @@ program
 program
   .command('calculate')
   .description('Trigger a Quality-Gate calculation')
-  .option('--config <path>', 'Path to config file')
+  // Configuration from file, can contain all other configuration methods
+  .option('--configFile <path>', 'Path to config file')
+  // Read all OpenAPI specs matching the glob pattern
+  .option('--openApiSpecs <pattner>', 'Glob pattern for OpenAPI specs')
+  // Exact configuration for the Quality-Gate calculation
   .option('--qualityGate <gateName>', 'Quality-Cate configuration name')
   .option('--serviceName <serviceName>', 'Service name')
   .option('--apiName <apiName>', 'API name')
   .option('--apiVersion <version>', 'API version')
   .option('--url <baseUrl>', 'Base URL for Snow-White', 'http://localhost:8090')
-  .action(async (options: CalculateOptions)=> await calculate(getQualityGateApi(options.url), options));
+  .action(async (options: CliOptions)=> {
+    const sanitizedOptions= sanitizeConfiguration(options)
+    const qualityGateApi = getQualityGateApi(sanitizedOptions.url)
+    await calculate(qualityGateApi, sanitizedOptions);
+  });
 
 program.parse();

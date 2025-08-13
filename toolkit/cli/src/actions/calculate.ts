@@ -11,33 +11,9 @@ import { AxiosError } from 'axios';
 import chalk from 'chalk';
 
 import type { CalculateQualityGate202Response, QualityGateApi } from '../clients/quality-gate-api';
-import type { CalculateOptions } from './calculate.options';
-import { resolveSnowWhiteConfig } from '../common/config';
-import { INVALID_CONFIG_FORMAT, QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
+import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 
-const sanitizeConfiguration = (options: CalculateOptions): CalculateOptions => {
-  if (options.config && (options.qualityGate || options.serviceName || options.apiName || options.apiVersion)) {
-    console.error(chalk.red(`❌ You cannot use a config file in combination with these calculation parameters:`));
-    console.error(chalk.red(`\t- qualityGate`));
-    console.error(chalk.red(`\t- serviceName`));
-    console.error(chalk.red(`\t- apiName`));
-    console.error(chalk.red(`\t- apiVersion`));
-    exit(INVALID_CONFIG_FORMAT);
-  } else if (options.config) {
-    return resolveSnowWhiteConfig(options.config) as unknown as CalculateOptions;
-  } else if (!options.qualityGate || !options.serviceName || !options.apiName || !options.apiVersion) {
-    console.error(chalk.red(`❌ Either define a config file or all of these calculation parameters:`));
-    console.error(chalk.red(`\t- qualityGate`));
-    console.error(chalk.red(`\t- serviceName`));
-    console.error(chalk.red(`\t- apiName`));
-    console.error(chalk.red(`\t- apiVersion`));
-    exit(INVALID_CONFIG_FORMAT);
-  } else {
-    return options;
-  }
-};
-
-const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: CalculateOptions): Promise<void> => {
+const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
   console.log(chalk.blue('🚀 Starting quality gate calculation...'));
   console.log(chalk.gray(`Gate: ${options.qualityGate}`));
   console.log(chalk.gray(`Service: ${options.serviceName}`));
@@ -68,9 +44,7 @@ const calculateQualityGate = async (qualityGateApi: QualityGateApi, options: Cal
   console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
 };
 
-export const calculate = async (qualityGateApi: QualityGateApi, options: CalculateOptions): Promise<void> => {
-  options = sanitizeConfiguration(options);
-
+export const calculate = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
   try {
     await calculateQualityGate(qualityGateApi, options);
   } catch (error: unknown) {

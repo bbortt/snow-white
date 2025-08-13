@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
-export interface GlobalOptions {
+import type { SanitizedOptions } from './sanitized-options';
+
+export interface CliOptions extends SanitizedOptions {
   config: string;
 }
