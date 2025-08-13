@@ -4,8 +4,22 @@
  * See LICENSE file for full details.
  */
 
-import type { SanitizedOptions } from './sanitized-options';
-
-export interface CliOptions extends SanitizedOptions {
-  config: string;
+export interface CliOptions {
+  /**
+   * Configuration from file
+   */
+  configFile?: string;
+  /**
+   * Resolving API specifications
+   */
+  openApiSpecs?: string;
+  // Explicit configuration
+  qualityGate?: string;
+  serviceName?: string;
+  apiName?: string;
+  apiVersion?: string;
+  /**
+   * Base URL for Snow-White API.
+   */
+  url: string;
 }
