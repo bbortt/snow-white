@@ -6,20 +6,25 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+import static java.util.stream.Collectors.toSet;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReportService {
@@ -30,22 +35,28 @@ public class ReportService {
     String,
     QualityGateCalculationRequestEvent
   > kafkaTemplate;
-  private final QualityGateReportRepository qualityGateReportRepository;
+
   private final QualityGateService qualityGateService;
+
+  private final ApiTestRepository apiTestRepository;
+  private final QualityGateReportRepository qualityGateReportRepository;
 
   public ReportService(
     KafkaTemplate<String, QualityGateCalculationRequestEvent> kafkaTemplate,
+    QualityGateService qualityGateService,
+    ApiTestRepository apiTestRepository,
     QualityGateReportRepository qualityGateReportRepository,
-    ReportCoordinationServiceProperties reportCoordinationServiceProperties,
-    QualityGateService qualityGateService
+    ReportCoordinationServiceProperties reportCoordinationServiceProperties
   ) {
     this.calculationRequestTopic =
       reportCoordinationServiceProperties.getCalculationRequestTopic();
 
     this.kafkaTemplate = kafkaTemplate;
-    this.qualityGateReportRepository = qualityGateReportRepository;
 
     this.qualityGateService = qualityGateService;
+
+    this.apiTestRepository = apiTestRepository;
+    this.qualityGateReportRepository = qualityGateReportRepository;
   }
 
   public Optional<QualityGateReport> findReportByCalculationId(
@@ -54,54 +65,79 @@ public class ReportService {
     return qualityGateReportRepository.findById(calculationId);
   }
 
+  @Transactional
   public QualityGateReport initializeQualityGateCalculation(
     String qualityGateConfigName,
-    ReportParameters reportParameters
+    Set<ApiTest> apiTests,
+    ReportParameter reportParameter
   ) throws QualityGateNotFoundException {
-    var qualityGateConfig = qualityGateService
-      .findQualityGateConfigByName(qualityGateConfigName)
-      .orElseThrow(() ->
-        new QualityGateNotFoundException(qualityGateConfigName)
+    var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
+      qualityGateConfigName
+    );
+
+    var qualityGateReport = persistInitialQualityGateReport(
+      qualityGateConfig.getName(),
+      apiTests,
+      reportParameter
+    );
+
+    qualityGateReport
+      .getApiTests()
+      .forEach(apiTest ->
+        dispatchQualityGateCalculationRequest(
+          qualityGateReport.getCalculationId(),
+          qualityGateReport.getReportParameter(),
+          apiTest
+        )
       );
 
-    var qualityGateReport = createInitialReport(
-      qualityGateConfig.getName(),
-      reportParameters
-    );
-
-    return dispatchOpenApiCoverageCalculation(qualityGateReport);
+    return qualityGateReport;
   }
 
-  private QualityGateReport createInitialReport(
+  private QualityGateReport persistInitialQualityGateReport(
     String qualityGateConfigName,
-    ReportParameters reportParameters
+    Set<ApiTest> apiTests,
+    ReportParameter reportParameter
   ) {
-    return qualityGateReportRepository.save(
-      QualityGateReport.builder()
-        .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(reportParameters)
-        .build()
+    var calculationId = UUID.randomUUID();
+
+    var qualityGateReport = QualityGateReport.builder()
+      .calculationId(calculationId)
+      .qualityGateConfigName(qualityGateConfigName)
+      .reportParameter(reportParameter.withCalculationId(calculationId))
+      .build();
+
+    final var persistedQualityGateReport = qualityGateReportRepository.save(
+      qualityGateReport
     );
+
+    var persistedApiTests = apiTests
+      .stream()
+      .map(apiTest -> apiTest.withQualityGateReport(persistedQualityGateReport))
+      .map(apiTestRepository::save)
+      .collect(toSet());
+
+    return persistedQualityGateReport.withApiTests(persistedApiTests);
   }
 
-  private QualityGateReport dispatchOpenApiCoverageCalculation(
-    QualityGateReport qualityGateReport
+  private void dispatchQualityGateCalculationRequest(
+    UUID calculationId,
+    ReportParameter reportParameter,
+    ApiTest apiTest
   ) {
-    var reportParameters = qualityGateReport.getReportParameters();
-
     kafkaTemplate.send(
       calculationRequestTopic,
-      qualityGateReport.getCalculationId().toString(),
+      calculationId.toString(),
       QualityGateCalculationRequestEvent.builder()
-        .serviceName(reportParameters.getServiceName())
-        .apiName(reportParameters.getApiName())
-        .apiVersion(reportParameters.getApiVersion())
-        .lookbackWindow(reportParameters.getLookbackWindow())
+        .apiInformation(
+          ApiInformation.builder()
+            .serviceName(apiTest.getServiceName())
+            .apiName(apiTest.getApiName())
+            .apiVersion(apiTest.getApiVersion())
+            .build()
+        )
+        .lookbackWindow(reportParameter.getLookbackWindow())
         .build()
-    );
-
-    return qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiCoverageStatus(IN_PROGRESS)
     );
   }
 

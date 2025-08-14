@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;

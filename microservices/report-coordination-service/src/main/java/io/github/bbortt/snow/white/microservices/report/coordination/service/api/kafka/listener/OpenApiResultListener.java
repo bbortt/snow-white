@@ -9,21 +9,17 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.CONSUMER_GROUP_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.DEFAULT_CONSUMER_GROUP_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.OPENAPI_CALCULATION_RESPONSE_TOPIC;
-import static java.lang.String.format;
 import static org.springframework.kafka.support.KafkaHeaders.RECEIVED_KEY;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.OpenApiTestResultMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.service.OpenApiReportCalculator;
+import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -32,12 +28,48 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class OpenApiResultListener {
 
-  private final OpenApiTestResultMapper openApiTestResultMapper;
+  private final ApiTestResultMapper apiTestResultMapper;
   private final QualityGateService qualityGateService;
   private final ReportService reportService;
+
+  private final ApiInformationFilter apiInformationFilter;
+  private final ApiTestResultLinker apiTestResultLinker;
+  private final QualityGateStatusCalculator qualityGateStatusCalculator;
+
+  @Autowired
+  public OpenApiResultListener(
+    ApiTestResultMapper apiTestResultMapper,
+    QualityGateService qualityGateService,
+    ReportService reportService
+  ) {
+    this(
+      apiTestResultMapper,
+      qualityGateService,
+      reportService,
+      new ApiInformationFilter(),
+      new ApiTestResultLinker(),
+      new QualityGateStatusCalculator()
+    );
+  }
+
+  @VisibleForTesting
+  OpenApiResultListener(
+    ApiTestResultMapper apiTestResultMapper,
+    QualityGateService qualityGateService,
+    ReportService reportService,
+    ApiInformationFilter apiInformationFilter,
+    ApiTestResultLinker apiTestResultLinker,
+    QualityGateStatusCalculator qualityGateStatusCalculator
+  ) {
+    this.apiTestResultMapper = apiTestResultMapper;
+    this.qualityGateService = qualityGateService;
+    this.reportService = reportService;
+    this.apiInformationFilter = apiInformationFilter;
+    this.apiTestResultLinker = apiTestResultLinker;
+    this.qualityGateStatusCalculator = qualityGateStatusCalculator;
+  }
 
   @Transactional
   @KafkaListener(
@@ -47,74 +79,42 @@ public class OpenApiResultListener {
   public void persistOpenApiCoverageResponseIfReportIsPresent(
     @Header(name = RECEIVED_KEY) UUID key,
     @Payload OpenApiCoverageResponseEvent openApiCoverageResponseEvent
-  ) {
-    reportService
-      .findReportByCalculationId(key)
-      .map(report ->
-        new QualityGateConfigurationParameters(
-          report,
-          qualityGateService
-            .findQualityGateConfigByName(report.getQualityGateConfigName())
-            .orElseThrow(() ->
-              new IllegalStateException(
-                format(
-                  "Unreachable state, Quality-Gate configuration '%s' must exist at this point!",
-                  report.getQualityGateConfigName()
-                )
-              )
-            )
-        )
-      )
-      .ifPresent(configurationParameters ->
-        calculateAndPersistQualityGateReport(
-          configurationParameters,
-          openApiTestResultMapper.fromDto(
-            openApiCoverageResponseEvent.openApiCriteria()
-          )
-        )
-      );
-  }
+  ) throws QualityGateNotFoundException {
+    var reportByCalculationId = reportService.findReportByCalculationId(key);
 
-  private void calculateAndPersistQualityGateReport(
-    QualityGateConfigurationParameters configurationParameters,
-    Set<OpenApiTestResult> openApiTestCriteria
-  ) {
-    try {
-      var qualityGateReport = calculateQualityGateReport(
-        configurationParameters,
-        openApiTestCriteria
+    if (reportByCalculationId.isEmpty()) {
+      logger.warn(
+        "Received OpenAPI coverage response for unknown calculation ID: {}",
+        key
       );
-      reportService.update(qualityGateReport);
-    } catch (Exception e) {
-      logger.error(
-        "Failed to persist quality-gate report: {}",
-        configurationParameters,
-        e
-      );
+      return;
     }
+
+    var qualityGateReport = reportByCalculationId.get();
+
+    var apiInformation = openApiCoverageResponseEvent.apiInformation();
+    var apiTest =
+      apiInformationFilter.findApiTestMatchingApiInformationInQualityGateReport(
+        qualityGateReport,
+        apiInformation
+      );
+
+    var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
+      qualityGateReport.getQualityGateConfigName()
+    );
+
+    apiTestResultLinker.addResultsToApiTest(
+      apiTest,
+      qualityGateConfig.getOpenApiCriteria(),
+      apiTestResultMapper.fromDtos(
+        openApiCoverageResponseEvent.openApiCriteria()
+      )
+    );
+
+    qualityGateReport = qualityGateStatusCalculator.withUpdatedReportStatus(
+      qualityGateReport
+    );
+
+    reportService.update(qualityGateReport);
   }
-
-  private QualityGateReport calculateQualityGateReport(
-    QualityGateConfigurationParameters configurationParameters,
-    Set<OpenApiTestResult> openApiTestCriteria
-  ) {
-    var qualityGateReport = configurationParameters.qualityGateReport();
-
-    var calculationResult = new OpenApiReportCalculator(
-      qualityGateReport,
-      configurationParameters.qualityGateConfig().getOpenApiCriteria(),
-      openApiTestCriteria
-    ).calculate();
-
-    qualityGateReport = qualityGateReport
-      .withOpenApiCoverageStatus(calculationResult.status())
-      .withOpenApiTestResults(calculationResult.openApiTestResults());
-
-    return qualityGateReport.withUpdatedReportStatus();
-  }
-
-  private record QualityGateConfigurationParameters(
-    QualityGateReport qualityGateReport,
-    QualityGateConfig qualityGateConfig
-  ) {}
 }

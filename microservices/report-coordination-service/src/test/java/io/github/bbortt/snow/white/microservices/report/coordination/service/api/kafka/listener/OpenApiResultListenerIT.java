@@ -20,19 +20,25 @@ import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.SET;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.awaitility.Awaitility.await;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -45,6 +51,15 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
+  public static final ApiTest API_TEST = ApiTest.builder()
+    .serviceName("throne-of-glass")
+    .apiName("morath")
+    .apiVersion("1.0.0")
+    .build();
+
+  public static final ReportParameter REPORT_PARAMETER =
+    ReportParameter.builder().lookbackWindow("1h").build();
+
   @Autowired
   private KafkaTemplate<String, OpenApiCoverageResponseEvent> kafkaTemplate;
 
@@ -52,10 +67,21 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
   private ObjectMapper objectMapper;
 
   @Autowired
+  private ApiTestRepository apiTestRepository;
+
+  @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
 
   @Autowired
   private ReportCoordinationServiceProperties reportCoordinationServiceProperties;
+
+  private static ApiInformation createValidApiInformation() {
+    return ApiInformation.builder()
+      .serviceName(API_TEST.getServiceName())
+      .apiName(API_TEST.getApiName())
+      .apiVersion(API_TEST.getApiVersion())
+      .build();
+  }
 
   @Test
   void kafkaEvent_withCoveredCriteria_shouldBePersisted()
@@ -77,6 +103,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
+        createValidApiInformation(),
         Set.of(new OpenApiTestResult(openApiCriterion, ONE, duration))
       )
     );
@@ -111,6 +138,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
+        createValidApiInformation(),
         Set.of(new OpenApiTestResult(openApiCriterion, ZERO, duration))
       )
     );
@@ -127,20 +155,16 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   private @NotNull String persistInitialQualityGateReport(UUID calculationId) {
     var qualityGateConfigName = "minimal";
-    qualityGateReportRepository.save(
+    var qualityGateReport = qualityGateReportRepository.save(
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName("throne-of-glass")
-            .apiName("morath")
-            .apiVersion("1.0.0")
-            .lookbackWindow("1h")
-            .build()
-        )
+        .reportParameter(REPORT_PARAMETER.withCalculationId(calculationId))
         .build()
     );
+
+    apiTestRepository.save(API_TEST.withQualityGateReport(qualityGateReport));
+
     return qualityGateConfigName;
   }
 
@@ -181,12 +205,17 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
               report ->
                 assertThat(report.getReportStatus()).isEqualTo(reportStatus),
               report ->
-                assertThat(report.getOpenApiTestResults())
+                assertThat(report.getApiTests())
                   .hasSize(1)
                   .first()
+                  .extracting(ApiTest::getApiTestResults)
+                  .asInstanceOf(SET)
+                  .hasSize(1)
+                  .first()
+                  .asInstanceOf(type(ApiTestResult.class))
                   .satisfies(
                     openApiResult ->
-                      assertThat(openApiResult.getOpenApiTestCriteria())
+                      assertThat(openApiResult.getApiTestCriteria())
                         .isNotNull()
                         .isEqualTo(PATH_COVERAGE.name()),
                     openApiResult ->

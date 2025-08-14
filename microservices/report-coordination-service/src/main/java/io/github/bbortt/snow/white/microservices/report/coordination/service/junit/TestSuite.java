@@ -8,10 +8,12 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static lombok.AccessLevel.PRIVATE;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,29 +21,63 @@ import lombok.With;
 
 @With
 @Getter
-@Builder
 @AllArgsConstructor(access = PRIVATE)
 public class TestSuite {
 
   @JacksonXmlProperty(isAttribute = true)
   private String name;
 
-  @Builder.Default
   @JacksonXmlProperty(isAttribute = true)
-  private String time = "0";
+  private Long tests;
 
-  @Builder.Default
+  @JacksonXmlProperty(isAttribute = true)
+  private Long failures;
+
+  @JacksonXmlProperty(isAttribute = true)
+  private Long errors = 0L;
+
+  @JacksonXmlProperty(isAttribute = true)
+  private Long skipped = 0L;
+
+  @JacksonXmlProperty(isAttribute = true)
+  private Long assertions;
+
+  @With(PRIVATE)
+  @JacksonXmlProperty(isAttribute = true)
+  private String time;
+
+  @JsonIgnore
+  @With(PRIVATE)
+  private transient Duration duration;
+
+  @JacksonXmlProperty(isAttribute = true)
+  private String timestamp;
+
+  @JacksonXmlProperty(localName = "property")
+  @JacksonXmlElementWrapper(localName = "properties")
+  private Set<Property> properties;
+
   @JacksonXmlProperty(localName = "testcase")
   @JacksonXmlElementWrapper(useWrapping = false)
-  private List<TestCase> testCases = new ArrayList<>();
+  private Set<TestCase> testCases = new LinkedHashSet<>();
 
-  public TestSuite(String name) {
+  @Builder
+  public TestSuite(String name, Set<Property> properties) {
     this.name = name;
     this.time = "0";
-    this.testCases = new ArrayList<>();
+    this.properties = properties;
   }
 
-  public void addTestCase(TestCase testCase) {
-    testCases.add(testCase);
+  public TestSuite withDuration(
+    Duration duration,
+    DurationFormatter formatter
+  ) {
+    this.duration = duration;
+    this.time = formatter.toSecondsWithPrecision(duration);
+    return this;
+  }
+
+  public void addAllTestCases(Set<TestCase> testCases) {
+    this.testCases.addAll(testCases);
   }
 }

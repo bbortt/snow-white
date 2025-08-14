@@ -49,9 +49,7 @@ public class ReportResource implements ReportApi {
     }
 
     return ResponseEntity.ok(
-      qualityGateReportMapper.toListQualityGateReportsResponse(
-        reportOrError.qualityGateReport()
-      )
+      qualityGateReportMapper.toListDto(reportOrError.qualityGateReport())
     );
   }
 
@@ -95,7 +93,7 @@ public class ReportResource implements ReportApi {
       .body(
         qualityGateReports
           .stream()
-          .map(qualityGateReportMapper::toListQualityGateReportsResponse)
+          .map(qualityGateReportMapper::toListDto)
           .toList()
       );
   }
@@ -121,7 +119,7 @@ public class ReportResource implements ReportApi {
     if (IN_PROGRESS.equals(report.getReportStatus())) {
       return errorResponse(
         ResponseEntity.status(ACCEPTED).body(
-          qualityGateReportMapper.toListQualityGateReportsResponse(report)
+          qualityGateReportMapper.toListDto(report)
         )
       );
     }

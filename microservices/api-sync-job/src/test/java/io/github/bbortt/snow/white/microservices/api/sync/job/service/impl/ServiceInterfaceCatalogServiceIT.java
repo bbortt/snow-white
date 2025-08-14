@@ -9,8 +9,6 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okForContentType;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.util.TestUtils.getResourceContent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
@@ -26,9 +24,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.ContextConfiguration;
 
 @IntegrationTest
 @SpringBootTest(
