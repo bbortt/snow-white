@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
@@ -18,7 +18,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
-import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto.Entity;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto.EntityMeta;

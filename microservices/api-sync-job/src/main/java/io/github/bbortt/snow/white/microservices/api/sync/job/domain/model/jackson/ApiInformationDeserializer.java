@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.jackson;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiType.apiType;
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.apiType;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_INFO_TITLE;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_INFO_VERSION;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.openapi.OpenApiProperties.OAS_TYPE;

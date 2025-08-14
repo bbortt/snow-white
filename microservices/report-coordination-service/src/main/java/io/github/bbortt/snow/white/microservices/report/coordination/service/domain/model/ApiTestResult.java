@@ -21,7 +21,6 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,14 +35,14 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-@IdClass(OpenApiTestResult.OpenApiCriterionResultId.class)
-public class OpenApiTestResult {
+@IdClass(ApiTestResult.ApiTestResultId.class)
+public class ApiTestResult {
 
   @Id
   @NotNull
-  @Column(length = 32)
+  @With(PRIVATE)
   @Size(min = 1, max = 32)
-  private String openApiTestCriteria;
+  private String apiTestCriteria;
 
   @NotNull
   @Column(nullable = false, updatable = false, precision = 3, scale = 2)
@@ -64,13 +63,13 @@ public class OpenApiTestResult {
   @Id
   @NotNull
   @ManyToOne(optional = false)
-  @JoinColumn(name = "calculation_id", nullable = false)
-  private QualityGateReport qualityGateReport;
+  @JoinColumn(name = "api_test", nullable = false)
+  private ApiTest apiTest;
 
   @Data
-  public static class OpenApiCriterionResultId implements Serializable {
+  public static class ApiTestResultId implements Serializable {
 
-    private String openApiTestCriteria;
-    private UUID qualityGateReport;
+    private String apiTestCriteria;
+    private Long apiTest;
   }
 }

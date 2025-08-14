@@ -7,25 +7,30 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -41,6 +46,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 @ExtendWith({ MockitoExtension.class })
 class ReportServiceTest {
 
+  private static final String CALCULATION_REQUEST_TOPIC =
+    "calculation-request-topic";
+
   @Mock
   private KafkaTemplate<
     String,
@@ -48,10 +56,13 @@ class ReportServiceTest {
   > kafkaTemplateMock;
 
   @Mock
-  private QualityGateReportRepository qualityGateReportRepositoryMock;
+  private QualityGateService qualityGateServiceMock;
 
   @Mock
-  private QualityGateService qualityGateServiceMock;
+  private ApiTestRepository apiTestRepositoryMock;
+
+  @Mock
+  private QualityGateReportRepository qualityGateReportRepositoryMock;
 
   private ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
@@ -61,12 +72,16 @@ class ReportServiceTest {
   void beforeEachSetup() {
     reportCoordinationServiceProperties =
       new ReportCoordinationServiceProperties();
+    reportCoordinationServiceProperties.setCalculationRequestTopic(
+      CALCULATION_REQUEST_TOPIC
+    );
 
     fixture = new ReportService(
       kafkaTemplateMock,
+      qualityGateServiceMock,
+      apiTestRepositoryMock,
       qualityGateReportRepositoryMock,
-      reportCoordinationServiceProperties,
-      qualityGateServiceMock
+      reportCoordinationServiceProperties
     );
   }
 
@@ -94,127 +109,220 @@ class ReportServiceTest {
   class InitializeQualityGateCalculation {
 
     @Test
-    void shouldCreateAndReturnQualityGateReport()
+    void shouldCreateAndReturnQualityGateReport_andPersistCorrectValues()
       throws QualityGateNotFoundException {
       var qualityGateConfigName = "test-config";
-      var reportParameters = ReportParameters.builder()
+      var apiTest = ApiTest.builder()
         .serviceName("test-service")
         .apiName("test-api")
-        .apiVersion("v1")
+        .apiVersion("test-api-version")
+        .build();
+      var apiTests = Set.of(apiTest);
+
+      var reportParameter = ReportParameter.builder()
         .lookbackWindow("1d")
         .build();
 
       var qualityGateConfig = new QualityGateConfig(
         qualityGateConfigName,
-        emptyList()
+        emptySet()
       );
 
-      doReturn(Optional.of(qualityGateConfig))
+      doReturn(qualityGateConfig)
+        .when(qualityGateServiceMock)
+        .findQualityGateConfigByName(qualityGateConfigName);
+
+      var savedQualityGateReport = QualityGateReport.builder()
+        .calculationId(UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af"))
+        .reportParameter(reportParameter)
+        .build();
+      doReturn(savedQualityGateReport)
+        .when(qualityGateReportRepositoryMock)
+        .save(any(QualityGateReport.class));
+
+      doAnswer(returnsFirstArg())
+        .when(apiTestRepositoryMock)
+        .save(any(ApiTest.class));
+
+      QualityGateReport initializedQualityGateReport =
+        fixture.initializeQualityGateCalculation(
+          qualityGateConfigName,
+          apiTests,
+          reportParameter
+        );
+
+      assertThat(initializedQualityGateReport.getApiTests())
+        .hasSize(1)
+        .allSatisfy(preparedApiTest ->
+          assertThat(preparedApiTest.getQualityGateReport()).isEqualTo(
+            savedQualityGateReport
+          )
+        );
+
+      ArgumentCaptor<QualityGateReport> reportCaptor = captor();
+      verify(qualityGateReportRepositoryMock).save(reportCaptor.capture());
+
+      var initialQualityGate = reportCaptor.getValue();
+      assertThat(initialQualityGate).satisfies(
+        qualityGateReport ->
+          assertThat(qualityGateReport.getQualityGateConfigName()).isEqualTo(
+            qualityGateConfigName
+          ),
+        qualityGateReport ->
+          assertThat(qualityGateReport.getReportParameter()).satisfies(
+            initialReportParameter ->
+              assertThat(initialReportParameter.getCalculationId()).isEqualTo(
+                initialQualityGate.getCalculationId()
+              ),
+            initialReportParameter ->
+              assertThat(initialReportParameter.getLookbackWindow()).isEqualTo(
+                reportParameter.getLookbackWindow()
+              )
+          ),
+        qualityGateReport ->
+          assertThat(qualityGateReport.getApiTests()).isEmpty(),
+        qualityGateReport ->
+          assertThat(qualityGateReport.getReportStatus()).isEqualTo(IN_PROGRESS)
+      );
+
+      ArgumentCaptor<ApiTest> apiTestCaptor = captor();
+      verify(apiTestRepositoryMock).save(apiTestCaptor.capture());
+
+      assertThat(apiTestCaptor.getAllValues())
+        .hasSize(1)
+        .allSatisfy(persistedApiTest ->
+          assertThat(persistedApiTest.getQualityGateReport()).isEqualTo(
+            savedQualityGateReport
+          )
+        );
+    }
+
+    @Test
+    void shouldCreateAndReturnQualityGateReport_andDispatchKafkaEvent()
+      throws QualityGateNotFoundException {
+      var apiTest1 = ApiTest.builder()
+        .serviceName("starWars")
+        .apiName("aNewHope")
+        .apiVersion("1")
+        .build();
+      var apiTest2 = ApiTest.builder()
+        .serviceName("starWars")
+        .apiName("theCloneWars")
+        .apiVersion("2")
+        .build();
+      var apiTest = Set.of(apiTest1, apiTest2);
+
+      var qualityGateConfigName = "test-config";
+      var reportParameter = ReportParameter.builder()
+        .lookbackWindow("1d")
+        .build();
+
+      var qualityGateConfig = new QualityGateConfig(
+        qualityGateConfigName,
+        emptySet()
+      );
+
+      doReturn(qualityGateConfig)
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 
       var initialQualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("a1c937c2-d950-4047-8c8d-f1de16c13b41"))
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(reportParameters)
+        .reportParameter(reportParameter)
         .build();
 
       doReturn(initialQualityGateReport)
         .when(qualityGateReportRepositoryMock)
         .save(any(QualityGateReport.class));
 
+      doAnswer(returnsFirstArg())
+        .when(apiTestRepositoryMock)
+        .save(any(ApiTest.class));
+
       var result = fixture.initializeQualityGateCalculation(
         qualityGateConfigName,
-        reportParameters
+        apiTest,
+        reportParameter
       );
 
-      assertThat(result).isEqualTo(initialQualityGateReport);
-      verify(kafkaTemplateMock).send(
-        eq(reportCoordinationServiceProperties.getCalculationRequestTopic()),
+      assertThat(result).isNotNull();
+
+      ArgumentCaptor<
+        QualityGateCalculationRequestEvent
+      > qualityGateCalculationRequestEventArgumentCaptor = captor();
+
+      verify(kafkaTemplateMock, times(2)).send(
+        eq(CALCULATION_REQUEST_TOPIC),
         eq(initialQualityGateReport.getCalculationId().toString()),
-        any(QualityGateCalculationRequestEvent.class)
+        qualityGateCalculationRequestEventArgumentCaptor.capture()
       );
+
+      assertThat(
+        qualityGateCalculationRequestEventArgumentCaptor.getAllValues()
+      )
+        .hasSize(2)
+        .satisfiesOnlyOnce(event ->
+          assertThat(event)
+            .extracting(QualityGateCalculationRequestEvent::getApiInformation)
+            .satisfies(
+              apiInformation ->
+                assertThat(apiInformation.getServiceName()).isEqualTo(
+                  apiTest1.getServiceName()
+                ),
+              apiInformation ->
+                assertThat(apiInformation.getApiName()).isEqualTo(
+                  apiTest1.getApiName()
+                ),
+              apiInformation ->
+                assertThat(apiInformation.getApiVersion()).isEqualTo(
+                  apiTest1.getApiVersion()
+                )
+            )
+        )
+        .satisfiesOnlyOnce(event ->
+          assertThat(event)
+            .extracting(QualityGateCalculationRequestEvent::getApiInformation)
+            .satisfies(
+              apiInformation ->
+                assertThat(apiInformation.getServiceName()).isEqualTo(
+                  apiTest2.getServiceName()
+                ),
+              apiInformation ->
+                assertThat(apiInformation.getApiName()).isEqualTo(
+                  apiTest2.getApiName()
+                ),
+              apiInformation ->
+                assertThat(apiInformation.getApiVersion()).isEqualTo(
+                  apiTest2.getApiVersion()
+                )
+            )
+        )
+        .allSatisfy(event ->
+          assertThat(event.getLookbackWindow()).isEqualTo(
+            reportParameter.getLookbackWindow()
+          )
+        );
     }
 
     @Test
-    void shouldThrowQualityGateNotFoundExceptionWhenQualityGateConfigNotFound() {
+    void shouldThrowQualityGateNotFoundException_whenQualityGateConfigNotFound()
+      throws QualityGateNotFoundException {
       var qualityGateConfigName = "non-existent-config";
-      var reportParameters = new ReportParameters();
+      var reportParameter = new ReportParameter();
 
-      doReturn(Optional.empty())
+      var cause = new QualityGateNotFoundException(qualityGateConfigName);
+      doThrow(cause)
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 
       assertThatThrownBy(() ->
         fixture.initializeQualityGateCalculation(
           qualityGateConfigName,
-          reportParameters
+          emptySet(),
+          reportParameter
         )
-      )
-        .isInstanceOf(QualityGateNotFoundException.class)
-        .hasMessage(
-          "No Quality-Gate configuration with ID '%s' exists!",
-          qualityGateConfigName
-        );
-    }
-
-    @Test
-    void shouldCreateQualityGateReportWithCorrectValues()
-      throws QualityGateNotFoundException {
-      var qualityGateConfigName = "test-config";
-      var reportParameters = ReportParameters.builder()
-        .serviceName("test-service")
-        .apiName("test-api")
-        .apiVersion("v1")
-        .lookbackWindow("1d")
-        .build();
-
-      var qualityGateConfig = new QualityGateConfig(
-        qualityGateConfigName,
-        emptyList()
-      );
-
-      doReturn(Optional.of(qualityGateConfig))
-        .when(qualityGateServiceMock)
-        .findQualityGateConfigByName(qualityGateConfigName);
-
-      ArgumentCaptor<QualityGateReport> reportCaptor = captor();
-
-      var savedQualityGateReport = QualityGateReport.builder()
-        .calculationId(UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af"))
-        .reportParameters(reportParameters)
-        .build();
-      doReturn(savedQualityGateReport)
-        .when(qualityGateReportRepositoryMock)
-        .save(reportCaptor.capture());
-
-      fixture.initializeQualityGateCalculation(
-        qualityGateConfigName,
-        reportParameters
-      );
-
-      List<QualityGateReport> savedQualityGateReports =
-        reportCaptor.getAllValues();
-      assertThat(savedQualityGateReports).hasSize(2);
-
-      assertThat(savedQualityGateReports.getFirst()).satisfies(
-        capturedReport ->
-          assertThat(capturedReport.getQualityGateConfigName()).isEqualTo(
-            qualityGateConfigName
-          ),
-        capturedReport ->
-          assertThat(capturedReport.getReportParameters()).isEqualTo(
-            reportParameters
-          ),
-        capturedReport ->
-          assertThat(capturedReport.getOpenApiCoverageStatus()).isEqualTo(
-            NOT_STARTED
-          )
-      );
-
-      assertThat(savedQualityGateReports.getLast())
-        .extracting(QualityGateReport::getOpenApiCoverageStatus)
-        .isEqualTo(IN_PROGRESS);
+      ).isEqualTo(cause);
     }
   }
 

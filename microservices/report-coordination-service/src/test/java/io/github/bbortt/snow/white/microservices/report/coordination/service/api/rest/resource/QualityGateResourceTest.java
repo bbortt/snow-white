@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.resource;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -21,12 +22,15 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -42,10 +46,13 @@ class QualityGateResourceTest {
   private ReportService reportServiceMock;
 
   @Mock
-  private QualityGateReportMapper qualityGateReportMapperMock;
+  private ApiTestMapper apiTestMapperMock;
 
   @Mock
   private ReportParameterMapper reportParameterMapperMock;
+
+  @Mock
+  private QualityGateReportMapper qualityGateReportMapperMock;
 
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
@@ -56,8 +63,9 @@ class QualityGateResourceTest {
   void beforeEachSetup() {
     fixture = new QualityGateResource(
       reportServiceMock,
-      qualityGateReportMapperMock,
+      apiTestMapperMock,
       reportParameterMapperMock,
+      qualityGateReportMapperMock,
       reportCoordinationServicePropertiesMock
     );
   }
@@ -74,8 +82,13 @@ class QualityGateResourceTest {
     @Test
     void shouldInitializeQualityGateCalculation()
       throws QualityGateNotFoundException {
-      var reportParameters = mock(ReportParameters.class);
-      doReturn(reportParameters)
+      var apiTests = Set.of(mock(ApiTest.class));
+      doReturn(apiTests)
+        .when(apiTestMapperMock)
+        .getApiTests(qualityGateCalculationRequestMock);
+
+      var reportParameter = mock(ReportParameter.class);
+      doReturn(reportParameter)
         .when(reportParameterMapperMock)
         .fromDto(qualityGateCalculationRequestMock);
 
@@ -87,13 +100,14 @@ class QualityGateResourceTest {
         .when(reportServiceMock)
         .initializeQualityGateCalculation(
           QUALITY_GATE_CONFIG_NAME,
-          reportParameters
+          apiTests,
+          reportParameter
         );
 
       var responseDto = mock(CalculateQualityGate202Response.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toCalculateQualityGateResponse(qualityGateReport);
+        .toDto(qualityGateReport);
 
       var apiGatewayHost = "http://my-api-gateway";
       doReturn(apiGatewayHost)
@@ -123,8 +137,8 @@ class QualityGateResourceTest {
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
       throws QualityGateNotFoundException {
-      var reportParameters = mock(ReportParameters.class);
-      doReturn(reportParameters)
+      var reportParameter = mock(ReportParameter.class);
+      doReturn(reportParameter)
         .when(reportParameterMapperMock)
         .fromDto(qualityGateCalculationRequestMock);
 
@@ -132,7 +146,8 @@ class QualityGateResourceTest {
         .when(reportServiceMock)
         .initializeQualityGateCalculation(
           QUALITY_GATE_CONFIG_NAME,
-          reportParameters
+          emptySet(),
+          reportParameter
         );
 
       var response = fixture.calculateQualityGate(

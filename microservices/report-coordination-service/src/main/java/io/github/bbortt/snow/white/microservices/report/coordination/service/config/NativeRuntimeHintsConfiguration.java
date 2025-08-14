@@ -13,6 +13,8 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Failure;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Property;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Skipped;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.TestCase;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.TestSuite;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.TestSuites;
@@ -35,6 +37,8 @@ import org.springframework.context.annotation.Configuration;
     OpenApiTestResult.class,
     // For JUnit Report Generation
     Failure.class,
+    Property.class,
+    Skipped.class,
     TestCase.class,
     TestSuite.class,
     TestSuites.class,

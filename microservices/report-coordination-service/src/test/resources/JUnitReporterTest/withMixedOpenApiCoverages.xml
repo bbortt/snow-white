@@ -1,21 +1,73 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <testsuites
-  name="TransformToJUnitReport"
+  name="JUnitReporterTest"
   tests="2"
   failures="1"
   errors="0"
   skipped="0"
+  assertions="2"
   time="5.55500"
   timestamp="2025-04-24T22:30:00Z"
 >
-  <testsuite name="OpenAPI Specification" time="0">
+  <properties>
+    <property
+      name="calculationId"
+      value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
+    />
+  </properties>
+  <testsuite
+    name="serviceName: bar 1.0.0 [OPENAPI]"
+    tests="1"
+    failures="1"
+    errors="0"
+    skipped="0"
+    assertions="1"
+    time="1.23400"
+  >
+    <properties>
+      <property name="apiName" value="bar" />
+      <property name="apiVersion" value="1.0.0" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
     <testcase
       name="HTTP Method Coverage"
-      classname="HTTP_METHOD_COVERAGE"
+      classname="serviceName: bar 1.0.0 [OPENAPI]"
       time="1.23400"
     >
-      <failure message="Additional Information." type="coverage" />
+      <failure message="Additional Information." type="AssertionError" />
+      <properties>
+        <property
+          name="description"
+          value="Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested."
+        />
+      </properties>
     </testcase>
-    <testcase name="Path Coverage" classname="PATH_COVERAGE" time="4.32100" />
+  </testsuite>
+  <testsuite
+    name="serviceName: foo 1.0.0 [OPENAPI]"
+    tests="1"
+    failures="0"
+    errors="0"
+    skipped="0"
+    assertions="1"
+    time="4.32100"
+  >
+    <properties>
+      <property name="apiName" value="foo" />
+      <property name="apiVersion" value="1.0.0" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
+    <testcase
+      name="Path Coverage"
+      classname="serviceName: foo 1.0.0 [OPENAPI]"
+      time="4.32100"
+    >
+      <properties>
+        <property
+          name="description"
+          value="Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+        />
+      </properties>
+    </testcase>
   </testsuite>
 </testsuites>

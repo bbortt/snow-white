@@ -87,7 +87,7 @@ class ReportResourceTest {
       var responseDto = mock(ListQualityGateReports200ResponseInner.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toListQualityGateReportsResponse(qualityGateReport);
+        .toListDto(qualityGateReport);
 
       return responseDto;
     }
@@ -316,14 +316,10 @@ class ReportResourceTest {
         .stream();
 
       var dto1 = mock(ListQualityGateReports200ResponseInner.class);
-      doReturn(dto1)
-        .when(qualityGateReportMapperMock)
-        .toListQualityGateReportsResponse(report1);
+      doReturn(dto1).when(qualityGateReportMapperMock).toListDto(report1);
 
       var dto2 = mock(ListQualityGateReports200ResponseInner.class);
-      doReturn(dto2)
-        .when(qualityGateReportMapperMock)
-        .toListQualityGateReportsResponse(report2);
+      doReturn(dto2).when(qualityGateReportMapperMock).toListDto(report2);
 
       ResponseEntity<List<ListQualityGateReports200ResponseInner>> response =
         fixture.listQualityGateReports(page, size, sort);

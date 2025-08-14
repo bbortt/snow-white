@@ -1,25 +1,12 @@
 type: object
 required:
-  - serviceName
-  - apiName
+  - includeApis
 properties:
-  serviceName:
-    type: string
-    description: 'The service name for which the quality gate is being calculated'
-    example: 'example-application'
-    minLength: 1
-    maxLength: 256
-  apiName:
-    type: string
-    description: 'The name of the OpenAPI for which the quality gate is being calculated'
-    example: 'ping-pong'
-    minLength: 1
-    maxLength: 256
-  apiVersion:
-    type: string
-    description: 'The version of the OpenAPI for which the quality gate is being calculated - latest is being picked if non supplied'
-    example: '1.0.0'
-    maxLength: 16
+  includeApis:
+    type: array
+    description: 'List of OpenAPI information objects for which the Quality-Gate is being calculated'
+    items:
+      $ref: './ApiInformation.yml'
   lookbackWindow:
     type: string
     description: "The time window to consider for calculation (e.g., '1h', '24h', '7d')"
