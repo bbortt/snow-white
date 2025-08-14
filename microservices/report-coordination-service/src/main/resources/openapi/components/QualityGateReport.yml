@@ -24,11 +24,11 @@ properties:
     maxLength: 16
   calculationRequest:
     $ref: './QualityGateCalculationRequest.yml'
+  interfaces:
+    type: array
+    items:
+      $ref: './TestedApi.yml'
   initiatedAt:
     type: string
     format: date-time
     description: 'When the calculation was initiated'
-  openApiTestResults:
-    type: array
-    items:
-      $ref: './OpenApiTestResult.yml'

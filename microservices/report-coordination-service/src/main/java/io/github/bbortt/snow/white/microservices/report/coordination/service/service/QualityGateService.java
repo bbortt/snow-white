@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.se
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.mapper.QualityGateConfigMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,15 @@ public class QualityGateService {
   private final QualityGateApi qualityGateApi;
   private final QualityGateConfigMapper qualityGateConfigMapper;
 
-  public Optional<QualityGateConfig> findQualityGateConfigByName(
+  public QualityGateConfig findQualityGateConfigByName(
+    String qualityGateConfigName
+  ) throws QualityGateNotFoundException {
+    return queryQualityGateConfigByName(qualityGateConfigName).orElseThrow(() ->
+      new QualityGateNotFoundException(qualityGateConfigName)
+    );
+  }
+
+  private Optional<QualityGateConfig> queryQualityGateConfigByName(
     String qualityGateConfigName
   ) {
     try {

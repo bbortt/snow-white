@@ -8,14 +8,10 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.EAGER;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Column;
@@ -43,7 +39,7 @@ import lombok.With;
 @Table
 @With
 @Getter
-@Builder(buildMethodName = "lombokBuild")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
 public class QualityGateReport {
@@ -55,6 +51,7 @@ public class QualityGateReport {
 
   @Id
   @NotNull
+  @With(PRIVATE)
   @Column(nullable = false, updatable = false)
   private UUID calculationId;
 
@@ -64,19 +61,18 @@ public class QualityGateReport {
   private String qualityGateConfigName;
 
   @NotNull
-  @OneToOne(cascade = { ALL }, fetch = EAGER, optional = false)
-  private ReportParameters reportParameters;
-
-  @NotNull
-  @Builder.Default
-  @Enumerated(STRING)
-  @Column(nullable = false, length = 16)
-  private ReportStatus openApiCoverageStatus = NOT_STARTED;
+  @OneToOne(
+    mappedBy = "qualityGateReport",
+    cascade = { ALL },
+    fetch = EAGER,
+    optional = false
+  )
+  private ReportParameter reportParameter;
 
   @NotNull
   @Builder.Default
   @OneToMany(mappedBy = "qualityGateReport", cascade = { ALL }, fetch = EAGER)
-  private Set<OpenApiTestResult> openApiTestResults = new HashSet<>();
+  private Set<ApiTest> apiTests = new HashSet<>();
 
   @NotNull
   @Builder.Default
@@ -88,30 +84,4 @@ public class QualityGateReport {
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Instant createdAt = Instant.now();
-
-  public QualityGateReport withUpdatedReportStatus() {
-    ReportStatus updatedStatus = IN_PROGRESS;
-
-    if (
-      nonNull(openApiCoverageStatus) &&
-      STATUS_FOR_PROPAGATION.contains(openApiCoverageStatus)
-    ) {
-      updatedStatus = openApiCoverageStatus;
-    }
-
-    return withReportStatus(updatedStatus);
-  }
-
-  public static class QualityGateReportBuilder {
-
-    public QualityGateReport build() {
-      var qualityGateReport = lombokBuild();
-
-      if (isNull(qualityGateReport.getCalculationId())) {
-        return qualityGateReport.withCalculationId(randomUUID());
-      }
-
-      return qualityGateReport;
-    }
-  }
 }

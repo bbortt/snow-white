@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.domain.model;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
 import static lombok.AccessLevel.PRIVATE;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

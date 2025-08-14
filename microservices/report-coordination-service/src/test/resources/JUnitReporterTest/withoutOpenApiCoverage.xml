@@ -1,12 +1,18 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <testsuites
-  name="TransformToJUnitReport"
+  name="JUnitReporterTest"
   tests="0"
   failures="0"
   errors="0"
   skipped="0"
+  assertions="0"
   time="0"
   timestamp="2025-04-24T22:30:00Z"
 >
-  <testsuite name="OpenAPI Specification" time="0" />
+  <properties>
+    <property
+      name="calculationId"
+      value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
+    />
+  </properties>
 </testsuites>
