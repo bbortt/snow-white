@@ -8,7 +8,10 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static lombok.AccessLevel.PRIVATE;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import java.time.Duration;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +19,6 @@ import lombok.With;
 
 @With
 @Getter
-@Builder
 @AllArgsConstructor(access = PRIVATE)
 public class TestCase {
 
@@ -26,10 +28,33 @@ public class TestCase {
   @JacksonXmlProperty(isAttribute = true)
   private String classname;
 
-  @Builder.Default
+  @With(PRIVATE)
   @JacksonXmlProperty(isAttribute = true)
   private String time = "0";
 
+  @With(PRIVATE)
+  private transient Duration duration;
+
   @JacksonXmlProperty
   private Failure failure;
+
+  @JacksonXmlProperty
+  private Skipped skipped;
+
+  @JacksonXmlProperty(localName = "property")
+  @JacksonXmlElementWrapper(localName = "properties")
+  private Set<Property> properties;
+
+  @Builder
+  public TestCase(String name, String classname, Set<Property> properties) {
+    this.name = name;
+    this.classname = classname;
+    this.properties = properties;
+  }
+
+  public TestCase withDuration(Duration duration, DurationFormatter formatter) {
+    this.duration = duration;
+    this.time = formatter.toSecondsWithPrecision(duration);
+    return this;
+  }
 }

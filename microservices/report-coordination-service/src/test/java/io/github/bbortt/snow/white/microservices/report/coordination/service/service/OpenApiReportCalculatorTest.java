@@ -17,7 +17,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import java.math.BigDecimal;
@@ -50,9 +50,9 @@ class OpenApiReportCalculatorTest {
     void shouldReturn_statusPassed_whenNoCriteriaAreBeingIncluded(
       List<String> includedOpenApiCriteria
     ) {
-      Set<OpenApiTestResult> openApiTestCriteria = Set.of(
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(PATH_COVERAGE.name())
+      Set<ApiTestResult> openApiTestCriteria = Set.of(
+        ApiTestResult.builder()
+          .testCriteria(PATH_COVERAGE.name())
           .coverage(ONE)
           .build()
       );
@@ -68,7 +68,7 @@ class OpenApiReportCalculatorTest {
       assertThat(calculationResult).satisfies(
           r -> assertThat(r.status()).isEqualTo(PASSED),
           r ->
-            assertThat(r.openApiTestResults())
+            assertThat(r.apiTestResults())
               .isNotEmpty()
               .allSatisfy(criterionResult ->
                 assertThat(criterionResult.getIncludedInReport()).isFalse()
@@ -86,13 +86,13 @@ class OpenApiReportCalculatorTest {
       var pathCoverage = PATH_COVERAGE.name();
 
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
-      Set<OpenApiTestResult> openApiTestCriteria = Set.of(
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(pathCoverage)
+      Set<ApiTestResult> openApiTestCriteria = Set.of(
+        ApiTestResult.builder()
+          .testCriteria(pathCoverage)
           .coverage(ONE)
           .build(),
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
+        ApiTestResult.builder()
+          .testCriteria(HTTP_METHOD_COVERAGE.name())
           .coverage(ZERO)
           .build()
       );
@@ -108,13 +108,11 @@ class OpenApiReportCalculatorTest {
       assertThatCalculationResultHasStatus(calculationResult, PASSED);
 
       assertThat(calculationResult)
-        .extracting(
-          OpenApiReportCalculator.CalculationResult::openApiTestResults
-        )
+        .extracting(OpenApiReportCalculator.CalculationResult::apiTestResults)
         .asInstanceOf(SET)
         .satisfiesOnlyOnce(criterionResult ->
           assertThat(
-            ((OpenApiTestResult) criterionResult).getIncludedInReport()
+            ((ApiTestResult) criterionResult).getIncludedInReport()
           ).isTrue()
         );
     }
@@ -124,9 +122,9 @@ class OpenApiReportCalculatorTest {
       var pathCoverage = PATH_COVERAGE.name();
 
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
-      Set<OpenApiTestResult> openApiTestCriteria = Set.of(
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(pathCoverage)
+      Set<ApiTestResult> openApiTestCriteria = Set.of(
+        ApiTestResult.builder()
+          .testCriteria(pathCoverage)
           .coverage(BigDecimal.valueOf(0.99))
           .build()
       );
@@ -154,11 +152,8 @@ class OpenApiReportCalculatorTest {
       );
 
       // But only provide one in the results
-      Set<OpenApiTestResult> openApiTestCriteria = Set.of(
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(pathCoverage)
-          .coverage(ONE)
-          .build()
+      Set<ApiTestResult> openApiTestCriteria = Set.of(
+        ApiTestResult.builder().testCriteria(pathCoverage).coverage(ONE).build()
       );
 
       var fixture = new OpenApiReportCalculator(
@@ -172,11 +167,11 @@ class OpenApiReportCalculatorTest {
       assertThat(calculationResult).satisfies(
           r -> assertThat(r.status()).isEqualTo(FAILED),
           r ->
-            assertThat(r.openApiTestResults())
+            assertThat(r.apiTestResults())
               .isNotEmpty()
               .satisfies(criteriaResults ->
                 assertThat(criteriaResults)
-                  .map(OpenApiTestResult::getOpenApiTestCriteria)
+                  .map(ApiTestResult::getTestCriteria)
                   .containsExactly(pathCoverage)
               )
               .allSatisfy(criterionResult ->
@@ -198,13 +193,13 @@ class OpenApiReportCalculatorTest {
       List<String> includedOpenApiCriteria = singletonList(pathCoverage);
 
       // Provide both criteria in the results
-      Set<OpenApiTestResult> openApiTestCriteria = Set.of(
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(pathCoverage)
+      Set<ApiTestResult> openApiTestCriteria = Set.of(
+        ApiTestResult.builder()
+          .testCriteria(pathCoverage)
           .coverage(ONE)
           .build(),
-        OpenApiTestResult.builder()
-          .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
+        ApiTestResult.builder()
+          .testCriteria(HTTP_METHOD_COVERAGE.name())
           .coverage(ONE)
           .build()
       );
@@ -220,11 +215,11 @@ class OpenApiReportCalculatorTest {
       assertThat(calculationResult).satisfies(
           r -> assertThat(r.status()).isEqualTo(PASSED),
           r ->
-            assertThat(r.openApiTestResults())
+            assertThat(r.apiTestResults())
               .isNotEmpty()
               .satisfies(criteriaResults -> {
                 criteriaResults.forEach(result -> {
-                  if (result.getOpenApiTestCriteria().equals(pathCoverage)) {
+                  if (result.getTestCriteria().equals(pathCoverage)) {
                     assertThat(result.getIncludedInReport()).isTrue();
                   } else {
                     assertThat(result.getIncludedInReport()).isFalse();
@@ -244,7 +239,7 @@ class OpenApiReportCalculatorTest {
       assertThat(calculationResult).satisfies(
           r -> assertThat(r.status()).isEqualTo(passed),
           r ->
-            assertThat(r.openApiTestResults())
+            assertThat(r.apiTestResults())
               .isNotEmpty()
               .satisfiesOnlyOnce(criterionResult ->
                 assertThat(criterionResult.getIncludedInReport()).isTrue()

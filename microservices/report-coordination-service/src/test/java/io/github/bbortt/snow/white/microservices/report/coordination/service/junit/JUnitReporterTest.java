@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.springframework.util.StreamUtils.copyToString;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -31,14 +31,14 @@ import org.xml.sax.SAXException;
 
 class JUnitReporterTest {
 
-  private static OpenApiTestResult createOpenApiTestResult(
+  private static ApiTestResult createOpenApiTestResult(
     String openApiCriterionName,
     BigDecimal coverage,
     Duration duration,
     String additionalInformation
   ) {
-    return OpenApiTestResult.builder()
-      .openApiTestCriteria(openApiCriterionName)
+    return ApiTestResult.builder()
+      .testCriteria(openApiCriterionName)
       .coverage(coverage.setScale(2, HALF_UP))
       .duration(duration)
       .additionalInformation(additionalInformation)
@@ -71,23 +71,22 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withPassedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport =
-        createInitialQualityGateReport().withOpenApiTestResults(
-          Set.of(
-            createOpenApiTestResult(
-              PATH_COVERAGE.name(),
-              ONE,
-              Duration.ofMillis(12345),
-              null
-            ),
-            createOpenApiTestResult(
-              HTTP_METHOD_COVERAGE.name(),
-              ONE,
-              Duration.ofMillis(111213),
-              null
-            )
+      var qualityGateReport = createInitialQualityGateReport().withApiTests(
+        Set.of(
+          createOpenApiTestResult(
+            PATH_COVERAGE.name(),
+            ONE,
+            Duration.ofMillis(12345),
+            null
+          ),
+          createOpenApiTestResult(
+            HTTP_METHOD_COVERAGE.name(),
+            ONE,
+            Duration.ofMillis(111213),
+            null
           )
-        );
+        )
+      );
 
       var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
 
@@ -100,23 +99,22 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withFailedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport =
-        createInitialQualityGateReport().withOpenApiTestResults(
-          Set.of(
-            createOpenApiTestResult(
-              PATH_COVERAGE.name(),
-              ZERO,
-              Duration.ofMillis(54321),
-              "This failed because it can."
-            ),
-            createOpenApiTestResult(
-              HTTP_METHOD_COVERAGE.name(),
-              BigDecimal.valueOf(0.5),
-              Duration.ofMillis(131211),
-              "And this failed because it thought it's cool to do so."
-            )
+      var qualityGateReport = createInitialQualityGateReport().withApiTests(
+        Set.of(
+          createOpenApiTestResult(
+            PATH_COVERAGE.name(),
+            ZERO,
+            Duration.ofMillis(54321),
+            "This failed because it can."
+          ),
+          createOpenApiTestResult(
+            HTTP_METHOD_COVERAGE.name(),
+            BigDecimal.valueOf(0.5),
+            Duration.ofMillis(131211),
+            "And this failed because it thought it's cool to do so."
           )
-        );
+        )
+      );
 
       var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
 
@@ -129,23 +127,22 @@ class JUnitReporterTest {
     @Test
     void shouldTransformReport_withMixedOpenApiCoverages()
       throws IOException, JUnitReportCreationException, SAXException {
-      var qualityGateReport =
-        createInitialQualityGateReport().withOpenApiTestResults(
-          Set.of(
-            createOpenApiTestResult(
-              PATH_COVERAGE.name(),
-              ONE,
-              Duration.ofMillis(4321),
-              null
-            ),
-            createOpenApiTestResult(
-              HTTP_METHOD_COVERAGE.name(),
-              BigDecimal.valueOf(0.5),
-              Duration.ofMillis(1234),
-              "Additional Information."
-            )
+      var qualityGateReport = createInitialQualityGateReport().withApiTests(
+        Set.of(
+          createOpenApiTestResult(
+            PATH_COVERAGE.name(),
+            ONE,
+            Duration.ofMillis(4321),
+            null
+          ),
+          createOpenApiTestResult(
+            HTTP_METHOD_COVERAGE.name(),
+            BigDecimal.valueOf(0.5),
+            Duration.ofMillis(1234),
+            "Additional Information."
           )
-        );
+        )
+      );
 
       var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
 
@@ -158,12 +155,9 @@ class JUnitReporterTest {
     @Test
     void shouldThrow_whenOpenApiCriterionIsInvalid() {
       var invalidName = "invalid";
-      var qualityGateReport =
-        createInitialQualityGateReport().withOpenApiTestResults(
-          Set.of(
-            OpenApiTestResult.builder().openApiTestCriteria(invalidName).build()
-          )
-        );
+      var qualityGateReport = createInitialQualityGateReport().withApiTests(
+        Set.of(ApiTestResult.builder().testCriteria(invalidName).build())
+      );
 
       assertThatThrownBy(() ->
         fixture.transformToJUnitReport(qualityGateReport)

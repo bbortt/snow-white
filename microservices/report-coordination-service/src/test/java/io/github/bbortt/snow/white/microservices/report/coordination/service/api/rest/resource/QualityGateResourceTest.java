@@ -22,7 +22,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
@@ -74,7 +74,7 @@ class QualityGateResourceTest {
     @Test
     void shouldInitializeQualityGateCalculation()
       throws QualityGateNotFoundException {
-      var reportParameters = mock(ReportParameters.class);
+      var reportParameters = mock(ReportParameter.class);
       doReturn(reportParameters)
         .when(reportParameterMapperMock)
         .fromDto(qualityGateCalculationRequestMock);
@@ -93,7 +93,7 @@ class QualityGateResourceTest {
       var responseDto = mock(CalculateQualityGate202Response.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toCalculateQualityGateResponse(qualityGateReport);
+        .toDto(qualityGateReport);
 
       var apiGatewayHost = "http://my-api-gateway";
       doReturn(apiGatewayHost)
@@ -123,7 +123,7 @@ class QualityGateResourceTest {
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
       throws QualityGateNotFoundException {
-      var reportParameters = mock(ReportParameters.class);
+      var reportParameters = mock(ReportParameter.class);
       doReturn(reportParameters)
         .when(reportParameterMapperMock)
         .fromDto(qualityGateCalculationRequestMock);

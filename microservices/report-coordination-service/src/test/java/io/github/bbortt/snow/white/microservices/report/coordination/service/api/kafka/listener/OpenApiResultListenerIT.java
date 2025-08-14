@@ -31,7 +31,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.Abs
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
@@ -131,8 +131,8 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName("throne-of-glass")
             .apiName("morath")
             .apiVersion("1.0.0")
@@ -181,7 +181,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
               report ->
                 assertThat(report.getReportStatus()).isEqualTo(reportStatus),
               report ->
-                assertThat(report.getOpenApiTestResults())
+                assertThat(report.getApiTests())
                   .hasSize(1)
                   .first()
                   .satisfies(

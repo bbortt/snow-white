@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-CREATE TABLE report_parameters
+CREATE TABLE report_parameter
 (
     id              BIGSERIAL    NOT NULL PRIMARY KEY,
     service_name    VARCHAR(256) NOT NULL,
@@ -17,13 +17,13 @@ CREATE TABLE quality_gate_report
 (
     calculation_id           UUID        NOT NULL PRIMARY KEY,
     quality_gate_config_name VARCHAR(64) NOT NULL,
-    report_parameters_id     BIGINT      NOT NULL,
+    report_parameter_id     BIGINT      NOT NULL,
     open_api_coverage_status VARCHAR(16) NOT NULL DEFAULT 'NOT_STARTED',
     report_status            VARCHAR(16) NOT NULL DEFAULT 'IN_PROGRESS',
     created_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_quality_gate_report_parameters
-        FOREIGN KEY (report_parameters_id)
-            REFERENCES report_parameters (id)
+    CONSTRAINT fk_quality_gate_report_parameter
+        FOREIGN KEY (report_parameter_id)
+            REFERENCES report_parameter (id)
             ON DELETE CASCADE
 );
 
@@ -33,9 +33,9 @@ CREATE TABLE attribute_filters
     attribute_key       VARCHAR(64) NOT NULL,
     attribute_value     VARCHAR(64),
     PRIMARY KEY (report_parameter_id, attribute_key),
-    CONSTRAINT fk_attribute_filters_report_parameters
+    CONSTRAINT fk_attribute_filters_report_parameter
         FOREIGN KEY (report_parameter_id)
-            REFERENCES report_parameters (id)
+            REFERENCES report_parameter (id)
             ON DELETE CASCADE
 );
 

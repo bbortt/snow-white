@@ -13,7 +13,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import jakarta.annotation.Nullable;
@@ -29,7 +29,7 @@ public class OpenApiReportCalculator {
 
   private final QualityGateReport qualityGateReport;
   private final @Nullable List<String> includedOpenApiCriteria;
-  private final Set<OpenApiTestResult> openApiTestCriteria;
+  private final Set<ApiTestResult> openApiTestCriteria;
 
   public CalculationResult calculate() {
     var updatedOpenApiCriteria = updateQualityGateReportInformation();
@@ -52,14 +52,14 @@ public class OpenApiReportCalculator {
   }
 
   private void assertThatEachOpenApiCriterionIsCovered(
-    Set<OpenApiTestResult> updatedOpenApiCriteria,
+    Set<ApiTestResult> updatedOpenApiCriteria,
     AtomicReference<ReportStatus> reportStatus
   ) {
     requireNonNull(includedOpenApiCriteria).forEach(criterionName -> {
         boolean criterionFound = false;
 
-        for (OpenApiTestResult result : updatedOpenApiCriteria) {
-          if (result.getOpenApiTestCriteria().equals(criterionName)) {
+        for (ApiTestResult result : updatedOpenApiCriteria) {
+          if (result.getTestCriteria().equals(criterionName)) {
             criterionFound = true;
 
             if (ONE.compareTo(result.getCoverage()) != 0) {
@@ -83,7 +83,7 @@ public class OpenApiReportCalculator {
       });
   }
 
-  private Set<OpenApiTestResult> updateQualityGateReportInformation() {
+  private Set<ApiTestResult> updateQualityGateReportInformation() {
     return openApiTestCriteria
       .parallelStream()
       .map(openApiCriterionResult ->
@@ -94,17 +94,15 @@ public class OpenApiReportCalculator {
       .collect(toSet());
   }
 
-  private boolean isIncludedInReport(OpenApiTestResult openApiCriterionResult) {
+  private boolean isIncludedInReport(ApiTestResult openApiCriterionResult) {
     return (
       nonNull(includedOpenApiCriteria) &&
-      includedOpenApiCriteria.contains(
-        openApiCriterionResult.getOpenApiTestCriteria()
-      )
+      includedOpenApiCriteria.contains(openApiCriterionResult.getTestCriteria())
     );
   }
 
   public record CalculationResult(
     ReportStatus status,
-    Set<OpenApiTestResult> openApiTestResults
+    Set<ApiTestResult> apiTestResults
   ) {}
 }

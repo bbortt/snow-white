@@ -9,10 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.do
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202Response;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202ResponseOpenApiTestResultsInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInnerOpenApiTestResultsInner;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import java.time.Instant;
@@ -21,39 +18,30 @@ import java.time.ZoneId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = SPRING)
+@Mapper(
+  componentModel = SPRING,
+  uses = { ApiTestMapper.class, ReportParameterMapper.class }
+)
 public interface QualityGateReportMapper {
-  @Mapping(target = "calculationRequest", source = "reportParameters")
+  @Mapping(target = "calculationRequest", source = "reportParameter")
   @Mapping(target = "initiatedAt", source = "createdAt")
+  @Mapping(target = "interfaces", source = "apiTests")
   @Mapping(target = "status", source = "reportStatus")
-  CalculateQualityGate202Response toCalculateQualityGateResponse(
-    QualityGateReport qualityGateReport
-  );
+  CalculateQualityGate202Response toDto(QualityGateReport qualityGateReport);
 
-  @Mapping(target = "id", source = "openApiTestCriteria")
-  @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
-  CalculateQualityGate202ResponseOpenApiTestResultsInner toCalculateQualityGateResponse(
-    OpenApiTestResult openApiTestResult
-  );
-
-  @Mapping(target = "calculationRequest", source = "reportParameters")
+  @Mapping(target = "calculationRequest", source = "reportParameter")
   @Mapping(target = "initiatedAt", source = "createdAt")
+  @Mapping(target = "interfaces", source = "apiTests")
   @Mapping(target = "status", source = "reportStatus")
-  ListQualityGateReports200ResponseInner toListQualityGateReportsResponse(
+  ListQualityGateReports200ResponseInner toListDto(
     QualityGateReport qualityGateReport
-  );
-
-  @Mapping(target = "id", source = "openApiTestCriteria")
-  @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
-  ListQualityGateReports200ResponseInnerOpenApiTestResultsInner toListQualityGateReportsResponse(
-    OpenApiTestResult openApiTestResult
   );
 
   default OffsetDateTime map(Instant instant) {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
   }
 
-  default CalculateQualityGate202Response.StatusEnum toCalculateQualityGateResponse(
+  default CalculateQualityGate202Response.StatusEnum toStatusEnum(
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {
@@ -65,7 +53,7 @@ public interface QualityGateReportMapper {
     };
   }
 
-  default ListQualityGateReports200ResponseInner.StatusEnum toListQualityGateReportsResponse(
+  default ListQualityGateReports200ResponseInner.StatusEnum toListStatusEnum(
     ReportStatus reportStatus
   ) {
     return switch (reportStatus) {

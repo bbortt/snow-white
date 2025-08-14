@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
@@ -97,7 +97,7 @@ class ReportServiceTest {
     void shouldCreateAndReturnQualityGateReport()
       throws QualityGateNotFoundException {
       var qualityGateConfigName = "test-config";
-      var reportParameters = ReportParameters.builder()
+      var reportParameters = ReportParameter.builder()
         .serviceName("test-service")
         .apiName("test-api")
         .apiVersion("v1")
@@ -116,7 +116,7 @@ class ReportServiceTest {
       var initialQualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("a1c937c2-d950-4047-8c8d-f1de16c13b41"))
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(reportParameters)
+        .reportParameter(reportParameters)
         .build();
 
       doReturn(initialQualityGateReport)
@@ -139,7 +139,7 @@ class ReportServiceTest {
     @Test
     void shouldThrowQualityGateNotFoundExceptionWhenQualityGateConfigNotFound() {
       var qualityGateConfigName = "non-existent-config";
-      var reportParameters = new ReportParameters();
+      var reportParameters = new ReportParameter();
 
       doReturn(Optional.empty())
         .when(qualityGateServiceMock)
@@ -162,7 +162,7 @@ class ReportServiceTest {
     void shouldCreateQualityGateReportWithCorrectValues()
       throws QualityGateNotFoundException {
       var qualityGateConfigName = "test-config";
-      var reportParameters = ReportParameters.builder()
+      var reportParameters = ReportParameter.builder()
         .serviceName("test-service")
         .apiName("test-api")
         .apiVersion("v1")
@@ -182,7 +182,7 @@ class ReportServiceTest {
 
       var savedQualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af"))
-        .reportParameters(reportParameters)
+        .reportParameter(reportParameters)
         .build();
       doReturn(savedQualityGateReport)
         .when(qualityGateReportRepositoryMock)
@@ -203,7 +203,7 @@ class ReportServiceTest {
             qualityGateConfigName
           ),
         capturedReport ->
-          assertThat(capturedReport.getReportParameters()).isEqualTo(
+          assertThat(capturedReport.getReportParameter()).isEqualTo(
             reportParameters
           ),
         capturedReport ->

@@ -33,9 +33,9 @@ import static org.springframework.util.StreamUtils.copyToString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
@@ -93,8 +93,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName(serviceName)
             .apiName(apiName)
             .apiVersion(apiVersion)
@@ -136,8 +136,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName(serviceName)
             .apiName(apiName)
             .apiVersion(apiVersion)
@@ -151,8 +151,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
     var additionalInformation = "some additional information";
 
-    var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(PATH_COVERAGE.name())
+    var openApiCriterionResult = ApiTestResult.builder()
+      .testCriteria(PATH_COVERAGE.name())
       .qualityGateReport(qualityGateReport)
       .coverage(coverage)
       .includedInReport(TRUE)
@@ -161,7 +161,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .build();
 
     qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
+      qualityGateReport.withApiTests(Set.of(openApiCriterionResult))
     );
 
     var responseAsString = mockMvc
@@ -232,8 +232,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName("serviceName")
             .apiName("apiName")
             .build()
@@ -243,8 +243,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .build()
     );
 
-    var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(PATH_COVERAGE.name())
+    var openApiCriterionResult = ApiTestResult.builder()
+      .testCriteria(PATH_COVERAGE.name())
       .qualityGateReport(qualityGateReport)
       .coverage(ONE)
       .includedInReport(TRUE)
@@ -252,7 +252,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .build();
 
     qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
+      qualityGateReport.withApiTests(Set.of(openApiCriterionResult))
     );
 
     var jUnitReport = mockMvc
@@ -287,8 +287,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(UUID.fromString("b30bb84b-7bf6-4744-8bfc-ac05b8a85991"))
         .qualityGateConfigName("nameA")
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName("serviceName")
             .apiName("apiName")
             .build()
@@ -302,8 +302,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(UUID.fromString("99635525-27a5-43ee-ae46-1cedf2ba4c35"))
         .qualityGateConfigName("nameB")
-        .reportParameters(
-          ReportParameters.builder()
+        .reportParameter(
+          ReportParameter.builder()
             .serviceName("serviceName")
             .apiName("apiName")
             .build()

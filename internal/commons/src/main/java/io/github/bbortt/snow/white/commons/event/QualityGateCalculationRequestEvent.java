@@ -8,8 +8,9 @@ package io.github.bbortt.snow.white.commons.event;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,12 +25,7 @@ import lombok.With;
 public class QualityGateCalculationRequestEvent {
 
   @Nonnull
-  private String serviceName;
-
-  @Nonnull
-  private String apiName;
-
-  private @Nullable String apiVersion;
+  private Set<ApiInformation> apiInformation;
 
   @Nonnull
   private String lookbackWindow;

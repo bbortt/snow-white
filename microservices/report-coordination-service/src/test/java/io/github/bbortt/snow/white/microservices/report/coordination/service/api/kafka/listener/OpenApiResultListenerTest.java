@@ -26,9 +26,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.OpenApiTestResultMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
@@ -51,7 +51,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class OpenApiResultListenerTest {
 
   @Mock
-  private OpenApiTestResultMapper openApiTestResultMapperMock;
+  private ApiTestResultMapper apiTestResultMapperMock;
 
   @Mock
   private QualityGateService qualityGateServiceMock;
@@ -64,7 +64,7 @@ class OpenApiResultListenerTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OpenApiResultListener(
-      openApiTestResultMapperMock,
+      apiTestResultMapperMock,
       qualityGateServiceMock,
       reportServiceMock
     );
@@ -108,15 +108,15 @@ class OpenApiResultListenerTest {
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
-      OpenApiTestResult openApiTestResult = OpenApiTestResult.builder()
-        .openApiTestCriteria("test-criterion")
+      ApiTestResult apiTestResult = ApiTestResult.builder()
+        .testCriteria("test-criterion")
         .coverage(BigDecimal.valueOf(85.0))
         .build();
-      Set<OpenApiTestResult> mappedResults = Set.of(openApiTestResult);
+      Set<ApiTestResult> mappedResults = Set.of(apiTestResult);
 
       doReturn(mappedResults)
-        .when(openApiTestResultMapperMock)
-        .fromDto(openApiCriteria);
+        .when(apiTestResultMapperMock)
+        .fromDtos(openApiCriteria);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
         calculationId,
@@ -137,7 +137,7 @@ class OpenApiResultListenerTest {
               qualityGateConfigName
             ),
           r -> assertThat(r.getOpenApiCoverageStatus()).isEqualTo(FAILED),
-          r -> assertThat(r.getOpenApiTestResults()).hasSize(1),
+          r -> assertThat(r.getApiTests()).hasSize(1),
           r -> assertThat(r.getReportStatus()).isEqualTo(FAILED),
           r -> assertThat(r.getCreatedAt()).isNotNull()
         );
@@ -156,7 +156,7 @@ class OpenApiResultListenerTest {
       );
 
       verifyNoInteractions(qualityGateServiceMock);
-      verifyNoInteractions(openApiTestResultMapperMock);
+      verifyNoInteractions(apiTestResultMapperMock);
       verify(reportServiceMock, never()).update(any(QualityGateReport.class));
     }
 
@@ -189,7 +189,7 @@ class OpenApiResultListenerTest {
           qualityGateConfigName
         );
 
-      verifyNoInteractions(openApiTestResultMapperMock);
+      verifyNoInteractions(apiTestResultMapperMock);
       verify(reportServiceMock, never()).update(any(QualityGateReport.class));
     }
 
@@ -228,24 +228,24 @@ class OpenApiResultListenerTest {
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
-      OpenApiTestResult criterion1Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(PATH_COVERAGE.name())
+      ApiTestResult criterion1Result = ApiTestResult.builder()
+        .testCriteria(PATH_COVERAGE.name())
         .coverage(ONE)
         .build();
 
-      OpenApiTestResult criterion2Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
+      ApiTestResult criterion2Result = ApiTestResult.builder()
+        .testCriteria(HTTP_METHOD_COVERAGE.name())
         .coverage(ONE)
         .build();
 
-      Set<OpenApiTestResult> mappedResults = Set.of(
+      Set<ApiTestResult> mappedResults = Set.of(
         criterion1Result,
         criterion2Result
       );
 
       doReturn(mappedResults)
-        .when(openApiTestResultMapperMock)
-        .fromDto(openApiCriteria);
+        .when(apiTestResultMapperMock)
+        .fromDtos(openApiCriteria);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
         calculationId,
@@ -266,7 +266,7 @@ class OpenApiResultListenerTest {
               qualityGateConfigName
             ),
           r -> assertThat(r.getOpenApiCoverageStatus()).isEqualTo(PASSED),
-          r -> assertThat(r.getOpenApiTestResults()).hasSize(2),
+          r -> assertThat(r.getApiTests()).hasSize(2),
           r -> assertThat(r.getReportStatus()).isEqualTo(PASSED)
         );
     }
@@ -306,23 +306,23 @@ class OpenApiResultListenerTest {
       );
       var event = new OpenApiCoverageResponseEvent(openApiCriteria);
 
-      OpenApiTestResult criterion1Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(PATH_COVERAGE.name())
+      ApiTestResult criterion1Result = ApiTestResult.builder()
+        .testCriteria(PATH_COVERAGE.name())
         .coverage(ONE)
         .build();
 
-      OpenApiTestResult criterion2Result = OpenApiTestResult.builder()
-        .openApiTestCriteria(HTTP_METHOD_COVERAGE.name())
+      ApiTestResult criterion2Result = ApiTestResult.builder()
+        .testCriteria(HTTP_METHOD_COVERAGE.name())
         .coverage(BigDecimal.valueOf(85.0))
         .build();
 
-      Set<OpenApiTestResult> mappedResults = new HashSet<>(
+      Set<ApiTestResult> mappedResults = new HashSet<>(
         asList(criterion1Result, criterion2Result)
       );
 
       doReturn(mappedResults)
-        .when(openApiTestResultMapperMock)
-        .fromDto(openApiCriteria);
+        .when(apiTestResultMapperMock)
+        .fromDtos(openApiCriteria);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
         calculationId,
@@ -343,7 +343,7 @@ class OpenApiResultListenerTest {
               qualityGateConfigName
             ),
           r -> assertThat(r.getOpenApiCoverageStatus()).isEqualTo(FAILED),
-          r -> assertThat(r.getOpenApiTestResults()).hasSize(2),
+          r -> assertThat(r.getApiTests()).hasSize(2),
           r -> assertThat(r.getReportStatus()).isEqualTo(FAILED)
         );
     }
@@ -369,9 +369,7 @@ class OpenApiResultListenerTest {
 
       var event = new OpenApiCoverageResponseEvent(emptySet());
 
-      doReturn(emptySet())
-        .when(openApiTestResultMapperMock)
-        .fromDto(emptySet());
+      doReturn(emptySet()).when(apiTestResultMapperMock).fromDtos(emptySet());
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
         calculationId,
@@ -392,7 +390,7 @@ class OpenApiResultListenerTest {
               qualityGateConfigName
             ),
           r -> assertThat(r.getOpenApiCoverageStatus()).isEqualTo(PASSED),
-          r -> assertThat(r.getOpenApiTestResults()).isEmpty(),
+          r -> assertThat(r.getApiTests()).isEmpty(),
           r -> assertThat(r.getReportStatus()).isEqualTo(PASSED)
         );
     }

@@ -165,7 +165,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
         report ->
           assertThat(report.getOpenApiCoverageStatus()).isEqualTo(IN_PROGRESS),
         report ->
-          assertThat(report.getReportParameters()).satisfies(parameters ->
+          assertThat(report.getReportParameter()).satisfies(parameters ->
             assertThat(parameters).satisfies(
               parameter ->
                 assertThat(parameter.getServiceName()).isEqualTo(serviceName),

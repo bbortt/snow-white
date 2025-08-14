@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.testing;
 
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -23,5 +24,5 @@ import java.lang.annotation.Target;
  * The annotation is retained only at the source level and is not included in the compiled class files or runtime environment.
  */
 @Retention(SOURCE)
-@Target({ FIELD, METHOD, TYPE })
+@Target({ CONSTRUCTOR, FIELD, METHOD, TYPE })
 public @interface VisibleForTesting {}

@@ -54,7 +54,7 @@ public class QualityGateResource implements QualityGateApi {
             report.getCalculationId()
           )
         )
-        .body(qualityGateReportMapper.toCalculateQualityGateResponse(report));
+        .body(qualityGateReportMapper.toDto(report));
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
         CalculateQualityGate400Response.builder()

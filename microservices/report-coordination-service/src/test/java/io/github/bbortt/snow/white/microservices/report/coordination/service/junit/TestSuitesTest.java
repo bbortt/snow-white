@@ -8,19 +8,43 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ju
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashSet;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class TestSuitesTest {
 
   @Nested
+  class Constructor {
+
+    @Test
+    void shouldCreateTestSuites() {
+      var testSuiteName = "sample-suite";
+      var timestamp = "timestamp";
+      var properties = new HashSet<Property>();
+
+      var testSuites = new TestSuites(testSuiteName, timestamp, properties);
+
+      assertThat(testSuites).satisfies(
+        s -> assertThat(s.getName()).isEqualTo(testSuiteName),
+        s -> assertThat(s.getErrors()).isZero(),
+        s -> assertThat(s.getSkipped()).isZero(),
+        s -> assertThat(s.getTime()).isEqualTo("0"),
+        s -> assertThat(s.getTimestamp()).isEqualTo(timestamp),
+        s -> assertThat(s.getProperties()).isEqualTo(properties),
+        s -> assertThat(s.getContainedSuites()).isNotNull().isEmpty()
+      );
+    }
+  }
+
+  @Nested
   class AddTestSuite {
 
     @Test
-    void shouldAddTestSuiteToTestSuites() {
-      TestSuites testSuites = new TestSuites();
-      TestSuite testSuite = new TestSuite("added-suite");
+    void shouldAddTestSuite() {
+      var testSuite = TestSuite.builder().build();
 
+      var testSuites = TestSuites.builder().build();
       testSuites.addTestSuite(testSuite);
 
       assertThat(testSuites.getContainedSuites())

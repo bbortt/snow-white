@@ -4,12 +4,12 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.domain.model;
+package io.github.bbortt.snow.white.commons.event.dto;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
 import static lombok.AccessLevel.PRIVATE;
 
-import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,20 +19,15 @@ import lombok.With;
 @With
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
 public class ApiInformation {
 
-  private String title;
-  private String version;
-
-  private String sourceUrl;
-
-  private String name;
+  @Nonnull
   private String serviceName;
 
-  private ApiType apiType;
+  @Nonnull
+  private String apiName;
 
-  @Builder.Default
-  private ApiLoadStatus loadStatus = UNLOADED;
+  private @Nullable String apiVersion;
 }

@@ -7,11 +7,13 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
+import static java.util.stream.Collectors.toSet;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.Optional;
@@ -56,7 +58,7 @@ public class ReportService {
 
   public QualityGateReport initializeQualityGateCalculation(
     String qualityGateConfigName,
-    ReportParameters reportParameters
+    ReportParameter reportParameter
   ) throws QualityGateNotFoundException {
     var qualityGateConfig = qualityGateService
       .findQualityGateConfigByName(qualityGateConfigName)
@@ -66,42 +68,52 @@ public class ReportService {
 
     var qualityGateReport = createInitialReport(
       qualityGateConfig.getName(),
-      reportParameters
+      reportParameter
     );
 
-    return dispatchOpenApiCoverageCalculation(qualityGateReport);
+    dispatchOpenApiCoverageCalculation(qualityGateReport);
+
+    return qualityGateReportRepository.save(
+      qualityGateReport.withReportStatus(IN_PROGRESS)
+    );
   }
 
   private QualityGateReport createInitialReport(
     String qualityGateConfigName,
-    ReportParameters reportParameters
+    ReportParameter reportParameter
   ) {
     return qualityGateReportRepository.save(
       QualityGateReport.builder()
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameters(reportParameters)
+        .reportParameter(reportParameter)
         .build()
     );
   }
 
-  private QualityGateReport dispatchOpenApiCoverageCalculation(
+  private void dispatchOpenApiCoverageCalculation(
     QualityGateReport qualityGateReport
   ) {
-    var reportParameters = qualityGateReport.getReportParameters();
+    var reportParameters = qualityGateReport.getReportParameter();
 
     kafkaTemplate.send(
       calculationRequestTopic,
       qualityGateReport.getCalculationId().toString(),
       QualityGateCalculationRequestEvent.builder()
-        .serviceName(reportParameters.getServiceName())
-        .apiName(reportParameters.getApiName())
-        .apiVersion(reportParameters.getApiVersion())
+        .apiInformation(
+          qualityGateReport
+            .getApiTests()
+            .stream()
+            .map(apiTest ->
+              ApiInformation.builder()
+                .serviceName(apiTest.getServiceName())
+                .apiName(apiTest.getApiName())
+                .apiVersion(apiTest.getApiVersion())
+                .build()
+            )
+            .collect(toSet())
+        )
         .lookbackWindow(reportParameters.getLookbackWindow())
         .build()
-    );
-
-    return qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiCoverageStatus(IN_PROGRESS)
     );
   }
 
