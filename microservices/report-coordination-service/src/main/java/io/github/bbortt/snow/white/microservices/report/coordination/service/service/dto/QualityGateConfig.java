@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.se
 
 import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotEmpty;
-import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,5 +20,5 @@ public class QualityGateConfig {
   private final String name;
 
   @Nonnull
-  private List<String> openApiCriteria;
+  private Set<String> openApiCriteria;
 }

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -28,23 +29,21 @@ public class SyncJob {
   private final List<ApiCatalogService> apiCatalogServices;
   private final CachingService cachingService;
 
-  void syncCatalog() {
-    var apiCatalogIndices = apiCatalogServices
-      .parallelStream()
-      .map(apiCatalogService ->
-        new ApiCatalogIndex(
-          apiCatalogService,
-          apiCatalogService.fetchApiIndex()
-        )
-      )
-      .toList();
-
+  private static long countTotalApiInformation(
+    List<ApiCatalogIndex> apiCatalogIndices
+  ) {
     var apiInformationCount = apiCatalogIndices
       .parallelStream()
       .map(ApiCatalogIndex::apiInformation)
       .flatMap(Collection::parallelStream)
       .count();
     logger.info("Validating {} APIs loaded from index", apiInformationCount);
+    return apiInformationCount;
+  }
+
+  void syncCatalog() {
+    var apiCatalogIndices = loadApiCatalogFromServices();
+    var apiInformationCount = countTotalApiInformation(apiCatalogIndices);
 
     var validApis = apiCatalogIndices
       .parallelStream()
@@ -59,6 +58,18 @@ public class SyncJob {
       validApis.size(),
       apiInformationCount
     );
+  }
+
+  private @NotNull List<ApiCatalogIndex> loadApiCatalogFromServices() {
+    return apiCatalogServices
+      .parallelStream()
+      .map(apiCatalogService ->
+        new ApiCatalogIndex(
+          apiCatalogService,
+          apiCatalogService.fetchApiIndex()
+        )
+      )
+      .toList();
   }
 
   private boolean publishLoadedApi(ApiInformation apiInformation) {

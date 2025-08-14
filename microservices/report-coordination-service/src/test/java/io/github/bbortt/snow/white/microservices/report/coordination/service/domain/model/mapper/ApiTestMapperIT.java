@@ -13,15 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-class OpenApiTestResultMapperIT extends AbstractReportCoordinationServiceIT {
+class ApiTestMapperIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private ApplicationContext applicationContext;
 
   @Test
   void isRegisteredWithinSpringComponentModel() {
-    assertThat(
-      applicationContext.getBean(OpenApiTestResultMapper.class)
-    ).isNotNull();
+    assertThat(applicationContext.getBean(ApiTestMapper.class)).isNotNull();
   }
 }

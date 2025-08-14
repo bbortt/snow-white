@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner.ApiTypeEnum.UNSPECIFIED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.NOT_STARTED;
@@ -16,6 +17,7 @@ import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
 import static java.math.RoundingMode.HALF_UP;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.hamcrest.Matchers.not;
@@ -33,10 +35,12 @@ import static org.springframework.util.StreamUtils.copyToString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameters;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -60,20 +64,23 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   private static final String JUNIT_REPORT_API_URL =
     ENTITY_API_URL + "/{calculationId}/junit";
 
-  private static String reportStatusAsString(ReportStatus reportStatus) {
-    return NOT_STARTED.equals(reportStatus)
-      ? "IN_PROGRESS"
-      : reportStatus.toString();
-  }
-
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private ApiTestRepository apiTestRepository;
 
   @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
 
   @Autowired
   private MockMvc mockMvc;
+
+  private static String reportStatusAsString(ReportStatus reportStatus) {
+    return NOT_STARTED.equals(reportStatus)
+      ? "IN_PROGRESS"
+      : reportStatus.toString();
+  }
 
   @AfterEach
   void afterEachTeardown() {
@@ -89,20 +96,13 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     var apiVersion = "apiVersion";
     var lookbackWindow = "1m";
 
-    qualityGateReportRepository.save(
-      QualityGateReport.builder()
-        .calculationId(calculationId)
-        .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName(serviceName)
-            .apiName(apiName)
-            .apiVersion(apiVersion)
-            .lookbackWindow(lookbackWindow)
-            .build()
-        )
-        .reportStatus(IN_PROGRESS)
-        .build()
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      serviceName,
+      apiName,
+      apiVersion,
+      lookbackWindow,
+      IN_PROGRESS
     );
 
     mockMvc
@@ -110,17 +110,36 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.calculationId").value(calculationId.toString()))
-      .andExpect(jsonPath("$.status").value(IN_PROGRESS.name()))
       .andExpect(
-        jsonPath("$.calculationRequest.serviceName").value(serviceName)
+        jsonPath("$.qualityGateConfigName").value(
+          qualityGateReport.getQualityGateConfigName()
+        )
       )
-      .andExpect(jsonPath("$.calculationRequest.apiName").value(apiName))
-      .andExpect(jsonPath("$.calculationRequest.apiVersion").value(apiVersion))
+      .andExpect(jsonPath("$.status").value(IN_PROGRESS.name()))
+      .andExpect(jsonPath("$.calculationRequest.includeApis.length()").value(1))
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].serviceName").value(
+          serviceName
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].apiName").value(apiName)
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].apiVersion").value(
+          apiVersion
+        )
+      )
       .andExpect(
         jsonPath("$.calculationRequest.lookbackWindow").value(lookbackWindow)
       )
       .andExpect(jsonPath("$.initiatedAt").value(not(nullValue())))
-      .andExpect(jsonPath("$.openApiTestResults").isArray());
+      .andExpect(jsonPath("$.interfaces.length()").value(1))
+      .andExpect(jsonPath("$.interfaces[0].serviceName").value(serviceName))
+      .andExpect(jsonPath("$.interfaces[0].apiName").value(apiName))
+      .andExpect(jsonPath("$.interfaces[0].apiVersion").value(apiVersion))
+      .andExpect(jsonPath("$.interfaces[0].apiType").value(UNSPECIFIED.name()))
+      .andExpect(jsonPath("$.interfaces[0].testResults").isArray());
   }
 
   @Test
@@ -132,37 +151,40 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     var apiVersion = "apiVersion";
     var lookbackWindow = "1m";
 
-    var qualityGateReport = qualityGateReportRepository.save(
-      QualityGateReport.builder()
-        .calculationId(calculationId)
-        .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName(serviceName)
-            .apiName(apiName)
-            .apiVersion(apiVersion)
-            .lookbackWindow(lookbackWindow)
-            .build()
-        )
-        .reportStatus(FAILED)
-        .build()
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      serviceName,
+      apiName,
+      apiVersion,
+      lookbackWindow,
+      FAILED
     );
 
     var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
     var additionalInformation = "some additional information";
 
-    var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(PATH_COVERAGE.name())
-      .qualityGateReport(qualityGateReport)
-      .coverage(coverage)
-      .includedInReport(TRUE)
-      .duration(Duration.ofSeconds(1))
-      .additionalInformation(additionalInformation)
-      .build();
-
-    qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
+    qualityGateReport = qualityGateReport.withApiTests(
+      qualityGateReport
+        .getApiTests()
+        .stream()
+        .map(apiTest ->
+          apiTest.withApiTestResults(
+            Set.of(
+              ApiTestResult.builder()
+                .apiTestCriteria(PATH_COVERAGE.name())
+                .coverage(coverage)
+                .includedInReport(TRUE)
+                .duration(Duration.ofSeconds(1))
+                .additionalInformation(additionalInformation)
+                .apiTest(apiTest)
+                .build()
+            )
+          )
+        )
+        .collect(toSet())
     );
+
+    qualityGateReportRepository.save(qualityGateReport);
 
     var responseAsString = mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, calculationId))
@@ -189,10 +211,21 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
             .isNotNull()
             .satisfies(
               request ->
-                assertThat(request.getServiceName()).isEqualTo(serviceName),
-              request -> assertThat(request.getApiName()).isEqualTo(apiName),
-              request ->
-                assertThat(request.getApiVersion()).isEqualTo(apiVersion),
+                assertThat(request.getIncludeApis())
+                  .hasSize(1)
+                  .first()
+                  .satisfies(
+                    includedApi ->
+                      assertThat(includedApi.getServiceName()).isEqualTo(
+                        serviceName
+                      ),
+                    includedApi ->
+                      assertThat(includedApi.getApiName()).isEqualTo(apiName),
+                    includedApi ->
+                      assertThat(includedApi.getApiVersion()).isEqualTo(
+                        apiVersion
+                      )
+                  ),
               request ->
                 assertThat(request.getLookbackWindow()).isEqualTo(
                   lookbackWindow
@@ -200,18 +233,42 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
             ),
         report -> assertThat(report.getInitiatedAt()).isNotNull(),
         report ->
-          assertThat(report.getOpenApiTestResults())
+          assertThat(report.getInterfaces())
             .hasSize(1)
             .first()
-            .satisfies(
-              result ->
-                assertThat(result.getId()).isEqualTo(PATH_COVERAGE.name()),
-              result -> assertThat(result.getCoverage()).isEqualTo(coverage),
-              result ->
-                assertThat(result.getAdditionalInformation()).isEqualTo(
-                  additionalInformation
-                ),
-              result -> assertThat(result.getIsIncludedInQualityGate()).isTrue()
+            .satisfies(api ->
+              assertThat(api).satisfies(
+                  includedApi ->
+                    assertThat(includedApi.getServiceName()).isEqualTo(
+                      serviceName
+                    ),
+                  includedApi ->
+                    assertThat(includedApi.getApiName()).isEqualTo(apiName),
+                  includedApi ->
+                    assertThat(includedApi.getApiVersion()).isEqualTo(
+                      apiVersion
+                    ),
+                  includedApi ->
+                    assertThat(includedApi.getTestResults())
+                      .hasSize(1)
+                      .first()
+                      .satisfies(
+                        result ->
+                          assertThat(result.getId()).isEqualTo(
+                            PATH_COVERAGE.name()
+                          ),
+                        result ->
+                          assertThat(result.getCoverage()).isEqualTo(coverage),
+                        result ->
+                          assertThat(
+                            result.getAdditionalInformation()
+                          ).isEqualTo(additionalInformation),
+                        result ->
+                          assertThat(
+                            result.getIsIncludedInQualityGate()
+                          ).isTrue()
+                      )
+                )
             )
       );
   }
@@ -232,28 +289,37 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName("qualityGateConfigName")
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName("serviceName")
-            .apiName("apiName")
-            .build()
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId).build()
         )
         .reportStatus(PASSED)
         .createdAt(Instant.parse("2025-04-28T08:00:00.00Z"))
         .build()
     );
 
-    var openApiCriterionResult = OpenApiTestResult.builder()
-      .openApiTestCriteria(PATH_COVERAGE.name())
-      .qualityGateReport(qualityGateReport)
-      .coverage(ONE)
-      .includedInReport(TRUE)
-      .duration(Duration.ofSeconds(1))
-      .build();
+    createSimpleApiTestSet(qualityGateReport);
 
-    qualityGateReportRepository.save(
-      qualityGateReport.withOpenApiTestResults(Set.of(openApiCriterionResult))
+    qualityGateReport = qualityGateReport.withApiTests(
+      qualityGateReport
+        .getApiTests()
+        .stream()
+        .map(apiTest ->
+          apiTest.withApiTestResults(
+            Set.of(
+              ApiTestResult.builder()
+                .apiTestCriteria(PATH_COVERAGE.name())
+                .coverage(ONE)
+                .includedInReport(TRUE)
+                .duration(Duration.ofSeconds(1))
+                .apiTest(apiTest)
+                .build()
+            )
+          )
+        )
+        .collect(toSet())
     );
+
+    qualityGateReportRepository.save(qualityGateReport);
 
     var jUnitReport = mockMvc
       .perform(get(JUNIT_REPORT_API_URL, calculationId))
@@ -283,35 +349,38 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @ParameterizedTest
   @EnumSource(ReportStatus.class)
   void findAllReports(ReportStatus reportStatus) throws Exception {
-    qualityGateReportRepository.save(
+    var calculationId1 = UUID.fromString(
+      "b30bb84b-7bf6-4744-8bfc-ac05b8a85991"
+    );
+    var qualityGateReport1 = qualityGateReportRepository.save(
       QualityGateReport.builder()
-        .calculationId(UUID.fromString("b30bb84b-7bf6-4744-8bfc-ac05b8a85991"))
+        .calculationId(calculationId1)
         .qualityGateConfigName("nameA")
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName("serviceName")
-            .apiName("apiName")
-            .build()
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId1).build()
         )
         .reportStatus(reportStatus)
         .createdAt(Instant.parse("2025-05-07T18:00:00.00Z"))
         .build()
     );
 
-    qualityGateReportRepository.save(
+    var calculationId2 = UUID.fromString(
+      "99635525-27a5-43ee-ae46-1cedf2ba4c35"
+    );
+    var qualityGateReport2 = qualityGateReportRepository.save(
       QualityGateReport.builder()
-        .calculationId(UUID.fromString("99635525-27a5-43ee-ae46-1cedf2ba4c35"))
+        .calculationId(calculationId2)
         .qualityGateConfigName("nameB")
-        .reportParameters(
-          ReportParameters.builder()
-            .serviceName("serviceName")
-            .apiName("apiName")
-            .build()
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId2).build()
         )
         .reportStatus(reportStatus)
         .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
         .build()
     );
+
+    createSimpleApiTestSet(qualityGateReport1);
+    createSimpleApiTestSet(qualityGateReport2);
 
     mockMvc
       .perform(get(ENTITY_API_URL).queryParam("sort", "createdAt,desc"))
@@ -327,5 +396,51 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .andExpect(
         jsonPath("$[1].status").value(reportStatusAsString(reportStatus))
       );
+  }
+
+  private QualityGateReport createAndPersistQualityGateReport(
+    UUID calculationId,
+    String serviceName,
+    String apiName,
+    String apiVersion,
+    String lookbackWindow,
+    ReportStatus reportStatus
+  ) {
+    var qualityGateReport = QualityGateReport.builder()
+      .calculationId(calculationId)
+      .qualityGateConfigName("qualityGateConfigName")
+      .reportParameter(
+        ReportParameter.builder()
+          .calculationId(calculationId)
+          .lookbackWindow(lookbackWindow)
+          .build()
+      )
+      .reportStatus(reportStatus)
+      .build();
+
+    final var persistedQualityGateReport = qualityGateReportRepository.save(
+      qualityGateReport
+    );
+
+    var persistedApiTests = apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion(apiVersion)
+        .qualityGateReport(persistedQualityGateReport)
+        .build()
+    );
+
+    return persistedQualityGateReport.withApiTests(Set.of(persistedApiTests));
+  }
+
+  private void createSimpleApiTestSet(QualityGateReport qualityGateReport) {
+    apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName("serviceName")
+        .apiName("apiName")
+        .qualityGateReport(qualityGateReport)
+        .build()
+    );
   }
 }

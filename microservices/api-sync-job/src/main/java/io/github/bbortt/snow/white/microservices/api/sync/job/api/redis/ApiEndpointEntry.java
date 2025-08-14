@@ -6,9 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.api.redis;
 
-import static java.lang.String.format;
-import static java.util.Objects.nonNull;
+import static io.github.bbortt.snow.white.commons.redis.RedisHashUtils.generateRedisApiInformationId;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
+import jakarta.annotation.Nonnull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -21,45 +22,44 @@ import org.springframework.data.redis.core.index.Indexed;
 public class ApiEndpointEntry {
 
   @Id
-  private String id; // Will be constructed as "{otelServiceName}:{apiName}:{apiVersion}"
+  private @Nonnull String id; // Will be constructed as "{otelServiceName}:{apiName}:{apiVersion}"
 
   @Indexed
-  private String otelServiceName;
+  private @Nonnull String otelServiceName;
 
   @Indexed
-  private String apiName;
+  private @Nonnull String apiName;
 
   @Indexed
-  private String apiVersion;
+  private @Nonnull String apiVersion;
 
-  private String sourceUrl;
+  private @Nonnull String sourceUrl;
+
+  private @Nonnull Integer apiType;
 
   public ApiEndpointEntry(
-    String otelServiceName,
-    String apiName,
-    String apiVersion,
-    String sourceUrl
+    @Nonnull String otelServiceName,
+    @Nonnull String apiName,
+    @Nonnull String apiVersion,
+    @Nonnull String sourceUrl,
+    ApiType apiType
   ) {
-    this.id = generateId(otelServiceName, apiName, apiVersion);
+    this.id = generateRedisApiInformationId(
+      otelServiceName,
+      apiName,
+      apiVersion
+    );
     this.otelServiceName = otelServiceName;
     this.apiName = apiName;
     this.apiVersion = apiVersion;
     this.sourceUrl = sourceUrl;
-  }
-
-  private static String generateId(
-    String otelServiceName,
-    String apiName,
-    String apiVersion
-  ) {
-    return format("%s:%s:%s", otelServiceName, apiName, apiVersion);
+    this.apiType = apiType.getVal();
   }
 
   @Override
   public boolean equals(Object o) {
     return (
       o instanceof ApiEndpointEntry apiEndpointEntry &&
-      nonNull(id) &&
       id.equals(apiEndpointEntry.id)
     );
   }

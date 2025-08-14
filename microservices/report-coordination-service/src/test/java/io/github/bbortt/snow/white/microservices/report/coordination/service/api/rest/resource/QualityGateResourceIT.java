@@ -36,8 +36,11 @@ import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEv
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequestIncludeApisInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
+import jakarta.validation.Valid;
 import java.time.Duration;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -119,9 +122,15 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     var lookbackWindow = "1m";
 
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
-      .serviceName(serviceName)
-      .apiName(apiName)
-      .apiVersion(apiVersion)
+      .includeApis(
+        singletonList(
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName(serviceName)
+            .apiName(apiName)
+            .apiVersion(apiVersion)
+            .build()
+        )
+      )
       .lookbackWindow(lookbackWindow)
       .build();
 
@@ -163,27 +172,26 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
           ),
         report -> assertThat(report.getReportStatus()).isEqualTo(IN_PROGRESS),
         report ->
-          assertThat(report.getOpenApiCoverageStatus()).isEqualTo(IN_PROGRESS),
+          assertThat(report.getApiTests())
+            .hasSize(1)
+            .first()
+            .satisfies(
+              apiTests ->
+                assertThat(apiTests.getServiceName()).isEqualTo(serviceName),
+              apiTests -> assertThat(apiTests.getApiName()).isEqualTo(apiName),
+              apiTests ->
+                assertThat(apiTests.getApiVersion()).isEqualTo(apiVersion)
+            ),
         report ->
-          assertThat(report.getReportParameters()).satisfies(parameters ->
-            assertThat(parameters).satisfies(
-              parameter ->
-                assertThat(parameter.getServiceName()).isEqualTo(serviceName),
-              parameter ->
-                assertThat(parameter.getApiName()).isEqualTo(apiName),
-              parameter ->
-                assertThat(parameter.getApiVersion()).isEqualTo(apiVersion),
-              parameter ->
-                assertThat(parameter.getLookbackWindow()).isEqualTo(
-                  lookbackWindow
-                )
-            )
-          )
+          assertThat(report.getReportParameter())
+            .isNotNull()
+            .extracting(ReportParameter::getLookbackWindow)
+            .isEqualTo(lookbackWindow)
       );
 
     assertThatKafkaEventHasBeenPublished(
       calculationIdStr,
-      qualityGateCalculationRequest,
+      qualityGateCalculationRequest.getIncludeApis().getFirst(),
       qualityGateCalculationRequest.getLookbackWindow()
     );
 
@@ -196,10 +204,17 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
 
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
-      .serviceName("star-wars")
-      .apiName("yoda")
-      .apiVersion(null)
+      .includeApis(
+        singletonList(
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName("serviceName")
+            .apiName("apiName")
+            .apiVersion("apiVersion")
+            .build()
+        )
+      )
       .lookbackWindow(null)
+      .attributeFilters(null)
       .build();
 
     var contentAsString = mockMvc
@@ -234,11 +249,33 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
     assertThatKafkaEventHasBeenPublished(
       calculationIdStr,
-      qualityGateCalculationRequest,
+      qualityGateCalculationRequest.getIncludeApis().getFirst(),
       "1h"
     );
 
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  @Test
+  void postRequest_withMissingRequiredParameters_shouldBeReported()
+    throws Exception {
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
+
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
+      .includeApis(null)
+      .lookbackWindow(null)
+      .attributeFilters(null)
+      .build();
+
+    mockMvc
+      .perform(
+        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(
+            objectMapper.writeValueAsString(qualityGateCalculationRequest)
+          )
+      )
+      .andExpect(status().isBadRequest());
   }
 
   private @NotNull String createQualityGateApiWiremockStub()
@@ -258,8 +295,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   private void assertThatKafkaEventHasBeenPublished(
-    String calculationIdStr,
-    CalculateQualityGateRequest qualityGateCalculationRequest,
+    String calculationId,
+    @Valid CalculateQualityGateRequestIncludeApisInner includedApi,
     String lookbackWindow
   ) {
     await()
@@ -273,27 +310,32 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
           ),
         record ->
           assertThat(record).satisfies(
-            r -> assertThat(r.key()).isEqualTo(calculationIdStr),
-            r ->
-              assertThat(r.value()).satisfies(
-                event ->
-                  assertThat(event.getServiceName()).isEqualTo(
-                    qualityGateCalculationRequest.getServiceName()
-                  ),
-                event ->
-                  assertThat(event.getApiName()).isEqualTo(
-                    qualityGateCalculationRequest.getApiName()
-                  ),
-                event ->
-                  assertThat(event.getApiVersion()).isEqualTo(
-                    qualityGateCalculationRequest.getApiVersion()
-                  ),
-                event ->
-                  assertThat(event.getLookbackWindow()).isEqualTo(
-                    lookbackWindow
+              r -> assertThat(r.key()).isEqualTo(calculationId),
+              r ->
+                assertThat(r.value()).satisfies(
+                    event ->
+                      assertThat(event.getApiInformation())
+                        .isNotNull()
+                        .satisfies(
+                          apiInformation ->
+                            assertThat(
+                              apiInformation.getServiceName()
+                            ).isEqualTo(includedApi.getServiceName()),
+                          apiInformation ->
+                            assertThat(apiInformation.getApiName()).isEqualTo(
+                              includedApi.getApiName()
+                            ),
+                          apiInformation ->
+                            assertThat(
+                              apiInformation.getApiVersion()
+                            ).isEqualTo(includedApi.getApiVersion())
+                        ),
+                    event ->
+                      assertThat(event.getLookbackWindow()).isEqualTo(
+                        lookbackWindow
+                      )
                   )
-              )
-          )
+            )
       );
   }
 }

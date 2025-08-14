@@ -6,8 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.service.impl.redis;
 
-import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
+import static io.github.bbortt.snow.white.commons.redis.RedisHashUtils.generateRedisApiInformationId;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.CachingService;
@@ -32,26 +31,16 @@ public class RedisCachingService implements CachingService {
     String apiName,
     String apiVersion
   ) {
-    var id = HASH_PREFIX + generateId(otelServiceName, apiName, apiVersion);
+    var id =
+      HASH_PREFIX +
+      generateRedisApiInformationId(otelServiceName, apiName, apiVersion);
 
     logger.debug("Checking if ID exists: {}", id);
 
     var result = redisTemplate.hasKey(id);
 
-    logger.trace(
-      "ID '{}' {}",
-      id,
-      TRUE.equals(result) ? "exists" : "does not exist"
-    );
+    logger.trace("ID '{}' {}", id, result ? "exists" : "does not exist");
 
     return result;
-  }
-
-  private static String generateId(
-    String otelServiceName,
-    String apiName,
-    String apiVersion
-  ) {
-    return format("%s:%s:%s", otelServiceName, apiName, apiVersion);
   }
 }

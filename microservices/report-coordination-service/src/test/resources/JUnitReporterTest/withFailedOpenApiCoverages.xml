@@ -1,26 +1,62 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <testsuites
-  name="TransformToJUnitReport"
+  name="JUnitReporterTest"
   tests="2"
   failures="2"
   errors="0"
   skipped="0"
+  assertions="2"
   time="185.53200"
   timestamp="2025-04-24T22:30:00Z"
 >
-  <testsuite name="OpenAPI Specification" time="0">
+  <properties>
+    <property
+      name="calculationId"
+      value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
+    />
+  </properties>
+  <testsuite
+    name="serviceName: testApi 1.0.0 [OPENAPI]"
+    tests="2"
+    failures="2"
+    errors="0"
+    skipped="0"
+    assertions="2"
+    time="185.53200"
+  >
+    <properties>
+      <property name="apiName" value="testApi" />
+      <property name="apiVersion" value="1.0.0" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
     <testcase
       name="HTTP Method Coverage"
-      classname="HTTP_METHOD_COVERAGE"
+      classname="serviceName: testApi 1.0.0 [OPENAPI]"
       time="131.21100"
     >
       <failure
         message="And this failed because it thought it's cool to do so."
-        type="coverage"
+        type="AssertionError"
       />
+      <properties>
+        <property
+          name="description"
+          value="Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested."
+        />
+      </properties>
     </testcase>
-    <testcase name="Path Coverage" classname="PATH_COVERAGE" time="54.32100">
-      <failure message="This failed because it can." type="coverage" />
+    <testcase
+      name="Path Coverage"
+      classname="serviceName: testApi 1.0.0 [OPENAPI]"
+      time="54.32100"
+    >
+      <failure message="This failed because it can." type="AssertionError" />
+      <properties>
+        <property
+          name="description"
+          value="Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+        />
+      </properties>
     </testcase>
   </testsuite>
 </testsuites>

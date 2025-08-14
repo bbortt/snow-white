@@ -1,14 +1,33 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <testsuites
   name="qualityGateConfigName"
-  tests="1"
+  tests="0"
   failures="0"
   errors="0"
   skipped="0"
-  time="1.00000"
+  assertions="0"
+  time="0"
   timestamp="2025-04-28T08:00:00Z"
 >
-  <testsuite name="OpenAPI Specification" time="0">
-    <testcase name="Path Coverage" classname="PATH_COVERAGE" time="1.00000" />
+  <properties>
+    <property
+      name="calculationId"
+      value="aaac28e5-2d0e-4ea6-8fef-4dc85169759e"
+    />
+  </properties>
+  <testsuite
+    name="serviceName: apiName null [UNSPECIFIED]"
+    tests="0"
+    failures="0"
+    errors="0"
+    skipped="0"
+    assertions="0"
+    time="0"
+  >
+    <properties>
+      <property name="apiName" value="apiName" />
+      <property name="apiVersion" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
   </testsuite>
 </testsuites>

@@ -17,8 +17,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.api.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.mapper.QualityGateConfigMapper;
-import java.util.Optional;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -52,62 +53,62 @@ class QualityGateServiceTest {
     );
   }
 
-  @Test
-  void findQualityGateConfigByNameReturnsConfigWhenFound() {
-    doReturn(qualityGateDto)
-      .when(qualityGateApiMock)
-      .getQualityGateByName(TEST_QUALITY_GATE_NAME);
-    doReturn(qualityGateConfig)
-      .when(qualityGateConfigMapperMock)
-      .fromDto(qualityGateDto);
+  @Nested
+  class findQualityGateConfigByName {
 
-    Optional<QualityGateConfig> result = fixture.findQualityGateConfigByName(
-      TEST_QUALITY_GATE_NAME
-    );
+    @Test
+    void shouldReturnConfigWhenFound() throws QualityGateNotFoundException {
+      doReturn(qualityGateDto)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
+      doReturn(qualityGateConfig)
+        .when(qualityGateConfigMapperMock)
+        .fromDto(qualityGateDto);
 
-    assertThat(result).isPresent().get().isEqualTo(qualityGateConfig);
-  }
+      QualityGateConfig result = fixture.findQualityGateConfigByName(
+        TEST_QUALITY_GATE_NAME
+      );
 
-  @Test
-  void findQualityGateConfigByNameReturnsEmptyWhenApiReturnsNull() {
-    doReturn(null)
-      .when(qualityGateApiMock)
-      .getQualityGateByName(TEST_QUALITY_GATE_NAME);
+      assertThat(result).isEqualTo(qualityGateConfig);
+    }
 
-    Optional<QualityGateConfig> result = fixture.findQualityGateConfigByName(
-      TEST_QUALITY_GATE_NAME
-    );
+    @Test
+    void shouldThrow_whenQualityGateIsNotPresent() {
+      doReturn(null)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
 
-    assertThat(result).isEmpty();
-  }
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).isInstanceOf(QualityGateNotFoundException.class);
+    }
 
-  @Test
-  void findQualityGateConfigByNameReturnsEmptyWhenNotFound() {
-    var notFoundExceptionMock = mock(RestClientResponseException.class);
+    @Test
+    void shouldThrow_whenQueryThrows() {
+      var notFoundExceptionMock = mock(RestClientResponseException.class);
 
-    doReturn(NOT_FOUND).when(notFoundExceptionMock).getStatusCode();
-    doThrow(notFoundExceptionMock)
-      .when(qualityGateApiMock)
-      .getQualityGateByName(TEST_QUALITY_GATE_NAME);
+      doReturn(NOT_FOUND).when(notFoundExceptionMock).getStatusCode();
+      doThrow(notFoundExceptionMock)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
 
-    Optional<QualityGateConfig> result = fixture.findQualityGateConfigByName(
-      TEST_QUALITY_GATE_NAME
-    );
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).isInstanceOf(QualityGateNotFoundException.class);
+    }
 
-    assertThat(result).isEmpty();
-  }
+    @Test
+    void shouldPropagateOtherExceptions() {
+      var otherException = mock(RestClientResponseException.class);
 
-  @Test
-  void findQualityGateConfigByNamePropagatesOtherExceptions() {
-    var otherException = mock(RestClientResponseException.class);
+      doReturn(INTERNAL_SERVER_ERROR).when(otherException).getStatusCode();
+      doThrow(otherException)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
 
-    doReturn(INTERNAL_SERVER_ERROR).when(otherException).getStatusCode();
-    doThrow(otherException)
-      .when(qualityGateApiMock)
-      .getQualityGateByName(TEST_QUALITY_GATE_NAME);
-
-    assertThatThrownBy(() ->
-      fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
-    ).isSameAs(otherException);
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).isSameAs(otherException);
+    }
   }
 }

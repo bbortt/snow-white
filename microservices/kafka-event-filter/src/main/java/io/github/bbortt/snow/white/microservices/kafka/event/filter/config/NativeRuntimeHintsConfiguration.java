@@ -6,20 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.config;
 
-import static java.util.Collections.addAll;
+import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
 @Slf4j
 @Configuration
@@ -89,36 +83,6 @@ public class NativeRuntimeHintsConfiguration {
       scanPackageForClassesRecursively("io.opentelemetry.proto").forEach(
         clazz -> hints.reflection().registerType(clazz, INVOKE_PUBLIC_METHODS)
       );
-    }
-
-    @VisibleForTesting
-    static Set<Class<?>> scanPackageForClassesRecursively(String packageName) {
-      var scanner = new ClassPathScanningCandidateComponentProvider(false);
-
-      scanner.addIncludeFilter(
-        new RegexPatternTypeFilter(Pattern.compile(".*"))
-      );
-
-      Set<Class<?>> classes = new HashSet<>();
-
-      scanner
-        .findCandidateComponents(packageName)
-        .forEach(beanDefinition -> {
-          try {
-            Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-            classes.add(clazz);
-
-            // Add nested classes
-            Class<?>[] nestedClasses = clazz.getDeclaredClasses();
-            addAll(classes, nestedClasses);
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-        });
-
-      logger.debug("Scanned classes: {}", classes);
-
-      return classes;
     }
   }
 }

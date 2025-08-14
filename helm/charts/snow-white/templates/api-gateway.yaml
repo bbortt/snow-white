@@ -1,3 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snow-white.fullname" . }}
+  labels:
+    {{- include "snow-white.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "snow-white.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- include "app.annotations.splunk" . | nindent 8 }}
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "snow-white.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- include "pf-app.analytics-container" . | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- if .Values.application.useZgc }}
+            - name: JVM_ARGS
+              value: "-XX:+UseContainerSupport -XX:InitialRAMPercentage=70 -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=70 -XX:+UseNUMA -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication"
+            {{- end}}
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            {{- range $k, $v := .Values.additionalEnvs }}
+            - name: {{ $k }}
+              value: {{ $v }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /appl/snow-white/config
+              name: {{ include "snow-white.fullname" . }}-properties
+          ports:
+            - name: http
+              containerPort: {{ .Values.application.container.port }}
+              protocol: TCP
+            - name: actuator
+              containerPort: {{ .Values.application.management.port }}
+              protocol: TCP
+            {{- if .Values.extension.kafka.enabled }}
+            - name: kafka
+              containerPort: {{ .Values.extension.kafka.advertisedPort }}
+              protocol: TCP
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+      volumes:
+        - name: {{ include "snow-white.fullname" . }}-properties
+          configMap:
+            name: {{ include "snow-white.fullname" . }}-configmap-{{ include "snow-white.configmapChecksum" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,21 +107,21 @@ spec:
       port: {{ .Values.snowWhite.apiGateway.service.port }}
       targetPort: http
 ---
-{{- if .Values.ingress.enabled -}}
-{{- $host := .Values.ingress.host -}}
+{{- if .Values.snowWhite.ingress.enabled -}}
+{{- $host := .Values.snowWhite.ingress.host -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
   labels:
     {{- include "snow-white.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.snowWhite.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  ingressClassName: {{ .Values.ingress.className }}
-  {{- if .Values.ingress.tls }}
+  ingressClassName: {{ .Values.snowWhite.ingress.className }}
+  {{- if .Values.snowWhite.ingress.tls }}
   tls:
     - hosts:
         - {{ $host }}

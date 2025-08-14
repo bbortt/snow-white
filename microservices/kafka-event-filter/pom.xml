@@ -59,6 +59,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.opentelemetry.javaagent</groupId>
       <artifactId>opentelemetry-javaagent</artifactId>
       <scope>compile</scope>

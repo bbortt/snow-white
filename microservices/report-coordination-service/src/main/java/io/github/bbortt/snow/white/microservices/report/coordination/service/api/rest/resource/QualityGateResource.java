@@ -15,6 +15,7 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.api
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
@@ -29,8 +30,9 @@ public class QualityGateResource implements QualityGateApi {
 
   private final ReportService reportService;
 
-  private final QualityGateReportMapper qualityGateReportMapper;
+  private final ApiTestMapper apiTestMapper;
   private final ReportParameterMapper reportParameterMapper;
+  private final QualityGateReportMapper qualityGateReportMapper;
 
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
@@ -40,9 +42,14 @@ public class QualityGateResource implements QualityGateApi {
     CalculateQualityGateRequest calculateQualityGateRequest
   ) {
     try {
+      var apiTests = apiTestMapper.getApiTests(calculateQualityGateRequest);
+      var reportParameter = reportParameterMapper.fromDto(
+        calculateQualityGateRequest
+      );
       var report = reportService.initializeQualityGateCalculation(
         qualityGateConfigName,
-        reportParameterMapper.fromDto(calculateQualityGateRequest)
+        apiTests,
+        reportParameter
       );
 
       return ResponseEntity.status(ACCEPTED)
@@ -54,7 +61,7 @@ public class QualityGateResource implements QualityGateApi {
             report.getCalculationId()
           )
         )
-        .body(qualityGateReportMapper.toCalculateQualityGateResponse(report));
+        .body(qualityGateReportMapper.toDto(report));
     } catch (QualityGateNotFoundException e) {
       return ResponseEntity.status(NOT_FOUND).body(
         CalculateQualityGate400Response.builder()

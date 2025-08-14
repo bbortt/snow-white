@@ -9,9 +9,9 @@ paths:
   /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate:
     post:
       operationId: calculateQualityGate
-      summary: 'Initiate asynchronous Quality-Gate calculation for a specific service and API'
+      summary: 'Initiate asynchronous Quality-Gate calculation with the defined configuration'
       description: >
-        Starts an asynchronous calculation of a previously configured Quality-Gate for a specified service.
+        Starts an asynchronous calculation of a previously configured Quality-Gate.
         Returns a UUID that can be used to query the status and results of the calculation.
       tags:
         - quality-gate

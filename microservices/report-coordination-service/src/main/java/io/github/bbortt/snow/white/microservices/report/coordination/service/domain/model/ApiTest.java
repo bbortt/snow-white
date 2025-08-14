@@ -6,26 +6,27 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model;
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapKeyColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,12 +40,13 @@ import lombok.With;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
-public class ReportParameters {
+public class ApiTest {
 
   @Id
   @NotNull
-  @SequenceGenerator(name = "report_parameters_id_seq", allocationSize = 1)
-  @GeneratedValue(strategy = SEQUENCE, generator = "report_parameters_id_seq")
+  @With(PRIVATE)
+  @SequenceGenerator(name = "api_test_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = SEQUENCE, generator = "api_test_id_seq")
   @Column(nullable = false, updatable = false)
   private Long id;
 
@@ -62,22 +64,32 @@ public class ReportParameters {
   @Column(updatable = false, length = 16)
   private @Nullable String apiVersion;
 
-  @NotEmpty
-  @Builder.Default
-  @Size(max = 8)
-  @Column(nullable = false, updatable = false, length = 8)
-  private String lookbackWindow = "1h";
+  @Column(updatable = false)
+  private @Nullable Integer apiType;
 
+  @NotNull
   @Builder.Default
-  @ElementCollection
-  @Column(name = "attribute_value")
-  @MapKeyColumn(name = "attribute_key")
-  @CollectionTable(
-    name = "attribute_filters",
-    joinColumns = @JoinColumn(name = "report_parameter_id")
-  )
-  private Map<String, String> attributeFilters = new HashMap<>();
+  @OneToMany(mappedBy = "apiTest", cascade = { ALL }, fetch = EAGER)
+  private Set<ApiTestResult> apiTestResults = new HashSet<>();
 
-  @OneToOne(mappedBy = "reportParameters", optional = false)
+  @NotNull
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "calculation_id", nullable = false)
   private QualityGateReport qualityGateReport;
+
+  public ApiType getApiType() {
+    return ApiType.apiType(apiType);
+  }
+
+  public ApiTest withApiType(ApiType apiType) {
+    return ApiTest.builder()
+      .id(getId())
+      .serviceName(getServiceName())
+      .apiName(getApiName())
+      .apiVersion(getApiVersion())
+      .apiType(apiType.getVal())
+      .apiTestResults(getApiTestResults())
+      .qualityGateReport(getQualityGateReport())
+      .build();
+  }
 }

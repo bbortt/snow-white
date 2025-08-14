@@ -13,8 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-class QualityGateReportParameterMapperIT
-  extends AbstractReportCoordinationServiceIT {
+class ReportParameterMapperIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private ApplicationContext applicationContext;
