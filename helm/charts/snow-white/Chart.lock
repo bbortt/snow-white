@@ -4,12 +4,12 @@ dependencies:
   version: 32.3.14
 - name: influxdb
   repository: https://charts.bitnami.com/bitnami
-  version: 7.1.16
+  version: 7.1.18
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 16.7.26
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 22.0.3
-digest: sha256:5a105b6e4fec3921f8312c19f5dbcf16ca7bef5bb9df90f51b9057f645857c68
-generated: "2025-08-16T08:35:15.888644686Z"
+digest: sha256:4bc8f1075ad2d4b365ce1cdf908dc1cca100323672da38a73d40ee2a49591e30
+generated: "2025-08-16T09:03:08.526600764Z"
