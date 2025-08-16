@@ -9,7 +9,7 @@ maintainers:
     email: timon.borter@gmx.ch
 dependencies:
   - name: kafka
-    version: 32.3.14
+    version: 32.4.2
     repository: 'https://charts.bitnami.com/bitnami'
     condition: kafka.enabled
   - name: influxdb
