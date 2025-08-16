@@ -27,7 +27,7 @@
     </maven.build.timestamp.format>
 
     <confluent.version>8.0.0</confluent.version>
-    <google-protobuf.version>4.31.1</google-protobuf.version>
+    <google-protobuf.version>4.32.0</google-protobuf.version>
     <grpc.version>1.74.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
