@@ -155,7 +155,7 @@ services:
       - internal
 
   postgres:
-    image: 'postgres:17.5-alpine'
+    image: 'postgres:17.6-alpine'
     shm_size: 128mb
     volumes:
       - ./postgres/data/:/var/lib/postgresql/data/
