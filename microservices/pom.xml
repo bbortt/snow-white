@@ -37,7 +37,7 @@
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.projectlombok.version>1.18.38</org.projectlombok.version>
-    <org.springdoc.version>2.8.9</org.springdoc.version>
+    <org.springdoc.version>2.8.10</org.springdoc.version>
     <org.wiremock.version>3.10.0</org.wiremock.version>
 
     <container.registry>ghcr.io</container.registry>
