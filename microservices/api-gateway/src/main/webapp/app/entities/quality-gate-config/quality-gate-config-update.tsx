@@ -4,6 +4,9 @@
  * See LICENSE file for full details.
  */
 
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities as getOpenApiCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
@@ -23,8 +26,8 @@ export const QualityGateUpdate = () => {
   const { id } = useParams<'id'>();
   const isNew = id === undefined;
 
-  const openApiCriteria = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
-  const qualityGateConfigEntity = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
+  const openApiCriteriaList: IOpenApiCriterion[] = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+  const qualityGateConfigEntity: IQualityGateConfig = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const updating = useAppSelector(state => state.snowwhite.qualityGateConfig.updating);
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
@@ -137,8 +140,8 @@ export const QualityGateUpdate = () => {
                 name="openApiCriteria"
               >
                 <option value="" key="0" />
-                {openApiCriteria
-                  ? openApiCriteria.map(otherEntity => (
+                {openApiCriteriaList
+                  ? openApiCriteriaList.map(otherEntity => (
                       <option value={otherEntity.id} key={otherEntity.id}>
                         {otherEntity.name}
                       </option>

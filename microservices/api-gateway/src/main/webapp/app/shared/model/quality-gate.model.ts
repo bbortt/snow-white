@@ -6,17 +6,17 @@
 
 import type { ICalculationRequestParameters } from 'app/shared/model/calculation-request-parameters.model';
 import type { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import type { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
 import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
-import type dayjs from 'dayjs';
+
+import { IApiTest } from 'app/shared/model/api-test.model';
 
 export interface IQualityGate {
   calculationId?: string;
   qualityGateConfig?: IQualityGateConfig;
+  apiTests?: IApiTest[];
   status?: keyof typeof ReportStatus;
   createdAt?: string;
   calculationRequest?: ICalculationRequestParameters;
-  openApiTestResults?: IOpenApiTestResult[];
 }
 
 export const defaultValue: Readonly<IQualityGate> = {};

@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect } from 'react';
@@ -22,7 +24,7 @@ export const OpenApiCriterionDetail = () => {
     dispatch(getEntity(id!));
   }, []);
 
-  const openApiCriterionEntity = useAppSelector(state => state.snowwhite.openApiCriterion.entity);
+  const openApiCriterionEntity: IOpenApiCriterion = useAppSelector(state => state.snowwhite.openApiCriterion.entity);
 
   return (
     <Row>

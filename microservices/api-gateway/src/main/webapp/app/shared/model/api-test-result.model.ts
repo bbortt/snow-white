@@ -4,11 +4,11 @@
  * See LICENSE file for full details.
  */
 
-export interface IOpenApiTestResult {
+export interface IApiTestResult {
   openApiCriterionName?: string;
   coverage?: number;
-  additionalInformation?: string | null;
+  additionalInformation?: string;
   isIncludedInQualityGate: boolean;
 }
 
-export const defaultValue: Readonly<IOpenApiTestResult> = { isIncludedInQualityGate: false };
+export const defaultValue: Readonly<IApiTestResult> = { isIncludedInQualityGate: false };
