@@ -10,7 +10,37 @@ import { spawn } from 'child_process';
 import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
 import { MatchingAttributes, WireMock } from 'wiremock-captain';
 
+import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
+import { QUALITY_GATE_CALCULATION_FAILED } from './common/exit-codes';
+
+import { fileSync, setGracefulCleanup } from 'tmp';
+import { writeFileSync } from 'node:fs';
+
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
+
+const configureSuccessfulWireMockRequest = (): {
+  serviceName: string;
+  apiName: string;
+  apiVersion: string;
+  wireMockRequest: IWireMockRequest;
+} => {
+  const serviceName = 'user-service';
+  const apiName = 'user-api';
+  const apiVersion = '1.0.0';
+
+  const wireMockRequest: IWireMockRequest & { body: CalculateQualityGateRequest } = {
+    method: 'POST',
+    endpoint: '/api/rest/v1/quality-gates/test-quality-gate/calculate',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: {
+      includeApis: [{ serviceName, apiName, apiVersion }],
+    },
+  };
+
+  return { serviceName, apiName, apiVersion, wireMockRequest };
+};
 
 const executeCLICommand = async (
   args: string[],
@@ -63,12 +93,43 @@ const executeCLICommand = async (
 };
 
 describe('CLI', () => {
+  const qualityGateConfigName = 'test-quality-gate';
+
   let wiremock: WireMock;
   let WIREMOCK_URL: string;
 
-  beforeAll(() => {
-    WIREMOCK_URL = `http://localhost:${WIREMOCK_PORT}`;
+  const invokeCalculateCommandWithExplicitConfiguration = (serviceName: string, apiName: string, apiVersion: string) =>
+    executeCLICommand([
+      'calculate',
+      '--qualityGate',
+      qualityGateConfigName,
+      '--serviceName',
+      serviceName,
+      '--apiName',
+      apiName,
+      '--apiVersion',
+      apiVersion,
+      '--url',
+      WIREMOCK_URL,
+    ]);
 
+  const assertThatBasicInformationIsBeingPrinted = (
+    cliResult: {
+      exitCode: number;
+      stdout: string;
+      stderr: string;
+    },
+    expectedExitCode: number,
+  ) => {
+    expect(cliResult.exitCode, cliResult.stderr).toBe(expectedExitCode);
+    expect(cliResult.stdout).toContain('🚀 Starting Quality-Gate calculation for 1 API(s)...');
+    expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
+  };
+
+  beforeAll(() => {
+    setGracefulCleanup();
+
+    WIREMOCK_URL = `http://localhost:${WIREMOCK_PORT}`;
     wiremock = new WireMock(WIREMOCK_URL);
 
     console.log(`WireMock started on port ${WIREMOCK_PORT}`);
@@ -78,216 +139,188 @@ describe('CLI', () => {
     return wiremock.clearAllExceptDefault();
   });
 
-  describe('command: calculate', () => {
-    const getWireMockRequest = (): {
-      serviceName: string;
-      apiName: string;
-      apiVersion: string;
-      wireMockRequest: IWireMockRequest;
-    } => {
-      const serviceName = 'user-service';
-      const apiName = 'user-api';
-      const apiVersion = '1.0.0';
+  [
+    {
+      title: 'with explicit configuration',
+      cliInvocationCommand: (serviceName: string, apiName: string, apiVersion: string) =>
+        invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion),
+    },
+    {
+      title: 'with configuration from file',
+      cliInvocationCommand: async (serviceName: string, apiName: string, apiVersion: string) => {
+        const tmpobj = fileSync();
+        writeFileSync(
+          tmpobj.name,
+          JSON.stringify({
+            qualityGate: qualityGateConfigName,
+            apiInformation: [{ serviceName, apiName, apiVersion }],
+            url: WIREMOCK_URL,
+          }),
+        );
 
-      const wireMockRequest: IWireMockRequest = {
-        method: 'POST',
-        endpoint: '/api/rest/v1/quality-gates/test-quality-gate/calculate',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          serviceName,
-          apiName,
-          apiVersion,
-        },
-      };
-      return { serviceName, apiName, apiVersion, wireMockRequest };
-    };
-
-    const assertThatBasicInformationIsBeingPrinted = (
-      cliResult: {
-        exitCode: number;
-        stdout: string;
-        stderr: string;
+        return executeCLICommand(['calculate', '--configFile', tmpobj.name, '--url', WIREMOCK_URL]);
       },
-      expectedExitCode: number,
-    ) => {
-      expect(cliResult.exitCode, cliResult.stderr).toBe(expectedExitCode);
-      expect(cliResult.stdout).toContain('🚀 Starting quality gate calculation...');
-      expect(cliResult.stdout).toContain('Gate: test-quality-gate');
-      expect(cliResult.stdout).toContain('Service: user-service');
-      expect(cliResult.stdout).toContain('API: user-api');
-      expect(cliResult.stdout).toContain('Version: 1.0.0');
-    };
+    },
+  ].forEach(testConfiguration => {
+    describe('command: calculate', () => {
+      describe(testConfiguration.title, () => {
+        it('should successfully trigger quality gate calculation', async () => {
+          const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
 
-    const invokeCalculateCommand = async (serviceName: string, apiName: string, apiVersion: string) =>
-      await executeCLICommand([
-        'calculate',
-        '--qualityGate',
-        'test-quality-gate',
-        '--serviceName',
-        serviceName,
-        '--apiName',
-        apiName,
-        '--apiVersion',
-        apiVersion,
-        '--url',
-        WIREMOCK_URL,
-      ]);
+          const mockResponse: IWireMockResponse = {
+            status: 202,
+            headers: {
+              'Content-Type': 'application/json',
+              Location: `${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
+            },
+            body: {
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              status: 'INITIATED',
+              qualityGateConfigName,
+              serviceName,
+              apiName,
+              apiVersion,
+              createdAt: '2025-06-21T10:30:00Z',
+            },
+          };
 
-    it('should successfully trigger quality gate calculation', async () => {
-      const { serviceName, apiName, apiVersion, wireMockRequest } = getWireMockRequest();
+          await wiremock.register(wireMockRequest, mockResponse, {
+            requestHeaderFeatures: {
+              'Content-Type': MatchingAttributes.EqualTo,
+            },
+          });
 
-      const mockResponse: IWireMockResponse = {
-        status: 202,
-        headers: {
-          'Content-Type': 'application/json',
-          Location: `${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
-        },
-        body: {
-          id: '550e8400-e29b-41d4-a716-446655440000',
-          status: 'INITIATED',
-          qualityGateConfigName: 'test-quality-gate',
-          serviceName,
-          apiName,
-          apiVersion,
-          createdAt: '2025-06-21T10:30:00Z',
-        },
-      };
+          const cliResult = await testConfiguration.cliInvocationCommand(serviceName, apiName, apiVersion);
 
-      await wiremock.register(wireMockRequest, mockResponse, {
-        requestHeaderFeatures: {
-          'Content-Type': MatchingAttributes.EqualTo,
-        },
+          console.debug(`Output: ${cliResult.stdout}`);
+
+          assertThatBasicInformationIsBeingPrinted(cliResult, 0);
+
+          expect(cliResult.stdout).toContain('✅ Quality-Gate calculation initiated successfully!');
+          expect(cliResult.stdout).toContain(
+            `Location: ${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
+          );
+          expect(cliResult.stdout).toContain('💡 Use the returned URL to check the calculation report.');
+
+          const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
+          expect(requests.length).toBe(1);
+
+          const unmatchedRequests = await wiremock.getUnmatchedRequests();
+          expect(unmatchedRequests.length).toBe(0);
+        });
       });
-
-      const cliResult = await invokeCalculateCommand(serviceName, apiName, apiVersion);
-
-      console.debug(`Output: ${cliResult.stdout}`);
-
-      assertThatBasicInformationIsBeingPrinted(cliResult, 0);
-
-      expect(cliResult.stdout).toContain('✅ Quality gate calculation initiated successfully!');
-      expect(cliResult.stdout).toContain(
-        'Location: http://localhost:8080/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000',
-      );
-      expect(cliResult.stdout).toContain('💡 Use the returned URL to check the calculation report.');
-
-      const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/quality-gates/test-quality-gate/calculate');
-      expect(requests.length).toBe(1);
-
-      const unmatchedRequests = await wiremock.getUnmatchedRequests();
-      expect(unmatchedRequests.length).toBe(0);
     });
 
-    it('should exit when server responds with 404 bad request response', async () => {
-      const { serviceName, apiName, apiVersion, wireMockRequest } = getWireMockRequest();
+    describe('error handling', () => {
+      it('should exit when server responds with 404 bad request response', async () => {
+        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
 
-      const message = 'This is a forced error message!';
-      const mockResponse: IWireMockResponse = {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          status: 'BAD_REQUEST',
-          message,
-        },
-      };
+        const message = 'This is a forced error message!';
+        const mockResponse: IWireMockResponse = {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            status: 'BAD_REQUEST',
+            message,
+          },
+        };
 
-      await wiremock.register(wireMockRequest, mockResponse, {
-        requestHeaderFeatures: {
-          'Content-Type': MatchingAttributes.EqualTo,
-        },
+        await wiremock.register(wireMockRequest, mockResponse, {
+          requestHeaderFeatures: {
+            'Content-Type': MatchingAttributes.EqualTo,
+          },
+        });
+
+        const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
+
+        console.debug(`Output: ${cliResult.stdout}`);
+
+        assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
+
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('Status: 400');
+        expect(cliResult.stderr).toContain(`Details: ${message}`);
+
+        const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
+        expect(requests.length).toBe(1);
+
+        const unmatchedRequests = await wiremock.getUnmatchedRequests();
+        expect(unmatchedRequests.length).toBe(0);
       });
 
-      const cliResult = await invokeCalculateCommand(serviceName, apiName, apiVersion);
+      it('should exit when server responds with 404 not found response', async () => {
+        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
 
-      console.debug(`Output: ${cliResult.stdout}`);
+        const message = 'Quality-Gate name not found';
+        const mockResponse: IWireMockResponse = {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: {
+            code: 'NOT_FOUND',
+            message,
+          },
+        };
 
-      assertThatBasicInformationIsBeingPrinted(cliResult, 1);
+        await wiremock.register(wireMockRequest, mockResponse, {
+          requestHeaderFeatures: {
+            'Content-Type': MatchingAttributes.EqualTo,
+          },
+        });
 
-      expect(cliResult.stderr).toContain('❌ Failed to trigger quality gate calculation!');
-      expect(cliResult.stderr).toContain('Status: 400');
-      expect(cliResult.stderr).toContain(`Details: ${message}`);
+        const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
 
-      const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/quality-gates/test-quality-gate/calculate');
-      expect(requests.length).toBe(1);
+        console.debug(`Output: ${cliResult.stdout}`);
 
-      const unmatchedRequests = await wiremock.getUnmatchedRequests();
-      expect(unmatchedRequests.length).toBe(0);
-    });
+        assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-    it('should exit when server responds with 404 not found response', async () => {
-      const { serviceName, apiName, apiVersion, wireMockRequest } = getWireMockRequest();
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('Status: 404');
+        expect(cliResult.stderr).toContain(`Details: ${message}`);
 
-      const message = 'Quality-Gate name not found';
-      const mockResponse: IWireMockResponse = {
-        status: 404,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          code: 'NOT_FOUND',
-          message,
-        },
-      };
+        const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
+        expect(requests.length).toBe(1);
 
-      await wiremock.register(wireMockRequest, mockResponse, {
-        requestHeaderFeatures: {
-          'Content-Type': MatchingAttributes.EqualTo,
-        },
+        const unmatchedRequests = await wiremock.getUnmatchedRequests();
+        expect(unmatchedRequests.length).toBe(0);
       });
 
-      const cliResult = await invokeCalculateCommand(serviceName, apiName, apiVersion);
+      it('should exit when server responds with 500 internal server error response', async () => {
+        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
 
-      console.debug(`Output: ${cliResult.stdout}`);
+        const mockResponse: IWireMockResponse = {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Message body is not guaranteed with HTTP 500 errors
+        };
 
-      assertThatBasicInformationIsBeingPrinted(cliResult, 1);
+        await wiremock.register(wireMockRequest, mockResponse, {
+          requestHeaderFeatures: {
+            'Content-Type': MatchingAttributes.EqualTo,
+          },
+        });
 
-      expect(cliResult.stderr).toContain('❌ Failed to trigger quality gate calculation!');
-      expect(cliResult.stderr).toContain('Status: 404');
-      expect(cliResult.stderr).toContain(`Details: ${message}`);
+        const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
 
-      const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/quality-gates/test-quality-gate/calculate');
-      expect(requests.length).toBe(1);
+        console.debug(`Output: ${cliResult.stdout}`);
 
-      const unmatchedRequests = await wiremock.getUnmatchedRequests();
-      expect(unmatchedRequests.length).toBe(0);
-    });
+        assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-    it('should exit when server responds with 500 internal server error response', async () => {
-      const { serviceName, apiName, apiVersion, wireMockRequest } = getWireMockRequest();
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('Status: 500');
+        expect(cliResult.stderr).toContain('Error: Server Error');
 
-      const mockResponse: IWireMockResponse = {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // Message body is not guaranteed with HTTP 500 errors
-      };
+        const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
+        expect(requests.length).toBe(1);
 
-      await wiremock.register(wireMockRequest, mockResponse, {
-        requestHeaderFeatures: {
-          'Content-Type': MatchingAttributes.EqualTo,
-        },
+        const unmatchedRequests = await wiremock.getUnmatchedRequests();
+        expect(unmatchedRequests.length).toBe(0);
       });
-
-      const cliResult = await invokeCalculateCommand(serviceName, apiName, apiVersion);
-
-      console.debug(`Output: ${cliResult.stdout}`);
-
-      assertThatBasicInformationIsBeingPrinted(cliResult, 1);
-
-      expect(cliResult.stderr).toContain('❌ Failed to trigger quality gate calculation!');
-      expect(cliResult.stderr).toContain('Status: 500');
-      expect(cliResult.stderr).toContain('Error: Server Error');
-
-      const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/quality-gates/test-quality-gate/calculate');
-      expect(requests.length).toBe(1);
-
-      const unmatchedRequests = await wiremock.getUnmatchedRequests();
-      expect(unmatchedRequests.length).toBe(0);
     });
   });
 });

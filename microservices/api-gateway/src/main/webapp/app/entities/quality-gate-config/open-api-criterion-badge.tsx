@@ -34,7 +34,7 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
     }
   }, [openApiCriterion.name, dispatch]);
 
-  const openApiCriterionEntity = useAppSelector(
+  const openApiCriterionEntity: IOpenApiCriterion = useAppSelector(
     state => state.snowwhite.openApiCriterion.entities?.[openApiCriterion.name!] || openApiCriterion,
   );
 

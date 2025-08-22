@@ -10,16 +10,17 @@ import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import chalk from 'chalk';
 
-import type { CalculateQualityGate202Response, QualityGateApi } from '../clients/quality-gate-api';
+import type { CalculateQualityGate202Response, CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import type { SanitizedOptions } from '../config/sanitized-options';
+import { toDtos } from '../entity/mapper/api-information.mapper';
 
 const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
-  console.log(chalk.blue(`🚀 Starting Quality-Gate calculation for ${options.apiInformation.length} OpenAPIs...`));
+  console.log(chalk.blue(`🚀 Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
   console.log(chalk.gray(`Base URL: ${options.url}`));
   console.log('');
 
-  const calculationRequest = { ...options.apiInformation[0] };
+  const calculationRequest: CalculateQualityGateRequest = { includeApis: toDtos(options.apiInformation) };
 
   const response: AxiosResponse<CalculateQualityGate202Response> = await qualityGateApi.calculateQualityGate(
     options.qualityGate,
@@ -31,10 +32,9 @@ const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: Sa
 
   if (response.headers.location) {
     console.log(`Location: ${response.headers.location}`);
+    console.log('');
+    console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
   }
-
-  console.log('');
-  console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
 };
 
 export const calculate = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
