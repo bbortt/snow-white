@@ -4,20 +4,21 @@
  * See LICENSE file for full details.
  */
 
-import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
+import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
+
 import React from 'react';
 import { Translate } from 'react-jhipster';
 import { Table } from 'reactstrap';
 
-interface OpenapiTestResultTableProps {
-  openapiTestResults: IOpenApiTestResult[];
+interface ApiTestResultTableProps {
+  apiTestResults: IApiTestResult[];
 }
 
-export const OpenapiTestResultTable: React.FC<OpenapiTestResultTableProps> = ({ openapiTestResults }: OpenapiTestResultTableProps) => {
+export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestResults }: ApiTestResultTableProps) => {
   return (
     <div>
       <div className="table-responsive">
-        {openapiTestResults && openapiTestResults.length > 0 ? (
+        {apiTestResults && apiTestResults.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
@@ -35,10 +36,10 @@ export const OpenapiTestResultTable: React.FC<OpenapiTestResultTableProps> = ({ 
               </tr>
             </thead>
             <tbody>
-              {openapiTestResults
+              {apiTestResults
                 .slice()
-                .sort((a, b) => a.openApiCriterionName!.localeCompare(b.openApiCriterionName!))
-                .map((openapiTestResult: IOpenApiTestResult) => (
+                .sort((a, b) => a.openApiCriterionName!.localeCompare(b.openApiCriterionName))
+                .map((openapiTestResult: IOpenApiTestResult, i: number) => (
                   <tr key={`entity-${openapiTestResult.openApiCriterionName}`} data-cy="openApiTestResultTable">
                     <td>{openapiTestResult.openApiCriterionName}</td>
                     <td>{openapiTestResult.coverage}</td>
@@ -57,4 +58,4 @@ export const OpenapiTestResultTable: React.FC<OpenapiTestResultTableProps> = ({ 
   );
 };
 
-export default OpenapiTestResultTable;
+export default ApiTestResultTable;

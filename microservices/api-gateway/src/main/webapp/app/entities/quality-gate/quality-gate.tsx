@@ -4,12 +4,13 @@
  * See LICENSE file for full details.
  */
 
+import type { IQualityGate } from 'app/shared/model/quality-gate.model';
+
 import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
-import { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import dayjs from 'dayjs';
@@ -30,9 +31,10 @@ export const QualityGate = () => {
     overridePaginationStateWithQueryParams(getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc'), pageLocation.search),
   );
 
-  const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGate.totalItems);
+
+  const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
 
   const getAllEntities = () => {
     dispatch(
@@ -132,13 +134,7 @@ export const QualityGate = () => {
                   <FontAwesomeIcon icon={getSortIconByFieldName('createdAt')} />
                 </th>
                 <th>
-                  <Translate contentKey="snowWhiteApp.qualityGate.serviceName">Service Name</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.qualityGate.apiName">API Name</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.qualityGate.apiVersion">API Version</Translate>
+                  <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
                 </th>
                 <th />
               </tr>
@@ -164,9 +160,7 @@ export const QualityGate = () => {
                       <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
                     ) : null}
                   </td>
-                  <td>{qualityGate.calculationRequest?.serviceName}</td>
-                  <td>{qualityGate.calculationRequest?.apiName}</td>
-                  <td>{qualityGate.calculationRequest?.apiVersion}</td>
+                  <td>{qualityGate.apiTests?.length}</td>
                   <td className="text-end">
                     <div className="btn-group flex-btn-group-container">
                       <Button

@@ -29,19 +29,29 @@ const fromDto = ({
   qualityGateConfigName,
   status,
   calculationRequest,
+  interfaces,
   initiatedAt,
-  openApiTestResults,
 }: ListQualityGateReports200ResponseInner): IQualityGate => ({
   calculationId,
   qualityGateConfig: { name: qualityGateConfigName },
-  status,
-  calculationRequest: { ...calculationRequest, attributeFilters: joinAttributeFilters(calculationRequest.attributeFilters) },
-  createdAt: initiatedAt,
-  openApiTestResults: openApiTestResults?.map(openApiTestResult => ({
-    ...openApiTestResult,
-    openApiCriterionName: openApiTestResult.id,
-    isIncludedInQualityGate: openApiTestResult.isIncludedInQualityGate || false,
+  apiTests: interfaces?.map(apiTest => ({
+    serviceName: apiTest.serviceName,
+    apiName: apiTest.apiName,
+    apiVersion: apiTest.apiVersion,
+    apiType: apiTest.apiType,
+    testResults: apiTest.testResults?.map(testResult => ({
+      openApiCriterionName: testResult.id,
+      coverage: testResult.coverage,
+      additionalInformation: testResult.additionalInformation,
+      isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,
+    })),
   })),
+  status,
+  createdAt: initiatedAt,
+  calculationRequest: {
+    lookbackWindow: calculationRequest.lookbackWindow,
+    attributeFilters: joinAttributeFilters(calculationRequest.attributeFilters),
+  },
 });
 
 export const joinAttributeFilters = (attributeFilters?: Record<string, string>): string => {

@@ -4,7 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
+import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
+
 import React, { useMemo } from 'react';
 import { Translate } from 'react-jhipster';
 import { Alert } from 'reactstrap';
@@ -19,7 +20,7 @@ export interface IGroupedTestResult {
   value: number;
 }
 
-export const groupOpenApiTestResults = (testResults: IOpenApiTestResult[]): IGroupedTestResult[] => {
+export const groupOpenApiTestResults = (testResults: IApiTestResult[]): IGroupedTestResult[] => {
   const groups = testResults.reduce(
     (acc, result) => {
       const groupName: ResultType = result.coverage === 1.0 ? ResultType.PASSED : ResultType.FAILED;
@@ -38,7 +39,7 @@ export const groupOpenApiTestResults = (testResults: IOpenApiTestResult[]): IGro
   );
 };
 
-export const groupOpenApiTestResultsWithStats = (testResults: IOpenApiTestResult[]) => {
+export const groupOpenApiTestResultsWithStats = (testResults: IApiTestResult[]) => {
   const total = testResults.length;
   const passed = testResults.filter(result => result.coverage === 1.0).length;
   const failed = total - passed;
@@ -72,16 +73,13 @@ const COLORS: Record<ResultType, string> = {
 };
 
 type ShapePieChartProps = {
-  openApiTestResults?: IOpenApiTestResult[];
+  apiTestResults?: IApiTestResult[];
 };
 
-export const ShapePieChart: React.FC<ShapePieChartProps> = ({ openApiTestResults }: ShapePieChartProps) => {
-  const data: IGroupedTestResult[] = useMemo(
-    () => (openApiTestResults ? groupOpenApiTestResults(openApiTestResults) : []),
-    [openApiTestResults],
-  );
+export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: ShapePieChartProps) => {
+  const data: IGroupedTestResult[] = useMemo(() => (apiTestResults ? groupOpenApiTestResults(apiTestResults) : []), [apiTestResults]);
 
-  if (!openApiTestResults || openApiTestResults.length === 0) {
+  if (!apiTestResults || apiTestResults.length === 0) {
     return (
       <Alert className="mt-5 text-center" color="warning">
         <Translate contentKey="error.chart.noData">No data for chart available.</Translate>
