@@ -5,11 +5,8 @@
  */
 
 export interface ICalculationRequestParameters {
-  serviceName?: string;
-  apiName?: string;
-  apiVersion?: string | null;
-  lookbackWindow?: string | null;
-  attributeFilters?: string | null;
+  lookbackWindow?: string;
+  attributeFilters?: string;
 }
 
 export const defaultValue: Readonly<ICalculationRequestParameters> = {};

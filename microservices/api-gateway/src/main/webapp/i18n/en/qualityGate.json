@@ -15,9 +15,7 @@
       "qualityGateConfigName": "Quality-Gate",
       "status": "Status",
       "createdAt": "Initiated A",
-      "serviceName": "Service Name",
-      "apiName": "API Name",
-      "apiVersion": "API Version",
+      "testedAPIs": "Tested APIs",
       "calculationRequest": "Calculation Request Parameters",
       "openApiTestResult": {
         "title": "OpenAPI Test Results",

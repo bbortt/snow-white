@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React, { useEffect, useState } from 'react';
@@ -27,7 +29,7 @@ export const QualityGateConfigDeleteDialog = () => {
     setLoadModal(true);
   }, []);
 
-  const qualityGateConfigEntity = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
+  const qualityGateConfigEntity: IQualityGateConfig = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
 
   const handleClose = () => {

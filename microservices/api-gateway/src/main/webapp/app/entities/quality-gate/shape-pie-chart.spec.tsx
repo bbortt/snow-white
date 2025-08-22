@@ -36,7 +36,7 @@ describe('ShapePieChart', () => {
 
   describe('Component rendering', () => {
     it.each([null, undefined, []])('should render alert when openApiTestResults is:', (openApiTestResults: null | undefined) => {
-      const { container } = render(<ShapePieChart openApiTestResults={openApiTestResults} />);
+      const { container } = render(<ShapePieChart apiTestResults={openApiTestResults} />);
       expect(container.tagName).toBe('DIV');
       expect(container.firstChild).toHaveClass('alert');
       expect(container.firstChild).toHaveClass('alert-warning');
@@ -50,7 +50,7 @@ describe('ShapePieChart', () => {
     it('should render chart components when data is provided', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test 1'), createTestResult(0.5, 'Test 2')];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('ShapePieChart', () => {
         createTestResult(0.5, 'Failed Test 1'),
       ];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       const pieElement = screen.getByTestId('pie');
       const pieData = JSON.parse(pieElement.getAttribute('data-pie-data') || '[]');
@@ -80,7 +80,7 @@ describe('ShapePieChart', () => {
     it('should render correct number of cells with proper colors', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Passed Test'), createTestResult(0.8, 'Failed Test')];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       const cells = screen.getAllByTestId('pie-cell');
       expect(cells).toHaveLength(2);
@@ -94,7 +94,7 @@ describe('ShapePieChart', () => {
     it('should render only PASSED cell when all tests pass', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test 1'), createTestResult(1.0, 'Test 2')];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       const cells = screen.getAllByTestId('pie-cell');
       expect(cells).toHaveLength(1);
@@ -104,7 +104,7 @@ describe('ShapePieChart', () => {
     it('should render only FAILED cell when all tests fail', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(0.5, 'Test 1'), createTestResult(0.8, 'Test 2')];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       const cells = screen.getAllByTestId('pie-cell');
       expect(cells).toHaveLength(1);
@@ -116,7 +116,7 @@ describe('ShapePieChart', () => {
     it('should include tooltip component', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
 
-      render(<ShapePieChart openApiTestResults={testResults} />);
+      render(<ShapePieChart apiTestResults={testResults} />);
 
       expect(screen.getByTestId('tooltip')).toBeInTheDocument();
     });
@@ -126,12 +126,12 @@ describe('ShapePieChart', () => {
     it('should memoize data processing based on openApiTestResults', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
 
-      const { rerender } = render(<ShapePieChart openApiTestResults={testResults} />);
+      const { rerender } = render(<ShapePieChart apiTestResults={testResults} />);
 
       const initialPieData = JSON.parse(screen.getByTestId('pie').getAttribute('data-pie-data') || '[]');
 
       // Rerender with same data
-      rerender(<ShapePieChart openApiTestResults={testResults} />);
+      rerender(<ShapePieChart apiTestResults={testResults} />);
 
       const rerenderedPieData = JSON.parse(screen.getByTestId('pie').getAttribute('data-pie-data') || '[]');
 
@@ -142,12 +142,12 @@ describe('ShapePieChart', () => {
       const testResults1: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
       const testResults2: IOpenApiTestResult[] = [createTestResult(1.0, 'Test 1'), createTestResult(0.5, 'Test 2')];
 
-      const { rerender } = render(<ShapePieChart openApiTestResults={testResults1} />);
+      const { rerender } = render(<ShapePieChart apiTestResults={testResults1} />);
 
       let pieData = JSON.parse(screen.getByTestId('pie').getAttribute('data-pie-data') || '[]');
       expect(pieData).toHaveLength(1);
 
-      rerender(<ShapePieChart openApiTestResults={testResults2} />);
+      rerender(<ShapePieChart apiTestResults={testResults2} />);
 
       pieData = JSON.parse(screen.getByTestId('pie').getAttribute('data-pie-data') || '[]');
       expect(pieData).toHaveLength(2);
