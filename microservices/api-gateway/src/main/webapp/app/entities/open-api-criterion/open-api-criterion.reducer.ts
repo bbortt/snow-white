@@ -29,7 +29,7 @@ const initialState: EntityState<IOpenApiCriterion> = {
 export const getEntities = createAsyncThunk(
   'openApiCriterion/fetch_entity_list',
   async (): Promise<AxiosResponse<IOpenApiCriterion[]>> => {
-    return criteriaApi.listOpenApiCriteria().then(response => ({
+    return await criteriaApi.listOpenApiCriteria().then(response => ({
       ...response,
       data: response.data.map(openApiCriterion => {
         const { id, name, description } = openApiCriterion;
