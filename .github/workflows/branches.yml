@@ -28,7 +28,7 @@ jobs:
           filterOutClosed: true
           filterOutDraft: true
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         with:
           cache: maven
