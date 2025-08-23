@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.api.redis;
+package io.github.bbortt.snow.white.commons.redis;
 
 import static io.github.bbortt.snow.white.commons.redis.RedisHashUtils.generateRedisApiInformationId;
 
@@ -22,7 +22,7 @@ import org.springframework.data.redis.core.index.Indexed;
 public class ApiEndpointEntry {
 
   @Id
-  private @Nonnull String id; // Will be constructed as "{otelServiceName}:{apiName}:{apiVersion}"
+  private @Nonnull String id;
 
   @Indexed
   private @Nonnull String otelServiceName;

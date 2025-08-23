@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka.stream;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -50,16 +49,12 @@ public class OpenApiCoverageCalculationProcessor {
         logger.debug("Handling message id '{}'", key)
       )
       .mapValues((key, calculationRequestEvent) -> {
-        var openApiIdentifier = new OpenApiService.OpenApiIdentifier(
-          calculationRequestEvent.getServiceName(),
-          calculationRequestEvent.getApiName(),
-          calculationRequestEvent.getApiVersion()
-        );
-
         try {
           return new OpenApiService.OpenApiCoverageRequest(
-            openApiIdentifier,
-            openApiService.findAndParseOpenApi(openApiIdentifier),
+            calculationRequestEvent.getApiInformation(),
+            openApiService.findAndParseOpenApi(
+              calculationRequestEvent.getApiInformation()
+            ),
             calculationRequestEvent.getLookbackWindow()
           );
         } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {

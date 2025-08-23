@@ -6,28 +6,26 @@
 
 package io.github.bbortt.snow.white.commons.event.dto;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static lombok.AccessLevel.PRIVATE;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.With;
 
 @With
 @Getter
 @Builder
+@ToString
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
-public class ApiInformation {
+public class OpenApiInformation extends ApiInformation {
 
-  @Nonnull
-  private String serviceName;
-
-  @Nonnull
-  private String apiName;
-
-  private @Nullable String apiVersion;
+  private ApiType apiType = OPENAPI;
 }

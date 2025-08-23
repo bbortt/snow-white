@@ -6,11 +6,11 @@
 
 package io.github.bbortt.snow.white.commons.event;
 
-import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.commons.event.dto.TypedApiInformation;
 import java.util.Set;
 
 public record OpenApiCoverageResponseEvent(
-  ApiInformation apiInformation,
+  TypedApiInformation apiInformation,
   Set<OpenApiTestResult> openApiCriteria
 ) {}

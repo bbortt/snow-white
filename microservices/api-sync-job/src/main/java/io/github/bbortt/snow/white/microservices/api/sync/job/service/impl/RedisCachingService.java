@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointEntry;
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
