@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.api.redis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

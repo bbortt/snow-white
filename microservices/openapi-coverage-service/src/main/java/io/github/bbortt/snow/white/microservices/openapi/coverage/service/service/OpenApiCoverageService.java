@@ -7,29 +7,32 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.OperationKeyCalculator.toOperationKey;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter.attributeFilters;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.DELETE;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.GET;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.HEAD;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.OPTIONS;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.PATCH;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.POST;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.HttpAttributes.HttpRequestMethodValues.PUT;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD;
 import static io.opentelemetry.semconv.UrlAttributes.URL_PATH;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.GET;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.HEAD;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.OPTIONS;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.PATCH;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.POST;
+import static io.swagger.v3.oas.models.PathItem.HttpMethod.PUT;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,40 +42,42 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OpenApiCoverageService {
 
+  private static final Set<PathItemMapping> METHOD_ACCESSORS = Set.of(
+    new PathItemMapping(PathItem::getGet, GET),
+    new PathItemMapping(PathItem::getPost, POST),
+    new PathItemMapping(PathItem::getPut, PUT),
+    new PathItemMapping(PathItem::getDelete, DELETE),
+    new PathItemMapping(PathItem::getPatch, PATCH),
+    new PathItemMapping(PathItem::getHead, HEAD),
+    new PathItemMapping(PathItem::getOptions, OPTIONS)
+  );
+
   private final OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinator;
-  private final OpenTelemetryService openTelemetryService;
 
-  public Set<OpenApiTestResult> gatherDataAndCalculateCoverage(
-    OpenApiService.OpenApiCoverageRequest openApiCoverageRequest
+  public Set<OpenApiTestResult> testOpenApi(
+    @NotNull OpenApiTestContext openApiTestContext
   ) {
-    var openTelemetryData = openTelemetryService.findTracingData(
-      openApiCoverageRequest.openApiIdentifier().otelServiceName(),
-      openApiCoverageRequest.lookbackWindow(),
-      // TODO #145: Values should be extracted from stream
-      attributeFilters().build()
-    );
-
-    if (isEmpty(openTelemetryData)) {
+    if (isEmpty(openApiTestContext.openTelemetryData())) {
       return emptySet();
     }
 
     return calculateCoverage(
-      openApiCoverageRequest.openAPI(),
-      openTelemetryData
+      openApiTestContext.openAPI(),
+      openApiTestContext.openTelemetryData()
     );
   }
 
   private Set<OpenApiTestResult> calculateCoverage(
     OpenAPI openApi,
-    List<OpenTelemetryData> telemetryData
+    Set<OpenTelemetryData> openTelemetryData
   ) {
     logger.info(
       "Calculating OpenAPI coverage for {} telemetry data points",
-      telemetryData.size()
+      openTelemetryData.size()
     );
 
     var pathToOpenAPIOperationMap = extractPathsAndOperations(openApi);
-    var pathToTelemetryMap = groupTelemetryByPath(telemetryData);
+    var pathToTelemetryMap = groupTelemetryByPath(openTelemetryData);
 
     return openApiCoverageCalculationCoordinator.calculate(
       pathToOpenAPIOperationMap,
@@ -90,47 +95,14 @@ public class OpenApiCoverageService {
     openApi
       .getPaths()
       .forEach((path, pathItem) -> {
-        if (nonNull(pathItem.getGet())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, GET),
-            pathItem.getGet()
-          );
-        }
-        if (nonNull(pathItem.getPost())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, POST),
-            pathItem.getPost()
-          );
-        }
-        if (nonNull(pathItem.getPut())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, PUT),
-            pathItem.getPut()
-          );
-        }
-        if (nonNull(pathItem.getDelete())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, DELETE),
-            pathItem.getDelete()
-          );
-        }
-        if (nonNull(pathItem.getPatch())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, PATCH),
-            pathItem.getPatch()
-          );
-        }
-        if (nonNull(pathItem.getHead())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, HEAD),
-            pathItem.getHead()
-          );
-        }
-        if (nonNull(pathItem.getOptions())) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, OPTIONS),
-            pathItem.getOptions()
-          );
+        for (var pathItemMapping : METHOD_ACCESSORS) {
+          var operation = pathItemMapping.mappingFunction().apply(pathItem);
+          if (nonNull(operation)) {
+            pathToOpenAPIOperationMap.put(
+              toOperationKey(path, pathItemMapping.httpMethodString()),
+              operation
+            );
+          }
         }
       });
 
@@ -138,7 +110,7 @@ public class OpenApiCoverageService {
   }
 
   private Map<String, List<OpenTelemetryData>> groupTelemetryByPath(
-    List<OpenTelemetryData> telemetryData
+    Set<OpenTelemetryData> telemetryData
   ) {
     return telemetryData
       .stream()
@@ -158,5 +130,14 @@ public class OpenApiCoverageService {
           return toOperationKey(path, method);
         })
       );
+  }
+
+  private record PathItemMapping(
+    Function<PathItem, Operation> mappingFunction,
+    PathItem.HttpMethod httpMethod
+  ) {
+    public String httpMethodString() {
+      return httpMethod.name();
+    }
   }
 }

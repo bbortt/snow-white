@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis;
 
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

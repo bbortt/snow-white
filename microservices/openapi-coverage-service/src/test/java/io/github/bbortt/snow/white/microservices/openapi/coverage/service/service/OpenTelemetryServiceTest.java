@@ -11,6 +11,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.service
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.VALUE_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilterOperator.STRING_EQUALS;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
@@ -27,6 +28,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -58,7 +60,7 @@ class OpenTelemetryServiceTest {
   }
 
   @Nested
-  class FindTracingData {
+  class FindOpenTelemetryTracingData {
 
     private static final String SERVICE_NAME = "test-service";
     private static final String LOOKBACK_RANGE = "1h";
@@ -80,20 +82,20 @@ class OpenTelemetryServiceTest {
     }
 
     public static Stream<
-      List<AttributeFilter>
+      Set<AttributeFilter>
     > withoutAttributeFilters_shouldBuildCorrectQuery() {
-      return Stream.of(null, emptyList());
+      return Stream.of(null, emptySet());
     }
 
     @MethodSource
     @ParameterizedTest
     void withoutAttributeFilters_shouldBuildCorrectQuery(
-      List<AttributeFilter> attributeFilters
+      Set<AttributeFilter> attributeFilters
     ) {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
-      List<OpenTelemetryData> result = fixture.findTracingData(
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
         SERVICE_NAME,
         LOOKBACK_RANGE,
         attributeFilters
@@ -120,12 +122,12 @@ class OpenTelemetryServiceTest {
         STRING_EQUALS,
         "200"
       );
-      List<AttributeFilter> attributeFilters = List.of(filter1, filter2);
+      Set<AttributeFilter> attributeFilters = Set.of(filter1, filter2);
 
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
-      List<OpenTelemetryData> result = fixture.findTracingData(
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
         SERVICE_NAME,
         LOOKBACK_RANGE,
         attributeFilters
@@ -179,7 +181,7 @@ class OpenTelemetryServiceTest {
       doReturn(List.of(fluxRecord1, fluxRecord2)).when(fluxTable).getRecords();
       doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
 
-      List<OpenTelemetryData> result = fixture.findTracingData(
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
         SERVICE_NAME,
         LOOKBACK_RANGE,
         null
@@ -187,7 +189,7 @@ class OpenTelemetryServiceTest {
 
       assertThat(result)
         .hasSize(2)
-        .satisfiesExactly(
+        .satisfiesExactlyInAnyOrder(
           data1 -> {
             assertThat(data1.spanId()).isEqualTo(spanId1);
             assertThat(data1.traceId()).isEqualTo(traceId1);

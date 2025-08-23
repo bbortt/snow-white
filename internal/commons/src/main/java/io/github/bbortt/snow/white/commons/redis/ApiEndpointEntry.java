@@ -4,25 +4,33 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.api.redis;
+package io.github.bbortt.snow.white.commons.redis;
 
 import static io.github.bbortt.snow.white.commons.redis.RedisHashUtils.generateRedisApiInformationId;
+import static java.util.Objects.nonNull;
+import static lombok.AccessLevel.PACKAGE;
 
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import jakarta.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.With;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
 @Getter
 @Setter
+@With(PACKAGE)
 @RedisHash("api_endpoints")
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApiEndpointEntry {
 
   @Id
-  private @Nonnull String id; // Will be constructed as "{otelServiceName}:{apiName}:{apiVersion}"
+  private @Nonnull String id;
 
   @Indexed
   private @Nonnull String otelServiceName;
@@ -60,6 +68,7 @@ public class ApiEndpointEntry {
   public boolean equals(Object o) {
     return (
       o instanceof ApiEndpointEntry apiEndpointEntry &&
+      nonNull(id) &&
       id.equals(apiEndpointEntry.id)
     );
   }
