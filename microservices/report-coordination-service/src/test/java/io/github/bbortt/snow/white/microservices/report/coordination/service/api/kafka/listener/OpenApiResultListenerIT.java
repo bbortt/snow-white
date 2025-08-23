@@ -12,6 +12,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.PASSED;
@@ -103,6 +104,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
+        OPENAPI,
         createValidApiInformation(),
         Set.of(new OpenApiTestResult(openApiCriterion, ONE, duration))
       )
@@ -138,6 +140,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
         .getTopic(),
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
+        OPENAPI,
         createValidApiInformation(),
         Set.of(new OpenApiTestResult(openApiCriterion, ZERO, duration))
       )

@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import org.junit.jupiter.api.Test;
 
 class OpenApiNotIndexedExceptionTest {
@@ -17,14 +17,14 @@ class OpenApiNotIndexedExceptionTest {
   void shouldConstructMessage() {
     assertThat(
       new OpenApiNotIndexedException(
-        new OpenApiService.OpenApiIdentifier(
-          "otelServiceName",
-          "apiName",
-          "apiVersion"
-        )
+        ApiInformation.builder()
+          .serviceName("otelServiceName")
+          .apiName("apiName")
+          .apiVersion("apiVersion")
+          .build()
       )
     ).hasMessage(
-      "OpenApi identifier not indexed: OpenApiIdentifier[otelServiceName=otelServiceName, apiName=apiName, apiVersion=apiVersion]"
+      "OpenApi identifier not indexed: { \"serviceName\": \"otelServiceName\",\"apiName\": \"apiName\",\"apiVersion\": \"apiVersion\" }"
     );
   }
 }

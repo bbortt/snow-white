@@ -15,8 +15,8 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
 import jakarta.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,10 +29,12 @@ public class OpenTelemetryService {
   private final InfluxDBClient influxDBClient;
   private final InfluxDBProperties influxDBProperties;
 
-  public List<OpenTelemetryData> findTracingData(
+  // TODO: Add api name and api version filter
+
+  public Set<OpenTelemetryData> findOpenTelemetryTracingData(
     String serviceName,
     String lookbackRange,
-    @Nullable List<AttributeFilter> attributeFilters
+    @Nullable Set<AttributeFilter> attributeFilters
   ) {
     var fluxBuilder = new StringBuilder();
     fluxBuilder
@@ -57,7 +59,7 @@ public class OpenTelemetryService {
 
     var fluxTables = influxDBClient.getQueryApi().query(fluxQuery);
 
-    var openTelemetryData = new ArrayList<OpenTelemetryData>();
+    Set<OpenTelemetryData> openTelemetryData = new HashSet<>();
     fluxTables.forEach(fluxTable ->
       fluxTable
         .getRecords()
