@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointEntry;
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.RedisCachingService;

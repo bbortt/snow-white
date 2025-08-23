@@ -6,13 +6,20 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
+import static java.lang.String.format;
+
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 
 public class OpenApiNotIndexedException extends Exception {
 
-  public OpenApiNotIndexedException(
-    OpenApiService.OpenApiIdentifier openApiIdentifier
-  ) {
-    super("OpenApi identifier not indexed: " + openApiIdentifier);
+  public OpenApiNotIndexedException(ApiInformation apiInformation) {
+    super(
+      format(
+        "OpenApi identifier not indexed: { \"serviceName\": \"%s\",\"apiName\": \"%s\",\"apiVersion\": \"%s\" }",
+        apiInformation.getServiceName(),
+        apiInformation.getApiName(),
+        apiInformation.getApiVersion()
+      )
+    );
   }
 }

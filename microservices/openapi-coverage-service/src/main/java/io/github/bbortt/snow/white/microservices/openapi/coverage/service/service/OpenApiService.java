@@ -9,7 +9,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointEntry;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
@@ -29,15 +30,15 @@ public class OpenApiService {
 
   private final ApiEndpointRepository apiEndpointRepository;
 
-  public OpenAPI findAndParseOpenApi(OpenApiIdentifier openApiIdentifier)
+  public OpenAPI findAndParseOpenApi(ApiInformation apiInformation)
     throws OpenApiNotIndexedException, UnparseableOpenApiException {
     var apiEndpointEntry = apiEndpointRepository
       .findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
-        openApiIdentifier.otelServiceName(),
-        openApiIdentifier.apiName(),
-        openApiIdentifier.apiVersion()
+        apiInformation.getServiceName(),
+        apiInformation.getApiName(),
+        apiInformation.getApiVersion()
       )
-      .orElseThrow(() -> new OpenApiNotIndexedException(openApiIdentifier));
+      .orElseThrow(() -> new OpenApiNotIndexedException(apiInformation));
 
     return parseOpenApiSource(apiEndpointEntry);
   }
@@ -56,16 +57,4 @@ public class OpenApiService {
 
     return swaggerParseResult.getOpenAPI();
   }
-
-  public record OpenApiIdentifier(
-    String otelServiceName,
-    String apiName,
-    String apiVersion
-  ) {}
-
-  public record OpenApiCoverageRequest(
-    OpenApiIdentifier openApiIdentifier,
-    OpenAPI openAPI,
-    String lookbackWindow
-  ) {}
 }

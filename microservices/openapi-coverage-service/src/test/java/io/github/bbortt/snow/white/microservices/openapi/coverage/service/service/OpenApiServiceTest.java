@@ -6,13 +6,15 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointEntry;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
@@ -45,32 +47,31 @@ class OpenApiServiceTest {
     private static final String API_NAME = "api";
     private static final String API_VERSION = "1.2.3";
 
-    private OpenApiService.OpenApiIdentifier openApiIdentifier;
+    private ApiInformation apiInformation;
 
     @BeforeEach
     void beforeEachSetup() {
-      openApiIdentifier = new OpenApiService.OpenApiIdentifier(
-        OTEL_SERVICE_NAME,
-        API_NAME,
-        API_VERSION
-      );
+      apiInformation = ApiInformation.builder()
+        .serviceName(OTEL_SERVICE_NAME)
+        .apiName(API_NAME)
+        .apiVersion(API_VERSION)
+        .build();
     }
 
     @Test
     void shouldQueryAndParseOpenApi()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var apiEndpointEntry = ApiEndpointEntry.builder()
-        .apiName(API_NAME)
-        .apiVersion(API_VERSION)
-        .otelServiceName(OTEL_SERVICE_NAME)
-        .sourceUrl(
-          requireNonNull(
-            getClass()
-              .getClassLoader()
-              .getResource("OpenApiServiceTest/swagger.yaml")
-          ).toExternalForm()
-        )
-        .build();
+      var apiEndpointEntry = new ApiEndpointEntry(
+        OTEL_SERVICE_NAME,
+        API_NAME,
+        API_VERSION,
+        requireNonNull(
+          getClass()
+            .getClassLoader()
+            .getResource("OpenApiServiceTest/swagger.yaml")
+        ).toExternalForm(),
+        OPENAPI
+      );
 
       doReturn(Optional.of(apiEndpointEntry))
         .when(apiEndpointRepositoryMock)
@@ -80,7 +81,7 @@ class OpenApiServiceTest {
           API_VERSION
         );
 
-      OpenAPI openAPI = fixture.findAndParseOpenApi(openApiIdentifier);
+      OpenAPI openAPI = fixture.findAndParseOpenApi(apiInformation);
 
       assertThat(openAPI)
         .isNotNull()
@@ -90,18 +91,17 @@ class OpenApiServiceTest {
 
     @Test
     void shouldThrow_whenApiIsUnparseable() {
-      var apiEndpointEntry = ApiEndpointEntry.builder()
-        .apiName(API_NAME)
-        .apiVersion(API_VERSION)
-        .otelServiceName(OTEL_SERVICE_NAME)
-        .sourceUrl(
-          requireNonNull(
-            getClass()
-              .getClassLoader()
-              .getResource("OpenApiServiceTest/swagger-invalid.yaml")
-          ).toExternalForm()
-        )
-        .build();
+      var apiEndpointEntry = new ApiEndpointEntry(
+        OTEL_SERVICE_NAME,
+        API_NAME,
+        API_VERSION,
+        requireNonNull(
+          getClass()
+            .getClassLoader()
+            .getResource("OpenApiServiceTest/swagger-invalid.yaml")
+        ).toExternalForm(),
+        OPENAPI
+      );
 
       doReturn(Optional.of(apiEndpointEntry))
         .when(apiEndpointRepositoryMock)
@@ -111,18 +111,16 @@ class OpenApiServiceTest {
           API_VERSION
         );
 
-      assertThatThrownBy(() -> fixture.findAndParseOpenApi(openApiIdentifier))
+      assertThatThrownBy(() -> fixture.findAndParseOpenApi(apiInformation))
         .isInstanceOf(UnparseableOpenApiException.class)
         .hasMessageStartingWith("Unparsable OpenAPI");
     }
 
     @Test
     void shouldThrow_whenApiEndpointNotFound() {
-      assertThatThrownBy(() -> fixture.findAndParseOpenApi(openApiIdentifier))
-        .isInstanceOf(OpenApiNotIndexedException.class)
-        .hasMessage(
-          "OpenApi identifier not indexed: OpenApiIdentifier[otelServiceName=service, apiName=api, apiVersion=1.2.3]"
-        );
+      assertThatThrownBy(() ->
+        fixture.findAndParseOpenApi(apiInformation)
+      ).isInstanceOf(OpenApiNotIndexedException.class);
 
       verify(
         apiEndpointRepositoryMock

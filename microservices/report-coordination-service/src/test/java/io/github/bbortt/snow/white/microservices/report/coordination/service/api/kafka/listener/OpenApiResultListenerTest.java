@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.api.kafka.listener;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.FAILED;
@@ -164,6 +165,7 @@ class OpenApiResultListenerTest {
       );
 
       var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
         apiInformation,
         openApiCriteria
       );
@@ -212,7 +214,11 @@ class OpenApiResultListenerTest {
     void shouldLogWarningAndReturn_whenReportDoesNotExist()
       throws QualityGateNotFoundException {
       var apiInformation = mock(ApiInformation.class);
-      var event = new OpenApiCoverageResponseEvent(apiInformation, emptySet());
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        apiInformation,
+        emptySet()
+      );
 
       doReturn(Optional.empty())
         .when(reportServiceMock)
@@ -242,7 +248,11 @@ class OpenApiResultListenerTest {
 
       var apiInformation = mock(ApiInformation.class);
       var apiTest = mock(ApiTest.class);
-      var event = new OpenApiCoverageResponseEvent(apiInformation, emptySet());
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        apiInformation,
+        emptySet()
+      );
 
       doReturn(Optional.of(report))
         .when(reportServiceMock)
@@ -290,7 +300,11 @@ class OpenApiResultListenerTest {
         .build();
 
       var apiInformation = mock(ApiInformation.class);
-      var event = new OpenApiCoverageResponseEvent(apiInformation, emptySet());
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        apiInformation,
+        emptySet()
+      );
 
       doReturn(Optional.of(report))
         .when(reportServiceMock)
@@ -352,7 +366,11 @@ class OpenApiResultListenerTest {
 
       var apiInformation = mock(ApiInformation.class);
       var apiTest = mock(ApiTest.class);
-      var event = new OpenApiCoverageResponseEvent(apiInformation, emptySet());
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        apiInformation,
+        emptySet()
+      );
 
       doReturn(apiTest)
         .when(apiInformationFilterMock)
@@ -431,6 +449,7 @@ class OpenApiResultListenerTest {
       );
 
       var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
         apiInformation,
         openApiCriteria
       );

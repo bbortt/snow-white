@@ -9,7 +9,6 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
-import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.System.lineSeparator;
