@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.redis;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +56,8 @@ class RedisCachingServiceTest {
         .withServiceName(serviceName)
         .withName(apiName)
         .withVersion(apiVersion)
-        .withSourceUrl(sourceUrl);
+        .withSourceUrl(sourceUrl)
+        .withApiType(OPENAPI);
 
       doAnswer(returnsFirstArg())
         .when(apiEndpointRepositoryMock)
@@ -70,10 +72,18 @@ class RedisCachingServiceTest {
           assertThat(e.getId()).isEqualTo(
             serviceName + ":" + apiName + ":" + apiVersion
           ),
-        e -> assertThat(e.getOtelServiceName()).isEqualTo(serviceName),
-        e -> assertThat(e.getApiName()).isEqualTo(apiName),
-        e -> assertThat(e.getApiVersion()).isEqualTo(apiVersion),
-        e -> assertThat(e.getSourceUrl()).isEqualTo(sourceUrl)
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getOtelServiceName()).isEqualTo(
+            serviceName
+          ),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiName()).isEqualTo(apiName),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiVersion()).isEqualTo(apiVersion),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getSourceUrl()).isEqualTo(sourceUrl),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiType()).isEqualTo(OPENAPI.getVal())
       );
     }
   }
