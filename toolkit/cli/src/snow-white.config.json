@@ -2,8 +2,8 @@
   "apiInformation": [
     {
       "serviceName": "user-service",
-      "apiName" : "user-api",
-       "apiVersion" : "1.0.0"
+      "apiName": "user-api",
+      "apiVersion": "1.0.0"
     }
   ],
   "qualityGate": "sonarqube",
