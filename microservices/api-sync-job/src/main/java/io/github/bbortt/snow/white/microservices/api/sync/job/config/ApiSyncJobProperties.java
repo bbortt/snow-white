@@ -11,7 +11,6 @@ import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.Pars
 import static java.lang.String.format;
 import static org.springframework.util.StringUtils.hasText;
 
-import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
 import lombok.Getter;
 import lombok.Setter;

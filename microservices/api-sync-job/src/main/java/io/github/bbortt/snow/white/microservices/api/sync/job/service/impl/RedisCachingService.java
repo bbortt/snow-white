@@ -26,7 +26,8 @@ public class RedisCachingService implements CachingService {
         apiInformation.getServiceName(),
         apiInformation.getName(),
         apiInformation.getVersion(),
-        apiInformation.getSourceUrl()
+        apiInformation.getSourceUrl(),
+        apiInformation.getApiType()
       )
     );
   }

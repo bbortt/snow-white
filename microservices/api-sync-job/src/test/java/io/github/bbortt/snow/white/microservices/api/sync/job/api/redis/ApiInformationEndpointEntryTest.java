@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.api.redis;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.ASYNCAPI;
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -33,15 +35,27 @@ class ApiInformationEndpointEntryTest {
         serviceName,
         apiName,
         apiVersion,
-        sourceUrl
+        sourceUrl,
+        OPENAPI
       );
 
       assertThat(fixture).satisfies(
-        f -> assertThat(f.getId()).isEqualTo("test-service:test-api:1.2.3"),
-        f -> assertThat(f.getOtelServiceName()).isEqualTo(serviceName),
-        f -> assertThat(f.getApiName()).isEqualTo(apiName),
-        f -> assertThat(f.getApiVersion()).isEqualTo(apiVersion),
-        f -> assertThat(f.getSourceUrl()).isEqualTo(sourceUrl)
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getId()).isEqualTo(
+            "test-service:test-api:1.2.3"
+          ),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getOtelServiceName()).isEqualTo(
+            serviceName
+          ),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiName()).isEqualTo(apiName),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiVersion()).isEqualTo(apiVersion),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getSourceUrl()).isEqualTo(sourceUrl),
+        apiEndpointEntry ->
+          assertThat(apiEndpointEntry.getApiType()).isEqualTo(OPENAPI.getVal())
       );
     }
   }
@@ -59,13 +73,15 @@ class ApiInformationEndpointEntryTest {
         otelServiceName,
         apiName,
         apiVersion,
-        "foo"
+        "foo",
+        ASYNCAPI
       );
       var entry2 = new ApiEndpointEntry(
         otelServiceName,
         apiName,
         apiVersion,
-        "bar"
+        "bar",
+        OPENAPI
       );
 
       assertThat(entry1).isEqualTo(entry2).hasSameHashCodeAs(entry2);
@@ -117,13 +133,15 @@ class ApiInformationEndpointEntryTest {
         otelServiceName1,
         apiName1,
         apiVersion1,
-        "foo"
+        "foo",
+        ASYNCAPI
       );
       var entry2 = new ApiEndpointEntry(
         otelServiceName2,
         apiName2,
         apiVersion2,
-        "foo"
+        "foo",
+        OPENAPI
       );
 
       assertThat(entry1).isNotEqualTo(entry2).doesNotHaveSameHashCodeAs(entry2);
