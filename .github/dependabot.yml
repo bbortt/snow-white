@@ -32,7 +32,7 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
-      npm-dependencies:
+      helm-dependencies:
         patterns:
           - '*'
   - package-ecosystem: 'helm'
@@ -54,7 +54,7 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
-      npm-dependencies:
+      ui-dependencies:
         patterns:
           - '*'
   - package-ecosystem: 'bun'
@@ -67,7 +67,7 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
-      npm-dependencies:
+      cli-dependencies:
         patterns:
           - '*'
   - package-ecosystem: 'maven'

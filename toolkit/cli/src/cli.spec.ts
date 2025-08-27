@@ -4,6 +4,11 @@
  * See LICENSE file for full details.
  */
 
+import { randomBytes } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import type { ChildProcess } from 'child_process';
 import { spawn } from 'child_process';
@@ -12,9 +17,6 @@ import { MatchingAttributes, WireMock } from 'wiremock-captain';
 
 import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
 import { QUALITY_GATE_CALCULATION_FAILED } from './common/exit-codes';
-
-import { fileSync, setGracefulCleanup } from 'tmp';
-import { writeFileSync } from 'node:fs';
 
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
 
@@ -127,8 +129,6 @@ describe('CLI', () => {
   };
 
   beforeAll(() => {
-    setGracefulCleanup();
-
     WIREMOCK_URL = `http://localhost:${WIREMOCK_PORT}`;
     wiremock = new WireMock(WIREMOCK_URL);
 
@@ -148,9 +148,9 @@ describe('CLI', () => {
     {
       title: 'with configuration from file',
       cliInvocationCommand: async (serviceName: string, apiName: string, apiVersion: string) => {
-        const tmpobj = fileSync();
+        const tmpPath = join(tmpdir(), `temp-${randomBytes(16).toString('hex')}.json`);
         writeFileSync(
-          tmpobj.name,
+          tmpPath,
           JSON.stringify({
             qualityGate: qualityGateConfigName,
             apiInformation: [{ serviceName, apiName, apiVersion }],
@@ -158,7 +158,7 @@ describe('CLI', () => {
           }),
         );
 
-        return executeCLICommand(['calculate', '--configFile', tmpobj.name, '--url', WIREMOCK_URL]);
+        return executeCLICommand(['calculate', '--configFile', tmpPath, '--url', WIREMOCK_URL]);
       },
     },
   ].forEach(testConfiguration => {
