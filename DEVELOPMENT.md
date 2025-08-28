@@ -44,6 +44,22 @@ Restart the environment for changes to take effect:
 docker compose -f dev/docker-compose.yaml down && docker compose -f dev/docker-compose.yaml up -d
 ```
 
+### 4. Generate some Tracing Data
+
+You can use the provided example application to generate some tracing data.
+
+```shell
+curl -ijv http://localhost:8080/ping?message=pong
+```
+
+### 5. Run the Coverage Calculation
+
+Use the following query to run the coverage calculation against the generated data.
+
+```shell
+node toolkit/cli/target/cli/index.js calculate --configFile dev/snow-white.json
+```
+
 ## Architecture Overview
 
 **Snow-White** follows an event-driven architecture.

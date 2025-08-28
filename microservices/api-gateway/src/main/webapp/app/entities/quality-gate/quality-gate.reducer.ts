@@ -40,7 +40,7 @@ const fromDto = ({
     apiVersion: apiTest.apiVersion,
     apiType: apiTest.apiType,
     testResults: apiTest.testResults?.map(testResult => ({
-      openApiCriterionName: testResult.id,
+      id: testResult.id,
       coverage: testResult.coverage,
       additionalInformation: testResult.additionalInformation,
       isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,

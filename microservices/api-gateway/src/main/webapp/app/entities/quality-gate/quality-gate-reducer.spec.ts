@@ -4,14 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import type { QualityGateReport } from 'app/clients/report-api';
+import type { ListQualityGateReports200ResponseInner } from 'app/clients/report-api';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
 
 import { reportApi } from 'app/entities/quality-gate/report-api';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
-import dayjs from 'dayjs';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
@@ -137,32 +136,67 @@ describe('Quality-Gate reducer tests', () => {
     let mockStore;
     let store;
 
-    const resolvedObject: AxiosResponse<QualityGateReport> = {
+    const resolvedObject: AxiosResponse<ListQualityGateReports200ResponseInner> = {
       data: {
         calculationId: '7769ae2f-cc7e-448d-ab07-0b4dc075744d',
         qualityGateConfigName: 'unit test',
         status: 'IN_PROGRESS',
         calculationRequest: {
-          apiName: 'test api',
-          serviceName: 'test service',
+          includeApis: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+            },
+          ],
+          lookbackWindow: '1234',
           attributeFilters: { foo: 'bar', traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' },
         },
+        interfaces: [
+          {
+            serviceName: 'test service',
+            apiName: 'test api',
+            apiVersion: 'test api version',
+            apiType: 'OPENAPI',
+            testResults: [
+              {
+                id: 'test_openapi_criterion',
+                coverage: 0.5,
+                additionalInformation: 'additional information',
+                isIncludedInQualityGate: false,
+              },
+            ],
+          },
+        ],
         initiatedAt: '2025-05-07T18:00:00.00Z',
-        openApiTestResults: [{ id: 'test_openapi_criterion' }],
       },
     } as AxiosResponse;
 
     const expectedObject: IQualityGate = {
       calculationId: '7769ae2f-cc7e-448d-ab07-0b4dc075744d',
       qualityGateConfig: { name: 'unit test' },
+      apiTests: [
+        {
+          serviceName: 'test service',
+          apiName: 'test api',
+          apiVersion: 'test api version',
+          apiType: 'OPENAPI',
+          testResults: [
+            {
+              id: 'test_openapi_criterion',
+              coverage: 0.5,
+              additionalInformation: 'additional information',
+              isIncludedInQualityGate: false,
+            },
+          ],
+        },
+      ],
       status: 'IN_PROGRESS',
+      createdAt: '2025-05-07T18:00:00.00Z',
       calculationRequest: {
-        apiName: 'test api',
-        serviceName: 'test service',
+        lookbackWindow: '1234',
         attributeFilters: 'foo=bar, traceparent=00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
       },
-      createdAt: '2025-05-07T18:00:00.00Z',
-      openApiTestResults: [{ openApiCriterionName: 'test_openapi_criterion', isIncludedInQualityGate: false }],
     };
 
     beforeEach(() => {

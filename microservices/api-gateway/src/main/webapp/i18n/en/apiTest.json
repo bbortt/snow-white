@@ -1,0 +1,19 @@
+{
+  "snowWhiteApp": {
+    "apiTest": {
+      "home": {
+        "title": "API Tests",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No API Tests found"
+      },
+      "detail": {
+        "title": "API Test"
+      },
+      "serviceName": "Service Name",
+      "apiName": "API Name",
+      "apiVersion": "API Version",
+      "apiType": "API Type",
+      "testResults": "Test Results"
+    }
+  }
+}

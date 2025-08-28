@@ -1,0 +1,11 @@
+{
+  "qualityGate": "basic-coverage",
+  "apiInformation": [
+    {
+      "serviceName": "example-application",
+      "apiName": "ping-pong",
+      "apiVersion": "1.0.0"
+    }
+  ],
+  "url": "http://localhost:9000"
+}
