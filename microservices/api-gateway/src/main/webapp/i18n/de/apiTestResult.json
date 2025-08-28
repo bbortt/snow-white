@@ -9,9 +9,9 @@
       "detail": {
         "title": "OpenAPI Test Resultat"
       },
-      "id": "ID",
-      "openApiCriterionName": "OpenAPI Kriterium",
+      "id": "API Kriterium",
       "coverage": "Abdeckung",
+      "isIncludedInQualityGate": "In Quality-Gate inkludiert?",
       "additionalInformation": "Details",
       "qualityGate": "Quality-Gate"
     }

@@ -121,13 +121,13 @@ export const QualityGate = () => {
                   <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('calculationId')} />
                 </th>
-                <th className="hand" onClick={sort('qualityGateConfigName')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('qualityGateConfigName')} />
-                </th>
                 <th className="hand" onClick={sort('status')}>
                   <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('status')} />
+                </th>
+                <th className="hand" onClick={sort('qualityGateConfigName')}>
+                  <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('qualityGateConfigName')} />
                 </th>
                 <th className="hand" onClick={sort('createdAt')}>
                   <Translate contentKey="snowWhiteApp.qualityGate.createdAt">Initiated At</Translate>{' '}
@@ -148,12 +148,12 @@ export const QualityGate = () => {
                     </Button>
                   </td>
                   <td>
+                    <StatusBadge fill={true} qualityGate={qualityGate} />
+                  </td>
+                  <td>
                     <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
                       {qualityGate.qualityGateConfig?.name}
                     </Button>
-                  </td>
-                  <td>
-                    <StatusBadge fill={true} qualityGate={qualityGate} />
                   </td>
                   <td>
                     {qualityGate.createdAt ? (

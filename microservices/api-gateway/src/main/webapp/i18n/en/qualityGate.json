@@ -4,8 +4,7 @@
       "home": {
         "title": "Quality-Gate Results",
         "refreshListLabel": "Refresh list",
-        "notFound": "No Quality-Gates found",
-        "noOpenApiTestResultsFound": "No OpenAPI Test Results found"
+        "notFound": "No Quality-Gates found"
       },
       "detail": {
         "title": "Quality-Gate Result"

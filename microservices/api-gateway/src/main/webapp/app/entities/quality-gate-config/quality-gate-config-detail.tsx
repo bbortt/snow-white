@@ -11,13 +11,14 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import OpenApiCriterionBadge from 'app/entities/quality-gate-config/open-api-criterion-badge';
 import React, { useEffect } from 'react';
 import { Translate } from 'react-jhipster';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate-config.reducer';
 
 export const QualityGateConfigDetail = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const { id } = useParams<'id'>();
 
@@ -63,19 +64,25 @@ export const QualityGateConfigDetail = () => {
               : null}
           </dd>
         </dl>
-        <Button tag={Link} to="/quality-gate-config" replace color="info" data-testid="entityDetailsBackButton">
-          <FontAwesomeIcon icon="arrow-left" />{' '}
+        <Button tag={Link} onClick={() => navigate(-1)} replace color="info" data-testid="entityDetailsBackButton">
+          <FontAwesomeIcon icon="arrow-left" />
+          &nbsp;
           <span className="d-none d-md-inline">
             <Translate contentKey="entity.action.back">Back</Translate>
           </span>
         </Button>
-        &nbsp;
-        <Button tag={Link} to={`/quality-gate-config/${qualityGateConfigEntity.name}/edit`} replace color="primary">
-          <FontAwesomeIcon icon="pencil-alt" />{' '}
-          <span className="d-none d-md-inline">
-            <Translate contentKey="entity.action.edit">Edit</Translate>
-          </span>
-        </Button>
+        {!qualityGateConfigEntity.isPredefined && (
+          <>
+            &nbsp;
+            <Button tag={Link} to={`/quality-gate-config/${qualityGateConfigEntity.name}/edit`} replace color="primary">
+              <FontAwesomeIcon icon="pencil-alt" />
+              &nbsp;
+              <span className="d-none d-md-inline">
+                <Translate contentKey="entity.action.edit">Edit</Translate>
+              </span>
+            </Button>
+          </>
+        )}
       </Col>
     </Row>
   );
