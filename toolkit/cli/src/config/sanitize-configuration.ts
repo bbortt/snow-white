@@ -23,6 +23,21 @@ const exitWithCodeInvalidConfig = (): void => {
 const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
   if (Object.keys(options).length === 0 || options.configFile) {
     console.error(chalk.red('❌ Configuration file may not contain recursive references or be empty.'));
+    console.error(chalk.red("\tHere's an example of a valid configuration file:"));
+    console.error();
+    console.error(
+      chalk.red(
+        JSON.stringify(
+          {
+            qualityGate: 'basic-coverage',
+            apiInformation: [{ serviceName: 'example-application', apiName: 'ping-pong', apiVersion: '1.0.0' }],
+            url: 'http://localhost:9000',
+          },
+          null,
+          2,
+        ),
+      ),
+    );
     exitWithCodeInvalidConfig();
   }
 

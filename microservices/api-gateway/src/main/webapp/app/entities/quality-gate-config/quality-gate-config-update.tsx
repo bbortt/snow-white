@@ -20,7 +20,6 @@ import { createEntity, getEntity, reset, updateEntity } from './quality-gate-con
 
 export const QualityGateUpdate = () => {
   const dispatch = useAppDispatch();
-
   const navigate = useNavigate();
 
   const { id } = useParams<'id'>();
@@ -73,7 +72,7 @@ export const QualityGateUpdate = () => {
       : {
           ...qualityGateConfigEntity,
           isPredefined: false,
-          openApiCriteria: qualityGateConfigEntity?.openApiCriteria?.map(e => e.id.toString()),
+          openApiCriteria: qualityGateConfigEntity?.openApiCriteria?.map(openApiCriterion => openApiCriterion.name),
         };
 
   return (
@@ -84,7 +83,7 @@ export const QualityGateUpdate = () => {
             {isNew ? (
               <Translate contentKey="snowWhiteApp.qualityGateConfig.home.createLabel">Create a new Quality-Gate</Translate>
             ) : (
-              <Translate contentKey="snowWhiteApp.qualityGateConfig.home.editLabl">Edit Quality-Gate</Translate>
+              <Translate contentKey="snowWhiteApp.qualityGateConfig.home.editLabel">Edit Quality-Gate</Translate>
             )}
           </h2>
         </Col>
@@ -142,13 +141,13 @@ export const QualityGateUpdate = () => {
                 <option value="" key="0" />
                 {openApiCriteriaList
                   ? openApiCriteriaList.map(otherEntity => (
-                      <option value={otherEntity.id} key={otherEntity.id}>
+                      <option value={otherEntity.name} key={otherEntity.name}>
                         {otherEntity.name}
                       </option>
                     ))
                   : null}
               </ValidatedField>
-              <Button tag={Link} id="cancel-save" data-testid="entityCreateCancelButton" to="/quality-gate-config" replace color="info">
+              <Button tag={Link} id="cancel-save" data-testid="entityCreateCancelButton" onClick={() => navigate(-1)} replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;
                 <span className="d-none d-md-inline">

@@ -5,7 +5,7 @@
  */
 
 export interface IApiTestResult {
-  openApiCriterionName?: string;
+  id?: string;
   coverage?: number;
   additionalInformation?: string;
   isIncludedInQualityGate: boolean;

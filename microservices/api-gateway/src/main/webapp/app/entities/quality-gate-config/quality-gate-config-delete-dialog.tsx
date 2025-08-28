@@ -44,7 +44,9 @@ export const QualityGateConfigDeleteDialog = () => {
   }, [updateSuccess]);
 
   const confirmDelete = () => {
-    dispatch(deleteEntity(qualityGateConfigEntity.id));
+    if (qualityGateConfigEntity.name) {
+      dispatch(deleteEntity(qualityGateConfigEntity.name));
+    }
   };
 
   return (
@@ -53,7 +55,7 @@ export const QualityGateConfigDeleteDialog = () => {
         <Translate contentKey="entity.delete.title">Confirm delete operation</Translate>
       </ModalHeader>
       <ModalBody id="snowWhiteApp.qualityGateConfig.delete.question">
-        <Translate contentKey="snowWhiteApp.qualityGateConfig.delete.question" interpolate={{ id: qualityGateConfigEntity.id }}>
+        <Translate contentKey="snowWhiteApp.qualityGateConfig.delete.question" interpolate={{ id: qualityGateConfigEntity.name }}>
           Are you sure you want to delete this QualityGateConfig?
         </Translate>
       </ModalBody>

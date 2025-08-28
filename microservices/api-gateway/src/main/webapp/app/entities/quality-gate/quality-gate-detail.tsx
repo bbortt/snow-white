@@ -11,18 +11,19 @@ import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { ApiTestTable } from 'app/entities/quality-gate/api-test-table';
+import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import React, { useEffect } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
 
 export const QualityGateDetail = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const { id } = useParams<'id'>();
 
@@ -123,12 +124,19 @@ export const QualityGateDetail = () => {
               </Col>
             </Row>
           </dd>
+          <hr className="mt-5" />
           <dt>
-            <Translate contentKey="snowWhiteApp.qualityGate.openApiTestResult.title">OpenAPI Test Results</Translate>
+            <h3 className="mb-2">
+              <Translate contentKey="snowWhiteApp.qualityGate.openApiTestResult.title">OpenAPI Test Results</Translate>
+            </h3>
           </dt>
           <dd>
             {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0 ? (
-              <ApiTestTable apiTests={qualityGateEntity.apiTests} />
+              <>
+                {qualityGateEntity.apiTests.map((apiTest: IApiTest, i: number) => (
+                  <ApiTestCard apiTest={apiTest} key={`api-test-${i}`} />
+                ))}
+              </>
             ) : (
               !loading && (
                 <div className="alert alert-warning">
@@ -138,7 +146,7 @@ export const QualityGateDetail = () => {
             )}
           </dd>
         </dl>
-        <Button tag={Link} to="/quality-gate" replace color="info" data-cy="entityDetailsBackButton">
+        <Button tag={Link} onClick={() => navigate(-1)} replace color="info" data-cy="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}
           <span className="d-none d-md-inline">
             <Translate contentKey="entity.action.back">Back</Translate>
