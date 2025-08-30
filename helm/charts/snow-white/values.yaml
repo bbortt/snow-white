@@ -1,5 +1,6 @@
 # Snow-White
 snowWhite:
+  mode: high-available
   imageRegistry: ghcr.io
   ingress:
     enabled: true
@@ -11,12 +12,6 @@ snowWhite:
     service:
       type: ClusterIP
       port: 80
-
-# Ingress
-ingress:
-  enabled: true
-  className: 'nginx'
-  tls: true
 
 # Infrastructure
 kafka:
