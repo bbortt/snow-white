@@ -26,12 +26,16 @@
       yyyy-MM-dd'T'HH:mm:ss'Z'
     </maven.build.timestamp.format>
 
+    <citrus.version>4.8.0</citrus.version>
     <confluent.version>8.0.0</confluent.version>
     <google-protobuf.version>4.32.0</google-protobuf.version>
     <grpc.version>1.75.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
     <protobuf-maven-plugin.version>3.9.0</protobuf-maven-plugin.version>
+
+    <!-- Application Testing -->
+    <docker.network>bridge</docker.network>
   </properties>
 
   <dependencyManagement>
@@ -134,6 +138,25 @@
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit5</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-kafka</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>5.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -307,6 +330,128 @@
                 <id>add-reachability-metadata</id>
                 <goals>
                   <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <properties>
+        <frontend.build.skip>true</frontend.build.skip>
+        <frontend.test.skip>true</frontend.test.skip>
+      </properties>
+
+      <build>
+        <resources>
+          <resource>
+            <directory>src/apptest/resources</directory>
+          </resource>
+        </resources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.1</version>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/kafka-event-filter:${image.tag}
+                  </name>
+                  <alias>kafka-event-filter</alias>
+                  <run>
+                    <env>
+                      <SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME>
+                        snow-white_inbound
+                      </SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME>
+                      <SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS>
+                      <SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME>
+                        snow-white_outbound
+                      </SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME>
+                      <SPRING_DATA_REDIS_HOST>redis</SPRING_DATA_REDIS_HOST>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                    </env>
+                    <log>
+                      <prefix>kafka-event-filter</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
                 </goals>
               </execution>
             </executions>

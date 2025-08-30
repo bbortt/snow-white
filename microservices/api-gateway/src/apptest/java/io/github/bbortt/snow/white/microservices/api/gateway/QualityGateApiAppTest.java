@@ -6,6 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.api.gateway;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -19,22 +24,16 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import io.restassured.RestAssured;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 class QualityGateApiAppTest {
 
   @BeforeAll
   static void beforeAllSetup() {
-    RestAssured.baseURI = format("http://%s", Optional.ofNullable(getProperty("api-gateway.host")).orElse("localhost"));
-    RestAssured.port = parseInt(Optional.ofNullable(getProperty("api-gateway.port")).orElse("8080"));
+    RestAssured.baseURI = format("http://%s", getProperty("api-gateway.host","localhost"));
+    RestAssured.port = parseInt(getProperty("api-gateway.port","8080"));
 
     WireMock.configureFor(
-      Optional.ofNullable(getProperty("wiremock.host")).orElse("localhost"),
-      parseInt(Optional.ofNullable(getProperty("wiremock.port")).orElse("9000"))
+      getProperty("wiremock.host","localhost"),
+      parseInt(getProperty("wiremock.port","9000"))
     );
   }
 

@@ -106,3 +106,12 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+  - package-ecosystem: 'docker-compose'
+    directory: '/microservices/kafka-event-filter/src/apptest/resources'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
