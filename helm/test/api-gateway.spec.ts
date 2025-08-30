@@ -34,10 +34,10 @@ describe('API Gateway', () => {
 
       expect(service.metadata.labels).toEqual({
         'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'v2.0.0',
+        'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'snow-white',
+        'app.kubernetes.io/name': 'api-gateway',
         'app.kubernetes.io/part-of': 'snow-white',
       });
 
@@ -45,7 +45,7 @@ describe('API Gateway', () => {
 
       expect(service.spec.selector).toEqual({
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'snow-white',
+        'app.kubernetes.io/name': 'api-gateway',
         'app.kubernetes.io/part-of': 'snow-white',
       });
 
@@ -117,16 +117,33 @@ describe('API Gateway', () => {
       const port = service.spec.ports[0];
       expect(port.port).toBe(customPort);
     });
+
+    it('selects correct pod based on selector labels', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+      });
+
+      const service = getApiGatewayService(manifests);
+      expect(Object.keys(service.spec.selector)).toHaveLength(3);
+
+      const deployment = manifests.find(
+        (m) =>
+          m.kind === 'Deployment' &&
+          m.spec.metadata?.labels === service.spec.selector,
+      );
+
+      expect(deployment).toBeDefined();
+    });
   });
 
   describe('ingress', () => {
     const getIngress = (manifests: any[]) => {
-      const service = manifests.find(
+      const ingress = manifests.find(
         (m) =>
           m.kind === 'Ingress' && m.metadata.name === 'snow-white-test-release',
       );
-      expect(service).toBeDefined();
-      return service;
+      expect(ingress).toBeDefined();
+      return ingress;
     };
 
     it('renders with default values', async () => {
@@ -141,10 +158,10 @@ describe('API Gateway', () => {
 
       expect(ingress.metadata.labels).toEqual({
         'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'v2.0.0',
+        'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'snow-white',
+        'app.kubernetes.io/name': 'api-gateway',
         'app.kubernetes.io/part-of': 'snow-white',
       });
 
@@ -171,6 +188,17 @@ describe('API Gateway', () => {
       expect(path.backend.service.port.name).toBe('http');
     });
 
+    it('is the only exposed ingress', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+      });
+
+      const ingress = manifests.filter((m) => m.kind === 'Ingress');
+      expect(ingress).toBeDefined();
+      expect(ingress).toHaveLength(1);
+      expect(ingress[0].metadata.name).toBe('snow-white-test-release');
+    });
+
     it('truncates long release name', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
@@ -192,8 +220,10 @@ describe('API Gateway', () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
-          ingress: {
-            enabled: false,
+          snowWhite: {
+            ingress: {
+              enabled: false,
+            },
           },
         },
       });
@@ -214,9 +244,11 @@ describe('API Gateway', () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
-          ingress: {
-            enabled: true,
-            annotations,
+          snowWhite: {
+            ingress: {
+              enabled: true,
+              annotations,
+            },
           },
         },
       });
@@ -232,8 +264,10 @@ describe('API Gateway', () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
-          ingress: {
-            className: ingressClassName,
+          snowWhite: {
+            ingress: {
+              className: ingressClassName,
+            },
           },
         },
       });
@@ -249,8 +283,10 @@ describe('API Gateway', () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
-          ingress: {
-            host: hostname,
+          snowWhite: {
+            ingress: {
+              host: hostname,
+            },
           },
         },
       });
