@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream;
 
 import static java.util.Objects.nonNull;
-import static org.apache.kafka.streams.KeyValue.pair;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.OtelInformationFilteringService;
@@ -20,14 +19,14 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 
 @Slf4j
-public abstract class AbstractExportTraceServiceRequestEventProtobufProcessor {
+public abstract class AbstractExportTraceServiceRequestEventProcessor {
 
   private final OtelInformationFilteringService otelInformationFilteringService;
 
   private final String inboundTopicName;
   private final String outboundTopicName;
 
-  protected AbstractExportTraceServiceRequestEventProtobufProcessor(
+  protected AbstractExportTraceServiceRequestEventProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
     KafkaEventFilterProperties kafkaEventFilterProperties
   ) {

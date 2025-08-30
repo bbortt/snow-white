@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.s
 
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
 
-import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.AbstractExportTraceServiceRequestEventProtobufProcessor;
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.AbstractExportTraceServiceRequestEventProcessor;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Bean;
 
 @Slf4j
 public class ExportTraceServiceRequestEventJsonProcessor
-  extends AbstractExportTraceServiceRequestEventProtobufProcessor {
+  extends AbstractExportTraceServiceRequestEventProcessor {
 
   public ExportTraceServiceRequestEventJsonProcessor(
     OtelInformationFilteringService otelInformationFilteringService,

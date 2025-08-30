@@ -7,8 +7,7 @@ To build the **API Gateway** application:
 ### 1. Build the Maven artifact:
 
 ```shell
-./mvnw -Dimage.tag=latest  -Pprod -pl :api-gateway -am package
-docker build -t ghcr.io/bbortt/snow-white/api-gateway:latest -f microservices/api-gateway/Dockerfile microservices/api-gateway/
+./mvnw -Pprod -pl :api-gateway -am install
 ```
 
 ### 2. Package it into a Docker image:
@@ -27,10 +26,12 @@ Before running tests, ensure:
 - Docker is installed and running.
 - The API Gateway Docker image is built (see [Building the Application](#building-the-application) above).
 
-### Step 1 - Create a Docker network
+### Step 1 - Create a Docker Network
+
+To allow communication between the API Gateway and WireMock, create a Docker network:
 
 ```shell
-docker network create api-gateway-network
+docker network create github_actions
 ```
 
 ### Step 2 - Start WireMock
@@ -52,7 +53,6 @@ In **another terminal**, run:
 ```shell
 ./mvnw \
   -Dimage.tag=latest \
-  -Dwiremock.baseURL=http://host.docker.internal:9000 \
   -Papptest \
   -pl :api-gateway \
   -Ddocker.network=github_actions \

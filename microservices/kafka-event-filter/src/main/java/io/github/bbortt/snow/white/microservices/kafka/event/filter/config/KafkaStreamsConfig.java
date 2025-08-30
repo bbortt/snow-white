@@ -13,15 +13,12 @@ import static io.github.bbortt.snow.white.microservices.kafka.event.filter.confi
 import static org.apache.kafka.common.serialization.Serdes.serdeFrom;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.google.protobuf.util.JsonFormat;
 import io.confluent.kafka.streams.serdes.protobuf.KafkaProtobufSerde;
-import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.exception.SerializationException;
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.serialization.ExportTraceServiceRequestJsonDeserializer;
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.serialization.ExportTraceServiceRequestJsonSerializer;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.common.serialization.Serializer;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -35,44 +32,10 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 public class KafkaStreamsConfig {
 
   public static Serde<ExportTraceServiceRequest> JsonSerde() {
-    var parser = JsonFormat.parser().ignoringUnknownFields();
-    var printer = JsonFormat.printer();
-
-    var logger = LoggerFactory.getLogger("protobuf-jackson-bridge");
-
-    Serializer<ExportTraceServiceRequest> serializer = (
-      String topic,
-      ExportTraceServiceRequest data
-    ) -> {
-      try {
-        return printer.print(data).getBytes();
-      } catch (Exception e) {
-        logger.error("Error serializing protobuf JSON message", e);
-        throw new SerializationException(
-          "Error serializing protobuf JSON message",
-          e
-        );
-      }
-    };
-
-    Deserializer<ExportTraceServiceRequest> deserializer = (
-      String topic,
-      byte[] data
-    ) -> {
-      try {
-        var builder = ExportTraceServiceRequest.newBuilder();
-        parser.merge(new String(data), builder);
-        return builder.build();
-      } catch (Exception e) {
-        logger.error("Error deserializing protobuf JSON message", e);
-        throw new SerializationException(
-          "Error deserializing protobuf JSON message",
-          e
-        );
-      }
-    };
-
-    return serdeFrom(serializer, deserializer);
+    return serdeFrom(
+      new ExportTraceServiceRequestJsonSerializer(),
+      new ExportTraceServiceRequestJsonDeserializer()
+    );
   }
 
   @Bean

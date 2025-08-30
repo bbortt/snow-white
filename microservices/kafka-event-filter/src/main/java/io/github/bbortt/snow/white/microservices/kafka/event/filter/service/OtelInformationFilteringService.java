@@ -137,7 +137,7 @@ public class OtelInformationFilteringService {
     List<KeyValue> scopeAttributes
   ) {
     var spanAttributes = span.getAttributesList();
-    var identifier3 = extractApiIdentifyingAttributes(
+    var apiIdentifier = extractApiIdentifyingAttributes(
       Stream.of(
         resourceAttributes.stream(),
         scopeAttributes.stream(),
@@ -147,7 +147,9 @@ public class OtelInformationFilteringService {
         .toList()
     );
 
-    if (identifier3.isPresent() && apiIsKnownToSnowWhite(identifier3.get())) {
+    if (
+      apiIdentifier.isPresent() && apiIsKnownToSnowWhite(apiIdentifier.get())
+    ) {
       return span;
     }
 
