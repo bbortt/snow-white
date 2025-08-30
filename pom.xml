@@ -64,6 +64,7 @@
     </sonar.junit.reportPaths>
 
     <!-- Dependency Management -->
+    <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
     <spring-boot.version>3.5.5</spring-boot.version>
 
     <!-- Node.js & NPM -->
@@ -204,7 +205,7 @@
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>5.1.0.4751</version>
+        <version>${sonar-maven-plugin.version}</version>
       </plugin>
     </plugins>
   </build>
@@ -267,7 +268,7 @@
           <plugin>
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>5.1.0.4751</version>
+            <version>${sonar-maven-plugin.version}</version>
           </plugin>
         </plugins>
       </build>
