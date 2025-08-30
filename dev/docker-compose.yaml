@@ -8,7 +8,7 @@ networks:
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.132.4
+    image: otel/opentelemetry-collector-contrib:0.133.0
     env_file: .env
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
