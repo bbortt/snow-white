@@ -30,7 +30,7 @@ processors:
     traces:
       span:
         - attributes["http.request.method"] == nil
-        - attributes["openapi.name"] == nil or attributes["openapi.version"] == nil
+        - attributes["api.name"] == nil or attributes["api.version"] == nil
   filter/snow-white:
     error_mode: propagate
     spans:

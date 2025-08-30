@@ -6,12 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.json;
 
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_SCOPE_SPANS;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_SPANS;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.wrapResourceSpans;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +15,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.service.OtelInformationFilteringService;
@@ -47,6 +42,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class ExportTraceServiceRequestEventJsonProcessorTest {
+
+  private static final TestData TEST_DATA = TestData.builder().build();
 
   private final String inboundTopicName =
     getClass().getSimpleName() + ":inbound";
@@ -90,10 +87,10 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
     public static Stream<ResourceSpans> validResourceSpans() {
       return Stream.of(
-        RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL
+        TEST_DATA.resourceSpansWithResourceAttributes(),
+        TEST_DATA.resourceSpansWithScopeAttributes(),
+        TEST_DATA.resourceSpansWithSpanAttributes(),
+        TEST_DATA.resourceSpansWithAttributesOnEachLevel()
       );
     }
 
@@ -140,8 +137,8 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
     public static Stream<ResourceSpans> resourceSpansWithoutContent() {
       return Stream.of(
-        RESOURCE_SPANS_WITHOUT_SCOPE_SPANS,
-        RESOURCE_SPANS_WITHOUT_SPANS
+        TEST_DATA.resourceSpansWithoutScopeSpans(),
+        TEST_DATA.resourceSpansWithoutSpans()
       );
     }
 

@@ -23,6 +23,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class KafkaStreamsConfigTest {
 
+  private final TestData testData = TestData.builder().build();
+
   private KafkaStreamsConfig fixture;
 
   @BeforeEach
@@ -36,7 +38,7 @@ class KafkaStreamsConfigTest {
     @Test
     void serializationAndDeserializationLoop() {
       var originalMessage = ExportTraceServiceRequest.newBuilder()
-        .addResourceSpans(TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL)
+        .addResourceSpans(testData.resourceSpansWithAttributesOnEachLevel())
         .build();
 
       byte[] serializedData = KafkaStreamsConfig.JsonSerde()

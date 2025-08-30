@@ -7,18 +7,8 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.service;
 
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.API_NAME;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.API_NAME_PROPERTY;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.API_VERSION;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.API_VERSION_PROPERTY;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.OTEL_SERVICE_NAME;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_API_NAME;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_API_VERSION;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_OTEL_SERVICE_NAME;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.SERVICE_NAME_PROPERTY;
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.wrapResourceSpans;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
@@ -26,6 +16,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -43,6 +34,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class OtelInformationFilteringServiceTest {
+
+  private static final String SERVICE_NAME_PROPERTY =
+    "OtelInformationFilteringServiceTest:serviceName";
+  private static final String API_NAME_PROPERTY =
+    "OtelInformationFilteringServiceTest:apiName";
+  private static final String API_VERSION_PROPERTY =
+    "OtelInformationFilteringServiceTest:apiVersion";
+
+  private static final TestData TEST_DATA = TestData.builder()
+    .serviceNameProperty(SERVICE_NAME_PROPERTY)
+    .apiNameProperty(API_NAME_PROPERTY)
+    .apiVersionProperty(API_VERSION_PROPERTY)
+    .build();
 
   @Mock
   private CachingService cachingServiceMock;
@@ -92,10 +96,10 @@ class OtelInformationFilteringServiceTest {
 
     public static Stream<ResourceSpans> resourceSpansWithValidApiIdentifiers() {
       return Stream.of(
-        RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL
+        TEST_DATA.resourceSpansWithResourceAttributes(),
+        TEST_DATA.resourceSpansWithScopeAttributes(),
+        TEST_DATA.resourceSpansWithSpanAttributes(),
+        TEST_DATA.resourceSpansWithAttributesOnEachLevel()
       );
     }
 
@@ -147,9 +151,9 @@ class OtelInformationFilteringServiceTest {
 
     public static Stream<ResourceSpans> invalidResourceSpans() {
       return Stream.of(
-        RESOURCE_SPANS_WITHOUT_API_NAME,
-        RESOURCE_SPANS_WITHOUT_API_VERSION,
-        RESOURCE_SPANS_WITHOUT_OTEL_SERVICE_NAME
+        TEST_DATA.resourceSpansWithoutApiName(),
+        TEST_DATA.resourceSpansWithoutApiVersion(),
+        TEST_DATA.resourceSpansWithoutOtelServiceName()
       );
     }
 

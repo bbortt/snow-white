@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class RedisCachingService implements CachingService {
 
   @VisibleForTesting
-  static final String HASH_PREFIX = "api_endpoints:";
+  public static final String HASH_PREFIX = "api_endpoints:";
 
   private final RedisTemplate<String, Object> redisTemplate;
 

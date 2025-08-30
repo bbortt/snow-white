@@ -22,8 +22,8 @@ public class SpringWebInterceptorProperties {
 
   static final String PREFIX = "io.github.bbortt.snow.white.toolkit.spring.web";
 
-  private static final String DEFAULT_API_NAME_ATTRIBUTE = "openapi.name";
-  private static final String DEFAULT_API_VERSION_ATTRIBUTE = "openapi.version";
+  private static final String DEFAULT_API_NAME_ATTRIBUTE = "api.name";
+  private static final String DEFAULT_API_VERSION_ATTRIBUTE = "api.version";
   private static final String DEFAULT_OPERATION_ID_ATTRIBUTE =
     "openapi.operation.id";
 

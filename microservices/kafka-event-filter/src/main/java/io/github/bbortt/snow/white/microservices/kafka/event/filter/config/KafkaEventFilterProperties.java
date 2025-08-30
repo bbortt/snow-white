@@ -64,9 +64,8 @@ public class KafkaEventFilterProperties implements InitializingBean {
   @Setter
   public static class Filtering {
 
-    private static final String DEFAULT_API_NAME_PROPERTY = "openapi.name";
-    private static final String DEFAULT_API_VERSION_PROPERTY =
-      "openapi.version";
+    private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
+    private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";
     private static final String DEFAULT_SERVICE_NAME_PROPERTY =
       SERVICE_NAME.getKey();
 

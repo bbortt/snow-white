@@ -110,8 +110,8 @@ class KafkaEventFilterPropertiesTest {
     @Test
     void defaultFilterPropertiesAlignWithSemanticConvention() {
       assertThat(fixture.getFiltering()).satisfies(
-        f -> assertThat(f.getApiNameProperty()).isEqualTo("openapi.name"),
-        f -> assertThat(f.getApiVersionProperty()).isEqualTo("openapi.version")
+        f -> assertThat(f.getApiNameProperty()).isEqualTo("api.name"),
+        f -> assertThat(f.getApiVersionProperty()).isEqualTo("api.version")
       );
     }
   }
