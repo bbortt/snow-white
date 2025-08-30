@@ -30,8 +30,8 @@ importers:
         specifier: 5.3.8
         version: 5.3.8(@popperjs/core@2.11.8)
       dayjs:
-        specifier: 1.11.15
-        version: 1.11.15
+        specifier: 1.11.18
+        version: 1.11.18
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -46,7 +46,7 @@ importers:
         version: 7.62.0(react@19.1.1)
       react-jhipster:
         specifier: 0.25.3
-        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.15)(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)(reactstrap@9.2.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
+        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.18)(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)(reactstrap@9.2.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))
       react-loadable:
         specifier: 5.5.0
         version: 5.5.0(react@19.1.1)
@@ -187,8 +187,8 @@ importers:
         specifier: 30.1.1
         version: 30.1.1
       jest-fixed-jsdom:
-        specifier: 0.0.9
-        version: 0.0.9(jest-environment-jsdom@30.1.1)
+        specifier: 0.0.10
+        version: 0.0.10(jest-environment-jsdom@30.1.1)
       jest-junit:
         specifier: 16.0.0
         version: 16.0.0
@@ -2720,8 +2720,8 @@ packages:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
 
-  dayjs@1.11.15:
-    resolution: {integrity: sha512-MC+DfnSWiM9APs7fpiurHGCoeIx0Gdl6QZBy+5lu8MbYKN5FZEXqOgrundfibdfhGZ15o9hzmZ2xJjZnbvgKXQ==}
+  dayjs@1.11.18:
+    resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -4045,8 +4045,8 @@ packages:
     resolution: {integrity: sha512-IaMoaA6saxnJimqCppUDqKck+LKM0Jg+OxyMUIvs1yGd2neiC22o8zXo90k04+tO+49OmgMR4jTgM5e4B0S62Q==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  jest-fixed-jsdom@0.0.9:
-    resolution: {integrity: sha512-KPfqh2+sn5q2B+7LZktwDcwhCpOpUSue8a1I+BcixWLOQoEVyAjAGfH+IYZGoxZsziNojoHGRTC8xRbB1wDD4g==}
+  jest-fixed-jsdom@0.0.10:
+    resolution: {integrity: sha512-WaEVX+FripJh+Hn/7dysIgqP66h0KT1NNC22NGmNYANExtCoYNk1q2yjwwcdSboBMkkhn0NtmvKad/cmisnCLg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       jest-environment-jsdom: '>=28.0.0'
@@ -9437,7 +9437,7 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
-  dayjs@1.11.15: {}
+  dayjs@1.11.18: {}
 
   debug@2.6.9:
     dependencies:
@@ -11027,7 +11027,7 @@ snapshots:
       jest-util: 30.0.5
       jest-validate: 30.1.0
 
-  jest-fixed-jsdom@0.0.9(jest-environment-jsdom@30.1.1):
+  jest-fixed-jsdom@0.0.10(jest-environment-jsdom@30.1.1):
     dependencies:
       jest-environment-jsdom: 30.1.1
 
@@ -12172,10 +12172,10 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.15)(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)(reactstrap@9.2.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)):
+  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.11.0)(dayjs@1.11.18)(react-dom@19.1.1(react@19.1.1))(react-hook-form@7.62.0(react@19.1.1))(react@19.1.1)(reactstrap@9.2.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)):
     dependencies:
       axios: 1.11.0
-      dayjs: 1.11.15
+      dayjs: 1.11.18
       lodash: 4.17.21
       numeral: 2.0.6
       react: 19.1.1
