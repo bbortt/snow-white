@@ -6,12 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.protobuf;
 
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_SCOPE_SPANS;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITHOUT_SPANS;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,6 +40,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class ExportTraceServiceRequestEventProtobufProcessorTest {
+
+  private static final TestData TEST_DATA = TestData.builder().build();
 
   private final String inboundTopicName =
     getClass().getSimpleName() + ":inbound";
@@ -92,10 +88,10 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
 
     public static Stream<ResourceSpans> validResourceSpans() {
       return Stream.of(
-        RESOURCE_SPANS_WITH_RESOURCE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SCOPE_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_SPAN_ATTRIBUTES,
-        RESOURCE_SPANS_WITH_ATTRIBUTES_ON_EACH_LEVEL
+        TEST_DATA.resourceSpansWithResourceAttributes(),
+        TEST_DATA.resourceSpansWithScopeAttributes(),
+        TEST_DATA.resourceSpansWithSpanAttributes(),
+        TEST_DATA.resourceSpansWithAttributesOnEachLevel()
       );
     }
 
@@ -128,8 +124,8 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
 
     public static Stream<ResourceSpans> resourceSpansWithoutContent() {
       return Stream.of(
-        RESOURCE_SPANS_WITHOUT_SCOPE_SPANS,
-        RESOURCE_SPANS_WITHOUT_SPANS
+        TEST_DATA.resourceSpansWithoutScopeSpans(),
+        TEST_DATA.resourceSpansWithoutSpans()
       );
     }
 
