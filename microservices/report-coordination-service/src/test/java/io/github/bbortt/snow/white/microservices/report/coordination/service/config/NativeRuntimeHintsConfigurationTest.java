@@ -37,6 +37,7 @@ class NativeRuntimeHintsConfigurationTest {
       new ClassPathScanningUtils.FilterConfiguration(false, false)
     )
       .stream()
+      .filter(clazz -> !clazz.getName().contains("BeanDefinitions"))
       .filter(clazz -> !clazz.getName().endsWith("Builder"))
       .filter(clazz -> !clazz.getName().endsWith("Factory"))
       .filter(clazz ->
