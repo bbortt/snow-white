@@ -8,9 +8,7 @@ backstage/
 node_modules/
 opentelemetry-proto/
 
-package-lock.json
-helm/pnpm-lock.yaml
-microservices/api-gateway/pnpm-lock.yaml
+**/pnpm-lock.yaml
 
 target/
 
