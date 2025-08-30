@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter;
 
+import static com.google.protobuf.ByteString.fromHex;
+
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
@@ -27,6 +29,9 @@ public class TestData {
   public static final String API_NAME = TestData.class.getSimpleName();
   public static final String API_VERSION = "1.2.3";
   public static final String OTEL_SERVICE_NAME = "kafka-event-filter";
+
+  public static final String TRACE_ID = "a7b2c9d4e8f1a6b3c5d7e9f2a4b6c8d0";
+  public static final String SPAN_ID = "f3a7b2c9d4e8f1a6";
 
   // -------------------------------------------
   // Utility Method
@@ -102,6 +107,8 @@ public class TestData {
       .addScopeSpans(
         ScopeSpans.newBuilder().addSpans(
           Span.newBuilder()
+            .setTraceId(fromHex(TRACE_ID))
+            .setSpanId(fromHex(SPAN_ID))
             .addAttributes(
               KeyValue.newBuilder()
                 .setKey(API_NAME_PROPERTY)
@@ -142,13 +149,16 @@ public class TestData {
             )
           )
           .addSpans(
-            Span.newBuilder().addAttributes(
-              KeyValue.newBuilder()
-                .setKey(SERVICE_NAME_PROPERTY)
-                .setValue(
-                  AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
-                )
-            )
+            Span.newBuilder()
+              .setTraceId(fromHex("a7b2c9d4e8f1a6b3c5d7e9f2a4b6c8d0"))
+              .setSpanId(fromHex("f3a7b2c9d4e8f1a6"))
+              .addAttributes(
+                KeyValue.newBuilder()
+                  .setKey(SERVICE_NAME_PROPERTY)
+                  .setValue(
+                    AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
+                  )
+              )
           )
       )
       .build();
