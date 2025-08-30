@@ -1,22 +1,56 @@
+# Global (across snow-white and third parties)
+global:
+  imageRegistry: ''
+  imagePullSecrets: []
+
 # Snow-White
 snowWhite:
-  imageRegistry: ghcr.io
+  mode: high-available
+  image:
+    pullPolicy: Always
+  revisionHistoryLimit: 3
   ingress:
     enabled: true
     className: 'nginx'
     tls: true
+  podAnnotations: {}
+  podAntiAffinity: {}
   apiGateway:
     image:
-      name: bbortt/snow-white/api-gateway
+      tag: ''
+    podAntiAffinity: {}
+    additionalEnvs: {}
+    resources:
+      limits:
+        memory: '0.5Gi'
+        ephemeral-storage: '0Gi'
+      requests:
+        cpu: '0.5'
+        memory: '0.5Gi'
+        ephemeral-storage: '0Mi'
+    livenessProbe:
+      httpGet:
+        scheme: HTTP
+        path: /api/manage/health
+        port: actuator
+      initialDelaySeconds: 45
+      timeoutSeconds: 5
+      periodSeconds: 15
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        scheme: HTTP
+        path: /
+        port: http
+      initialDelaySeconds: 10
+      timeoutSeconds: 2
+      periodSeconds: 5
+      successThreshold: 1
+      failureThreshold: 12
     service:
       type: ClusterIP
       port: 80
-
-# Ingress
-ingress:
-  enabled: true
-  className: 'nginx'
-  tls: true
 
 # Infrastructure
 kafka:
