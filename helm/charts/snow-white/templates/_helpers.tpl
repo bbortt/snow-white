@@ -51,3 +51,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/name: {{ include "snow-white.name" . }}
 app.kubernetes.io/part-of: snow-white
 {{- end }}
+
+{{/*
+Mode selection tools:
+    minimal:        setup with only one running pod per microservice, ideal for poc installations
+    high-available: setup with three pods per deployment-unit, for producton environments
+    autoscale:      high-available setup with additional (horizontal) autoscaling enabled
+*/}}
+{{- define "snow-white.replicas "}}
+{{ if .Values.snowWhite.mode == "minimal" }}
+1
+{{- end }}
+{{- end }}
