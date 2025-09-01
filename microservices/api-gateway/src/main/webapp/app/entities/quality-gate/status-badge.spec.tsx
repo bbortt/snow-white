@@ -14,10 +14,10 @@ import { translate } from 'react-jhipster';
 jest.mock('react-jhipster', () => ({
   translate: jest.fn().mockImplementation((key: string) => {
     const translations: Record<string, string> = {
-      'snowWhiteApp.ReportStatus.PASSED': 'Passed',
-      'snowWhiteApp.ReportStatus.FAILED': 'Failed',
-      'snowWhiteApp.ReportStatus.NOT_STARTED': 'NOT_STARTED',
-      'snowWhiteApp.ReportStatus.IN_PROGRESS': 'IN_PROGRESS',
+      'snowWhiteApp.reportStatus.PASSED': 'Passed',
+      'snowWhiteApp.reportStatus.FAILED': 'Failed',
+      'snowWhiteApp.reportStatus.NOT_STARTED': 'NOT_STARTED',
+      'snowWhiteApp.reportStatus.IN_PROGRESS': 'IN_PROGRESS',
     };
     return translations[key] || key;
   }),
@@ -121,7 +121,7 @@ describe('StatusBadge', () => {
       (reportStatus: ReportStatus) => {
         const passedQualityGate = createQualityGate(reportStatus);
         render(<StatusBadge qualityGate={passedQualityGate} />);
-        expect(translate).toHaveBeenCalledWith(`snowWhiteApp.ReportStatus.${reportStatus}`);
+        expect(translate).toHaveBeenCalledWith(`snowWhiteApp.reportStatus.${reportStatus}`);
       },
     );
   });
