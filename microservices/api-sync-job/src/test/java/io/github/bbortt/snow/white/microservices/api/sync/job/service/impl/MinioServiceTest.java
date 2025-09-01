@@ -12,14 +12,12 @@ import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -245,12 +243,6 @@ class MinioServiceTest {
         .name(name)
         .version(version)
         .build();
-    }
-
-    private OpenAPI createOpenAPI(String version) {
-      var openAPI = mock(OpenAPI.class);
-      doReturn(version).when(openAPI).getOpenapi();
-      return openAPI;
     }
   }
 }

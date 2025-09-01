@@ -276,6 +276,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
           )
       )
       .andExpect(status().isBadRequest());
+
+    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
   }
 
   private @NotNull String createQualityGateApiWiremockStub()
@@ -308,8 +310,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
             reportCoordinationServiceProperties.getCalculationRequestTopic(),
             Duration.ofSeconds(5)
           ),
-        record ->
-          assertThat(record).satisfies(
+        consumerRecord ->
+          assertThat(consumerRecord).satisfies(
               r -> assertThat(r.key()).isEqualTo(calculationId),
               r ->
                 assertThat(r.value()).satisfies(

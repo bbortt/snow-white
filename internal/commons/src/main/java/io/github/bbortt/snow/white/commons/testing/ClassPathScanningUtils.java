@@ -53,7 +53,7 @@ public final class ClassPathScanningUtils {
             addAll(classes, nestedClasses);
           }
         } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
+          throw new ClassPathScanningException(e);
         }
       });
 

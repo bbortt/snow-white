@@ -214,8 +214,6 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
     @Test
     void isNotNull() {
-      var inboundTopicName = "inboundTopicName";
-
       KStream<String, ExportTraceServiceRequest> kStreamMock = mock();
       doReturn(kStreamMock)
         .when(streamsBuilderMock)

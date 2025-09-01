@@ -19,7 +19,9 @@ class SerializationExceptionTest {
 
     var fixture = new SerializationException(message, cause);
 
-    assertThat(fixture).hasMessage(message);
-    assertThat(fixture.getCause()).isEqualTo(cause);
+    assertThat(fixture).satisfies(
+      f -> assertThat(f).hasMessage(message),
+      f -> assertThat(f).hasCause(cause)
+    );
   }
 }

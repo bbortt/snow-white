@@ -133,8 +133,8 @@ export const QualityGateDetail = () => {
           <dd>
             {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0 ? (
               <>
-                {qualityGateEntity.apiTests.map((apiTest: IApiTest, i: number) => (
-                  <ApiTestCard apiTest={apiTest} key={`api-test-${i}`} />
+                {qualityGateEntity.apiTests.map((apiTest: IApiTest) => (
+                  <ApiTestCard apiTest={apiTest} key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`} />
                 ))}
               </>
             ) : (

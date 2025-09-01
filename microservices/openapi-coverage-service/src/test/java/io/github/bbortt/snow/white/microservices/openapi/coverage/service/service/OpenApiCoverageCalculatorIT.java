@@ -33,8 +33,8 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
         openApiCriteria ->
           openApiCoverageCalculators
             .stream()
-            .filter(openApiCoverageCalculators ->
-              openApiCoverageCalculators.accepts(openApiCriteria)
+            .filter(openApiCoverageCalculator ->
+              openApiCoverageCalculator.accepts(openApiCriteria)
             )
             .count() !=
           1

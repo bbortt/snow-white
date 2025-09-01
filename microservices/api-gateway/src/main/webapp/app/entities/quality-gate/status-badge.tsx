@@ -18,7 +18,7 @@ type StatusBadgeProps = {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ qualityGate, fill }: StatusBadgeProps) => {
   const className = useMemo(() => (fill ? 'badge-block' : ''), [fill]);
-  const status: string | null = useMemo(() => translate(`snowWhiteApp.ReportStatus.${qualityGate.status}`), [qualityGate.status]);
+  const status: string | null = useMemo(() => translate(`snowWhiteApp.reportStatus.${qualityGate.status}`), [qualityGate.status]);
 
   if (qualityGate.status === 'PASSED') {
     return (

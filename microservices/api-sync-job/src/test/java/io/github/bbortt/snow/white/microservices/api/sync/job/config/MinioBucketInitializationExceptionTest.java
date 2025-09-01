@@ -18,10 +18,12 @@ class MinioBucketInitializationExceptionTest {
     var cause = new Throwable("Something nasty happened!");
 
     var fixture = new MinioBucketInitializationException(bucketName, cause);
-
-    assertThat(fixture).hasMessage(
-      "Failed to initialize MinIO bucket 'bucketName'!"
+    assertThat(fixture).satisfies(
+      f ->
+        assertThat(f).hasMessage(
+          "Failed to initialize MinIO bucket 'bucketName'!"
+        ),
+      f -> assertThat(f).hasCause(cause)
     );
-    assertThat(fixture.getCause()).isEqualTo(cause);
   }
 }

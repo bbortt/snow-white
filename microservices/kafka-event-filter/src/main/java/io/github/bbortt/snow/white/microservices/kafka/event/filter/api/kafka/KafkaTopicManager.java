@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka;
 
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties.PREFIX;
 import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,8 @@ public class KafkaTopicManager {
       Boolean.class,
       FALSE
     );
-    if (!initTopics) {
+
+    if (!TRUE.equals(initTopics)) {
       return null;
     }
 
@@ -57,7 +59,8 @@ public class KafkaTopicManager {
       Boolean.class,
       FALSE
     );
-    if (!initTopics) {
+
+    if (!TRUE.equals(initTopics)) {
       return null;
     }
 

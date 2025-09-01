@@ -16,6 +16,7 @@ import static io.github.bbortt.snow.white.microservices.report.coordination.serv
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Properties.DESCRIPTION;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Properties.SERVICE_NAME;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Property.property;
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ONE;
 import static java.time.Duration.ZERO;
@@ -103,11 +104,11 @@ public class JUnitReporter {
       AtomicReference<Duration> totalTime = new AtomicReference<>(ZERO);
       testSuites
         .getContainedSuites()
-        .forEach(testSuite -> {
+        .forEach(testSuite ->
           totalTime.getAndUpdate(current ->
             current.plus(testSuite.getDuration())
-          );
-        });
+          )
+        );
 
       return testSuites
         .withTests(
@@ -242,7 +243,7 @@ public class JUnitReporter {
         durationFormatter
       );
 
-      if (!apiTestResult.getIncludedInReport()) {
+      if (!TRUE.equals(apiTestResult.getIncludedInReport())) {
         return testCase.withSkipped(
           Skipped.builder()
             .message(
