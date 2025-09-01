@@ -12,7 +12,6 @@ import { serializeAxiosError } from './reducer.utils';
 const initialState = {
   ribbonEnv: '',
   inProduction: true,
-  isOpenAPIEnabled: false,
 };
 
 export type ApplicationProfileState = Readonly<typeof initialState>;
@@ -31,7 +30,6 @@ export const ApplicationProfileSlice = createSlice({
       const { data } = action.payload;
       state.ribbonEnv = data['display-ribbon-on-profiles'];
       state.inProduction = data.activeProfiles.includes('prod');
-      state.isOpenAPIEnabled = data.activeProfiles.includes('api-docs');
     });
   },
 });

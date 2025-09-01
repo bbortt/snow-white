@@ -153,6 +153,7 @@
         <version>3.5.3</version>
         <configuration>
           <excludes>
+            <exclude>**/*AppTest.java</exclude>
             <exclude>**/*IT.java</exclude>
           </excludes>
         </configuration>

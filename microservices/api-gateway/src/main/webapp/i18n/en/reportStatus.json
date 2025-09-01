@@ -1,6 +1,6 @@
 {
   "snowWhiteApp": {
-    "ReportStatus": {
+    "reportStatus": {
       "undefined": "Unknown",
       "NOT_STARTED": "Not Started",
       "IN_PROGRESS": "In Progress",

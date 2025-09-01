@@ -20,7 +20,6 @@ import { Brand, Home, QualityGates } from './header-components';
 export interface IHeaderProps {
   ribbonEnv: string;
   isInProduction: boolean;
-  isOpenAPIEnabled: boolean;
   currentLocale: string;
 }
 
@@ -38,9 +37,9 @@ const Header = (props: IHeaderProps) => {
   const renderDevRibbon = () =>
     !props.isInProduction ? (
       <div className="ribbon dev" data-testid="dev-ribbon">
-        <a href="">
+        <div>
           <Translate contentKey={`global.ribbon.${props.ribbonEnv}`} />
-        </a>
+        </div>
       </div>
     ) : null;
 

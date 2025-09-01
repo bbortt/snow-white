@@ -233,7 +233,7 @@ public class BackstageCatalogService implements ApiCatalogService {
         .filter(spec ->
           Optional.ofNullable(spec.get("type")).orElse("").equals("openapi")
         )
-        .map(spec -> (JsonNode) objectMapper.valueToTree(spec))
+        .map(objectMapper::<JsonNode>valueToTree)
         .map(jsonNode -> jsonNode.get("definition"))
         .map(JsonNode::asText)
         .map(openAPIV3Parser::readContents)

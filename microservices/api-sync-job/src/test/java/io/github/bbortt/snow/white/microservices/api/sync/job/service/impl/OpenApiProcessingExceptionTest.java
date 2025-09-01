@@ -18,7 +18,9 @@ class OpenApiProcessingExceptionTest {
 
     var fixture = new OpenApiProcessingException(cause);
 
-    assertThat(fixture).hasMessage("Failed to transform OpenAPI to JSON!");
-    assertThat(fixture.getCause()).isEqualTo(cause);
+    assertThat(fixture).satisfies(
+      f -> assertThat(f).hasMessage("Failed to transform OpenAPI to JSON!"),
+      f -> assertThat(f).hasCause(cause)
+    );
   }
 }
