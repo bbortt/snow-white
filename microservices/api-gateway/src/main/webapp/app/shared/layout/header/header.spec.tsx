@@ -21,13 +21,11 @@ describe('Header', () => {
     currentLocale: 'en',
     ribbonEnv: 'dev',
     isInProduction: false,
-    isOpenAPIEnabled: true,
   };
   const prodProps = {
     ...devProps,
     ribbonEnv: 'prod',
     isInProduction: true,
-    isOpenAPIEnabled: false,
   };
 
   const wrapper = (props = devProps) => {

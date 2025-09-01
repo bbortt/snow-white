@@ -150,7 +150,7 @@ public class ApiInformationDeserializer
   ) {
     Iterable<JsonNode> nodeIterable = properties::elements;
     return stream(nodeIterable.spliterator(), false)
-      .filter(propertyNode -> propertyNode.get(VALUE_PROPERTY) != null)
+      .filter(propertyNode -> nonNull(propertyNode.get(VALUE_PROPERTY)))
       .collect(
         toMap(
           propertyNode -> propertyNode.get(KEY_PROPERTY).asText(),

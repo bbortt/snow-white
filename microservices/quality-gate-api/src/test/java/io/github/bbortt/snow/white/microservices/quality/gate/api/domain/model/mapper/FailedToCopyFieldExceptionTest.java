@@ -19,7 +19,9 @@ class FailedToCopyFieldExceptionTest {
 
     var fixture = new FailedToCopyFieldException(message, cause);
 
-    assertThat(fixture).hasMessage("Failed to copy field: %s", message);
-    assertThat(fixture.getCause()).isEqualTo(cause);
+    assertThat(fixture).satisfies(
+      f -> assertThat(f).hasMessage("Failed to copy field: %s", message),
+      f -> assertThat(f).hasCause(cause)
+    );
   }
 }

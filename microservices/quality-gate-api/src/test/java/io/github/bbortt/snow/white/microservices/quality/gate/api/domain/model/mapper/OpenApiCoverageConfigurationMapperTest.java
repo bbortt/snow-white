@@ -40,7 +40,10 @@ class OpenApiCoverageConfigurationMapperTest {
         .name(openApiCriteria.name())
         .build();
 
-      assertThat(fixture.toDtos(singleton(openApiCoverageConfiguration)))
+      var openApiCoverageConfigurations = singleton(
+        openApiCoverageConfiguration
+      );
+      assertThat(fixture.toDtos(openApiCoverageConfigurations))
         .isNotNull()
         .hasSize(1)
         .first()

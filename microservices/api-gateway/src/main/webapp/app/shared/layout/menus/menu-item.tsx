@@ -24,7 +24,7 @@ const MenuItem: React.FC<IMenuItem> = (props: IMenuItem) => {
 
   return (
     <DropdownItem tag={Link} to={to} id={id} data-testid={props['data-testid']}>
-      <FontAwesomeIcon icon={icon} fixedWidth /> {children}
+      <FontAwesomeIcon icon={icon} /> {children}
     </DropdownItem>
   );
 };

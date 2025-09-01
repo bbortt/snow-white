@@ -308,6 +308,8 @@ class BackstageCatalogServiceTest {
         swaggerParseResultMock
       );
 
+      assertThat(openApiStringCaptor.getAllValues()).isEmpty();
+
       ArgumentCaptor<
         BackstageCatalogService.OpenAPIParameters
       > openAPIParametersArgumentCaptor = captor();
