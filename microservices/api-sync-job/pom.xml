@@ -69,7 +69,6 @@
     <dependency>
       <groupId>io.swagger.parser.v3</groupId>
       <artifactId>swagger-parser</artifactId>
-      <version>2.1.32</version>
     </dependency>
 
     <dependency>
