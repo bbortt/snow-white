@@ -7,6 +7,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
+import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { useEffect } from 'react';
 import { Translate, translate } from 'react-jhipster';
 import { Button, Table } from 'reactstrap';
@@ -61,7 +62,9 @@ export const OpenApiCriterion = () => {
                 return (
                   <tr key={`entity-${openApiCriterion.name}`} data-testid="openApiCriteriaTable">
                     <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
-                    <td>{description.startsWith('translation-not-found') ? openApiCriterion.description : description}</td>
+                    <td>
+                      {description.startsWith('translation-not-found') ? openApiCriterion.description : <TextWithCode text={description} />}
+                    </td>
                   </tr>
                 );
               })}

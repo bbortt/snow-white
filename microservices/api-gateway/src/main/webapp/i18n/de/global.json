@@ -12,7 +12,7 @@
         "openApiCriterion": "OpenAPI Kriterien",
         "qualityGateConfig": "Quality-Gates",
         "calculationRequestParameters": "Quality-Gate Parameter",
-        "openApiTestResult": "OpenAPI Test-Resultate",
+        "apiTestResult": "API Test-Resultate",
         "qualityGate": "Resultate"
       },
       "resources": {

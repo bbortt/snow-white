@@ -16,12 +16,6 @@
       "createdAt": "Erstellt am",
       "testedAPIs": "Getestete Schnittstellen",
       "calculationRequest": "Anfrage-Details",
-      "openApiTestResult": {
-        "title": "OpenAPI Test Resultate",
-        "name": "Name",
-        "coverage": "Abdeckung",
-        "additionalInformation": "Zusätzliche Information"
-      },
       "shapes": {
         "qualityGateResults": "Status inkludierter Kriterien",
         "allResults": "Status aller Kriterien"
