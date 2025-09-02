@@ -1,6 +1,6 @@
 {
   "snowWhiteApp": {
-    "openApiTestResult": {
+    "apiTestResult": {
       "home": {
         "title": "OpenAPI Test Resultate",
         "refreshListLabel": "Liste aktualisieren",

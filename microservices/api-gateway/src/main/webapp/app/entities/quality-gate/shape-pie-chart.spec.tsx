@@ -35,8 +35,8 @@ describe('ShapePieChart', () => {
   });
 
   describe('Component rendering', () => {
-    it.each([null, undefined, []])('should render alert when openApiTestResults is:', (openApiTestResults: null | undefined) => {
-      const { container } = render(<ShapePieChart apiTestResults={openApiTestResults} />);
+    it.each([null, undefined, []])('should render alert when apiTestResults is:', (apiTestResults: null | undefined) => {
+      const { container } = render(<ShapePieChart apiTestResults={apiTestResults} />);
       expect(container.tagName).toBe('DIV');
       expect(container.firstChild).toHaveClass('alert');
       expect(container.firstChild).toHaveClass('alert-warning');
@@ -123,7 +123,7 @@ describe('ShapePieChart', () => {
   });
 
   describe('Memoization behavior', () => {
-    it('should memoize data processing based on openApiTestResults', () => {
+    it('should memoize data processing based on apiTestResults', () => {
       const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
 
       const { rerender } = render(<ShapePieChart apiTestResults={testResults} />);
@@ -138,7 +138,7 @@ describe('ShapePieChart', () => {
       expect(rerenderedPieData).toEqual(initialPieData);
     });
 
-    it('should update memoized data when openApiTestResults change', () => {
+    it('should update memoized data when apiTestResults change', () => {
       const testResults1: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
       const testResults2: IOpenApiTestResult[] = [createTestResult(1.0, 'Test 1'), createTestResult(0.5, 'Test 2')];
 

@@ -34,7 +34,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ qualityGate, fill }: S
     );
   } else {
     return (
-      <Badge className={className} color="primary">
+      <Badge className={className} color="info">
         <span>{status?.startsWith('translation-not-found') ? 'Unknown' : status}</span>
       </Badge>
     );

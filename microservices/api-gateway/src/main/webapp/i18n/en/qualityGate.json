@@ -16,12 +16,6 @@
       "createdAt": "Initiated A",
       "testedAPIs": "Tested APIs",
       "calculationRequest": "Calculation Request Parameters",
-      "openApiTestResult": {
-        "title": "OpenAPI Test Results",
-        "name": "Name",
-        "coverage": "Coverage",
-        "additionalInformation": "Additional Information"
-      },
       "shapes": {
         "qualityGateResults": "Included Criteria Status",
         "allResults": "All Criteria Status"

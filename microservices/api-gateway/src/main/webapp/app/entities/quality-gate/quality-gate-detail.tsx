@@ -127,7 +127,7 @@ export const QualityGateDetail = () => {
           <hr className="mt-5" />
           <dt>
             <h3 className="mb-2">
-              <Translate contentKey="snowWhiteApp.qualityGate.openApiTestResult.title">OpenAPI Test Results</Translate>
+              <Translate contentKey="snowWhiteApp.apiTestResult.home.title">API Test Results</Translate>
             </h3>
           </dt>
           <dd>
