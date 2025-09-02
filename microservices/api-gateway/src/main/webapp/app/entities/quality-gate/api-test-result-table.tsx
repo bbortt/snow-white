@@ -6,6 +6,7 @@
 
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 
+import { TextWithCode } from 'app/shared/TextWithCode';
 import React from 'react';
 import { Translate } from 'react-jhipster';
 import { Table } from 'reactstrap';
@@ -39,12 +40,14 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
             {apiTestResults
               .slice()
               .sort((a, b) => a.id!.localeCompare(b.id!))
-              .map((openapiTestResult: IApiTestResult) => (
-                <tr key={`entity-${openapiTestResult.id}`} data-cy="apiTestResultTable">
-                  <td>{openapiTestResult.id}</td>
-                  <td>{openapiTestResult.coverage}</td>
-                  <td>{String(openapiTestResult.isIncludedInQualityGate)}</td>
-                  <td>{openapiTestResult.additionalInformation}</td>
+              .map((apiTestResult: IApiTestResult) => (
+                <tr key={`entity-${apiTestResult.id}`} data-cy="apiTestResultTable">
+                  <td>{apiTestResult.id}</td>
+                  <td>{apiTestResult.coverage}</td>
+                  <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
+                  <td>
+                    <TextWithCode text={apiTestResult.additionalInformation} />
+                  </td>
                 </tr>
               ))}
           </tbody>
