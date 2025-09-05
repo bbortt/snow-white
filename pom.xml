@@ -64,6 +64,7 @@
     </sonar.junit.reportPaths>
 
     <!-- Dependency Management -->
+    <org.projectlombok.version>1.18.40</org.projectlombok.version>
     <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
     <spring-boot.version>3.5.5</spring-boot.version>
 
@@ -93,6 +94,13 @@
         <groupId>io.github.bbortt.snow-white</groupId>
         <artifactId>commons</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${org.projectlombok.version}</version>
+        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
