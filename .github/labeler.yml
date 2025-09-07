@@ -98,4 +98,6 @@ lang:typescript:
 include:apptests:
   - changed-files:
       - any-glob-to-any-file:
-          - '**/Dockerfile'
+          - 'microservices/**/Dockerfile'
+          - 'microservices/*/pom.xml'
+          - 'microservices/*/src/apptest/**'
