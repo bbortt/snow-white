@@ -106,7 +106,7 @@ public class ErrorResponseCodeCoverageCalculator
     @NotNull Set<String> uncoveredErrorCodes
   ) {
     return super.getAdditionalInformationOrNull(
-      "The following error codes in paths are uncovered: %s",
+      "The following error codes in paths are uncovered: `%s`",
       uncoveredErrorCodes
     );
   }

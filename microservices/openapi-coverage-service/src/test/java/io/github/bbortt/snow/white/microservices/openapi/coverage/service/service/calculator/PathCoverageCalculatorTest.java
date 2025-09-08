@@ -160,7 +160,7 @@ class PathCoverageCalculatorTest {
             .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following resources (ignoring request methods) are uncovered: /api/v1/users"
+            "The following resources (ignoring request methods) are uncovered: `/api/v1/users`"
           )
       );
     }

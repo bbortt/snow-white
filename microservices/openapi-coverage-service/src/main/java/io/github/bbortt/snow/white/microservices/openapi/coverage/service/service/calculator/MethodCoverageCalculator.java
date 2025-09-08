@@ -78,8 +78,8 @@ public class MethodCoverageCalculator
     sort(uncoveredPaths);
 
     return format(
-      "The following paths are uncovered: %s",
-      join(", ", uncoveredPaths)
+      "The following paths are uncovered: `%s`",
+      join("`, `", uncoveredPaths)
     );
   }
 }
