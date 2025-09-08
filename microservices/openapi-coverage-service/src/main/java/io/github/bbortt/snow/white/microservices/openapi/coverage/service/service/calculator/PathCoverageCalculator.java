@@ -96,8 +96,8 @@ public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
     sort(uncoveredPaths);
 
     return format(
-      "The following resources (ignoring request methods) are uncovered: %s",
-      join(", ", uncoveredPaths)
+      "The following resources (ignoring request methods) are uncovered: `%s`",
+      join("`, `", uncoveredPaths)
     );
   }
 }
