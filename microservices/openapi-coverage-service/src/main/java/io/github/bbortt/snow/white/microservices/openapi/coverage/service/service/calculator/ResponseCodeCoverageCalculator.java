@@ -196,7 +196,7 @@ public class ResponseCodeCoverageCalculator
     @NotNull Set<String> uncoveredResponseCodes
   ) {
     return getAdditionalInformationOrNull(
-      "The following response codes in paths are uncovered: %s",
+      "The following response codes in paths are uncovered: `%s`",
       uncoveredResponseCodes
     );
   }
@@ -218,7 +218,10 @@ public class ResponseCodeCoverageCalculator
 
     if (!codes.isEmpty()) {
       additionalInformationBuilder.append(
-        format(infoMessagePattern, join(", ", codes.stream().sorted().toList()))
+        format(
+          infoMessagePattern,
+          join("`, `", codes.stream().sorted().toList())
+        )
       );
     }
 
@@ -234,8 +237,8 @@ public class ResponseCodeCoverageCalculator
     if (!defaultCodes.isEmpty()) {
       additionalInformationBuilder.append(
         format(
-          "The following default response codes in paths were being ignored for the calculation: %s",
-          join(", ", defaultCodes.stream().sorted().toList())
+          "The following default response codes in paths were being ignored for the calculation: `%s`",
+          join("`, `", defaultCodes.stream().sorted().toList())
         )
       );
     }

@@ -147,7 +147,7 @@ class ResponseCodeCoverageCalculatorTest {
               .isPositive(),
           r ->
             assertThat(r.additionalInformation()).isEqualTo(
-              "The following response codes in paths are uncovered: GET_/api/v1/users [500], POST_/api/v1/users [422]"
+              "The following response codes in paths are uncovered: `GET_/api/v1/users [500]`, `POST_/api/v1/users [422]`"
             )
         );
     }
@@ -181,7 +181,7 @@ class ResponseCodeCoverageCalculatorTest {
             .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following response codes in paths are uncovered: GET_/api/v1/users [200], GET_/api/v1/users [301], GET_/api/v1/users [400], GET_/api/v1/users [404], POST_/api/v1/users [500]"
+            "The following response codes in paths are uncovered: `GET_/api/v1/users [200]`, `GET_/api/v1/users [301]`, `GET_/api/v1/users [400]`, `GET_/api/v1/users [404]`, `POST_/api/v1/users [500]`"
           )
       );
     }
@@ -247,7 +247,7 @@ class ResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: GET_/api/v1/users [default]"
+            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
           )
       );
     }
@@ -311,7 +311,7 @@ class ResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following response codes in paths are uncovered: GET_/api/v1/users [400], GET_/api/v1/users [404]"
+            "The following response codes in paths are uncovered: `GET_/api/v1/users [400]`, `GET_/api/v1/users [404]`"
           )
       );
     }
@@ -338,8 +338,8 @@ class ResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.6)),
         r ->
           assertThat(r.additionalInformation()).contains(
-            "The following response codes in paths are uncovered: GET_/api/v1/users [300]",
-            "The following default response codes in paths were being ignored for the calculation: GET_/api/v1/users [default]"
+            "The following response codes in paths are uncovered: `GET_/api/v1/users [300]`",
+            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
           )
       );
     }
@@ -363,7 +363,7 @@ class ResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following response codes in paths are uncovered: GET_/api/v1/users [201]"
+            "The following response codes in paths are uncovered: `GET_/api/v1/users [201]`"
           )
       );
     }

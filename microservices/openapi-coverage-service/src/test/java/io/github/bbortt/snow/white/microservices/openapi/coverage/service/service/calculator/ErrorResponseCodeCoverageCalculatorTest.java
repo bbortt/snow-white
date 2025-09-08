@@ -152,7 +152,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
               .isPositive(),
           r ->
             assertThat(r.additionalInformation()).isEqualTo(
-              "The following error codes in paths are uncovered: GET_/api/v1/users [500], POST_/api/v1/users [422]"
+              "The following error codes in paths are uncovered: `GET_/api/v1/users [500]`, `POST_/api/v1/users [422]`"
             )
         );
     }
@@ -189,7 +189,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
             .isPositive(),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following error codes in paths are uncovered: GET_/api/v1/users [400], GET_/api/v1/users [404], POST_/api/v1/users [500]"
+            "The following error codes in paths are uncovered: `GET_/api/v1/users [400]`, `GET_/api/v1/users [404]`, `POST_/api/v1/users [500]`"
           )
       );
     }
@@ -255,7 +255,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: GET_/api/v1/users [default]"
+            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
           )
       );
     }
@@ -319,7 +319,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following error codes in paths are uncovered: GET_/api/v1/users [400], GET_/api/v1/users [404]"
+            "The following error codes in paths are uncovered: `GET_/api/v1/users [400]`, `GET_/api/v1/users [404]`"
           )
       );
     }
@@ -343,7 +343,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal((double) 2 / 3)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: GET_/api/v1/users [default]"
+            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
           )
       );
     }
