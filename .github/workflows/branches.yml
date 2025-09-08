@@ -22,7 +22,7 @@ jobs:
         with:
           submodules: true
       - name: Check if PR exists
-        uses: 8BitJonny/gh-get-current-pr@3.0.0
+        uses: 8BitJonny/gh-get-current-pr@4.0.0
         id: check
         with:
           filterOutClosed: true
