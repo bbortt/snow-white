@@ -53,8 +53,6 @@ services:
 
   kafka:
     image: bitnami/kafka:4.0.0
-    volumes:
-      - ./kafka/data:/bitnami/kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://127.0.0.1:9092,EXTERNAL://kafka:9094'

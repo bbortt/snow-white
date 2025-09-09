@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
 import jakarta.annotation.Nullable;
 import java.util.Set;
@@ -17,14 +18,23 @@ public record OpenApiTestContext(
   ApiInformation apiInformation,
   OpenAPI openAPI,
   String lookbackWindow,
+  Set<FluxAttributeFilter> fluxAttributeFilters,
   @With @Nullable Set<OpenTelemetryData> openTelemetryData,
   @With @Nullable Set<OpenApiTestResult> openApiTestResults
 ) {
   public OpenApiTestContext(
     ApiInformation apiInformation,
     OpenAPI openAPI,
-    String lookbackWindow
+    String lookbackWindow,
+    Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
-    this(apiInformation, openAPI, lookbackWindow, null, null);
+    this(
+      apiInformation,
+      openAPI,
+      lookbackWindow,
+      fluxAttributeFilters,
+      null,
+      null
+    );
   }
 }

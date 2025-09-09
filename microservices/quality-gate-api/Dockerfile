@@ -7,9 +7,6 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelem
 
 ENV OTEL_SERVICE_NAME="quality-gate-api"
 ENV OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white"
-ENV OTEL_TRACES_EXPORTER="otlp"
-ENV OTEL_METRICS_EXPORTER="otlp"
-ENV OTEL_LOGS_EXPORTER="otlp"
 ENV SPRING_PROFILES_ACTIVE="prod"
 
 ENTRYPOINT ["java", \
