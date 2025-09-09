@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb;
+package io.github.bbortt.snow.white.commons.event.dto;
 
 public enum AttributeFilterOperator {
   STRING_EQUALS("==");

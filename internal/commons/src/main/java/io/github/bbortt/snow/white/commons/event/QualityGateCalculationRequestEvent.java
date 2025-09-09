@@ -9,7 +9,10 @@ package io.github.bbortt.snow.white.commons.event;
 import static lombok.AccessLevel.PRIVATE;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,4 +31,7 @@ public class QualityGateCalculationRequestEvent {
 
   @Nonnull
   private String lookbackWindow;
+
+  @Nullable
+  private Set<AttributeFilter> attributeFilters;
 }

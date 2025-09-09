@@ -10,7 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class OpenApiTestContextTest {
@@ -21,7 +23,14 @@ class OpenApiTestContextTest {
     var openAPI = mock(OpenAPI.class);
     var lookbackWindow = "lookbackWindow";
 
-    assertThat(new OpenApiTestContext(apiInformation, openAPI, lookbackWindow))
+    assertThat(
+      new OpenApiTestContext(
+        apiInformation,
+        openAPI,
+        lookbackWindow,
+        Set.of(mock(FluxAttributeFilter.class))
+      )
+    )
       .isNotNull()
       .hasNoNullFieldsOrPropertiesExcept(
         "openTelemetryData",

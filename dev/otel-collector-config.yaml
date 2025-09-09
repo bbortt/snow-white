@@ -30,19 +30,18 @@ processors:
     traces:
       span:
         - attributes["http.request.method"] == nil
-        - attributes["api.name"] == nil or attributes["api.version"] == nil
-  filter/snow-white:
+        - attributes["api.name"] == nil
+        - attributes["api.version"] == nil
+  filter/snow-white-microservices:
     error_mode: propagate
-    spans:
-      exclude:
-        match_type: strict
-        services:
-          - api-gateway
-          - api-sync-job
-          - kafka-event-filter
-          - openapi-coverage-service
-          - quality-gate-api
-          - report-coordination-service
+    traces:
+      span:
+        - resource.attributes["service.name"] == "api-gateway"
+        - resource.attributes["service.name"] == "api-sync-job"
+        - resource.attributes["service.name"] == "kafka-event-filter"
+        - resource.attributes["service.name"] == "openapi-coverage-service"
+        - resource.attributes["service.name"] == "quality-gate-api"
+        - resource.attributes["service.name"] == "report-coordination-service"
   groupbyattrs/service:
     keys:
       - service.name
@@ -110,7 +109,7 @@ service:
       processors:
         [
           memory_limiter,
-          filter/snow-white,
+          filter/snow-white-microservices,
           filter/openapi-traces,
           groupbytrace,
           resource/cleanup,

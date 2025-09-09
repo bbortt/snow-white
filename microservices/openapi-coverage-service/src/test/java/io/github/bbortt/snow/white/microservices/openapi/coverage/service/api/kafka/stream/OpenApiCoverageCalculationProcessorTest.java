@@ -6,12 +6,17 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka.stream;
 
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilter.attributeFilters;
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -21,6 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
@@ -31,6 +37,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.servic
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -56,6 +63,9 @@ class OpenApiCoverageCalculationProcessorTest {
   public static final String SERVICE_NAME = "serviceName";
   public static final String API_NAME = "apiName";
   public static final String API_VERSION = "apiVersion";
+
+  private static final String LOOKBACK_WINDOW = "1h";
+
   private final String requestTopicName =
     getClass().getSimpleName() + ":request";
   private final String responseTopicName =
@@ -98,15 +108,11 @@ class OpenApiCoverageCalculationProcessorTest {
   class OpenapiCoverageStream {
 
     @Test
-    void shouldReturnCoverage()
+    void shouldReturnCoverage_withUnmappedAttributeFilters()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var lookbackWindow = "1h";
-
       var openAPIMock = getOpenAPIMock();
-      Set<OpenTelemetryData> openTelemetryData = getMockedOpenTelemetryData(
-        lookbackWindow
-      );
-      Set<OpenApiTestResult> openApiTestResults = getOpenApiTestResults(
+      var openTelemetryData = getMockedOpenTelemetryData();
+      var openApiTestResults = getOpenApiTestResults(
         Set.of(new OpenApiTestResult(PATH_COVERAGE, BigDecimal.ONE, null))
       );
 
@@ -114,7 +120,7 @@ class OpenApiCoverageCalculationProcessorTest {
 
       sendEventsAndAssert(
         calculationId,
-        getQualityGateCalculationRequestEvent(lookbackWindow),
+        getQualityGateCalculationRequestEvent(),
         outputTopic ->
           assertThat(outputTopic.readKeyValuesToList())
             .hasSize(1)
@@ -157,21 +163,84 @@ class OpenApiCoverageCalculationProcessorTest {
     }
 
     @Test
-    void shouldReturnEmptyCoverage()
+    void shouldReturnCoverage_withMappedAttributeFilters()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var lookbackWindow = "1h";
+      var calculationId = "bc1eed1a-251f-4c3b-98b7-5f1c5a3ee45c";
+
+      var attributeFilter = new AttributeFilter("key", STRING_EQUALS, "value");
+      var attributeFilters = attributeFilters().with(attributeFilter).build();
 
       var openAPIMock = getOpenAPIMock();
-      Set<OpenTelemetryData> openTelemetryData = getMockedOpenTelemetryData(
-        lookbackWindow
+      var openTelemetryData = getMockedOpenTelemetryData();
+      var openApiTestResults = getOpenApiTestResults(
+        Set.of(new OpenApiTestResult(PATH_COVERAGE, BigDecimal.ONE, null))
       );
+
+      sendEventsAndAssert(
+        calculationId,
+        getQualityGateCalculationRequestEvent().withAttributeFilters(
+          attributeFilters
+        ),
+        outputTopic ->
+          assertThat(outputTopic.readKeyValuesToList())
+            .hasSize(1)
+            .first()
+            .satisfies(
+              r -> assertThat(r.key).isEqualTo(calculationId),
+              r ->
+                assertThat(r.value)
+                  .isInstanceOf(OpenApiCoverageResponseEvent.class)
+                  .satisfies(
+                    responseEvent ->
+                      assertThat(responseEvent.getApiType()).isEqualTo(OPENAPI),
+                    responseEvent ->
+                      assertThat(responseEvent.apiInformation()).satisfies(
+                        openApiInformation ->
+                          assertThat(
+                            openApiInformation.getServiceName()
+                          ).isEqualTo(SERVICE_NAME),
+                        openApiInformation ->
+                          assertThat(openApiInformation.getApiName()).isEqualTo(
+                            API_NAME
+                          ),
+                        openApiInformation ->
+                          assertThat(
+                            openApiInformation.getApiVersion()
+                          ).isEqualTo(API_VERSION)
+                      ),
+                    responseEvent ->
+                      assertThat(responseEvent.openApiCriteria()).isEqualTo(
+                        openApiTestResults
+                      )
+                  )
+            )
+      );
+
+      var fluxAttributeFiltersArgumentCaptor =
+        assertThatOpenApiHasBeenTestedWithTelemetryData(
+          openAPIMock,
+          openTelemetryData
+        );
+
+      assertThat(fluxAttributeFiltersArgumentCaptor.getValue())
+        .hasSize(1)
+        .first()
+        .extracting("baseAttributeFilter")
+        .isEqualTo(attributeFilter);
+    }
+
+    @Test
+    void shouldReturnEmptyCoverage()
+      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      var openAPIMock = getOpenAPIMock();
+      Set<OpenTelemetryData> openTelemetryData = getMockedOpenTelemetryData();
       getOpenApiTestResults(emptySet());
 
       var calculationId = "31a196cd-b918-49a8-9ae0-dcf82a1f39fe";
 
       sendEventsAndAssert(
         calculationId,
-        getQualityGateCalculationRequestEvent(lookbackWindow),
+        getQualityGateCalculationRequestEvent(),
         outputTopic ->
           assertThat(outputTopic.readKeyValuesToList())
             .hasSize(1)
@@ -234,7 +303,7 @@ class OpenApiCoverageCalculationProcessorTest {
     ) {
       sendEventsAndAssert(
         "981900ba-bce2-4147-99c0-c52d12ec9575",
-        getQualityGateCalculationRequestEvent("1h"),
+        getQualityGateCalculationRequestEvent(),
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
 
@@ -285,21 +354,50 @@ class OpenApiCoverageCalculationProcessorTest {
       }
     }
 
-    private void assertThatOpenApiHasBeenTestedWithTelemetryData(
+    private ArgumentCaptor<
+      Set<FluxAttributeFilter>
+    > assertThatOpenApiHasBeenTestedWithTelemetryData(
       OpenAPI openAPIMock,
       Set<OpenTelemetryData> openTelemetryData
     ) {
       ArgumentCaptor<OpenApiTestContext> openApiTestContextArgumentCaptor =
         captor();
+
       verify(openApiCoverageServiceMock).testOpenApi(
         openApiTestContextArgumentCaptor.capture()
       );
+
       assertThat(openApiTestContextArgumentCaptor.getValue())
         .isNotNull()
         .satisfies(
           r -> assertThat(r.openAPI()).isEqualTo(openAPIMock),
           r -> assertThat(r.openTelemetryData()).isEqualTo(openTelemetryData)
         );
+
+      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor = captor();
+      ArgumentCaptor<
+        Set<FluxAttributeFilter>
+      > fluxAttributeFiltersArgumentCaptor = captor();
+
+      verify(openTelemetryService).findOpenTelemetryTracingData(
+        apiInformationArgumentCaptor.capture(),
+        anyLong(),
+        eq(LOOKBACK_WINDOW),
+        fluxAttributeFiltersArgumentCaptor.capture()
+      );
+
+      assertThat(apiInformationArgumentCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          apiInformation ->
+            assertThat(apiInformation.getServiceName()).isEqualTo(SERVICE_NAME),
+          apiInformation ->
+            assertThat(apiInformation.getApiName()).isEqualTo(API_NAME),
+          apiInformation ->
+            assertThat(apiInformation.getApiVersion()).isEqualTo(API_VERSION)
+        );
+
+      return fluxAttributeFiltersArgumentCaptor;
     }
   }
 
@@ -321,21 +419,22 @@ class OpenApiCoverageCalculationProcessorTest {
     return openAPIMock;
   }
 
-  private @NotNull Set<OpenTelemetryData> getMockedOpenTelemetryData(
-    String lookbackWindow
-  ) {
+  private @NotNull Set<OpenTelemetryData> getMockedOpenTelemetryData() {
     Set<OpenTelemetryData> openTelemetryData = Set.of(
       new OpenTelemetryData("spanId", "traceId", null)
     );
     doReturn(openTelemetryData)
       .when(openTelemetryService)
-      .findOpenTelemetryTracingData(SERVICE_NAME, lookbackWindow, emptySet());
+      .findOpenTelemetryTracingData(
+        any(ApiInformation.class),
+        anyLong(),
+        eq(LOOKBACK_WINDOW),
+        anySet()
+      );
     return openTelemetryData;
   }
 
-  private static QualityGateCalculationRequestEvent getQualityGateCalculationRequestEvent(
-    String lookbackWindow
-  ) {
+  private static QualityGateCalculationRequestEvent getQualityGateCalculationRequestEvent() {
     return QualityGateCalculationRequestEvent.builder()
       .apiInformation(
         ApiInformation.builder()
@@ -344,7 +443,7 @@ class OpenApiCoverageCalculationProcessorTest {
           .apiVersion(API_VERSION)
           .build()
       )
-      .lookbackWindow(lookbackWindow)
+      .lookbackWindow(LOOKBACK_WINDOW)
       .build();
   }
 }

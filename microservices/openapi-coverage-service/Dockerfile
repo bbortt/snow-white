@@ -64,9 +64,6 @@ ENV JAVA_HOME="/opt/java" \
     OTEL_SERVICE_NAME="openapi-coverage-service" \
     OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
-    OTEL_TRACES_EXPORTER="otlp" \
-    OTEL_METRICS_EXPORTER="otlp" \
-    OTEL_LOGS_EXPORTER="otlp" \
     SPRING_PROFILES_ACTIVE="prod" \
     JAVA_OPTS="-XX:+UseContainerSupport \
         -XX:+TieredCompilation \

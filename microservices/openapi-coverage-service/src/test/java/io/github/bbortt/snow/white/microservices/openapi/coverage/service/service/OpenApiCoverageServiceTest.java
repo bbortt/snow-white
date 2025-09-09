@@ -81,7 +81,8 @@ class OpenApiCoverageServiceTest {
           .apiName("apiName")
           .build(),
         openAPIMock,
-        LOOKBACK_WINDOW
+        LOOKBACK_WINDOW,
+        null
       );
     }
 

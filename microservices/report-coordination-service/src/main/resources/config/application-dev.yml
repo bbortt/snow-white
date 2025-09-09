@@ -3,7 +3,7 @@ snow:
     report:
       coordination:
         service:
-          calculation-request-topic: snow-white-coverage-request
+          calculation-request-topic: snow-white-calculation-request
           openapi-calculation-response:
             topic: snow-white-openapi-calculation-response
           public-api-gateway-url: http://localhost:8090

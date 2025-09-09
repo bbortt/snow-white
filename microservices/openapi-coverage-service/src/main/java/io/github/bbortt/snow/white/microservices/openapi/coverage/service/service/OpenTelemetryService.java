@@ -7,18 +7,30 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.parseOpenTelemetryData;
-import static io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
+import static java.lang.String.join;
+import static java.time.Instant.ofEpochMilli;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
+import static java.util.concurrent.ConcurrentHashMap.newKeySet;
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 
 import com.influxdb.client.InfluxDBClient;
+import com.influxdb.query.FluxTable;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.InfluxDBProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import java.util.HashSet;
+import java.time.Instant;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -29,63 +41,162 @@ public class OpenTelemetryService {
   private final InfluxDBClient influxDBClient;
   private final InfluxDBProperties influxDBProperties;
 
-  // TODO: Add api name and api version filter
+  private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
 
   public Set<OpenTelemetryData> findOpenTelemetryTracingData(
-    String serviceName,
-    String lookbackRange,
-    @Nullable Set<AttributeFilter> attributeFilters
+    ApiInformation apiInformation,
+    long lookbackFromTimestamp,
+    String lookbackWindow,
+    @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
+    var fluxQuery = buildFluxQuery(
+      apiInformation,
+      lookbackFromTimestamp,
+      lookbackWindow,
+      fluxAttributeFilters
+    );
+    logger.trace("Firing flux query: {}", fluxQuery);
+
+    var fluxTables = influxDBClient.getQueryApi().query(fluxQuery);
+    return parseFluxTableToOpenTelemetryData(fluxTables);
+  }
+
+  private @NotNull String buildFluxQuery(
+    ApiInformation apiInformation,
+    long lookbackFromTimestamp,
+    String lookbackWindow,
+    @org.jetbrains.annotations.Nullable Set<
+      FluxAttributeFilter
+    > fluxAttributeFilters
+  ) {
+    var filteringProperties = openApiCoverageServiceProperties.getFiltering();
+
     var fluxBuilder = new StringBuilder();
     fluxBuilder
       .append(buildBucketFilter())
-      .append(buildRangeFilter(lookbackRange))
+      .append(buildRangeFilter(lookbackFromTimestamp, lookbackWindow))
       .append(" |> filter(fn: (r) => r._measurement == \"spans\") ")
-      .append(buildServiceNameFilter(serviceName))
-      .append(" |> filter(fn: (r) => r._field == \"attributes\") ");
+      .append(
+        buildNullableAttributeFilter(
+          filteringProperties.getServiceNameProperty(),
+          apiInformation.getServiceName()
+        )
+      )
+      .append(" |> filter(fn: (r) => r._field == \"attributes\") ")
+      .append(
+        jsonToDimensionsMapping(filteringProperties, fluxAttributeFilters)
+      )
+      .append(
+        buildNullableAttributeFilter(
+          filteringProperties.getApiNameProperty().replace(".", "_"),
+          apiInformation.getApiName()
+        )
+      )
+      .append(
+        buildNullableAttributeFilter(
+          filteringProperties.getApiVersionProperty().replace(".", "_"),
+          apiInformation.getApiVersion()
+        )
+      );
 
-    if (!isEmpty(attributeFilters)) {
-      attributeFilters.forEach(attributeFilter ->
+    if (!isEmpty(fluxAttributeFilters)) {
+      fluxAttributeFilters.forEach(attributeFilter ->
         fluxBuilder.append(attributeFilter.toFluxString())
       );
     }
 
     fluxBuilder.append(
-      " |> keep(columns: [\"_field\", \"_value\", \"span_id\", \"trace_id\"]) "
+      " |> keep(columns: [\"_value\", \"span_id\", \"trace_id\"]) "
     );
 
-    var fluxQuery = fluxBuilder.toString();
-    logger.trace("Firing flux query: {}", fluxQuery);
+    return """
+    import "date"
+    import "experimental/json"
 
-    var fluxTables = influxDBClient.getQueryApi().query(fluxQuery);
-
-    Set<OpenTelemetryData> openTelemetryData = new HashSet<>();
-    fluxTables.forEach(fluxTable ->
-      fluxTable
-        .getRecords()
-        .forEach(fluxRecord ->
-          openTelemetryData.add(parseOpenTelemetryData(fluxRecord))
-        )
-    );
-
-    return openTelemetryData;
+    %s
+    """.formatted(fluxBuilder.toString());
   }
 
   private String buildBucketFilter() {
     return "from(bucket: \"" + influxDBProperties.getBucket() + "\") ";
   }
 
-  private String buildRangeFilter(String lookbackRange) {
-    return "|> range(start: -" + lookbackRange + ") ";
+  private String buildRangeFilter(long eventTime, String lookbackWindow) {
+    Instant instant = ofEpochMilli(eventTime);
+    String isoTime = ISO_INSTANT.format(instant);
+
+    return (
+      "|> range(start: date.sub(d: " +
+      lookbackWindow +
+      ", from: " +
+      isoTime +
+      "), stop: " +
+      isoTime +
+      ")"
+    );
   }
 
-  private String buildServiceNameFilter(String serviceName) {
-    return (
-      "|> filter(fn: (r) => r[\"" +
-      SERVICE_NAME.getKey() +
-      "\"] == \"" +
-      serviceName +
-      "\") "
+  private String jsonToDimensionsMapping(
+    OpenApiCoverageServiceProperties.Filtering filteringProperties,
+    Set<FluxAttributeFilter> fluxAttributeFilters
+  ) {
+    var apiNameMapping = filteringProperties.getApiNameProperty();
+    var apiVersionMapping = filteringProperties.getApiVersionProperty();
+
+    var attributesToMapToDimensions = Stream.of(
+      apiNameMapping,
+      apiVersionMapping
     );
+    if (!isEmpty(fluxAttributeFilters)) {
+      attributesToMapToDimensions = Stream.concat(
+        attributesToMapToDimensions,
+        fluxAttributeFilters.stream().map(FluxAttributeFilter::getKey)
+      );
+    }
+
+    var dimensions = attributesToMapToDimensions
+      .map(
+        attributeMapping ->
+          attributeMapping.replace(".", "_") +
+          ": parsed[\"" +
+          attributeMapping +
+          "\"]"
+      )
+      .collect(toSet());
+
+    return """
+    |> map(fn: (r) => {
+      parsed = json.parse(data: bytes(v: r._value))
+      return { r with %s }
+    })
+    """.formatted(join(", ", dimensions));
+  }
+
+  private String buildNullableAttributeFilter(
+    @Nonnull String key,
+    @Nullable String value
+  ) {
+    if (!hasText(value)) {
+      return "";
+    }
+
+    return (" |> filter(fn: (r) => r[\"" + key + "\"] == \"" + value + "\") ");
+  }
+
+  private static @NotNull Set<
+    OpenTelemetryData
+  > parseFluxTableToOpenTelemetryData(List<FluxTable> fluxTables) {
+    Set<OpenTelemetryData> openTelemetryData = newKeySet();
+    fluxTables
+      .parallelStream()
+      .forEach(fluxTable ->
+        fluxTable
+          .getRecords()
+          .parallelStream()
+          .forEach(fluxRecord ->
+            openTelemetryData.add(parseOpenTelemetryData(fluxRecord))
+          )
+      );
+    return openTelemetryData;
   }
 }
