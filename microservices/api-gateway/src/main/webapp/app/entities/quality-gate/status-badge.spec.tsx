@@ -79,7 +79,7 @@ describe('StatusBadge', () => {
 
       const badge = screen.getByText(reportStatus);
       expect(badge).toBeInTheDocument();
-      expect(badge.closest('.badge')).toHaveClass('bg-primary');
+      expect(badge.closest('.badge')).toHaveClass('bg-info');
     });
 
     it.each(['NOT_STARTED', 'IN_PROGRESS'])(
@@ -90,7 +90,7 @@ describe('StatusBadge', () => {
         render(<StatusBadge qualityGate={qualityGate} fill={true} />);
 
         const badge = screen.getByText(reportStatus);
-        expect(badge.closest('.badge')).toHaveClass('bg-primary', 'badge-block');
+        expect(badge.closest('.badge')).toHaveClass('bg-info', 'badge-block');
       },
     );
   });
@@ -136,7 +136,7 @@ describe('StatusBadge', () => {
       render(<StatusBadge qualityGate={qualityGate} />);
 
       const badge = screen.getByText('Unknown');
-      expect(badge.closest('.badge')).toHaveClass('bg-primary');
+      expect(badge.closest('.badge')).toHaveClass('bg-info');
     });
   });
 
