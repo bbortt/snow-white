@@ -57,7 +57,7 @@ export const resolveConfigInternal = (
   }
 
   if (!filepath) {
-    console.error(chalk.red(`⚙️ Failed to find configuration file`));
+    console.error(chalk.red(`⚙️ Failed to find configuration file - try with '--configFile <path-to-your-config-file>'`));
     exit(CONFIG_FILE_NOT_FOUND);
   } else if (filepath && !existsSync(filepath)) {
     console.error(chalk.red(`⚙️ Configuration file '${filepath}' does not exist`));
