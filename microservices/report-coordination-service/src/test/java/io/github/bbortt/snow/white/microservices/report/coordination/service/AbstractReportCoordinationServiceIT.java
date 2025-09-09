@@ -32,7 +32,8 @@ import org.wiremock.integrations.testcontainers.WireMockContainer;
 )
 public abstract class AbstractReportCoordinationServiceIT {
 
-  static final String CALCULATION_REQUEST_TOPIC = "snow-white-coverage-request";
+  static final String CALCULATION_REQUEST_TOPIC =
+    "snow-white-calculation-request";
   static final String OPENAPI_CALCULATION_RESPONSE_TOPIC =
     "snow-white-openapi-calculation-response";
 

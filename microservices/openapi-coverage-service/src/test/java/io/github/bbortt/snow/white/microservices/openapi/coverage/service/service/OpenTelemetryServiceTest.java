@@ -6,10 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.service.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.SPAN_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.TRACE_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData.VALUE_KEY;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilterOperator.STRING_EQUALS;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -24,9 +24,12 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.InfluxDBProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.AttributeFilter;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -49,21 +52,33 @@ class OpenTelemetryServiceTest {
   private InfluxDBClient influxDBClientMock;
 
   private InfluxDBProperties influxDBProperties;
+  private OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
 
   private OpenTelemetryService fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     influxDBProperties = new InfluxDBProperties();
+    openApiCoverageServiceProperties = new OpenApiCoverageServiceProperties();
 
-    fixture = new OpenTelemetryService(influxDBClientMock, influxDBProperties);
+    fixture = new OpenTelemetryService(
+      influxDBClientMock,
+      influxDBProperties,
+      openApiCoverageServiceProperties
+    );
   }
 
   @Nested
   class FindOpenTelemetryTracingData {
 
-    private static final String SERVICE_NAME = "test-service";
-    private static final String LOOKBACK_RANGE = "1h";
+    private static final ApiInformation API_INFORMATION =
+      ApiInformation.builder()
+        .serviceName("serviceName")
+        .apiName("apiName")
+        .build();
+
+    private static final long LOOKBACK_FROM = 1234L;
+    private static final String LOOKBACK_WINDOW = "1h";
     private static final String OTEL_BUCKET = "otel-bucket";
 
     @Mock
@@ -82,7 +97,7 @@ class OpenTelemetryServiceTest {
     }
 
     public static Stream<
-      Set<AttributeFilter>
+      Set<FluxAttributeFilter>
     > withoutAttributeFilters_shouldBuildCorrectQuery() {
       return Stream.of(null, emptySet());
     }
@@ -90,62 +105,139 @@ class OpenTelemetryServiceTest {
     @MethodSource
     @ParameterizedTest
     void withoutAttributeFilters_shouldBuildCorrectQuery(
-      Set<AttributeFilter> attributeFilters
+      Set<FluxAttributeFilter> fluxAttributeFilters
     ) {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
       Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
-        SERVICE_NAME,
-        LOOKBACK_RANGE,
-        attributeFilters
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        fluxAttributeFilters
       );
 
       assertThat(result).isEmpty();
 
       var capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
-        "from(bucket: \"" + OTEL_BUCKET + "\")",
-        "|> range(start: -" + LOOKBACK_RANGE + ")",
-        "r._measurement == \"spans\"",
-        "r[\"service.name\"] == \"" + SERVICE_NAME + "\"",
-        "r._field == \"attributes\"",
-        "keep(columns: [\"_field\", \"_value\", \"span_id\", \"trace_id\"])"
+          "import \"date\"",
+          "import \"experimental/json\"",
+          "from(bucket: \"" + OTEL_BUCKET + "\")",
+          "|> range(start: date.sub(d: " +
+          LOOKBACK_WINDOW +
+          ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
+          "|> filter(fn: (r) => r._measurement == \"spans\")",
+          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+          API_INFORMATION.getServiceName() +
+          "\")",
+          "|> filter(fn: (r) => r._field == \"attributes\")",
+          """
+          |> map(fn: (r) => {
+            parsed = json.parse(data: bytes(v: r._value))
+            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
+          })
+          """,
+          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+          API_INFORMATION.getApiName() +
+          "\")",
+          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+        );
+    }
+
+    @Test
+    void withApiVersion_shouldAppendFilterExpression() {
+      ArgumentCaptor<String> queryCaptor = captor();
+      doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
+
+      var apiInformation = API_INFORMATION.withApiVersion("apiVersion");
+
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
+        apiInformation,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
       );
+
+      assertThat(result).isEmpty();
+
+      var capturedQuery = queryCaptor.getValue();
+      assertThat(capturedQuery).contains(
+          "import \"date\"",
+          "import \"experimental/json\"",
+          "from(bucket: \"" + OTEL_BUCKET + "\")",
+          "|> range(start: date.sub(d: " +
+          LOOKBACK_WINDOW +
+          ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
+          "|> filter(fn: (r) => r._measurement == \"spans\")",
+          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+          apiInformation.getServiceName() +
+          "\")",
+          "|> filter(fn: (r) => r._field == \"attributes\")",
+          """
+          |> map(fn: (r) => {
+            parsed = json.parse(data: bytes(v: r._value))
+            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
+          })
+          """,
+          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+          apiInformation.getApiName() +
+          "\")",
+          "|> filter(fn: (r) => r[\"api_version\"] == \"" +
+          apiInformation.getApiVersion() +
+          "\")",
+          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"]) "
+        );
     }
 
     @Test
     void withAttributeFilters_shouldIncludeFiltersInQuery() {
-      var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
-      var filter2 = new AttributeFilter(
-        "http.status_code",
-        STRING_EQUALS,
-        "200"
+      var filter1 = new FluxAttributeFilter(
+        new AttributeFilter("http.method", STRING_EQUALS, "GET")
       );
-      Set<AttributeFilter> attributeFilters = Set.of(filter1, filter2);
+      var filter2 = new FluxAttributeFilter(
+        new AttributeFilter("http.status_code", STRING_EQUALS, "200")
+      );
+      Set<FluxAttributeFilter> fluxAttributeFilters = Set.of(filter1, filter2);
 
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
       Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
-        SERVICE_NAME,
-        LOOKBACK_RANGE,
-        attributeFilters
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        fluxAttributeFilters
       );
 
       assertThat(result).isEmpty();
 
       String capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
-        "from(bucket: \"" + OTEL_BUCKET + "\")",
-        "|> range(start: -" + LOOKBACK_RANGE + ")",
-        "r._measurement == \"spans\"",
-        "r[\"service.name\"] == \"" + SERVICE_NAME + "\"",
-        "r._field == \"attributes\"",
-        filter1.toFluxString(),
-        filter2.toFluxString(),
-        "keep(columns: [\"_field\", \"_value\", \"span_id\", \"trace_id\"])"
-      );
+          "import \"date\"",
+          "import \"experimental/json\"",
+          "from(bucket: \"" + OTEL_BUCKET + "\")",
+          "|> range(start: date.sub(d: " +
+          LOOKBACK_WINDOW +
+          ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
+          "|> filter(fn: (r) => r._measurement == \"spans\")",
+          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+          API_INFORMATION.getServiceName() +
+          "\")",
+          "|> filter(fn: (r) => r._field == \"attributes\")",
+          """
+          |> map(fn: (r) => {
+            parsed = json.parse(data: bytes(v: r._value))
+            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"], http_method: parsed["http.method"], http_status_code: parsed["http.status_code"] }
+          })
+          """,
+          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+          API_INFORMATION.getApiName() +
+          "\")",
+          "|> filter(fn: (r) => r.http_method == \"GET\")",
+          "|> filter(fn: (r) => r.http_status_code == \"200\")",
+          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+        );
     }
 
     @Test
@@ -182,8 +274,9 @@ class OpenTelemetryServiceTest {
       doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
 
       Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
-        SERVICE_NAME,
-        LOOKBACK_RANGE,
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
         null
       );
 
