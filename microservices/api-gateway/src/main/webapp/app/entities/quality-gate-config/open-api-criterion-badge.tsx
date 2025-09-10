@@ -9,6 +9,7 @@ import './open-api-criterion-badge.scss';
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { useEffect, useMemo, useState } from 'react';
 import { translate } from 'react-jhipster';
 import { Badge, Tooltip } from 'reactstrap';
@@ -62,7 +63,7 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
     <>
       <Badge id={`badge-${openApiCriterionEntity.name}`}>{name}</Badge>
       <Tooltip target={`badge-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
-        {description}
+        <TextWithCode text={description} />
       </Tooltip>
     </>
   );
