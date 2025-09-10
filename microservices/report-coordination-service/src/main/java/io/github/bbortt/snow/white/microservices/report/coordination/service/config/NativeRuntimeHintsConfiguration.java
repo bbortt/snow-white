@@ -6,12 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.config;
 
+import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
+
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.Error;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.OpenApiCriterion;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Failure;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Property;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Skipped;
@@ -19,17 +19,16 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.jun
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.TestSuite;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.TestSuites;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 
 @Slf4j
 @Configuration
 @RegisterReflectionForBinding(
   {
-    // For Quality-Gate API Requests
-    Error.class,
-    OpenApiCriterion.class,
-    QualityGateConfig.class,
     // For Coverage Requests
     QualityGateCalculationRequestEvent.class,
     // For Coverage Responses
@@ -44,4 +43,33 @@ import org.springframework.context.annotation.Configuration;
     TestSuites.class,
   }
 )
-public class NativeRuntimeHintsConfiguration {}
+@ImportRuntimeHints(
+  {
+    NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints.class,
+    NativeRuntimeHintsConfiguration.RestApiDtoHints.class,
+  }
+)
+public class NativeRuntimeHintsConfiguration {
+
+  static class QualityGateApiDtoRuntimeHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+      scanPackageForClassesRecursively(
+        "io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto"
+      ).forEach(clazz -> hints.reflection().registerType(clazz));
+    }
+  }
+
+  static class RestApiDtoHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+      scanPackageForClassesRecursively(
+        "io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto"
+      ).forEach(clazz ->
+        hints.reflection().registerType(clazz, INVOKE_PUBLIC_METHODS)
+      );
+    }
+  }
+}
