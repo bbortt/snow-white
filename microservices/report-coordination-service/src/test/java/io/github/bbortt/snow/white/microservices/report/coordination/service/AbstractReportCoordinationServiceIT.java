@@ -23,10 +23,10 @@ import org.wiremock.integrations.testcontainers.WireMockContainer;
   classes = { Main.class },
   properties = {
     "snow.white.report.coordination.service.calculation-request-topic=" +
-    CALCULATION_REQUEST_TOPIC,
+      CALCULATION_REQUEST_TOPIC,
     "snow.white.report.coordination.service.init-topics=true",
     "snow.white.report.coordination.service.openapi-calculation-response.topic=" +
-    OPENAPI_CALCULATION_RESPONSE_TOPIC,
+      OPENAPI_CALCULATION_RESPONSE_TOPIC,
     "snow.white.report.coordination.service.public-api-gateway-url=http://localhost:9080",
   }
 )

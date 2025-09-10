@@ -200,44 +200,20 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     assertThat(resultingQualityGateReport).satisfies(
-        report ->
-          assertThat(report.getCalculationId()).isEqualTo(calculationId),
-        report ->
-          assertThat(report.getStatus()).isEqualTo(
-            ListQualityGateReports200ResponseInner.StatusEnum.FAILED
-          ),
-        report ->
-          assertThat(report.getCalculationRequest())
-            .isNotNull()
-            .satisfies(
-              request ->
-                assertThat(request.getIncludeApis())
-                  .hasSize(1)
-                  .first()
-                  .satisfies(
-                    includedApi ->
-                      assertThat(includedApi.getServiceName()).isEqualTo(
-                        serviceName
-                      ),
-                    includedApi ->
-                      assertThat(includedApi.getApiName()).isEqualTo(apiName),
-                    includedApi ->
-                      assertThat(includedApi.getApiVersion()).isEqualTo(
-                        apiVersion
-                      )
-                  ),
-              request ->
-                assertThat(request.getLookbackWindow()).isEqualTo(
-                  lookbackWindow
-                )
-            ),
-        report -> assertThat(report.getInitiatedAt()).isNotNull(),
-        report ->
-          assertThat(report.getInterfaces())
-            .hasSize(1)
-            .first()
-            .satisfies(api ->
-              assertThat(api).satisfies(
+      report -> assertThat(report.getCalculationId()).isEqualTo(calculationId),
+      report ->
+        assertThat(report.getStatus()).isEqualTo(
+          ListQualityGateReports200ResponseInner.StatusEnum.FAILED
+        ),
+      report ->
+        assertThat(report.getCalculationRequest())
+          .isNotNull()
+          .satisfies(
+            request ->
+              assertThat(request.getIncludeApis())
+                .hasSize(1)
+                .first()
+                .satisfies(
                   includedApi ->
                     assertThat(includedApi.getServiceName()).isEqualTo(
                       serviceName
@@ -247,30 +223,45 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
                   includedApi ->
                     assertThat(includedApi.getApiVersion()).isEqualTo(
                       apiVersion
-                    ),
-                  includedApi ->
-                    assertThat(includedApi.getTestResults())
-                      .hasSize(1)
-                      .first()
-                      .satisfies(
-                        result ->
-                          assertThat(result.getId()).isEqualTo(
-                            PATH_COVERAGE.name()
-                          ),
-                        result ->
-                          assertThat(result.getCoverage()).isEqualTo(coverage),
-                        result ->
-                          assertThat(
-                            result.getAdditionalInformation()
-                          ).isEqualTo(additionalInformation),
-                        result ->
-                          assertThat(
-                            result.getIsIncludedInQualityGate()
-                          ).isTrue()
-                      )
-                )
+                    )
+                ),
+            request ->
+              assertThat(request.getLookbackWindow()).isEqualTo(lookbackWindow)
+          ),
+      report -> assertThat(report.getInitiatedAt()).isNotNull(),
+      report ->
+        assertThat(report.getInterfaces())
+          .hasSize(1)
+          .first()
+          .satisfies(api ->
+            assertThat(api).satisfies(
+              includedApi ->
+                assertThat(includedApi.getServiceName()).isEqualTo(serviceName),
+              includedApi ->
+                assertThat(includedApi.getApiName()).isEqualTo(apiName),
+              includedApi ->
+                assertThat(includedApi.getApiVersion()).isEqualTo(apiVersion),
+              includedApi ->
+                assertThat(includedApi.getTestResults())
+                  .hasSize(1)
+                  .first()
+                  .satisfies(
+                    result ->
+                      assertThat(result.getId()).isEqualTo(
+                        PATH_COVERAGE.name()
+                      ),
+                    result ->
+                      assertThat(result.getCoverage()).isEqualTo(coverage),
+                    result ->
+                      assertThat(result.getAdditionalInformation()).isEqualTo(
+                        additionalInformation
+                      ),
+                    result ->
+                      assertThat(result.getIsIncludedInQualityGate()).isTrue()
+                  )
             )
-      );
+          )
+    );
   }
 
   @Test

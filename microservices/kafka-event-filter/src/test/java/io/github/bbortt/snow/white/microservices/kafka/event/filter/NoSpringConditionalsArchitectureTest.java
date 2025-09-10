@@ -306,7 +306,7 @@ class NoSpringConditionalsArchitectureTest {
       .notBeAnnotatedWith(Profile.class)
       .because(
         "Spring conditional annotations can cause runtime issues in native compiled applications. " +
-        "Use compile-time configuration with Spring profiles or explicit bean definitions instead."
+          "Use compile-time configuration with Spring profiles or explicit bean definitions instead."
       );
 
     rule.check(importedClasses);

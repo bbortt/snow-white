@@ -16,9 +16,9 @@ public class UnparseableOpenApiException extends Exception {
   public UnparseableOpenApiException(List<String> messages) {
     super(
       "Unparsable OpenAPI" +
-      ((isNull(messages) || messages.isEmpty())
-          ? " detected"
-          : ": " + join(", ", messages))
+        ((isNull(messages) || messages.isEmpty())
+            ? " detected"
+            : ": " + join(", ", messages))
     );
   }
 }

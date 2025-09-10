@@ -129,8 +129,8 @@ class MinioServiceTest {
 
       assertThat(result.getSourceUrl()).isEqualTo(
         "https://minio.example.com/" +
-        BUCKET_NAME +
-        "/order-service-Order-API-v2.1.xml"
+          BUCKET_NAME +
+          "/order-service-Order-API-v2.1.xml"
       );
     }
 
@@ -227,9 +227,9 @@ class MinioServiceTest {
 
       assertThat(result.getSourceUrl()).isEqualTo(
         ENDPOINT +
-        "/" +
-        BUCKET_NAME +
-        "/user-auth-service-User-&-Auth-API-v1.0-beta.xml"
+          "/" +
+          BUCKET_NAME +
+          "/user-auth-service-User-&-Auth-API-v1.0-beta.xml"
       );
     }
 

@@ -312,32 +312,32 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
           ),
         consumerRecord ->
           assertThat(consumerRecord).satisfies(
-              r -> assertThat(r.key()).isEqualTo(calculationId),
-              r ->
-                assertThat(r.value()).satisfies(
-                    event ->
-                      assertThat(event.getApiInformation())
-                        .isNotNull()
-                        .satisfies(
-                          apiInformation ->
-                            assertThat(
-                              apiInformation.getServiceName()
-                            ).isEqualTo(includedApi.getServiceName()),
-                          apiInformation ->
-                            assertThat(apiInformation.getApiName()).isEqualTo(
-                              includedApi.getApiName()
-                            ),
-                          apiInformation ->
-                            assertThat(
-                              apiInformation.getApiVersion()
-                            ).isEqualTo(includedApi.getApiVersion())
+            r -> assertThat(r.key()).isEqualTo(calculationId),
+            r ->
+              assertThat(r.value()).satisfies(
+                event ->
+                  assertThat(event.getApiInformation())
+                    .isNotNull()
+                    .satisfies(
+                      apiInformation ->
+                        assertThat(apiInformation.getServiceName()).isEqualTo(
+                          includedApi.getServiceName()
                         ),
-                    event ->
-                      assertThat(event.getLookbackWindow()).isEqualTo(
-                        lookbackWindow
-                      )
+                      apiInformation ->
+                        assertThat(apiInformation.getApiName()).isEqualTo(
+                          includedApi.getApiName()
+                        ),
+                      apiInformation ->
+                        assertThat(apiInformation.getApiVersion()).isEqualTo(
+                          includedApi.getApiVersion()
+                        )
+                    ),
+                event ->
+                  assertThat(event.getLookbackWindow()).isEqualTo(
+                    lookbackWindow
                   )
-            )
+              )
+          )
       );
   }
 }
