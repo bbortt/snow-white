@@ -1,6 +1,9 @@
 management:
   server:
     port: 8090
+server:
+  error:
+    include-message: always
 spring:
   jpa:
     hibernate:

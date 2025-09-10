@@ -49,12 +49,6 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Sanitiz
     if (error instanceof AxiosError && error.response) {
       console.error(chalk.red(`Status: ${error.response.status}`));
 
-      // TODO: 404 resulted in:
-      // ❌ Failed to trigger Quality-Gate calculation!
-      //
-      //   Status: 404
-      //   Error: Not Found  <-- should be "Quality-Gate configuration '%s' does not exist!",
-
       if (error.response.data && Object.prototype.hasOwnProperty.call(error.response.data, 'message')) {
         console.error(chalk.red(`Details: ${(error.response.data as { message: string }).message}`));
       } else {
