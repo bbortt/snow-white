@@ -139,22 +139,22 @@ class ErrorResponseCodeCoverageCalculatorTest {
       );
 
       assertThat(result).satisfies(
-          r ->
-            assertThat(r.openApiCriteria()).isEqualTo(
-              ERROR_RESPONSE_CODE_COVERAGE
-            ),
-          r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.6)), // 3/5 covered
-          r ->
-            assertThat(r.duration())
-              .isNotNull()
-              .extracting(Duration::getNano)
-              .asInstanceOf(INTEGER)
-              .isPositive(),
-          r ->
-            assertThat(r.additionalInformation()).isEqualTo(
-              "The following error codes in paths are uncovered: `GET_/api/v1/users [500]`, `POST_/api/v1/users [422]`"
-            )
-        );
+        r ->
+          assertThat(r.openApiCriteria()).isEqualTo(
+            ERROR_RESPONSE_CODE_COVERAGE
+          ),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.6)), // 3/5 covered
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isPositive(),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following error codes in paths are uncovered: `GET_/api/v1/users [500]`, `POST_/api/v1/users [422]`"
+          )
+      );
     }
 
     @Test
@@ -276,9 +276,9 @@ class ErrorResponseCodeCoverageCalculatorTest {
       );
 
       assertThat(result).satisfies(
-          r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // 0/0 = 100%
-          r -> assertThat(r.additionalInformation()).isNull()
-        );
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // 0/0 = 100%
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
     }
 
     @Test
@@ -294,9 +294,9 @@ class ErrorResponseCodeCoverageCalculatorTest {
       );
 
       assertThat(result).satisfies(
-          r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // 0/0 = 100%
-          r -> assertThat(r.additionalInformation()).isNull()
-        );
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // 0/0 = 100%
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
     }
 
     @Test
@@ -364,9 +364,9 @@ class ErrorResponseCodeCoverageCalculatorTest {
       );
 
       assertThat(result).satisfies(
-          r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // No error codes to cover
-          r -> assertThat(r.additionalInformation()).isNull()
-        );
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // No error codes to cover
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
     }
 
     @Test
@@ -389,9 +389,9 @@ class ErrorResponseCodeCoverageCalculatorTest {
       );
 
       assertThat(result).satisfies(
-          r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // No error codes to cover
-          r -> assertThat(r.additionalInformation()).isNull()
-        );
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // No error codes to cover
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
     }
 
     private Map<String, Operation> createOperationsWithErrorCodes(

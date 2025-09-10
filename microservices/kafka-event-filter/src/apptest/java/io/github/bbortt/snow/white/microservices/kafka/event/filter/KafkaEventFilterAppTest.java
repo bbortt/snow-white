@@ -78,7 +78,11 @@ class KafkaEventFilterAppTest {
     try (var jedis = new Jedis(REDIS_HOST, REDIS_PORT)) {
       jedis.set(
         HASH_PREFIX +
-        generateRedisApiInformationId(OTEL_SERVICE_NAME, API_NAME, API_VERSION),
+          generateRedisApiInformationId(
+            OTEL_SERVICE_NAME,
+            API_NAME,
+            API_VERSION
+          ),
         "exists"
       );
     }

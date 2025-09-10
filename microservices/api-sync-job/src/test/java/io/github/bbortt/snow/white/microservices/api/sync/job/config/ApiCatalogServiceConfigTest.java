@@ -51,7 +51,7 @@ class ApiCatalogServiceConfigTest {
         .withBean(RestClient.Builder.class, RestClient::builder)
         .withPropertyValues(
           ApiSyncJobProperties.ServiceInterfaceProperties.BASE_URL_PROPERTY_NAME +
-          "=http://localhost:8080"
+            "=http://localhost:8080"
         )
         .run(context ->
           assertThat(context)
@@ -108,7 +108,7 @@ class ApiCatalogServiceConfigTest {
         .withBean(ObjectMapper.class, () -> mock(ObjectMapper.class))
         .withPropertyValues(
           ApiSyncJobProperties.BackstageProperties.BASE_URL_PROPERTY_NAME +
-          "=http://localhost:3000"
+            "=http://localhost:3000"
         )
         .run(context ->
           assertThat(context)
