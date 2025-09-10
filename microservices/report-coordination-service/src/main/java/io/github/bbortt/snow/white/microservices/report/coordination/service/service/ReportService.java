@@ -6,10 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static java.util.stream.Collectors.toSet;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
@@ -137,8 +139,28 @@ public class ReportService {
             .build()
         )
         .lookbackWindow(reportParameter.getLookbackWindow())
+        .attributeFilters(
+          parseReportParameterAttributeFiltersToDto(reportParameter)
+        )
         .build()
     );
+  }
+
+  private static Set<AttributeFilter> parseReportParameterAttributeFiltersToDto(
+    ReportParameter reportParameter
+  ) {
+    return reportParameter
+      .getAttributeFilters()
+      .entrySet()
+      .stream()
+      .map(attributeFilter ->
+        new AttributeFilter(
+          attributeFilter.getKey(),
+          STRING_EQUALS,
+          attributeFilter.getValue()
+        )
+      )
+      .collect(toSet());
   }
 
   public QualityGateReport update(QualityGateReport qualityGateReport) {

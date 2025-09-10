@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordination.service.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus.IN_PROGRESS;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
@@ -29,6 +31,8 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.dom
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -200,6 +204,26 @@ class ReportServiceTest {
     @Test
     void shouldCreateAndReturnQualityGateReport_andDispatchKafkaEvent()
       throws QualityGateNotFoundException {
+      assertThatKafkaEventIsBeingDispatched(Map.of());
+    }
+
+    @Test
+    void shouldCreateAndReturnQualityGateReport_andDispatchKafkaEvent_withFilterAttributes()
+      throws QualityGateNotFoundException {
+      assertThat(
+        assertThatKafkaEventIsBeingDispatched(Map.of("key", "value"))
+      ).allSatisfy(event ->
+        assertThat(event.getAttributeFilters()).containsExactly(
+          new AttributeFilter("key", STRING_EQUALS, "value")
+        )
+      );
+    }
+
+    List<
+      QualityGateCalculationRequestEvent
+    > assertThatKafkaEventIsBeingDispatched(
+      Map<String, String> attributeFilters
+    ) throws QualityGateNotFoundException {
       var apiTest1 = ApiTest.builder()
         .serviceName("starWars")
         .apiName("aNewHope")
@@ -215,6 +239,7 @@ class ReportServiceTest {
       var qualityGateConfigName = "test-config";
       var reportParameter = ReportParameter.builder()
         .lookbackWindow("1d")
+        .attributeFilters(attributeFilters)
         .build();
 
       var qualityGateConfig = new QualityGateConfig(
@@ -303,6 +328,8 @@ class ReportServiceTest {
             reportParameter.getLookbackWindow()
           )
         );
+
+      return qualityGateCalculationRequestEventArgumentCaptor.getAllValues();
     }
 
     @Test
