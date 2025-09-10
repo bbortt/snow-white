@@ -121,28 +121,28 @@ class OpenTelemetryServiceTest {
 
       var capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
-          "import \"date\"",
-          "import \"experimental/json\"",
-          "from(bucket: \"" + OTEL_BUCKET + "\")",
-          "|> range(start: date.sub(d: " +
+        "import \"date\"",
+        "import \"experimental/json\"",
+        "from(bucket: \"" + OTEL_BUCKET + "\")",
+        "|> range(start: date.sub(d: " +
           LOOKBACK_WINDOW +
           ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
-          "|> filter(fn: (r) => r._measurement == \"spans\")",
-          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+        "|> filter(fn: (r) => r._measurement == \"spans\")",
+        "|> filter(fn: (r) => r[\"service.name\"] == \"" +
           API_INFORMATION.getServiceName() +
           "\")",
-          "|> filter(fn: (r) => r._field == \"attributes\")",
-          """
-          |> map(fn: (r) => {
-            parsed = json.parse(data: bytes(v: r._value))
-            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
-          })
-          """,
-          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+        "|> filter(fn: (r) => r._field == \"attributes\")",
+        """
+        |> map(fn: (r) => {
+          parsed = json.parse(data: bytes(v: r._value))
+          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
+        })
+        """,
+        "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           API_INFORMATION.getApiName() +
           "\")",
-          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
-        );
+        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+      );
     }
 
     @Test
@@ -163,31 +163,31 @@ class OpenTelemetryServiceTest {
 
       var capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
-          "import \"date\"",
-          "import \"experimental/json\"",
-          "from(bucket: \"" + OTEL_BUCKET + "\")",
-          "|> range(start: date.sub(d: " +
+        "import \"date\"",
+        "import \"experimental/json\"",
+        "from(bucket: \"" + OTEL_BUCKET + "\")",
+        "|> range(start: date.sub(d: " +
           LOOKBACK_WINDOW +
           ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
-          "|> filter(fn: (r) => r._measurement == \"spans\")",
-          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+        "|> filter(fn: (r) => r._measurement == \"spans\")",
+        "|> filter(fn: (r) => r[\"service.name\"] == \"" +
           apiInformation.getServiceName() +
           "\")",
-          "|> filter(fn: (r) => r._field == \"attributes\")",
-          """
-          |> map(fn: (r) => {
-            parsed = json.parse(data: bytes(v: r._value))
-            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
-          })
-          """,
-          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+        "|> filter(fn: (r) => r._field == \"attributes\")",
+        """
+        |> map(fn: (r) => {
+          parsed = json.parse(data: bytes(v: r._value))
+          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
+        })
+        """,
+        "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           apiInformation.getApiName() +
           "\")",
-          "|> filter(fn: (r) => r[\"api_version\"] == \"" +
+        "|> filter(fn: (r) => r[\"api_version\"] == \"" +
           apiInformation.getApiVersion() +
           "\")",
-          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"]) "
-        );
+        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"]) "
+      );
     }
 
     @Test
@@ -214,30 +214,30 @@ class OpenTelemetryServiceTest {
 
       String capturedQuery = queryCaptor.getValue();
       assertThat(capturedQuery).contains(
-          "import \"date\"",
-          "import \"experimental/json\"",
-          "from(bucket: \"" + OTEL_BUCKET + "\")",
-          "|> range(start: date.sub(d: " +
+        "import \"date\"",
+        "import \"experimental/json\"",
+        "from(bucket: \"" + OTEL_BUCKET + "\")",
+        "|> range(start: date.sub(d: " +
           LOOKBACK_WINDOW +
           ", from: 1970-01-01T00:00:01.234Z), stop: 1970-01-01T00:00:01.234Z)",
-          "|> filter(fn: (r) => r._measurement == \"spans\")",
-          "|> filter(fn: (r) => r[\"service.name\"] == \"" +
+        "|> filter(fn: (r) => r._measurement == \"spans\")",
+        "|> filter(fn: (r) => r[\"service.name\"] == \"" +
           API_INFORMATION.getServiceName() +
           "\")",
-          "|> filter(fn: (r) => r._field == \"attributes\")",
-          """
-          |> map(fn: (r) => {
-            parsed = json.parse(data: bytes(v: r._value))
-            return { r with api_name: parsed["api.name"], api_version: parsed["api.version"], http_method: parsed["http.method"], http_status_code: parsed["http.status_code"] }
-          })
-          """,
-          "|> filter(fn: (r) => r[\"api_name\"] == \"" +
+        "|> filter(fn: (r) => r._field == \"attributes\")",
+        """
+        |> map(fn: (r) => {
+          parsed = json.parse(data: bytes(v: r._value))
+          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"], http_method: parsed["http.method"], http_status_code: parsed["http.status_code"] }
+        })
+        """,
+        "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           API_INFORMATION.getApiName() +
           "\")",
-          "|> filter(fn: (r) => r.http_method == \"GET\")",
-          "|> filter(fn: (r) => r.http_status_code == \"200\")",
-          "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
-        );
+        "|> filter(fn: (r) => r.http_method == \"GET\")",
+        "|> filter(fn: (r) => r.http_status_code == \"200\")",
+        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+      );
     }
 
     @Test
