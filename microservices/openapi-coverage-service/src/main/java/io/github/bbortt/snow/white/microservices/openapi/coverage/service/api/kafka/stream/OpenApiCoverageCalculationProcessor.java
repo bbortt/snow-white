@@ -86,15 +86,15 @@ public class OpenApiCoverageCalculationProcessor {
           new ContextualFixedKeyProcessor<>() {
             @Override
             public void process(
-              FixedKeyRecord<String, OpenApiTestContext> record
+              FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord
             ) {
-              var openApiTestContext = record.value();
+              var openApiTestContext = kafkaEventRecord.value();
               context().forward(
-                record.withValue(
+                kafkaEventRecord.withValue(
                   openApiTestContext.withOpenTelemetryData(
                     openTelemetryService.findOpenTelemetryTracingData(
                       openApiTestContext.apiInformation(),
-                      record.timestamp(),
+                      kafkaEventRecord.timestamp(),
                       openApiTestContext.lookbackWindow(),
                       openApiTestContext.fluxAttributeFilters()
                     )
