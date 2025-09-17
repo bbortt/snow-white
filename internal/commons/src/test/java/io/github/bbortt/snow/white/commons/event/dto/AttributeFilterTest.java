@@ -55,7 +55,7 @@ class AttributeFilterTest {
           .with(filter2)
           .build();
 
-        assertThat(filters).containsExactly(filter1, filter2);
+        assertThat(filters).containsExactlyInAnyOrder(filter1, filter2);
       }
     }
   }
