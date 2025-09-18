@@ -65,7 +65,7 @@
 
     <!-- Dependency Management -->
     <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
-    <org.projectlombok.version>1.18.40</org.projectlombok.version>
+    <org.projectlombok.version>1.18.42</org.projectlombok.version>
     <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
     <spring-boot.version>3.5.5</spring-boot.version>
 
