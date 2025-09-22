@@ -23,7 +23,7 @@
     "vitest": "3.2.4"
   },
   "optionalDependencies": {
-    "npm-check-updates": "18.2.1"
+    "npm-check-updates": "18.3.0"
   },
   "packageManager": "pnpm@10.15.0",
   "engines": {
