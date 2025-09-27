@@ -26,7 +26,7 @@
       yyyy-MM-dd'T'HH:mm:ss'Z'
     </maven.build.timestamp.format>
 
-    <citrus.version>4.8.0</citrus.version>
+    <citrus.version>4.8.1</citrus.version>
     <confluent.version>8.0.0</confluent.version>
     <google-protobuf.version>4.32.1</google-protobuf.version>
     <grpc.version>1.75.0</grpc.version>
