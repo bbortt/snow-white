@@ -15,6 +15,7 @@ enum ResultType {
   PASSED = 'PASSED',
   FAILED = 'FAILED',
 }
+
 export interface IGroupedTestResult {
   name: ResultType;
   value: number;
@@ -90,7 +91,7 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: 
   return (
     <ResponsiveContainer>
       <PieChart>
-        <Pie data={data} innerRadius="50%" labelLine={false}>
+        <Pie data={data as unknown as Record<string, unknown>[]} innerRadius="50%" labelLine={false}>
           {data.map((entry: IGroupedTestResult) => (
             <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
           ))}

@@ -206,7 +206,7 @@ services:
           memory: '512m'
         limits:
           cpus: '0.5'
-          memory: '1g'
+          memory: '512m'
     depends_on:
       otel-collector:
         condition: service_started
