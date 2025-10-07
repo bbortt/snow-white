@@ -22,6 +22,10 @@
   <packaging>jar</packaging>
 
   <properties>
+    <!-- Default optimization configuration for native image during development -->
+    <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
+
+    <!-- General configuration for OpenAPI source generation -->
     <basePackage>
       io.github.bbortt.snow.white.microservices.report.coordination.service
     </basePackage>
@@ -339,6 +343,15 @@
 
   <profiles>
     <profile>
+      <id>prod</id>
+
+      <properties>
+        <!-- 03 tells GraalVM to optimize for peak performance -->
+        <native-maven-plugin.optimization>-O3</native-maven-plugin.optimization>
+      </properties>
+    </profile>
+
+    <profile>
       <id>native</id>
 
       <properties>
@@ -417,7 +430,9 @@
 
             <configuration>
               <buildArgs>
-                <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>${native-maven-plugin.optimization}</buildArg>
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>--verbose</buildArg>
                 <buildArg>-Dspring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>

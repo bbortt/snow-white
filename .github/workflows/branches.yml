@@ -27,13 +27,13 @@ jobs:
         with:
           filterOutClosed: true
           filterOutDraft: true
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v5
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 21
+          java-version: 25
       - name: Cache SonarQube Packages
         uses: actions/cache@v4
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
