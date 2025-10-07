@@ -15,6 +15,7 @@ enum ResultType {
   PASSED = 'PASSED',
   FAILED = 'FAILED',
 }
+
 export interface IGroupedTestResult {
   name: ResultType;
   value: number;
@@ -23,7 +24,7 @@ export interface IGroupedTestResult {
 export const groupOpenApiTestResults = (testResults: IApiTestResult[]): IGroupedTestResult[] => {
   const groups = testResults.reduce(
     (acc, result) => {
-      const groupName: ResultType = result.coverage === 1.0 ? ResultType.PASSED : ResultType.FAILED;
+      const groupName: ResultType = result.coverage === 1 ? ResultType.PASSED : ResultType.FAILED;
       acc[groupName] = (acc[groupName] || 0) + 1;
       return acc;
     },
@@ -41,7 +42,7 @@ export const groupOpenApiTestResults = (testResults: IApiTestResult[]): IGrouped
 
 export const groupOpenApiTestResultsWithStats = (testResults: IApiTestResult[]) => {
   const total = testResults.length;
-  const passed = testResults.filter(result => result.coverage === 1.0).length;
+  const passed = testResults.filter(result => result.coverage === 1).length;
   const failed = total - passed;
 
   const groups: IGroupedTestResult[] = [];
@@ -90,7 +91,7 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: 
   return (
     <ResponsiveContainer>
       <PieChart>
-        <Pie data={data} innerRadius="50%" labelLine={false}>
+        <Pie data={data as unknown as Record<string, unknown>[]} innerRadius="50%" labelLine={false}>
           {data.map((entry: IGroupedTestResult) => (
             <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
           ))}
