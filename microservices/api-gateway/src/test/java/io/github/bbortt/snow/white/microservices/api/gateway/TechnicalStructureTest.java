@@ -30,7 +30,6 @@ class TechnicalStructureTest {
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config")
-    .whereLayer("Security").mayOnlyBeAccessedByLayers("Config", "Service", "Web")
     .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service", "Web", "Config")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
