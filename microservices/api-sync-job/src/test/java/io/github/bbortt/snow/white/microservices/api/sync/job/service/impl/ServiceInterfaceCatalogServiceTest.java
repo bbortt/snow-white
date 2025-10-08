@@ -23,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.client.RestClient;
 
 @ExtendWith({ MockitoExtension.class })
@@ -38,6 +39,9 @@ class ServiceInterfaceCatalogServiceTest {
 
   @Mock
   private OpenApiValidationService openApiValidationServiceMock;
+
+  @Mock
+  private AsyncTaskExecutor taskExecutorMock;
 
   private ApiSyncJobProperties.ServiceInterfaceProperties serviceInterfaceProperties;
 
@@ -63,7 +67,8 @@ class ServiceInterfaceCatalogServiceTest {
         new ServiceInterfaceCatalogService(
           restCLientBuilderMock,
           openApiValidationServiceMock,
-          serviceInterfaceProperties
+          serviceInterfaceProperties,
+          taskExecutorMock
         )
       ).hasNoNullFieldsOrProperties();
     }
@@ -80,7 +85,8 @@ class ServiceInterfaceCatalogServiceTest {
       var fixture = new ServiceInterfaceCatalogService(
         restCLientBuilderMock,
         openApiValidationServiceMock,
-        serviceInterfaceProperties
+        serviceInterfaceProperties,
+        taskExecutorMock
       );
 
       var apiInformation = mock(ApiInformation.class);

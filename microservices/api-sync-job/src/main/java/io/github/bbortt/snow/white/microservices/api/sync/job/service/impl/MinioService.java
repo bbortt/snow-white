@@ -42,9 +42,7 @@ public class MinioService {
    * Backstage does not have direct access links to API entities, or I didn't find it.
    * Thus, Snow-White stores them in an S3 bucket.
    */
-  ApiInformation storeBackstageApiEntity(
-    BackstageCatalogService.OpenAPIParameters openAPIParameters
-  ) {
+  ApiInformation storeBackstageApiEntity(OpenAPIParameters openAPIParameters) {
     requireNonNull(openAPIParameters.apiInformation());
 
     var objectName = constructFileName(openAPIParameters.apiInformation());

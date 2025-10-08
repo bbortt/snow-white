@@ -19,12 +19,15 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.client.RestClient;
 
 public class ServiceInterfaceCatalogService implements ApiCatalogService {
 
   private final RestClient serviceInterfaceRepositoryClient;
   private final OpenApiValidationService openApiValidationService;
+  private final AsyncTaskExecutor taskExecutor;
 
   private final String serviceInterfaceIndexUri;
   private final ParsingMode parsingMode;
@@ -32,31 +35,38 @@ public class ServiceInterfaceCatalogService implements ApiCatalogService {
   public ServiceInterfaceCatalogService(
     RestClient.Builder restClientBuilder,
     OpenApiValidationService openApiValidationService,
-    ApiSyncJobProperties.ServiceInterfaceProperties serviceInterfaceProperties
+    ApiSyncJobProperties.ServiceInterfaceProperties serviceInterfaceProperties,
+    AsyncTaskExecutor taskExecutor
   ) {
     this.serviceInterfaceRepositoryClient = restClientBuilder
       .baseUrl(serviceInterfaceProperties.getBaseUrl())
       .build();
     this.openApiValidationService = openApiValidationService;
+    this.taskExecutor = taskExecutor;
 
     this.serviceInterfaceIndexUri = serviceInterfaceProperties.getIndexUri();
     this.parsingMode = serviceInterfaceProperties.getParsingMode();
   }
 
   @Override
-  public Set<ApiInformation> fetchApiIndex() {
-    var apis = serviceInterfaceRepositoryClient
-      .get()
-      .uri(serviceInterfaceIndexUri)
-      .accept(APPLICATION_JSON, APPLICATION_OCTET_STREAM)
-      .retrieve()
-      .body(ApiInformation[].class);
+  public CompletableFuture<Set<ApiInformation>> fetchApiIndex() {
+    return CompletableFuture.supplyAsync(
+      () -> {
+        var apis = serviceInterfaceRepositoryClient
+          .get()
+          .uri(serviceInterfaceIndexUri)
+          .accept(APPLICATION_JSON, APPLICATION_OCTET_STREAM)
+          .retrieve()
+          .body(ApiInformation[].class);
 
-    if (isEmpty(apis)) {
-      return emptySet();
-    }
+        if (isEmpty(apis)) {
+          return emptySet();
+        }
 
-    return stream(apis).collect(toSet());
+        return stream(apis).collect(toSet());
+      },
+      taskExecutor
+    );
   }
 
   @Override

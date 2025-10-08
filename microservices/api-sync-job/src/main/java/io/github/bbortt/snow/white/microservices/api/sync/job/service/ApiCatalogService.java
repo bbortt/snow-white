@@ -8,9 +8,10 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public interface ApiCatalogService {
-  Set<ApiInformation> fetchApiIndex();
+  CompletableFuture<Set<ApiInformation>> fetchApiIndex();
 
   ApiInformation validateApiInformation(ApiInformation apiInformation);
 }

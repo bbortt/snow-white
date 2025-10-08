@@ -63,7 +63,7 @@ class MinioServiceTest {
     public static final String BUCKET_NAME = "test-bucket";
 
     @Mock
-    private BackstageCatalogService.OpenAPIParameters openAPIParametersMock;
+    private OpenAPIParameters openAPIParametersMock;
 
     private MinioService fixture;
 
