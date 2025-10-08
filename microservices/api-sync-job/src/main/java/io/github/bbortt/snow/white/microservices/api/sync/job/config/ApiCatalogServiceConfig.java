@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -33,12 +34,14 @@ public class ApiCatalogServiceConfig {
   )
   public ApiCatalogService serviceInterfaceCatalogService(
     RestClient.Builder restClientBuilder,
-    ApiSyncJobProperties apiSyncJobProperties
+    ApiSyncJobProperties apiSyncJobProperties,
+    AsyncTaskExecutor taskExecutor
   ) {
     return new ServiceInterfaceCatalogService(
       restClientBuilder,
       openApiValidationService,
-      apiSyncJobProperties.getServiceInterface()
+      apiSyncJobProperties.getServiceInterface(),
+      taskExecutor
     );
   }
 
@@ -50,6 +53,7 @@ public class ApiCatalogServiceConfig {
     ApiSyncJobProperties apiSyncJobProperties,
     EntityApi backstageEntityApi,
     JsonMapper jsonMapper,
+    AsyncTaskExecutor taskExecutor,
     @Autowired(required = false) @Nullable MinioService minioService
   ) {
     return new BackstageCatalogService(
@@ -57,6 +61,7 @@ public class ApiCatalogServiceConfig {
       backstageEntityApi,
       jsonMapper,
       openApiValidationService,
+      taskExecutor,
       minioService
     );
   }
