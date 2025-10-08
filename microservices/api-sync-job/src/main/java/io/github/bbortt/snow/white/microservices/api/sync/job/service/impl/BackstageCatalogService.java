@@ -7,10 +7,13 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static java.lang.Thread.currentThread;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -24,21 +27,20 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalog
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import lombok.With;
+import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.AsyncTaskExecutor;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -51,17 +53,19 @@ public class BackstageCatalogService implements ApiCatalogService {
   private final EntityApi backstageEntityApi;
   private final JsonMapper jsonMapper;
   private final OpenApiValidationService openApiValidationService;
+  private final AsyncTaskExecutor taskExecutor;
 
   private final InformationExtractor informationExtractor;
   private final OpenAPIV3Parser openAPIV3Parser;
 
-  private MinioService minioService;
+  private final MinioService minioService;
 
   public BackstageCatalogService(
     ApiSyncJobProperties.BackstageProperties backstageProperties,
     EntityApi backstageEntityApi,
     JsonMapper jsonMapper,
     OpenApiValidationService openApiValidationService,
+    AsyncTaskExecutor taskExecutor,
     @Autowired(required = false) @Nullable MinioService minioService
   ) {
     this(
@@ -69,6 +73,7 @@ public class BackstageCatalogService implements ApiCatalogService {
       backstageEntityApi,
       jsonMapper,
       openApiValidationService,
+      taskExecutor,
       minioService,
       new InformationExtractor(
         backstageProperties.getCustomApiNameJsonPath(),
@@ -84,6 +89,7 @@ public class BackstageCatalogService implements ApiCatalogService {
     EntityApi backstageEntityApi,
     JsonMapper jsonMapper,
     OpenApiValidationService openApiValidationService,
+    AsyncTaskExecutor taskExecutor,
     @Autowired(required = false) @Nullable MinioService minioService,
     InformationExtractor informationExtractor,
     OpenAPIV3Parser openAPIV3Parser
@@ -92,27 +98,40 @@ public class BackstageCatalogService implements ApiCatalogService {
     this.backstageEntityApi = backstageEntityApi;
     this.jsonMapper = jsonMapper;
     this.openApiValidationService = openApiValidationService;
-
+    this.taskExecutor = taskExecutor;
+    this.minioService = minioService;
     this.informationExtractor = informationExtractor;
     this.openAPIV3Parser = openAPIV3Parser;
-
-    this.minioService = minioService;
   }
 
   @Override
-  public Set<ApiInformation> fetchApiIndex() {
-    var streamEnhancer = getStreamEnhancerBasedOnSpecLocation();
-    var totalItems = queryTotalApiEntities();
+  public CompletableFuture<Set<ApiInformation>> fetchApiIndex() {
+    return supplyAsync(
+      () -> {
+        var streamEnhancer = getStreamEnhancerBasedOnSpecLocation();
 
-    var apiInformation = new HashSet<ApiInformation>();
+        var pagedEntities = new PagedBackstageEntitySpliterator(
+          backstageEntityApi,
+          PAGE_SIZE
+        );
+        var entitiesStream = StreamSupport.stream(pagedEntities, false);
 
-    for (int offset = 0; offset < totalItems.intValue(); offset += PAGE_SIZE) {
-      queryAndParsePageIntoApiInformation(streamEnhancer, offset).forEach(
-        apiInformation::add
-      );
-    }
-
-    return apiInformation;
+        return streamEnhancer
+          .apply(entitiesStream)
+          .map(this::extractApiInformation)
+          .filter(openAPIParameters ->
+            nonNull(openAPIParameters.apiInformation())
+          )
+          .map(openAPIParameters -> {
+            if (!hasText(openAPIParameters.sourceUrl())) {
+              return minioService.storeBackstageApiEntity(openAPIParameters);
+            }
+            return openAPIParameters.apiInformation();
+          })
+          .collect(toSet());
+      },
+      taskExecutor
+    );
   }
 
   @Override
@@ -146,13 +165,6 @@ public class BackstageCatalogService implements ApiCatalogService {
 
       return resolveFromBackstage();
     }
-  }
-
-  @NonNull
-  private BigDecimal queryTotalApiEntities() {
-    return backstageEntityApi
-      .getEntitiesByQuery(null, 0, null, null, null, null, null, null)
-      .getTotalItems();
   }
 
   @NonNull
@@ -208,15 +220,29 @@ public class BackstageCatalogService implements ApiCatalogService {
         )
         .flatMap(Collection::stream)
         .map(location ->
-          new OpenAPIParameters(
-            location,
-            openAPIV3Parser.readLocation(
+          taskExecutor.submit(() ->
+            new OpenAPIParameters(
               location,
-              emptyList(),
-              new ParseOptions()
+              openAPIV3Parser.readLocation(
+                location,
+                emptyList(),
+                new ParseOptions()
+              )
             )
           )
-        );
+        )
+        .map(future -> {
+          try {
+            return future.get();
+          } catch (Exception e) {
+            logger.error("Error resolving from custom repository", e);
+            if (e instanceof InterruptedException) {
+              currentThread().interrupt();
+            }
+            return null;
+          }
+        })
+        .filter(Objects::nonNull);
   }
 
   private Function<
@@ -229,13 +255,31 @@ public class BackstageCatalogService implements ApiCatalogService {
         .filter(Objects::nonNull)
         // TODO: This currently only supports OpenAPI
         .filter(spec ->
-          Optional.ofNullable(spec.get("type")).orElse("").equals("openapi")
+          Optional.ofNullable(spec.get("type"))
+            .map(String::valueOf)
+            .orElse("")
+            .equals("openapi")
         )
         .map(jsonMapper::<JsonNode>valueToTree)
         .map(jsonNode -> jsonNode.get("definition"))
         .map(JsonNode::asString)
-        .map(openAPIV3Parser::readContents)
-        .map(OpenAPIParameters::new);
+        .map(definition ->
+          taskExecutor.submit(() ->
+            new OpenAPIParameters(openAPIV3Parser.readContents(definition))
+          )
+        )
+        .map(future -> {
+          try {
+            return future.get();
+          } catch (Exception e) {
+            logger.error("Error resolving from backstage", e);
+            if (e instanceof InterruptedException) {
+              currentThread().interrupt();
+            }
+            return null;
+          }
+        })
+        .filter(Objects::nonNull);
   }
 
   private OpenAPIParameters extractApiInformation(
@@ -273,25 +317,5 @@ public class BackstageCatalogService implements ApiCatalogService {
       .build();
 
     return openAPIParameters.withApiInformation(apiInformation);
-  }
-
-  @With
-  record OpenAPIParameters(
-    @Nullable String sourceUrl,
-    SwaggerParseResult swaggerParseResult,
-    @Nullable ApiInformation apiInformation
-  ) {
-    OpenAPIParameters(SwaggerParseResult swaggerParseResult) {
-      this(null, swaggerParseResult, null);
-    }
-
-    OpenAPIParameters(String location, SwaggerParseResult swaggerParseResult) {
-      this(location, swaggerParseResult, null);
-    }
-
-    String openApiAsJson() {
-      var openAPI = swaggerParseResult().getOpenAPI();
-      return JsonMapper.shared().writeValueAsString(openAPI);
-    }
   }
 }

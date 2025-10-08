@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -49,6 +50,7 @@ class ApiCatalogServiceConfigTest {
       contextRunner
         .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)
         .withBean(RestClient.Builder.class, RestClient::builder)
+        .withBean(AsyncTaskExecutor.class, () -> mock(AsyncTaskExecutor.class))
         .withPropertyValues(
           ApiSyncJobProperties.ServiceInterfaceProperties.BASE_URL_PROPERTY_NAME +
             "=http://localhost:8080"
@@ -106,6 +108,7 @@ class ApiCatalogServiceConfigTest {
         .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)
         .withBean(EntityApi.class, () -> mock(EntityApi.class))
         .withBean(JsonMapper.class, () -> mock(JsonMapper.class))
+        .withBean(AsyncTaskExecutor.class, () -> mock(AsyncTaskExecutor.class))
         .withPropertyValues(
           ApiSyncJobProperties.BackstageProperties.BASE_URL_PROPERTY_NAME +
             "=http://localhost:3000"
