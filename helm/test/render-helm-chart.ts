@@ -8,13 +8,21 @@ import { file as tmpFile } from 'tmp-promise';
 import { execa } from 'execa';
 import { writeFile } from 'node:fs/promises';
 import { stringify, parseAllDocuments } from 'yaml';
+import { merge } from 'lodash';
 
 const withDefaultValues = (values: object): object => {
   return {
-    ingress: {
-      host: 'localhost',
-    },
-    ...values,
+    appVersionOverride: 'test-version',
+    ...merge(
+      {
+        snowWhite: {
+          ingress: {
+            host: 'localhost',
+          },
+        },
+      },
+      values,
+    ),
   };
 };
 
@@ -27,7 +35,7 @@ export async function renderHelmChart(options: {
 }): Promise<any[]> {
   const {
     chartPath,
-    debug = false,
+    debug = process.env.DEBUG?.toLowerCase() === 'true',
     namespace = 'default',
     releaseName = 'test-release',
     values = {},
@@ -36,16 +44,22 @@ export async function renderHelmChart(options: {
   const { path: tmpValuesPath, cleanup } = await tmpFile();
   await writeFile(tmpValuesPath, stringify(withDefaultValues(values)));
 
+  const helmArgs = [
+    'template',
+    releaseName,
+    chartPath,
+    '--namespace',
+    namespace,
+    '-f',
+    tmpValuesPath,
+  ];
+
+  if (debug) {
+    helmArgs.push('--debug');
+  }
+
   try {
-    const { stdout } = await execa('helm', [
-      'template',
-      releaseName,
-      chartPath,
-      '--namespace',
-      namespace,
-      '-f',
-      tmpValuesPath,
-    ]);
+    const { stdout } = await execa('helm', helmArgs);
 
     const docs = parseAllDocuments(stdout);
     const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
