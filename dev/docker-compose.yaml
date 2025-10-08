@@ -207,7 +207,6 @@ services:
       SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
       SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
       SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL: 'http://report-coordinator-api:8080'
-      SPRING_PROFILES_ACTIVE: 'prod'
     ports:
       - '80:8080'
     deploy:
@@ -217,7 +216,7 @@ services:
           memory: '512m'
         limits:
           cpus: '0.5'
-          memory: '1g'
+          memory: '512m'
     depends_on:
       otel-collector:
         condition: service_started
@@ -248,7 +247,6 @@ services:
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
       SPRING_DATA_REDIS_HOST: 'redis'
-      SPRING_PROFILES_ACTIVE: 'prod'
     deploy:
       resources:
         reservations:
@@ -256,7 +254,7 @@ services:
           memory: '512m'
         limits:
           cpus: '0.5'
-          memory: '1g'
+          memory: '512m'
     depends_on:
       otel-collector:
         condition: service_started
@@ -316,7 +314,6 @@ services:
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
-      SPRING_PROFILES_ACTIVE: 'prod'
     deploy:
       resources:
         reservations:
@@ -324,7 +321,7 @@ services:
           memory: '512m'
         limits:
           cpus: '0.5'
-          memory: '1g'
+          memory: '512m'
     depends_on:
       otel-collector:
         condition: service_started
