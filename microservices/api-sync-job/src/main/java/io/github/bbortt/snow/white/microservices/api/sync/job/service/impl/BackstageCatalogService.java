@@ -30,6 +30,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
@@ -41,7 +42,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
