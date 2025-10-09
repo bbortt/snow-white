@@ -41,11 +41,11 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.dom
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.repository.QualityGateReportRepository;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
