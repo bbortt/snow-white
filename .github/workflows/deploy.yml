@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Build with Maven
-        run: ./mvnw -B -DskipTests -Pprod -pl :cli -am install
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am install
       - name: Upload CLI Artifacts
         if: ${{ steps.release.outputs.release_created }}
         env:
@@ -88,7 +88,7 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Build with Maven
-        run: ./mvnw -B -DskipTests -Pprod -pl '!:cli,!:helm' install
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl '!:cli,!:helm' install
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
         with:
@@ -98,7 +98,12 @@ jobs:
       - name: Build JDK Images
         run: .github/scripts/build-oci-images.sh "${{ steps.version.outputs.VERSION }}" "ghcr.io" "--push"
       - name: Build Native Images
-        run: ./mvnw -B -Dimage.tag="${{ steps.version.outputs.VERSION }}" -DskipTests -Pnative,prod -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
+        run: |
+          ./mvnw -B spring-boot:build-image \
+            -b smart -T4C \
+            -Dimage.tag="${{ steps.version.outputs.VERSION }}" \
+            -DskipTests -Pnative,prod \
+            -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api
       - name: Push Native Images
         run: |
           docker image push "ghcr.io/bbortt/snow-white/kafka-event-filter:${{ steps.version.outputs.VERSION }}"
