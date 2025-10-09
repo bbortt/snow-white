@@ -35,7 +35,7 @@ describe('Redis', () => {
 
     const redisMaster = getRedisMaster(manifests);
     expect(redisMaster.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/redis:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/redis:.+$/,
     );
   });
 
@@ -46,7 +46,7 @@ describe('Redis', () => {
 
     const redisReplicas = getRedisReplicas(manifests);
     expect(redisReplicas.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/redis:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/redis:.+$/,
     );
   });
 
