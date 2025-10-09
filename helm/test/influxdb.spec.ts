@@ -25,7 +25,7 @@ describe('InfluxDB', () => {
 
     const deployment = getInfluxDBDeployment(manifests);
     expect(deployment.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/influxdb:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/influxdb:.+$/,
     );
   });
 

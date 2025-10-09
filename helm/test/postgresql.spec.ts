@@ -35,7 +35,7 @@ describe('PostgreSQL', () => {
 
     const primaryStatefulSet = getPrimaryStatefulSet(manifests);
     expect(primaryStatefulSet.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/postgresql:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/postgresql:.+$/,
     );
   });
 
@@ -46,7 +46,7 @@ describe('PostgreSQL', () => {
 
     const readReplicas = getReadReplicas(manifests);
     expect(readReplicas.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/postgresql:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/postgresql:.+$/,
     );
     expect(readReplicas.spec.replicas).toBe(1);
   });

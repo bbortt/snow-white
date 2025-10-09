@@ -26,7 +26,7 @@ describe('Kafka', () => {
     const statefulSet = getKafkaStatefulSet(manifests);
 
     expect(statefulSet.spec.template.spec.containers[0].image).toMatch(
-      /^docker.io\/bitnami\/kafka:.*$/,
+      /^(registry-\d\.)?docker\.io\/bitnami\/kafka:.+$/,
     );
   });
 
