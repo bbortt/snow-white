@@ -71,7 +71,7 @@ jobs:
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Build with Maven
-        run: ./mvnw -B -Pprod -Dfailsafe.rerunFailingTestsCount=2 verify
+        run: ./mvnw -B -Pprod verify
       - name: Fetch References
         run: git fetch origin
       - name: Sonar Analysis
@@ -111,13 +111,13 @@ jobs:
           java-version: 21
       - name: Rebuild JAR
         run: |
-          ./mvnw -B \
+          ./mvnw -B install \
+            -b smart -T4C \
+            -Pnode,prod \
             -DskipTests \
             -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
-            -Pnode,prod \
-            -pl :${{ matrix.service }} -am \
-            install
+            -pl :${{ matrix.service }} -am
       - name: Build ${{ matrix.service }} Image
         run: |
           docker build \
@@ -127,12 +127,11 @@ jobs:
       - name: Test ${{ matrix.service }} Image
         run: |
           docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
-          ./mvnw -B \
+          ./mvnw -B verify \
+            -Papptest \
             -Ddocker.network=${docker_network} \
             -Dimage.tag=${{ github.sha }} \
-            -Papptest \
-            -pl :${{ matrix.service }} \
-            verify
+            -pl :${{ matrix.service }}
   native-tests:
     name: 'Native Application Tests'
     if: contains(github.event.pull_request.labels.*.name, 'include:apptests')
@@ -174,30 +173,28 @@ jobs:
           java-version: 21
       - name: Rebuild JAR
         run: |
-          ./mvnw -B \
+          ./mvnw -B install \
+            -b smart -T4C \
+            -Pprod \
             -DskipTests \
             -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
-            -Pprod \
-            -pl :${{ matrix.service }} -am \
-            install
+            -pl :${{ matrix.service }} -am
       - name: Build Native ${{ matrix.service }} Image
         run: |
-          ./mvnw -B \
+          ./mvnw -B spring-boot:build-image \
+            -Pnative \
             -Dimage.tag=${{ github.sha }} \
             -DskipTests \
-            -Pnative \
-            -pl :${{ matrix.service }} \
-            spring-boot:build-image
+            -pl :${{ matrix.service }}
       - name: Test Native ${{ matrix.service }} Image
         run: |
           docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
-          ./mvnw -B \
+          ./mvnw -B verify \
+            -Papptest \
             -Ddocker.network=${docker_network} \
             -Dimage.tag=${{ github.sha }} \
-            -Papptest \
-            -pl :${{ matrix.service }} \
-            verify
+            -pl :${{ matrix.service }}
   prettier-post-release:
     name: 'Run Prettier on Release PR'
     if: ${{ startsWith(github.head_ref, 'release-please-') }}
