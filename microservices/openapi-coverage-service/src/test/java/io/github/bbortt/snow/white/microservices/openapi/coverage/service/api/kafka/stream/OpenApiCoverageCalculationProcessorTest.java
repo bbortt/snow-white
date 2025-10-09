@@ -39,6 +39,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.servic
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
@@ -48,7 +49,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

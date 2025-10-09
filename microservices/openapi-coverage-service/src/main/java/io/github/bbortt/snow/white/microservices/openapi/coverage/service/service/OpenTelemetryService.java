@@ -24,13 +24,13 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.service.servic
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.influxdb.FluxAttributeFilter;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -65,9 +65,7 @@ public class OpenTelemetryService {
     ApiInformation apiInformation,
     long lookbackFromTimestamp,
     String lookbackWindow,
-    @org.jetbrains.annotations.Nullable Set<
-      FluxAttributeFilter
-    > fluxAttributeFilters
+    @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
     var filteringProperties = openApiCoverageServiceProperties.getFiltering();
 
@@ -138,7 +136,7 @@ public class OpenTelemetryService {
 
   private String jsonToDimensionsMapping(
     OpenApiCoverageServiceProperties.Filtering filteringProperties,
-    Set<FluxAttributeFilter> fluxAttributeFilters
+    @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
     var apiNameMapping = filteringProperties.getApiNameProperty();
     var apiVersionMapping = filteringProperties.getApiVersionProperty();
