@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.json;
 
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
+import static io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.serialization.ExportTraceServiceRequestSerdes.JsonSerde;
 
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.AbstractExportTraceServiceRequestEventProcessor;
 import io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaEventFilterProperties;

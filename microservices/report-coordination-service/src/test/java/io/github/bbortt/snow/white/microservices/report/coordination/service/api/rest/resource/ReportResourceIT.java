@@ -32,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.util.StreamUtils.copyToString;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
@@ -54,6 +53,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
 class ReportResourceIT extends AbstractReportCoordinationServiceIT {
@@ -65,7 +65,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     ENTITY_API_URL + "/{calculationId}/junit";
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Autowired
   private ApiTestRepository apiTestRepository;
@@ -194,7 +194,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .getResponse()
       .getContentAsString();
 
-    var resultingQualityGateReport = objectMapper.readValue(
+    var resultingQualityGateReport = jsonMapper.readValue(
       responseAsString,
       ListQualityGateReports200ResponseInner.class
     );

@@ -25,9 +25,9 @@ import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
@@ -295,11 +295,10 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
           r ->
-            assertThat(r.getHeaders())
-              .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("2")
-              )
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
+              HEADER_X_TOTAL_COUNT,
+              "2"
+            )
         );
     }
 
@@ -325,11 +324,10 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).isEmpty(),
           r ->
-            assertThat(r.getHeaders())
-              .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("0")
-              )
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
+              HEADER_X_TOTAL_COUNT,
+              "0"
+            )
         );
     }
   }

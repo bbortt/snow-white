@@ -11,13 +11,13 @@ import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.ApiTestMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.QualityGateReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import lombok.RequiredArgsConstructor;

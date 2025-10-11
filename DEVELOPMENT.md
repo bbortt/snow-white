@@ -8,7 +8,7 @@ If you run into any issues, please open an issue or contact the maintainers.
 
 ### 1. Prerequisites
 
-- Java 21 installed
+- Java 25 installed
 - Node.js 22 installed
 - Docker or Podman (with Compose) installed
 

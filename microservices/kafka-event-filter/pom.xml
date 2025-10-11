@@ -26,6 +26,9 @@
       yyyy-MM-dd'T'HH:mm:ss'Z'
     </maven.build.timestamp.format>
 
+    <!-- Default optimization configuration for native image during development -->
+    <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
+
     <citrus.version>4.8.1</citrus.version>
     <confluent.version>8.1.0</confluent.version>
     <google-protobuf.version>4.33.0</google-protobuf.version>
@@ -118,23 +121,13 @@
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis</artifactId>
+      <artifactId>spring-boot-starter-kafka</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.tngtech.archunit</groupId>
-      <artifactId>archunit-junit5</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.springframework.kafka</groupId>
       <artifactId>spring-kafka-test</artifactId>
@@ -234,6 +227,15 @@
 
   <profiles>
     <profile>
+      <id>prod</id>
+
+      <properties>
+        <!-- 03 tells GraalVM to optimize for peak performance -->
+        <native-maven-plugin.optimization>-O3</native-maven-plugin.optimization>
+      </properties>
+    </profile>
+
+    <profile>
       <id>native</id>
 
       <properties>
@@ -310,7 +312,9 @@
 
             <configuration>
               <buildArgs>
-                <buildArg>-O3 --no-fallback --verbose</buildArg>
+                <buildArg>${native-maven-plugin.optimization}</buildArg>
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>--verbose</buildArg>
                 <buildArg>-Dspring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>

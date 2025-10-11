@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.toSet;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
@@ -122,7 +122,7 @@ public class OpenApiCoverageCalculationProcessor {
         openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic(),
         Produced.with(
           Serdes.String(),
-          KafkaStreamsConfig.OpenApiCoverageResponseEvent()
+          QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent()
         )
       );
 
@@ -138,7 +138,7 @@ public class OpenApiCoverageCalculationProcessor {
       openApiCoverageServiceProperties.getCalculationRequestTopic(),
       Consumed.with(
         Serdes.String(),
-        KafkaStreamsConfig.QualityGateCalculationRequestEvent()
+        QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent()
       )
     );
   }

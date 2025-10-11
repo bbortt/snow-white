@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
@@ -20,6 +19,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @RequiredArgsConstructor
