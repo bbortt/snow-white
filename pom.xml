@@ -31,7 +31,7 @@
 
   <properties>
     <!-- Global -->
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- SonarQube properties -->
@@ -67,16 +67,24 @@
     <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
     <org.projectlombok.version>1.18.42</org.projectlombok.version>
     <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
-    <spring-boot.version>3.5.7</spring-boot.version>
+    <spring-boot.version>4.0.0-M3</spring-boot.version>
 
     <!-- Node.js & NPM -->
     <frontend-maven-plugin.version>1.15.4</frontend-maven-plugin.version>
     <node.downloadRoot>https://nodejs.org/dist/</node.downloadRoot>
-    <node.version>v22.15.0</node.version>
+    <node.version>v22.20.0</node.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>6.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -125,6 +133,12 @@
             <installDirectory>target</installDirectory>
             <nodeVersion>${node.version}</nodeVersion>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.14.1</version>
         </plugin>
 
         <plugin>

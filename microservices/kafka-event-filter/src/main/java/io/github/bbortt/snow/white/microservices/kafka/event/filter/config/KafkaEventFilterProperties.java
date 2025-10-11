@@ -36,9 +36,6 @@ public class KafkaEventFilterProperties implements InitializingBean {
 
   private Boolean initTopics = false;
 
-  public static final String DEFAULT_CONSUMER_GROUP_NAME = "kafka-event-filter";
-  private String consumerGroupName = DEFAULT_CONSUMER_GROUP_NAME;
-
   public static final String CONSUMER_MODE_PROPERTY_NAME =
     PREFIX + ".consumer-mode";
   private ConsumerMode consumerMode = JSON;

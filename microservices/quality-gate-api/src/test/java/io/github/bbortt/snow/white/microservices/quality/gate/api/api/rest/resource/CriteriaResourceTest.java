@@ -12,8 +12,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCoverageConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCoverageConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;

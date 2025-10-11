@@ -24,11 +24,11 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
@@ -212,12 +212,11 @@ class ReportResourceTest {
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(CONTENT_DISPOSITION, value ->
-                assertThat(value).containsExactly(
-                  "attachment; filename=\"junit-report.xml\""
-                )
+              .containsEntry(
+                CONTENT_DISPOSITION,
+                "attachment; filename=\"junit-report.xml\""
               ),
           r -> assertThat(r.getBody()).isEqualTo(junitReport)
         );
@@ -330,11 +329,9 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("2")
-              )
+              .containsEntry(HEADER_X_TOTAL_COUNT, "2")
         );
     }
 
@@ -360,11 +357,9 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).isEmpty(),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("0")
-              )
+              .containsEntry(HEADER_X_TOTAL_COUNT, "0")
         );
 
       verifyNoInteractions(qualityGateReportMapperMock);

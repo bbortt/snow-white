@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.stream.json;
 
 import static io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData.wrapResourceSpans;
-import static io.github.bbortt.snow.white.microservices.kafka.event.filter.config.KafkaStreamsConfig.JsonSerde;
+import static io.github.bbortt.snow.white.microservices.kafka.event.filter.api.kafka.serialization.ExportTraceServiceRequestSerdes.JsonSerde;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
@@ -53,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
 class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
@@ -64,7 +64,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   private static final String QUALITY_GATE_CONFIG_NAME = "basic-coverage";
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Autowired
   private QualityGateReportRepository qualityGateReportRepository;
@@ -138,9 +138,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .perform(
         post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
-          .content(
-            objectMapper.writeValueAsString(qualityGateCalculationRequest)
-          )
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
@@ -154,7 +152,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .getResponse()
       .getContentAsString();
 
-    var responseJson = objectMapper.readTree(contentAsString);
+    var responseJson = jsonMapper.readTree(contentAsString);
     String calculationIdStr = responseJson.get("calculationId").asText();
 
     assertThat(calculationIdStr).isNotEmpty();
@@ -221,9 +219,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .perform(
         post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
-          .content(
-            objectMapper.writeValueAsString(qualityGateCalculationRequest)
-          )
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
@@ -237,7 +233,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .getResponse()
       .getContentAsString();
 
-    var responseJson = objectMapper.readTree(contentAsString);
+    var responseJson = jsonMapper.readTree(contentAsString);
     String calculationIdStr = responseJson.get("calculationId").asText();
 
     assertThat(calculationIdStr).isNotEmpty();
@@ -271,9 +267,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .perform(
         post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
-          .content(
-            objectMapper.writeValueAsString(qualityGateCalculationRequest)
-          )
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
       .andExpect(status().isBadRequest());
 
@@ -289,7 +283,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     var qualityGateByNameEndpoint = "/api/rest/v1/quality-gates/basic-coverage";
     stubFor(
       get(qualityGateByNameEndpoint).willReturn(
-        okJson(objectMapper.writeValueAsString(qualityGateConfig))
+        okJson(jsonMapper.writeValueAsString(qualityGateConfig))
       )
     );
 

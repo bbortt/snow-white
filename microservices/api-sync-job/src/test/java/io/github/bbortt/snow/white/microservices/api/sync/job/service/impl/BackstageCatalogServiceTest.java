@@ -24,8 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
@@ -59,6 +57,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class BackstageCatalogServiceTest {
@@ -295,7 +295,7 @@ class BackstageCatalogServiceTest {
 
       var jsonNodeMock = mock(JsonNode.class);
       doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
-      doReturn(openApiDefinition).when(jsonNodeMock).asText();
+      doReturn(openApiDefinition).when(jsonNodeMock).asString();
 
       doReturn(jsonNodeMock).when(objectMapperMock).valueToTree(spec);
 
@@ -369,7 +369,7 @@ class BackstageCatalogServiceTest {
 
       var jsonNodeMock = mock(JsonNode.class);
       doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
-      doReturn(openApiDefinition).when(jsonNodeMock).asText();
+      doReturn(openApiDefinition).when(jsonNodeMock).asString();
 
       doReturn(jsonNodeMock).when(objectMapperMock).valueToTree(spec);
 

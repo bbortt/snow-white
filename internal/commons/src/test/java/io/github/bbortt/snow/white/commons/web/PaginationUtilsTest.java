@@ -101,7 +101,7 @@ class PaginationUtilsTest {
 
       assertThat(headers).isNotNull();
       assertThat(headers.getFirst("X-Total-Count")).isEqualTo("123");
-      assertThat(headers).containsOnlyKeys("X-Total-Count");
+      assertThat(headers.headerNames()).containsExactly("X-Total-Count");
     }
 
     @Test
@@ -113,7 +113,7 @@ class PaginationUtilsTest {
       );
 
       assertThat(headers.getFirst("X-Total-Count")).isEqualTo("0");
-      assertThat(headers).containsOnlyKeys("X-Total-Count");
+      assertThat(headers.headerNames()).containsExactly("X-Total-Count");
     }
   }
 }

@@ -11,47 +11,25 @@ import static io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerC
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.bbortt.snow.white.microservices.kafka.event.filter.TestData;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.util.Properties;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith({ MockitoExtension.class })
 class KafkaStreamsConfigTest {
-
-  private final TestData testData = TestData.builder().build();
 
   private KafkaStreamsConfig fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     fixture = new KafkaStreamsConfig();
-  }
-
-  @Nested
-  class JsonSerde {
-
-    @Test
-    void serializationAndDeserializationLoop() {
-      var originalMessage = ExportTraceServiceRequest.newBuilder()
-        .addResourceSpans(testData.resourceSpansWithAttributesOnEachLevel())
-        .build();
-
-      byte[] serializedData = KafkaStreamsConfig.JsonSerde()
-        .serializer()
-        .serialize("test-topic", originalMessage);
-      assertThat(serializedData).isNotNull();
-
-      ExportTraceServiceRequest deserializedMessage =
-        KafkaStreamsConfig.JsonSerde()
-          .deserializer()
-          .deserialize("test-topic", serializedData);
-      assertThat(deserializedMessage).isNotNull().isEqualTo(originalMessage);
-    }
   }
 
   @Nested

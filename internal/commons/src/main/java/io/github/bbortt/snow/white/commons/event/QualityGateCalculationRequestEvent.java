@@ -15,6 +15,7 @@ import jakarta.annotation.Nullable;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
@@ -22,6 +23,7 @@ import lombok.With;
 @With
 @Getter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
 public class QualityGateCalculationRequestEvent {

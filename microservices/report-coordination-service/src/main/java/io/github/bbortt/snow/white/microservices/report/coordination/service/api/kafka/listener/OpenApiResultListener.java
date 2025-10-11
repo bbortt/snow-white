@@ -13,7 +13,7 @@ import static org.springframework.kafka.support.KafkaHeaders.RECEIVED_KEY;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestResultMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;

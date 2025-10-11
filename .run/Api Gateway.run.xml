@@ -11,10 +11,6 @@
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
-    <option
-      name="ALTERNATIVE_JRE_PATH"
-      value="/usr/lib/jvm/temurin-21-jdk-amd64"
-    />
     <module name="api-gateway" />
     <option
       name="SPRING_BOOT_MAIN_CLASS"

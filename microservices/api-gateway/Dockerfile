@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine AS jlink-builder
+FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
 ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
@@ -13,7 +13,7 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /classpath/ope
 
 RUN jdeps --ignore-missing-deps \
     --class-path 'dependencies/*' \
-    --multi-release 21 \
+    --multi-release 25 \
     --print-module-deps \
     --recursive \
     app.jar > deps.info

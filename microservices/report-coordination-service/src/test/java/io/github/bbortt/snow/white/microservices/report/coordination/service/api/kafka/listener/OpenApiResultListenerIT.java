@@ -26,7 +26,6 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.awaitility.Awaitility.await;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
@@ -49,6 +48,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
@@ -65,7 +65,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
   private KafkaTemplate<String, OpenApiCoverageResponseEvent> kafkaTemplate;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Autowired
   private ApiTestRepository apiTestRepository;
@@ -183,7 +183,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;
     stubFor(
       get(qualityGateByNameEndpoint).willReturn(
-        okJson(objectMapper.writeValueAsString(qualityGateConfig))
+        okJson(jsonMapper.writeValueAsString(qualityGateConfig))
       )
     );
 
