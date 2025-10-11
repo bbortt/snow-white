@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
@@ -18,6 +17,9 @@ import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.ApiTestMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.QualityGateReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGate400Response;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.CalculateQualityGateRequest;
@@ -25,9 +27,6 @@ import io.github.bbortt.snow.white.microservices.report.coordination.service.con
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportParameter;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ApiTestMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.ReportParameterMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.exception.QualityGateNotFoundException;
 import java.util.Set;
@@ -125,11 +124,9 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(ACCEPTED),
           r -> assertThat(r.getBody()).isEqualTo(responseDto),
           r ->
-            assertThat(r.getHeaders()).containsEntry(
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
               LOCATION,
-              singletonList(
-                "http://my-api-gateway/quality-gate/37809fff-2044-4341-b55e-f99202291478"
-              )
+              "http://my-api-gateway/quality-gate/37809fff-2044-4341-b55e-f99202291478"
             )
         );
     }

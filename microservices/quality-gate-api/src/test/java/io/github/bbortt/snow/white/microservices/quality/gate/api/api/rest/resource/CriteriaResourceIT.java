@@ -16,8 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
@@ -26,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
 class CriteriaResourceIT extends AbstractQualityGateApiIT {
@@ -35,7 +35,7 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
     ENTITY_API_URL + "/openapi";
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Autowired
   private MockMvc mockMvc;
@@ -51,7 +51,7 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
       .getResponse()
       .getContentAsString();
 
-    var openApiCriteria = objectMapper.readValue(
+    var openApiCriteria = jsonMapper.readValue(
       content,
       new TypeReference<List<OpenApiCriterion>>() {}
     );

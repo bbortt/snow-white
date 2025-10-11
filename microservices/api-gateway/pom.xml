@@ -24,7 +24,7 @@
   <properties>
     <!-- Dependency Management -->
     <git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
-    <spring-cloud.version>2025.0.0-RC1</spring-cloud.version>
+    <spring-cloud.version>2025.1.0-M3</spring-cloud.version>
 
     <!-- SonarQube properties -->
     <sonar.inclusions>
@@ -102,11 +102,6 @@
       <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.tngtech.archunit</groupId>
-      <artifactId>archunit-junit5</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>

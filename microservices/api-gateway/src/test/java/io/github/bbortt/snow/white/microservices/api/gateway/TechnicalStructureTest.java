@@ -24,13 +24,9 @@ class TechnicalStructureTest {
     .consideringAllDependencies()
     .layer("Config").definedBy("..config..")
     .layer("Web").definedBy("..web..")
-    .optionalLayer("Service").definedBy("..service..")
-    .optionalLayer("Persistence").definedBy("..repository..")
 
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
-    .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config")
-    .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service", "Web", "Config")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
 }

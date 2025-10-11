@@ -13,15 +13,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
+import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 class ApiInformationDeserializerTest {
 
@@ -32,14 +34,18 @@ class ApiInformationDeserializerTest {
     fixture = new ApiInformationDeserializer(new ApiSyncJobProperties());
   }
 
+  private JsonMapper getJsonMapper() {
+    return new JsonMapper.Builder(JsonFactory.builder().build())
+      .addModule(
+        new SimpleModule().addDeserializer(ApiInformation.class, fixture)
+      )
+      .build();
+  }
+
   @Test
   void testSuccessfulApiDeserialization() throws IOException {
-    var objectMapper = new ObjectMapper().registerModule(
-      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-    );
-
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
-    var api = objectMapper.readValue(content, ApiInformation.class);
+    var api = getJsonMapper().readValue(content, ApiInformation.class);
 
     var title = "Swagger Petstore - OpenAPI 3.1";
     assertThat(api).satisfies(
@@ -65,12 +71,8 @@ class ApiInformationDeserializerTest {
 
     fixture = new ApiInformationDeserializer(apiSyncJobProperties);
 
-    var objectMapper = new ObjectMapper().registerModule(
-      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-    );
-
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
-    var api = objectMapper.readValue(content, ApiInformation.class);
+    var api = getJsonMapper().readValue(content, ApiInformation.class);
 
     assertThat(api).satisfies(
       a -> assertThat(a).hasNoNullFieldsOrProperties(),
@@ -89,12 +91,8 @@ class ApiInformationDeserializerTest {
 
     fixture = new ApiInformationDeserializer(apiSyncJobProperties);
 
-    var objectMapper = new ObjectMapper().registerModule(
-      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-    );
-
     var content = getResourceContent("ApiDeserializerTest/single-api.json");
-    var api = objectMapper.readValue(content, ApiInformation.class);
+    var api = getJsonMapper().readValue(content, ApiInformation.class);
 
     assertThat(api).satisfies(
       a -> assertThat(a).hasNoNullFieldsOrProperties(),
@@ -105,12 +103,8 @@ class ApiInformationDeserializerTest {
   @Test
   void testSuccessfulApiArrayDeserializationOfMultipleApis()
     throws IOException {
-    var objectMapper = new ObjectMapper().registerModule(
-      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-    );
-
     var content = getResourceContent("ApiDeserializerTest/multiple-apis.json");
-    var apis = objectMapper.readValue(content, ApiInformation[].class);
+    var apis = getJsonMapper().readValue(content, ApiInformation[].class);
 
     assertThat(apis).hasSize(2);
   }
@@ -119,18 +113,14 @@ class ApiInformationDeserializerTest {
   @ValueSource(strings = { "title", "otel-service-name", "version" })
   void testMissingPropertyApiSerialization(String missingProperty)
     throws IOException {
-    var objectMapper = new ObjectMapper().registerModule(
-      new SimpleModule().addDeserializer(ApiInformation.class, fixture)
-    );
-
     var content = getResourceContent(
       "ApiDeserializerTest/missing-" + missingProperty + ".json"
     );
 
     assertThatThrownBy(() ->
-      objectMapper.readValue(content, ApiInformation.class)
+      getJsonMapper().readValue(content, ApiInformation.class)
     )
-      .isInstanceOf(JsonParseException.class)
+      .isInstanceOf(ApiCatalogException.class)
       .hasMessageContaining(
         "Mandatory property '",
         missingProperty,

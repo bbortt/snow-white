@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -36,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
 class QualityGateResourceIT extends AbstractQualityGateApiIT {
@@ -45,7 +45,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
     ENTITY_API_URL + "/{qualityGateName}";
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private JsonMapper jsonMapper;
 
   @Autowired
   private MockMvc mockMvc;
@@ -66,7 +66,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .perform(
         post(ENTITY_API_URL)
           .contentType(APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(qualityGateConfig))
+          .content(jsonMapper.writeValueAsString(qualityGateConfig))
       )
       .andExpect(status().isCreated())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
@@ -77,7 +77,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
         )
       )
       .andExpect(
-        content().json(objectMapper.writeValueAsString(qualityGateConfig))
+        content().json(jsonMapper.writeValueAsString(qualityGateConfig))
       );
 
     assertThat(
@@ -95,7 +95,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .perform(
         post(ENTITY_API_URL)
           .contentType(APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(qualityGateConfig))
+          .content(jsonMapper.writeValueAsString(qualityGateConfig))
       )
       .andExpect(status().isBadRequest());
   }
@@ -197,7 +197,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .perform(
         put(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName())
           .contentType(APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(qualityGateConfiguration))
+          .content(jsonMapper.writeValueAsString(qualityGateConfiguration))
       )
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))

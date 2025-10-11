@@ -12,7 +12,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
@@ -22,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.ObjectMapper;
 
 class ApiCatalogServiceConfigTest {
 
