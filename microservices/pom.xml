@@ -38,7 +38,7 @@
     <org.flywaydb.version>11.14.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>2.8.13</org.springdoc.version>
-    <org.wiremock.version>3.10.0</org.wiremock.version>
+    <org.wiremock.version>3.10.6</org.wiremock.version>
 
     <container.registry>ghcr.io</container.registry>
     <image.tag>${project.version}</image.tag>
@@ -48,6 +48,14 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-bom</artifactId>
+        <version>12.1.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>com.tngtech.archunit</groupId>
         <artifactId>archunit-junit5</artifactId>
@@ -184,7 +192,14 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.14.1</version>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
         </plugin>
 
         <plugin>

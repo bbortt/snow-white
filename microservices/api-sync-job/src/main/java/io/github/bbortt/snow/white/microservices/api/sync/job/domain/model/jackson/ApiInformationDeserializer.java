@@ -16,24 +16,25 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.StreamSupport.stream;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.SimpleRequiredApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
 import jakarta.annotation.Nullable;
-import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.springframework.boot.jackson.JsonComponent;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.node.ArrayNode;
 
+@JsonComponent
 public class ApiInformationDeserializer
-  extends StdDeserializer<ApiInformation> {
+  extends ValueDeserializer<ApiInformation> {
 
   private static final String KEY_PROPERTY = "key";
   private static final String VALUE_PROPERTY = "value";
@@ -46,7 +47,6 @@ public class ApiInformationDeserializer
   private transient @Nullable ApiProperty apiVersionProperty;
 
   public ApiInformationDeserializer(ApiSyncJobProperties apiSyncJobProperties) {
-    super(ApiInformation.class);
     var serviceInterface = apiSyncJobProperties.getServiceInterface();
 
     this.serviceNameProperty = new SimpleRequiredApiProperty(
@@ -69,92 +69,87 @@ public class ApiInformationDeserializer
   @Override
   public ApiInformation deserialize(
     JsonParser parser,
-    DeserializationContext deserializationContext
-  ) throws IOException {
+    DeserializationContext context
+  ) throws JacksonException {
     var apiBuilder = ApiInformation.builder();
 
-    JsonNode node = parser.getCodec().readTree(parser);
+    JsonNode node = parser.readValueAsTree();
     JsonNode sourceNode = node.get(SOURCE_PROPERTY);
     if (sourceNode != null) {
-      apiBuilder.sourceUrl(sourceNode.asText());
+      apiBuilder.sourceUrl(sourceNode.asString());
     }
 
-    deserializeProperties(parser, apiBuilder, node);
+    deserializeProperties(apiBuilder, node);
 
     return apiBuilder.build();
   }
 
   private void deserializeProperties(
-    JsonParser parser,
     ApiInformation.ApiInformationBuilder apiInformationBuilder,
     JsonNode node
-  ) throws JsonParseException {
+  ) throws ApiCatalogException {
     if (node.has(PROPERTIES_PROPERTY)) {
       var propertyLookup = createPropertyLookup(
         (ArrayNode) node.get(PROPERTIES_PROPERTY)
       );
 
-      try {
+      assignProperty(
+        apiInformationBuilder::title,
+        OAS_INFO_TITLE,
+        propertyLookup
+      );
+      assignProperty(
+        apiInformationBuilder::version,
+        OAS_INFO_VERSION,
+        propertyLookup
+      );
+
+      if (nonNull(apiNameProperty)) {
         assignProperty(
-          apiInformationBuilder::title,
+          apiInformationBuilder::name,
+          apiNameProperty,
+          propertyLookup
+        );
+      } else {
+        assignProperty(
+          apiInformationBuilder::name,
           OAS_INFO_TITLE,
           propertyLookup
         );
+      }
+
+      if (nonNull(apiVersionProperty)) {
         assignProperty(
           apiInformationBuilder::version,
-          OAS_INFO_VERSION,
+          apiVersionProperty,
           propertyLookup
         );
-
-        if (nonNull(apiNameProperty)) {
-          assignProperty(
-            apiInformationBuilder::name,
-            apiNameProperty,
-            propertyLookup
-          );
-        } else {
-          assignProperty(
-            apiInformationBuilder::name,
-            OAS_INFO_TITLE,
-            propertyLookup
-          );
-        }
-
-        if (nonNull(apiVersionProperty)) {
-          assignProperty(
-            apiInformationBuilder::version,
-            apiVersionProperty,
-            propertyLookup
-          );
-        }
-
-        assignProperty(
-          apiInformationBuilder::serviceName,
-          serviceNameProperty,
-          propertyLookup
-        );
-
-        assignProperty(
-          prop -> apiInformationBuilder.apiType(apiType(prop)),
-          OAS_TYPE,
-          propertyLookup
-        );
-      } catch (ApiCatalogException e) {
-        throw new JsonParseException(parser, e.getMessage(), e);
       }
+
+      assignProperty(
+        apiInformationBuilder::serviceName,
+        serviceNameProperty,
+        propertyLookup
+      );
+
+      assignProperty(
+        prop -> apiInformationBuilder.apiType(apiType(prop)),
+        OAS_TYPE,
+        propertyLookup
+      );
     }
   }
 
   private static Map<String, String> createPropertyLookup(
     ArrayNode properties
   ) {
-    Iterable<JsonNode> nodeIterable = properties::elements;
+    Iterable<JsonNode> nodeIterable = properties.elements();
     return stream(nodeIterable.spliterator(), false)
       .filter(propertyNode -> nonNull(propertyNode.get(VALUE_PROPERTY)))
       .collect(
         toMap(
-          propertyNode -> propertyNode.get(KEY_PROPERTY).asText(),
-          propertyNode -> propertyNode.get(VALUE_PROPERTY).asText()
+          propertyNode -> propertyNode.get(KEY_PROPERTY).asString(),
+          propertyNode -> propertyNode.get(VALUE_PROPERTY).asString()
         )
       );
   }

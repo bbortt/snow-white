@@ -6,7 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.exception;
 
-public class ApiCatalogException extends Exception {
+import tools.jackson.core.JacksonException;
+
+public class ApiCatalogException extends JacksonException {
 
   public ApiCatalogException(String message) {
     super(message);

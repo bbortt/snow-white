@@ -14,12 +14,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 21
+          java-version: 25
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am install
       - name: Upload CLI Artifacts
@@ -81,12 +81,12 @@ jobs:
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 21
+          java-version: 25
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl '!:cli,!:helm' install
       - name: 'Login to GitHub Container Registry'

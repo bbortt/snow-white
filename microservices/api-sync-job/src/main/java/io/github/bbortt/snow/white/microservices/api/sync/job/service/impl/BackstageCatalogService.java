@@ -15,8 +15,6 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto.Entity;
@@ -43,6 +41,8 @@ import java.util.stream.Stream;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 public class BackstageCatalogService implements ApiCatalogService {
@@ -235,7 +235,7 @@ public class BackstageCatalogService implements ApiCatalogService {
         )
         .map(objectMapper::<JsonNode>valueToTree)
         .map(jsonNode -> jsonNode.get("definition"))
-        .map(JsonNode::asText)
+        .map(JsonNode::asString)
         .map(openAPIV3Parser::readContents)
         .map(OpenAPIParameters::new);
   }
