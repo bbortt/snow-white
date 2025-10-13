@@ -17,7 +17,7 @@ dependencies:
     repository: 'https://charts.bitnami.com/bitnami'
     condition: influxdb.enabled
   - name: postgresql
-    version: 16.7.27
+    version: 18.0.12
     repository: 'https://charts.bitnami.com/bitnami'
     condition: postgresql.enabled
   - name: redis
