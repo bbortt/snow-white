@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
@@ -125,11 +124,9 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(ACCEPTED),
           r -> assertThat(r.getBody()).isEqualTo(responseDto),
           r ->
-            assertThat(r.getHeaders()).containsEntry(
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
               LOCATION,
-              singletonList(
-                "http://my-api-gateway/quality-gate/37809fff-2044-4341-b55e-f99202291478"
-              )
+              "http://my-api-gateway/quality-gate/37809fff-2044-4341-b55e-f99202291478"
             )
         );
     }

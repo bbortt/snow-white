@@ -212,12 +212,11 @@ class ReportResourceTest {
         .satisfies(
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(CONTENT_DISPOSITION, value ->
-                assertThat(value).containsExactly(
-                  "attachment; filename=\"junit-report.xml\""
-                )
+              .containsEntry(
+                CONTENT_DISPOSITION,
+                "attachment; filename=\"junit-report.xml\""
               ),
           r -> assertThat(r.getBody()).isEqualTo(junitReport)
         );
@@ -330,11 +329,9 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("2")
-              )
+              .containsEntry(HEADER_X_TOTAL_COUNT, "2")
         );
     }
 
@@ -360,11 +357,9 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).isEmpty(),
           r ->
-            assertThat(r.getHeaders())
+            assertThat(r.getHeaders().toSingleValueMap())
               .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("0")
-              )
+              .containsEntry(HEADER_X_TOTAL_COUNT, "0")
         );
 
       verifyNoInteractions(qualityGateReportMapperMock);
