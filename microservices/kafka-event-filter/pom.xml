@@ -28,7 +28,7 @@
 
     <citrus.version>4.8.1</citrus.version>
     <confluent.version>8.1.0</confluent.version>
-    <google-protobuf.version>4.32.1</google-protobuf.version>
+    <google-protobuf.version>4.33.0</google-protobuf.version>
     <grpc.version>1.76.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
