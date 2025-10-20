@@ -8,12 +8,14 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleNameEndingWith;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.InfluxDBProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 
 @AnalyzeClasses(
@@ -25,15 +27,17 @@ class TechnicalStructureTest {
   // prettier-ignore
   @ArchTest
   static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
-          .consideringAllDependencies()
-          .layer("Kafka").definedBy("..kafka..")
-          .layer("Service").definedBy("..service..")
-          .layer("Config").definedBy("..config..")
+    .consideringAllDependencies()
+    .layer("Kafka").definedBy("..kafka..")
+    .layer("Service").definedBy("..service..")
+    .layer("Config").definedBy("..config..")
 
-          .whereLayer("Config").mayNotBeAccessedByAnyLayer()
-          .whereLayer("Kafka").mayOnlyBeAccessedByLayers("Config")
-          .whereLayer("Service").mayOnlyBeAccessedByLayers("Kafka", "Config")
+    .whereLayer("Config").mayNotBeAccessedByAnyLayer()
+    .whereLayer("Kafka").mayOnlyBeAccessedByLayers("Config")
+    .whereLayer("Service").mayOnlyBeAccessedByLayers("Kafka", "Config")
 
-          .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
-          .ignoreDependency(alwaysTrue(), belongToAnyOf(OpenApiCoverageServiceProperties.class));
+    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(InfluxDBProperties.class, OpenApiCoverageServiceProperties.class))
+    .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
 }

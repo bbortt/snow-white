@@ -25,11 +25,11 @@ class TechnicalStructureTest {
   @ArchTest
   static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
     .consideringAllDependencies()
-          .layer("Api").definedBy("..api..")
+    .layer("Api").definedBy("..api..")
     .layer("Config").definedBy("..config..")
-          .layer("Service").definedBy("..service..")
+    .layer("Service").definedBy("..service..")
 
-          .whereLayer("Api").mayOnlyBeAccessedByLayers("Config")
+    .whereLayer("Api").mayOnlyBeAccessedByLayers("Config")
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Api", "Config")
 

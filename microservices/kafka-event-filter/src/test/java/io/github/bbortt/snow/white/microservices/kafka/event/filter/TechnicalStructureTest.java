@@ -25,18 +25,18 @@ class TechnicalStructureTest {
 
   // prettier-ignore
   @ArchTest
-    static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
-            .consideringAllDependencies()
-            .layer("Kafka").definedBy("..kafka..")
-            .layer("Service").definedBy("..service..")
-            .layer("Config").definedBy("..config..")
+  static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
+    .consideringAllDependencies()
+    .layer("Kafka").definedBy("..kafka..")
+    .layer("Service").definedBy("..service..")
+    .layer("Config").definedBy("..config..")
 
-            .whereLayer("Config").mayNotBeAccessedByAnyLayer()
-            .whereLayer("Kafka").mayOnlyBeAccessedByLayers("Config")
-            .whereLayer("Service").mayOnlyBeAccessedByLayers("Kafka", "Config")
+    .whereLayer("Config").mayNotBeAccessedByAnyLayer()
+    .whereLayer("Kafka").mayOnlyBeAccessedByLayers("Config")
+    .whereLayer("Service").mayOnlyBeAccessedByLayers("Kafka", "Config")
 
-            .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
-            .ignoreDependency(alwaysTrue(), belongToAnyOf(KafkaEventFilterProperties.class))
-            .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
-            .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
+    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(KafkaEventFilterProperties.class))
+    .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
 }

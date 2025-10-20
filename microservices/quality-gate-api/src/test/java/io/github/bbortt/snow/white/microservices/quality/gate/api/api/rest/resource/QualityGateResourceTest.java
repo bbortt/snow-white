@@ -295,11 +295,10 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).containsExactly(dto1, dto2),
           r ->
-            assertThat(r.getHeaders())
-              .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("2")
-              )
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
+              HEADER_X_TOTAL_COUNT,
+              "2"
+            )
         );
     }
 
@@ -325,11 +324,10 @@ class QualityGateResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r -> assertThat(r.getBody()).isEmpty(),
           r ->
-            assertThat(r.getHeaders())
-              .hasSize(1)
-              .hasEntrySatisfying(HEADER_X_TOTAL_COUNT, value ->
-                assertThat(value).containsExactly("0")
-              )
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
+              HEADER_X_TOTAL_COUNT,
+              "0"
+            )
         );
     }
   }

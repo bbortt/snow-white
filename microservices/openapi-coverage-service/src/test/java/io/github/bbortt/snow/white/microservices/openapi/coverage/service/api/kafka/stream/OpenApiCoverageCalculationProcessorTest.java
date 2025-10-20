@@ -10,6 +10,11 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilter.attr
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.TestData.API_NAME;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.TestData.API_VERSION;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.TestData.LOOKBACK_WINDOW;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.TestData.SERVICE_NAME;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.service.TestData.qualityGateCalculationRequestEvent;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
@@ -28,7 +33,7 @@ import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEv
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.KafkaStreamsConfig;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.service.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.OpenApiService;
@@ -59,12 +64,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenApiCoverageCalculationProcessorTest {
-
-  public static final String SERVICE_NAME = "serviceName";
-  public static final String API_NAME = "apiName";
-  public static final String API_VERSION = "apiVersion";
-
-  private static final String LOOKBACK_WINDOW = "1h";
 
   private final String requestTopicName =
     getClass().getSimpleName() + ":request";
@@ -120,7 +119,7 @@ class OpenApiCoverageCalculationProcessorTest {
 
       sendEventsAndAssert(
         calculationId,
-        getQualityGateCalculationRequestEvent(),
+        qualityGateCalculationRequestEvent(),
         outputTopic ->
           assertThat(outputTopic.readKeyValuesToList())
             .hasSize(1)
@@ -178,7 +177,7 @@ class OpenApiCoverageCalculationProcessorTest {
 
       sendEventsAndAssert(
         calculationId,
-        getQualityGateCalculationRequestEvent().withAttributeFilters(
+        qualityGateCalculationRequestEvent().withAttributeFilters(
           attributeFilters
         ),
         outputTopic ->
@@ -240,7 +239,7 @@ class OpenApiCoverageCalculationProcessorTest {
 
       sendEventsAndAssert(
         calculationId,
-        getQualityGateCalculationRequestEvent(),
+        qualityGateCalculationRequestEvent(),
         outputTopic ->
           assertThat(outputTopic.readKeyValuesToList())
             .hasSize(1)
@@ -303,7 +302,7 @@ class OpenApiCoverageCalculationProcessorTest {
     ) {
       sendEventsAndAssert(
         "981900ba-bce2-4147-99c0-c52d12ec9575",
-        getQualityGateCalculationRequestEvent(),
+        qualityGateCalculationRequestEvent(),
         outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
 
@@ -339,13 +338,13 @@ class OpenApiCoverageCalculationProcessorTest {
         var inputTopic = topologyTestDriver.createInputTopic(
           requestTopicName,
           new StringSerializer(),
-          KafkaStreamsConfig.QualityGateCalculationRequestEvent().serializer()
+          QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent().serializer()
         );
 
         var outputTopic = topologyTestDriver.createOutputTopic(
           responseTopicName,
           new StringDeserializer(),
-          KafkaStreamsConfig.OpenApiCoverageResponseEvent().deserializer()
+          QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent().deserializer()
         );
 
         inputTopic.pipeInput(calculationId, qualityGateCalculationRequestEvent);
@@ -432,18 +431,5 @@ class OpenApiCoverageCalculationProcessorTest {
         anySet()
       );
     return openTelemetryData;
-  }
-
-  private static QualityGateCalculationRequestEvent getQualityGateCalculationRequestEvent() {
-    return QualityGateCalculationRequestEvent.builder()
-      .apiInformation(
-        ApiInformation.builder()
-          .serviceName(SERVICE_NAME)
-          .apiName(API_NAME)
-          .apiVersion(API_VERSION)
-          .build()
-      )
-      .lookbackWindow(LOOKBACK_WINDOW)
-      .build();
   }
 }
