@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.gateway;
+package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
@@ -15,18 +15,23 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-@AnalyzeClasses(packagesOf = Main.class, importOptions = DoNotIncludeTests.class)
+@AnalyzeClasses(
+  packagesOf = Main.class,
+  importOptions = DoNotIncludeTests.class
+)
 class TechnicalStructureTest {
 
   // prettier-ignore
   @ArchTest
   static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
     .consideringAllDependencies()
+          .layer("Api").definedBy("..api..")
     .layer("Config").definedBy("..config..")
-    .layer("Web").definedBy("..web..")
+          .layer("Service").definedBy("..service..")
 
+          .whereLayer("Api").mayOnlyBeAccessedByLayers("Config")
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
-    .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
+    .whereLayer("Service").mayOnlyBeAccessedByLayers("Api", "Config")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
 }

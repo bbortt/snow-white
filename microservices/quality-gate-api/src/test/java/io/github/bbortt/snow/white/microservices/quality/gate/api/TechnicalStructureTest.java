@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.gateway;
+package io.github.bbortt.snow.white.microservices.quality.gate.api;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
@@ -15,7 +15,10 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-@AnalyzeClasses(packagesOf = Main.class, importOptions = DoNotIncludeTests.class)
+@AnalyzeClasses(
+  packagesOf = Main.class,
+  importOptions = DoNotIncludeTests.class
+)
 class TechnicalStructureTest {
 
   // prettier-ignore
@@ -24,9 +27,17 @@ class TechnicalStructureTest {
     .consideringAllDependencies()
     .layer("Config").definedBy("..config..")
     .layer("Web").definedBy("..web..")
+    .optionalLayer("Service").definedBy("..service..")
+    .layer("Security").definedBy("..security..")
+    .optionalLayer("Persistence").definedBy("..repository..")
+    .layer("Domain").definedBy("..domain..")
 
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
+    .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config")
+    .whereLayer("Security").mayOnlyBeAccessedByLayers("Config", "Service", "Web")
+    .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service", "Security", "Web", "Config")
+    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Persistence", "Service", "Security", "Web", "Config")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
 }
