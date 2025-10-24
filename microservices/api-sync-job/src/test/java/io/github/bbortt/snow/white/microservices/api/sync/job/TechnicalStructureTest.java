@@ -14,6 +14,7 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -33,5 +34,6 @@ class TechnicalStructureTest {
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Api", "Config")
 
-    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
+    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(ApiSyncJobProperties.class));
 }

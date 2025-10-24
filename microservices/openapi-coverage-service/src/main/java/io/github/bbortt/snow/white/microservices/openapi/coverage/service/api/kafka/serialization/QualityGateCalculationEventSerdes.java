@@ -25,9 +25,9 @@ public class QualityGateCalculationEventSerdes {
     var serializer = new JacksonJsonSerializer<
       QualityGateCalculationRequestEvent
     >();
-    var deserializer = new JacksonJsonDeserializer<
-      QualityGateCalculationRequestEvent
-    >();
+    var deserializer = new JacksonJsonDeserializer<>(
+      QualityGateCalculationRequestEvent.class
+    );
 
     return serdeFrom(serializer, deserializer);
   }
@@ -36,9 +36,9 @@ public class QualityGateCalculationEventSerdes {
     OpenApiCoverageResponseEvent
   > OpenApiCoverageResponseEvent() {
     var serializer = new JacksonJsonSerializer<OpenApiCoverageResponseEvent>();
-    var deserializer = new JacksonJsonDeserializer<
-      OpenApiCoverageResponseEvent
-    >();
+    var deserializer = new JacksonJsonDeserializer<>(
+      OpenApiCoverageResponseEvent.class
+    );
 
     return serdeFrom(serializer, deserializer);
   }
