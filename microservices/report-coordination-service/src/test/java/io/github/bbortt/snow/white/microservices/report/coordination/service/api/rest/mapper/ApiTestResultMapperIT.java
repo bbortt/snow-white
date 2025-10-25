@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper;
+package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-class QualityGateReportMapperIT extends AbstractReportCoordinationServiceIT {
+class ApiTestResultMapperIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private ApplicationContext applicationContext;
@@ -21,7 +21,7 @@ class QualityGateReportMapperIT extends AbstractReportCoordinationServiceIT {
   @Test
   void isRegisteredWithinSpringComponentModel() {
     assertThat(
-      applicationContext.getBean(QualityGateReportMapper.class)
+      applicationContext.getBean(ApiTestResultMapper.class)
     ).isNotNull();
   }
 }

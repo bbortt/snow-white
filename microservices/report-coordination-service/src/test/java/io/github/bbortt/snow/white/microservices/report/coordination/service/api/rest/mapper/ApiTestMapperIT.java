@@ -4,24 +4,22 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper;
+package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-class OpenApiCoverageConfigurationMapperIT extends AbstractQualityGateApiIT {
+class ApiTestMapperIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private ApplicationContext applicationContext;
 
   @Test
   void isRegisteredWithinSpringComponentModel() {
-    assertThat(
-      applicationContext.getBean(OpenApiCoverageConfigurationMapper.class)
-    ).isNotNull();
+    assertThat(applicationContext.getBean(ApiTestMapper.class)).isNotNull();
   }
 }

@@ -11,8 +11,8 @@ import static java.util.stream.Collectors.toCollection;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.CriteriaApi;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCoverageConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCoverageConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import java.util.LinkedHashSet;
 import java.util.List;

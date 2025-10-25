@@ -4,16 +4,16 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-class ReportParameterMapperIT extends AbstractReportCoordinationServiceIT {
+class OpenApiCoverageConfigurationMapperIT extends AbstractQualityGateApiIT {
 
   @Autowired
   private ApplicationContext applicationContext;
@@ -21,7 +21,7 @@ class ReportParameterMapperIT extends AbstractReportCoordinationServiceIT {
   @Test
   void isRegisteredWithinSpringComponentModel() {
     assertThat(
-      applicationContext.getBean(ReportParameterMapper.class)
+      applicationContext.getBean(OpenApiCoverageConfigurationMapper.class)
     ).isNotNull();
   }
 }

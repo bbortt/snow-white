@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper;
+package io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.mapper;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 

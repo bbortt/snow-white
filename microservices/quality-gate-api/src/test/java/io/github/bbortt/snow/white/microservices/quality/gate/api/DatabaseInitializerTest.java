@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api;
 
 import static org.mockito.Mockito.verify;
 
+import io.github.bbortt.snow.white.microservices.quality.gate.api.init.DatabaseInitializer;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import org.junit.jupiter.api.BeforeEach;

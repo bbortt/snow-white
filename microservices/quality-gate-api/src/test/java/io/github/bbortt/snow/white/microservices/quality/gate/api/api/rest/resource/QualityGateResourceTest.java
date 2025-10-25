@@ -25,9 +25,9 @@ import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;

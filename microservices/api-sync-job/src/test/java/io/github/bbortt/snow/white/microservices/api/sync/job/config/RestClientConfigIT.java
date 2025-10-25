@@ -25,7 +25,7 @@ class RestClientConfigIT {
   class RestClientBuilder {
 
     @Test
-    void restClientBuilderIsPrototypeBean() {
+    void isPrototypeBean() {
       assertThat(
         applicationContext.getBean(RestClient.Builder.class)
       ).isNotSameAs(applicationContext.getBean(RestClient.Builder.class));

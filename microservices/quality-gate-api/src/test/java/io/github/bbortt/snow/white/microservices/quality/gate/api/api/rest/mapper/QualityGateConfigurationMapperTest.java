@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;

@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
-import static io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.ObjectUtils.copyNonNullFields;
+import static io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.ObjectUtils.copyNonNullFields;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -17,8 +17,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.OpenApiCriterionDoesNotExistException;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.mapper.QualityGateConfigurationMapper;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;

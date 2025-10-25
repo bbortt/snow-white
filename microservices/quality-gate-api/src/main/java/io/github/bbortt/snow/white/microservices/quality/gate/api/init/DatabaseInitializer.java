@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.quality.gate.api;
+package io.github.bbortt.snow.white.microservices.quality.gate.api.init;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;

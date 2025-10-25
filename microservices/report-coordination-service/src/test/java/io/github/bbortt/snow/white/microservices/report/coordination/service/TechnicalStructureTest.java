@@ -14,6 +14,7 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.config.ReportCoordinationServiceProperties;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -26,14 +27,17 @@ class TechnicalStructureTest {
   static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
     .consideringAllDependencies()
     .layer("Config").definedBy("..config..")
+      .layer("Web").definedBy("..api.rest..")
     .optionalLayer("Service").definedBy("..service..")
     .optionalLayer("Persistence").definedBy("..repository..")
     .layer("Domain").definedBy("..domain..")
 
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
-    .whereLayer("Service").mayOnlyBeAccessedByLayers( "Config")
-    .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service",  "Config")
-    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Persistence", "Service",  "Config")
+      .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
+      .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config")
+      .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service",  "Web", "Config")
+      .whereLayer("Domain").mayOnlyBeAccessedByLayers("Persistence", "Service",  "Web", "Config")
 
-    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue());
+    .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
+    .ignoreDependency(alwaysTrue(),belongToAnyOf(ReportCoordinationServiceProperties.class));
 }

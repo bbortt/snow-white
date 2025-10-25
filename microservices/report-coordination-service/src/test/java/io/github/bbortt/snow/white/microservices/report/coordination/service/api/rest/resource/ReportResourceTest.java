@@ -26,9 +26,9 @@ import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.dto.ListQualityGateReports500Response;
+import io.github.bbortt.snow.white.microservices.report.coordination.service.api.rest.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ReportStatus;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.service.ReportService;
