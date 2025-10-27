@@ -73,7 +73,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
       - name: Fetch References
-        run: git fetch origin
+        run: git fetch --unshallow origin
       - name: Sonar Analysis
         if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
         env:
