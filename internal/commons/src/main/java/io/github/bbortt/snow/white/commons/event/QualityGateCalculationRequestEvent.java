@@ -26,7 +26,7 @@ import lombok.With;
 @EqualsAndHashCode
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
-public class QualityGateCalculationRequestEvent {
+public final class QualityGateCalculationRequestEvent {
 
   @Nonnull
   private ApiInformation apiInformation;

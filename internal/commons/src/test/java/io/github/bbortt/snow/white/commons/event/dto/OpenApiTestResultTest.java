@@ -8,12 +8,21 @@ package io.github.bbortt.snow.white.commons.event.dto;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.math.BigDecimal.ONE;
+import static nl.jqno.equalsverifier.Warning.BIGDECIMAL_EQUALITY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 class OpenApiTestResultTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(OpenApiTestResult.class)
+      .suppress(BIGDECIMAL_EQUALITY)
+      .verify();
+  }
 
   @Test
   void allArgsConstructor() {

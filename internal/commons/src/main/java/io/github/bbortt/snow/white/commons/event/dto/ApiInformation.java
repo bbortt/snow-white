@@ -23,7 +23,7 @@ import lombok.With;
 @EqualsAndHashCode
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
-public class ApiInformation {
+public final class ApiInformation {
 
   @Nonnull
   private String serviceName;

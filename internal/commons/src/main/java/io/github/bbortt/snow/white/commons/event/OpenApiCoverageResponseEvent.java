@@ -10,7 +10,6 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import java.util.Set;
-import lombok.EqualsAndHashCode;
 
 public record OpenApiCoverageResponseEvent(
   ApiType apiType,
