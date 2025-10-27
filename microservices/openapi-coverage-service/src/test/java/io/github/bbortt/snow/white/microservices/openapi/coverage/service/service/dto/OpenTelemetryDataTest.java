@@ -50,7 +50,7 @@ class OpenTelemetryDataTest {
 
       var attributes = result.attributes();
       assertThat(attributes).isNotNull();
-      assertThat(attributes.get("key").asText()).isEqualTo("value");
+      assertThat(attributes.get("key").asString()).isEqualTo("value");
     }
 
     @Test

@@ -120,7 +120,7 @@ class OpenApiCoverageCalculationCoordinator {
         for (OpenTelemetryData data : pathToTelemetryMap.get(operationKey)) {
           if (data.attributes().has("http.response.status_code")) {
             observedResponseCodes.add(
-              data.attributes().get("http.response.status_code").asText()
+              data.attributes().get("http.response.status_code").asString()
             );
           }
         }
@@ -302,7 +302,7 @@ class OpenApiCoverageCalculationCoordinator {
             String queryString = data
               .attributes()
               .get(URL_QUERY.getKey())
-              .asText();
+              .asString();
             if (queryString.contains(paramName + "=")) {
               parameterFound = true;
               break;
@@ -549,7 +549,7 @@ class OpenApiCoverageCalculationCoordinator {
             String statusCode = data
               .attributes()
               .get(HTTP_RESPONSE_STATUS_CODE.getKey())
-              .asText();
+              .asString();
             if (statusCode.startsWith("4") || statusCode.startsWith("5")) {
               logger.trace(
                 "Status code {} covered for operation '{}'",
@@ -642,7 +642,7 @@ class OpenApiCoverageCalculationCoordinator {
             HTTP_REQUEST_HEADER + "content-type";
           if (data.attributes().has(requestContentTypeAttribute)) {
             observedRequestContentTypes.add(
-              data.attributes().get(requestContentTypeAttribute).asText()
+              data.attributes().get(requestContentTypeAttribute).asString()
             );
           }
 
@@ -651,7 +651,7 @@ class OpenApiCoverageCalculationCoordinator {
             HTTP_RESPONSE_HEADER + "content-type";
           if (data.attributes().has(responseContentTypeAttribute)) {
             observedResponseContentTypes.add(
-              data.attributes().get(responseContentTypeAttribute).asText()
+              data.attributes().get(responseContentTypeAttribute).asString()
             );
           }
         }

@@ -41,10 +41,10 @@ public class ApiInformationDeserializer
   private static final String PROPERTIES_PROPERTY = "properties";
   public static final String SOURCE_PROPERTY = "source";
 
-  private final transient ApiProperty serviceNameProperty;
+  private final ApiProperty serviceNameProperty;
 
-  private transient @Nullable ApiProperty apiNameProperty;
-  private transient @Nullable ApiProperty apiVersionProperty;
+  private @Nullable ApiProperty apiNameProperty;
+  private @Nullable ApiProperty apiVersionProperty;
 
   public ApiInformationDeserializer(ApiSyncJobProperties apiSyncJobProperties) {
     var serviceInterface = apiSyncJobProperties.getServiceInterface();

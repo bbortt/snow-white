@@ -50,14 +50,15 @@ class OpenTelemetryServiceTest {
   private InfluxDBClient influxDBClientMock;
 
   private InfluxDBProperties influxDBProperties;
-  private OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
 
   private OpenTelemetryService fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     influxDBProperties = new InfluxDBProperties();
-    openApiCoverageServiceProperties = new OpenApiCoverageServiceProperties();
+
+    var openApiCoverageServiceProperties =
+      new OpenApiCoverageServiceProperties();
 
     fixture = new OpenTelemetryService(
       influxDBClientMock,
