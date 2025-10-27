@@ -43,7 +43,7 @@ class SyncJobIT {
 
   @Container
   static final RedisContainer REDIS_CONTAINER = new RedisContainer(
-    DockerImageName.parse("redis:7.4.1-alpine")
+    DockerImageName.parse("redis:8.2.2-alpine")
   ).withExposedPorts(REDIS_PORT);
 
   @DynamicPropertySource
