@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class AttributeFilterTest {
 
   @Test
-  public void equalsContract() {
+  void equalsContract() {
     EqualsVerifier.forClass(AttributeFilter.class).verify();
   }
 

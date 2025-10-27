@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;

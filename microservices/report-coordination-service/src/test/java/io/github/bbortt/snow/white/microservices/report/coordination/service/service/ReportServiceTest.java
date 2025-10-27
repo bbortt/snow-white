@@ -68,13 +68,11 @@ class ReportServiceTest {
   @Mock
   private QualityGateReportRepository qualityGateReportRepositoryMock;
 
-  private ReportCoordinationServiceProperties reportCoordinationServiceProperties;
-
   private ReportService fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    reportCoordinationServiceProperties =
+    var reportCoordinationServiceProperties =
       new ReportCoordinationServiceProperties();
     reportCoordinationServiceProperties.setCalculationRequestTopic(
       CALCULATION_REQUEST_TOPIC

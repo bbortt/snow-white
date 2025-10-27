@@ -152,7 +152,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .getContentAsString();
 
     var responseJson = jsonMapper.readTree(contentAsString);
-    String calculationIdStr = responseJson.get("calculationId").asText();
+    String calculationIdStr = responseJson.get("calculationId").asString();
 
     assertThat(calculationIdStr).isNotEmpty();
     var calculationId = assertDoesNotThrow(() ->
@@ -233,7 +233,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .getContentAsString();
 
     var responseJson = jsonMapper.readTree(contentAsString);
-    String calculationIdStr = responseJson.get("calculationId").asText();
+    String calculationIdStr = responseJson.get("calculationId").asString();
 
     assertThat(calculationIdStr).isNotEmpty();
     var calculationId = assertDoesNotThrow(() ->

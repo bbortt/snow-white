@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class OpenApiTestResultTest {
 
   @Test
-  public void equalsContract() {
+  void equalsContract() {
     EqualsVerifier.forClass(OpenApiTestResult.class)
       .suppress(BIGDECIMAL_EQUALITY)
       .verify();

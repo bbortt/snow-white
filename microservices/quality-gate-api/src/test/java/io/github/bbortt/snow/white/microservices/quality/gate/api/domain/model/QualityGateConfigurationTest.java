@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;

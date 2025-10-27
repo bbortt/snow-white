@@ -9,7 +9,6 @@ package io.github.bbortt.snow.white.microservices.report.coordination.service.ap
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
-import io.github.bbortt.snow.white.microservices.report.coordination.service.api.mapper.QualityGateReportMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

@@ -125,8 +125,8 @@ public class OpenApiCoverageService {
           String method = data
             .attributes()
             .get(HTTP_REQUEST_METHOD.getKey())
-            .asText();
-          String path = data.attributes().get(URL_PATH.getKey()).asText();
+            .asString();
+          String path = data.attributes().get(URL_PATH.getKey()).asString();
           return toOperationKey(path, method);
         })
       );

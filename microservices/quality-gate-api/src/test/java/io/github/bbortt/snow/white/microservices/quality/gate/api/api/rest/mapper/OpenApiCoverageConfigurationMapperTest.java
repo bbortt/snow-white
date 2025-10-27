@@ -78,9 +78,11 @@ class OpenApiCoverageConfigurationMapperTest {
         .name(openApiCriteria)
         .build();
 
-      assertThatThrownBy(() ->
-        fixture.toDtos(singleton(openApiCoverageConfiguration))
-      )
+      var openApiCoverageConfigurations = singleton(
+        openApiCoverageConfiguration
+      );
+
+      assertThatThrownBy(() -> fixture.toDtos(openApiCoverageConfigurations))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageStartingWith("No enum constant")
         .hasMessageEndingWith(openApiCriteria);

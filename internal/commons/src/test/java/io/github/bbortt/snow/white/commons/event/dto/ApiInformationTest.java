@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class ApiInformationTest {
 
   @Test
-  public void equalsContract() {
+  void equalsContract() {
     EqualsVerifier.forClass(ApiInformation.class)
       .suppress(NONFINAL_FIELDS)
       .verify();

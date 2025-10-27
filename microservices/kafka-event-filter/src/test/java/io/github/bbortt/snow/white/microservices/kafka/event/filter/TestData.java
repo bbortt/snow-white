@@ -56,7 +56,7 @@ public final class TestData {
   // Valid ResourceSpans
   // -------------------------------------------
 
-  public final ResourceSpans resourceSpansWithResourceAttributes() {
+  public ResourceSpans resourceSpansWithResourceAttributes() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -82,7 +82,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithScopeAttributes() {
+  public ResourceSpans resourceSpansWithScopeAttributes() {
     return ResourceSpans.newBuilder()
       .addScopeSpans(
         ScopeSpans.newBuilder()
@@ -111,7 +111,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithSpanAttributes() {
+  public ResourceSpans resourceSpansWithSpanAttributes() {
     return ResourceSpans.newBuilder()
       .addScopeSpans(
         ScopeSpans.newBuilder().addSpans(
@@ -140,7 +140,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithAttributesOnEachLevel() {
+  public ResourceSpans resourceSpansWithAttributesOnEachLevel() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder().addAttributes(
@@ -178,7 +178,7 @@ public final class TestData {
   // Invalid ResourceSpans
   // -------------------------------------------
 
-  public final ResourceSpans resourceSpansWithoutApiName() {
+  public ResourceSpans resourceSpansWithoutApiName() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -199,7 +199,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithoutApiVersion() {
+  public ResourceSpans resourceSpansWithoutApiVersion() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -220,7 +220,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithoutOtelServiceName() {
+  public ResourceSpans resourceSpansWithoutOtelServiceName() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -241,7 +241,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithoutScopeSpans() {
+  public ResourceSpans resourceSpansWithoutScopeSpans() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
@@ -264,7 +264,7 @@ public final class TestData {
       .build();
   }
 
-  public final ResourceSpans resourceSpansWithoutSpans() {
+  public ResourceSpans resourceSpansWithoutSpans() {
     return ResourceSpans.newBuilder()
       .setResource(
         Resource.newBuilder()
