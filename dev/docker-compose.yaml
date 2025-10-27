@@ -289,10 +289,10 @@ services:
     networks:
       - internal
 
-  microservices.openapi-coverage-service:
+  microservices.openapi-coverage-stream:
     build:
-      context: ../microservices/openapi-coverage-service
-    hostname: openapi-coverage-service
+      context: ../microservices/openapi-coverage-stream
+    hostname: openapi-coverage-stream
     env_file: .env
     environment:
       INFLUXDB_URL: 'http://influxdb:8086'
@@ -300,9 +300,9 @@ services:
       INFLUXDB_BUCKET: 'raw-data'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
-      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_INIT-TOPICS: 'true'
-      SNOW_WHITE_OPENAPI_COVERAGE_SERVICE_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
+      SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS: 'true'
+      SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
       SPRING_PROFILES_ACTIVE: 'prod'

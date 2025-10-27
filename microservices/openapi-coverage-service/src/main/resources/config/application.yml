@@ -1,4 +1,0 @@
-spring:
-  kafka:
-    streams:
-      application-id: openapi-coverage-service
