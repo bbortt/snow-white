@@ -104,7 +104,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>microservices/report-coordination-service/src/main/resources/openapi/v1-quality-gate-api.yml</inputSpec>
+              <inputSpec>microservices/report-coordinator-api/src/main/resources/openapi/v1-quality-gate-api.yml</inputSpec>
               <generatorName>typescript-axios</generatorName>
               <output>${project.build.directory}/generated-sources/openapi/quality-gate-api</output>
             </configuration>

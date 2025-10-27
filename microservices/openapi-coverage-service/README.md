@@ -10,7 +10,7 @@ This service is a core component of the **Snow White** application’s observabi
 - Queries telemetry data stored in InfluxDB.
 - Compares runtime API usage against stored OpenAPI specs.
   - Stores and retrieves OpenAPI specs via Redis.
-- Publishes coverage reports to Kafka, which are consumed by the [`report-coordination-service`](../report-coordination-service).
+- Publishes coverage reports to Kafka, which are consumed by the [`report-coordinator-api`](../report-coordinator-api).
 
 ## Configuration
 

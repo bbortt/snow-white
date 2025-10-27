@@ -42,7 +42,7 @@ class ReportCoordinationServiceAppTest {
 
   @Test
   void qualityGateCalculationRequestShouldBeForwarded() {
-    var qualityGateConfigName = "report-coordination-service";
+    var qualityGateConfigName = "report-coordinator-api";
 
     stubFor(
       post(urlPathTemplate("/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate"))
@@ -79,7 +79,7 @@ class ReportCoordinationServiceAppTest {
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 
-    when().get("/v3/api-docs/report-coordination-service").then().statusCode(200);
+    when().get("/v3/api-docs/report-coordinator-api").then().statusCode(200);
 
     verify(getRequestedFor(urlEqualTo("/v3/api-docs")));
   }

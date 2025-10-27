@@ -206,7 +206,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>microservices/report-coordination-service/src/main/resources/openapi/v1-report-api.yml</inputSpec>
+              <inputSpec>microservices/report-coordinator-api/src/main/resources/openapi/v1-report-api.yml</inputSpec>
               <generatorName>typescript-axios</generatorName>
               <output>${project.build.directory}/generated-sources/openapi/report-api</output>
             </configuration>
@@ -433,9 +433,9 @@
                   <run>
                     <env>
                       <SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL>http://wiremock:8080</SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL>
-                      <SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL>
+                      <SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL>
                         http://wiremock:8080
-                      </SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL>
+                      </SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL>
                       <SNOW_WHITE_API_GATEWAY_PUBLIC-URL>http://localhost:8080</SNOW_WHITE_API_GATEWAY_PUBLIC-URL>
                       <OTEL_TRACES_EXPORTER>none</OTEL_TRACES_EXPORTER>
                       <OTEL_METRICS_EXPORTER>none</OTEL_METRICS_EXPORTER>
