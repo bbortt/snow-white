@@ -29,9 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.wiremock.spring.EnableWireMock;
 
-@Disabled(
-    "Enable this once wiremock-spring-boot supports Spring-Boot 4.0!"
-)
+@Disabled("Enable this once wiremock-spring-boot supports Spring-Boot 4.0!")
 @Isolated
 @DirtiesContext
 @EnableWireMock

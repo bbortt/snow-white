@@ -6,18 +6,19 @@
 
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.YamlParser.OBJECT_MAPPER;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static lombok.AccessLevel.PACKAGE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
+import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import lombok.Setter;
+import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.codegen.CliOption;
 import org.openapitools.codegen.CodegenOperation;
@@ -25,6 +26,7 @@ import org.openapitools.codegen.languages.SpringCodegen;
 import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.OperationMap;
 import org.openapitools.codegen.model.OperationsMap;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Setter
@@ -35,24 +37,50 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   public static final String API_NAME_PROPERTY = "apiNameProperty";
 
   @Setter
-  protected String apiName = "info.title";
+  protected String apiName;
 
   public static final String API_VERSION_PROPERTY = "apiVersionProperty";
 
   @Setter
-  protected String apiVersion = "info.version";
+  protected String apiVersion;
 
   public static final String SERVICE_NAME_PROPERTY = "serviceNameProperty";
 
   @Setter
-  protected String serviceName = "info.x-service-name";
+  protected String serviceName;
 
-  private final YamlParser yamlParser = new YamlParser();
-
+  @With(PACKAGE)
+  @VisibleForTesting
   private InformationExtractor informationExtractor;
 
+  @With(PACKAGE)
+  @VisibleForTesting
+  private YamlToJsonConverter yamlToJsonConverter;
+
   public SnowWhiteSpringServerGenerator() {
+    this(
+      "info.title",
+      "info.version",
+      "info.x-service-name",
+      null,
+      new YamlToJsonConverter()
+    );
+  }
+
+  SnowWhiteSpringServerGenerator(
+    String apiName,
+    String apiVersion,
+    String serviceName,
+    InformationExtractor informationExtractor,
+    YamlToJsonConverter yamlToJsonConverter
+  ) {
     super();
+    this.apiName = apiName;
+    this.apiVersion = apiVersion;
+    this.serviceName = serviceName;
+    this.informationExtractor = informationExtractor;
+    this.yamlToJsonConverter = yamlToJsonConverter;
+
     cliOptions.add(
       CliOption.newString(
         API_NAME_PROPERTY,
@@ -108,20 +136,16 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
       allModels
     );
 
-    var openApi = yamlParser.readSpecToJson(getInputSpec());
+    var openApi = yamlToJsonConverter.readSpecToJson(getInputSpec());
 
     var extractedApiInformation =
       getOrCreateInformationExtractor().extractFromOpenApi(openApi);
 
     if (extractedApiInformation.isIncomplete()) {
-      try {
-        logger.warn(
-          "Failed to extract snow-white information from OpenAPI specification: {}",
-          OBJECT_MAPPER.writeValueAsString(extractedApiInformation)
-        );
-      } catch (JsonProcessingException e) {
-        // Ignore exception
-      }
+      logger.warn(
+        "Failed to extract snow-white information from OpenAPI specification: {}",
+        JsonMapper.shared().writeValueAsString(extractedApiInformation)
+      );
 
       return processedOperations;
     }

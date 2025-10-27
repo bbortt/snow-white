@@ -8,11 +8,10 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service.servi
 
 import static java.util.Objects.requireNonNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.query.FluxRecord;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 public record OpenTelemetryData(
@@ -20,8 +19,6 @@ public record OpenTelemetryData(
   String traceId,
   JsonNode attributes
 ) {
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-
   public static final String SPAN_ID_KEY = "span_id";
   public static final String TRACE_ID_KEY = "trace_id";
   public static final String VALUE_KEY = "_value";
@@ -39,11 +36,16 @@ public record OpenTelemetryData(
   }
 
   private static JsonNode parseJsonAttributes(String attributes) {
+    var jsonMapper = JsonMapper.shared();
+
     try {
-      return objectMapper.readTree(attributes);
-    } catch (JsonProcessingException e) {
-      logger.error("Failed parsing span attributes!", e);
-      return objectMapper.createObjectNode();
+      return jsonMapper.readTree(attributes);
+    } catch (Exception e) {
+      logger.warn(
+        "Failed parsing span attributes! Returning default empty object.",
+        e
+      );
+      return jsonMapper.createObjectNode();
     }
   }
 }

@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.api.client.qualitygateapi.dto.QualityGateConfig;
@@ -274,8 +273,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
   }
 
-  private @NotNull String createQualityGateApiWiremockStub()
-    throws JsonProcessingException {
+  private @NotNull String createQualityGateApiWiremockStub() {
     var qualityGateConfig = new QualityGateConfig().name(
       QUALITY_GATE_CONFIG_NAME
     );

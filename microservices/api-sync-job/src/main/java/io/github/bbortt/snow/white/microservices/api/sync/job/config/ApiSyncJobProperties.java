@@ -87,7 +87,7 @@ public class ApiSyncJobProperties implements InitializingBean {
 
     private String customApiNameJsonPath = "info.title";
     private String customApiVersionJsonPath = "info.version";
-    private String customServiceNameJsonPath = "info.x-service-name";
+    private String customServiceNameJsonPath = "info.extensions.x-service-name";
 
     private ParsingMode parsingMode = GRACEFUL;
   }
