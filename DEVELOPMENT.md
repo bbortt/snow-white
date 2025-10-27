@@ -83,7 +83,7 @@ package "Snow-White" {
 
     component "API Sync Job" as sync #Darkorange
     component "OTEL Event Filter" as filter #Darkorange
-    component "OpenAPI Coverage Service" as coverage #Darkorange
+    component "OpenAPI Coverage Stream" as coverage #Darkorange
     component "Quality-Gate API" as qgate #Darkorange
     component "Report Coordinator API" as coordinator #Darkorange
 
@@ -142,7 +142,7 @@ otel --> influx: Persist Telemetry Data
 coordinator .down.> request
 response .up.> coordinator
 
-' OpenAPI Coverage Service
+' OpenAPI Coverage Stream
 
 request .down.> coverage
 coverage <--> redis: Query API Meta Information
@@ -161,14 +161,14 @@ end legend
 
 Each microservice completes a specific task.
 
-| Microservice                                                         | Intent                                                                                                                                                                                |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [API Gateway](./microservices/api-gateway)                           | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
-| [API Sync Job](./microservices/api-sync-job)                         | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
-| [OTEL Event Filter](./microservices/otel-event-filter-stream)        | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
-| [OpenAPI Coverage Service](./microservices/openapi-coverage-service) | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
-| [Quality-Gate API](./microservices/quality-gate-api)                 | Handles quality gate evaluations and criteria management.                                                                                                                             |
-| [Report Coordinator API](./microservices/report-coordinator-api)     | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
+| Microservice                                                       | Intent                                                                                                                                                                                |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [API Gateway](./microservices/api-gateway)                         | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
+| [API Sync Job](./microservices/api-sync-job)                       | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
+| [OTEL Event Filter](./microservices/otel-event-filter-stream)      | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
+| [OpenAPI Coverage Stream](./microservices/openapi-coverage-stream) | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
+| [Quality-Gate API](./microservices/quality-gate-api)               | Handles quality gate evaluations and criteria management.                                                                                                                             |
+| [Report Coordinator API](./microservices/report-coordinator-api)   | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
 
 ### Building and Running Services
 
@@ -200,7 +200,7 @@ Use the following steps for rapid local development:
 | [`api-gateway`](./microservices/api-gateway)                           | `9080`                      | `80`                                               |
 | [`api-sync-job`](./microservices/api-sync-job)                         | -                           | -                                                  |
 | [`otel-event-filter-stream`](./microservices/otel-event-filter-stream) | -                           | -                                                  |
-| [`openapi-coverage-service`](./microservices/openapi-coverage-service) | -                           | -                                                  |
+| [`openapi-coverage-stream`](./microservices/openapi-coverage-stream)   | -                           | -                                                  |
 | [`quality-gate-api`](./microservices/quality-gate-api)                 | `8081`                      | `8081`                                             |
 | [`report-coordinator-api`](./microservices/report-coordinator-api)     | `8084`                      | `8084`                                             |
 
