@@ -52,7 +52,7 @@ jobs:
         run: ./mvnw -B -Pprod verify
       - name: Fetch References
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
-        run: git fetch origin
+        run: git fetch --unshallow origin
       - name: Sonar Analysis
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         env:
