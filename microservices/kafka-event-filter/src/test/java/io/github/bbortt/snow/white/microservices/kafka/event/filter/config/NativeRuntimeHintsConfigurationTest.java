@@ -85,7 +85,7 @@ class NativeRuntimeHintsConfigurationTest {
 
     otelRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
 
-    verify(reflectionHintsMock, times(885)).registerType(
+    verify(reflectionHintsMock, times(883)).registerType(
       any(Class.class),
       eq(INVOKE_PUBLIC_METHODS)
     );

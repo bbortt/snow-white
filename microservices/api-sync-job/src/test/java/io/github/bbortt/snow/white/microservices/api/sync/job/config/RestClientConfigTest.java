@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClient;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleDeserializers;
@@ -71,9 +72,7 @@ class RestClientConfigTest {
               converter ->
                 assertThat(converter.getMapper())
                   .isNotSameAs(jsonMapperMock)
-                  .extracting(jsonMapper ->
-                    jsonMapper.getRegisteredModules().toList()
-                  )
+                  .extracting(ObjectMapper::registeredModules)
                   .asInstanceOf(LIST)
                   .satisfiesExactly(registeredModule ->
                     assertThat(registeredModule)
