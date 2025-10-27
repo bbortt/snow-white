@@ -17,7 +17,7 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
 @NoArgsConstructor(access = PRIVATE)
-public class QualityGateCalculationEventSerdes {
+public final class QualityGateCalculationEventSerdes {
 
   public static Serde<
     QualityGateCalculationRequestEvent

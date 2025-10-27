@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.service;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 
-public class TestData {
+public final class TestData {
 
   public static final String SERVICE_NAME = "serviceName";
   public static final String API_NAME = "apiName";
