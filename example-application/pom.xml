@@ -143,6 +143,9 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
+              <mainClass>
+                io.github.bbortt.snow.white.example.application.Application
+              </mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>

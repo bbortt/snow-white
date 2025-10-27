@@ -17,7 +17,6 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.openapitools.codegen.CodegenType.SERVER;
-import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
@@ -65,20 +64,15 @@ class SnowWhiteSpringServerGeneratorTest {
   private InformationExtractor informationExtractorMock;
 
   @Mock
-  private YamlParser yamlParserMock;
+  private YamlToJsonConverter yamlToJsonConverterMock;
 
   private SnowWhiteSpringServerGenerator fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new SnowWhiteSpringServerGenerator();
-    setField(
-      fixture,
-      "informationExtractor",
-      informationExtractorMock,
-      InformationExtractor.class
-    );
-    setField(fixture, "yamlParser", yamlParserMock, YamlParser.class);
+    fixture = new SnowWhiteSpringServerGenerator()
+      .withInformationExtractor(informationExtractorMock)
+      .withYamlToJsonConverter(yamlToJsonConverterMock);
   }
 
   @Test
@@ -319,7 +313,9 @@ class SnowWhiteSpringServerGeneratorTest {
 
     private void prepareOpenApiInformation(String validApiName) {
       fixture.setInputSpec(INPUT_SPEC);
-      doReturn(VALID_YAML).when(yamlParserMock).readSpecToJson(INPUT_SPEC);
+      doReturn(VALID_YAML)
+        .when(yamlToJsonConverterMock)
+        .readSpecToJson(INPUT_SPEC);
 
       var apiInfo = new OpenApiInformation(
         validApiName,

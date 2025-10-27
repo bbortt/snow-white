@@ -7,9 +7,6 @@
 package io.github.bbortt.snow.white.microservices.report.coordination.service.junit;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
-import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_STANDALONE_YES_TO_XML_DECLARATION;
-import static com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator.Feature.WRITE_XML_DECLARATION;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Properties.API_NAME;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Properties.API_VERSION;
 import static io.github.bbortt.snow.white.microservices.report.coordination.service.junit.Properties.CALCULATION_ID;
@@ -23,8 +20,11 @@ import static java.time.Duration.ZERO;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
+import static tools.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static tools.jackson.dataformat.xml.XmlMapper.xmlBuilder;
+import static tools.jackson.dataformat.xml.XmlWriteFeature.WRITE_STANDALONE_YES_TO_XML_DECLARATION;
+import static tools.jackson.dataformat.xml.XmlWriteFeature.WRITE_XML_DECLARATION;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordination.service.domain.model.ApiTestResult;
@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 /**
  * JUnit XML report generator, based on <a href="https://github.com/testmoapp/junitxml">Common JUnit XML Format</a>.
@@ -46,14 +47,12 @@ public class JUnitReporter {
 
   private static final DurationFormatter durationFormatter =
     new DurationFormatter();
-  private static final XmlMapper xmlMapper = new XmlMapper();
-
-  static {
-    xmlMapper.enable(INDENT_OUTPUT);
-    xmlMapper.enable(WRITE_XML_DECLARATION);
-    xmlMapper.enable(WRITE_STANDALONE_YES_TO_XML_DECLARATION);
-    xmlMapper.setSerializationInclusion(NON_EMPTY);
-  }
+  private static final XmlMapper xmlMapper = xmlBuilder()
+    .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(NON_EMPTY))
+    .enable(INDENT_OUTPUT)
+    .enable(WRITE_XML_DECLARATION)
+    .enable(WRITE_STANDALONE_YES_TO_XML_DECLARATION)
+    .build();
 
   public Resource transformToJUnitReport(QualityGateReport qualityGateReport)
     throws JUnitReportCreationException {

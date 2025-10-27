@@ -215,6 +215,9 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
+              <mainClass>
+                io.github.bbortt.snow.white.microservices.kafka.event.filter.Main
+              </mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>

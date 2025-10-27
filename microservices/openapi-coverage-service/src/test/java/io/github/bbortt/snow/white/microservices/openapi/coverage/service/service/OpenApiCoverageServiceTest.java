@@ -21,8 +21,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenApiTestContext;
@@ -45,11 +43,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenApiCoverageServiceTest {
-
-  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @Mock
   private OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinatorMock;
@@ -103,10 +100,10 @@ class OpenApiCoverageServiceTest {
     void shouldReturnCalculatedCoverage(
       PathItem.HttpMethod httpMethod,
       PathItem pathItem
-    ) throws JsonProcessingException {
+    ) {
       var spanId = "5f2d3c8b9e1a0f4d";
       var traceId = "6e0c63257de34c92b8b045a7c3c2e3fc";
-      var attributes = objectMapper.readTree(
+      var attributes = JsonMapper.shared().readTree(
         // language=json
         """
         {"http.request.method": "%s","url.path":"/api/rest/v1/foo" }

@@ -11,7 +11,6 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.service.service.dto.OpenTelemetryData;
@@ -31,11 +30,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class ResponseCodeCoverageCalculatorTest {
-
-  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   private ResponseCodeCoverageCalculator fixture;
 
@@ -476,14 +474,14 @@ class ResponseCodeCoverageCalculatorTest {
       String attributeName,
       String value
     ) {
-      var attributes = objectMapper.createObjectNode();
+      var attributes = JsonMapper.shared().createObjectNode();
       attributes.put(attributeName, value);
 
       return new OpenTelemetryData("span-123", "trace-456", attributes);
     }
 
     private OpenTelemetryData createTelemetryDataWithoutStatusCode() {
-      var attributes = objectMapper.createObjectNode();
+      var attributes = JsonMapper.shared().createObjectNode();
       attributes.put("some.other.attribute", "value");
 
       return new OpenTelemetryData("span-123", "trace-456", attributes);

@@ -14,7 +14,6 @@ import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api.EntityApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto.Entity;
@@ -23,7 +22,6 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobP
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
-import io.swagger.v3.core.util.Json;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
@@ -42,7 +40,7 @@ import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 public class BackstageCatalogService implements ApiCatalogService {
@@ -51,7 +49,7 @@ public class BackstageCatalogService implements ApiCatalogService {
 
   private final ApiSyncJobProperties.BackstageProperties backstageProperties;
   private final EntityApi backstageEntityApi;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper jsonMapper;
   private final OpenApiValidationService openApiValidationService;
 
   private final InformationExtractor informationExtractor;
@@ -62,14 +60,14 @@ public class BackstageCatalogService implements ApiCatalogService {
   public BackstageCatalogService(
     ApiSyncJobProperties.BackstageProperties backstageProperties,
     EntityApi backstageEntityApi,
-    ObjectMapper objectMapper,
+    JsonMapper jsonMapper,
     OpenApiValidationService openApiValidationService,
     @Autowired(required = false) @Nullable MinioService minioService
   ) {
     this(
       backstageProperties,
       backstageEntityApi,
-      objectMapper,
+      jsonMapper,
       openApiValidationService,
       minioService,
       new InformationExtractor(
@@ -84,7 +82,7 @@ public class BackstageCatalogService implements ApiCatalogService {
   BackstageCatalogService(
     ApiSyncJobProperties.BackstageProperties backstageProperties,
     EntityApi backstageEntityApi,
-    ObjectMapper objectMapper,
+    JsonMapper jsonMapper,
     OpenApiValidationService openApiValidationService,
     @Autowired(required = false) @Nullable MinioService minioService,
     InformationExtractor informationExtractor,
@@ -92,7 +90,7 @@ public class BackstageCatalogService implements ApiCatalogService {
   ) {
     this.backstageProperties = backstageProperties;
     this.backstageEntityApi = backstageEntityApi;
-    this.objectMapper = objectMapper;
+    this.jsonMapper = jsonMapper;
     this.openApiValidationService = openApiValidationService;
 
     this.informationExtractor = informationExtractor;
@@ -233,7 +231,7 @@ public class BackstageCatalogService implements ApiCatalogService {
         .filter(spec ->
           Optional.ofNullable(spec.get("type")).orElse("").equals("openapi")
         )
-        .map(objectMapper::<JsonNode>valueToTree)
+        .map(jsonMapper::<JsonNode>valueToTree)
         .map(jsonNode -> jsonNode.get("definition"))
         .map(JsonNode::asString)
         .map(openAPIV3Parser::readContents)
@@ -293,12 +291,7 @@ public class BackstageCatalogService implements ApiCatalogService {
 
     String openApiAsJson() {
       var openAPI = swaggerParseResult().getOpenAPI();
-
-      try {
-        return Json.mapper().writeValueAsString(openAPI);
-      } catch (JsonProcessingException e) {
-        throw new OpenApiProcessingException(e);
-      }
+      return JsonMapper.shared().writeValueAsString(openAPI);
     }
   }
 }

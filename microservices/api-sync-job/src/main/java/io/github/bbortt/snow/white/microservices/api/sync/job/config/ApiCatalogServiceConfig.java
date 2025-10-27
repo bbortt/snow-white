@@ -19,7 +19,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @RequiredArgsConstructor
@@ -49,13 +49,13 @@ public class ApiCatalogServiceConfig {
   public ApiCatalogService backstageCatalogService(
     ApiSyncJobProperties apiSyncJobProperties,
     EntityApi backstageEntityApi,
-    ObjectMapper objectMapper,
+    JsonMapper jsonMapper,
     @Autowired(required = false) @Nullable MinioService minioService
   ) {
     return new BackstageCatalogService(
       apiSyncJobProperties.getBackstage(),
       backstageEntityApi,
-      objectMapper,
+      jsonMapper,
       openApiValidationService,
       minioService
     );

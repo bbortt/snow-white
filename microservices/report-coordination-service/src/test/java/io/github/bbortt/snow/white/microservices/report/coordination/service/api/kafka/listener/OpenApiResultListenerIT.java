@@ -25,7 +25,6 @@ import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.awaitility.Awaitility.await;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
@@ -85,8 +84,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void kafkaEvent_withCoveredCriteria_shouldBePersisted()
-    throws JsonProcessingException {
+  void kafkaEvent_withCoveredCriteria_shouldBePersisted() {
     var calculationId = UUID.fromString("6fa77498-a7aa-48d2-8f1d-dee93eb45780");
 
     var qualityGateConfigName = persistInitialQualityGateReport(calculationId);
@@ -121,8 +119,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void kafkaEvent_withUncoveredCriteria_shouldBePersisted()
-    throws JsonProcessingException {
+  void kafkaEvent_withUncoveredCriteria_shouldBePersisted() {
     var calculationId = UUID.fromString("dc296f73-8124-4bd3-bc09-5518bdb5be6e");
 
     var qualityGateConfigName = persistInitialQualityGateReport(calculationId);
@@ -174,7 +171,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
   private @NotNull String createQualityGateApiWiremockStub(
     String qualityGateConfigName,
     OpenApiCriteria openApiCriterion
-  ) throws JsonProcessingException {
+  ) {
     var qualityGateConfig = new QualityGateConfig()
       .name(qualityGateConfigName)
       .addOpenApiCriteriaItem(openApiCriterion.name());

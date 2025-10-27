@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.web.client.RestClient;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class ApiCatalogServiceConfigTest {
 
@@ -105,7 +105,7 @@ class ApiCatalogServiceConfigTest {
       contextRunner
         .withBean(ApiSyncJobProperties.class, () -> apiSyncJobPropertiesMock)
         .withBean(EntityApi.class, () -> mock(EntityApi.class))
-        .withBean(ObjectMapper.class, () -> mock(ObjectMapper.class))
+        .withBean(JsonMapper.class, () -> mock(JsonMapper.class))
         .withPropertyValues(
           ApiSyncJobProperties.BackstageProperties.BASE_URL_PROPERTY_NAME +
             "=http://localhost:3000"
