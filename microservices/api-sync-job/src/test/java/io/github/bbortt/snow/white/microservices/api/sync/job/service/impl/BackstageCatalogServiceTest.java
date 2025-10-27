@@ -58,7 +58,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class BackstageCatalogServiceTest {
@@ -73,7 +73,7 @@ class BackstageCatalogServiceTest {
   private InformationExtractor informationExtractorMock;
 
   @Mock
-  private ObjectMapper objectMapperMock;
+  private JsonMapper jsonMapperMock;
 
   @Mock
   private OpenApiValidationService openApiValidationServiceMock;
@@ -108,7 +108,7 @@ class BackstageCatalogServiceTest {
       fixture = new BackstageCatalogService(
         backstagePropertiesMock,
         backstageEntityApiMock,
-        objectMapperMock,
+        jsonMapperMock,
         openApiValidationServiceMock,
         minioServiceMock,
         informationExtractorMock,
@@ -201,8 +201,10 @@ class BackstageCatalogServiceTest {
 
       assertThat(openApiStringCaptor.getValue())
         .isNotEmpty()
-        .isEqualTo(
-          "{\"info\":{\"title\":\"title\"},\"servers\":[],\"security\":[],\"tags\":[]}"
+        .isEqualToIgnoringNewLines(
+          // language=json
+          """
+          {"components":null,"extensions":{},"externalDocs":null,"info":{"contact":null,"description":null,"extensions":{},"license":null,"summary":null,"termsOfService":null,"title":"title","version":null},"jsonSchemaDialect":null,"openapi":null,"paths":null,"security":[],"servers":[],"tags":[],"webhooks":{}}"""
         );
     }
 
@@ -297,7 +299,7 @@ class BackstageCatalogServiceTest {
       doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
       doReturn(openApiDefinition).when(jsonNodeMock).asString();
 
-      doReturn(jsonNodeMock).when(objectMapperMock).valueToTree(spec);
+      doReturn(jsonNodeMock).when(jsonMapperMock).valueToTree(spec);
 
       var swaggerParseResultMock = mock(SwaggerParseResult.class);
       doReturn(swaggerParseResultMock)
@@ -371,7 +373,7 @@ class BackstageCatalogServiceTest {
       doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
       doReturn(openApiDefinition).when(jsonNodeMock).asString();
 
-      doReturn(jsonNodeMock).when(objectMapperMock).valueToTree(spec);
+      doReturn(jsonNodeMock).when(jsonMapperMock).valueToTree(spec);
 
       var swaggerParseResultMock = mock(SwaggerParseResult.class);
       doReturn(swaggerParseResultMock)
@@ -522,7 +524,7 @@ class BackstageCatalogServiceTest {
       var fixture = new BackstageCatalogService(
         backstagePropertiesMock,
         backstageEntityApiMock,
-        objectMapperMock,
+        jsonMapperMock,
         openApiValidationServiceMock,
         minioServiceMock
       );

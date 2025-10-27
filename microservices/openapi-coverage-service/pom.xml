@@ -160,6 +160,9 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
+              <mainClass>
+                io.github.bbortt.snow.white.microservices.openapi.coverage.service.Main
+              </mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>

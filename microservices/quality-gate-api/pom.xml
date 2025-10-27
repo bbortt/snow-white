@@ -181,6 +181,9 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
+              <mainClass>
+                io.github.bbortt.snow.white.microservices.quality.gate.api.Main
+              </mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>

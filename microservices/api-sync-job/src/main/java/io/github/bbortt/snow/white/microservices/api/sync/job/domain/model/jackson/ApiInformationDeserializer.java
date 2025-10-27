@@ -25,16 +25,16 @@ import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.springframework.boot.jackson.JacksonComponent;
+import org.springframework.boot.jackson.ObjectValueDeserializer;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.node.ArrayNode;
 
 @JacksonComponent
 public class ApiInformationDeserializer
-  extends ValueDeserializer<ApiInformation> {
+  extends ObjectValueDeserializer<ApiInformation> {
 
   private static final String KEY_PROPERTY = "key";
   private static final String VALUE_PROPERTY = "value";
@@ -67,19 +67,19 @@ public class ApiInformationDeserializer
   }
 
   @Override
-  public ApiInformation deserialize(
-    JsonParser parser,
-    DeserializationContext context
+  public ApiInformation deserializeObject(
+    JsonParser jsonParser,
+    DeserializationContext context,
+    JsonNode tree
   ) throws JacksonException {
     var apiBuilder = ApiInformation.builder();
 
-    JsonNode node = parser.readValueAsTree();
-    JsonNode sourceNode = node.get(SOURCE_PROPERTY);
+    JsonNode sourceNode = tree.get(SOURCE_PROPERTY);
     if (sourceNode != null) {
       apiBuilder.sourceUrl(sourceNode.asString());
     }
 
-    deserializeProperties(apiBuilder, node);
+    deserializeProperties(apiBuilder, tree);
 
     return apiBuilder.build();
   }

@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
 import com.influxdb.query.FluxRecord;
@@ -42,11 +41,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenTelemetryServiceTest {
-
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Mock
   private InfluxDBClient influxDBClientMock;
@@ -287,14 +285,14 @@ class OpenTelemetryServiceTest {
             assertThat(data1.spanId()).isEqualTo(spanId1);
             assertThat(data1.traceId()).isEqualTo(traceId1);
             assertThat(data1.attributes()).isEqualTo(
-              OBJECT_MAPPER.readTree(attributesValue1)
+              JsonMapper.shared().readTree(attributesValue1)
             );
           },
           data2 -> {
             assertThat(data2.spanId()).isEqualTo(spanId2);
             assertThat(data2.traceId()).isEqualTo(traceId2);
             assertThat(data2.attributes()).isEqualTo(
-              OBJECT_MAPPER.readTree(attributesValue2)
+              JsonMapper.shared().readTree(attributesValue2)
             );
           }
         );

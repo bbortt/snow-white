@@ -16,7 +16,8 @@ class InformationExtractorTest {
 
   private static final String API_NAME_PATH = "info.title";
   private static final String API_VERSION_PATH = "info.version";
-  private static final String SERVICE_NAME_PATH = "info.x-service-name";
+  private static final String SERVICE_NAME_PATH =
+    "info.extensions.x-service-name";
 
   private static final String VALID_API_NAME = "Test API";
   private static final String VALID_API_VERSION = "1.0.0";
@@ -45,8 +46,10 @@ class InformationExtractorTest {
               "info": {
                   "title": "%s",
                   "version": "%s",
-                  "x-service-name": "%s"
-              }
+                  "extensions": {
+                    "x-service-name": "%s"
+                }
+            }
           }""".formatted(VALID_API_NAME, VALID_API_VERSION, VALID_SERVICE_NAME);
 
       OpenApiInformation result = fixture.extractFromOpenApi(openApi);

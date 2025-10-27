@@ -33,16 +33,25 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!-- TODO: This is a legacy dependency and should be removed once OpenAPI generator supports tools.jackson! -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
     <dependency>
       <groupId>jakarta.annotation</groupId>
       <artifactId>jakarta.annotation-api</artifactId>
       <version>3.0.0</version>
     </dependency>
-
     <dependency>
       <groupId>org.openapitools</groupId>
       <artifactId>openapi-generator</artifactId>
       <version>${openapi-generator.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <version>3.0.1</version>
     </dependency>
 
     <dependency>
