@@ -120,7 +120,7 @@ class KafkaEventFilterAppTest {
 
   @Test
   @CitrusTest
-  public void shouldPassThroughMatchingInboundEvent(
+  void shouldPassThroughMatchingInboundEvent(
     @CitrusResource TestActionRunner runner
   ) {
     writeApiInformationToRedis();

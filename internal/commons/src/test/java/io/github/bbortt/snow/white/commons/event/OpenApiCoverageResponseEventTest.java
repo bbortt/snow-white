@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class OpenApiCoverageResponseEventTest {
 
   @Test
-  public void equalsContract() {
+  void equalsContract() {
     EqualsVerifier.forClass(OpenApiCoverageResponseEvent.class).verify();
   }
 }

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class QualityGateCalculationRequestEventTest {
 
   @Test
-  public void equalsContract() {
+  void equalsContract() {
     EqualsVerifier.forClass(QualityGateCalculationRequestEvent.class)
       .suppress(NONFINAL_FIELDS)
       .verify();

@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
-import static java.util.Collections.singletonList;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 
@@ -31,8 +30,8 @@ public class RestClientConfig {
       List.of(APPLICATION_JSON, APPLICATION_OCTET_STREAM)
     );
 
-    return RestClient.builder().messageConverters(
-      singletonList(jacksonJsonHttpMessageConverter)
+    return RestClient.builder().configureMessageConverters(configurer ->
+      configurer.jsonMessageConverter(jacksonJsonHttpMessageConverter)
     );
   }
 }

@@ -81,13 +81,12 @@ class OpenApiCoverageCalculationProcessorTest {
   @Mock
   private OpenTelemetryService openTelemetryService;
 
-  private OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
-
   private OpenApiCoverageCalculationProcessor fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    openApiCoverageServiceProperties = new OpenApiCoverageServiceProperties();
+    var openApiCoverageServiceProperties =
+      new OpenApiCoverageServiceProperties();
     openApiCoverageServiceProperties.setCalculationRequestTopic(
       requestTopicName
     );

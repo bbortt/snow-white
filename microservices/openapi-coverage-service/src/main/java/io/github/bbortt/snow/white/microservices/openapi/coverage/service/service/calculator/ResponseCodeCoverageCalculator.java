@@ -170,7 +170,7 @@ public class ResponseCodeCoverageCalculator
 
     var attributes = telemetryData.attributes();
     if (attributes.has(HTTP_RESPONSE_STATUS_CODE.getKey())) {
-      return attributes.get(HTTP_RESPONSE_STATUS_CODE.getKey()).asText();
+      return attributes.get(HTTP_RESPONSE_STATUS_CODE.getKey()).asString();
     }
 
     logger.debug(

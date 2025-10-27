@@ -116,8 +116,10 @@ class ApiInformationDeserializerTest {
       "ApiDeserializerTest/missing-" + missingProperty + ".json"
     );
 
+    var jsonMapper = getJsonMapper();
+
     assertThatThrownBy(() ->
-      getJsonMapper().readValue(content, ApiInformation.class)
+      jsonMapper.readValue(content, ApiInformation.class)
     )
       .isInstanceOf(ApiCatalogException.class)
       .hasMessageContaining(
