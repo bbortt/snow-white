@@ -139,7 +139,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [kafka-event-filter]
+        service: [otel-event-filter-stream]
       fail-fast: false
     services:
       kafka:

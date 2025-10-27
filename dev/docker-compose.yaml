@@ -255,19 +255,19 @@ services:
     networks:
       - internal
 
-  microservices.kafka-event-filter:
+  microservices.otel-event-filter-stream:
     # If not built natively:
     #    build:
-    #      context: ../microservices/kafka-event-filter
+    #      context: ../microservices/otel-event-filter-stream
     # Native image:
-    image: ghcr.io/bbortt/snow-white/kafka-event-filter
-    hostname: kafka-event-filter
+    image: ghcr.io/bbortt/snow-white/otel-event-filter-stream
+    hostname: otel-event-filter-stream
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SNOW_WHITE_KAFKA_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
-      SNOW_WHITE_KAFKA_EVENT_FILTER_INIT-TOPICS: 'true'
-      SNOW_WHITE_KAFKA_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
+      SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
+      SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS: 'true'
+      SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
       SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
     deploy:

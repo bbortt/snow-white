@@ -1,0 +1,14 @@
+snow:
+  white:
+    otel:
+      event:
+        filter:
+          consumer-mode: json
+spring:
+  kafka:
+    consumer:
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual
+    streams:
+      application-id: otel-event-filter-stream

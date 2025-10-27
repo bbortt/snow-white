@@ -104,9 +104,9 @@ jobs:
             -b smart -T4C \
             -Dimage.tag="${{ steps.version.outputs.VERSION }}" \
             -DskipTests -Pnative,prod \
-            -pl :kafka-event-filter,:report-coordinator-api,:quality-gate-api
+            -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api
       - name: Push Native Images
         run: |
-          docker image push "ghcr.io/bbortt/snow-white/kafka-event-filter:${{ steps.version.outputs.VERSION }}"
+          docker image push "ghcr.io/bbortt/snow-white/otel-event-filter-stream:${{ steps.version.outputs.VERSION }}"
           docker image push "ghcr.io/bbortt/snow-white/quality-gate-api:${{ steps.version.outputs.VERSION }}"
           docker image push "ghcr.io/bbortt/snow-white/report-coordinator-api:${{ steps.version.outputs.VERSION }}"

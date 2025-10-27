@@ -25,7 +25,7 @@
   <modules>
     <module>api-gateway</module>
     <module>api-sync-job</module>
-    <module>kafka-event-filter</module>
+    <module>otel-event-filter-stream</module>
     <module>openapi-coverage-service</module>
     <module>report-coordinator-api</module>
     <module>quality-gate-api</module>
