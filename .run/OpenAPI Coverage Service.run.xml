@@ -6,7 +6,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration
     default="false"
-    name="OpenAPI Coverage Service"
+    name="OpenAPI Coverage Stream"
     type="SpringBootApplicationConfigurationType"
     factoryName="Spring Boot"
   >
@@ -14,13 +14,13 @@
     <option name="envFilePaths">
       <option value="$PROJECT_DIR$/dev/.env" />
     </option>
-    <module name="openapi-coverage-service" />
+    <module name="openapi-coverage-stream" />
     <selectedOptions>
       <option name="environmentVariables" />
     </selectedOptions>
     <option
       name="SPRING_BOOT_MAIN_CLASS"
-      value="io.github.bbortt.snow.white.microservices.openapi.coverage.service.Main"
+      value="io.github.bbortt.snow.white.microservices.openapi.coverage.stream.Main"
     />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="true" />

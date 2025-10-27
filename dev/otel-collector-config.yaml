@@ -39,7 +39,7 @@ processors:
         - resource.attributes["service.name"] == "api-gateway"
         - resource.attributes["service.name"] == "api-sync-job"
         - resource.attributes["service.name"] == "otel-event-filter-stream"
-        - resource.attributes["service.name"] == "openapi-coverage-service"
+        - resource.attributes["service.name"] == "openapi-coverage-stream"
         - resource.attributes["service.name"] == "quality-gate-api"
         - resource.attributes["service.name"] == "report-coordinator-api"
   groupbyattrs/service:

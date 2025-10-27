@@ -1,0 +1,14 @@
+influxdb:
+  url: http://localhost:8086
+  org: snow-white
+  bucket: raw-data
+snow:
+  white:
+    openapi:
+      coverage:
+        stream:
+          calculation-request-topic: snow-white-calculation-request
+          init-topics: true
+          openapi-calculation-response-topic: snow-white-openapi-calculation-response
+server:
+  port: 8083
