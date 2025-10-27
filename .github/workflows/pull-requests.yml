@@ -58,13 +58,6 @@ jobs:
           cache: maven
           distribution: 'temurin'
           java-version: 25
-      - name: Cache SonarQube Packages
-        uses: actions/cache@v4
-        if: '!steps.check.outputs.number'
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -74,6 +67,13 @@ jobs:
         run: ./mvnw -B -Pprod verify
       - name: Fetch References
         run: git fetch --unshallow origin
+      - name: Cache SonarQube Packages
+        uses: actions/cache@v4
+        if: '!steps.check.outputs.number'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
       - name: Sonar Analysis
         if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
         env:
