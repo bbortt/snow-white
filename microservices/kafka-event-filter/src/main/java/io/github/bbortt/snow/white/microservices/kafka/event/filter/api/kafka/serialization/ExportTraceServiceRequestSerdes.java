@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import org.apache.kafka.common.serialization.Serde;
 
 @NoArgsConstructor(access = PRIVATE)
-public class ExportTraceServiceRequestSerdes {
+public final class ExportTraceServiceRequestSerdes {
 
   public static Serde<ExportTraceServiceRequest> JsonSerde() {
     return serdeFrom(

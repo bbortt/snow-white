@@ -10,10 +10,16 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOpera
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class AttributeFilterTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier.forClass(AttributeFilter.class).verify();
+  }
 
   @Nested
   class AttributeFilters {

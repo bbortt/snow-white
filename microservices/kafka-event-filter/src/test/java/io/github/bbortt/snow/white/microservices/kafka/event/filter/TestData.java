@@ -22,7 +22,7 @@ import lombok.Builder;
 
 @Builder
 @AllArgsConstructor(access = PRIVATE)
-public class TestData {
+public final class TestData {
 
   public static final String OTEL_SERVICE_NAME = "kafka-event-filter";
   public static final String API_NAME = TestData.class.getSimpleName();
