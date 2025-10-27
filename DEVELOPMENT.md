@@ -82,7 +82,7 @@ package "Snow-White" {
     }
 
     component "API Sync Job" as sync #Darkorange
-    component "Kafka Event Filter" as filter #Darkorange
+    component "OTEL Event Filter" as filter #Darkorange
     component "OpenAPI Coverage Service" as coverage #Darkorange
     component "Quality-Gate API" as qgate #Darkorange
     component "Report Coordinator API" as coordinator #Darkorange
@@ -124,7 +124,7 @@ sync ---> backstage : Fetch API Index
 sync ---> sir : Fetch API Index
 sync --> redis : Store API Meta Information
 
-' Kafka Event Filter
+' OTEL Event Filter
 
 component "Example-Application" as app
 
@@ -199,7 +199,7 @@ Use the following steps for rapid local development:
 | [`example-application`](./example-application)                         | `8080`                      | `8080`                                             |
 | [`api-gateway`](./microservices/api-gateway)                           | `9080`                      | `80`                                               |
 | [`api-sync-job`](./microservices/api-sync-job)                         | -                           | -                                                  |
-| [`kafka-event-filter`](./microservices/kafka-event-filter)             | -                           | -                                                  |
+| [`otel-event-filter-stream`](./microservices/otel-event-filter-stream) | -                           | -                                                  |
 | [`openapi-coverage-service`](./microservices/openapi-coverage-service) | -                           | -                                                  |
 | [`quality-gate-api`](./microservices/quality-gate-api)                 | `8081`                      | `8081`                                             |
 | [`report-coordinator-api`](./microservices/report-coordinator-api)     | `8084`                      | `8084`                                             |
@@ -262,7 +262,7 @@ To run application tests within GitHub Actions, add the `include:apptests` label
 
 These microservices support native image builds:
 
-- `kafka-event-filter`
+- `otel-event-filter-stream`
 - `quality-gate-api`
 - `report-coordinator-api`
 
@@ -277,7 +277,7 @@ Build all native microservices:
 
 ```shell
 ./mvnw -T1C install
-./mvnw -DskipTests -Pnative -T1C -pl :kafka-event-filter,:report-coordinator-api,:quality-gate-api spring-boot:build-image
+./mvnw -DskipTests -Pnative -T1C -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api spring-boot:build-image
 ```
 
 For development, override `-Dimage.tag=latest` to build a "latest" image for usage with [Docker/Podman Compose](#quick-start).

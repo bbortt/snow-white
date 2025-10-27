@@ -107,7 +107,7 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'docker-compose'
-    directory: '/microservices/kafka-event-filter/src/apptest/resources'
+    directory: '/microservices/otel-event-filter-stream/src/apptest/resources'
     schedule:
       interval: 'weekly'
     assignees:

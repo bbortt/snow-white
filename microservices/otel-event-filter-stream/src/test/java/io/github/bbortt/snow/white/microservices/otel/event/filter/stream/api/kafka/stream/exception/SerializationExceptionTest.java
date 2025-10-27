@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.exception;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
+class SerializationExceptionTest {
+
+  @Test
+  void constructorAssignsMessageAndCause() {
+    var message = "message";
+    var cause = new Exception();
+
+    var fixture = new SerializationException(message, cause);
+
+    assertThat(fixture).satisfies(
+      f -> assertThat(f).hasMessage(message),
+      f -> assertThat(f).hasCause(cause)
+    );
+  }
+}

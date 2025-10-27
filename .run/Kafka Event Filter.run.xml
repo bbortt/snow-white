@@ -6,15 +6,15 @@
 <component name="ProjectRunConfigurationManager">
   <configuration
     default="false"
-    name="Kafka Event Filter"
+    name="OTEL Event Filter"
     type="SpringBootApplicationConfigurationType"
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
-    <module name="kafka-event-filter" />
+    <module name="otel-event-filter-stream" />
     <option
       name="SPRING_BOOT_MAIN_CLASS"
-      value="io.github.bbortt.snow.white.microservices.kafka.event.filter.Main"
+      value="io.github.bbortt.snow.white.microservices.otel.event.filter.stream.Main"
     />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
