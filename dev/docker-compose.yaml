@@ -195,7 +195,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
       SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
-      SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL: 'http://report-coordination-service:8080'
+      SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL: 'http://report-coordinator-api:8080'
       SPRING_PROFILES_ACTIVE: 'prod'
     ports:
       - '80:8080'
@@ -214,7 +214,7 @@ services:
         condition: service_completed_successfully
       microservices.quality-gate-api:
         condition: service_started
-      microservices.report-coordination-service:
+      microservices.report-coordinator-api:
         condition: service_started
     healthcheck:
       test: wget -O - http://localhost:8090/management/health | grep UP || exit 1
@@ -360,13 +360,13 @@ services:
     networks:
       - internal
 
-  microservices.report-coordination-service:
+  microservices.report-coordinator-api:
     # If not built natively:
     #    build:
-    #      context: ../microservices/report-coordination-service
+    #      context: ../microservices/report-coordinator-api
     # Native image:
-    image: ghcr.io/bbortt/snow-white/report-coordination-service
-    hostname: report-coordination-service
+    image: ghcr.io/bbortt/snow-white/report-coordinator-api
+    hostname: report-coordinator-api
     env_file: .env
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
@@ -376,7 +376,7 @@ services:
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
       SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/report-coordination-service'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/report-coordinator-api'
       SPRING_DATASOURCE_USERNAME: 'report_coord_app'
       SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
       SPRING_FLYWAY_USER: 'report_coord_flyway'

@@ -27,7 +27,7 @@
     <module>api-sync-job</module>
     <module>kafka-event-filter</module>
     <module>openapi-coverage-service</module>
-    <module>report-coordination-service</module>
+    <module>report-coordinator-api</module>
     <module>quality-gate-api</module>
   </modules>
 

@@ -25,10 +25,8 @@ public class RoutingConfig {
   public RouteLocator snowWhiteRouteLocator(RouteLocatorBuilder builder) {
     return builder
       .routes()
-      .route("report-coordination-service", r ->
-        r
-          .path("/api/rest/v1/quality-gates/*/calculate", "/api/rest/v1/reports/**")
-          .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
+      .route("report-coordinator-api", r ->
+        r.path("/api/rest/v1/quality-gates/*/calculate", "/api/rest/v1/reports/**").uri(apiGatewayProperties.getReportCoordinatorApiUrl())
       )
       .route("quality-gate-api", r ->
         r.path("/api/rest/v1/criteria/**", "/api/rest/v1/quality-gates/**").uri(apiGatewayProperties.getQualityGateApiUrl())
@@ -36,11 +34,8 @@ public class RoutingConfig {
       .route("quality-gate-api-swagger", r ->
         r.path("/v3/api-docs/quality-gate-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getQualityGateApiUrl())
       )
-      .route("report-coordination-service-swagger", r ->
-        r
-          .path("/v3/api-docs/report-coordination-service")
-          .filters(apiDocsRewriteTarget())
-          .uri(apiGatewayProperties.getReportCoordinationServiceUrl())
+      .route("report-coordinator-api-swagger", r ->
+        r.path("/v3/api-docs/report-coordinator-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getReportCoordinatorApiUrl())
       )
       .build();
   }

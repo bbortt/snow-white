@@ -37,7 +37,7 @@ import org.wiremock.spring.EnableWireMock;
   classes = { Main.class },
   properties = {
     "snow.white.api.gateway.quality-gate-api-url=${wiremock.server.baseUrl}",
-    "snow.white.api.gateway.report-coordination-service-url=http://localhost:8084",
+    "snow.white.api.gateway.report-coordinator-api-url=http://localhost:8084",
   },
   webEnvironment = RANDOM_PORT
 )

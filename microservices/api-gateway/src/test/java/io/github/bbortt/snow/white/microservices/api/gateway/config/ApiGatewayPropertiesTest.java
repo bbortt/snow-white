@@ -59,7 +59,7 @@ class ApiGatewayPropertiesTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
-      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
     }
@@ -70,12 +70,12 @@ class ApiGatewayPropertiesTest {
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.report-coordination-service-url].");
+        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.report-coordinator-api-url].");
     }
 
     @Test
     void throwsExceptionWithMissingReportCoordinationServiceUrl() {
-      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
@@ -93,7 +93,7 @@ class ApiGatewayPropertiesTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
-      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
         .isInstanceOf(IllegalArgumentException.class)
@@ -106,7 +106,7 @@ class ApiGatewayPropertiesTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
-      fixture.setReportCoordinationServiceUrl("reportCoordinationServiceUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       fixture.setPublicUrl("publicUrl");
 

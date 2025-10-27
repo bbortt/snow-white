@@ -23,7 +23,7 @@ import org.springframework.context.ConfigurableApplicationContext;
   classes = { Main.class },
   properties = {
     "snow.white.api.gateway.quality-gate-api-url=http://localhost:8081",
-    "snow.white.api.gateway.report-coordination-service-url=http://localhost:8084",
+    "snow.white.api.gateway.report-coordinator-api-url=http://localhost:8084",
   }
 )
 class RoutingConfigIT {
@@ -67,13 +67,13 @@ class RoutingConfigIT {
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
-            r -> assertThat(r.getId()).isEqualTo("report-coordination-service"),
+            r -> assertThat(r.getId()).isEqualTo("report-coordinator-api"),
             r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         )
         .satisfiesOnlyOnce(route ->
           assertThat(route).satisfies(
-            r -> assertThat(r.getId()).isEqualTo("report-coordination-service-swagger"),
+            r -> assertThat(r.getId()).isEqualTo("report-coordinator-api-swagger"),
             r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8084"))
           )
         );

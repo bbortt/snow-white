@@ -39,7 +39,7 @@ import org.wiremock.spring.EnableWireMock;
   classes = { Main.class },
   properties = {
     "snow.white.api.gateway.quality-gate-api-url=http://localhost:8081",
-    "snow.white.api.gateway.report-coordination-service-url=${wiremock.server.baseUrl}",
+    "snow.white.api.gateway.report-coordinator-api-url=${wiremock.server.baseUrl}",
   },
   webEnvironment = RANDOM_PORT
 )
@@ -55,7 +55,7 @@ class ReportCoordinationServiceIT {
 
   @Test
   void qualityGateCalculationRequestShouldBeForwarded() {
-    var qualityGateConfigName = "report-coordination-service";
+    var qualityGateConfigName = "report-coordinator-api";
 
     stubFor(
       post(urlPathTemplate("/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate"))
@@ -92,7 +92,7 @@ class ReportCoordinationServiceIT {
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 
-    when().get("/v3/api-docs/report-coordination-service").then().statusCode(200);
+    when().get("/v3/api-docs/report-coordinator-api").then().statusCode(200);
 
     verify(getRequestedFor(urlEqualTo("/v3/api-docs")));
   }

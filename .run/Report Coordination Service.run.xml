@@ -6,21 +6,21 @@
 <component name="ProjectRunConfigurationManager">
   <configuration
     default="false"
-    name="Report Coordination Service"
+    name="Report Coordinator API"
     type="SpringBootApplicationConfigurationType"
     factoryName="Spring Boot"
   >
     <option name="ACTIVE_PROFILES" value="dev" />
-    <module name="report-coordination-service" />
+    <module name="report-coordinator-api" />
     <option
       name="SPRING_BOOT_MAIN_CLASS"
-      value="io.github.bbortt.snow.white.microservices.report.coordination.service.Main"
+      value="io.github.bbortt.snow.white.microservices.report.coordinator.api.Main"
     />
     <extension name="coverage">
       <pattern>
         <option
           name="PATTERN"
-          value="io.github.bbortt.snow.white.microservices.report.coordination.service.*"
+          value="io.github.bbortt.snow.white.microservices.report.coordinator.api.*"
         />
         <option name="ENABLED" value="true" />
       </pattern>
