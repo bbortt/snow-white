@@ -24,7 +24,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.
 import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
@@ -32,7 +32,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.node.ArrayNode;
 
-@JsonComponent
+@JacksonComponent
 public class ApiInformationDeserializer
   extends ValueDeserializer<ApiInformation> {
 
