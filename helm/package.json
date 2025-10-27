@@ -18,9 +18,9 @@
   },
   "devDependencies": {
     "@types/node": "24.9.1",
-    "@vitest/coverage-v8": "4.0.1",
+    "@vitest/coverage-v8": "4.0.4",
     "ts-node": "10.9.2",
-    "vitest": "4.0.1"
+    "vitest": "4.0.4"
   },
   "optionalDependencies": {
     "npm-check-updates": "19.1.1"
