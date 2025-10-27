@@ -18,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
   classes = { Main.class },
   properties = {
     "snow.white.api.gateway.quality-gate-api-url=http://localhost:8081",
-    "snow.white.api.gateway.report-coordination-service-url=http://localhost:8084",
+    "snow.white.api.gateway.report-coordinator-api-url=http://localhost:8084",
   }
 )
 public @interface IntegrationTest {}

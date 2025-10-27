@@ -85,7 +85,7 @@ package "Snow-White" {
     component "Kafka Event Filter" as filter #Darkorange
     component "OpenAPI Coverage Service" as coverage #Darkorange
     component "Quality-Gate API" as qgate #Darkorange
-    component "Report-Coordination Service" as coordination #Darkorange
+    component "Report Coordinator API" as coordinator #Darkorange
 
     ' Third-party components next
 
@@ -116,7 +116,7 @@ user ..> cli: uses
 cli --> gate: HTTP/S
 
 gate <--> qgate
-gate <--> coordination
+gate <--> coordinator
 
 ' API Sync Job
 
@@ -137,10 +137,10 @@ filter .up.> outbound
 outbound ..> otel
 otel --> influx: Persist Telemetry Data
 
-' Report Coordination Service
+' Report Coordinator API
 
-coordination .down.> request
-response .up.> coordination
+coordinator .down.> request
+response .up.> coordinator
 
 ' OpenAPI Coverage Service
 
@@ -161,14 +161,14 @@ end legend
 
 Each microservice completes a specific task.
 
-| Microservice                                                               | Intent                                                                                                                                                                                |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [API Gateway](./microservices/api-gateway)                                 | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
-| [API Sync Job](./microservices/api-sync-job)                               | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
-| [Kafka Event Filter](./microservices/kafka-event-filter)                   | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
-| [OpenAPI Coverage Service](./microservices/openapi-coverage-service)       | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
-| [Quality-Gate API](./microservices/quality-gate-api)                       | Handles quality gate evaluations and criteria management.                                                                                                                             |
-| [Report Coordination Service](./microservices/report-coordination-service) | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
+| Microservice                                                         | Intent                                                                                                                                                                                |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [API Gateway](./microservices/api-gateway)                           | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
+| [API Sync Job](./microservices/api-sync-job)                         | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
+| [OTEL Event Filter](./microservices/otel-event-filter-stream)        | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
+| [OpenAPI Coverage Service](./microservices/openapi-coverage-service) | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
+| [Quality-Gate API](./microservices/quality-gate-api)                 | Handles quality gate evaluations and criteria management.                                                                                                                             |
+| [Report Coordinator API](./microservices/report-coordinator-api)     | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
 
 ### Building and Running Services
 
@@ -194,15 +194,15 @@ Use the following steps for rapid local development:
 
 ### Mapped Ports
 
-| Service                                                                      | Spring Boot (`dev` profile) | Docker (or Podman) Compose (`docker-compose.yaml`) |
-| ---------------------------------------------------------------------------- | --------------------------- | -------------------------------------------------- |
-| [`example-application`](./example-application)                               | `8080`                      | `8080`                                             |
-| [`api-gateway`](./microservices/api-gateway)                                 | `9080`                      | `80`                                               |
-| [`api-sync-job`](./microservices/api-sync-job)                               | -                           | -                                                  |
-| [`kafka-event-filter`](./microservices/kafka-event-filter)                   | -                           | -                                                  |
-| [`openapi-coverage-service`](./microservices/openapi-coverage-service)       | -                           | -                                                  |
-| [`quality-gate-api`](./microservices/quality-gate-api)                       | `8081`                      | `8081`                                             |
-| [`report-coordination-service`](./microservices/report-coordination-service) | `8084`                      | `8084`                                             |
+| Service                                                                | Spring Boot (`dev` profile) | Docker (or Podman) Compose (`docker-compose.yaml`) |
+| ---------------------------------------------------------------------- | --------------------------- | -------------------------------------------------- |
+| [`example-application`](./example-application)                         | `8080`                      | `8080`                                             |
+| [`api-gateway`](./microservices/api-gateway)                           | `9080`                      | `80`                                               |
+| [`api-sync-job`](./microservices/api-sync-job)                         | -                           | -                                                  |
+| [`kafka-event-filter`](./microservices/kafka-event-filter)             | -                           | -                                                  |
+| [`openapi-coverage-service`](./microservices/openapi-coverage-service) | -                           | -                                                  |
+| [`quality-gate-api`](./microservices/quality-gate-api)                 | `8081`                      | `8081`                                             |
+| [`report-coordinator-api`](./microservices/report-coordinator-api)     | `8084`                      | `8084`                                             |
 
 The UI Development Server (used by `api-gateway`) is available on port `9001`.
 
@@ -264,7 +264,7 @@ These microservices support native image builds:
 
 - `kafka-event-filter`
 - `quality-gate-api`
-- `report-coordination-service`
+- `report-coordinator-api`
 
 Build an image using:
 
@@ -277,7 +277,7 @@ Build all native microservices:
 
 ```shell
 ./mvnw -T1C install
-./mvnw -DskipTests -Pnative -T1C -pl :kafka-event-filter,:report-coordination-service,:quality-gate-api spring-boot:build-image
+./mvnw -DskipTests -Pnative -T1C -pl :kafka-event-filter,:report-coordinator-api,:quality-gate-api spring-boot:build-image
 ```
 
 For development, override `-Dimage.tag=latest` to build a "latest" image for usage with [Docker/Podman Compose](#quick-start).

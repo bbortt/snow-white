@@ -3,7 +3,7 @@ snow:
     api:
       gateway:
         quality-gate-api-url: http://localhost:8081
-        report-coordination-service-url: http://localhost:8084
+        report-coordinator-api-url: http://localhost:8084
 server:
   port: 9080
 springdoc:
@@ -12,6 +12,6 @@ springdoc:
       - name: quality-gate-api
         display-name: Quality-Gate API
         url: 'http://localhost:${server.port}/v3/api-docs/quality-gate-api'
-      - name: report-coordination-service
-        display-name: Report Coordination Service
-        url: 'http://localhost:${server.port}/v3/api-docs/report-coordination-service'
+      - name: report-coordinator-api
+        display-name: Report Coordinator API
+        url: 'http://localhost:${server.port}/v3/api-docs/report-coordinator-api'

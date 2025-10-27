@@ -41,7 +41,7 @@ processors:
         - resource.attributes["service.name"] == "kafka-event-filter"
         - resource.attributes["service.name"] == "openapi-coverage-service"
         - resource.attributes["service.name"] == "quality-gate-api"
-        - resource.attributes["service.name"] == "report-coordination-service"
+        - resource.attributes["service.name"] == "report-coordinator-api"
   groupbyattrs/service:
     keys:
       - service.name

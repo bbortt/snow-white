@@ -19,18 +19,18 @@ The API Gateway handles:
 The gateway routes requests to the following internal microservices:
 
 - [`quality-gate-api`](../quality-gate-api) – Handles quality gate evaluations and criteria management.
-- [`report-coordination-service`](../report-coordination-service) – Coordinates data aggregation and reporting logic across the application.
+- [`report-coordinator-api`](../report-coordinator-api) – Coordinates data aggregation and reporting logic across the application.
 
 ## Required Configuration
 
 These properties **must** be configured either via environment variables or configuration files to ensure the gateway
 functions properly:
 
-| Property                                                 | Description                                                                                              | Example Value                             |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `SNOW_WHITE_API_GATEWAY_PUBLIC-URL`                      | The public URL where the gateway is exposed. This is the entry point into the Snow White system.         | `http://localhost`                        |
-| `SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL`            | Internal URL to the `quality-gate-api` service. Used for routing requests internally within the cluster. | `http://quality-gate-api:8080`            |
-| `SNOW_WHITE_API_GATEWAY_REPORT-COORDINATION-SERVICE-URL` | Internal URL to the `report-coordination-service`. Also used for internal routing.                       | `http://report-coordination-service:8080` |
+| Property                                            | Description                                                                                              | Example Value                        |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `SNOW_WHITE_API_GATEWAY_PUBLIC-URL`                 | The public URL where the gateway is exposed. This is the entry point into the Snow White system.         | `http://localhost`                   |
+| `SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL`       | Internal URL to the `quality-gate-api` service. Used for routing requests internally within the cluster. | `http://quality-gate-api:8080`       |
+| `SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL` | Internal URL to the `report-coordinator-api`. Also used for internal routing.                            | `http://report-coordinator-api:8080` |
 
 ## Deployment Notes
 
