@@ -52,7 +52,7 @@ services:
       - internal
 
   kafka:
-    image: confluentinc/cp-kafka:8.0.0
+    image: confluentinc/cp-kafka:8.1.0
     environment:
       # Cluster / broker identity
       KAFKA_NODE_ID: 1
