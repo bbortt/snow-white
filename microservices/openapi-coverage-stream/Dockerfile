@@ -1,7 +1,7 @@
 FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.security.sasl,java.sql"
+ENV ESSENTIAL_MODULES="java.compiler,java.desktop,java.instrument,java.logging,java.management,java.security.sasl,java.sql"
 
 RUN apk add --no-cache binutils
 
@@ -55,16 +55,14 @@ RUN apk add --no-cache \
 
 COPY --from=jlink-builder /custom-jre /opt/java
 
-COPY target/*-executable.jar app.jar
+COPY target/*-executable.jar /tmp/app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-RUN chown -R openapi-coverage-stream:openapi-coverage-stream /app /opt/java
-
 ENV JAVA_HOME="/opt/java" \
+    AOT_CACHE="/app/api-gateway.aot" \
     OTEL_SERVICE_NAME="openapi-coverage-stream" \
     OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
-    SPRING_PROFILES_ACTIVE="prod" \
     JAVA_OPTS="-XX:+UseContainerSupport \
         -XX:+TieredCompilation \
         -XX:TieredStopAtLevel=1 \
@@ -75,6 +73,26 @@ ENV JAVA_HOME="/opt/java" \
         -XX:+UseCompressedOops"
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
+# Build AOT cache in "dev" profile to avoid configuration errors
+# https://docs.spring.io/spring-boot/4.0/reference/packaging/aot-cache.html#packaging.aot-cache.aot-cache
+
+ENV SPRING_PROFILES_ACTIVE="dev" \
+    OTEL_JAVAAGENT_ENABLED="false" \
+    INFLUXDB_TOKEN="influxdb-token" \
+    SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS="FALSE"
+
+RUN java -Djarmode=tools -jar /tmp/app.jar extract --destination /app && \
+    cd /app && \
+    mv app.jar openapi-coverage-stream.jar && \
+    java -XX:AOTCacheOutput=$AOT_CACHE $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -Dspring.context.exit=onRefresh -jar openapi-coverage-stream.jar && \
+    rm /tmp/app.jar && \
+    chown -R openapi-coverage-stream:openapi-coverage-stream /app /opt/java
+
+# Reversed AOT cache configuration / productive Spring / OTEL configuration
+ENV SPRING_PROFILES_ACTIVE="prod" \
+    OTEL_JAVAAGENT_ENABLED="true" \
+    INFLUXDB_TOKEN=""
+
 USER openapi-coverage-stream
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -XX:AOTCache=$AOT_CACHE -javaagent:/opt/opentelemetry-javaagent.jar -jar /app/openapi-coverage-stream.jar" ]
