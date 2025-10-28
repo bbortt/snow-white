@@ -109,13 +109,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.wiremock.integrations</groupId>
-      <artifactId>wiremock-spring-boot</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-webtestclient</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-webtestclient</artifactId>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -176,7 +176,7 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
-              <mainClass>io.github.bbortt.snow.white.microservices.api.gateway.Application</mainClass>
+              <mainClass>io.github.bbortt.snow.white.microservices.api.gateway.Main</mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>

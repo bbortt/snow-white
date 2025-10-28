@@ -42,16 +42,16 @@ public class KafkaStreamsConfig {
       );
     }
 
-    Properties props = new Properties();
-    props.put(
+    var properties = new Properties();
+    properties.put(
       SCHEMA_REGISTRY_URL_CONFIG,
       kafkaEventFilterProperties.getSchemaRegistryUrl()
     );
-    props.put(
+    properties.put(
       SPECIFIC_PROTOBUF_VALUE_TYPE,
       ExportTraceServiceRequest.class.getName()
     );
-    return props;
+    return properties;
   }
 
   @Bean
