@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine AS jlink-builder
+FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
 ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
@@ -13,7 +13,7 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /classpath/ope
 
 RUN jdeps --ignore-missing-deps \
     --class-path 'dependencies/*' \
-    --multi-release 21 \
+    --multi-release 25 \
     --print-module-deps \
     --recursive \
     app.jar > deps.info
@@ -51,26 +51,38 @@ RUN addgroup -S api-gateway && \
 
 COPY --from=jlink-builder /custom-jre /opt/java
 
-COPY target/*-executable.jar app.jar
+COPY target/*-executable.jar /tmp/app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-RUN chown -R api-gateway:api-gateway /app /opt/java
-
 ENV JAVA_HOME="/opt/java" \
+    AOT_CACHE="/app/api-gateway.aot" \
     OTEL_SERVICE_NAME="api-gateway" \
     OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
-    SPRING_PROFILES_ACTIVE="prod" \
     JAVA_OPTS="-XX:+UseContainerSupport \
-        -XX:+TieredCompilation \
-        -XX:TieredStopAtLevel=1 \
-        -Xss256k \
-        -XX:+UseG1GC \
-        -XX:MaxGCPauseMillis=100 \
+        -XX:InitialRAMPercentage=75 \
+        -XX:MaxRAMPercentage=75 \
         -XX:+UseStringDeduplication \
         -XX:+UseCompressedOops"
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
+# Build AOT cache in "dev" profile to avoid configuration errors
+# https://docs.spring.io/spring-boot/4.0/reference/packaging/aot-cache.html#packaging.aot-cache.aot-cache
+
+ENV SPRING_PROFILES_ACTIVE="dev" \
+    OTEL_JAVAAGENT_ENABLED="false"
+
+RUN java -Djarmode=tools -jar /tmp/app.jar extract --destination /app && \
+    cd /app && \
+    mv app.jar api-gateway.jar && \
+    java -XX:AOTCacheOutput=$AOT_CACHE $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -Dspring.context.exit=onRefresh -jar api-gateway.jar && \
+    rm /tmp/app.jar && \
+    chown -R api-gateway:api-gateway /app /opt/java
+
+# Reversed AOT cache configuration / productive Spring / OTEL configuration
+ENV SPRING_PROFILES_ACTIVE="prod" \
+    OTEL_JAVAAGENT_ENABLED="true"
+
 USER api-gateway
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java -XX:AOTCache=$AOT_CACHE $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar /app/api-gateway.jar" ]

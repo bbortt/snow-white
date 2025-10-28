@@ -43,32 +43,34 @@ public class NativeRuntimeHintsConfiguration {
         )
         .registerType(
           io.confluent.kafka.streams.serdes.protobuf.KafkaProtobufSerde.class
+        )
+        .registerType(
+          org.apache.kafka.streams.processor.internals
+            .NoOpProcessorWrapper.class
         );
 
+      registerTypeIgnoringClassNotFoundException(
+        hints,
+        "io.confluent.kafka.serializers.subject.TopicNameStrategy"
+      );
+      registerTypeIgnoringClassNotFoundException(
+        hints,
+        "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy"
+      );
+      registerTypeIgnoringClassNotFoundException(
+        hints,
+        "io.confluent.kafka.serializers.subject.RecordNameStrategy"
+      );
+    }
+
+    private static void registerTypeIgnoringClassNotFoundException(
+      RuntimeHints hints,
+      String className
+    ) {
       try {
-        hints
-          .reflection()
-          .registerType(
-            Class.forName(
-              "io.confluent.kafka.serializers.subject.TopicNameStrategy"
-            )
-          );
-        hints
-          .reflection()
-          .registerType(
-            Class.forName(
-              "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy"
-            )
-          );
-        hints
-          .reflection()
-          .registerType(
-            Class.forName(
-              "io.confluent.kafka.serializers.subject.RecordNameStrategyy"
-            )
-          );
+        hints.reflection().registerType(Class.forName(className));
       } catch (ClassNotFoundException e) {
-        logger.warn("Failed registering runtime hints!", e);
+        logger.warn("Failed to register runtime hint class '%{}", className, e);
       }
     }
   }

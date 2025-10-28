@@ -237,9 +237,7 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
-              <mainClass>
-                io.github.bbortt.snow.white.microservices.report.coordinator.api.Main
-              </mainClass>
+              <mainClass>${basePackage}.Main</mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>
@@ -435,6 +433,9 @@
                 <goals>
                   <goal>process-aot</goal>
                 </goals>
+                <configuration>
+                  <mainClass>${basePackage}.Main</mainClass>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -453,7 +454,6 @@
               <classesDirectory>
                 ${project.build.outputDirectory}
               </classesDirectory>
-              <mainClass>${basePackage}.Main</mainClass>
               <metadataRepository>
                 <enabled>true</enabled>
               </metadataRepository>
