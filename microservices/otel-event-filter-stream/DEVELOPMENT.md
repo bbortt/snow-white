@@ -10,18 +10,20 @@ To build the **OTEL Event Filter** application:
 ./mvnw -Pprod -pl :otel-event-filter-stream -am install
 ```
 
-### 2. Package it into a Docker image:
+### 2. Package it into an Image
 
 ```shell
-./mvnw -Dimage.tag=latest -Pnative -pl :otel-event-filter-stream spring-boot:build-image
+./mvnw -Pnative -Dimage.tag=latest -DskipTests -pl :otel-event-filter-stream spring-boot:build-image
 ```
+
+The resulting image is: `ghcr.io/bbortt/snow-white/otel-event-filter-stream:latest`.
 
 ## Running Application Tests
 
 Before running tests, ensure:
 
 - Docker is installed and running.
-- The API Gateway Docker image is built (see [Building the Application](#building-the-application) above).
+- The `otel-event-filter-stream` image has been built (see [Building the Application](#building-the-application) above).
 
 ### Step 1 - Start Docker Compose
 
@@ -32,7 +34,7 @@ In **one terminal**, run:
 docker compose -f microservices/otel-event-filter-stream/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
-### Step 2 - Run the API Gateway tests
+### Step 2 - Run the OTEL Event Filter tests
 
 In **another terminal**, run:
 

@@ -22,6 +22,10 @@
   <packaging>jar</packaging>
 
   <properties>
+    <mainClass>
+      io.github.bbortt.snow.white.microservices.otel.event.filter.stream.Main
+    </mainClass>
+
     <maven.build.timestamp.format>
       yyyy-MM-dd'T'HH:mm:ss'Z'
     </maven.build.timestamp.format>
@@ -215,9 +219,7 @@
           <execution>
             <configuration>
               <classifier>executable</classifier>
-              <mainClass>
-                io.github.bbortt.snow.white.microservices.otel.event.filter.stream.Main
-              </mainClass>
+              <mainClass>${mainClass}</mainClass>
             </configuration>
             <goals>
               <goal>repackage</goal>
@@ -305,6 +307,9 @@
                 <goals>
                   <goal>process-aot</goal>
                 </goals>
+                <configuration>
+                  <mainClass>${mainClass}</mainClass>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -323,9 +328,6 @@
               <classesDirectory>
                 ${project.build.outputDirectory}
               </classesDirectory>
-              <mainClass>
-                io.github.bbortt.snow.white.microservices.otel.event.filter.stream.Main
-              </mainClass>
               <metadataRepository>
                 <enabled>true</enabled>
               </metadataRepository>

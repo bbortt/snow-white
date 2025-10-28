@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Main {
 
-  void main() {
-    run(Main.class);
+  void main(String[] args) {
+    run(Main.class, args);
   }
 }
