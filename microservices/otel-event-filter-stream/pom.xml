@@ -33,7 +33,7 @@
     <!-- Default optimization configuration for native image during development -->
     <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
 
-    <citrus.version>4.8.1</citrus.version>
+    <citrus.version>4.8.2</citrus.version>
     <confluent.version>8.1.0</confluent.version>
     <google-protobuf.version>4.33.0</google-protobuf.version>
     <grpc.version>1.76.0</grpc.version>
