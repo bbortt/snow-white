@@ -10,5 +10,7 @@ snow:
           calculation-request-topic: snow-white-calculation-request
           init-topics: true
           openapi-calculation-response-topic: snow-white-openapi-calculation-response
-server:
-  port: 8083
+spring:
+  devtools:
+    livereload:
+      enabled: true

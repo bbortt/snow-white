@@ -6,3 +6,7 @@ snow:
           service-interface:
             index-uri: /localhost.json
             base-url: http://localhost:3000
+spring:
+  devtools:
+    livereload:
+      enabled: true

@@ -6,6 +6,10 @@ snow:
         report-coordinator-api-url: http://localhost:8084
 server:
   port: 9080
+spring:
+  devtools:
+    livereload:
+      enabled: true
 springdoc:
   swagger-ui:
     urls:
