@@ -61,11 +61,8 @@ ENV JAVA_HOME="/opt/java" \
     OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
     JAVA_OPTS="-XX:+UseContainerSupport \
-        -XX:+TieredCompilation \
-        -XX:TieredStopAtLevel=1 \
-        -Xss256k \
-        -XX:+UseG1GC \
-        -XX:MaxGCPauseMillis=100 \
+        -XX:InitialRAMPercentage=75 \
+        -XX:MaxRAMPercentage=75 \
         -XX:+UseStringDeduplication \
         -XX:+UseCompressedOops"
 ENV PATH="$PATH:$JAVA_HOME/bin"
