@@ -11,6 +11,9 @@ snow:
 server:
   port: 8084
 spring:
+  devtools:
+    livereload:
+      enabled: true
   datasource:
     jdbc-url: jdbc:h2:mem:report-coordinator-api;MODE=PostgreSQL
     username: sa
