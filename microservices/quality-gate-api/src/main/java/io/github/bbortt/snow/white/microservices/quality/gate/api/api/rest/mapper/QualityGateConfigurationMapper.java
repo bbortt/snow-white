@@ -6,8 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static lombok.AccessLevel.PACKAGE;
 import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
@@ -18,13 +16,12 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.O
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.Null;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.Setter;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,31 +40,37 @@ public abstract class QualityGateConfigurationMapper {
   public abstract QualityGateConfig toDto(QualityGateConfiguration entity);
 
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "openApiCoverageConfigurations", ignore = true)
+  public abstract QualityGateConfiguration toInitialEntityIgnoringRelationships(
+    QualityGateConfig dto
+  );
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "name", source = "dto.name")
+  @Mapping(target = "description", source = "dto.description")
+  @Mapping(target = "isPredefined", source = "dto.isPredefined")
   @Mapping(
     target = "openApiCoverageConfigurations",
-    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCriteria(), null))"
+    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCriteria(), existingEntity))"
   )
-  public abstract QualityGateConfiguration toEntity(QualityGateConfig dto)
-    throws OpenApiCriterionDoesNotExistException;
+  public abstract QualityGateConfiguration toEntityForUpdate(
+    QualityGateConfig dto,
+    QualityGateConfiguration existingEntity
+  ) throws OpenApiCriterionDoesNotExistException;
 
   protected List<String> mapOpenApiCriteriaToStringList(
-    @Nonnull QualityGateConfiguration entity
+    @NonNull QualityGateConfiguration entity
   ) {
-    if (isNull(entity.getOpenApiCoverageConfigurations())) {
-      return List.of();
-    }
-
     return entity
       .getOpenApiCoverageConfigurations()
       .stream()
-      .filter(mapping -> nonNull(mapping.getOpenApiCoverageConfiguration()))
       .map(mapping -> mapping.getOpenApiCoverageConfiguration().getName())
       .toList();
   }
 
-  protected Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
-    @Null List<String> openApiCriteria,
-    @Nullable QualityGateConfiguration existingEntity
+  public Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
+    @Nullable List<String> openApiCriteria,
+    @NonNull QualityGateConfiguration existingEntity
   ) throws OpenApiCriterionDoesNotExistException {
     if (isEmpty(openApiCriteria)) {
       return new HashSet<>();
@@ -75,8 +78,8 @@ public abstract class QualityGateConfigurationMapper {
 
     Set<QualityGateOpenApiCoverageMapping> mappings = new HashSet<>();
 
-    for (var criteriaName : openApiCriteria) {
-      OpenApiCoverageConfiguration coverage =
+    for (var criteriaName : new HashSet<>(openApiCriteria)) {
+      OpenApiCoverageConfiguration openApiCoverageConfiguration =
         openApiCoverageConfigurationRepository
           .findByName(criteriaName)
           .orElseThrow(() ->
@@ -84,7 +87,7 @@ public abstract class QualityGateConfigurationMapper {
           );
 
       var mapping = QualityGateOpenApiCoverageMapping.builder()
-        .openApiCoverageConfiguration(coverage)
+        .openApiCoverageConfiguration(openApiCoverageConfiguration)
         .qualityGateConfiguration(existingEntity)
         .build();
 

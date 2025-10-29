@@ -15,7 +15,9 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.config.QualityGateApiProperties;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -42,6 +44,9 @@ class TechnicalStructureTest {
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
     .ignoreDependency(alwaysTrue(),belongToAnyOf(QualityGateApiProperties.class))
-      .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
-      .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
+    .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
+    .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"))
+
+    // Explicitly allow access into Mapper because of transitive dependency issue
+    .ignoreDependency(belongToAnyOf(QualityGateService.class), belongToAnyOf(QualityGateConfigurationMapper.class));
 }

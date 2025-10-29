@@ -27,7 +27,6 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -55,7 +55,7 @@ public class OpenApiCoverageService {
   private final OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinator;
 
   public Set<OpenApiTestResult> testOpenApi(
-    @NotNull OpenApiTestContext openApiTestContext
+    @NonNull OpenApiTestContext openApiTestContext
   ) {
     if (isEmpty(openApiTestContext.openTelemetryData())) {
       return emptySet();

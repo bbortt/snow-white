@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -303,7 +304,7 @@ class ReportResourceTest {
       var report1 = mock(QualityGateReport.class);
       var report2 = mock(QualityGateReport.class);
 
-      Page<QualityGateReport> qualityGateReportsPage = mock();
+      Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
       doReturn(2L).when(qualityGateReportsPage).getTotalElements();
 
       doReturn(qualityGateReportsPage)
@@ -320,8 +321,9 @@ class ReportResourceTest {
       var dto2 = mock(ListQualityGateReports200ResponseInner.class);
       doReturn(dto2).when(qualityGateReportMapperMock).toListDto(report2);
 
-      ResponseEntity<List<ListQualityGateReports200ResponseInner>> response =
-        fixture.listQualityGateReports(page, size, sort);
+      ResponseEntity<
+        @NonNull List<ListQualityGateReports200ResponseInner>
+      > response = fixture.listQualityGateReports(page, size, sort);
 
       assertThat(response)
         .isNotNull()
@@ -341,15 +343,16 @@ class ReportResourceTest {
       var size = 10;
       var sort = "createdAt,desc";
 
-      Page<QualityGateReport> qualityGateReportsPage = mock();
+      Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
         .findAllReports(any(Pageable.class));
 
       doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 
-      ResponseEntity<List<ListQualityGateReports200ResponseInner>> response =
-        fixture.listQualityGateReports(page, size, sort);
+      ResponseEntity<
+        @NonNull List<ListQualityGateReports200ResponseInner>
+      > response = fixture.listQualityGateReports(page, size, sort);
 
       assertThat(response)
         .isNotNull()

@@ -39,11 +39,11 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -57,11 +57,11 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
     .apiVersion("1.0.0")
     .build();
 
-  public static final ReportParameter REPORT_PARAMETER =
-    ReportParameter.builder().lookbackWindow("1h").build();
-
   @Autowired
-  private KafkaTemplate<String, OpenApiCoverageResponseEvent> kafkaTemplate;
+  private KafkaTemplate<
+    @NonNull String,
+    @NonNull OpenApiCoverageResponseEvent
+  > kafkaTemplate;
 
   @Autowired
   private JsonMapper jsonMapper;
@@ -153,13 +153,18 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
   }
 
-  private @NotNull String persistInitialQualityGateReport(UUID calculationId) {
+  private @NonNull String persistInitialQualityGateReport(UUID calculationId) {
     var qualityGateConfigName = "minimal";
     var qualityGateReport = qualityGateReportRepository.save(
       QualityGateReport.builder()
         .calculationId(calculationId)
         .qualityGateConfigName(qualityGateConfigName)
-        .reportParameter(REPORT_PARAMETER.withCalculationId(calculationId))
+        .reportParameter(
+          ReportParameter.builder()
+            .calculationId(calculationId)
+            .lookbackWindow("1h")
+            .build()
+        )
         .build()
     );
 
@@ -168,7 +173,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
     return qualityGateConfigName;
   }
 
-  private @NotNull String createQualityGateApiWiremockStub(
+  private @NonNull String createQualityGateApiWiremockStub(
     String qualityGateConfigName,
     OpenApiCriteria openApiCriterion
   ) {

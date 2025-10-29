@@ -16,13 +16,13 @@ import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -229,7 +229,7 @@ class MethodCoverageCalculatorTest {
       );
     }
 
-    private static @NotNull BigDecimal getBigDecimal(double value) {
+    private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
   }

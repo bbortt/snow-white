@@ -18,7 +18,6 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +26,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 
 @Entity
 @With
@@ -42,7 +42,6 @@ import lombok.With;
 public class OpenApiCoverageConfiguration {
 
   @Id
-  @NotNull
   @Column(nullable = false, updatable = false)
   @SequenceGenerator(
     name = "open_api_coverage_configuration_id_seq",
@@ -59,7 +58,7 @@ public class OpenApiCoverageConfiguration {
   @Column(nullable = false, updatable = false, unique = true, length = 64)
   private String name;
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @OneToMany(mappedBy = "openApiCoverageConfiguration")
   private Set<QualityGateOpenApiCoverageMapping> qualityGateConfigurations =

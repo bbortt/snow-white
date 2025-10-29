@@ -8,14 +8,14 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.StopWatch;
+import org.jspecify.annotations.NonNull;
 
 @NoArgsConstructor(access = PRIVATE)
 final class CalculatorUtils {
 
-  static @NotNull StopWatch getStartedStopWatch() {
+  static @NonNull StopWatch getStartedStopWatch() {
     var stopWatch = new StopWatch();
     stopWatch.start();
     return stopWatch;

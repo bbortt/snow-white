@@ -8,24 +8,59 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
 
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith({ MockitoExtension.class })
 class QualityGateConfigurationTest {
+
+  private QualityGateConfiguration fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = QualityGateConfiguration.builder().name("default-gate").build();
+  }
+
+  @Nested
+  class WithId {
+
+    @Mock
+    private QualityGateOpenApiCoverageMapping qualityGateOpenApiCoverageMappingMock;
+
+    @BeforeEach
+    void beforeEachSetup() {
+      fixture = fixture.withOpenApiCoverageConfigurations(
+        Set.of(qualityGateOpenApiCoverageMappingMock)
+      );
+    }
+
+    @Test
+    void shouldPropagateIdToMappings() {
+      var id = 1234L;
+
+      var updatedQualityGateConfiguration = fixture.withId(id);
+
+      assertThat(updatedQualityGateConfiguration.getId()).isEqualTo(id);
+      verify(qualityGateOpenApiCoverageMappingMock).setQualityGateConfiguration(
+        fixture
+      );
+    }
+  }
 
   @Nested
   class WithOpenApiCoverageConfiguration {
 
-    private QualityGateConfiguration fixture;
     private OpenApiCoverageConfiguration coverageConfig;
 
     @BeforeEach
     void beforeEachSetup() {
-      fixture = QualityGateConfiguration.builder().name("default-gate").build();
-
       coverageConfig = OpenApiCoverageConfiguration.builder()
         .name("first")
         .build();

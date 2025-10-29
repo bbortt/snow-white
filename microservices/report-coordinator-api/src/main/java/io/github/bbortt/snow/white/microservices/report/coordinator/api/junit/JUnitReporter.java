@@ -13,13 +13,13 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.j
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.DESCRIPTION;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.SERVICE_NAME;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Property.property;
-import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ONE;
 import static java.time.Duration.ZERO;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static tools.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static tools.jackson.dataformat.xml.XmlMapper.xmlBuilder;
 import static tools.jackson.dataformat.xml.XmlWriteFeature.WRITE_STANDALONE_YES_TO_XML_DECLARATION;
@@ -86,7 +86,7 @@ public class JUnitReporter {
         )
         .build();
 
-      if (nonNull(qualityGateReport.getApiTests())) {
+      if (!isEmpty(qualityGateReport.getApiTests())) {
         var testSuites = qualityGateReport
           .getApiTests()
           .parallelStream()
@@ -242,7 +242,7 @@ public class JUnitReporter {
         durationFormatter
       );
 
-      if (!TRUE.equals(apiTestResult.getIncludedInReport())) {
+      if (!apiTestResult.getIncludedInReport()) {
         return testCase.withSkipped(
           Skipped.builder()
             .message(

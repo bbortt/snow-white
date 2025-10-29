@@ -18,7 +18,6 @@ import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +27,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 
 @Entity
 @Table
@@ -39,7 +39,7 @@ import lombok.With;
 public class ReportParameter {
 
   @Id
-  @NotNull
+  @NonNull
   @Column(nullable = false, updatable = false)
   private UUID calculationId;
 

@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.lang.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
 @ExtendWith({ MockitoExtension.class })

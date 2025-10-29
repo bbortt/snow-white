@@ -21,9 +21,9 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiIn
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.SimpleRequiredApiProperty;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
-import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.jackson.JacksonComponent;
 import org.springframework.boot.jackson.ObjectValueDeserializer;
 import tools.jackson.core.JacksonException;

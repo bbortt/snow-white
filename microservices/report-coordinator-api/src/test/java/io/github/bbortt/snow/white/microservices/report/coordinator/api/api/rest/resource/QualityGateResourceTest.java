@@ -10,6 +10,8 @@ import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -89,7 +91,7 @@ class QualityGateResourceTest {
       var reportParameter = mock(ReportParameter.class);
       doReturn(reportParameter)
         .when(reportParameterMapperMock)
-        .fromDto(qualityGateCalculationRequestMock);
+        .fromDto(eq(qualityGateCalculationRequestMock), any(UUID.class));
 
       var qualityGateReport = mock(QualityGateReport.class);
       doReturn(UUID.fromString("37809fff-2044-4341-b55e-f99202291478"))
@@ -137,7 +139,7 @@ class QualityGateResourceTest {
       var reportParameter = mock(ReportParameter.class);
       doReturn(reportParameter)
         .when(reportParameterMapperMock)
-        .fromDto(qualityGateCalculationRequestMock);
+        .fromDto(eq(qualityGateCalculationRequestMock), any(UUID.class));
 
       doThrow(new QualityGateNotFoundException(QUALITY_GATE_CONFIG_NAME))
         .when(reportServiceMock)

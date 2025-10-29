@@ -11,7 +11,6 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,7 +20,6 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +29,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(
@@ -50,7 +50,6 @@ import lombok.With;
 public class QualityGateConfiguration {
 
   @Id
-  @NotNull
   @Column(nullable = false, updatable = false)
   @SequenceGenerator(
     name = "quality_gate_configuration_id_seq",
@@ -71,12 +70,13 @@ public class QualityGateConfiguration {
   @Column(length = 256)
   private @Nullable String description;
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Boolean isPredefined = false;
 
-  @NotNull
+  @Setter
+  @NonNull
   @Builder.Default
   @OneToMany(
     cascade = { ALL },
@@ -88,9 +88,11 @@ public class QualityGateConfiguration {
 
   public QualityGateConfiguration withId(Long id) {
     setId(id);
+
     openApiCoverageConfigurations.forEach(mapping ->
-      mapping.withQualityGateConfiguration(this)
+      mapping.setQualityGateConfiguration(this)
     );
+
     return this;
   }
 

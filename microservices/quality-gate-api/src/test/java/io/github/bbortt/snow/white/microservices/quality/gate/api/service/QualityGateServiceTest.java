@@ -6,20 +6,29 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
@@ -27,8 +36,10 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import org.assertj.core.api.ListAssert;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,6 +54,9 @@ import org.springframework.data.domain.Pageable;
 class QualityGateServiceTest {
 
   @Mock
+  private QualityGateConfigurationMapper qualityGateConfigurationMapperMock;
+
+  @Mock
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepositoryMock;
 
   @Mock
@@ -53,6 +67,7 @@ class QualityGateServiceTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new QualityGateService(
+      qualityGateConfigurationMapperMock,
       openApiCoverageConfigurationRepositoryMock,
       qualityGateConfigurationRepositoryMock
     );
@@ -64,6 +79,55 @@ class QualityGateServiceTest {
     @Test
     void shouldSaveNewConfiguration()
       throws ConfigurationNameAlreadyExistsException {
+      var qualityGateConfigurationArgumentCaptor =
+        assertThatNewQualityGateConfigurationHasBeenPersisted(emptyList());
+
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
+
+      assertThat(qualityGateConfigurationArgumentCaptor.getValue())
+        .isNotNull()
+        .extracting(QualityGateConfiguration::getIsPredefined)
+        .isEqualTo(FALSE);
+    }
+
+    @Test
+    void shouldSaveNewConfiguration_withOpenApiCriteriaAttached()
+      throws ConfigurationNameAlreadyExistsException {
+      var openApiCriteria = singletonList(PATH_COVERAGE.name());
+
+      Set<
+        QualityGateOpenApiCoverageMapping
+      > qualityGateOpenApiCoverageMappings = mock();
+
+      ArgumentCaptor<QualityGateConfiguration> updatedQualityGateConfiguration =
+        captor();
+      doReturn(qualityGateOpenApiCoverageMappings)
+        .when(qualityGateConfigurationMapperMock)
+        .mapOpenApiCriteriaToMappings(
+          eq(openApiCriteria),
+          updatedQualityGateConfiguration.capture()
+        );
+
+      var initialQualityGateConfigurationArgumentCaptor =
+        assertThatNewQualityGateConfigurationHasBeenPersisted(openApiCriteria);
+
+      assertThat(initialQualityGateConfigurationArgumentCaptor.getValue())
+        .isNotNull()
+        .extracting(QualityGateConfiguration::getOpenApiCoverageConfigurations)
+        .asInstanceOf(SET)
+        .isEmpty();
+
+      assertThat(updatedQualityGateConfiguration.getValue())
+        .isNotNull()
+        .extracting(QualityGateConfiguration::getOpenApiCoverageConfigurations)
+        .isEqualTo(qualityGateOpenApiCoverageMappings);
+    }
+
+    ArgumentCaptor<
+      QualityGateConfiguration
+    > assertThatNewQualityGateConfigurationHasBeenPersisted(
+      List<String> openApiCriteria
+    ) throws ConfigurationNameAlreadyExistsException {
       var configuration = QualityGateConfiguration.builder()
         .name("NonExistingConfig")
         .build();
@@ -80,7 +144,7 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .save(qualityGateConfigurationArgumentCaptor.capture());
 
-      var result = fixture.persist(configuration);
+      var result = fixture.persist(configuration, openApiCriteria);
 
       assertThat(result).isEqualTo(persistedQualityGateConfiguration);
 
@@ -88,10 +152,7 @@ class QualityGateServiceTest {
         configuration.getName()
       );
 
-      assertThat(qualityGateConfigurationArgumentCaptor.getValue())
-        .isNotNull()
-        .extracting(QualityGateConfiguration::getIsPredefined)
-        .isEqualTo(FALSE);
+      return qualityGateConfigurationArgumentCaptor;
     }
 
     @Test
@@ -104,10 +165,11 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .existsByName(configuration.getName());
 
-      assertThatThrownBy(() -> fixture.persist(configuration)).isInstanceOf(
-        ConfigurationNameAlreadyExistsException.class
-      );
+      assertThatThrownBy(() ->
+        fixture.persist(configuration, emptyList())
+      ).isInstanceOf(ConfigurationNameAlreadyExistsException.class);
 
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
       verify(qualityGateConfigurationRepositoryMock, never()).save(
         configuration
       );
@@ -178,7 +240,7 @@ class QualityGateServiceTest {
         .when(qualityGateConfigurationRepositoryMock)
         .findAll(pageable);
 
-      Page<QualityGateConfiguration> result =
+      Page<@NonNull QualityGateConfiguration> result =
         fixture.findAllQualityGateConfigurations(pageable);
 
       assertThat(result).isEqualTo(qualityGateConfigurations);

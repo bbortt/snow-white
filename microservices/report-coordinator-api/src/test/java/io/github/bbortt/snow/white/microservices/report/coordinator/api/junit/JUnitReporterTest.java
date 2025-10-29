@@ -16,11 +16,14 @@ import static java.math.RoundingMode.HALF_UP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.springframework.util.StreamUtils.copyToString;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -44,6 +47,7 @@ class JUnitReporterTest {
       .calculationId(CALCULATION_ID)
       .qualityGateConfigName(JUnitReporterTest.class.getSimpleName())
       .createdAt(Instant.parse("2025-04-24T22:30:00.00Z"))
+      .reportParameter(mock(ReportParameter.class))
       .build();
   }
 
@@ -72,6 +76,7 @@ class JUnitReporterTest {
       .includedInReport(TRUE)
       .duration(duration)
       .additionalInformation(additionalInformation)
+      .apiTest(mock(ApiTest.class))
       .build();
   }
 
@@ -205,13 +210,12 @@ class JUnitReporterTest {
     @Test
     void shouldThrow_whenOpenApiCriterionIsInvalid() {
       var invalidName = "invalid";
+
+      var apiTestResultMock = mock(ApiTestResult.class);
+      doReturn(invalidName).when(apiTestResultMock).getApiTestCriteria();
+
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
-        Set.of(
-          createApiTest(
-            "testApi",
-            Set.of(ApiTestResult.builder().apiTestCriteria(invalidName).build())
-          )
-        )
+        Set.of(createApiTest("testApi", Set.of(apiTestResultMock)))
       );
 
       assertThatThrownBy(() ->

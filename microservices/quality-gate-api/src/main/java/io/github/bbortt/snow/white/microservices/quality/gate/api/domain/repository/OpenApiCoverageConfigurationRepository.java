@@ -8,13 +8,14 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposi
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import java.util.Optional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OpenApiCoverageConfigurationRepository
-  extends JpaRepository<OpenApiCoverageConfiguration, Long> {
+  extends JpaRepository<@NonNull OpenApiCoverageConfiguration, @NonNull Long> {
   boolean existsByName(@Param("name") String name);
   Optional<OpenApiCoverageConfiguration> findByName(@Param("name") String name);
 }

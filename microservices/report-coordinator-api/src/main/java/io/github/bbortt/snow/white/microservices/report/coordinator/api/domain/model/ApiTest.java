@@ -12,7 +12,6 @@ import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
 
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,7 +22,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +30,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table
@@ -43,7 +43,6 @@ import lombok.With;
 public class ApiTest {
 
   @Id
-  @NotNull
   @With(PRIVATE)
   @SequenceGenerator(name = "api_test_id_seq", allocationSize = 1)
   @GeneratedValue(strategy = SEQUENCE, generator = "api_test_id_seq")
@@ -67,12 +66,11 @@ public class ApiTest {
   @Column(updatable = false)
   private @Nullable Integer apiType;
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @OneToMany(mappedBy = "apiTest", cascade = { ALL }, fetch = EAGER)
   private Set<ApiTestResult> apiTestResults = new HashSet<>();
 
-  @NotNull
   @ManyToOne(optional = false)
   @JoinColumn(name = "calculation_id", nullable = false)
   private QualityGateReport qualityGateReport;

@@ -19,6 +19,8 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Te
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuite;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuites;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -51,20 +53,28 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 )
 public class NativeRuntimeHintsConfiguration {
 
+  @NullMarked
   static class QualityGateApiDtoRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
       scanPackageForClassesRecursively(
         "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto"
       ).forEach(clazz -> hints.reflection().registerType(clazz));
     }
   }
 
+  @NullMarked
   static class RestApiDtoHints implements RuntimeHintsRegistrar {
 
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
       scanPackageForClassesRecursively(
         "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto"
       ).forEach(clazz ->

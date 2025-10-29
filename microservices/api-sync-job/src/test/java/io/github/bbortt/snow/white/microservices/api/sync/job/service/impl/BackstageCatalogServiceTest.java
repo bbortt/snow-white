@@ -39,7 +39,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.assertj.core.api.ThrowingConsumer;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -87,7 +87,7 @@ class BackstageCatalogServiceTest {
   @Nested
   class FetchApiIndex {
 
-    private static @NotNull ThrowingConsumer<
+    private static @NonNull ThrowingConsumer<
       ApiInformation
     > assertOpenApiInformation() {
       return apiInformation ->

@@ -22,8 +22,6 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +29,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -46,7 +46,7 @@ public class ResponseCodeCoverageCalculator
   public static final Pattern SINGLE_DIGIT_PATTERN = compile("^\\dXX$");
 
   @Override
-  protected @NotNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
     return RESPONSE_CODE_COVERAGE;
   }
 
@@ -193,7 +193,7 @@ public class ResponseCodeCoverageCalculator
   }
 
   protected @Nullable String getAdditionalInformationOrNull(
-    @NotNull Set<String> uncoveredResponseCodes
+    @NonNull Set<String> uncoveredResponseCodes
   ) {
     return getAdditionalInformationOrNull(
       "The following response codes in paths are uncovered: `%s`",
@@ -203,7 +203,7 @@ public class ResponseCodeCoverageCalculator
 
   protected @Nullable String getAdditionalInformationOrNull(
     String infoMessagePattern,
-    @NotNull Set<String> uncoveredResponseCodes
+    @NonNull Set<String> uncoveredResponseCodes
   ) {
     if (uncoveredResponseCodes.isEmpty()) {
       return null;

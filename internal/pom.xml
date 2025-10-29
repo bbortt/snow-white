@@ -23,6 +23,7 @@
 
   <modules>
     <module>commons</module>
+    <module>archunit-rules</module>
   </modules>
 
   <profiles>

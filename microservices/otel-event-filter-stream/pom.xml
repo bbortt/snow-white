@@ -128,8 +128,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka-test</artifactId>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>archunit-rules</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -143,6 +143,11 @@
       <groupId>org.citrusframework</groupId>
       <artifactId>citrus-kafka</artifactId>
       <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

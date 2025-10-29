@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,8 +57,8 @@ class ReportServiceTest {
 
   @Mock
   private KafkaTemplate<
-    String,
-    QualityGateCalculationRequestEvent
+    @NonNull String,
+    @NonNull QualityGateCalculationRequestEvent
   > kafkaTemplateMock;
 
   @Mock
@@ -122,6 +124,7 @@ class ReportServiceTest {
       var apiTests = Set.of(apiTest);
 
       var reportParameter = ReportParameter.builder()
+        .calculationId(UUID.fromString("41386eb3-7569-4944-a39f-0bdcadf15654"))
         .lookbackWindow("1d")
         .build();
 
@@ -236,6 +239,7 @@ class ReportServiceTest {
 
       var qualityGateConfigName = "test-config";
       var reportParameter = ReportParameter.builder()
+        .calculationId(UUID.fromString("59d11db1-b07a-4bea-b4c1-8ca178bed839"))
         .lookbackWindow("1d")
         .attributeFilters(attributeFilters)
         .build();
@@ -381,7 +385,9 @@ class ReportServiceTest {
         .when(qualityGateReportRepositoryMock)
         .findAll(pageable);
 
-      Page<QualityGateReport> result = fixture.findAllReports(pageable);
+      Page<@NonNull QualityGateReport> result = fixture.findAllReports(
+        pageable
+      );
 
       assertThat(result).isEqualTo(qualityGateReports);
     }

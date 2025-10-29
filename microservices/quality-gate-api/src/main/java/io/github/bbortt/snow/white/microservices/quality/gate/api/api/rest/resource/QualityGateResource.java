@@ -26,6 +26,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,7 +38,7 @@ public class QualityGateResource implements QualityGateApi {
   private final QualityGateService qualityGateService;
 
   private static ResponseEntity<
-    Error
+    @NonNull Error
   > newHttpBadRequestResponseQualityGateConfigUnmodifiable(String message) {
     return ResponseEntity.status(BAD_REQUEST).body(
       Error.builder()
@@ -48,7 +49,7 @@ public class QualityGateResource implements QualityGateApi {
   }
 
   private static ResponseEntity<
-    Error
+    @NonNull Error
   > newHttpConflictResponseQualityGateConfigNameAlreadyExists(String message) {
     return ResponseEntity.status(CONFLICT).body(
       Error.builder().code(CONFLICT.getReasonPhrase()).message(message).build()
@@ -56,7 +57,7 @@ public class QualityGateResource implements QualityGateApi {
   }
 
   private static ResponseEntity<
-    Error
+    @NonNull Error
   > newHttpNotFoundResponseQualityGateConfigDoesNotExist(String message) {
     return ResponseEntity.status(NOT_FOUND).body(
       Error.builder().code(NOT_FOUND.getReasonPhrase()).message(message).build()
@@ -67,7 +68,10 @@ public class QualityGateResource implements QualityGateApi {
   public ResponseEntity createQualityGate(QualityGateConfig qualityGateConfig) {
     try {
       var createdQualityGateConfiguration = qualityGateService.persist(
-        qualityGateConfigurationMapper.toEntity(qualityGateConfig)
+        qualityGateConfigurationMapper.toInitialEntityIgnoringRelationships(
+          qualityGateConfig
+        ),
+        qualityGateConfig.getOpenApiCriteria()
       );
 
       return ResponseEntity.created(
@@ -102,7 +106,7 @@ public class QualityGateResource implements QualityGateApi {
   }
 
   @Override
-  public ResponseEntity<List<QualityGateConfig>> getAllQualityGates(
+  public ResponseEntity<@NonNull List<QualityGateConfig>> getAllQualityGates(
     Integer page,
     Integer size,
     String sort
@@ -144,7 +148,10 @@ public class QualityGateResource implements QualityGateApi {
   ) {
     try {
       var qualityGateConfiguration = qualityGateService.findByName(name);
-      var updates = qualityGateConfigurationMapper.toEntity(qualityGateConfig);
+      var updates = qualityGateConfigurationMapper.toEntityForUpdate(
+        qualityGateConfig,
+        qualityGateConfiguration
+      );
 
       copyNonNullFields(updates, qualityGateConfiguration);
 

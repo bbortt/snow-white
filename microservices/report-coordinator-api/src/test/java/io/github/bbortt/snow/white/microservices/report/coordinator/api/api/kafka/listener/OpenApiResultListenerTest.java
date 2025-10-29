@@ -12,6 +12,7 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.P
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
+import static java.lang.Boolean.FALSE;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,6 +31,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapp
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
@@ -126,12 +128,14 @@ class OpenApiResultListenerTest {
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       var updatedReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(PASSED)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       doReturn(Optional.of(originalReport))
@@ -173,12 +177,15 @@ class OpenApiResultListenerTest {
       var apiTestResult = ApiTestResult.builder()
         .apiTestCriteria(PATH_COVERAGE.name())
         .coverage(BigDecimal.valueOf(85.0))
+        .includedInReport(FALSE)
+        .duration(Duration.ofSeconds(1))
+        .apiTest(mock(ApiTest.class))
         .build();
       Set<ApiTestResult> mappedResults = Set.of(apiTestResult);
 
       doReturn(mappedResults)
         .when(apiTestResultMapperMock)
-        .fromDtos(openApiCriteria);
+        .fromDtos(openApiCriteria, apiTest);
 
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
@@ -198,11 +205,11 @@ class OpenApiResultListenerTest {
       verify(qualityGateServiceMock).findQualityGateConfigByName(
         QUALITY_GATE_CONFIG_NAME
       );
-      verify(apiTestResultMapperMock).fromDtos(openApiCriteria);
-      verify(apiTestResultLinkerMock).addResultsToApiTest(
+      verify(apiTestResultMapperMock).fromDtos(openApiCriteria, apiTest);
+      verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
+        mappedResults,
         apiTest,
-        qualityGateConfig.getOpenApiCriteria(),
-        mappedResults
+        qualityGateConfig.getOpenApiCriteria()
       );
       verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
         originalReport
@@ -244,6 +251,7 @@ class OpenApiResultListenerTest {
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       var apiInformation = mock(ApiInformation.class);
@@ -297,6 +305,7 @@ class OpenApiResultListenerTest {
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       var apiInformation = mock(ApiInformation.class);
@@ -344,12 +353,14 @@ class OpenApiResultListenerTest {
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       var updatedReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(FAILED)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       doReturn(Optional.of(originalReport))
@@ -379,7 +390,9 @@ class OpenApiResultListenerTest {
           apiInformation
         );
 
-      doReturn(emptySet()).when(apiTestResultMapperMock).fromDtos(emptySet());
+      doReturn(emptySet())
+        .when(apiTestResultMapperMock)
+        .fromDtos(emptySet(), apiTest);
 
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
@@ -390,9 +403,9 @@ class OpenApiResultListenerTest {
         event
       );
 
-      verify(apiTestResultLinkerMock).addResultsToApiTest(
-        apiTest,
+      verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
         emptySet(),
+        apiTest,
         emptySet()
       );
       verify(reportServiceMock).update(updatedReport);
@@ -405,12 +418,14 @@ class OpenApiResultListenerTest {
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       var updatedReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
         .reportStatus(PASSED)
+        .reportParameter(mock(ReportParameter.class))
         .build();
 
       doReturn(Optional.of(originalReport))
@@ -458,16 +473,22 @@ class OpenApiResultListenerTest {
         ApiTestResult.builder()
           .apiTestCriteria(PATH_COVERAGE.name())
           .coverage(BigDecimal.valueOf(90.0))
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
           .build(),
         ApiTestResult.builder()
           .apiTestCriteria(HTTP_METHOD_COVERAGE.name())
           .coverage(BigDecimal.valueOf(95.0))
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
           .build()
       );
 
       doReturn(mappedResults)
         .when(apiTestResultMapperMock)
-        .fromDtos(openApiCriteria);
+        .fromDtos(openApiCriteria, apiTest);
 
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
@@ -478,10 +499,10 @@ class OpenApiResultListenerTest {
         event
       );
 
-      verify(apiTestResultLinkerMock).addResultsToApiTest(
+      verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
+        mappedResults,
         apiTest,
-        qualityGateConfig.getOpenApiCriteria(),
-        mappedResults
+        qualityGateConfig.getOpenApiCriteria()
       );
       verify(reportServiceMock).update(updatedReport);
     }
