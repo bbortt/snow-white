@@ -24,7 +24,6 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
-import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -38,6 +37,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.processor.api.ContextualFixedKeyProcessor;
 import org.apache.kafka.streams.processor.api.FixedKeyProcessorSupplier;
 import org.apache.kafka.streams.processor.api.FixedKeyRecord;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
 
-  private static @NotNull Set<FluxAttributeFilter> mapToFluxAttributeFilters(
+  private static @NonNull Set<FluxAttributeFilter> mapToFluxAttributeFilters(
     Set<AttributeFilter> attributeFilters
   ) {
     return Optional.ofNullable(attributeFilters)

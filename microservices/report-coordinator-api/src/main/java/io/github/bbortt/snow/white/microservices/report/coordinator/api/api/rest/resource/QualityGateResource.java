@@ -20,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,7 +45,8 @@ public class QualityGateResource implements QualityGateApi {
     try {
       var apiTests = apiTestMapper.getApiTests(calculateQualityGateRequest);
       var reportParameter = reportParameterMapper.fromDto(
-        calculateQualityGateRequest
+        calculateQualityGateRequest,
+        UUID.randomUUID()
       );
       var report = reportService.initializeQualityGateCalculation(
         qualityGateConfigName,

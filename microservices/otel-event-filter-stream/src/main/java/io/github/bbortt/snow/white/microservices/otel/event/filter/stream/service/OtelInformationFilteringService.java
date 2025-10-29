@@ -17,13 +17,13 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -50,7 +50,7 @@ public class OtelInformationFilteringService {
     logger.info("Filter is in place: {}", filteringProperties);
   }
 
-  public @Nonnull ExportTraceServiceRequest filterUnknownSpecifications(
+  public @NonNull ExportTraceServiceRequest filterUnknownSpecifications(
     ExportTraceServiceRequest exportTraceServiceRequest
   ) {
     return ExportTraceServiceRequest.newBuilder()
@@ -64,7 +64,7 @@ public class OtelInformationFilteringService {
       .build();
   }
 
-  private @Nonnull ResourceSpans filterResourceSpansDropAllOfUnknownSpecifications(
+  private @NonNull ResourceSpans filterResourceSpansDropAllOfUnknownSpecifications(
     ResourceSpans resourceSpans
   ) {
     var resourceAttributes = resourceSpans.getResource().getAttributesList();
@@ -95,7 +95,7 @@ public class OtelInformationFilteringService {
       .build();
   }
 
-  private @Nonnull ScopeSpans filterScopeSpansDropAllOfUnknownSpecifications(
+  private @NonNull ScopeSpans filterScopeSpansDropAllOfUnknownSpecifications(
     ScopeSpans scopeSpans,
     List<KeyValue> resourceAttributes
   ) {

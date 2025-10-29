@@ -101,6 +101,11 @@
 
       <dependency>
         <groupId>io.github.bbortt.snow-white</groupId>
+        <artifactId>archunit-rules</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.bbortt.snow-white</groupId>
         <artifactId>commons</artifactId>
         <version>${project.version}</version>
       </dependency>

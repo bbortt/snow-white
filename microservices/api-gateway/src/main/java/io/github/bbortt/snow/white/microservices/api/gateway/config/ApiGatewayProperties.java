@@ -10,11 +10,11 @@ import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredPr
 import static io.github.bbortt.snow.white.microservices.api.gateway.config.ApiGatewayProperties.PREFIX;
 import static java.util.Objects.nonNull;
 
-import jakarta.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.EnvironmentAware;

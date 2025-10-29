@@ -9,7 +9,10 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.SET;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
@@ -27,7 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import org.junit.jupiter.api.Test;
@@ -80,9 +85,57 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
         content().json(jsonMapper.writeValueAsString(qualityGateConfig))
       );
 
-    assertThat(
-      qualityGateConfigurationRepository.findByName(name)
-    ).isNotEmpty();
+    assertThat(qualityGateConfigurationRepository.findByName(name))
+      .isNotEmpty()
+      .map(QualityGateConfiguration::getName)
+      .get()
+      .isEqualTo(name);
+
+    qualityGateConfigurationRepository.deleteByName(name);
+  }
+
+  @Test
+  @Transactional
+  void createQualityGateConfig_withAttachedOpenAPi() throws Exception {
+    var name = generateUniqueName("createQualityGateConfig");
+    var qualityGateConfig = QualityGateConfig.builder()
+      .name(name)
+      .openApiCriteria(singletonList(PATH_COVERAGE.name()))
+      .build();
+
+    mockMvc
+      .perform(
+        post(ENTITY_API_URL)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(qualityGateConfig))
+      )
+      .andExpect(status().isCreated())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(
+        header().string(
+          "location",
+          format("/api/rest/v1/quality-gates/%s", name)
+        )
+      )
+      .andExpect(
+        content().json(jsonMapper.writeValueAsString(qualityGateConfig))
+      );
+
+    assertThat(qualityGateConfigurationRepository.findByName(name))
+      .isNotEmpty()
+      .map(QualityGateConfiguration::getOpenApiCoverageConfigurations)
+      .get()
+      .asInstanceOf(SET)
+      .hasSize(1)
+      .first()
+      .asInstanceOf(type(QualityGateOpenApiCoverageMapping.class))
+      .satisfies(qualityGateOpenApiCoverageMapping ->
+        assertThat(
+          qualityGateOpenApiCoverageMapping.getOpenApiCoverageConfiguration()
+        )
+          .extracting(OpenApiCoverageConfiguration::getName)
+          .isEqualTo(PATH_COVERAGE.name())
+      );
 
     qualityGateConfigurationRepository.deleteByName(name);
   }

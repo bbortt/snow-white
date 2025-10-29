@@ -15,12 +15,12 @@ import static java.util.regex.Pattern.compile;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,7 +35,7 @@ public class ErrorResponseCodeCoverageCalculator
   extends ResponseCodeCoverageCalculator {
 
   @Override
-  protected @NotNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
     return ERROR_RESPONSE_CODE_COVERAGE;
   }
 
@@ -103,7 +103,7 @@ public class ErrorResponseCodeCoverageCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NotNull Set<String> uncoveredErrorCodes
+    @NonNull Set<String> uncoveredErrorCodes
   ) {
     return super.getAdditionalInformationOrNull(
       "The following error codes in paths are uncovered: `%s`",

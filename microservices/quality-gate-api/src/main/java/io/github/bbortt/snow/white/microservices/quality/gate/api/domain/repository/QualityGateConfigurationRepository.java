@@ -8,13 +8,14 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposi
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import java.util.Optional;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QualityGateConfigurationRepository
-  extends JpaRepository<QualityGateConfiguration, Long> {
+  extends JpaRepository<@NonNull QualityGateConfiguration, @NonNull Long> {
   boolean existsByName(@Param("name") String name);
   Optional<QualityGateConfiguration> findByName(@Param("name") String name);
   void deleteByName(@Param("name") String name);

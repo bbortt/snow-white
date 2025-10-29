@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -16,7 +15,6 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -27,6 +25,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table
@@ -39,20 +39,20 @@ import lombok.With;
 public class ApiTestResult {
 
   @Id
-  @NotNull
+  @NonNull
   @With(PRIVATE)
   @Size(min = 1, max = 32)
   private String apiTestCriteria;
 
-  @NotNull
+  @NonNull
   @Column(nullable = false, updatable = false, precision = 3, scale = 2)
   private BigDecimal coverage;
 
-  @NotNull
+  @NonNull
   @Column(nullable = false, updatable = false)
   private Boolean includedInReport;
 
-  @NotNull
+  @NonNull
   @Column(nullable = false, updatable = false)
   private Duration duration;
 
@@ -61,7 +61,7 @@ public class ApiTestResult {
   private @Nullable String additionalInformation;
 
   @Id
-  @NotNull
+  @NonNull
   @ManyToOne(optional = false)
   @JoinColumn(name = "api_test", nullable = false)
   private ApiTest apiTest;

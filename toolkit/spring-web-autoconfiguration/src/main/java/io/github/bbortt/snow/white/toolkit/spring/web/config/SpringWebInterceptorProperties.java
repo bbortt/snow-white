@@ -10,9 +10,9 @@ import static io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInt
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 
 @Getter
 @Setter

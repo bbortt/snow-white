@@ -8,8 +8,8 @@ package io.github.bbortt.snow.white.commons.web;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.annotation.Nullable;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

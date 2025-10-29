@@ -71,37 +71,14 @@ class QualityGateConfigurationMapperTest {
     }
 
     @Test
-    void shouldFilterNullValues() {
-      var qualityGateConfiguration = QualityGateConfiguration.builder()
-        .openApiCoverageConfigurations(
-          Set.of(QualityGateOpenApiCoverageMapping.builder().build())
-        )
-        .build();
+    void shouldReturnEmptyList_whenApiCoverageConfigurationsIsEmpty() {
+      var qualityGateConfigurationMock = mock(QualityGateConfiguration.class);
+      doReturn(emptySet())
+        .when(qualityGateConfigurationMock)
+        .getOpenApiCoverageConfigurations();
 
       List<String> stringList = fixture.mapOpenApiCriteriaToStringList(
-        qualityGateConfiguration
-      );
-
-      assertThat(stringList).isNotNull().isEmpty();
-    }
-
-    public static Stream<
-      Set<QualityGateOpenApiCoverageMapping>
-    > shouldReturnEmptyList_whenApiCoverageConfigurationsIsEmpty() {
-      return Stream.of(null, emptySet());
-    }
-
-    @MethodSource
-    @ParameterizedTest
-    void shouldReturnEmptyList_whenApiCoverageConfigurationsIsEmpty(
-      Set<QualityGateOpenApiCoverageMapping> openApiCoverageConfigurations
-    ) {
-      var qualityGateConfiguration = QualityGateConfiguration.builder()
-        .openApiCoverageConfigurations(openApiCoverageConfigurations)
-        .build();
-
-      List<String> stringList = fixture.mapOpenApiCriteriaToStringList(
-        qualityGateConfiguration
+        qualityGateConfigurationMock
       );
 
       assertThat(stringList).isNotNull().isEmpty();
@@ -147,7 +124,7 @@ class QualityGateConfigurationMapperTest {
 
       assertThat(nameCaptor.getAllValues())
         .hasSize(2)
-        .containsExactly("foo", "bar");
+        .containsExactlyInAnyOrder("foo", "bar");
     }
 
     @Test

@@ -25,8 +25,6 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiVal
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,6 +36,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -123,7 +123,7 @@ public class BackstageCatalogService implements ApiCatalogService {
     );
   }
 
-  @NotNull
+  @NonNull
   private Function<
     Stream<Entity>,
     Stream<OpenAPIParameters>
@@ -148,14 +148,14 @@ public class BackstageCatalogService implements ApiCatalogService {
     }
   }
 
-  @NotNull
+  @NonNull
   private BigDecimal queryTotalApiEntities() {
     return backstageEntityApi
       .getEntitiesByQuery(null, 0, null, null, null, null, null, null)
       .getTotalItems();
   }
 
-  @NotNull
+  @NonNull
   private List<Entity> queryPageItems(int offset) {
     return backstageEntityApi
       .getEntitiesByQuery(
@@ -171,7 +171,7 @@ public class BackstageCatalogService implements ApiCatalogService {
       .getItems();
   }
 
-  @NotNull
+  @NonNull
   private Stream<ApiInformation> queryAndParsePageIntoApiInformation(
     Function<Stream<Entity>, Stream<OpenAPIParameters>> streamEnhancer,
     int offset

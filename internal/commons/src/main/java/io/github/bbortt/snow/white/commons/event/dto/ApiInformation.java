@@ -8,14 +8,14 @@ package io.github.bbortt.snow.white.commons.event.dto;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @With
 @Getter
@@ -25,10 +25,10 @@ import lombok.With;
 @AllArgsConstructor(access = PROTECTED)
 public final class ApiInformation {
 
-  @Nonnull
+  @NonNull
   private String serviceName;
 
-  @Nonnull
+  @NonNull
   private String apiName;
 
   private @Nullable String apiVersion;

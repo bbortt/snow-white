@@ -22,15 +22,15 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -61,7 +61,7 @@ public class OpenTelemetryService {
     return parseFluxTableToOpenTelemetryData(fluxTables);
   }
 
-  private @NotNull String buildFluxQuery(
+  private @NonNull String buildFluxQuery(
     ApiInformation apiInformation,
     long lookbackFromTimestamp,
     String lookbackWindow,
@@ -171,7 +171,7 @@ public class OpenTelemetryService {
   }
 
   private String buildNullableAttributeFilter(
-    @Nonnull String key,
+    @NonNull String key,
     @Nullable String value
   ) {
     if (!hasText(value)) {
@@ -181,7 +181,7 @@ public class OpenTelemetryService {
     return (" |> filter(fn: (r) => r[\"" + key + "\"] == \"" + value + "\") ");
   }
 
-  private static @NotNull Set<
+  private static @NonNull Set<
     OpenTelemetryData
   > parseFluxTableToOpenTelemetryData(List<FluxTable> fluxTables) {
     Set<OpenTelemetryData> openTelemetryData = newKeySet();

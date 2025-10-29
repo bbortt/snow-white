@@ -10,9 +10,9 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
-import jakarta.annotation.Nullable;
 import java.util.Set;
 import lombok.With;
+import org.jspecify.annotations.Nullable;
 
 public record OpenApiTestContext(
   ApiInformation apiInformation,

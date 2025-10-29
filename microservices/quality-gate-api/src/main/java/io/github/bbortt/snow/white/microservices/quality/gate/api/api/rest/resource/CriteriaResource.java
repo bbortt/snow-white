@@ -17,6 +17,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenAp
 import java.util.LinkedHashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ public class CriteriaResource implements CriteriaApi {
   private final OpenApiCoverageConfigurationService openApiCoverageConfigurationService;
 
   @Override
-  public ResponseEntity<List<OpenApiCriterion>> listOpenApiCriteria() {
+  public ResponseEntity<@NonNull List<OpenApiCriterion>> listOpenApiCriteria() {
     var openApiCoverageConfigurations = openApiCoverageConfigurationService
       .getAllOpenapiCoverageConfigurations()
       .stream()

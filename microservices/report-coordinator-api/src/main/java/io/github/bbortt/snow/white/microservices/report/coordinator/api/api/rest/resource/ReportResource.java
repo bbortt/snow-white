@@ -26,10 +26,11 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
-import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -82,7 +83,7 @@ public class ReportResource implements ReportApi {
 
   @Override
   public ResponseEntity<
-    List<ListQualityGateReports200ResponseInner>
+    @NonNull List<ListQualityGateReports200ResponseInner>
   > listQualityGateReports(Integer page, Integer size, String sort) {
     var qualityGateReports = reportService.findAllReports(
       toPageable(page, size, sort)

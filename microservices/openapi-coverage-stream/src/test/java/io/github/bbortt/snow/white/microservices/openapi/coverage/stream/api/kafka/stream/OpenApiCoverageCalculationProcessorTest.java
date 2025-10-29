@@ -44,7 +44,6 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
@@ -54,6 +53,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -399,7 +399,7 @@ class OpenApiCoverageCalculationProcessorTest {
     }
   }
 
-  private @NotNull Set<OpenApiTestResult> getOpenApiTestResults(
+  private @NonNull Set<OpenApiTestResult> getOpenApiTestResults(
     Set<OpenApiTestResult> openApiTestResults
   ) {
     doReturn(openApiTestResults)
@@ -408,7 +408,7 @@ class OpenApiCoverageCalculationProcessorTest {
     return openApiTestResults;
   }
 
-  private @NotNull OpenAPI getOpenAPIMock()
+  private @NonNull OpenAPI getOpenAPIMock()
     throws OpenApiNotIndexedException, UnparseableOpenApiException {
     var openAPIMock = mock(OpenAPI.class);
     doReturn(openAPIMock)
@@ -417,7 +417,7 @@ class OpenApiCoverageCalculationProcessorTest {
     return openAPIMock;
   }
 
-  private @NotNull Set<OpenTelemetryData> getMockedOpenTelemetryData() {
+  private @NonNull Set<OpenTelemetryData> getMockedOpenTelemetryData() {
     Set<OpenTelemetryData> openTelemetryData = Set.of(
       new OpenTelemetryData("spanId", "traceId", null)
     );

@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +36,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.service.except
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -130,12 +132,12 @@ class QualityGateResourceTest {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .toEntity(qualityGateConfig);
+        .toInitialEntityIgnoringRelationships(qualityGateConfig);
 
       var persistedQualityGateConfiguration = new QualityGateConfiguration();
       doReturn(persistedQualityGateConfiguration)
         .when(qualityGateServiceMock)
-        .persist(qualityGateConfiguration);
+        .persist(qualityGateConfiguration, emptyList());
 
       var responseEntity = new QualityGateConfig();
       doReturn(responseEntity)
@@ -164,14 +166,14 @@ class QualityGateResourceTest {
 
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .toEntity(qualityGateConfig);
+        .toInitialEntityIgnoringRelationships(qualityGateConfig);
       doThrow(
         new ConfigurationNameAlreadyExistsException(
           qualityGateConfiguration.getName()
         )
       )
         .when(qualityGateServiceMock)
-        .persist(qualityGateConfiguration);
+        .persist(qualityGateConfiguration, emptyList());
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -198,7 +200,7 @@ class QualityGateResourceTest {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
-        .toEntity(qualityGateConfig);
+        .toInitialEntityIgnoringRelationships(qualityGateConfig);
 
       var response = fixture.createQualityGate(qualityGateConfig);
 
@@ -265,7 +267,8 @@ class QualityGateResourceTest {
       var qualityGateConfiguration1 = mock(QualityGateConfiguration.class);
       var qualityGateConfiguration2 = mock(QualityGateConfiguration.class);
 
-      Page<QualityGateConfiguration> qualityGateConfigurationPage = mock();
+      Page<@NonNull QualityGateConfiguration> qualityGateConfigurationPage =
+        mock();
       doReturn(2L).when(qualityGateConfigurationPage).getTotalElements();
 
       doReturn(qualityGateConfigurationPage)
@@ -286,7 +289,7 @@ class QualityGateResourceTest {
         .when(qualityGateConfigurationMapperMock)
         .toDto(qualityGateConfiguration2);
 
-      ResponseEntity<List<QualityGateConfig>> response =
+      ResponseEntity<@NonNull List<QualityGateConfig>> response =
         fixture.getAllQualityGates(page, size, sort);
 
       assertThat(response)
@@ -308,14 +311,15 @@ class QualityGateResourceTest {
       var size = 10;
       var sort = "createdAt,desc";
 
-      Page<QualityGateConfiguration> qualityGateConfigurationPage = mock();
+      Page<@NonNull QualityGateConfiguration> qualityGateConfigurationPage =
+        mock();
       doReturn(qualityGateConfigurationPage)
         .when(qualityGateServiceMock)
         .findAllQualityGateConfigurations(any(Pageable.class));
 
       doReturn(Stream.empty()).when(qualityGateConfigurationPage).stream();
 
-      ResponseEntity<List<QualityGateConfig>> response =
+      ResponseEntity<@NonNull List<QualityGateConfig>> response =
         fixture.getAllQualityGates(page, size, sort);
 
       assertThat(response)
@@ -396,7 +400,7 @@ class QualityGateResourceTest {
       var qualityGateConfigurationWithUpdates = new QualityGateConfiguration();
       doReturn(qualityGateConfigurationWithUpdates)
         .when(qualityGateConfigurationMapperMock)
-        .toEntity(qualityGateConfig);
+        .toEntityForUpdate(qualityGateConfig, qualityGateConfiguration);
 
       var persistedQualityGateConfiguration = new QualityGateConfiguration();
       doReturn(persistedQualityGateConfiguration)
@@ -447,7 +451,7 @@ class QualityGateResourceTest {
       var qualityGateConfigurationWithUpdates = new QualityGateConfiguration();
       doReturn(qualityGateConfigurationWithUpdates)
         .when(qualityGateConfigurationMapperMock)
-        .toEntity(qualityGateConfig);
+        .toEntityForUpdate(qualityGateConfig, qualityGateConfiguration);
 
       doThrow(new UnmodifiableConfigurationException(NAME))
         .when(qualityGateServiceMock)

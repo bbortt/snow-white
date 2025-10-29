@@ -18,8 +18,10 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.R
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
@@ -27,11 +29,12 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.reposit
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,11 +45,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class QualityGateService {
 
+  private final QualityGateConfigurationMapper qualityGateConfigurationMapper;
+
   private final OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
   private final QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
+  @Transactional
   public QualityGateConfiguration persist(
-    @Nonnull QualityGateConfiguration qualityGateConfiguration
+    @NonNull QualityGateConfiguration qualityGateConfiguration,
+    @Nullable List<String> openApiCriteria
   ) throws ConfigurationNameAlreadyExistsException {
     if (
       qualityGateConfigurationRepository.existsByName(
@@ -58,9 +65,32 @@ public class QualityGateService {
       );
     }
 
-    return qualityGateConfigurationRepository.save(
-      qualityGateConfiguration.withIsPredefined(FALSE)
-    );
+    var initialQualityGateConfiguration =
+      qualityGateConfigurationRepository.save(
+        qualityGateConfiguration.withIsPredefined(FALSE)
+      );
+
+    if (!isEmpty(openApiCriteria)) {
+      attachOpenApiCoverageConfigurations(
+        initialQualityGateConfiguration,
+        openApiCriteria
+      );
+    }
+
+    return initialQualityGateConfiguration;
+  }
+
+  private void attachOpenApiCoverageConfigurations(
+    QualityGateConfiguration target,
+    List<String> openApiCriteria
+  ) {
+    var openApiCoverageConfigurations =
+      qualityGateConfigurationMapper.mapOpenApiCriteriaToMappings(
+        openApiCriteria,
+        target
+      );
+
+    target.setOpenApiCoverageConfigurations(openApiCoverageConfigurations);
   }
 
   public void deleteByName(String name)
@@ -79,9 +109,9 @@ public class QualityGateService {
     qualityGateConfigurationRepository.deleteByName(name);
   }
 
-  public Page<QualityGateConfiguration> findAllQualityGateConfigurations(
-    Pageable pageable
-  ) {
+  public Page<
+    @NonNull QualityGateConfiguration
+  > findAllQualityGateConfigurations(Pageable pageable) {
     return qualityGateConfigurationRepository.findAll(pageable);
   }
 
