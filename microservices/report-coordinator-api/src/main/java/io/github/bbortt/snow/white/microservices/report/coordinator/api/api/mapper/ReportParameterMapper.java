@@ -10,15 +10,17 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = SPRING)
 public interface ReportParameterMapper {
-  @Mapping(target = "calculationId", ignore = true)
+  @Mapping(target = "calculationId", source = "calculationId")
   @Mapping(target = "lookbackWindow", defaultValue = "1h")
   @Mapping(target = "qualityGateReport", ignore = true)
   ReportParameter fromDto(
-    CalculateQualityGateRequest qualityGateCalculationRequest
+    CalculateQualityGateRequest qualityGateCalculationRequest,
+    UUID calculationId
   );
 }

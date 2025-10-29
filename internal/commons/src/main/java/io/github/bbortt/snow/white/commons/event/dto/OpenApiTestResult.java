@@ -7,9 +7,9 @@
 package io.github.bbortt.snow.white.commons.event.dto;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
-import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
+import org.jspecify.annotations.Nullable;
 
 public record OpenApiTestResult(
   OpenApiCriteria openApiCriteria,

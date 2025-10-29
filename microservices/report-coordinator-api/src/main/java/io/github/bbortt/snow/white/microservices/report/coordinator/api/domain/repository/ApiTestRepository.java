@@ -7,8 +7,10 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ApiTestRepository extends JpaRepository<ApiTest, Long> {}
+public interface ApiTestRepository
+  extends JpaRepository<@NonNull ApiTest, @NonNull Long> {}

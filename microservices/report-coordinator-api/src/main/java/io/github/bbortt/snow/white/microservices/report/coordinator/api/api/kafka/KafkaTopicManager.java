@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kaf
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.PREFIX;
 import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class KafkaTopicManager {
       FALSE
     );
 
-    if (!TRUE.equals(initTopics)) {
+    if (!initTopics) {
       return null;
     }
 
@@ -65,7 +64,7 @@ public class KafkaTopicManager {
       FALSE
     );
 
-    if (!TRUE.equals(initTopics)) {
+    if (!initTopics) {
       return null;
     }
 

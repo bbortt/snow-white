@@ -103,12 +103,13 @@ public class OpenApiResultListener {
       qualityGateReport.getQualityGateConfigName()
     );
 
-    apiTestResultLinker.addResultsToApiTest(
-      apiTest,
-      qualityGateConfig.getOpenApiCriteria(),
+    apiTestResultLinker.addApiTestResultsToApiTest(
       apiTestResultMapper.fromDtos(
-        openApiCoverageResponseEvent.openApiCriteria()
-      )
+        openApiCoverageResponseEvent.openApiCriteria(),
+        apiTest
+      ),
+      apiTest,
+      qualityGateConfig.getOpenApiCriteria()
     );
 
     qualityGateReport = qualityGateStatusCalculator.withUpdatedReportStatus(

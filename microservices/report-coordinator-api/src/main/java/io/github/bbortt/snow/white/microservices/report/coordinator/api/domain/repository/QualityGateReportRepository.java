@@ -8,9 +8,10 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QualityGateReportRepository
-  extends JpaRepository<QualityGateReport, UUID> {}
+  extends JpaRepository<@NonNull QualityGateReport, @NonNull UUID> {}

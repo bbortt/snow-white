@@ -22,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -34,8 +35,8 @@ public class ReportService {
   private final String calculationRequestTopic;
 
   private final KafkaTemplate<
-    String,
-    QualityGateCalculationRequestEvent
+    @NonNull String,
+    @NonNull QualityGateCalculationRequestEvent
   > kafkaTemplate;
 
   private final QualityGateService qualityGateService;
@@ -44,7 +45,10 @@ public class ReportService {
   private final QualityGateReportRepository qualityGateReportRepository;
 
   public ReportService(
-    KafkaTemplate<String, QualityGateCalculationRequestEvent> kafkaTemplate,
+    KafkaTemplate<
+      @NonNull String,
+      @NonNull QualityGateCalculationRequestEvent
+    > kafkaTemplate,
     QualityGateService qualityGateService,
     ApiTestRepository apiTestRepository,
     QualityGateReportRepository qualityGateReportRepository,
@@ -101,12 +105,10 @@ public class ReportService {
     Set<ApiTest> apiTests,
     ReportParameter reportParameter
   ) {
-    var calculationId = UUID.randomUUID();
-
     var qualityGateReport = QualityGateReport.builder()
-      .calculationId(calculationId)
+      .calculationId(reportParameter.getCalculationId())
       .qualityGateConfigName(qualityGateConfigName)
-      .reportParameter(reportParameter.withCalculationId(calculationId))
+      .reportParameter(reportParameter)
       .build();
 
     final var persistedQualityGateReport = qualityGateReportRepository.save(
@@ -167,7 +169,7 @@ public class ReportService {
     return qualityGateReportRepository.save(qualityGateReport);
   }
 
-  public Page<QualityGateReport> findAllReports(Pageable pageable) {
+  public Page<@NonNull QualityGateReport> findAllReports(Pageable pageable) {
     return qualityGateReportRepository.findAll(pageable);
   }
 }

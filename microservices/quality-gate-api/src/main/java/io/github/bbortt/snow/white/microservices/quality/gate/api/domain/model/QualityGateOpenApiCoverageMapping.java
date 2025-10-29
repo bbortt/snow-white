@@ -12,6 +12,7 @@ import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.PERSIST;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.FetchType.EAGER;
+import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Entity;
@@ -20,14 +21,15 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 
 @Entity
 @Table
@@ -42,13 +44,14 @@ import lombok.With;
 public class QualityGateOpenApiCoverageMapping {
 
   @Id
-  @NotNull
+  @NonNull
+  @Setter(PACKAGE)
   @ManyToOne(optional = false, cascade = { ALL }, fetch = EAGER)
   @JoinColumn(name = "quality_gate_configuration", nullable = false)
   private QualityGateConfiguration qualityGateConfiguration;
 
   @Id
-  @NotNull
+  @NonNull
   @ManyToOne(
     optional = false,
     cascade = { PERSIST, MERGE, REFRESH, DETACH },

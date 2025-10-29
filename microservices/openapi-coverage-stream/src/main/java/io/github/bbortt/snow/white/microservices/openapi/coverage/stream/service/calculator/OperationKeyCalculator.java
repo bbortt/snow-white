@@ -8,20 +8,20 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static lombok.AccessLevel.PRIVATE;
 
-import jakarta.annotation.Nonnull;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.NonNull;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class OperationKeyCalculator {
 
   public static String toOperationKey(
-    @Nonnull String path,
-    @Nonnull String method
+    @NonNull String path,
+    @NonNull String method
   ) {
     return method.toUpperCase() + "_" + path;
   }
 
-  public static String toPath(@Nonnull String operationKey) {
+  public static String toPath(@NonNull String operationKey) {
     return operationKey.substring(operationKey.indexOf("_") + 1);
   }
 }

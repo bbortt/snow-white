@@ -18,8 +18,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,7 +43,7 @@ public class OpenApiService {
     return parseOpenApiSource(apiEndpointEntry);
   }
 
-  private OpenAPI parseOpenApiSource(@NotNull ApiEndpointEntry apiEndpointEntry)
+  private OpenAPI parseOpenApiSource(@NonNull ApiEndpointEntry apiEndpointEntry)
     throws UnparseableOpenApiException {
     SwaggerParseResult swaggerParseResult = openAPIV3Parser.readLocation(
       apiEndpointEntry.getSourceUrl(),

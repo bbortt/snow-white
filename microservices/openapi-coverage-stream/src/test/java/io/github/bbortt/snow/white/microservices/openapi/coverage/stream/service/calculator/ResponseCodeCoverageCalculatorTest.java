@@ -17,12 +17,12 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
-import jakarta.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -487,7 +487,7 @@ class ResponseCodeCoverageCalculatorTest {
       return new OpenTelemetryData("span-123", "trace-456", attributes);
     }
 
-    private static @Nonnull BigDecimal getBigDecimal(double value) {
+    private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
     }
   }

@@ -39,11 +39,11 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.R
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,6 +159,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       UUID.fromString(calculationIdStr)
     );
 
+    assertThat(calculationId).isNotNull();
     assertThat(qualityGateReportRepository.findById(calculationId))
       .isPresent()
       .get()
@@ -240,6 +241,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       UUID.fromString(calculationIdStr)
     );
 
+    assertThat(calculationId).isNotNull();
     assertThat(qualityGateReportRepository.findById(calculationId)).isPresent();
 
     assertThatKafkaEventHasBeenPublished(
@@ -273,7 +275,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
   }
 
-  private @NotNull String createQualityGateApiWiremockStub() {
+  private @NonNull String createQualityGateApiWiremockStub() {
     var qualityGateConfig = new QualityGateConfig().name(
       QUALITY_GATE_CONFIG_NAME
     );

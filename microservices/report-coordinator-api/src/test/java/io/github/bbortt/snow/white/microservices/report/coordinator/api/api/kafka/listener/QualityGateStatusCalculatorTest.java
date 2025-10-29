@@ -16,17 +16,18 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import java.time.Duration;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class QualityGateStatusCalculatorTest {
 
@@ -40,33 +41,33 @@ class QualityGateStatusCalculatorTest {
   @Nested
   class WithUpdatedReportStatus {
 
-    public static <T> Stream<Set<T>> nullOrEmptySet() {
-      return Stream.of(null, emptySet());
-    }
-
-    @ParameterizedTest
-    @MethodSource("nullOrEmptySet")
-    void shouldReturnNotStarted_whenNoApiTestsArePresent(
-      Set<ApiTest> apiTests
-    ) {
-      var report = new QualityGateReport().withApiTests(apiTests);
+    @Test
+    void shouldReturnNotStarted_whenNoApiTestsArePresent() {
+      var report = QualityGateReport.builder()
+        .calculationId(UUID.fromString("694b4335-3748-42e2-9901-48705374ddb7"))
+        .apiTests(emptySet())
+        .reportParameter(mock(ReportParameter.class))
+        .build();
 
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 
       assertThat(result.getReportStatus()).isEqualTo(NOT_STARTED);
     }
 
-    @ParameterizedTest
-    @MethodSource("nullOrEmptySet")
-    void shouldReturnInProgress_whenAnyTestResultsHaveNotArrivedYet(
-      Set<ApiTestResult> apiTestResults
-    ) {
-      var report = new QualityGateReport().withApiTests(
-        Set.of(
-          new ApiTest().withApiTestResults(apiTestResults),
-          new ApiTest().withApiTestResults(Set.of(new ApiTestResult()))
+    @Test
+    void shouldReturnInProgress_whenAnyTestResultsHaveNotArrivedYet() {
+      var report = QualityGateReport.builder()
+        .calculationId(UUID.fromString("87ddf55c-4f38-4a00-b067-c3dc7abbdfcb"))
+        .apiTests(
+          Set.of(
+            ApiTest.builder().apiTestResults(emptySet()).build(),
+            ApiTest.builder()
+              .apiTestResults(Set.of(new ApiTestResult()))
+              .build()
+          )
         )
-      );
+        .reportParameter(mock(ReportParameter.class))
+        .build();
 
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 
@@ -75,20 +76,40 @@ class QualityGateStatusCalculatorTest {
 
     @Test
     void shouldReturnFailed_whenAnyIncludedTestFailedAndNoneInProgress() {
-      var report = new QualityGateReport().withApiTests(
-        Set.of(
-          new ApiTest().withApiTestResults(
-            Set.of(
-              new ApiTestResult().withCoverage(ONE).withIncludedInReport(TRUE)
-            )
-          ),
-          new ApiTest().withApiTestResults(
-            Set.of(
-              new ApiTestResult().withCoverage(ZERO).withIncludedInReport(TRUE)
-            )
+      var report = QualityGateReport.builder()
+        .calculationId(UUID.fromString("26578776-7886-4be4-84ac-110c4e5307b8"))
+        .apiTests(
+          Set.of(
+            ApiTest.builder()
+              .apiTestResults(
+                Set.of(
+                  ApiTestResult.builder()
+                    .apiTestCriteria("criteria1")
+                    .coverage(ONE)
+                    .includedInReport(TRUE)
+                    .duration(Duration.ofSeconds(1))
+                    .apiTest(mock(ApiTest.class))
+                    .build()
+                )
+              )
+              .build(),
+            ApiTest.builder()
+              .apiTestResults(
+                Set.of(
+                  ApiTestResult.builder()
+                    .apiTestCriteria("criteria1")
+                    .coverage(ZERO)
+                    .includedInReport(TRUE)
+                    .duration(Duration.ofSeconds(1))
+                    .apiTest(mock(ApiTest.class))
+                    .build()
+                )
+              )
+              .build()
           )
         )
-      );
+        .reportParameter(mock(ReportParameter.class))
+        .build();
 
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 
@@ -97,15 +118,27 @@ class QualityGateStatusCalculatorTest {
 
     @Test
     void should_not_returnFailed_whenAnyUnincludedTestFailed() {
-      var report = new QualityGateReport().withApiTests(
-        Set.of(
-          new ApiTest().withApiTestResults(
-            Set.of(
-              new ApiTestResult().withCoverage(ZERO).withIncludedInReport(FALSE)
-            )
+      var report = QualityGateReport.builder()
+        .calculationId(UUID.fromString("fadeeadc-8a60-4a2f-ac87-66c339c175f2"))
+        .apiTests(
+          Set.of(
+            ApiTest.builder()
+              .apiTestResults(
+                Set.of(
+                  ApiTestResult.builder()
+                    .apiTestCriteria("criteria")
+                    .coverage(ZERO)
+                    .includedInReport(FALSE)
+                    .duration(Duration.ofSeconds(1))
+                    .apiTest(mock(ApiTest.class))
+                    .build()
+                )
+              )
+              .build()
           )
         )
-      );
+        .reportParameter(mock(ReportParameter.class))
+        .build();
 
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 
@@ -114,20 +147,40 @@ class QualityGateStatusCalculatorTest {
 
     @Test
     void shouldReturnPassedWhenAllIncludedTestsPassedAndNoneInProgress() {
-      var report = new QualityGateReport().withApiTests(
-        Set.of(
-          new ApiTest().withApiTestResults(
-            Set.of(
-              new ApiTestResult().withCoverage(ZERO).withIncludedInReport(FALSE)
-            )
-          ),
-          new ApiTest().withApiTestResults(
-            Set.of(
-              new ApiTestResult().withCoverage(ONE).withIncludedInReport(TRUE)
-            )
+      var report = QualityGateReport.builder()
+        .calculationId(UUID.fromString("9c18ee4b-0fc4-4677-90e1-47eae4092d9b"))
+        .apiTests(
+          Set.of(
+            ApiTest.builder()
+              .apiTestResults(
+                Set.of(
+                  ApiTestResult.builder()
+                    .apiTestCriteria("criteria1")
+                    .coverage(ZERO)
+                    .includedInReport(FALSE)
+                    .duration(Duration.ofSeconds(1))
+                    .apiTest(mock(ApiTest.class))
+                    .build()
+                )
+              )
+              .build(),
+            ApiTest.builder()
+              .apiTestResults(
+                Set.of(
+                  ApiTestResult.builder()
+                    .apiTestCriteria("criteria2")
+                    .coverage(ONE)
+                    .includedInReport(TRUE)
+                    .duration(Duration.ofSeconds(1))
+                    .apiTest(mock(ApiTest.class))
+                    .build()
+                )
+              )
+              .build()
           )
         )
-      );
+        .reportParameter(mock(ReportParameter.class))
+        .build();
 
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 

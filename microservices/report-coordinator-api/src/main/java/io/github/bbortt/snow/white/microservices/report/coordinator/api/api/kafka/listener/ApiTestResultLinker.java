@@ -17,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 final class ApiTestResultLinker {
 
-  void addResultsToApiTest(
+  void addApiTestResultsToApiTest(
+    Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
-    Set<String> includedOpenApiCriteria,
-    Set<ApiTestResult> apiTestResults
+    Set<String> includedOpenApiCriteria
   ) {
     if (isEmpty(apiTestResults)) {
       return;
@@ -29,11 +29,9 @@ final class ApiTestResultLinker {
     apiTestResults
       .parallelStream()
       .map(apiTestResult ->
-        apiTestResult
-          .withApiTest(apiTest)
-          .withIncludedInReport(
-            isIncludedInReport(apiTestResult, includedOpenApiCriteria)
-          )
+        apiTestResult.withIncludedInReport(
+          isIncludedInReport(apiTestResult, includedOpenApiCriteria)
+        )
       )
       .forEach(apiTest.getApiTestResults()::add);
   }

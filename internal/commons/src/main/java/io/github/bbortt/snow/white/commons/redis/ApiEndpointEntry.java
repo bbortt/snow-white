@@ -11,12 +11,12 @@ import static java.util.Objects.nonNull;
 import static lombok.AccessLevel.PACKAGE;
 
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
-import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
@@ -30,26 +30,26 @@ import org.springframework.data.redis.core.index.Indexed;
 public class ApiEndpointEntry {
 
   @Id
-  private @Nonnull String id;
+  private @NonNull String id;
 
   @Indexed
-  private @Nonnull String otelServiceName;
+  private @NonNull String otelServiceName;
 
   @Indexed
-  private @Nonnull String apiName;
+  private @NonNull String apiName;
 
   @Indexed
-  private @Nonnull String apiVersion;
+  private @NonNull String apiVersion;
 
-  private @Nonnull String sourceUrl;
+  private @NonNull String sourceUrl;
 
-  private @Nonnull Integer apiType;
+  private @NonNull Integer apiType;
 
   public ApiEndpointEntry(
-    @Nonnull String otelServiceName,
-    @Nonnull String apiName,
-    @Nonnull String apiVersion,
-    @Nonnull String sourceUrl,
+    @NonNull String otelServiceName,
+    @NonNull String apiName,
+    @NonNull String apiVersion,
+    @NonNull String sourceUrl,
     ApiType apiType
   ) {
     this.id = generateRedisApiInformationId(

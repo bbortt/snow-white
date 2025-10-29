@@ -15,11 +15,11 @@ import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.ka
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.protobuf.ExportTraceServiceRequestEventProtobufProcessor;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

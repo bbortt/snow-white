@@ -13,11 +13,11 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 abstract class AbstractOpenApiCoverageCalculator
   implements OpenApiCoverageCalculator {
@@ -47,9 +47,9 @@ abstract class AbstractOpenApiCoverageCalculator
     );
   }
 
-  protected abstract @Nonnull OpenApiCriteria getSupportedOpenApiCriteria();
+  protected abstract @NonNull OpenApiCriteria getSupportedOpenApiCriteria();
 
-  protected abstract @Nonnull CoverageCalculationResult calculateCoverage(
+  protected abstract @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   );

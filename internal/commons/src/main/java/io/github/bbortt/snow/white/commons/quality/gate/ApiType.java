@@ -9,8 +9,8 @@ package io.github.bbortt.snow.white.commons.quality.gate;
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 
-import jakarta.annotation.Nullable;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 public enum ApiType {

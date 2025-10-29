@@ -22,7 +22,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.HashSet;
@@ -34,6 +33,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 
 @Entity
 @Table
@@ -50,7 +50,7 @@ public class QualityGateReport {
   );
 
   @Id
-  @NotNull
+  @NonNull
   @With(PRIVATE)
   @Column(nullable = false, updatable = false)
   private UUID calculationId;
@@ -60,7 +60,7 @@ public class QualityGateReport {
   @Column(nullable = false, updatable = false, length = 64)
   private String qualityGateConfigName;
 
-  @NotNull
+  @NonNull
   @OneToOne(
     mappedBy = "qualityGateReport",
     cascade = { ALL },
@@ -69,18 +69,18 @@ public class QualityGateReport {
   )
   private ReportParameter reportParameter;
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @OneToMany(mappedBy = "qualityGateReport", cascade = { ALL }, fetch = EAGER)
   private Set<ApiTest> apiTests = new HashSet<>();
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @Enumerated(STRING)
   @Column(nullable = false, length = 16)
   private ReportStatus reportStatus = IN_PROGRESS;
 
-  @NotNull
+  @NonNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Instant createdAt = Instant.now();

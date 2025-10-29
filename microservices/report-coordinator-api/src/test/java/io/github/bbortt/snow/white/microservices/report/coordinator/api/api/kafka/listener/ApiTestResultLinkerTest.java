@@ -7,15 +7,19 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static java.lang.Boolean.FALSE;
 import static java.math.BigDecimal.ONE;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +45,7 @@ class ApiTestResultLinkerTest {
   }
 
   @Nested
-  class AddResultsToApiTest {
+  class AddApiTestResultsToApiTest {
 
     public static <T> Stream<Set<T>> nullOrEmptyList() {
       return Stream.of(null, emptySet());
@@ -54,65 +58,72 @@ class ApiTestResultLinkerTest {
     ) {
       var apiTestMock = mock(ApiTest.class);
 
-      fixture.addResultsToApiTest(apiTestMock, emptySet(), apiTestResults);
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTestMock,
+        emptySet()
+      );
 
       verifyNoInteractions(apiTestMock);
     }
 
     @ParameterizedTest
     @MethodSource("nullOrEmptyList")
-    void shouldReturnApiTestWithLinkedResults(
+    void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCriteria(
       Set<String> includedOpenApiCriteria
     ) {
       var apiTest = ApiTest.builder().build();
 
-      Set<ApiTestResult> openApiTestCriteria = Set.of(
+      var apiTestResult = spy(
         ApiTestResult.builder()
           .apiTestCriteria(PATH_COVERAGE.name())
           .coverage(ONE)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
           .build()
       );
 
-      fixture.addResultsToApiTest(
+      fixture.addApiTestResultsToApiTest(
+        Set.of(apiTestResult),
         apiTest,
-        includedOpenApiCriteria,
-        openApiTestCriteria
+        includedOpenApiCriteria
       );
 
       assertThat(apiTest.getApiTestResults())
         .hasSize(1)
         .first()
-        .satisfies(
-          result -> assertThat(result.getApiTest()).isEqualTo(apiTest),
-          result -> assertThat(result.getIncludedInReport()).isFalse()
-        );
+        .isEqualTo(apiTestResult);
+
+      verify(apiTestResult).withIncludedInReport(false);
     }
 
     @Test
-    void shouldReturnApiTestWithLinkedResults_andMarkThemAsIncluded() {
+    void shouldReturnApiTestWithLinkedResults_includedInOpenApiCriteria() {
       var apiTest = ApiTest.builder().build();
 
-      Set<ApiTestResult> openApiTestCriteria = Set.of(
+      Set<ApiTestResult> apiTestResults = Set.of(
         ApiTestResult.builder()
           .apiTestCriteria(PATH_COVERAGE.name())
           .coverage(ONE)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
           .build()
       );
 
       Set<String> includedOpenApiCriteria = Set.of(PATH_COVERAGE.name());
 
-      fixture.addResultsToApiTest(
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
         apiTest,
-        includedOpenApiCriteria,
-        openApiTestCriteria
+        includedOpenApiCriteria
       );
 
       assertThat(apiTest.getApiTestResults())
         .hasSize(1)
-        .first()
-        .satisfies(
-          result -> assertThat(result.getApiTest()).isEqualTo(apiTest),
-          result -> assertThat(result.getIncludedInReport()).isTrue()
+        .allSatisfy(result ->
+          assertThat(result.getIncludedInReport()).isTrue()
         );
     }
   }

@@ -12,8 +12,8 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiVal
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.BackstageCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.MinioService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.ServiceInterfaceCatalogService;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
