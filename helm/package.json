@@ -17,13 +17,13 @@
     "yaml": "2.8.1"
   },
   "devDependencies": {
-    "@types/node": "24.9.1",
-    "@vitest/coverage-v8": "4.0.4",
+    "@types/node": "24.9.2",
+    "@vitest/coverage-v8": "4.0.6",
     "ts-node": "10.9.2",
-    "vitest": "4.0.4"
+    "vitest": "4.0.6"
   },
   "optionalDependencies": {
-    "npm-check-updates": "19.1.1"
+    "npm-check-updates": "19.1.2"
   },
   "packageManager": "pnpm@10.15.0",
   "engines": {
