@@ -44,6 +44,19 @@ describe('API Gateway', () => {
       return deployment;
     };
 
+    const getPodSpec = (deployment) => {
+      const { spec } = deployment;
+      expect(spec).toBeDefined();
+
+      const { template } = spec;
+      expect(template).toBeDefined();
+
+      const templateSpec = template.spec;
+      expect(templateSpec).toBeDefined();
+
+      return templateSpec;
+    };
+
     it('should be kubernetes Deployment', async () => {
       const deployment = await renderAndGetDeployment();
 
@@ -72,20 +85,22 @@ describe('API Gateway', () => {
       });
     });
 
-    it("should specify 'RollingUpdate' strategy", async () => {
-      const deployment = await renderAndGetDeployment();
+    it('truncates long release name', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        // 53 chars is the max length for Helm release names
+        releaseName: 'very-long-test-release-name-that-exceeds-the-limit',
+      });
 
-      const { spec } = deployment;
-      expect(spec).toBeDefined();
+      const deployment = manifests.find(
+        (m) =>
+          m.kind === 'Deployment' &&
+          m.metadata.name ===
+            'snow-white-very-long-test-release-name-that-exceeds-the-limit-a',
+      );
 
-      expect(spec.replicas).toBe(3);
-
-      const { strategy } = spec;
-      expect(strategy).toBeDefined();
-      expect(strategy.type).toBe('RollingUpdate');
-      expect(strategy.rollingUpdate).toBeDefined();
-      expect(strategy.rollingUpdate.maxSurge).toBe(0);
-      expect(strategy.rollingUpdate.maxUnavailable).toBe(1);
+      expect(deployment).toBeDefined();
+      expect(deployment.metadata.name).toHaveLength(63);
     });
 
     describe('replicas', () => {
@@ -133,6 +148,22 @@ describe('API Gateway', () => {
 
         expect(deployment.spec.replicas).toBeUndefined();
       });
+    });
+
+    it("should specify 'RollingUpdate' strategy", async () => {
+      const deployment = await renderAndGetDeployment();
+
+      const { spec } = deployment;
+      expect(spec).toBeDefined();
+
+      expect(spec.replicas).toBe(3);
+
+      const { strategy } = spec;
+      expect(strategy).toBeDefined();
+      expect(strategy.type).toBe('RollingUpdate');
+      expect(strategy.rollingUpdate).toBeDefined();
+      expect(strategy.rollingUpdate.maxSurge).toBe(0);
+      expect(strategy.rollingUpdate.maxUnavailable).toBe(1);
     });
 
     describe('revisionHistoryLimit', () => {
@@ -186,7 +217,10 @@ describe('API Gateway', () => {
       it('should select correct pod based on selector labels', async () => {
         const deployment = await renderAndGetDeployment();
 
-        const { template } = deployment;
+        const { spec } = deployment;
+        expect(spec).toBeDefined();
+
+        const { template } = spec;
         expect(template).toBeDefined();
 
         const { metadata } = template;
@@ -195,6 +229,47 @@ describe('API Gateway', () => {
         expect(
           isSubset(deployment.spec.selector.matchLabels, metadata.labels),
         ).toBe(true);
+      });
+    });
+
+    describe('imagePullSecrets', () => {
+      it('should have none by default', async () => {
+        const deployment = await renderAndGetDeployment();
+
+        const { spec } = deployment;
+        expect(spec).toBeDefined();
+
+        expect(spec.imagePullSecrets).toBeUndefined();
+      });
+
+      it('renders with custom image pull secret based on values', async () => {
+        const manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            global: {
+              imagePullSecrets: {
+                token: 'something',
+              },
+            },
+          },
+        });
+
+        const deployment = getApiGatewayDeployment(manifests);
+        const templateSpec = getPodSpec(deployment);
+
+        expect(templateSpec.imagePullSecrets).toEqual({ token: 'something' });
+      });
+    });
+
+    describe('affinities', () => {
+      it('should have none by default', async () => {
+        const deployment = await renderAndGetDeployment();
+
+        const templateSpec = getPodSpec(deployment);
+
+        expect(templateSpec.affinity).toBeDefined();
+        expect(templateSpec.affinity.podAffinity).toBeUndefined();
+        expect(templateSpec.affinity.podAntiAffinity).toBeUndefined();
       });
     });
   });
@@ -266,7 +341,7 @@ describe('API Gateway', () => {
     });
 
     describe('type', async () => {
-      it('should have default labels', async () => {
+      it("should be 'ClusterIP' by default", async () => {
         const service = await renderAndGetService();
 
         const { spec } = service;
@@ -464,7 +539,7 @@ describe('API Gateway', () => {
     });
 
     describe('annotations', () => {
-      it('should not have any annotations by default', async () => {
+      it('should have none by default', async () => {
         const ingress = await renderAndGetIngress();
 
         const { metadata } = ingress;

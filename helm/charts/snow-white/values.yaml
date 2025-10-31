@@ -13,7 +13,6 @@ snowWhite:
     enabled: true
     className: 'nginx'
     tls: true
-  podAnnotations: {}
   podAntiAffinity: {}
   apiGateway:
     image:

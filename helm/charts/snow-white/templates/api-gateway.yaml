@@ -21,10 +21,6 @@ spec:
       {{- $selectorLabels | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.snowWhite.podAnnotations }}
-      annotations:
-          {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- $selectorLabels | nindent 8 }}
     spec:
@@ -34,17 +30,17 @@ spec:
       {{- end }}
       securityContext:
         fsGroup: 101
-      {{- if .Values.snowWhite.podAntiAffinity }}
-      {{- with .Values.snowWhite.podAntiAffinity }}
       affinity:
+        {{- if .Values.snowWhite.podAffinity }}
+        {{- with .Values.snowWhite.podAffinity }}
+        podAffinity: {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.snowWhite.apiGateway.podAntiAffinity }}
+        {{- with .Values.snowWhite.apiGateway.podAntiAffinity }}
         podAntiAffinity: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- else if .Values.snowWhite.apiGateway.podAntiAffinity }}
-      {{- with .Values.snowWhite.apiGateway.podAntiAffinity }}
-      affinity:
-        podAntiAffinity: {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- end }}
+        {{- end }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
