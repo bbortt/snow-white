@@ -17,8 +17,10 @@
     "yaml": "2.8.1"
   },
   "devDependencies": {
+    "@types/lodash": "4.17.20",
     "@types/node": "24.9.1",
     "@vitest/coverage-v8": "4.0.4",
+    "lodash": "4.17.21",
     "ts-node": "10.9.2",
     "vitest": "4.0.4"
   },
