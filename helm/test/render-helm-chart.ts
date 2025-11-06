@@ -10,7 +10,7 @@ import { writeFile } from 'node:fs/promises';
 import { stringify, parseAllDocuments } from 'yaml';
 import { merge } from 'lodash';
 
-const withDefaultValues = (values: object): object => {
+const mergeWithDefaultValues = (values: object): object => {
   return {
     appVersionOverride: 'test-version',
     ...merge(
@@ -51,6 +51,7 @@ export async function renderHelmChart(options: {
   namespace?: string;
   releaseName?: string;
   values?: object;
+  withDefaultValues?: boolean;
 }): Promise<any[]> {
   const {
     chartPath,
@@ -58,10 +59,14 @@ export async function renderHelmChart(options: {
     namespace = 'default',
     releaseName = 'test-release',
     values = {},
+    withDefaultValues = true,
   } = options;
 
   const { path: tmpValuesPath } = await tmpFile();
-  await writeFile(tmpValuesPath, stringify(withDefaultValues(values)));
+  await writeFile(
+    tmpValuesPath,
+    stringify(withDefaultValues ? mergeWithDefaultValues(values) : values),
+  );
 
   const helmArgs = [
     'template',
