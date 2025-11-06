@@ -1,9 +1,9 @@
-{{- $labels := include "snow-white.labels" (dict "name" "api-gateway" "context" .) | nindent 0 }}
-{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "api-gateway" "context" .) | nindent 0 }}
+{{- $labels := include "snow-white.labels" (dict "name" "quality-gate-api" "context" .) | nindent 0 }}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "quality-gate-api" "context" .) | nindent 0 }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "quality-gate-api" | trunc 63 | trimSuffix "-" }}
   labels:
     {{ $labels | nindent 4 }}
 spec:
@@ -13,7 +13,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: {{ .Values.snowWhite.apiGateway.rollout.maxSurge }}
+      maxSurge: {{ .Values.snowWhite.qualityGateApi.rollout.maxSurge }}
       maxUnavailable: 0
   revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
   selector:
@@ -36,17 +36,23 @@ spec:
         nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
       {{- end }}
       containers:
-        - name: api-gateway
-          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-gateway:{{ .Values.snowWhite.apiGateway.image.tag | default .Chart.AppVersion }}"
+        - name: quality-gate-api
+          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/quality-gate-api:{{ .Values.snowWhite.apiGateway.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.snowWhite.image.pullPolicy }}
           env:
-            - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
+            - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
               value: '{{ include "snow-white.publicHost" . }}'
-            - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'
-              value: 'http://quality-gate-api:8080'
-            - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'
-              value: 'http://report-coordinator-api:8080'
-          {{- with .Values.snowWhite.apiGateway.additionalEnvs }}
+            - name: 'SPRING_DATASOURCE_URL'
+              value: 'jdbc:postgresql://postgres:5432/quality-gate-api'
+            - name: 'SPRING_DATASOURCE_USERNAME'
+              value: 'quality_gate_app'
+            - name: 'SPRING_DATASOURCE_PASSWORD'
+              value: 'strongpassword4'
+            - name: 'SPRING_FLYWAY_USER'
+              value: 'quality_gate_flyway'
+            - name: 'SPRING_FLYWAY_PASSWORD'
+              value: 'strongpassword3'
+          {{- with .Values.snowWhite.qualityGateApi.additionalEnvs }}
             {{- range $k, $v := . }}
             - name: {{ $k }}
               value: {{ $v }}
@@ -61,11 +67,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: '0.5Gi'
+              memory: '128Mi'
               ephemeral-storage: '0Gi'
             requests:
-              cpu: '0.5'
-              memory: '0.5Gi'
+              cpu: '0.1'
+              memory: '128Mi'
               ephemeral-storage: '0Mi'
           startupProbe:
             httpGet:
@@ -106,7 +112,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "quality-gate-api" | trunc 63 | trimSuffix "-" }}
   labels: {{ $labels | nindent 4 }}
 spec:
   selector: {{ $selectorLabels | nindent 4 }}
@@ -115,44 +121,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "quality-gate-api" | trunc 63 | trimSuffix "-" }}
   labels: {{ $labels | nindent 4 }}
 spec:
-  type: {{ .Values.snowWhite.apiGateway.service.type }}
+  type: ClusterIP
   selector: {{ $selectorLabels | nindent 4 }}
   ports:
     - name: http
       protocol: TCP
-      port: {{ .Values.snowWhite.apiGateway.service.port }}
+      port: 80
       targetPort: http
----
-{{ if .Values.snowWhite.ingress.enabled -}}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
-  labels:
-    {{ $labels | nindent 4 }}
-  {{- with .Values.snowWhite.ingress.annotations }}
-  annotations:
-    {{ toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  ingressClassName: {{ .Values.snowWhite.ingress.className }}
-  {{- if .Values.snowWhite.ingress.tls }}
-  tls:
-    - hosts:
-        - '{{ include "snow-white.publicHost" . }}'
-  {{- end }}
-  rules:
-    - host: {{ include "snow-white.publicHost" . }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
-                port:
-                  name: http
-{{- end }}
