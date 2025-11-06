@@ -806,6 +806,34 @@ describe('API Gateway', () => {
         const rule = ingress.spec.rules[0];
         expect(rule.host).toBe(hostname);
       });
+
+      it('is required to specify a public host', async () => {
+        expectFailsWithMessageContaining(
+          async () =>
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              withDefaultValues: false,
+            }),
+          "ERROR: You must set 'snowWhite.ingress.host' to the public URL!",
+        );
+      });
+
+      const expectFailsWithMessageContaining = async (
+        callback: Function,
+        part: string,
+      ): Promise<void> => {
+        try {
+          await callback();
+        } catch (error) {
+          expect(error.message).contains(part);
+
+          return;
+        }
+
+        expect.fail(
+          `Expected code to throw exception containing message '${part}'!`,
+        );
+      };
     });
   });
 });
