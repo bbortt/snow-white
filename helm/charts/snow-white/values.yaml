@@ -44,6 +44,7 @@ snowWhite:
   ingress:
     enabled: true
     className: 'nginx'
+    host: ''
     tls: true
   apiGateway:
     image:

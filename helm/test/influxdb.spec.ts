@@ -34,8 +34,8 @@ describe('InfluxDB', () => {
       chartPath: 'charts/snow-white',
     });
 
-    const statefulSet = getInfluxDBDeployment(manifests);
-    expect(statefulSet.spec.replicas).toBeUndefined();
+    const deployment = getInfluxDBDeployment(manifests);
+    expect(deployment.spec.replicas).toBeUndefined();
   });
 
   it('can be disabled via properties', async () => {

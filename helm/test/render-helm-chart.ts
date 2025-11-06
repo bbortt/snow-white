@@ -26,6 +26,25 @@ const withDefaultValues = (values: object): object => {
   };
 };
 
+const executeHelmCommand = async (helmArgs: string[]): Promise<string> => {
+  const { stdout } = await execa('helm', helmArgs);
+  return stdout;
+};
+
+const transformStdoutToJson = async (
+  stdout: string,
+  debug: boolean,
+): Promise<any[]> => {
+  const docs = parseAllDocuments(stdout);
+  const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
+
+  if (debug) {
+    console.debug('json:', json);
+  }
+
+  return json;
+};
+
 export async function renderHelmChart(options: {
   chartPath: string;
   debug?: boolean;
@@ -41,7 +60,7 @@ export async function renderHelmChart(options: {
     values = {},
   } = options;
 
-  const { path: tmpValuesPath, cleanup } = await tmpFile();
+  const { path: tmpValuesPath } = await tmpFile();
   await writeFile(tmpValuesPath, stringify(withDefaultValues(values)));
 
   const helmArgs = [
@@ -58,18 +77,7 @@ export async function renderHelmChart(options: {
     helmArgs.push('--debug');
   }
 
-  try {
-    const { stdout } = await execa('helm', helmArgs);
-
-    const docs = parseAllDocuments(stdout);
-    const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
-
-    if (debug) {
-      console.debug('json:', json);
-    }
-
-    return json;
-  } finally {
-    await cleanup();
-  }
+  return await executeHelmCommand(helmArgs).then((stdout) =>
+    transformStdoutToJson(stdout, debug),
+  );
 }
