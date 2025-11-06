@@ -47,12 +47,20 @@ snowWhite:
     host: ''
     tls: true
   apiGateway:
+    rollout:
+      maxSurge: '25%'
     image:
       tag: ''
     additionalEnvs: {}
     service:
       type: ClusterIP
       port: 80
+  qualityGateApi:
+    rollout:
+      maxSurge: '25%'
+    image:
+      tag: ''
+    additionalEnvs: {}
 
 # Infrastructure
 kafka:
