@@ -5,10 +5,10 @@ kind: Deployment
 metadata:
   name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
   labels:
-    {{- $labels | nindent 4 }}
+    {{ $labels | nindent 4 }}
 spec:
   {{- if ne .Values.snowWhite.mode "auto-scaling" }}
-  {{- include "snow-white.replicas" . | nindent 2 }}
+  {{ include "snow-white.replicas" . | nindent 2 }}
   {{- end }}
   strategy:
     type: RollingUpdate
@@ -18,22 +18,22 @@ spec:
   revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
   selector:
     matchLabels:
-      {{- $selectorLabels | nindent 6 }}
+      {{ $selectorLabels | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- $selectorLabels | nindent 8 }}
+        {{ $selectorLabels | nindent 8 }}
     spec:
-      {{- include "snowWhite.imagePullSecrets" . | nindent 6 }}
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
       securityContext:
         fsGroup: 101
       {{- if .Values.affinity }}
-      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
       {{- else }}
       affinity:
-        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
-        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
-        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
       {{- end }}
       containers:
         - name: api-gateway
@@ -41,7 +41,7 @@ spec:
           imagePullPolicy: {{ .Values.snowWhite.image.pullPolicy }}
           env:
             - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
-              value: 'http://localhost'
+              value: '{{ include "snow-white.publicHost" . }}'
             - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'
               value: 'http://quality-gate-api:8080'
             - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'
@@ -117,27 +117,26 @@ spec:
       port: {{ .Values.snowWhite.apiGateway.service.port }}
       targetPort: http
 ---
-{{- if .Values.snowWhite.ingress.enabled -}}
-{{- $host := .Values.snowWhite.ingress.host -}}
+{{ if .Values.snowWhite.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
   labels:
-    {{- $labels | nindent 4 }}
+    {{ $labels | nindent 4 }}
   {{- with .Values.snowWhite.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{ toYaml . | nindent 4 }}
   {{- end }}
 spec:
   ingressClassName: {{ .Values.snowWhite.ingress.className }}
   {{- if .Values.snowWhite.ingress.tls }}
   tls:
     - hosts:
-        - {{ $host }}
+        - '{{ include "snow-white.publicHost" . }}'
   {{- end }}
   rules:
-    - host: {{ $host }}
+    - host: {{ include "snow-white.publicHost" . }}
       http:
         paths:
           - path: /

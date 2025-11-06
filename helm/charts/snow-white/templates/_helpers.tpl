@@ -2,7 +2,7 @@
 Expand the name of the chart
 */}}
 {{- define "snow-white.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -28,9 +28,9 @@ app.kubernetes.io/part-of: snow-white
 Create the name of the service account to use
 */}}
 {{- define "snow-white.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
+{{ if .Values.serviceAccount.create -}}
     {{ default (include "snow-white.name" .) .Values.serviceAccount.name }}
-{{- else -}}
+{{ else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
@@ -52,9 +52,22 @@ replicas: 3
 {{/*
 Helper function to construct the imagePullSecrets spec
 */}}
-{{- define "snowWhite.imagePullSecrets" -}}
+{{- define "snow-white.imagePullSecrets" -}}
 {{- with .Values.global.imagePullSecrets -}}
 imagePullSecrets:
-{{- toYaml . | nindent 2 }}
+{{ toYaml . | nindent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Helper function making sure that the public domain (exposed through ingress) is defined
+
+TODO: how can I "throw" this? { print "⚠ SECURITY WARNING: No public URL for snow-white defined!"
+*/}}
+{{- define "snow-white.publicHost" -}}
+{{ if (empty .Values.snowWhite.ingress.host) }}
+{{ fail "⚠️  ERROR: You must set 'snowWhite.ingress.host' to the public URL!" }}
+{{- else -}}
+{{ .Values.snowWhite.ingress.host }}
 {{- end -}}
 {{- end -}}
