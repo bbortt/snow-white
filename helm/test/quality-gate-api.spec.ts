@@ -169,10 +169,8 @@ describe('Quality-Gate API', () => {
             chartPath: 'charts/snow-white',
             values: {
               snowWhite: {
-                qualityGateApi: {
-                  rollout: {
-                    maxSurge: 0,
-                  },
+                rollout: {
+                  maxSurge: 0,
                 },
               },
             },
@@ -493,7 +491,10 @@ describe('Quality-Gate API', () => {
         const { spec } = pdb;
         expect(spec).toBeDefined();
 
-        expect(spec.selector).toEqual({
+        const { selector } = spec;
+        expect(selector).toBeDefined();
+
+        expect(selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'quality-gate-api',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -510,7 +511,7 @@ describe('Quality-Gate API', () => {
         const deployment = manifests.find(
           (m) =>
             m.kind === 'Deployment' &&
-            isSubset(pdb.spec.selector, m.metadata?.labels),
+            isSubset(pdb.spec.selector.matchLabels, m.metadata?.labels),
         );
 
         expect(deployment).toBeDefined();
