@@ -169,10 +169,8 @@ describe('API Gateway', () => {
             chartPath: 'charts/snow-white',
             values: {
               snowWhite: {
-                apiGateway: {
-                  rollout: {
-                    maxSurge: 0,
-                  },
+                rollout: {
+                  maxSurge: 0,
                 },
               },
             },
@@ -408,7 +406,7 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3 environment variables by default', async () => {
+          it('should deploy 3 environment varabiles by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
             expect(apiGateway.env).toHaveLength(3);
           });
@@ -491,7 +489,7 @@ describe('API Gateway', () => {
         const { spec } = pdb;
         expect(spec).toBeDefined();
 
-        expect(spec.selector).toEqual({
+        expect(spec.selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-gateway',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -508,7 +506,7 @@ describe('API Gateway', () => {
         const deployment = manifests.find(
           (m) =>
             m.kind === 'Deployment' &&
-            isSubset(pdb.spec.selector, m.metadata?.labels),
+            isSubset(pdb.spec.selector.matchLabels, m.metadata?.labels),
         );
 
         expect(deployment).toBeDefined();
@@ -566,7 +564,7 @@ describe('API Gateway', () => {
       });
     });
 
-    it('should truncate long release name', async () => {
+    it('truncates long release name', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         // 53 chars is the max length for Helm release names
@@ -742,7 +740,7 @@ describe('API Gateway', () => {
       expect(ingress[0].metadata.name).toBe('snow-white-test-release');
     });
 
-    it('should truncate long release name', async () => {
+    it('truncates long release name', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         // 53 chars is the max length for Helm release names

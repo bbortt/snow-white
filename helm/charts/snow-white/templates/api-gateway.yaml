@@ -1,5 +1,5 @@
-{{- $labels := include "snow-white.labels" (dict "name" "api-gateway" "context" .) | nindent 0 }}
-{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "api-gateway" "context" .) | nindent 0 }}
+{{- $labels := include "snow-white.labels" (dict "name" "api-gateway" "context" .) | nindent 0 -}}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "api-gateway" "context" .) | nindent 0 -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,7 +13,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: {{ .Values.snowWhite.apiGateway.rollout.maxSurge }}
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
       maxUnavailable: 0
   revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
   selector:
@@ -57,49 +57,48 @@ spec:
               containerPort: 8080
               protocol: TCP
             - name: actuator
-              containerPort: 9000
+              containerPort: 8090
               protocol: TCP
           resources:
             limits:
               memory: '0.5Gi'
-              ephemeral-storage: '0Gi'
+              ephemeral-storage: '2Gi'
             requests:
               cpu: '0.5'
               memory: '0.5Gi'
-              ephemeral-storage: '0Mi'
+              ephemeral-storage: '50Mi'
           startupProbe:
             httpGet:
               scheme: HTTP
-              path: /
-              port: http
-            initialDelaySeconds: 10
-            timeoutSeconds: 2
-            periodSeconds: 5
+              path: /management/health
+              port: actuator
+            # native apps start fast, so allow minimal delay
+            initialDelaySeconds: 3
+            periodSeconds: 1
+            timeoutSeconds: 1
             successThreshold: 1
-            failureThreshold: 12
+            failureThreshold: 7  # tolerate a few slow startups just in case
           readinessProbe:
             httpGet:
               scheme: HTTP
-              path: /api/manage/readiness
+              path: /management/health/readiness
               port: actuator
-            initialDelaySeconds: 10
-            timeoutSeconds: 2
+            timeoutSeconds: 1
             periodSeconds: 5
-            successThreshold: 1
-            failureThreshold: 12
+            successThreshold: 1   # allow immediate readiness on success
+            failureThreshold: 2   # stop routing quickly if unhealthy
           livenessProbe:
             httpGet:
               scheme: HTTP
-              path: /api/manage/liveness
+              path: /management/health/liveness
               port: actuator
-            initialDelaySeconds: 45
-            timeoutSeconds: 5
-            periodSeconds: 15
+            timeoutSeconds: 1
+            periodSeconds: 10      # liveness can be less frequent to reduce load
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 3    # don’t restart on minor hiccups
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            # readOnlyRootFilesystem: true
             runAsUser: 100
             runAsGroup: 101
 ---
@@ -109,7 +108,9 @@ metadata:
   name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
   labels: {{ $labels | nindent 4 }}
 spec:
-  selector: {{ $selectorLabels | nindent 4 }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
   maxUnavailable: 25%
 ---
 apiVersion: v1

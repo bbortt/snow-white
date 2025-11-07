@@ -2,6 +2,9 @@
 global:
   imagePullSecrets: []
 
+commonLabels:
+  app.kubernetes.io/part-of: snow-white
+
 ## @param podAffinityPreset InfluxDB(TM) Core Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
 ##
@@ -41,6 +44,8 @@ snowWhite:
     registry: 'ghcr.io'
     pullPolicy: Always
   revisionHistoryLimit: 3
+  rollout:
+    maxSurge: '25%'
   ingress:
     enabled: true
     className: 'nginx'

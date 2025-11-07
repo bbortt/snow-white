@@ -66,7 +66,7 @@ TODO: how can I "throw" this? { print "⚠ SECURITY WARNING: No public URL for s
 */}}
 {{- define "snow-white.publicHost" -}}
 {{ if (empty .Values.snowWhite.ingress.host) }}
-{{ fail "⚠️  ERROR: You must set 'snowWhite.ingress.host' to the public URL!" }}
+{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.ingress.host' to the public URL!" }}
 {{- else -}}
 {{ .Values.snowWhite.ingress.host }}
 {{- end -}}
