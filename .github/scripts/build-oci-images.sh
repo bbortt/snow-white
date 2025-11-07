@@ -10,6 +10,11 @@ image_tag="$1"
 registry="${2:-ghcr.io}"
 additional_args="$3"
 
+if [[ -z "$image_tag" ]]; then
+  echo "Must provide image tag as first variable: .github/scripts/build-oci-images.sh [IMAGE_TAG]" 1>&2
+  exit 1
+fi
+
 scripts_dir="$(dirname "$(realpath "$0")")"
 root_dir="$scripts_dir/../.."
 
