@@ -20,6 +20,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.springframework.util.StreamUtils.copyToString;
 
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.XmlMapperConfiguration;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -33,8 +34,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.Resource;
 import org.xml.sax.SAXException;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 class JUnitReporterTest {
 
@@ -80,6 +81,8 @@ class JUnitReporterTest {
       .build();
   }
 
+  private final XmlMapper xmlMapper = new XmlMapperConfiguration().xmlMapper();
+
   private JUnitReporter fixture;
 
   @BeforeEach
@@ -88,14 +91,14 @@ class JUnitReporterTest {
   }
 
   @Nested
-  class TransformToJUnitReport {
+  class TransformToJUnitTestSuites {
 
     @Test
     void shouldTransformReport_withoutOpenApiCoverage()
       throws IOException, JUnitReportCreationException, SAXException {
       var qualityGateReport = createInitialQualityGateReport();
 
-      var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
+      var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
 
       verifyJUnitReportEqualsExpectedContent(
         jUnitReport,
@@ -128,7 +131,7 @@ class JUnitReporterTest {
         )
       );
 
-      var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
+      var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
 
       verifyJUnitReportEqualsExpectedContent(
         jUnitReport,
@@ -161,7 +164,7 @@ class JUnitReporterTest {
         )
       );
 
-      var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
+      var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
 
       verifyJUnitReportEqualsExpectedContent(
         jUnitReport,
@@ -199,7 +202,7 @@ class JUnitReporterTest {
         )
       );
 
-      var jUnitReport = fixture.transformToJUnitReport(qualityGateReport);
+      var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
 
       verifyJUnitReportEqualsExpectedContent(
         jUnitReport,
@@ -219,7 +222,7 @@ class JUnitReporterTest {
       );
 
       assertThatThrownBy(() ->
-        fixture.transformToJUnitReport(qualityGateReport)
+        fixture.transformToJUnitTestSuites(qualityGateReport)
       )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageStartingWith("No enum constant")
@@ -227,7 +230,7 @@ class JUnitReporterTest {
     }
 
     private void verifyJUnitReportEqualsExpectedContent(
-      Resource jUnitReport,
+      TestSuites testSuites,
       String resourceName
     ) throws IOException, SAXException {
       assertXMLEqual(
@@ -235,7 +238,7 @@ class JUnitReporterTest {
           getClass().getClassLoader().getResourceAsStream(resourceName),
           UTF_8
         ),
-        jUnitReport.getContentAsString(UTF_8)
+        xmlMapper.writeValueAsString(testSuites)
       );
     }
   }

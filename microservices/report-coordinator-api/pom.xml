@@ -41,11 +41,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-xml</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>io.github.bbortt.snow-white</groupId>
       <artifactId>commons</artifactId>
     </dependency>
@@ -89,6 +84,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
+
     <dependency>
       <groupId>tools.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>

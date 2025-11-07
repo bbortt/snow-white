@@ -17,7 +17,10 @@ import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_XML;
 
+import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
@@ -37,6 +40,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class ReportResource implements ReportApi {
+
+  @VisibleForTesting
+  static final String JUNIT_XML_FILENAME = "snow-white-junit.xml";
 
   private final JUnitReporter jUnitReporter;
   private final ReportService reportService;
@@ -62,22 +68,26 @@ public class ReportResource implements ReportApi {
     }
 
     try {
-      var jUnitReport = jUnitReporter.transformToJUnitReport(
+      var jUnitReport = jUnitReporter.transformToJUnitTestSuites(
         reportOrError.qualityGateReport()
       );
+
       return ResponseEntity.ok()
         .header(
           CONTENT_DISPOSITION,
-          format("attachment; filename=\"%s\"", jUnitReport.getFilename())
+          format("attachment; filename=\"%s\"", JUNIT_XML_FILENAME)
         )
+        .contentType(APPLICATION_XML)
         .body(jUnitReport);
     } catch (JUnitReportCreationException e) {
-      return ResponseEntity.internalServerError().body(
-        ListQualityGateReports500Response.builder()
-          .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
-          .message(e.getMessage())
-          .build()
-      );
+      return ResponseEntity.internalServerError()
+        .contentType(APPLICATION_JSON)
+        .body(
+          ListQualityGateReports500Response.builder()
+            .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
+            .message(e.getMessage())
+            .build()
+        );
     }
   }
 
@@ -106,12 +116,14 @@ public class ReportResource implements ReportApi {
 
     if (optionalReport.isEmpty()) {
       return errorResponse(
-        ResponseEntity.status(NOT_FOUND).body(
-          ListQualityGateReports500Response.builder()
-            .code(NOT_FOUND.getReasonPhrase())
-            .message(format("No report by id '%s' exists!", calculationId))
-            .build()
-        )
+        ResponseEntity.status(NOT_FOUND)
+          .contentType(APPLICATION_JSON)
+          .body(
+            ListQualityGateReports500Response.builder()
+              .code(NOT_FOUND.getReasonPhrase())
+              .message(format("No report by id '%s' exists!", calculationId))
+              .build()
+          )
       );
     }
 
@@ -119,9 +131,9 @@ public class ReportResource implements ReportApi {
 
     if (IN_PROGRESS.equals(report.getReportStatus())) {
       return errorResponse(
-        ResponseEntity.status(ACCEPTED).body(
-          qualityGateReportMapper.toListDto(report)
-        )
+        ResponseEntity.status(ACCEPTED)
+          .contentType(APPLICATION_JSON)
+          .body(qualityGateReportMapper.toListDto(report))
       );
     }
 
