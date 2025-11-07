@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.API_NAME;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.API_VERSION;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.CALCULATION_ID;
@@ -20,24 +19,16 @@ import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static tools.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static tools.jackson.dataformat.xml.XmlMapper.xmlBuilder;
-import static tools.jackson.dataformat.xml.XmlWriteFeature.WRITE_STANDALONE_YES_TO_XML_DECLARATION;
-import static tools.jackson.dataformat.xml.XmlWriteFeature.WRITE_XML_DECLARATION;
 
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import tools.jackson.dataformat.xml.XmlMapper;
 
 /**
  * JUnit XML report generator, based on <a href="https://github.com/testmoapp/junitxml">Common JUnit XML Format</a>.
@@ -47,25 +38,11 @@ public class JUnitReporter {
 
   private static final DurationFormatter durationFormatter =
     new DurationFormatter();
-  private static final XmlMapper xmlMapper = xmlBuilder()
-    .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(NON_EMPTY))
-    .enable(INDENT_OUTPUT)
-    .enable(WRITE_XML_DECLARATION)
-    .enable(WRITE_STANDALONE_YES_TO_XML_DECLARATION)
-    .build();
 
-  public Resource transformToJUnitReport(QualityGateReport qualityGateReport)
-    throws JUnitReportCreationException {
-    var testSuites = new TestSuitesFactory().buildForQualityGateReport(
-      qualityGateReport
-    );
-
-    try (var byteArrayOutputStream = new ByteArrayOutputStream()) {
-      xmlMapper.writeValue(byteArrayOutputStream, testSuites);
-      return new JUnitReportResource(byteArrayOutputStream.toByteArray());
-    } catch (IOException e) {
-      throw new JUnitReportCreationException(e);
-    }
+  public TestSuites transformToJUnitTestSuites(
+    QualityGateReport qualityGateReport
+  ) throws JUnitReportCreationException {
+    return new TestSuitesFactory().buildForQualityGateReport(qualityGateReport);
   }
 
   private static class TestSuitesFactory {

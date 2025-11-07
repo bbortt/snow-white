@@ -313,7 +313,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     qualityGateReportRepository.save(qualityGateReport);
 
     var jUnitReport = mockMvc
-      .perform(get(JUNIT_REPORT_API_URL, calculationId))
+      .perform(
+        get(JUNIT_REPORT_API_URL, calculationId).accept(APPLICATION_XML_VALUE)
+      )
       .andExpect(status().isOk())
       .andExpect(
         header().string(

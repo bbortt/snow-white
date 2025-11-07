@@ -19,10 +19,12 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
@@ -31,6 +33,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuites;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +46,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -199,12 +201,10 @@ class ReportResourceTest {
         .when(reportServiceMock)
         .findReportByCalculationId(calculationId);
 
-      var junitReport = mock(Resource.class);
-      var filename = "junit-report.xml";
-      doReturn(filename).when(junitReport).getFilename();
-      doReturn(junitReport)
+      var testSuitesMock = mock(TestSuites.class);
+      doReturn(testSuitesMock)
         .when(jUnitReporterMock)
-        .transformToJUnitReport(qualityGateReport);
+        .transformToJUnitTestSuites(qualityGateReport);
 
       var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
 
@@ -214,12 +214,13 @@ class ReportResourceTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(OK),
           r ->
             assertThat(r.getHeaders().toSingleValueMap())
-              .hasSize(1)
+              .hasSize(2)
               .containsEntry(
                 CONTENT_DISPOSITION,
-                "attachment; filename=\"junit-report.xml\""
-              ),
-          r -> assertThat(r.getBody()).isEqualTo(junitReport)
+                "attachment; filename=\"snow-white-junit.xml\""
+              )
+              .containsEntry(CONTENT_TYPE, APPLICATION_XML_VALUE),
+          r -> assertThat(r.getBody()).isEqualTo(testSuitesMock)
         );
     }
 
@@ -267,7 +268,7 @@ class ReportResourceTest {
       var cause = mock(JUnitReportCreationException.class);
       doThrow(cause)
         .when(jUnitReporterMock)
-        .transformToJUnitReport(qualityGateReport);
+        .transformToJUnitTestSuites(qualityGateReport);
 
       var message = "some error message";
       doReturn(message).when(cause).getMessage();
