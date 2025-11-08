@@ -15,13 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
@@ -31,7 +29,6 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuites;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
@@ -193,7 +190,7 @@ class ReportResourceTest {
     private QualityGateReport qualityGateReport;
 
     @Test
-    void shouldReturnJUnitReport() throws JUnitReportCreationException {
+    void shouldReturnJUnitReport() {
       var calculationId = UUID.fromString(
         "81699bec-99a0-4c8f-a9d0-06729477fe00"
       );
@@ -251,43 +248,6 @@ class ReportResourceTest {
                   assertThat(e.getMessage()).isEqualTo(
                     format("No report by id '%s' exists!", calculationId)
                   )
-              )
-        );
-    }
-
-    @Test
-    void shouldReturnInternalServerError_whenJUnitReportCreationFails()
-      throws JUnitReportCreationException {
-      var calculationId = UUID.fromString(
-        "1797354a-4230-4dd2-b1d2-2923f6424d05"
-      );
-      doReturn(Optional.of(qualityGateReport))
-        .when(reportServiceMock)
-        .findReportByCalculationId(calculationId);
-
-      var cause = mock(JUnitReportCreationException.class);
-      doThrow(cause)
-        .when(jUnitReporterMock)
-        .transformToJUnitTestSuites(qualityGateReport);
-
-      var message = "some error message";
-      doReturn(message).when(cause).getMessage();
-
-      var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
-
-      assertThat(response)
-        .isNotNull()
-        .satisfies(
-          r -> assertThat(r.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR),
-          r ->
-            assertThat(r.getBody())
-              .asInstanceOf(type(ListQualityGateReports500Response.class))
-              .satisfies(
-                e ->
-                  assertThat(e.getCode()).isEqualTo(
-                    INTERNAL_SERVER_ERROR.getReasonPhrase()
-                  ),
-                e -> assertThat(e.getMessage()).isEqualTo(message)
               )
         );
     }

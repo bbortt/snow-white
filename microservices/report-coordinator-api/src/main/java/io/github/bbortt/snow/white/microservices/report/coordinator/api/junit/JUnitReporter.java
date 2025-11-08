@@ -41,7 +41,7 @@ public class JUnitReporter {
 
   public TestSuites transformToJUnitTestSuites(
     QualityGateReport qualityGateReport
-  ) throws JUnitReportCreationException {
+  ) {
     return new TestSuitesFactory().buildForQualityGateReport(qualityGateReport);
   }
 
