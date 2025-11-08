@@ -95,7 +95,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withoutOpenApiCoverage()
-      throws IOException, JUnitReportCreationException, SAXException {
+      throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport();
 
       var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
@@ -108,7 +108,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withPassedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException, SAXException {
+      throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(
@@ -141,7 +141,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withFailedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException, SAXException {
+      throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(
@@ -174,7 +174,7 @@ class JUnitReporterTest {
 
     @Test
     void shouldTransformReport_withMixedOpenApiCoverages()
-      throws IOException, JUnitReportCreationException, SAXException {
+      throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(

@@ -15,7 +15,6 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_XML;
@@ -26,7 +25,6 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReportCreationException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import java.util.List;
@@ -67,28 +65,17 @@ public class ReportResource implements ReportApi {
       return reportOrError.errorResponse();
     }
 
-    try {
-      var jUnitReport = jUnitReporter.transformToJUnitTestSuites(
-        reportOrError.qualityGateReport()
-      );
+    var jUnitReport = jUnitReporter.transformToJUnitTestSuites(
+      reportOrError.qualityGateReport()
+    );
 
-      return ResponseEntity.ok()
-        .header(
-          CONTENT_DISPOSITION,
-          format("attachment; filename=\"%s\"", JUNIT_XML_FILENAME)
-        )
-        .contentType(APPLICATION_XML)
-        .body(jUnitReport);
-    } catch (JUnitReportCreationException e) {
-      return ResponseEntity.internalServerError()
-        .contentType(APPLICATION_JSON)
-        .body(
-          ListQualityGateReports500Response.builder()
-            .code(INTERNAL_SERVER_ERROR.getReasonPhrase())
-            .message(e.getMessage())
-            .build()
-        );
-    }
+    return ResponseEntity.ok()
+      .header(
+        CONTENT_DISPOSITION,
+        format("attachment; filename=\"%s\"", JUNIT_XML_FILENAME)
+      )
+      .contentType(APPLICATION_XML)
+      .body(jUnitReport);
   }
 
   @Override
