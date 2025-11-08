@@ -19,6 +19,7 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.E
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
@@ -147,17 +148,8 @@ public class QualityGateResource implements QualityGateApi {
     QualityGateConfig qualityGateConfig
   ) {
     try {
-      var qualityGateConfiguration = qualityGateService.findByName(name);
-      var updates = qualityGateConfigurationMapper.toEntityForUpdate(
-        qualityGateConfig,
-        qualityGateConfiguration
-      );
-
-      copyNonNullFields(updates, qualityGateConfiguration);
-
-      var updatedQualityGateConfiguration = qualityGateService.update(
-        qualityGateConfiguration
-      );
+      var updatedQualityGateConfiguration =
+        fetchAndUpdateExistingQualityGateConfig(name, qualityGateConfig);
 
       return ResponseEntity.ok(
         qualityGateConfigurationMapper.toDto(updatedQualityGateConfiguration)
@@ -178,5 +170,21 @@ public class QualityGateResource implements QualityGateApi {
         e.getMessage()
       );
     }
+  }
+
+  private QualityGateConfiguration fetchAndUpdateExistingQualityGateConfig(
+    String name,
+    QualityGateConfig qualityGateConfig
+  )
+    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+    var qualityGateConfiguration = qualityGateService.findByName(name);
+    var updates = qualityGateConfigurationMapper.toEntityForUpdate(
+      qualityGateConfig,
+      qualityGateConfiguration
+    );
+
+    copyNonNullFields(updates, qualityGateConfiguration);
+
+    return qualityGateService.update(qualityGateConfiguration);
   }
 }

@@ -132,7 +132,7 @@
             </path>
           </annotationProcessorPaths>
           <compilerArgs>
-            <arg>-Amapstruct.unmappedTargetPolicy=ERROR</arg>
+            <compilerArg>-Amapstruct.unmappedTargetPolicy=ERROR</compilerArg>
           </compilerArgs>
         </configuration>
       </plugin>
