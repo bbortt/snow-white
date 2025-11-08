@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
@@ -42,6 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+@Transactional
 @AutoConfigureMockMvc
 class QualityGateResourceIT extends AbstractQualityGateApiIT {
 
@@ -56,13 +58,15 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   private MockMvc mockMvc;
 
   @Autowired
+  private QualityGateConfigurationMapper qualityGateConfigurationMapper;
+
+  @Autowired
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
   @Autowired
   private QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
   @Test
-  @Transactional
   void createQualityGateConfig() throws Exception {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder().name(name).build();
@@ -95,7 +99,6 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   }
 
   @Test
-  @Transactional
   void createQualityGateConfig_withAttachedOpenAPi() throws Exception {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder()
@@ -154,7 +157,6 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   }
 
   @Test
-  @Transactional
   void deleteQualityGateConfig() throws Exception {
     var qualityGateConfiguration = createAndSaveQualityGateConfig(
       "deleteQualityGateConfig"
@@ -203,8 +205,6 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .andExpect(
         jsonPath("$[4].name").value(qualityGateConfiguration.getName())
       );
-
-    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   @Test
@@ -236,8 +236,6 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .andExpect(
         jsonPath("$.openApiCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
-
-    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   @Test
@@ -246,11 +244,15 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       "updateQualityGateConfig"
     ).withDescription("I just added this!");
 
+    var qualityGateConfig = qualityGateConfigurationMapper
+      .toDto(qualityGateConfiguration)
+      .openApiCriteria(singletonList(PATH_COVERAGE.name()));
+
     mockMvc
       .perform(
         put(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName())
           .contentType(APPLICATION_JSON)
-          .content(jsonMapper.writeValueAsString(qualityGateConfiguration))
+          .content(jsonMapper.writeValueAsString(qualityGateConfig))
       )
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
@@ -270,8 +272,6 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .get()
       .extracting(QualityGateConfiguration::getDescription)
       .isEqualTo(qualityGateConfiguration.getDescription());
-
-    qualityGateConfigurationRepository.delete(qualityGateConfiguration);
   }
 
   private QualityGateConfiguration createAndSaveQualityGateConfig(
@@ -282,7 +282,9 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .name(name)
       .build();
 
-    return qualityGateConfigurationRepository.save(qualityGateConfiguration);
+    return qualityGateConfigurationRepository.saveAndFlush(
+      qualityGateConfiguration
+    );
   }
 
   private String generateUniqueName(String suffix) {
