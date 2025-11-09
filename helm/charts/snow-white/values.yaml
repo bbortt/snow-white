@@ -77,6 +77,29 @@ influxdb:
 postgresql:
   enabled: true
   architecture: replication
-
+  primary:
+    extraEnvVars:
+      - name: 'REPORT_COORDINATOR_DATASOURCE_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'report-coord-password'
+      - name: 'REPORT_COORDINATOR_FLYWAY_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'report-coord-flyway-password'
+      - name: 'QUALITY_GATE_DATASOURCE_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'quality-gate-password'
+      - name: 'QUALITY_GATE_FLYWAY_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'quality-gate-flyway-password'
+    initdb:
+      scriptsConfigMap: 'snow-white-postgresql-init-scripts'
 redis:
   enabled: true

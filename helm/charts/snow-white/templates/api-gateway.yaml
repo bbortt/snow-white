@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
   labels:
     {{ $labels | nindent 4 }}
 spec:
@@ -41,11 +41,15 @@ spec:
           imagePullPolicy: {{ .Values.snowWhite.image.pullPolicy }}
           env:
             - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
-              value: '{{ include "snow-white.publicHost" . }}'
+              {{- if .Values.snowWhite.ingress.tls }}
+              value: 'https://{{ include "snow-white.publicHost" . }}'
+              {{- else }}
+              value: 'http://{{ include "snow-white.publicHost" . }}'
+              {{- end }}
             - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'
-              value: 'http://quality-gate-api:8080'
+              value: 'http://{{ printf "%s-%s-%s" .Chart.Name "quality-gate-api" .Release.Name | trunc 63 | trimSuffix "-" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
             - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'
-              value: 'http://report-coordinator-api:8080'
+              value: 'http://{{ printf "%s-%s-%s" .Chart.Name "report-coordinator-api" .Release.Name | trunc 63 | trimSuffix "-" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
           {{- with .Values.snowWhite.apiGateway.additionalEnvs }}
             {{- range $k, $v := . }}
             - name: {{ $k }}
@@ -73,11 +77,11 @@ spec:
               path: /management/health
               port: actuator
             # native apps start fast, so allow minimal delay
-            initialDelaySeconds: 3
+            initialDelaySeconds: 1
             periodSeconds: 1
             timeoutSeconds: 1
             successThreshold: 1
-            failureThreshold: 7  # tolerate a few slow startups just in case
+            failureThreshold: 9  # tolerate a few slow startups just in case
           readinessProbe:
             httpGet:
               scheme: HTTP
@@ -105,7 +109,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
   labels: {{ $labels | nindent 4 }}
 spec:
   selector:
@@ -116,7 +120,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
   labels: {{ $labels | nindent 4 }}
 spec:
   type: {{ .Values.snowWhite.apiGateway.service.type }}
@@ -153,7 +157,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ printf "%s-%s-%s" .Chart.Name .Release.Name "api-gateway" | trunc 63 | trimSuffix "-" }}
+                name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
                 port:
                   name: http
 {{- end }}

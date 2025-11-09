@@ -7,19 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-
-const isSubset = (
-  subset: Record<string, string>,
-  superset: Record<string, any>,
-): boolean => {
-  for (const key in subset) {
-    if (!(key in superset) || subset[key] !== superset[key]) {
-      return false;
-    }
-  }
-
-  return true;
-};
+import { isSubset } from './helpers';
 
 describe('API Gateway', () => {
   describe('deployment', () => {
@@ -33,7 +21,7 @@ describe('API Gateway', () => {
       const deployment = manifests.find(
         (m) =>
           m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-test-release-api-gateway',
+          m.metadata.name === 'snow-white-api-gateway-test-release',
       );
       expect(deployment).toBeDefined();
 
@@ -62,7 +50,7 @@ describe('API Gateway', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.name).toMatch('snow-white-test-release-api-gateway');
+      expect(metadata.name).toMatch('snow-white-api-gateway-test-release');
     });
 
     it('should have default labels', async () => {
@@ -92,7 +80,7 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-a',
+            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
       );
 
       expect(deployment).toBeDefined();
@@ -378,6 +366,25 @@ describe('API Gateway', () => {
               'custom.registry/bbortt/snow-white/api-gateway:v1.0.0-ci.0',
             );
           });
+
+          it('should adjust the image tag from values', async () => {
+            const customTag = 'custom.tag';
+
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    apiGateway: { image: { tag: customTag } },
+                  },
+                },
+              }),
+            );
+
+            expect(apiGateway.image).toBe(
+              'ghcr.io/bbortt/snow-white/api-gateway:custom.tag',
+            );
+          });
         });
 
         describe('imagePullPolicy', () => {
@@ -406,9 +413,63 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3 environment varabiles by default', async () => {
+          it('should deploy 3 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
             expect(apiGateway.env).toHaveLength(3);
+          });
+
+          it('should include public url from values without TLS', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    ingress: {
+                      tls: false,
+                    },
+                  },
+                },
+              }),
+            );
+
+            const publicDomain = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            );
+            expect(publicDomain).toBeDefined();
+            expect(publicDomain.value).toBe('http://localhost');
+          });
+
+          it('should include public url from values with TLS', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            const publicDomain = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            );
+            expect(publicDomain).toBeDefined();
+            expect(publicDomain.value).toBe('https://localhost');
+          });
+
+          it('should calculate service connections based on release name', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            const qualityGateUrl = apiGateway.env.find(
+              (env) =>
+                env.name === 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL',
+            );
+            expect(qualityGateUrl).toBeDefined();
+            expect(qualityGateUrl.value).toBe(
+              'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:8080',
+            );
+
+            const reportCoordinatorUrl = apiGateway.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL',
+            );
+            expect(reportCoordinatorUrl).toBeDefined();
+            expect(reportCoordinatorUrl.value).toBe(
+              'http://snow-white-report-coordinator-api-test-release.default.svc.cluster.local.:8080',
+            );
           });
 
           it('should accept additional environment variables', async () => {
@@ -435,12 +496,10 @@ describe('API Gateway', () => {
               (env) => env.name === 'author',
             );
             expect(authorEnv).toBeDefined();
-            expect(authorEnv.name).toBe('author');
             expect(authorEnv.value).toBe('bbortt');
 
             const fooEnv = apiGateway.env.find((env) => env.name === 'foo');
             expect(fooEnv).toBeDefined();
-            expect(fooEnv.name).toBe('foo');
             expect(fooEnv.value).toBe('bar');
           });
         });
@@ -459,7 +518,7 @@ describe('API Gateway', () => {
       const pdb = manifests.find(
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
-          m.metadata.name === 'snow-white-test-release-api-gateway',
+          m.metadata.name === 'snow-white-api-gateway-test-release',
       );
       expect(pdb).toBeDefined();
       return pdb;
@@ -476,7 +535,7 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-1',
+            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
       );
 
       expect(pdb).toBeDefined();
@@ -525,7 +584,7 @@ describe('API Gateway', () => {
       const service = manifests.find(
         (m) =>
           m.kind === 'Service' &&
-          m.metadata.name === 'snow-white-test-release-api-gateway',
+          m.metadata.name === 'snow-white-api-gateway-test-release',
       );
       expect(service).toBeDefined();
       return service;
@@ -544,7 +603,7 @@ describe('API Gateway', () => {
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
       expect(service.metadata.name).toMatch(
-        'snow-white-test-release-api-gateway',
+        'snow-white-api-gateway-test-release',
       );
     });
 
@@ -575,7 +634,7 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'Service' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-a',
+            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
       );
 
       expect(service).toBeDefined();
@@ -864,7 +923,7 @@ describe('API Gateway', () => {
         expect(path.path).toBe('/');
         expect(path.pathType).toBe('Prefix');
         expect(path.backend.service.name).toBe(
-          'snow-white-test-release-api-gateway',
+          'snow-white-api-gateway-test-release',
         );
         expect(path.backend.service.port.name).toBe('http');
       });

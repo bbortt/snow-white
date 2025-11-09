@@ -7,19 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-
-const isSubset = (
-  subset: Record<string, string>,
-  superset: Record<string, any>,
-): boolean => {
-  for (const key in subset) {
-    if (!(key in superset) || subset[key] !== superset[key]) {
-      return false;
-    }
-  }
-
-  return true;
-};
+import { isSubset } from './helpers';
 
 describe('Quality-Gate API', () => {
   describe('deployment', () => {
@@ -33,7 +21,7 @@ describe('Quality-Gate API', () => {
       const deployment = manifests.find(
         (m) =>
           m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-test-release-quality-gate-api',
+          m.metadata.name === 'snow-white-quality-gate-api-test-release',
       );
       expect(deployment).toBeDefined();
 
@@ -62,7 +50,7 @@ describe('Quality-Gate API', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.name).toMatch('snow-white-test-release-quality-gate-api');
+      expect(metadata.name).toMatch('snow-white-quality-gate-api-test-release');
     });
 
     it('should have default labels', async () => {
@@ -92,7 +80,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-a',
+            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
       );
 
       expect(deployment).toBeDefined();
@@ -362,7 +350,7 @@ describe('Quality-Gate API', () => {
             );
           });
 
-          it('should adjust the container registry from values', async () => {
+          it('should adjust the image registry from values', async () => {
             const customRegistry = 'custom.registry';
 
             const qualityGateApi = await renderAndGetQualityGateApiContainer(
@@ -378,6 +366,25 @@ describe('Quality-Gate API', () => {
 
             expect(qualityGateApi.image).toBe(
               'custom.registry/bbortt/snow-white/quality-gate-api:v1.0.0-ci.0',
+            );
+          });
+
+          it('should adjust the image tag from values', async () => {
+            const customTag = 'custom.tag';
+
+            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    qualityGateApi: { image: { tag: customTag } },
+                  },
+                },
+              }),
+            );
+
+            expect(qualityGateApi.image).toBe(
+              'ghcr.io/bbortt/snow-white/quality-gate-api:custom.tag',
             );
           });
         });
@@ -413,6 +420,38 @@ describe('Quality-Gate API', () => {
             expect(qualityGateApi.env).toHaveLength(6);
           });
 
+          it('should calculate spring datasource password based on release name', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+
+            const springDatasourcePassword = qualityGateApi.env.find(
+              (env) => env.name === 'SPRING_DATASOURCE_PASSWORD',
+            );
+            expect(springDatasourcePassword).toBeDefined();
+
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
+              'snow-white-postgresql-test-release',
+            );
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
+              'quality-gate-password',
+            );
+          });
+
+          it('should calculate spring flyway password based on release name', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+
+            const springDatasourcePassword = qualityGateApi.env.find(
+              (env) => env.name === 'SPRING_FLYWAY_PASSWORD',
+            );
+            expect(springDatasourcePassword).toBeDefined();
+
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
+              'snow-white-postgresql-test-release',
+            );
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
+              'quality-gate-flyway-password',
+            );
+          });
+
           it('should accept additional environment variables', async () => {
             const additionalEnvs = {
               author: 'bbortt',
@@ -437,12 +476,10 @@ describe('Quality-Gate API', () => {
               (env) => env.name === 'author',
             );
             expect(authorEnv).toBeDefined();
-            expect(authorEnv.name).toBe('author');
             expect(authorEnv.value).toBe('bbortt');
 
             const fooEnv = qualityGateApi.env.find((env) => env.name === 'foo');
             expect(fooEnv).toBeDefined();
-            expect(fooEnv.name).toBe('foo');
             expect(fooEnv.value).toBe('bar');
           });
         });
@@ -461,7 +498,7 @@ describe('Quality-Gate API', () => {
       const pdb = manifests.find(
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
-          m.metadata.name === 'snow-white-test-release-quality-gate-api',
+          m.metadata.name === 'snow-white-quality-gate-api-test-release',
       );
       expect(pdb).toBeDefined();
       return pdb;
@@ -478,7 +515,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-1',
+            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
       );
 
       expect(pdb).toBeDefined();
@@ -530,7 +567,7 @@ describe('Quality-Gate API', () => {
       const service = manifests.find(
         (m) =>
           m.kind === 'Service' &&
-          m.metadata.name === 'snow-white-test-release-quality-gate-api',
+          m.metadata.name === 'snow-white-quality-gate-api-test-release',
       );
       expect(service).toBeDefined();
       return service;
@@ -549,7 +586,7 @@ describe('Quality-Gate API', () => {
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
       expect(service.metadata.name).toMatch(
-        'snow-white-test-release-quality-gate-api',
+        'snow-white-quality-gate-api-test-release',
       );
     });
 
@@ -580,7 +617,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'Service' &&
           m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-a',
+            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
       );
 
       expect(service).toBeDefined();
