@@ -9,7 +9,7 @@ import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
 
-describe('Quality-Gate API', () => {
+describe('OTEL Collector', () => {
   describe('deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
@@ -21,7 +21,7 @@ describe('Quality-Gate API', () => {
       const deployment = manifests.find(
         (m) =>
           m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-quality-gate-api-test-release',
+          m.metadata.name === 'snow-white-otel-collector-test-release',
       );
       expect(deployment).toBeDefined();
 
@@ -50,7 +50,7 @@ describe('Quality-Gate API', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.name).toMatch('snow-white-quality-gate-api-test-release');
+      expect(metadata.name).toMatch('snow-white-otel-collector-test-release');
     });
 
     it('should have default labels', async () => {
@@ -64,7 +64,7 @@ describe('Quality-Gate API', () => {
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'quality-gate-api',
+        'app.kubernetes.io/name': 'otel-collector',
         'app.kubernetes.io/part-of': 'snow-white',
       });
     });
@@ -80,7 +80,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
+            'snow-white-otel-collector-very-long-test-release-name-that-exce',
       );
 
       expect(deployment).toBeDefined();
@@ -215,7 +215,7 @@ describe('Quality-Gate API', () => {
 
         expect(selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'quality-gate-api',
+          'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -282,7 +282,7 @@ describe('Quality-Gate API', () => {
                   matchLabels: {
                     'app.kubernetes.io/component': 'influxdb',
                     'app.kubernetes.io/instance': 'test-release',
-                    'app.kubernetes.io/name': 'quality-gate-api',
+                    'app.kubernetes.io/name': 'otel-collector',
                   },
                 },
                 topologyKey: 'kubernetes.io/hostname',
@@ -318,16 +318,16 @@ describe('Quality-Gate API', () => {
     });
 
     describe('containers', () => {
-      it('should have only one (quality-gate-api)', async () => {
+      it('should have only one (otel-collector)', async () => {
         const templateSpec = getPodSpec(await renderAndGetDeployment());
 
         const { containers } = templateSpec;
         expect(containers).toHaveLength(1);
 
-        expect(containers[0].name).toBe('quality-gate-api');
+        expect(containers[0].name).toBe('otel-collector');
       });
 
-      describe('quality-gate-api', () => {
+      describe('otel-collector', () => {
         const renderAndGetQualityGateApiContainer = async (
           manifests?: any[],
         ) => {
@@ -342,64 +342,64 @@ describe('Quality-Gate API', () => {
         };
 
         describe('image', () => {
-          it('should be pulled from ghcr.io by default', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+          it('should be pulled from docker.io by default', async () => {
+            const otelCollector = await renderAndGetQualityGateApiContainer();
 
-            expect(qualityGateApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/quality-gate-api:v1.0.0-ci.0',
+            expect(otelCollector.image).toBe(
+              'docker.io/otel/opentelemetry-collector-contrib:0.138.0',
             );
           });
 
           it('should adjust the image registry from values', async () => {
             const customRegistry = 'custom.registry';
 
-            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetQualityGateApiContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    image: { registry: customRegistry },
+                    otelCollector: { image: { registry: customRegistry } },
                   },
                 },
               }),
             );
 
-            expect(qualityGateApi.image).toBe(
-              'custom.registry/bbortt/snow-white/quality-gate-api:v1.0.0-ci.0',
+            expect(otelCollector.image).toBe(
+              'custom.registry/otel/opentelemetry-collector-contrib:0.138.0',
             );
           });
 
           it('should adjust the image tag from values', async () => {
             const customTag = 'custom.tag';
 
-            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetQualityGateApiContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    qualityGateApi: { image: { tag: customTag } },
+                    otelCollector: { image: { tag: customTag } },
                   },
                 },
               }),
             );
 
-            expect(qualityGateApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/quality-gate-api:custom.tag',
+            expect(otelCollector.image).toBe(
+              'docker.io/otel/opentelemetry-collector-contrib:custom.tag',
             );
           });
         });
 
         describe('imagePullPolicy', () => {
           it('should pull images if they are not present by default', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+            const otelCollector = await renderAndGetQualityGateApiContainer();
 
-            expect(qualityGateApi.imagePullPolicy).toBe('IfNotPresent');
+            expect(otelCollector.imagePullPolicy).toBe('IfNotPresent');
           });
 
           it('should adjust the image pull policy from values', async () => {
             const imagePullPolicy = 'my.policy';
 
-            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetQualityGateApiContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
@@ -408,77 +408,7 @@ describe('Quality-Gate API', () => {
               }),
             );
 
-            expect(qualityGateApi.imagePullPolicy).toBe(imagePullPolicy);
-          });
-        });
-
-        describe('env', () => {
-          it('should deploy 6 environment variables by default', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
-            expect(qualityGateApi.env).toHaveLength(6);
-          });
-
-          it('should calculate spring datasource password based on release name', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
-
-            const springDatasourcePassword = qualityGateApi.env.find(
-              (env) => env.name === 'SPRING_DATASOURCE_PASSWORD',
-            );
-            expect(springDatasourcePassword).toBeDefined();
-
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-test-release',
-            );
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
-              'quality-gate-password',
-            );
-          });
-
-          it('should calculate spring flyway password based on release name', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
-
-            const springDatasourcePassword = qualityGateApi.env.find(
-              (env) => env.name === 'SPRING_FLYWAY_PASSWORD',
-            );
-            expect(springDatasourcePassword).toBeDefined();
-
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-test-release',
-            );
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
-              'quality-gate-flyway-password',
-            );
-          });
-
-          it('should accept additional environment variables', async () => {
-            const additionalEnvs = {
-              author: 'bbortt',
-              foo: 'bar',
-            };
-
-            const qualityGateApi = await renderAndGetQualityGateApiContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  snowWhite: {
-                    qualityGateApi: { additionalEnvs },
-                  },
-                },
-              }),
-            );
-
-            // 6 default + 2 additional
-            expect(qualityGateApi.env).toHaveLength(8);
-
-            const authorEnv = qualityGateApi.env.find(
-              (env) => env.name === 'author',
-            );
-            expect(authorEnv).toBeDefined();
-            expect(authorEnv.value).toBe('bbortt');
-
-            const fooEnv = qualityGateApi.env.find((env) => env.name === 'foo');
-            expect(fooEnv).toBeDefined();
-            expect(fooEnv.value).toBe('bar');
+            expect(otelCollector.imagePullPolicy).toBe(imagePullPolicy);
           });
         });
       });
@@ -496,7 +426,7 @@ describe('Quality-Gate API', () => {
       const pdb = manifests.find(
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
-          m.metadata.name === 'snow-white-quality-gate-api-test-release',
+          m.metadata.name === 'snow-white-otel-collector-test-release',
       );
       expect(pdb).toBeDefined();
       return pdb;
@@ -513,7 +443,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
+            'snow-white-otel-collector-very-long-test-release-name-that-exce',
       );
 
       expect(pdb).toBeDefined();
@@ -531,7 +461,7 @@ describe('Quality-Gate API', () => {
 
         expect(selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'quality-gate-api',
+          'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -565,7 +495,7 @@ describe('Quality-Gate API', () => {
       const service = manifests.find(
         (m) =>
           m.kind === 'Service' &&
-          m.metadata.name === 'snow-white-quality-gate-api-test-release',
+          m.metadata.name === 'snow-white-otel-collector-test-release',
       );
       expect(service).toBeDefined();
       return service;
@@ -584,7 +514,7 @@ describe('Quality-Gate API', () => {
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
       expect(service.metadata.name).toMatch(
-        'snow-white-quality-gate-api-test-release',
+        'snow-white-otel-collector-test-release',
       );
     });
 
@@ -599,7 +529,7 @@ describe('Quality-Gate API', () => {
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'quality-gate-api',
+        'app.kubernetes.io/name': 'otel-collector',
         'app.kubernetes.io/part-of': 'snow-white',
       });
     });
@@ -615,7 +545,7 @@ describe('Quality-Gate API', () => {
         (m) =>
           m.kind === 'Service' &&
           m.metadata.name ===
-            'snow-white-quality-gate-api-very-long-test-release-name-that-ex',
+            'snow-white-otel-collector-very-long-test-release-name-that-exce',
       );
 
       expect(service).toBeDefined();
@@ -631,7 +561,7 @@ describe('Quality-Gate API', () => {
 
         expect(spec.selector).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'quality-gate-api',
+          'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
