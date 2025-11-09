@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jre-
+FROM eclipse-temurin:25-jre-alpine
 
 EXPOSE 8080
 EXPOSE 8090
