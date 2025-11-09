@@ -388,10 +388,10 @@ describe('API Gateway', () => {
         });
 
         describe('imagePullPolicy', () => {
-          it('should always pull images by default', async () => {
+          it('should pull images if they are not present by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
 
-            expect(apiGateway.imagePullPolicy).toBe('Always');
+            expect(apiGateway.imagePullPolicy).toBe('IfNotPresent');
           });
 
           it('should adjust the image pull policy from values', async () => {
@@ -401,9 +401,7 @@ describe('API Gateway', () => {
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
-                  snowWhite: {
-                    image: { pullPolicy: imagePullPolicy },
-                  },
+                  image: { pullPolicy: imagePullPolicy },
                 },
               }),
             );

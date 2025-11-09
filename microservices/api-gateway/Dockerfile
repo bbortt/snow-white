@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jre-alpine AS jlink-builder
+FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
 ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
@@ -78,9 +78,9 @@ ENV SPRING_PROFILES_ACTIVE="dev" \
 RUN java -Djarmode=tools -jar /tmp/app.jar extract --destination /app && \
     cd /app && \
     mv app.jar api-gateway.jar && \
-    java -XX:AOTCacheOutput=$AOT_CACHE $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -Dspring.context.exit=onRefresh -jar api-gateway.jar && \
+    java -XX:AOTCacheOutput=$AOT_CACHE $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -Dspring.context.exit=onRefresh -jar /app/api-gateway.jar && \
     rm /tmp/app.jar && \
-    chown -R api-gateway:api-gateway /app /opt/java
+    chown -R api-gateway:api-gateway /app /opt
 
 # Reversed AOT cache configuration / productive Spring / OTEL configuration
 ENV SPRING_PROFILES_ACTIVE="prod" \

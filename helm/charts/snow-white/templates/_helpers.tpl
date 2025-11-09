@@ -55,7 +55,7 @@ Helper function to construct the imagePullSecrets spec
 {{- define "snow-white.imagePullSecrets" -}}
 {{- with .Values.global.imagePullSecrets -}}
 imagePullSecrets:
-{{ toYaml . | nindent 2 }}
+{{- toYaml . | nindent 2 }}
 {{- end -}}
 {{- end -}}
 

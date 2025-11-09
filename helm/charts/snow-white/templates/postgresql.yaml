@@ -22,7 +22,7 @@ kind: Secret
 metadata:
   name: {{ $secretName }}
   labels:
-    {{ $labels | nindent 4 }}
+    {{- $labels | nindent 4 }}
 type: Opaque
 data:
   {{- if $reportCoordPassword }}
@@ -45,7 +45,7 @@ kind: ConfigMap
 metadata:
   name: 'snow-white-postgresql-init-scripts'
   labels:
-    {{ $labels | nindent 4 }}
+    {{- $labels | nindent 4 }}
 data:
   report-coordinator.sh: |
     # Backup and enable trust auth for postgres temporarily
