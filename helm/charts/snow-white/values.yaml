@@ -37,12 +37,14 @@ nodeAffinityPreset:
 ##
 affinity: {}
 
+image:
+  pullPolicy: IfNotPresent
+
 # Snow-White
 snowWhite:
   mode: high-available
   image:
     registry: 'ghcr.io'
-    pullPolicy: Always
   revisionHistoryLimit: 3
   rollout:
     maxSurge: '25%'
@@ -51,6 +53,27 @@ snowWhite:
     className: 'nginx'
     host: ''
     tls: true
+  otelCollector:
+    image:
+      registry: 'docker.io'
+      tag: '0.138.0'
+    influxdb:
+      endpoint: http://influxdb:8086
+      org: snow-white
+      bucket: raw-data
+      token: ${INFLUXDB_TOKEN}
+    kafka:
+      brokers:
+        - kafka:9094
+      inboundTopic: snow-white_inbound
+      outbountTopic: snow-white_outbound
+    pipeline:
+      resourceCleanup:
+        attributes:
+          - action: delete
+            pattern: ^process\..+
+          - action: delete
+            pattern: ^telemetry\..+
   apiGateway:
     rollout:
       maxSurge: '25%'

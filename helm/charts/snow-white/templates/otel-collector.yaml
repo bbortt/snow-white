@@ -1,0 +1,270 @@
+{{- $labels := include "snow-white.labels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  {{- if ne .Values.snowWhite.mode "auto-scaling" }}
+  {{ include "snow-white.replicas" . | nindent 2 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ $selectorLabels | nindent 8 }}
+    spec:
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: otel-collector
+          image: {{ .Values.snowWhite.otelCollector.image.registry }}/otel/opentelemetry-collector-contrib:{{ .Values.snowWhite.otelCollector.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          args:
+            - '--config=/appl/snow-white.config.yml'
+          env:
+            - name: GOMEMLIMIT
+              value: 800MiB
+          ports:
+            - name: grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: prometheus
+              containerPort: 8090
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+          resources:
+            limits:
+              memory: '512Mi'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.1'
+              memory: '512Mi'
+              ephemeral-storage: '50Mi'
+          startupProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: health
+            # native apps start fast, so allow minimal delay
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 19  # tolerate a few slow startups just in case
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /metrics
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1   # allow immediate readiness on success
+            failureThreshold: 2   # stop routing quickly if unhealthy
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: health
+            timeoutSeconds: 1
+            periodSeconds: 10      # liveness can be less frequent to reduce load
+            successThreshold: 1
+            failureThreshold: 3    # don’t restart on minor hiccups
+          volumeMounts:
+            - name: otel-collector-config-vol
+              mountPath: /appl
+      volumes:
+        - configMap:
+            name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+            items:
+              - key: snow-white.config.yml
+                path: snow-white.config.yml
+          name: otel-collector-config-vol
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  maxUnavailable: 25%
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  type: {{ .Values.snowWhite.apiGateway.service.type }}
+  selector: {{ $selectorLabels | nindent 4 }}
+  ports:
+    - name: grpc
+      port: 4317
+      protocol: TCP
+      targetPort: grpc
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  snow-white.config.yml: |
+    receivers:
+      kafka/snow-white:
+        brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
+        protocol_version: 4.0.0
+        topic: {{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}
+        traces:
+          encoding: otlp_json
+          # TODO https://github.com/bbortt/snow-white/issues/287
+          # encoding: otlp_proto
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+    processors:
+      batch:
+        send_batch_size: 512
+        send_batch_max_size: 1024
+      filter/openapi-traces:
+        error_mode: ignore
+        traces:
+          span:
+            - attributes["http.request.method"] == nil
+            - attributes["api.name"] == nil
+            - attributes["api.version"] == nil
+      filter/snow-white-internal:
+        error_mode: propagate
+        spans:
+          include:
+            match_type: strict
+            services:
+              - api-gateway
+              - api-sync-job
+              - openapi-coverage-stream
+              - otel-event-filter-stream
+              - quality-gate-api
+              - report-coordinator-api
+      filter/snow-white-microservices:
+        error_mode: propagate
+        spans:
+          exclude:
+            match_type: strict
+            services:
+              - api-gateway
+              - api-sync-job
+              - openapi-coverage-stream
+              - otel-event-filter-stream
+              - quality-gate-api
+              - report-coordinator-api
+      groupbyattrs/service:
+        keys:
+          - service.name
+          - service.namespace
+          - service.version
+      groupbytrace:
+        wait_duration: 5s
+        num_traces: 512
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      {{- with .Values.snowWhite.otelCollector.pipeline.resourceCleanup }}
+      resource/cleanup:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    extensions:
+      health_check:
+        endpoint: "0.0.0.0:13133"
+        check_collector_pipeline:
+          enabled: true
+          interval: 30s
+      zpages: { }
+    exporters:
+      debug/basic:
+        verbosity: basic
+        sampling_initial: 5
+      debug/detailed:
+        verbosity: detailed
+        sampling_initial: 5
+      kafka/snow-white:
+        brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
+        partition_traces_by_id: true
+        protocol_version: 4.0.0
+        topic: {{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}
+        traces:
+          encoding: otlp_json
+          # TODO https://github.com/bbortt/snow-white/issues/287
+          # encoding: otlp_proto
+      influxdb:
+        endpoint: {{ .Values.snowWhite.otelCollector.influxdb.endpoint | quote }}
+        org: {{ .Values.snowWhite.otelCollector.influxdb.org | quote }}
+        bucket: {{ .Values.snowWhite.otelCollector.influxdb.bucket | quote }}
+        token: {{ .Values.snowWhite.otelCollector.influxdb.token | quote }}
+      prometheus:
+        endpoint: "0.0.0.0:8090"
+        send_timestamps: true
+        metric_expiration: 10m
+        enable_open_metrics: true
+        resource_to_telemetry_conversion:
+          enabled: true
+    service:
+      extensions:
+        - health_check
+        - zpages
+      pipelines:
+        traces/snow-white:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/snow-white-microservices
+            - filter/openapi-traces
+            - groupbytrace
+            - resource/cleanup
+            - batch
+          exporters:
+            - debug/basic
+            - kafka/snow-white
+      telemetry:
+        logs:
+          level: INFO
+          sampling:
+            initial: 100
+        metrics:
+          level: detailed
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: '0.0.0.0'
+                    port: 8888

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jre-alpine AS jlink-builder
+FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
 ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
@@ -51,10 +51,10 @@ RUN addgroup -S api-sync-job \
 
 COPY --from=jlink-builder /custom-jre /opt/java
 
-COPY target/*-executable.jar app.jar
+COPY target/*-executable.jar sync-job.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-RUN chown -R api-sync-job:api-sync-job /app /opt/java
+RUN chown -R api-sync-job:api-sync-job /app /opt
 
 ENV JAVA_HOME="/opt/java" \
     OTEL_SERVICE_NAME="api-sync-job" \
@@ -69,4 +69,4 @@ ENV PATH="$PATH:$JAVA_HOME/bin"
 
 USER api-sync-job
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar /app/sync-job.jar" ]
