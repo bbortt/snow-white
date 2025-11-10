@@ -413,13 +413,48 @@ describe('Quality-Gate API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 6 environment variables by default', async () => {
+          it('should deploy 2+6 environment variables by default', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
-            expect(qualityGateApi.env).toHaveLength(6);
+            expect(qualityGateApi.env).toHaveLength(8);
           });
 
-          it('should calculate spring datasource password based on release name', async () => {
+          it('should include configuration for the OTEL collector', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
+
+            const protocol = qualityGateApi.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe('grpc');
+
+            const endpoint = qualityGateApi.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
+            );
+            expect(endpoint).toBeDefined();
+            expect(endpoint.value).toBe(
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:grpc',
+            );
+          });
+
+          it('should calculate jdbc connection string', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+
+            const springDatasourceUrl = qualityGateApi.env.find(
+              (env) => env.name === 'SPRING_DATASOURCE_URL',
+            );
+            expect(springDatasourceUrl).toBeDefined();
+
+            expect(springDatasourceUrl.value).toBe(
+              'jdbc:postgresql://test-release-postgresql-primary:5432/quality-gate-api',
+            );
+          });
+
+          it('should calculate spring datasource password', async () => {
+            const manifests = await renderHelmChart({
+              chartPath: 'charts/snow-white',
+            });
+            const qualityGateApi =
+              await renderAndGetQualityGateApiContainer(manifests);
 
             const springDatasourcePassword = qualityGateApi.env.find(
               (env) => env.name === 'SPRING_DATASOURCE_PASSWORD',
@@ -427,15 +462,27 @@ describe('Quality-Gate API', () => {
             expect(springDatasourcePassword).toBeDefined();
 
             expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-test-release',
+              'snow-white-postgresql-credentials',
             );
+            const secret = manifests.find(
+              (m) =>
+                m.kind === 'Secret' &&
+                m.metadata.name ===
+                  springDatasourcePassword.valueFrom.secretKeyRef.name,
+            );
+            expect(secret).toBeDefined();
+
             expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
               'quality-gate-password',
             );
           });
 
-          it('should calculate spring flyway password based on release name', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+          it('should calculate spring flyway password', async () => {
+            const manifests = await renderHelmChart({
+              chartPath: 'charts/snow-white',
+            });
+            const qualityGateApi =
+              await renderAndGetQualityGateApiContainer(manifests);
 
             const springDatasourcePassword = qualityGateApi.env.find(
               (env) => env.name === 'SPRING_FLYWAY_PASSWORD',
@@ -443,8 +490,16 @@ describe('Quality-Gate API', () => {
             expect(springDatasourcePassword).toBeDefined();
 
             expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-test-release',
+              'snow-white-postgresql-credentials',
             );
+            const secret = manifests.find(
+              (m) =>
+                m.kind === 'Secret' &&
+                m.metadata.name ===
+                  springDatasourcePassword.valueFrom.secretKeyRef.name,
+            );
+            expect(secret).toBeDefined();
+
             expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
               'quality-gate-flyway-password',
             );
@@ -467,8 +522,8 @@ describe('Quality-Gate API', () => {
               }),
             );
 
-            // 6 default + 2 additional
-            expect(qualityGateApi.env).toHaveLength(8);
+            // 2 OTEL + 6 default + 2 additional
+            expect(qualityGateApi.env).toHaveLength(10);
 
             const authorEnv = qualityGateApi.env.find(
               (env) => env.name === 'author',
