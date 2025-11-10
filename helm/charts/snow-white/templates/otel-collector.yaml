@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -97,7 +97,7 @@ spec:
               mountPath: /appl
       volumes:
         - configMap:
-            name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+            name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
             items:
               - key: snow-white.config.yml
                 path: snow-white.config.yml
@@ -106,7 +106,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -118,7 +118,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -133,7 +133,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "otel-collector" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
   labels:
     {{- $labels | nindent 4 }}
 data:

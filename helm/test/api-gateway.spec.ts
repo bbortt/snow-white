@@ -411,9 +411,27 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3 environment variables by default', async () => {
+          it('should deploy 2+3 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(3);
+            expect(apiGateway.env).toHaveLength(5);
+          });
+
+          it('should include configuration for the OTEL collector', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            const protocol = apiGateway.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe('grpc');
+
+            const endpoint = apiGateway.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
+            );
+            expect(endpoint).toBeDefined();
+            expect(endpoint.value).toBe(
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:grpc',
+            );
           });
 
           it('should include public url from values without TLS', async () => {
@@ -487,8 +505,8 @@ describe('API Gateway', () => {
               }),
             );
 
-            // 3 default + 2 additional
-            expect(apiGateway.env).toHaveLength(5);
+            // 2 OTEL + 3 default + 2 additional
+            expect(apiGateway.env).toHaveLength(7);
 
             const authorEnv = apiGateway.env.find(
               (env) => env.name === 'author',

@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -40,6 +40,7 @@ spec:
           image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-gateway:{{ .Values.snowWhite.apiGateway.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
+          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
               {{- if .Values.snowWhite.ingress.tls }}
               value: 'https://{{ include "snow-white.publicHost" . }}'
@@ -47,9 +48,9 @@ spec:
               value: 'http://{{ include "snow-white.publicHost" . }}'
               {{- end }}
             - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'
-              value: 'http://{{ printf "%s-%s-%s" .Chart.Name "quality-gate-api" .Release.Name | trunc 63 | trimSuffix "-" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
+              value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
             - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'
-              value: 'http://{{ printf "%s-%s-%s" .Chart.Name "report-coordinator-api" .Release.Name | trunc 63 | trimSuffix "-" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
+              value: 'http://{{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:8080'
           {{- with .Values.snowWhite.apiGateway.additionalEnvs }}
             {{- range $k, $v := . }}
             - name: {{ $k }}
@@ -109,7 +110,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -121,7 +122,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -159,7 +160,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ printf "%s-%s-%s" .Chart.Name "api-gateway" .Release.Name | trunc 63 | trimSuffix "-" }}
+                name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
                 port:
                   name: http
 {{- end }}

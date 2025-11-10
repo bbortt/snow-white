@@ -1,8 +1,8 @@
 {{/*
-Expand the name of the chart
+Common name-generation function
 */}}
 {{- define "snow-white.name" -}}
-{{ default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{ printf "%s-%s-%s" .context.Chart.Name .name .context.Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end -}}
 
 {{/*
@@ -25,17 +25,6 @@ app.kubernetes.io/part-of: snow-white
 {{- end -}}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "snow-white.serviceAccountName" -}}
-{{ if .Values.serviceAccount.create -}}
-    {{ default (include "snow-white.name" .) .Values.serviceAccount.name }}
-{{ else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Mode selection:
     minimal:        setup with only one running pod per microservice, ideal for poc installations
     high-available: setup with three pods per deployment-unit, for producton environments
@@ -55,14 +44,12 @@ Helper function to construct the imagePullSecrets spec
 {{- define "snow-white.imagePullSecrets" -}}
 {{- with .Values.global.imagePullSecrets -}}
 imagePullSecrets:
-{{- toYaml . | nindent 2 }}
+  {{- toYaml . | nindent 2 }}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Helper function making sure that the public domain (exposed through ingress) is defined
-
-TODO: how can I "throw" this? { print "⚠ SECURITY WARNING: No public URL for snow-white defined!"
 */}}
 {{- define "snow-white.publicHost" -}}
 {{ if (empty .Values.snowWhite.ingress.host) }}
@@ -70,4 +57,14 @@ TODO: how can I "throw" this? { print "⚠ SECURITY WARNING: No public URL for s
 {{- else -}}
 {{ .Values.snowWhite.ingress.host }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Common environment variables connecting microservices to OTEL collector service
+*/}}
+{{- define "snow-white.otelExporterEnvVariables" -}}
+- name: 'OTEL_EXPORTER_OTLP_PROTOCOL'
+  value: 'grpc'
+- name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
+  value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:grpc'
 {{- end -}}

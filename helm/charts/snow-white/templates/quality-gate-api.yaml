@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "quality-gate-api" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -40,23 +40,24 @@ spec:
           image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/quality-gate-api:{{ .Values.snowWhite.qualityGateApi.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
+          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
               value: '{{ include "snow-white.publicHost" . }}'
             - name: 'SPRING_DATASOURCE_URL'
-              value: 'jdbc:postgresql://postgres:5432/quality-gate-api'
+              value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql-primary" }}:5432/quality-gate-api'
             - name: 'SPRING_DATASOURCE_USERNAME'
               value: 'quality_gate_app'
             - name: 'SPRING_DATASOURCE_PASSWORD'
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "%s-%s-%s" .Chart.Name "postgresql" .Release.Name | trunc 63 | trimSuffix "-" }}
+                  name: "snow-white-postgresql-credentials"
                   key: 'quality-gate-password'
             - name: 'SPRING_FLYWAY_USER'
               value: 'quality_gate_flyway'
             - name: 'SPRING_FLYWAY_PASSWORD'
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "%s-%s-%s" .Chart.Name "postgresql" .Release.Name | trunc 63 | trimSuffix "-" }}
+                  name: "snow-white-postgresql-credentials"
                   key: 'quality-gate-flyway-password'
           {{- with .Values.snowWhite.qualityGateApi.additionalEnvs }}
             {{- range $k, $v := . }}
@@ -117,7 +118,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "quality-gate-api" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -129,7 +130,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ printf "%s-%s-%s" .Chart.Name "quality-gate-api" .Release.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
