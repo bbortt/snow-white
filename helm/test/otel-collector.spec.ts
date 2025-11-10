@@ -413,6 +413,36 @@ describe('OTEL Collector', () => {
         });
       });
     });
+
+    describe('volumes', () => {
+      it('should map snow-white config volume', async () => {
+        const manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+
+        const deployment = manifests.find(
+          (m) =>
+            m.kind === 'Deployment' &&
+            m.metadata.name === 'snow-white-otel-collector-test-release',
+        );
+        expect(deployment).toBeDefined();
+
+        const { volumes } = deployment.spec.template.spec;
+        expect(volumes).toBeDefined();
+
+        const otelCollectorConfigVol = volumes.find(
+          (volume) => volume.name === 'otel-collector-config-vol',
+        );
+        expect(otelCollectorConfigVol).toBeDefined();
+
+        const correspondingConfigMap = manifests.find(
+          (m) =>
+            m.kind === 'ConfigMap' &&
+            m.metadata.name === otelCollectorConfigVol.configMap.name,
+        );
+        expect(correspondingConfigMap).toBeDefined();
+      });
+    });
   });
 
   describe('pod disruption budget', () => {
