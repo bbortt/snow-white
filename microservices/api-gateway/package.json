@@ -13,7 +13,7 @@
     "apptest:wait:api-gateway": "wait-on --timeout 1m http-get:localhost:8090/management/health",
     "apptest:wait:wiremock": "wait-on --timeout 1m http-get://localhost:9000/__admin/health",
     "build": "npm run webapp:prod --",
-    "build-watch": "concurrently 'npm run webapp:build:dev -- --watch' npm:backend:start",
+    "build-watch": "run-p --print-label 'npm run webapp:build:dev -- --watch' npm:backend:start",
     "ci:frontend:test": "npm run webapp:build:$npm_package_config_default_environment && npm run test-ci",
     "clean-www": "rimraf target/classes/static/",
     "cleanup": "rimraf target/",

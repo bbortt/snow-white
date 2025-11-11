@@ -96,7 +96,7 @@ jobs:
       wiremock:
         image: wiremock/wiremock:3.1.0-alpine
         ports:
-          - 9000:8080
+          - '9000:8080'
         options: --name wiremock
     steps:
       - name: Checkout
@@ -139,7 +139,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [otel-event-filter-stream]
+        service: [otel-event-filter-stream, quality-gate-api]
       fail-fast: false
     services:
       kafka:
@@ -165,12 +165,23 @@ jobs:
           KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
         ports:
-          - 9092:9092
-          - 9094:9094
+          - '9092:9092'
+          - '9094:9094'
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: redis/redis-stack-server:7.4.0-v7
         ports:
-          - 6379:6379
+          - '6379:6379'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -182,6 +193,11 @@ jobs:
           cache: maven
           distribution: 'temurin'
           java-version: 25
+      - name: Init PostgreSQL Databases
+        if: ${{ matrix.service == 'quality-gate-api' }}
+        run: psql -h localhost -U postgres -d postgres -f ./dev/postgres/init.sql
+        env:
+          PGPASSWORD: postgres
       - name: Rebuild JAR
         run: |
           ./mvnw -B install \

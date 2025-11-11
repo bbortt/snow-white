@@ -118,6 +118,18 @@ class KafkaEventFilterAppTest {
       );
   }
 
+  /**
+   * The service shall filter inbound Kafka events based on message information:
+   * <ol>
+   *     <li>API Name</li>
+   *     <li>API Version</li>
+   *     <li>OTEL Service Name</li>
+   * </ol>
+   * Only if the API exists within the snow-white system, the event must be routed through.
+   * Otherwise, it shall be dropped.
+   * <p>
+   * When an inbound event with information of an existing API is received, the service must send it to the outbound queue exactly as received.
+   */
   @Test
   @CitrusTest
   void shouldPassThroughMatchingInboundEvent(

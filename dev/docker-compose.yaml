@@ -150,14 +150,14 @@ services:
 
   influxdb:
     image: influxdb:2.7.12-alpine
-    ports:
-      - '8086:8086'
     environment:
       DOCKER_INFLUXDB_INIT_MODE: 'setup'
       DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
       DOCKER_INFLUXDB_INIT_BUCKET: 'raw-data'
       DOCKER_INFLUXDB_INIT_USERNAME: 'snow-white'
       DOCKER_INFLUXDB_INIT_PASSWORD: 'snow-white'
+    ports:
+      - '8086:8086'
     restart: on-failure
     networks:
       - default
@@ -166,14 +166,14 @@ services:
   postgres:
     image: 'postgres:18.1-alpine'
     shm_size: 128mb
+    environment:
+      POSTGRES_USER: 'snow-white'
+      POSTGRES_PASSWORD: 'snow-white'
     volumes:
       - ./postgres/data/:/var/lib/postgresql/data/
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: 'snow-white'
-      POSTGRES_PASSWORD: 'snow-white'
+      - '5432:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U snow-white -d postgres']
       interval: 5s

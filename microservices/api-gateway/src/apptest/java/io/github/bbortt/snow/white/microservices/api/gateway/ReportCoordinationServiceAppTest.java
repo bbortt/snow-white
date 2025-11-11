@@ -40,6 +40,11 @@ class ReportCoordinationServiceAppTest {
     );
   }
 
+  /**
+   * The API gateway shall route requests for calculating Quality Gates to the report-coordinator-api service.
+   * <p>
+   * When the client calls {@code /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate}, the gateway must forward the request to {@code /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate} exactly as received.
+   */
   @Test
   void qualityGateCalculationRequestShouldBeForwarded() {
     var qualityGateConfigName = "report-coordinator-api";
@@ -55,6 +60,11 @@ class ReportCoordinationServiceAppTest {
     verify(postRequestedFor(urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName + "/calculate")));
   }
 
+  /**
+   * The API gateway shall route requests for all Reports to the report-coordinator-api service.
+   * <p>
+   * When the client calls {@code /api/rest/v1/reports}, the gateway must forward the request to {@code /api/rest/v1/reports} exactly as received.
+   */
   @Test
   void reportsResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/reports").willReturn(ok()));
@@ -64,6 +74,11 @@ class ReportCoordinationServiceAppTest {
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/reports")));
   }
 
+  /**
+   * The API gateway shall route requests for a specific Report to the report-coordinator-api service without modifying the path parameters.
+   * <p>
+   * When the client calls {@code /api/rest/v1/reports/{reportId}}, the gateway must forward the request to {@code /api/rest/v1/reports/{reportId}} exactly as received.
+   */
   @Test
   void reportByIdResourceRequestShouldBeForwarded() {
     var reportId = "report-id";
@@ -75,6 +90,11 @@ class ReportCoordinationServiceAppTest {
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/reports/" + reportId)));
   }
 
+  /**
+   * The API gateway shall expose service-specific Swagger documentation under a namespaced path.
+   * <p>
+   * Requests to {@code /v3/api-docs/report-coordinator-api} must be forwarded to the report-coordinator-api {@code /v3/api-docs} endpoint.
+   */
   @Test
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
