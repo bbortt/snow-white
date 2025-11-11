@@ -83,7 +83,7 @@ spec:
           startupProbe:
             httpGet:
               scheme: HTTP
-              path: /management/health
+              path: /actuator/health
               port: actuator
             # native apps start fast, so allow minimal delay
             initialDelaySeconds: 1
@@ -94,7 +94,7 @@ spec:
           readinessProbe:
             httpGet:
               scheme: HTTP
-              path: /management/health/readiness
+              path: /actuator/health/readiness
               port: actuator
             timeoutSeconds: 1
             periodSeconds: 5
@@ -103,7 +103,7 @@ spec:
           livenessProbe:
             httpGet:
               scheme: HTTP
-              path: /management/health/liveness
+              path: /actuator/health/liveness
               port: actuator
             timeoutSeconds: 1
             periodSeconds: 10      # liveness can be less frequent to reduce load

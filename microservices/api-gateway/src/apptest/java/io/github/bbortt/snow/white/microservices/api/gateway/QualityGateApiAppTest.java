@@ -34,6 +34,11 @@ class QualityGateApiAppTest {
     WireMock.configureFor(getProperty("wiremock.host", "localhost"), parseInt(getProperty("wiremock.port", "9000")));
   }
 
+  /**
+   * The API gateway shall route requests for all OpenAPI criteria to the quality-gate-api service.
+   * <p>
+   * When the client calls {@code /api/rest/v1/criteria/openapi}, the gateway must forward the request to {@code /api/rest/v1/criteria/openapi} exactly as received.
+   */
   @Test
   void openApiCriteriaResourceShouldBeForwarded() {
     stubFor(get("/api/rest/v1/criteria/openapi").willReturn(ok()));
@@ -43,6 +48,11 @@ class QualityGateApiAppTest {
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/criteria/openapi")));
   }
 
+  /**
+   * The API gateway shall route requests for all Quality Gate configurations to the quality-gate-api service.
+   * <p>
+   * When the client calls {@code /api/rest/v1/quality-gates}, the gateway must forward the request to {@code /api/rest/v1/quality-gates} exactly as received.
+   */
   @Test
   void qualityGatesResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/quality-gates").willReturn(ok()));
@@ -52,6 +62,11 @@ class QualityGateApiAppTest {
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/quality-gates")));
   }
 
+  /**
+   * The API gateway shall route requests for a specific Quality Gate configuration to the quality-gate-api service without modifying the path parameters.
+   * <p>
+   * When the client calls {@code /api/rest/v1/quality-gates/{reportId}}, the gateway must forward the request to {@code /api/rest/v1/quality-gates/{reportId}} exactly as received.
+   */
   @Test
   void qualityGateByIdResourceRequestShouldBeForwarded() {
     var qualityGateConfigName = "report-id";
@@ -67,6 +82,11 @@ class QualityGateApiAppTest {
     verify(getRequestedFor(urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName)));
   }
 
+  /**
+   * The API gateway shall expose service-specific Swagger documentation under a namespaced path.
+   * <p>
+   * Requests to {@code /v3/api-docs/quality-gate-api} must be forwarded to the quality-gate-api {@code /v3/api-docs} endpoint.
+   */
   @Test
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));

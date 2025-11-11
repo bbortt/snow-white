@@ -32,6 +32,11 @@
 
     <!-- Default optimization configuration for native image during development -->
     <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <docker.network>bridge</docker.network>
   </properties>
 
   <dependencies>
@@ -123,6 +128,17 @@
     </dependency>
 
     <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-test-api-core</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-webmvc-test</artifactId>
       <scope>test</scope>
@@ -135,6 +151,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -224,7 +245,7 @@
             </goals>
             <configuration>
               <inputSpec>
-                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
+                ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
               <modelPackage>
@@ -286,7 +307,7 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-
+            <version>${spring-boot.version}</version>
             <configuration>
               <image>
                 <env>
@@ -358,6 +379,194 @@
                 <id>add-reachability-metadata</id>
                 <goals>
                   <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <build>
+        <resources>
+          <resource>
+            <directory>src/apptest/resources</directory>
+          </resource>
+        </resources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.1</version>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-openapi-codegen-maven-plugin</artifactId>
+            <version>${citrus.version}</version>
+            <executions>
+              <execution>
+                <id>generate-v1-quality-gate-api-citrus-actions</id>
+                <goals>
+                  <goal>create-test-api</goal>
+                </goals>
+                <configuration>
+                  <apis>
+                    <api>
+                      <prefix>QualityGate</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
+                  </apis>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/quality-gate-api:${image.tag}
+                  </name>
+                  <alias>quality-gate-api</alias>
+                  <run>
+                    <env>
+                      <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
+                        http://localhost
+                      </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
+                      <SPRING_DATASOURCE_URL>
+                        jdbc:postgresql://postgres:5432/quality-gate-api
+                      </SPRING_DATASOURCE_URL>
+                      <SPRING_DATASOURCE_USERNAME>
+                        quality_gate_app
+                      </SPRING_DATASOURCE_USERNAME>
+                      <SPRING_DATASOURCE_PASSWORD>
+                        strongpassword4
+                      </SPRING_DATASOURCE_PASSWORD>
+                      <SPRING_FLYWAY_USER>
+                        quality_gate_flyway
+                      </SPRING_FLYWAY_USER>
+                      <SPRING_FLYWAY_PASSWORD>
+                        strongpassword3
+                      </SPRING_FLYWAY_PASSWORD>
+                    </env>
+                    <log>
+                      <prefix>quality-gate-api</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                    <ports>
+                      <port>8081:8080</port>
+                    </ports>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-node-and-corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>pnpm-install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <configuration>
+                  <arguments>pnpm install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>wait-on-ports</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <arguments>pnpm run apptest:wait</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
                 </goals>
               </execution>
             </executions>

@@ -260,13 +260,13 @@
         </dependencies>
         <executions>
           <execution>
-            <id>generate-quality-gate-api-v1</id>
+            <id>generate-v1-quality-gate-api</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/report-coordinator-api/src/main/resources/openapi/v1-quality-gate-api.yml
+                ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
               <modelPackage>${baseRestApiPackage}.dto</modelPackage>
@@ -283,13 +283,13 @@
             </configuration>
           </execution>
           <execution>
-            <id>generate-report-api-v1</id>
+            <id>generate-v1-report-api</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/report-coordinator-api/src/main/resources/openapi/v1-report-api.yml
+                ${project.basedir}/src/main/resources/openapi/v1-report-api.yml
               </inputSpec>
               <generatorName>snow-white-spring-server</generatorName>
               <modelPackage>${baseRestApiPackage}.dto</modelPackage>
@@ -306,13 +306,13 @@
             </configuration>
           </execution>
           <execution>
-            <id>generate-quality-gate-api-v1-client</id>
+            <id>generate-v1-quality-gate-api-client</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
               <inputSpec>
-                microservices/quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
+                ${project.basedir}/../quality-gate-api/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
               <apiPackage>${baseClientPackage}.qualitygateapi.api</apiPackage>
               <invokerPackage>
@@ -395,7 +395,7 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-
+            <version>${spring-boot.version}</version>
             <configuration>
               <image>
                 <env>

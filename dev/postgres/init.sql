@@ -40,6 +40,12 @@ GRANT USAGE ON SCHEMA public TO quality_gate_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO quality_gate_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO quality_gate_app;
 
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
 -- allow future tables to be accessible by app user
 ALTER DEFAULT PRIVILEGES FOR USER quality_gate_flyway IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO quality_gate_app;

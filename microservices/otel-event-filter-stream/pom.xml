@@ -33,7 +33,6 @@
     <!-- Default optimization configuration for native image during development -->
     <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
 
-    <citrus.version>4.8.2</citrus.version>
     <confluent.version>8.1.0</confluent.version>
     <google-protobuf.version>4.33.1</google-protobuf.version>
     <grpc.version>1.77.0</grpc.version>
@@ -130,7 +129,6 @@
     <dependency>
       <groupId>org.citrusframework</groupId>
       <artifactId>citrus-junit5</artifactId>
-      <version>${citrus.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -261,7 +259,7 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-
+            <version>${spring-boot.version}</version>
             <configuration>
               <image>
                 <env>

@@ -1,0 +1,22 @@
+name: 'quality-gate-api: apptest'
+
+networks:
+  default:
+    name: github_actions
+    external: true
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:18.1-alpine
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: 'snow-white'
+      POSTGRES_PASSWORD: 'snow-white'
+    volumes:
+      - ../../../../../dev/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '5432:5432'
+    restart: on-failure
+    networks:
+      - default

@@ -35,6 +35,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
+    <citrus.version>4.8.2</citrus.version>
     <org.flywaydb.version>11.18.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.0</org.springdoc.version>
@@ -143,9 +144,22 @@
       </dependency>
 
       <dependency>
+        <groupId>org.citrusframework</groupId>
+        <artifactId>citrus-junit5</artifactId>
+        <version>${citrus.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <version>5.5.6</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.wiremock.integrations</groupId>
         <artifactId>wiremock-spring-boot</artifactId>
         <version>${wiremock-spring-boot.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -227,6 +241,7 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
             <configuration>
               <docker>
                 <host>unix:///run/user/${user.id}/podman/podman.sock</host>
