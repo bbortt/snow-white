@@ -16,6 +16,8 @@ To build the **API Gateway** application:
 docker build \
   -t ghcr.io/bbortt/snow-white/api-gateway:latest \
   -f microservices/api-gateway/Dockerfile \
+  --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+  --build-arg PROJECT_VERSION="latest" \
   microservices/api-gateway/
 ```
 
@@ -32,7 +34,7 @@ The application tests depend on a running Wiremock instance.
 In **one terminal**, run:
 
 ```shell
-docker compose -f microservices/api-gateway/src/apptest/java/resources/docker-compose-apptest.yaml up
+docker compose -f microservices/api-gateway/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
 ### Step 2 - Run the API Gateway tests

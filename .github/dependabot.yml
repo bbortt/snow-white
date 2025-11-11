@@ -57,6 +57,20 @@ updates:
       ui-dependencies:
         patterns:
           - '*'
+  - package-ecosystem: 'npm'
+    directory: '/microservices/quality-gate-api/'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'include:apptests'
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      apptest-dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:
