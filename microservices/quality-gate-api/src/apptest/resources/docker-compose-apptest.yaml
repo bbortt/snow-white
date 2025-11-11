@@ -1,0 +1,16 @@
+name: 'quality-gate-api: apptest'
+
+networks:
+  default:
+    name: github_actions
+    external: true
+    driver: bridge
+
+services:
+  wiremock:
+    image: postgres:18.0-alpine
+    ports:
+      - '5432:5432'
+    restart: on-failure
+    networks:
+      - default
