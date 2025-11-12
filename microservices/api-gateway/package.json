@@ -10,7 +10,7 @@
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:api-gateway": "wait-on --timeout 1m http-get:localhost:8080/management/health",
+    "apptest:wait:api-gateway": "wait-on --timeout 1m http-get:localhost:8090/management/health",
     "apptest:wait:wiremock": "wait-on --timeout 1m http-get://localhost:9000/__admin/health",
     "build": "npm run webapp:prod --",
     "build-watch": "concurrently 'npm run webapp:build:dev -- --watch' npm:backend:start",
