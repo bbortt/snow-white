@@ -38,7 +38,7 @@
     <org.flywaydb.version>11.17.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.0-RC1</org.springdoc.version>
-    <org.wiremock.version>3.13.1</org.wiremock.version>
+    <org.wiremock.version>3.13.2</org.wiremock.version>
     <wiremock-spring-boot.version>4.0.7</wiremock-spring-boot.version>
 
     <container.registry>ghcr.io</container.registry>
