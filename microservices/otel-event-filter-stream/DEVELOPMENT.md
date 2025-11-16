@@ -35,7 +35,7 @@ docker network create github_actions
 
 ### Step 2 - Start Docker Compose
 
-The application tests depend on a running Kafka and Redis instance.
+The application tests depend on a running Kafka and Wiremock instance.
 In **one terminal**, run:
 
 ```shell

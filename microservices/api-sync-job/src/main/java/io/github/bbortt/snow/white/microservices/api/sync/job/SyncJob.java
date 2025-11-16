@@ -35,8 +35,8 @@ public class SyncJob {
         long apiInformationCount = apiCatalogIndices
           .stream()
           .map(ApiCatalogIndex::apiInformation)
-          .flatMap(Collection::stream)
-          .count();
+          .mapToLong(Collection::size)
+          .sum();
         logger.info(
           "Validating {} APIs loaded from index",
           apiInformationCount

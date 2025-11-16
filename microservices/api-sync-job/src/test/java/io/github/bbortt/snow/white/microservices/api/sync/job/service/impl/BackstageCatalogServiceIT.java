@@ -54,7 +54,7 @@ public class BackstageCatalogServiceIT extends AbstractApiCatalogServiceIT {
   ).withExposedPorts(MINIO_S3_PORT);
 
   @DynamicPropertySource
-  static void redisProperties(DynamicPropertyRegistry registry) {
+  static void minioProperties(DynamicPropertyRegistry registry) {
     registry.add("snow.white.api.sync.job.minio.endpoint", () ->
       format(
         "http://%s:%S",
