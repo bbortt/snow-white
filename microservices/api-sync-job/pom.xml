@@ -25,6 +25,11 @@
     <baseClientPackage>
       io.github.bbortt.snow.white.microservices.api.sync.job.api.client
     </baseClientPackage>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <docker.network>bridge</docker.network>
   </properties>
 
   <dependencies>
@@ -249,6 +254,114 @@
                   <outputDirectory>
                     ${project.build.directory}/dependencies
                   </outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>minio/minio:latest-cicd</name>
+                  <alias>minio</alias>
+                  <run>
+                    <cmd>server /home/shared</cmd>
+                    <hostname>minio</hostname>
+                    <log>
+                      <prefix>minio</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                    <ports>
+                      <port>9090:9000</port>
+                    </ports>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-minio</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-node-and-corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>pnpm-install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <configuration>
+                  <arguments>pnpm install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>run-apptests</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>integration-test</phase>
+                <configuration>
+                  <arguments>pnpm run apptest:test</arguments>
+                  <environmentVariables>
+                    <CONTAINER_REGISTRY>
+                      ${container.registry}
+                    </CONTAINER_REGISTRY>
+                    <DOCKER_NETWORK>${docker.network}</DOCKER_NETWORK>
+                    <IMAGE_TAG>${image.tag}</IMAGE_TAG>
+                  </environmentVariables>
                 </configuration>
               </execution>
             </executions>

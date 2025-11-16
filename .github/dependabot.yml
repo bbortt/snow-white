@@ -70,8 +70,9 @@ updates:
     groups:
       apptest-dependencies:
         patterns:
-          - 'quality-gate-api/*'
-          - 'report-coordinator-api/*'
+          - 'quality-gate-api/package*.json'
+          - 'report-coordinator-api/package*.json'
+          - 'api-sync-job/package*.json'
   - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:

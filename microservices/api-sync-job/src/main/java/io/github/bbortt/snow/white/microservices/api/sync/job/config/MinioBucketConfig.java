@@ -23,9 +23,8 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j
@@ -34,9 +33,7 @@ import org.springframework.context.annotation.Configuration;
   value = PREFIX + ".minio.init-bucket",
   havingValue = "true"
 )
-public class MinioBucketConfig
-  implements ApplicationListener<ApplicationReadyEvent>
-{
+public class MinioBucketConfig implements InitializingBean {
 
   @VisibleForTesting
   static final String PUBLIC_BUCKET_POLICY_TEMPLATE = """
@@ -66,7 +63,7 @@ public class MinioBucketConfig
   }
 
   @Override
-  public void onApplicationEvent(ApplicationReadyEvent event) {
+  public void afterPropertiesSet() {
     logger.info("Initializing bucket '{}'", bucketName);
 
     try {

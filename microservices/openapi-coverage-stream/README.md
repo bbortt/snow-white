@@ -10,7 +10,7 @@ It:
 
 - Queries telemetry data stored in InfluxDB.
 - Compares runtime API usage against stored OpenAPI specs.
-  - Stores and retrieves OpenAPI specs via Redis.
+  - Stores and retrieves OpenAPI specs via [`api-index-api`](../api-index-api).
 - Publishes coverage reports to Kafka, which are consumed by the [`report-coordinator-api`](../report-coordinator-api).
 
 ## Configuration
@@ -39,5 +39,5 @@ These environment variables **must** be configured for the service to work prope
 ## Usage Notes
 
 - The service reacts to Kafka messages — it does not expose an API.
-- OpenAPI specifications must be loaded into Redis ahead of time.
+- OpenAPI specifications must be loaded into `api-index-api` ahead of time.
 - The service must have access to consistent telemetry data for accurate calculations.

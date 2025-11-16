@@ -20,7 +20,7 @@ Start all required services using Docker/Podman Compose:
 docker compose -f dev/docker-compose.yaml up -d
 ```
 
-This includes InfluxDB, Kafka, OTEL Collector, Redis, and supporting UI tools.
+This includes InfluxDB, Kafka, OTEL Collector, PostgreSQL, and supporting UI tools.
 For more on which services are running and their ports, see [Mapped Ports](#mapped-ports).
 
 ### 3. Configure InfluxDB Access
