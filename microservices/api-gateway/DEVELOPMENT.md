@@ -32,7 +32,7 @@ The application tests depend on a running Wiremock instance.
 In **one terminal**, run:
 
 ```shell
-docker compose -f microservices/api-gateway/src/apptest/java/resources/docker-compose-apptest.yaml up
+docker compose -f microservices/api-gateway/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
 ### Step 2 - Run the API Gateway tests

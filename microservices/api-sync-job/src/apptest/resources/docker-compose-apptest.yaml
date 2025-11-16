@@ -1,0 +1,29 @@
+name: 'api-gateway: apptest'
+
+networks:
+  default:
+    name: github_actions
+    external: true
+    driver: bridge
+
+services:
+  wiremock:
+    image: wiremock/wiremock:3.1.0-alpine
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default
+
+  redis:
+    image: redis/redis-stack-server:7.4.0-v7
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: on-failure
+    networks:
+      - default

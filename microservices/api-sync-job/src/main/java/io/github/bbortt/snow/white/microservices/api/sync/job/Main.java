@@ -13,7 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Main {
 
-  void main() {
-    run(Main.class);
+  // TODO: Somehow, Spring-Boot still requires all this crap
+  public static void main(String[] args) {
+    run(Main.class, args);
   }
 }
