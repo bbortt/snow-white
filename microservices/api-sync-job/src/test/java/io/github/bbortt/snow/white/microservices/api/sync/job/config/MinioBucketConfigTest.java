@@ -14,7 +14,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.minio.BucketArgs;
 import io.minio.BucketExistsArgs;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,9 +38,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.context.ApplicationListener;
 
 @ExtendWith({ MockitoExtension.class })
 class MinioBucketConfigTest {
@@ -118,8 +115,8 @@ class MinioBucketConfigTest {
   }
 
   @Test
-  void isApplicationListener() {
-    assertThat(fixture).isInstanceOf(ApplicationListener.class);
+  void isInitializingBean() {
+    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -132,15 +129,7 @@ class MinioBucketConfigTest {
   }
 
   @Nested
-  class OnApplicationEvent {
-
-    @Mock
-    private ApplicationReadyEvent applicationReadyEventMock;
-
-    @AfterEach
-    void eventMockShouldNotBeTouched() {
-      verifyNoMoreInteractions(applicationReadyEventMock);
-    }
+  class AfterPropertiesSetTest {
 
     @Test
     void shouldSkipsExistingBucket()
@@ -151,7 +140,7 @@ class MinioBucketConfigTest {
         .when(minioClientMock)
         .bucketExists(bucketExistsArgsArgumentCaptor.capture());
 
-      fixture.onApplicationEvent(applicationReadyEventMock);
+      fixture.afterPropertiesSet();
 
       assertThatBucketExistsHasBeenCalled(bucketExistsArgsArgumentCaptor);
 
@@ -169,7 +158,7 @@ class MinioBucketConfigTest {
         .when(minioClientMock)
         .bucketExists(bucketExistsArgsArgumentCaptor.capture());
 
-      fixture.onApplicationEvent(applicationReadyEventMock);
+      fixture.afterPropertiesSet();
 
       assertThatBucketExistsHasBeenCalled(bucketExistsArgsArgumentCaptor);
 

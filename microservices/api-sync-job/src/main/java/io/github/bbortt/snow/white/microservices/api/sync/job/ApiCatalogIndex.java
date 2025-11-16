@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import java.util.List;
@@ -22,7 +24,7 @@ public record ApiCatalogIndex(
     return apiInformation
       .stream()
       .map(indexedApi ->
-        CompletableFuture.supplyAsync(
+        supplyAsync(
           () -> apiCatalogService.validateApiInformation(indexedApi),
           taskExecutor
         )

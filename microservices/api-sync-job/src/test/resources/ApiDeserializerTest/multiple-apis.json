@@ -3,9 +3,6 @@
     "name": "swagger-petstore-1.2.3.tgz",
     "properties": [
       {
-        "key": "stage"
-      },
-      {
         "key": "oas.info.title",
         "value": "Swagger Petstore - OpenAPI 3.1"
       },
@@ -31,9 +28,6 @@
   {
     "name": "streetlights-kafka-api-1.0.0.tgz",
     "properties": [
-      {
-        "key": "stage"
-      },
       {
         "key": "oas.info.title",
         "value": "Streetlights Kafka API"

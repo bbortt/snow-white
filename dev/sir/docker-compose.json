@@ -3,9 +3,6 @@
     "name": "ping-pong-1.0.0.tgz",
     "properties": [
       {
-        "key": "stage"
-      },
-      {
         "key": "oas.info.title",
         "value": "Ping-Pong API"
       },
@@ -31,9 +28,6 @@
   {
     "name": "streetlights-kafka-api-1.0.0.tgz",
     "properties": [
-      {
-        "key": "stage"
-      },
       {
         "key": "oas.info.title",
         "value": "Streetlights Kafka API"

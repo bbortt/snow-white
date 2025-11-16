@@ -445,9 +445,9 @@
                         http://wiremock:8080
                       </SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL>
                       <SNOW_WHITE_API_GATEWAY_PUBLIC-URL>http://localhost:8080</SNOW_WHITE_API_GATEWAY_PUBLIC-URL>
-                      <OTEL_TRACES_EXPORTER>none</OTEL_TRACES_EXPORTER>
-                      <OTEL_METRICS_EXPORTER>none</OTEL_METRICS_EXPORTER>
                       <OTEL_LOGS_EXPORTER>none</OTEL_LOGS_EXPORTER>
+                      <OTEL_METRICS_EXPORTER>none</OTEL_METRICS_EXPORTER>
+                      <OTEL_TRACES_EXPORTER>none</OTEL_TRACES_EXPORTER>
                     </env>
                     <log>
                       <prefix>api-gateway</prefix>

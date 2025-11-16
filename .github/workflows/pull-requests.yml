@@ -93,7 +93,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [api-gateway]
+        service: [api-gateway, api-sync-job]
       fail-fast: false
     services:
       wiremock:
