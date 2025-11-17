@@ -44,7 +44,7 @@ public abstract class AbstractReportCoordinationServiceIT {
 
   static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
     (PostgreSQLContainer<?>) new PostgreSQLContainer(
-      "postgres:18.0-alpine"
+      "postgres:18.1-alpine"
     ).withExposedPorts(5432);
 
   static final WireMockContainer WIRE_MOCK_CONTAINER = new WireMockContainer(

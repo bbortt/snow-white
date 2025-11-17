@@ -16,7 +16,7 @@ public abstract class AbstractQualityGateApiIT {
 
   static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
     (PostgreSQLContainer<?>) new PostgreSQLContainer(
-      "postgres:18.0-alpine"
+      "postgres:18.1-alpine"
     ).withExposedPorts(5432);
 
   static {
