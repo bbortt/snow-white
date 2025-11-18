@@ -36,7 +36,7 @@
     <citrus.version>4.8.2</citrus.version>
     <confluent.version>8.1.0</confluent.version>
     <google-protobuf.version>4.33.1</google-protobuf.version>
-    <grpc.version>1.76.0</grpc.version>
+    <grpc.version>1.77.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
     <protobuf-maven-plugin.version>4.0.2</protobuf-maven-plugin.version>
