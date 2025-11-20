@@ -19,10 +19,10 @@
   "devDependencies": {
     "@types/lodash": "4.17.20",
     "@types/node": "24.10.1",
-    "@vitest/coverage-v8": "4.0.10",
+    "@vitest/coverage-v8": "4.0.12",
     "lodash": "4.17.21",
     "ts-node": "10.9.2",
-    "vitest": "4.0.10"
+    "vitest": "4.0.12"
   },
   "optionalDependencies": {
     "npm-check-updates": "19.1.2"
