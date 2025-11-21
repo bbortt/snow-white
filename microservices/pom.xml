@@ -35,7 +35,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
-    <org.flywaydb.version>11.17.0</org.flywaydb.version>
+    <org.flywaydb.version>11.17.1</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.0-RC1</org.springdoc.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
