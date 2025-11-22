@@ -139,7 +139,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [otel-event-filter-stream]
+        service: [otel-event-filter-stream, quality-gate-api]
       fail-fast: false
     services:
       kafka:

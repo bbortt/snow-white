@@ -1,0 +1,15 @@
+{
+  "name": "quality-gate-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application testing dependencies of snow-white quality-gate api",
+  "license": "PolyForm-Small-Business-1.0.0",
+  "author": {
+    "name": "Timon Borter",
+    "email": "timon.borter@gmx.ch"
+  },
+  "devDependencies": {
+    "npm-run-all2": "8.0.4",
+    "wait-on": "9.0.3"
+  }
+}
