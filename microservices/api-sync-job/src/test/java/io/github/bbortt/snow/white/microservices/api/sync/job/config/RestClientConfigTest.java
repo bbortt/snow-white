@@ -62,7 +62,7 @@ class RestClientConfigTest {
             ArgumentCaptor<
               JacksonJsonHttpMessageConverter
             > jacksonJsonHttpMessageConverterArgumentCaptor = captor();
-            verify(clientBuilderMock).jsonMessageConverter(
+            verify(clientBuilderMock).addCustomConverter(
               jacksonJsonHttpMessageConverterArgumentCaptor.capture()
             );
 
@@ -95,7 +95,7 @@ class RestClientConfigTest {
             ArgumentCaptor<
               JacksonJsonHttpMessageConverter
             > jacksonJsonHttpMessageConverterArgumentCaptor = captor();
-            verify(clientBuilderMock).jsonMessageConverter(
+            verify(clientBuilderMock).addCustomConverter(
               jacksonJsonHttpMessageConverterArgumentCaptor.capture()
             );
 
