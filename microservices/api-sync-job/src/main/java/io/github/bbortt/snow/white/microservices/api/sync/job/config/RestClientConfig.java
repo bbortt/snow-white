@@ -30,8 +30,8 @@ public class RestClientConfig {
       List.of(APPLICATION_JSON, APPLICATION_OCTET_STREAM)
     );
 
-    return RestClient.builder().configureMessageConverters(configurer ->
-      configurer.jsonMessageConverter(jacksonJsonHttpMessageConverter)
+    return RestClient.builder().configureMessageConverters(clientBuilder ->
+      clientBuilder.addCustomConverter(jacksonJsonHttpMessageConverter)
     );
   }
 }
