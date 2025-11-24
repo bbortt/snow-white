@@ -56,7 +56,7 @@ snowWhite:
   otelCollector:
     image:
       registry: 'docker.io'
-      tag: '0.138.0'
+      tag: '0.140.0'
     influxdb:
       endpoint: http://influxdb:8086
       org: snow-white

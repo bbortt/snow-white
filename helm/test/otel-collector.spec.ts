@@ -346,7 +346,7 @@ describe('OTEL Collector', () => {
             const otelCollector = await renderAndGetQualityGateApiContainer();
 
             expect(otelCollector.image).toBe(
-              'docker.io/otel/opentelemetry-collector-contrib:0.138.0',
+              'docker.io/otel/opentelemetry-collector-contrib:0.140.0',
             );
           });
 
@@ -365,7 +365,7 @@ describe('OTEL Collector', () => {
             );
 
             expect(otelCollector.image).toBe(
-              'custom.registry/otel/opentelemetry-collector-contrib:0.138.0',
+              'custom.registry/otel/opentelemetry-collector-contrib:0.140.0',
             );
           });
 
