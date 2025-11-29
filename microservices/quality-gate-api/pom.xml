@@ -424,7 +424,7 @@
             <version>${citrus.version}</version>
             <executions>
               <execution>
-                <id>generate-v1-quality-gate-api-citrus-actions</id>
+                <id>generate-citrus-actions</id>
                 <goals>
                   <goal>create-test-api</goal>
                 </goals>
