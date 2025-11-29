@@ -15,17 +15,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class OpenApiConfigTest {
+class OpenApiConfigurationTest {
 
   private QualityGateApiProperties qualityGateApiProperties;
 
-  private OpenApiConfig fixture;
+  private OpenApiConfiguration fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     qualityGateApiProperties = new QualityGateApiProperties();
 
-    fixture = new OpenApiConfig(qualityGateApiProperties);
+    fixture = new OpenApiConfiguration(qualityGateApiProperties);
   }
 
   @Nested

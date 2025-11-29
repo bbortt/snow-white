@@ -25,7 +25,15 @@ Before running tests, ensure:
 - Docker is installed and running.
 - The `otel-event-filter-stream` image has been built (see [Building the Application](#building-the-application) above).
 
-### Step 1 - Start Docker Compose
+### Step 1 - Create an external Network
+
+Application Tests need a bridged network to connect to.
+
+```shell
+docker network create github_actions
+```
+
+### Step 2 - Start Docker Compose
 
 The application tests depend on a running Kafka and Redis instance.
 In **one terminal**, run:
@@ -34,7 +42,7 @@ In **one terminal**, run:
 docker compose -f microservices/otel-event-filter-stream/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
-### Step 2 - Run the OTEL Event Filter tests
+### Step 3 - Run the OTEL Event Filter tests
 
 In **another terminal**, run:
 

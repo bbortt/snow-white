@@ -1,0 +1,7 @@
+snow:
+  white:
+    otel:
+      event:
+        filter:
+          inbound-topic-name: snow-white-all
+          outbound-topic-name: snow-white-filtered

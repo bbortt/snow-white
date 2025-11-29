@@ -1,0 +1,68 @@
+name: 'report-coordinator-api: apptest'
+
+networks:
+  default:
+    name: github_actions
+    external: true
+    driver: bridge
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:8.1.0
+    environment:
+      # Cluster / broker identity
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      CLUSTER_ID: '1feed37e-6a27-4e5b-bdd1-c33d5ae070af' # random static cluster ID for single-node KRaft
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+
+      # Listener setup
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092,EXTERNAL://kafka:9094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      # Other essential configs
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'kafka-metadata-quorum.sh describe --bootstrap-server localhost:9092 || exit 1',
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - default
+
+  postgres:
+    image: postgres:18.1-alpine
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: 'snow-white'
+      POSTGRES_PASSWORD: 'snow-white'
+    volumes:
+      - ../../../../../dev/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '5432:5432'
+    restart: on-failure
+    networks:
+      - default
+
+  wiremock:
+    image: wiremock/wiremock:3.1.0-alpine
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default

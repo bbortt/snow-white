@@ -31,6 +31,11 @@
     </basePackage>
     <baseRestApiPackage>${basePackage}.api.rest</baseRestApiPackage>
     <baseClientPackage>${basePackage}.api.client</baseClientPackage>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <docker.network>bridge</docker.network>
   </properties>
 
   <dependencies>
@@ -136,6 +141,16 @@
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-test-api-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -437,6 +452,9 @@
                 </goals>
                 <configuration>
                   <mainClass>${basePackage}.Main</mainClass>
+                  <profiles>
+                    <profile>prod</profile>
+                  </profiles>
                 </configuration>
               </execution>
             </executions>
@@ -451,7 +469,7 @@
                 <buildArg>${native-maven-plugin.optimization}</buildArg>
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>--verbose</buildArg>
-                <buildArg>-Dspring.profiles.active=prod</buildArg>
+                <buildArg>--spring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}
@@ -467,6 +485,226 @@
                 <id>add-reachability-metadata</id>
                 <goals>
                   <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <build>
+        <resources>
+          <resource>
+            <directory>src/apptest/resources</directory>
+          </resource>
+        </resources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.1</version>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-openapi-codegen-maven-plugin</artifactId>
+            <version>${citrus.version}</version>
+            <executions>
+              <execution>
+                <id>generate-citrus-actions</id>
+                <goals>
+                  <goal>create-test-api</goal>
+                </goals>
+                <configuration>
+                  <apis>
+                    <api>
+                      <prefix>QualityGate</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
+                    <api>
+                      <prefix>ReportApi</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-report-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
+                  </apis>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/report-coordinator-api:${image.tag}
+                  </name>
+                  <alias>report-coordinator-api</alias>
+                  <run>
+                    <env>
+                      <MANAGEMENT_SERVER_PORT>8090</MANAGEMENT_SERVER_PORT>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC
+                      >
+                        snow-white-calculation-request
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC
+                      >
+                        snow-white-openapi-calculation-response
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC-API-GATEWAY-URL>
+                        http://localhost
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC-API-GATEWAY-URL>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL>
+                      <SPRING_DATASOURCE_URL>
+                        jdbc:postgresql://postgres:5432/report-coordinator-api
+                      </SPRING_DATASOURCE_URL>
+                      <SPRING_DATASOURCE_USERNAME>
+                        report_coord_app
+                      </SPRING_DATASOURCE_USERNAME>
+                      <SPRING_DATASOURCE_PASSWORD>
+                        strongpassword2
+                      </SPRING_DATASOURCE_PASSWORD>
+                      <SPRING_FLYWAY_USER>
+                        report_coord_flyway
+                      </SPRING_FLYWAY_USER>
+                      <SPRING_FLYWAY_PASSWORD>
+                        strongpassword1
+                      </SPRING_FLYWAY_PASSWORD>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                    </env>
+                    <log>
+                      <prefix>report-coordinator-api</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                    <ports>
+                      <port>8084:8080</port>
+                      <port>8094:8090</port>
+                    </ports>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-node-and-corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>pnpm-install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <configuration>
+                  <arguments>pnpm install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>wait-on-ports</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <arguments>pnpm run apptest:wait</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
                 </goals>
               </execution>
             </executions>
