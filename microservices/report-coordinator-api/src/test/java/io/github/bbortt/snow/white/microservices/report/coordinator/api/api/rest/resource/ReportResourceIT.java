@@ -310,7 +310,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .collect(toSet())
     );
 
-    qualityGateReportRepository.save(qualityGateReport);
+    qualityGateReportRepository.saveAndFlush(qualityGateReport);
 
     var jUnitReport = mockMvc
       .perform(

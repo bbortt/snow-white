@@ -1,8 +1,8 @@
 {
-  "name": "quality-gate-api",
+  "name": "report-coordinator-api",
   "version": "1.0.0",
   "private": true,
-  "description": "Application testing dependencies of snow-white quality-gate api",
+  "description": "Application testing dependencies of snow-white report-coordinator api",
   "license": "PolyForm-Small-Business-1.0.0",
   "author": {
     "name": "Timon Borter",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:quality-gate-api": "wait-on --timeout 1m http-get:localhost:8091/actuator/health"
+    "apptest:wait:report-coordinator-api": "wait-on --timeout 1m http-get:localhost:8094/actuator/health"
   },
   "devDependencies": {
     "npm-run-all2": "8.0.4",

@@ -139,7 +139,8 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [otel-event-filter-stream, quality-gate-api]
+        service:
+          [otel-event-filter-stream, quality-gate-api, report-coordinator-api]
       fail-fast: false
     services:
       kafka:
@@ -182,6 +183,11 @@ jobs:
         image: redis/redis-stack-server:7.4.0-v7
         ports:
           - '6379:6379'
+      wiremock:
+        image: wiremock/wiremock:3.1.0-alpine
+        ports:
+          - '9000:8080'
+        options: --name wiremock
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -194,7 +200,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Init PostgreSQL Databases
-        if: ${{ matrix.service == 'quality-gate-api' }}
+        if: ${{ matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api' }}
         run: psql -h localhost -U postgres -d postgres -f ./dev/postgres/init.sql
         env:
           PGPASSWORD: postgres

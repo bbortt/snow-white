@@ -26,6 +26,7 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
+import org.springframework.core.io.ClassPathResource;
 
 @Slf4j
 @Configuration
@@ -47,11 +48,28 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 )
 @ImportRuntimeHints(
   {
+    NativeRuntimeHintsConfiguration.ConfigResourcesRuntimeHints.class,
     NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints.class,
     NativeRuntimeHintsConfiguration.RestApiDtoHints.class,
   }
 )
 public class NativeRuntimeHintsConfiguration {
+
+  @NullMarked
+  static class ConfigResourcesRuntimeHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+      hints
+        .resources()
+        .registerResource(new ClassPathResource("config/application.yaml"));
+      hints
+        .resources()
+        .registerResource(
+          new ClassPathResource("config/application-prod.yaml")
+        );
+    }
+  }
 
   @NullMarked
   static class QualityGateApiDtoRuntimeHints implements RuntimeHintsRegistrar {

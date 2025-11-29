@@ -1,0 +1,9 @@
+snowWhite:
+  ingress:
+    host: 'localhost'
+  apiGateway:
+    image:
+      tag: 'latest'
+  qualityGateApi:
+    image:
+      tag: 'latest'

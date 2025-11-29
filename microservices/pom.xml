@@ -51,6 +51,14 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.citrusframework</groupId>
+        <artifactId>citrus-bom</artifactId>
+        <version>${citrus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-bom</artifactId>
         <version>12.1.4</version>
@@ -143,12 +151,6 @@
         <version>${org.springdoc.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.citrusframework</groupId>
-        <artifactId>citrus-junit5</artifactId>
-        <version>${citrus.version}</version>
-        <scope>test</scope>
-      </dependency>
       <dependency>
         <groupId>io.rest-assured</groupId>
         <artifactId>rest-assured</artifactId>
