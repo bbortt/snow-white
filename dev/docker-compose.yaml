@@ -76,19 +76,19 @@ services:
     ports:
       - '9092:9092'
       - '9094:9094'
-    #    deploy:
-    #      resources:
-    #        reservations:
-    #          cpus: '0.5'
-    #          memory: '1g'
-    #        limits:
-    #          cpus: '1'
-    #          memory: '2g'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.5'
+          memory: '1g'
+        limits:
+          cpus: '1'
+          memory: '2g'
     healthcheck:
-      test: kafka-cluster.sh cluster-id --bootstrap-server 127.0.0.1:9092 || exit 1
-      interval: 1s
+      test: kafka-topics --bootstrap-server localhost:9092 --list || exit 1
+      interval: 3s
       timeout: 5s
-      retries: 12
+      retries: 20
     restart: on-failure
     networks:
       - internal
@@ -341,6 +341,7 @@ services:
     image: ghcr.io/bbortt/snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
+      MANAGEMENT_SERVER_PORT: 8090
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
@@ -375,15 +376,15 @@ services:
     # Native image:
     image: ghcr.io/bbortt/snow-white/report-coordinator-api
     hostname: report-coordinator-api
-    env_file: .env
     environment:
+      MANAGEMENT_SERVER_PORT: 8090
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SNOW_WHITE_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
-      SNOW_WHITE_REPORT_COORDINATION_SERVICE_INIT-TOPICS: 'true'
-      SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
-      SNOW_WHITE_REPORT_COORDINATION_SERVICE_PUBLIC_API_GATEWAY_URL: 'http://localhost'
-      SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
+      SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS: 'true'
+      SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
+      SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL: 'http://localhost'
+      SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/report-coordinator-api'
       SPRING_DATASOURCE_USERNAME: 'report_coord_app'
       SPRING_DATASOURCE_PASSWORD: 'strongpassword2'

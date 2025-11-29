@@ -177,7 +177,7 @@ Use the following steps for rapid local development:
 1. Build all modules:
 
    ```shell
-   ./mvnw package -T1C
+   ./mvnw package -b smart
    ```
 
 2. Start the Docker environment (if not already running):
@@ -258,7 +258,37 @@ To run a [SonarQube](https://www.sonarsource.com/) analysis:
 Application tests run tests against the fully built and running application.
 To run application tests within GitHub Actions, add the `include:apptests` label in your pull request.
 
-## Native Builds
+## Builds
+
+### JDK Builds
+
+These microservices run in a traditional JVM image:
+
+- `api-gateway`
+- `api-sync-job`
+- `openapi-coverage-stream`
+
+Build an image using:
+
+```shell
+./mvnw -am -pl :<maven-module> -b smart install
+
+docker build \
+    -f "microservices/<maven-module>/Dockerfile" \
+    -t "ghcr.io/bbortt/snow-white/<maven-module>:latest" \
+    --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    --build-arg PROJECT_VERSION="latest" \
+    "microservices/<maven-module>"
+```
+
+Alternatively, install all packages and microservices first, then simply run the following script:
+
+```shell
+./mvnw -b smart -Pprod install
+.github/scripts/build-oci-images.sh latest
+```
+
+### Native Builds
 
 These microservices support native image builds:
 
@@ -269,15 +299,15 @@ These microservices support native image builds:
 Build an image using:
 
 ```shell
-./mvnw -am -pl :<maven-module> -T1C install
+./mvnw -am -pl :<maven-module> -b smart install
 ./mvnw -DskipTests -Pnative -pl :<maven-module> spring-boot:build-image
 ```
 
 Build all native microservices:
 
 ```shell
-./mvnw -T1C install
-./mvnw -DskipTests -Pnative -T1C -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api spring-boot:build-image
+./mvnw -b smart -Pprod install
+./mvnw -DskipTests -Pnative -b smart -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api spring-boot:build-image
 ```
 
 For development, override `-Dimage.tag=latest` to build a "latest" image for usage with [Docker/Podman Compose](#quick-start).

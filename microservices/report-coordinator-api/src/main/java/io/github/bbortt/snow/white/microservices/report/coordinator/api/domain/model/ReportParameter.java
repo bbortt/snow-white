@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model;
 
+import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.CollectionTable;
@@ -50,7 +51,7 @@ public class ReportParameter {
   private String lookbackWindow = "1h";
 
   @Builder.Default
-  @ElementCollection
+  @ElementCollection(fetch = EAGER)
   @Column(name = "attribute_value")
   @MapKeyColumn(name = "attribute_key")
   @CollectionTable(

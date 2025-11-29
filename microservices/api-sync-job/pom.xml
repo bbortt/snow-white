@@ -153,7 +153,7 @@
             <configuration>
               <classifier>executable</classifier>
               <mainClass>
-                io.github.bbortt.snow.white.microservices.api.sync.job.Application
+                io.github.bbortt.snow.white.microservices.api.sync.job.Main
               </mainClass>
             </configuration>
             <goals>

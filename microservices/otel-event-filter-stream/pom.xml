@@ -134,7 +134,6 @@
     <dependency>
       <groupId>org.citrusframework</groupId>
       <artifactId>citrus-kafka</artifactId>
-      <version>${citrus.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -301,6 +300,9 @@
                 </goals>
                 <configuration>
                   <mainClass>${mainClass}</mainClass>
+                  <profiles>
+                    <profile>prod</profile>
+                  </profiles>
                 </configuration>
               </execution>
             </executions>
@@ -315,7 +317,7 @@
                 <buildArg>${native-maven-plugin.optimization}</buildArg>
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>--verbose</buildArg>
-                <buildArg>-Dspring.profiles.active=prod</buildArg>
+                <buildArg>--spring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}
