@@ -130,7 +130,6 @@
     <dependency>
       <groupId>org.citrusframework</groupId>
       <artifactId>citrus-test-api-core</artifactId>
-      <version>${citrus.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -424,7 +423,7 @@
             <version>${citrus.version}</version>
             <executions>
               <execution>
-                <id>generate-v1-quality-gate-api-citrus-actions</id>
+                <id>generate-citrus-actions</id>
                 <goals>
                   <goal>create-test-api</goal>
                 </goals>
