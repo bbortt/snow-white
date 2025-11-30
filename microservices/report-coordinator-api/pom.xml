@@ -575,9 +575,24 @@
                   <alias>report-coordinator-api</alias>
                   <run>
                     <env>
+                      <SNOW_WHITE_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC
+                      >
+                        snow-white-calculation-request
+                      </SNOW_WHITE_REPORT_COORDINATION_SERVICE_CALCULATION-REQUEST-TOPIC>
+                      <SNOW_WHITE_REPORT_COORDINATION_SERVICE_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_REPORT_COORDINATION_SERVICE_INIT-TOPICS>
+                      <SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC
+                      >
+                        snow-white-openapi-calculation-response
+                      </SNOW_WHITE_REPORT_COORDINATION_SERVICE_OPENAPI-CALCULATION-RESPONSE_TOPIC>
                       <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
+                      <SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL
+                      >
+                        http://wiremock:8080
+                      </SNOW_WHITE_REPORT_COORDINATION_SERVICE_QUALITY-GATE-API-URL>
                       <SPRING_DATASOURCE_URL>
                         jdbc:postgresql://postgres:5432/report-coordinator-api
                       </SPRING_DATASOURCE_URL>
@@ -593,6 +608,9 @@
                       <SPRING_FLYWAY_PASSWORD>
                         strongpassword1
                       </SPRING_FLYWAY_PASSWORD>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
                     </env>
                     <log>
                       <prefix>report-coordinator-api</prefix>

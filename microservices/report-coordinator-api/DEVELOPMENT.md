@@ -2,28 +2,28 @@
 
 ## Building the Application
 
-To build the **Quality-Gate API** application:
+To build the **Report Coordinator API** application:
 
 ### 1. Build the Maven artifact:
 
 ```shell
-./mvnw -Pprod -pl :quality-gate-api -am install
+./mvnw -Pprod -pl :report-coordinator-api -am install
 ```
 
 ### 2. Package it into an Image
 
 ```shell
-./mvnw -Pnative -Dimage.tag=latest -DskipTests -pl :quality-gate-api spring-boot:build-image
+./mvnw -Pnative -Dimage.tag=latest -DskipTests -pl :report-coordinator-api spring-boot:build-image
 ```
 
-The resulting image is: `ghcr.io/bbortt/snow-white/quality-gate-api:latest`.
+The resulting image is: `ghcr.io/bbortt/snow-white/report-coordinator-api:latest`.
 
 ## Running Application Tests
 
 Before running tests, ensure:
 
 - Docker is installed and running.
-- The `quality-gate-api` image has been built (see [Building the Application](#building-the-application) above).
+- The `report-coordinator-api` image has been built (see [Building the Application](#building-the-application) above).
 
 ### Step 1 - Create an external Network
 
@@ -35,11 +35,11 @@ docker network create github_actions
 
 ### Step 2 - Start Docker Compose
 
-The application tests depend on a running PostgreSQL instance.
+The application tests depend on a running Kafka and PostgreSQL instance.
 In **one terminal**, run:
 
 ```shell
-docker compose -f microservices/quality-gate-api/src/apptest/resources/docker-compose-apptest.yaml up
+docker compose -f microservices/report-coordinator-api/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
 ### Step 3 - Run the Quality-Gate API tests
@@ -50,7 +50,7 @@ In **another terminal**, run:
 ./mvnw \
   -Dimage.tag=latest \
   -Papptest \
-  -pl :quality-gate-api \
+  -pl :report-coordinator-api \
   -Ddocker.network=github_actions \
   verify
 ```

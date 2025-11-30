@@ -58,7 +58,7 @@ updates:
         patterns:
           - '*'
   - package-ecosystem: 'npm'
-    directory: '/microservices/quality-gate-api/'
+    directory: '/microservices/'
     schedule:
       interval: 'weekly'
     assignees:
@@ -70,7 +70,8 @@ updates:
     groups:
       apptest-dependencies:
         patterns:
-          - '*'
+          - 'quality-gate-api/*'
+          - 'report-coordinator-api/*'
   - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:
