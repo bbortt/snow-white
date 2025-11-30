@@ -144,6 +144,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-test-api-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-webmvc-test</artifactId>
       <scope>test</scope>
