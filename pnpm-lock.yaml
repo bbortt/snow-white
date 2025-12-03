@@ -13,7 +13,7 @@ importers:
         version: 20.0.0
       '@prettier/plugin-xml':
         specifier: 3.4.2
-        version: 3.4.2(prettier@3.7.3)
+        version: 3.4.2(prettier@3.7.4)
       commitlint:
         specifier: 20.1.0
         version: 20.1.0(@types/node@24.6.0)(typescript@5.9.2)
@@ -24,14 +24,14 @@ importers:
         specifier: 16.2.7
         version: 16.2.7
       prettier:
-        specifier: 3.7.3
-        version: 3.7.3
+        specifier: 3.7.4
+        version: 3.7.4
       prettier-plugin-java:
         specifier: 2.7.7
-        version: 2.7.7(prettier@3.7.3)
+        version: 2.7.7(prettier@3.7.4)
       prettier-plugin-packagejson:
         specifier: 2.5.20
-        version: 2.5.20(prettier@3.7.3)
+        version: 2.5.20(prettier@3.7.4)
     optionalDependencies:
       npm-check-updates:
         specifier: 19.1.2
@@ -549,8 +549,8 @@ packages:
       prettier:
         optional: true
 
-  prettier@3.7.3:
-    resolution: {integrity: sha512-QgODejq9K3OzoBbuyobZlUhznP5SKwPqp+6Q6xw6o8gnhr4O85L2U915iM2IDcfF2NPXVaM9zlo9tdwipnYwzg==}
+  prettier@3.7.4:
+    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -831,10 +831,10 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@prettier/plugin-xml@3.4.2(prettier@3.7.3)':
+  '@prettier/plugin-xml@3.4.2(prettier@3.7.4)':
     dependencies:
       '@xml-tools/parser': 1.0.11
-      prettier: 3.7.3
+      prettier: 3.7.4
 
   '@types/conventional-commits-parser@5.0.1':
     dependencies:
@@ -1186,19 +1186,19 @@ snapshots:
 
   pidtree@0.6.0: {}
 
-  prettier-plugin-java@2.7.7(prettier@3.7.3):
+  prettier-plugin-java@2.7.7(prettier@3.7.4):
     dependencies:
       java-parser: 3.0.1
-      prettier: 3.7.3
+      prettier: 3.7.4
 
-  prettier-plugin-packagejson@2.5.20(prettier@3.7.3):
+  prettier-plugin-packagejson@2.5.20(prettier@3.7.4):
     dependencies:
       sort-package-json: 3.5.0
       synckit: 0.11.11
     optionalDependencies:
-      prettier: 3.7.3
+      prettier: 3.7.4
 
-  prettier@3.7.3: {}
+  prettier@3.7.4: {}
 
   regexp-to-ast@0.5.0: {}
 
