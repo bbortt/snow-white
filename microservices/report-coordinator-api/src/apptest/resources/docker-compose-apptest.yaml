@@ -13,7 +13,7 @@ services:
       # Cluster / broker identity
       KAFKA_NODE_ID: 1
       KAFKA_BROKER_ID: 1
-      CLUSTER_ID: '1feed37e-6a27-4e5b-bdd1-c33d5ae070af' # random static cluster ID for single-node KRaft
+      CLUSTER_ID: 'Zjg1NzRhNjRiYTQ5NDgzNz' # run "kafka-storage random-uuid"
       KAFKA_PROCESS_ROLES: 'broker,controller'
 
       # Listener setup

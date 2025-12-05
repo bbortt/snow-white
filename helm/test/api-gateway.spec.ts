@@ -249,6 +249,7 @@ describe('API Gateway', () => {
       });
 
       it('renders with custom image pull secret based on values', async () => {
+        const token = 'something';
         const templateSpec = getPodSpec(
           await renderAndGetDeployment(
             await renderHelmChart({
@@ -256,7 +257,7 @@ describe('API Gateway', () => {
               values: {
                 global: {
                   imagePullSecrets: {
-                    token: 'something',
+                    token,
                   },
                 },
               },
@@ -264,7 +265,7 @@ describe('API Gateway', () => {
           ),
         );
 
-        expect(templateSpec.imagePullSecrets).toEqual({ token: 'something' });
+        expect(templateSpec.imagePullSecrets).toEqual({ token });
       });
     });
 
@@ -606,15 +607,8 @@ describe('API Gateway', () => {
       return service;
     };
 
-    const renderAndGetService = async () => {
-      const service = await renderAndGetApiGatewayService();
-      expect(service).toBeDefined();
-
-      return service;
-    };
-
     it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetApiGatewayService();
 
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
@@ -624,7 +618,7 @@ describe('API Gateway', () => {
     });
 
     it('should have default labels', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetApiGatewayService();
 
       const { metadata } = service;
       expect(metadata).toBeDefined();
@@ -659,7 +653,7 @@ describe('API Gateway', () => {
 
     describe('type', async () => {
       it("should be 'ClusterIP' by default", async () => {
-        const service = await renderAndGetService();
+        const service = await renderAndGetApiGatewayService();
 
         const { spec } = service;
         expect(spec).toBeDefined();
@@ -694,7 +688,7 @@ describe('API Gateway', () => {
 
     describe('ports', async () => {
       it('should map http port 80 by default', async () => {
-        const service = await renderAndGetService();
+        const service = await renderAndGetApiGatewayService();
 
         const { spec } = service;
         expect(spec).toBeDefined();
@@ -733,7 +727,7 @@ describe('API Gateway', () => {
 
     describe('selector', () => {
       it('should contain immutable labels', async () => {
-        const service = await renderAndGetService();
+        const service = await renderAndGetApiGatewayService();
 
         const { spec } = service;
         expect(spec).toBeDefined();

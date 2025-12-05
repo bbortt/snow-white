@@ -249,6 +249,7 @@ describe('Quality-Gate API', () => {
       });
 
       it('renders with custom image pull secret based on values', async () => {
+        const token = 'something';
         const templateSpec = getPodSpec(
           await renderAndGetDeployment(
             await renderHelmChart({
@@ -256,7 +257,7 @@ describe('Quality-Gate API', () => {
               values: {
                 global: {
                   imagePullSecrets: {
-                    token: 'something',
+                    token,
                   },
                 },
               },
@@ -264,7 +265,7 @@ describe('Quality-Gate API', () => {
           ),
         );
 
-        expect(templateSpec.imagePullSecrets).toEqual({ token: 'something' });
+        expect(templateSpec.imagePullSecrets).toEqual({ token });
       });
     });
 
@@ -626,15 +627,8 @@ describe('Quality-Gate API', () => {
       return service;
     };
 
-    const renderAndGetService = async () => {
-      const service = await renderAndGetQualityGateApiService();
-      expect(service).toBeDefined();
-
-      return service;
-    };
-
     it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetQualityGateApiService();
 
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
@@ -644,7 +638,7 @@ describe('Quality-Gate API', () => {
     });
 
     it('should have default labels', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetQualityGateApiService();
 
       const { metadata } = service;
       expect(metadata).toBeDefined();
@@ -679,7 +673,7 @@ describe('Quality-Gate API', () => {
 
     describe('selector', () => {
       it('should contain immutable labels', async () => {
-        const service = await renderAndGetService();
+        const service = await renderAndGetQualityGateApiService();
 
         const { spec } = service;
         expect(spec).toBeDefined();

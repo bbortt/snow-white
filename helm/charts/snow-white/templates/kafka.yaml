@@ -1,0 +1,157 @@
+{{- if .Values.kafka.enabled }}
+{{- $name := include "snow-white.name" (dict "name" "kafka" "context" .) -}}
+{{- $labels := include "snow-white.labels" (dict "name" "kafka" "context" .) | nindent 0 -}}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "kafka" "context" .) | nindent 0 -}}
+
+{{ $replicas := 3 -}}
+{{- if eq .Values.snowWhite.mode "minimal" }}
+{{ $replicas = 1 -}}
+{{- end }}
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: {{ $replicas }}
+  serviceName: {{ $name }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ $labels | nindent 8 }}
+    spec:
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: kafka
+          image: "{{ .Values.kafka.image.registry }}/{{ .Values.kafka.image.name }}:{{ .Values.kafka.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # --- KRaft config ---
+            - name: KAFKA_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+            - name: KAFKA_BROKER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+            - name: CLUSTER_ID
+              value: "{{ .Values.kafka.clusterId }}"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_LISTENERS
+              value: "INTERNAL://:9092,CONTROLLER://:9093"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "INTERNAL://$(POD_NAME).{{ $name }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:9092"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "INTERNAL"
+            # Storage
+            - name: KAFKA_LOG_DIRS
+              value: "/var/lib/kafka/data"
+            # KRaft metadata quorum
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: {{ range $i, $e := until $replicas }}{{ $i }}@{{ $name }}-{{ $i }}.{{ $name }}.{{ include "common.names.namespace" $ }}.svc.cluster.local.:9093{{ if ne $i (sub $replicas 1) }},{{ end }}{{- end }}
+          ports:
+            - name: internal
+              containerPort: 9092
+              protocol: TCP
+            - name: controller
+              containerPort: 9093
+              protocol: TCP
+          resources:
+            limits:
+              memory: '2Gi'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.5'
+              memory: '1Gi'
+              ephemeral-storage: '50Mi'
+          startupProbe:
+            tcpSocket:
+              port: 9093
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 10
+          readinessProbe:
+            tcpSocket:
+              port: 9093
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 10
+          volumeMounts:
+            - mountPath: /var/lib/kafka
+              name: datadir
+      volumes:
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: {{ $name }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.kafka.storageSize }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  clusterIP: None
+  selector: {{ $selectorLabels | nindent 4 }}
+  ports:
+    - port: 9092
+      name: internal
+    - port: 9093
+      name: controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "kafka-connect" "context" .) }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{ $selectorLabels | nindent 4 }}
+  ports:
+    - name: kafka
+      port: 9092
+      targetPort: internal
+{{- end }}

@@ -348,9 +348,7 @@
                 </goals>
                 <configuration>
                   <mainClass>${mainClass}</mainClass>
-                  <profiles>
-                    <profile>prod</profile>
-                  </profiles>
+                  <profiles>prod</profiles>
                 </configuration>
               </execution>
             </executions>
@@ -365,7 +363,6 @@
                 <buildArg>${native-maven-plugin.optimization}</buildArg>
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>--verbose</buildArg>
-                <buildArg>--spring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}
@@ -471,7 +468,6 @@
                   <alias>quality-gate-api</alias>
                   <run>
                     <env>
-                      <MANAGEMENT_SERVER_PORT>8090</MANAGEMENT_SERVER_PORT>
                       <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>

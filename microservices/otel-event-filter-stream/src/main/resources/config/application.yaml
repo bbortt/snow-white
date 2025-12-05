@@ -12,3 +12,5 @@ spring:
       ack-mode: manual
     streams:
       application-id: otel-event-filter-stream
+  profiles:
+    default: prod

@@ -57,7 +57,7 @@ services:
       # Cluster / broker identity
       KAFKA_NODE_ID: 1
       KAFKA_BROKER_ID: 1
-      CLUSTER_ID: '3afff3c5-265a-4837-91d9-abe25e4ba7e8' # random static cluster ID for single-node KRaft
+      CLUSTER_ID: 'ZTkwOTM2MzQyYWJmNDM5Ym' # run "kafka-storage random-uuid"
       KAFKA_PROCESS_ROLES: 'broker,controller'
 
       # Listener setup
@@ -341,7 +341,6 @@ services:
     image: ghcr.io/bbortt/snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
-      MANAGEMENT_SERVER_PORT: 8090
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
@@ -377,7 +376,6 @@ services:
     image: ghcr.io/bbortt/snow-white/report-coordinator-api
     hostname: report-coordinator-api
     environment:
-      MANAGEMENT_SERVER_PORT: 8090
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
