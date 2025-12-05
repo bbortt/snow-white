@@ -42,6 +42,11 @@ spec:
           env:
             - name: GOMEMLIMIT
               value: 800MiB
+            - name: INFLUXDB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-%s" .Release.Name "influxdb-auth" }}
+                  key: influxdb-password
           ports:
             - name: grpc
               containerPort: 4317
@@ -142,11 +147,11 @@ data:
       kafka/snow-white:
         brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
         protocol_version: 4.0.0
-        topic: {{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}
         traces:
           encoding: otlp_json
           # TODO https://github.com/bbortt/snow-white/issues/287
           # encoding: otlp_proto
+          topic: {{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}
       otlp:
         protocols:
           grpc:
@@ -220,11 +225,11 @@ data:
         brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
         partition_traces_by_id: true
         protocol_version: 4.0.0
-        topic: {{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}
         traces:
           encoding: otlp_json
           # TODO https://github.com/bbortt/snow-white/issues/287
           # encoding: otlp_proto
+          topic: {{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}
       influxdb:
         endpoint: {{ .Values.snowWhite.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.snowWhite.otelCollector.influxdb.org | quote }}

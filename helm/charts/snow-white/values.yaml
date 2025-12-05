@@ -96,6 +96,11 @@ kafka:
 
 influxdb:
   enabled: true
+  config:
+    http:
+      auth-enabled: true
+  setDefaultUser:
+    enabled: true
 
 postgresql:
   enabled: true

@@ -61,6 +61,7 @@ jobs:
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com/
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Build with Maven
