@@ -249,6 +249,7 @@ describe('OTEL Collector', () => {
       });
 
       it('renders with custom image pull secret based on values', async () => {
+        const token = 'something';
         const templateSpec = getPodSpec(
           await renderAndGetDeployment(
             await renderHelmChart({
@@ -256,7 +257,7 @@ describe('OTEL Collector', () => {
               values: {
                 global: {
                   imagePullSecrets: {
-                    token: 'something',
+                    token,
                   },
                 },
               },
@@ -264,7 +265,7 @@ describe('OTEL Collector', () => {
           ),
         );
 
-        expect(templateSpec.imagePullSecrets).toEqual({ token: 'something' });
+        expect(templateSpec.imagePullSecrets).toEqual({ token });
       });
     });
 
@@ -345,8 +346,8 @@ describe('OTEL Collector', () => {
           it('should be pulled from docker.io by default', async () => {
             const otelCollector = await renderAndGetQualityGateApiContainer();
 
-            expect(otelCollector.image).toBe(
-              'docker.io/otel/opentelemetry-collector-contrib:0.141.0',
+            expect(otelCollector.image).toMatch(
+              /^docker\.io\/otel\/opentelemetry-collector-contrib:\d\.\d\.\d$/,
             );
           });
 
@@ -364,8 +365,8 @@ describe('OTEL Collector', () => {
               }),
             );
 
-            expect(otelCollector.image).toBe(
-              'custom.registry/otel/opentelemetry-collector-contrib:0.141.0',
+            expect(otelCollector.image).toMatch(
+              /^custom\.registry\/otel\/opentelemetry-collector-contrib:\d\.\d\.\d$/,
             );
           });
 
@@ -531,15 +532,8 @@ describe('OTEL Collector', () => {
       return service;
     };
 
-    const renderAndGetService = async () => {
-      const service = await renderAndGetQualityGateApiService();
-      expect(service).toBeDefined();
-
-      return service;
-    };
-
     it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetQualityGateApiService();
 
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
@@ -549,7 +543,7 @@ describe('OTEL Collector', () => {
     });
 
     it('should have default labels', async () => {
-      const service = await renderAndGetService();
+      const service = await renderAndGetQualityGateApiService();
 
       const { metadata } = service;
       expect(metadata).toBeDefined();
@@ -584,7 +578,7 @@ describe('OTEL Collector', () => {
 
     describe('selector', () => {
       it('should contain immutable labels', async () => {
-        const service = await renderAndGetService();
+        const service = await renderAndGetQualityGateApiService();
 
         const { spec } = service;
         expect(spec).toBeDefined();

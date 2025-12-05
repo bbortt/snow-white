@@ -300,9 +300,7 @@
                 </goals>
                 <configuration>
                   <mainClass>${mainClass}</mainClass>
-                  <profiles>
-                    <profile>prod</profile>
-                  </profiles>
+                  <profiles>prod</profiles>
                 </configuration>
               </execution>
             </executions>
@@ -317,7 +315,6 @@
                 <buildArg>${native-maven-plugin.optimization}</buildArg>
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>--verbose</buildArg>
-                <buildArg>--spring.profiles.active=prod</buildArg>
               </buildArgs>
               <classesDirectory>
                 ${project.build.outputDirectory}

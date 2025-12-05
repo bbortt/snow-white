@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       labels:
-        {{ $selectorLabels | nindent 8 }}
+        {{ $labels | nindent 8 }}
     spec:
       {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
       securityContext:
@@ -41,8 +41,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
           {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
-            - name: 'MANAGEMENT_SERVER_PORT'
-              value: '8090'
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
               value: '{{ include "snow-white.publicHost" . }}'
             - name: 'SPRING_DATASOURCE_URL'

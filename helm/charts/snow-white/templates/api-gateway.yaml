@@ -1,9 +1,10 @@
+{{- $name := include "snow-white.name" (dict "name" "api-gateway" "context" .) -}}
 {{- $labels := include "snow-white.labels" (dict "name" "api-gateway" "context" .) | nindent 0 -}}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "api-gateway" "context" .) | nindent 0 -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+  name: {{ $name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -22,7 +23,7 @@ spec:
   template:
     metadata:
       labels:
-        {{ $selectorLabels | nindent 8 }}
+        {{ $labels | nindent 8 }}
     spec:
       {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
       securityContext:
@@ -110,7 +111,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+  name: {{ $name }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -122,7 +123,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+  name: {{ $name }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -134,7 +135,7 @@ spec:
       port: {{ .Values.snowWhite.apiGateway.service.port }}
       targetPort: http
 ---
-{{ if .Values.snowWhite.ingress.enabled -}}
+{{- if .Values.snowWhite.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -160,7 +161,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+                name: {{ $name }}
                 port:
                   name: http
 {{- end }}

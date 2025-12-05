@@ -3,3 +3,5 @@ springdoc:
 spring:
   jpa:
     open-in-view: false
+  profiles:
+    default: prod

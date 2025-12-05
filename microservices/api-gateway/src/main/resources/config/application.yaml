@@ -13,4 +13,5 @@ management:
       access: read_only
 spring:
   profiles:
+    default: prod
     include: api-docs
