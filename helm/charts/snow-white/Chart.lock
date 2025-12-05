@@ -3,13 +3,13 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 32.4.3
 - name: influxdb
-  repository: https://charts.bitnami.com/bitnami
-  version: 7.1.20
+  repository: https://helm.influxdata.com/
+  version: 4.12.5
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 18.1.13
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 24.0.0
-digest: sha256:ca62a46f1de2d1ea837cca4e24abe638f49db267b25e3e7a91f3e8b076af4bc9
-generated: "2025-11-27T22:07:49.939910462Z"
+digest: sha256:577449f45b5b3a498bdaf9b98446ee445242afd889b13bf7c658865e9e10b66f
+generated: "2025-12-05T14:18:21.4841348+01:00"

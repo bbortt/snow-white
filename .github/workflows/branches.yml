@@ -38,6 +38,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com/
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Build with Maven

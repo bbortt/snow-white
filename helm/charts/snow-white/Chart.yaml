@@ -13,8 +13,8 @@ dependencies:
     repository: 'https://charts.bitnami.com/bitnami'
     condition: kafka.enabled
   - name: influxdb
-    version: 7.1.20
-    repository: 'https://charts.bitnami.com/bitnami'
+    version: 4.12.5
+    repository: 'https://helm.influxdata.com/'
     condition: influxdb.enabled
   - name: postgresql
     version: 18.1.13
