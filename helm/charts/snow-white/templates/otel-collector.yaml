@@ -22,7 +22,7 @@ spec:
   template:
     metadata:
       labels:
-        {{ $selectorLabels | nindent 8 }}
+        {{ $labels | nindent 8 }}
     spec:
       {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
       {{- if .Values.affinity }}

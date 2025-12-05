@@ -93,6 +93,14 @@ snowWhite:
 # Infrastructure
 kafka:
   enabled: true
+  replicaCount: 3
+  image:
+    registry: docker.io
+    name: confluentinc/cp-kafka
+    tag: 7.6.1
+  clusterId: 'NmE4MjRhYjI1MjkwNGI5ZG' # run "kafka-storage random-uuid"
+  storageClass: 'hostpath'
+  storageSize: 10Gi
 
 influxdb:
   enabled: true
@@ -104,7 +112,7 @@ influxdb:
 
 postgresql:
   enabled: true
-  architecture: replication
+  architecture: standalone
   primary:
     extraEnvVars:
       - name: 'REPORT_COORDINATOR_DATASOURCE_PASSWORD'

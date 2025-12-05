@@ -150,7 +150,7 @@ jobs:
           # Cluster / broker identity
           KAFKA_NODE_ID: 1
           KAFKA_BROKER_ID: 1
-          CLUSTER_ID: '442d715d-33a5-4445-9f07-bcabdc383cda' # random static cluster ID for single-node KRaft
+          CLUSTER_ID: 'NjZmNTk0MDc5OWZjNDQzYW' # run "kafka-storage random-uuid"
           KAFKA_PROCESS_ROLES: 'broker,controller'
 
           # Listener setup
