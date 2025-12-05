@@ -30,9 +30,9 @@
     "prettier:format": "npm run prettier -- --write"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "20.0.0",
+    "@commitlint/config-conventional": "20.2.0",
     "@prettier/plugin-xml": "3.4.2",
-    "commitlint": "20.1.0",
+    "commitlint": "20.2.0",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "prettier": "3.7.4",
