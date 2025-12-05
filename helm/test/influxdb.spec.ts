@@ -7,14 +7,14 @@
 import { describe, it, expect } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
 
-const getInfluxDBDeployment = (manifests: any[]) => {
-  const deployment = manifests.find(
+const getInfluxDBStatefulSet = (manifests: any[]) => {
+  const statefulSet = manifests.find(
     (m) =>
-      m.kind === 'Deployment' &&
+      m.kind === 'StatefulSet' &&
       m.metadata.name.startsWith('test-release-influxdb'),
   );
-  expect(deployment).toBeDefined();
-  return deployment;
+  expect(statefulSet).toBeDefined();
+  return statefulSet;
 };
 
 describe('InfluxDB', () => {
@@ -23,9 +23,9 @@ describe('InfluxDB', () => {
       chartPath: 'charts/snow-white',
     });
 
-    const deployment = getInfluxDBDeployment(manifests);
-    expect(deployment.spec.template.spec.containers[0].image).toMatch(
-      /^(registry-\d\.)?docker\.io\/bitnami\/influxdb:.+$/,
+    const statefulSet = getInfluxDBStatefulSet(manifests);
+    expect(statefulSet.spec.template.spec.containers[0].image).toMatch(
+      /^(registry-\d\.)?influxdb:.+$/,
     );
   });
 
@@ -34,8 +34,8 @@ describe('InfluxDB', () => {
       chartPath: 'charts/snow-white',
     });
 
-    const deployment = getInfluxDBDeployment(manifests);
-    expect(deployment.spec.replicas).toBeUndefined();
+    const statefulSet = getInfluxDBStatefulSet(manifests);
+    expect(statefulSet.spec.replicas).toBe(1);
   });
 
   it('can be disabled via properties', async () => {
@@ -53,5 +53,18 @@ describe('InfluxDB', () => {
     );
 
     expect(influxdbResources).toBeUndefined();
+  });
+
+  it('exposes credentials using secret', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const influxdbSecret = manifests.find(
+      (m) =>
+        m.kind === 'Secret' && m.metadata.name === 'test-release-influxdb-auth',
+    );
+
+    expect(influxdbSecret).toBeDefined();
   });
 });
