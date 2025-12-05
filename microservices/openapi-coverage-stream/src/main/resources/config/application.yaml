@@ -2,3 +2,5 @@ spring:
   kafka:
     streams:
       application-id: openapi-coverage-stream
+  profiles:
+    default: prod
