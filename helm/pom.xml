@@ -62,7 +62,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>webapp-test</id>
+            <id>helm-test</id>
             <goals>
               <goal>corepack</goal>
             </goals>

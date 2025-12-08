@@ -28,7 +28,7 @@ const getRedisReplicas = (manifests: any[]) => {
 };
 
 describe('Redis', () => {
-  it('has enabled master by default', async () => {
+  it('should be enabled master by default', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
     });
@@ -39,7 +39,7 @@ describe('Redis', () => {
     );
   });
 
-  it('has enabled replicas by default', async () => {
+  it('should be enabled replicas by default', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
     });
