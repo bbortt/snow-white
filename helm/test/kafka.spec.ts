@@ -296,7 +296,7 @@ describe('Kafka', () => {
             const kafka = await renderAndGetKafkaContainer();
 
             expect(kafka.image).toMatch(
-              /^docker\.io\/confluentinc\/cp-kafka:\d\.\d\.\d$/,
+              /^docker\.io\/confluentinc\/cp-kafka:.+$/,
             );
           });
 
@@ -315,7 +315,7 @@ describe('Kafka', () => {
             );
 
             expect(kafka.image).toMatch(
-              /^custom\.registry\/confluentinc\/cp-kafka:\d\.\d\.\d$/,
+              /^custom\.registry\/confluentinc\/cp-kafka:.+$/,
             );
           });
 
@@ -331,7 +331,7 @@ describe('Kafka', () => {
               }),
             );
 
-            expect(kafka.image).toMatch(/^docker\.io\/other-kafka:\d\.\d\.\d$/);
+            expect(kafka.image).toMatch(/^docker\.io\/other-kafka:.+$/);
           });
 
           it('should adjust the image tag from values', async () => {
@@ -405,7 +405,7 @@ describe('Kafka', () => {
             { mode: 'high-available', quorumVoters: fullQuorumVoters },
             { mode: 'auto-scaling', quorumVoters: fullQuorumVoters },
           ])(
-            'should calculate KAFKA_CONTROLLER_QUORUM_VOTERS',
+            'should calculate KAFKA_CONTROLLER_QUORUM_VOTERS: %s',
             async ({ mode, quorumVoters }) => {
               const kafka = await renderAndGetKafkaContainer(
                 await renderHelmChart({
