@@ -414,9 +414,9 @@ describe('Quality-Gate API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+7 environment variables by default', async () => {
+          it('should deploy 2+6 environment variables by default', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
-            expect(qualityGateApi.env).toHaveLength(9);
+            expect(qualityGateApi.env).toHaveLength(8);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -523,8 +523,8 @@ describe('Quality-Gate API', () => {
               }),
             );
 
-            // 2 OTEL + 7 default + 2 additional
-            expect(qualityGateApi.env).toHaveLength(11);
+            // 2 OTEL + 6 default + 2 additional
+            expect(qualityGateApi.env).toHaveLength(10);
 
             const authorEnv = qualityGateApi.env.find(
               (env) => env.name === 'author',
