@@ -64,7 +64,7 @@ public class ApiTest {
   private @Nullable String apiVersion;
 
   @Column(updatable = false)
-  private @Nullable Integer apiType;
+  private @Nullable Short apiType;
 
   @NonNull
   @Builder.Default
