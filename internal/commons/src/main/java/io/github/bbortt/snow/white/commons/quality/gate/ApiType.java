@@ -14,14 +14,14 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 public enum ApiType {
-  UNSPECIFIED(0),
-  ASYNCAPI(1),
-  OPENAPI(2),
-  GRAPHQL(3);
+  UNSPECIFIED((short) 0),
+  ASYNCAPI((short) 1),
+  OPENAPI((short) 2),
+  GRAPHQL((short) 3);
 
-  final int val;
+  final short val;
 
-  ApiType(int val) {
+  ApiType(short val) {
     this.val = val;
   }
 
@@ -33,7 +33,7 @@ public enum ApiType {
     return ApiType.valueOf(typeName.toUpperCase());
   }
 
-  public static ApiType apiType(@Nullable Integer val) {
+  public static ApiType apiType(@Nullable Short val) {
     if (isNull(val)) {
       return UNSPECIFIED;
     }

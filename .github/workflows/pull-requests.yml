@@ -145,7 +145,7 @@ jobs:
       fail-fast: false
     services:
       kafka:
-        image: confluentinc/cp-kafka:8.0.0
+        image: confluentinc/cp-kafka:8.1.1
         env:
           # Cluster / broker identity
           KAFKA_NODE_ID: 1

@@ -97,7 +97,7 @@ kafka:
   image:
     registry: docker.io
     name: confluentinc/cp-kafka
-    tag: 7.6.1
+    tag: 8.1.1
   clusterId: 'NmE4MjRhYjI1MjkwNGI5ZG' # run "kafka-storage random-uuid"
   storageClass: 'hostpath'
   storageSize: 10Gi

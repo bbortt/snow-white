@@ -38,6 +38,6 @@ class ApiTypeTest {
 
   @Test
   void fromIntegerNullValue() {
-    assertThat(ApiType.apiType((Integer) null)).isEqualTo(UNSPECIFIED);
+    assertThat(ApiType.apiType((Short) null)).isEqualTo(UNSPECIFIED);
   }
 }
