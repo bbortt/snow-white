@@ -43,7 +43,7 @@ public class ApiEndpointEntry {
 
   private @NonNull String sourceUrl;
 
-  private @NonNull Integer apiType;
+  private @NonNull Short apiType;
 
   public ApiEndpointEntry(
     @NonNull String otelServiceName,
