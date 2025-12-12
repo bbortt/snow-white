@@ -10,7 +10,7 @@ import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
 
 describe('Quality-Gate API', () => {
-  describe('deployment', () => {
+  describe('Deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({
@@ -446,7 +446,7 @@ describe('Quality-Gate API', () => {
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'jdbc:postgresql://test-release-postgresql-primary:5432/quality-gate-api',
+              'jdbc:postgresql://test-release-postgresql.svc.cluster.local.:5432/quality-gate-api',
             );
           });
 
@@ -610,7 +610,7 @@ describe('Quality-Gate API', () => {
     });
   });
 
-  describe('service', () => {
+  describe('Service', () => {
     const renderAndGetQualityGateApiService = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

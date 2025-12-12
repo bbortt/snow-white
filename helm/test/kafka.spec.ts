@@ -133,7 +133,7 @@ describe('Kafka', () => {
       });
     });
 
-    describe('service', () => {
+    describe('Service', () => {
       it('should have specified headless service name for direct communication', async () => {
         const manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
@@ -497,7 +497,7 @@ describe('Kafka', () => {
     });
   });
 
-  describe('services', () => {
+  describe("Service's", () => {
     describe('headless service', () => {
       const renderAndGetKafkaHeadlessService = async (manifests?: any[]) => {
         if (!manifests) {
@@ -582,7 +582,7 @@ describe('Kafka', () => {
       });
     });
 
-    describe('service', () => {
+    describe('Service', () => {
       const renderAndGetKafkaConnectService = async (manifests?: any[]) => {
         if (!manifests) {
           manifests = await renderHelmChart({

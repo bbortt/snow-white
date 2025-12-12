@@ -145,7 +145,7 @@ data:
   snow-white.config.yml: |
     receivers:
       kafka/snow-white:
-        brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
+        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.otelCollector.kafka.brokers }}
         protocol_version: 4.0.0
         traces:
           encoding: otlp_json
@@ -222,7 +222,7 @@ data:
         verbosity: detailed
         sampling_initial: 5
       kafka/snow-white:
-        brokers: {{ .Values.snowWhite.otelCollector.kafka.brokers }}
+        brokers: {{ default (printf "%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.otelCollector.kafka.brokers }}
         partition_traces_by_id: true
         protocol_version: 4.0.0
         traces:

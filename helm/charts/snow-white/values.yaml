@@ -53,6 +53,10 @@ snowWhite:
     className: 'nginx'
     host: ''
     tls: true
+  kafka:
+    initTopics: 'true'
+    calculationRequestTopic: 'snow-white-calculation-request'
+    openapiCalculationResponseTopic: 'snow-white-openapi-calculation-response'
   otelCollector:
     image:
       registry: 'docker.io'
@@ -63,8 +67,7 @@ snowWhite:
       bucket: raw-data
       token: ${INFLUXDB_TOKEN}
     kafka:
-      brokers:
-        - kafka:9094
+      brokers: []
       inboundTopic: snow-white_inbound
       outbountTopic: snow-white_outbound
     pipeline:
@@ -75,8 +78,6 @@ snowWhite:
           - action: delete
             pattern: ^telemetry\..+
   apiGateway:
-    rollout:
-      maxSurge: '25%'
     image:
       tag: ''
     additionalEnvs: {}
@@ -84,8 +85,10 @@ snowWhite:
       type: ClusterIP
       port: 80
   qualityGateApi:
-    rollout:
-      maxSurge: '25%'
+    image:
+      tag: ''
+    additionalEnvs: {}
+  reportCoordinatorApi:
     image:
       tag: ''
     additionalEnvs: {}

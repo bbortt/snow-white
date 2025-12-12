@@ -9,7 +9,7 @@ import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
 
-describe('API Gateway', () => {
+describe('Report Coordinator API', () => {
   describe('Deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
@@ -21,7 +21,7 @@ describe('API Gateway', () => {
       const deployment = manifests.find(
         (m) =>
           m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-api-gateway-test-release',
+          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
       );
       expect(deployment).toBeDefined();
 
@@ -50,7 +50,9 @@ describe('API Gateway', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.name).toMatch('snow-white-api-gateway-test-release');
+      expect(metadata.name).toMatch(
+        'snow-white-report-coordinator-api-test-release',
+      );
     });
 
     it('should have default labels', async () => {
@@ -64,7 +66,7 @@ describe('API Gateway', () => {
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-gateway',
+        'app.kubernetes.io/name': 'report-coordinator-api',
         'app.kubernetes.io/part-of': 'snow-white',
       });
     });
@@ -80,7 +82,7 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
+            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
       );
 
       expect(deployment).toBeDefined();
@@ -215,7 +217,7 @@ describe('API Gateway', () => {
 
         expect(selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'api-gateway',
+          'app.kubernetes.io/name': 'report-coordinator-api',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -283,7 +285,7 @@ describe('API Gateway', () => {
                   matchLabels: {
                     'app.kubernetes.io/component': 'influxdb',
                     'app.kubernetes.io/instance': 'test-release',
-                    'app.kubernetes.io/name': 'api-gateway',
+                    'app.kubernetes.io/name': 'report-coordinator-api',
                   },
                 },
                 topologyKey: 'kubernetes.io/hostname',
@@ -319,17 +321,19 @@ describe('API Gateway', () => {
     });
 
     describe('containers', () => {
-      it('should have only one (api-gateway)', async () => {
+      it('should have only one (report-coordinator-api)', async () => {
         const templateSpec = getPodSpec(await renderAndGetDeployment());
 
         const { containers } = templateSpec;
         expect(containers).toHaveLength(1);
 
-        expect(containers[0].name).toBe('api-gateway');
+        expect(containers[0].name).toBe('report-coordinator-api');
       });
 
-      describe('api-gateway', () => {
-        const renderAndGetApiGatewayContainer = async (manifests?: any[]) => {
+      describe('report-coordinator-api', () => {
+        const renderAndGetReportCoordinatorApiContainer = async (
+          manifests?: any[],
+        ) => {
           const templateSpec = getPodSpec(
             await renderAndGetDeployment(manifests),
           );
@@ -342,91 +346,98 @@ describe('API Gateway', () => {
 
         describe('image', () => {
           it('should be pulled from ghcr.io by default', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
 
-            expect(apiGateway.image).toBe(
-              'ghcr.io/bbortt/snow-white/api-gateway:v1.0.0-ci.0',
+            expect(reportCoordinatorApi.image).toBe(
+              'ghcr.io/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
             );
           });
 
-          it('should adjust the container registry from values', async () => {
+          it('should adjust the image registry from values', async () => {
             const customRegistry = 'custom.registry';
 
-            const apiGateway = await renderAndGetApiGatewayContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  snowWhite: {
-                    image: { registry: customRegistry },
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      image: { registry: customRegistry },
+                    },
                   },
-                },
-              }),
-            );
+                }),
+              );
 
-            expect(apiGateway.image).toBe(
-              'custom.registry/bbortt/snow-white/api-gateway:v1.0.0-ci.0',
+            expect(reportCoordinatorApi.image).toBe(
+              'custom.registry/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
             );
           });
 
           it('should adjust the image tag from values', async () => {
             const customTag = 'custom.tag';
 
-            const apiGateway = await renderAndGetApiGatewayContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  snowWhite: {
-                    apiGateway: { image: { tag: customTag } },
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      reportCoordinatorApi: { image: { tag: customTag } },
+                    },
                   },
-                },
-              }),
-            );
+                }),
+              );
 
-            expect(apiGateway.image).toBe(
-              'ghcr.io/bbortt/snow-white/api-gateway:custom.tag',
+            expect(reportCoordinatorApi.image).toBe(
+              'ghcr.io/bbortt/snow-white/report-coordinator-api:custom.tag',
             );
           });
         });
 
         describe('imagePullPolicy', () => {
           it('should pull images if they are not present by default', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
 
-            expect(apiGateway.imagePullPolicy).toBe('IfNotPresent');
+            expect(reportCoordinatorApi.imagePullPolicy).toBe('IfNotPresent');
           });
 
           it('should adjust the image pull policy from values', async () => {
             const imagePullPolicy = 'my.policy';
 
-            const apiGateway = await renderAndGetApiGatewayContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  image: { pullPolicy: imagePullPolicy },
-                },
-              }),
-            );
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    image: { pullPolicy: imagePullPolicy },
+                  },
+                }),
+              );
 
-            expect(apiGateway.imagePullPolicy).toBe(imagePullPolicy);
+            expect(reportCoordinatorApi.imagePullPolicy).toBe(imagePullPolicy);
           });
         });
 
         describe('env', () => {
-          it('should deploy 2+3 environment variables by default', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(5);
+          it('should deploy 2+6 environment variables by default', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
+            expect(reportCoordinatorApi.env).toHaveLength(8);
           });
 
           it('should include configuration for the OTEL collector', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
 
-            const protocol = apiGateway.env.find(
+            const protocol = reportCoordinatorApi.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
             );
             expect(protocol).toBeDefined();
             expect(protocol.value).toBe('grpc');
 
-            const endpoint = apiGateway.env.find(
+            const endpoint = reportCoordinatorApi.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
             );
             expect(endpoint).toBeDefined();
@@ -435,57 +446,73 @@ describe('API Gateway', () => {
             );
           });
 
-          it('should include public url from values without TLS', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  snowWhite: {
-                    ingress: {
-                      tls: false,
-                    },
-                  },
-                },
-              }),
-            );
+          it('should calculate jdbc connection string', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
 
-            const publicDomain = apiGateway.env.find(
-              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            const springDatasourceUrl = reportCoordinatorApi.env.find(
+              (env) => env.name === 'SPRING_DATASOURCE_URL',
             );
-            expect(publicDomain).toBeDefined();
-            expect(publicDomain.value).toBe('http://localhost');
+            expect(springDatasourceUrl).toBeDefined();
+
+            expect(springDatasourceUrl.value).toBe(
+              'jdbc:postgresql://test-release-postgresql.svc.cluster.local.:5432/report-coordinator-api',
+            );
           });
 
-          it('should include public url from values with TLS', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
+          it('should calculate spring datasource password', async () => {
+            const manifests = await renderHelmChart({
+              chartPath: 'charts/snow-white',
+            });
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(manifests);
 
-            const publicDomain = apiGateway.env.find(
-              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            const springDatasourcePassword = reportCoordinatorApi.env.find(
+              (env) => env.name === 'SPRING_DATASOURCE_PASSWORD',
             );
-            expect(publicDomain).toBeDefined();
-            expect(publicDomain.value).toBe('https://localhost');
+            expect(springDatasourcePassword).toBeDefined();
+
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
+              'snow-white-postgresql-credentials',
+            );
+            const secret = manifests.find(
+              (m) =>
+                m.kind === 'Secret' &&
+                m.metadata.name ===
+                  springDatasourcePassword.valueFrom.secretKeyRef.name,
+            );
+            expect(secret).toBeDefined();
+
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
+              'report-coord-password',
+            );
           });
 
-          it('should calculate service connections based on release name', async () => {
-            const apiGateway = await renderAndGetApiGatewayContainer();
+          it('should calculate spring flyway password', async () => {
+            const manifests = await renderHelmChart({
+              chartPath: 'charts/snow-white',
+            });
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(manifests);
 
-            const qualityGateUrl = apiGateway.env.find(
-              (env) =>
-                env.name === 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL',
+            const springDatasourcePassword = reportCoordinatorApi.env.find(
+              (env) => env.name === 'SPRING_FLYWAY_PASSWORD',
             );
-            expect(qualityGateUrl).toBeDefined();
-            expect(qualityGateUrl.value).toBe(
-              'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:8080',
-            );
+            expect(springDatasourcePassword).toBeDefined();
 
-            const reportCoordinatorUrl = apiGateway.env.find(
-              (env) =>
-                env.name ===
-                'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL',
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
+              'snow-white-postgresql-credentials',
             );
-            expect(reportCoordinatorUrl).toBeDefined();
-            expect(reportCoordinatorUrl.value).toBe(
-              'http://snow-white-report-coordinator-api-test-release.default.svc.cluster.local.:8080',
+            const secret = manifests.find(
+              (m) =>
+                m.kind === 'Secret' &&
+                m.metadata.name ===
+                  springDatasourcePassword.valueFrom.secretKeyRef.name,
+            );
+            expect(secret).toBeDefined();
+
+            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
+              'report-coord-flyway-password',
             );
           });
 
@@ -495,27 +522,30 @@ describe('API Gateway', () => {
               foo: 'bar',
             };
 
-            const apiGateway = await renderAndGetApiGatewayContainer(
-              await renderHelmChart({
-                chartPath: 'charts/snow-white',
-                values: {
-                  snowWhite: {
-                    apiGateway: { additionalEnvs },
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      reportCoordinatorApi: { additionalEnvs },
+                    },
                   },
-                },
-              }),
-            );
+                }),
+              );
 
-            // 2 OTEL + 3 default + 2 additional
-            expect(apiGateway.env).toHaveLength(7);
+            // 2 OTEL + 6 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(10);
 
-            const authorEnv = apiGateway.env.find(
+            const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',
             );
             expect(authorEnv).toBeDefined();
             expect(authorEnv.value).toBe('bbortt');
 
-            const fooEnv = apiGateway.env.find((env) => env.name === 'foo');
+            const fooEnv = reportCoordinatorApi.env.find(
+              (env) => env.name === 'foo',
+            );
             expect(fooEnv).toBeDefined();
             expect(fooEnv.value).toBe('bar');
           });
@@ -535,7 +565,7 @@ describe('API Gateway', () => {
       const pdb = manifests.find(
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
-          m.metadata.name === 'snow-white-api-gateway-test-release',
+          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
       );
       expect(pdb).toBeDefined();
       return pdb;
@@ -552,7 +582,7 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
+            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
       );
 
       expect(pdb).toBeDefined();
@@ -565,9 +595,12 @@ describe('API Gateway', () => {
         const { spec } = pdb;
         expect(spec).toBeDefined();
 
-        expect(spec.selector.matchLabels).toEqual({
+        const { selector } = spec;
+        expect(selector).toBeDefined();
+
+        expect(selector.matchLabels).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'api-gateway',
+          'app.kubernetes.io/name': 'report-coordinator-api',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -591,7 +624,9 @@ describe('API Gateway', () => {
   });
 
   describe('Service', () => {
-    const renderAndGetApiGatewayService = async (manifests?: any[]) => {
+    const renderAndGetReportCoordinatorApiService = async (
+      manifests?: any[],
+    ) => {
       if (!manifests) {
         manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
@@ -601,24 +636,24 @@ describe('API Gateway', () => {
       const service = manifests.find(
         (m) =>
           m.kind === 'Service' &&
-          m.metadata.name === 'snow-white-api-gateway-test-release',
+          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
       );
       expect(service).toBeDefined();
       return service;
     };
 
     it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetApiGatewayService();
+      const service = await renderAndGetReportCoordinatorApiService();
 
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
       expect(service.metadata.name).toMatch(
-        'snow-white-api-gateway-test-release',
+        'snow-white-report-coordinator-api-test-release',
       );
     });
 
     it('should have default labels', async () => {
-      const service = await renderAndGetApiGatewayService();
+      const service = await renderAndGetReportCoordinatorApiService();
 
       const { metadata } = service;
       expect(metadata).toBeDefined();
@@ -628,12 +663,12 @@ describe('API Gateway', () => {
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-gateway',
+        'app.kubernetes.io/name': 'report-coordinator-api',
         'app.kubernetes.io/part-of': 'snow-white',
       });
     });
 
-    it('truncates long release name', async () => {
+    it('should truncate long release name', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         // 53 chars is the max length for Helm release names
@@ -644,97 +679,23 @@ describe('API Gateway', () => {
         (m) =>
           m.kind === 'Service' &&
           m.metadata.name ===
-            'snow-white-api-gateway-very-long-test-release-name-that-exceeds',
+            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
       );
 
       expect(service).toBeDefined();
       expect(service.metadata.name).toHaveLength(63);
     });
 
-    describe('type', async () => {
-      it("should be 'ClusterIP' by default", async () => {
-        const service = await renderAndGetApiGatewayService();
-
-        const { spec } = service;
-        expect(spec).toBeDefined();
-
-        expect(spec.type).toBe('ClusterIP');
-      });
-
-      it('should be changeable with values', async () => {
-        const customType = 'custom';
-
-        const service = await renderAndGetApiGatewayService(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                apiGateway: {
-                  service: {
-                    type: customType,
-                  },
-                },
-              },
-            },
-          }),
-        );
-
-        const { spec } = service;
-        expect(spec).toBeDefined();
-
-        expect(spec.type).toBe(customType);
-      });
-    });
-
-    describe('ports', async () => {
-      it('should map http port 80 by default', async () => {
-        const service = await renderAndGetApiGatewayService();
-
-        const { spec } = service;
-        expect(spec).toBeDefined();
-
-        expect(spec.ports).toHaveLength(1);
-        const port = service.spec.ports[0];
-        expect(port.name).toBe('http');
-        expect(port.protocol).toBe('TCP');
-        expect(port.port).toBe(80);
-        expect(port.targetPort).toBe('http');
-      });
-
-      it('should configure dynamic port based on values', async () => {
-        const customPort = 8080;
-
-        const service = await renderAndGetApiGatewayService(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                apiGateway: {
-                  service: {
-                    port: customPort,
-                  },
-                },
-              },
-            },
-          }),
-        );
-
-        expect(service.spec.ports).toHaveLength(1);
-        const port = service.spec.ports[0];
-        expect(port.port).toBe(customPort);
-      });
-    });
-
     describe('selector', () => {
       it('should contain immutable labels', async () => {
-        const service = await renderAndGetApiGatewayService();
+        const service = await renderAndGetReportCoordinatorApiService();
 
         const { spec } = service;
         expect(spec).toBeDefined();
 
         expect(spec.selector).toEqual({
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'api-gateway',
+          'app.kubernetes.io/name': 'report-coordinator-api',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -744,7 +705,8 @@ describe('API Gateway', () => {
           chartPath: 'charts/snow-white',
         });
 
-        const service = await renderAndGetApiGatewayService(manifests);
+        const service =
+          await renderAndGetReportCoordinatorApiService(manifests);
 
         const deployment = manifests.find(
           (m) =>
@@ -754,243 +716,6 @@ describe('API Gateway', () => {
 
         expect(deployment).toBeDefined();
       });
-    });
-  });
-
-  describe('Ingress', () => {
-    const renderAndGetIngress = async (manifests?: any[]) => {
-      if (!manifests) {
-        manifests = await renderHelmChart({
-          chartPath: 'charts/snow-white',
-        });
-      }
-
-      const ingress = manifests.find(
-        (m) =>
-          m.kind === 'Ingress' && m.metadata.name === 'snow-white-test-release',
-      );
-      expect(ingress).toBeDefined();
-
-      return ingress;
-    };
-
-    it('should be kubernetes Ingress', async () => {
-      const ingress = await renderAndGetIngress();
-
-      expect(ingress.apiVersion).toMatch('v1');
-      expect(ingress.kind).toMatch('Ingress');
-      expect(ingress.metadata.name).toMatch('snow-white-test-release');
-    });
-
-    it('should have default labels', async () => {
-      const ingress = await renderAndGetIngress();
-
-      const { metadata } = ingress;
-      expect(metadata).toBeDefined();
-
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-gateway',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
-    });
-
-    it('should be the only exposed ingress', async () => {
-      const manifests = await renderHelmChart({
-        chartPath: 'charts/snow-white',
-      });
-
-      const ingress = manifests.filter((m) => m.kind === 'Ingress');
-      expect(ingress).toBeDefined();
-      expect(ingress).toHaveLength(1);
-      expect(ingress[0].metadata.name).toBe('snow-white-test-release');
-    });
-
-    it('truncates long release name', async () => {
-      const manifests = await renderHelmChart({
-        chartPath: 'charts/snow-white',
-        // 53 chars is the max length for Helm release names
-        releaseName: 'very-long-test-release-name-that-exceeds-the-limit-12',
-      });
-
-      const ingress = manifests.find(
-        (m) =>
-          m.kind === 'Ingress' &&
-          m.metadata.name ===
-            'snow-white-very-long-test-release-name-that-exceeds-the-limit-1',
-      );
-
-      expect(ingress).toBeDefined();
-    });
-
-    it('can be disabled with values', async () => {
-      const manifests = await renderHelmChart({
-        chartPath: 'charts/snow-white',
-        values: {
-          snowWhite: {
-            ingress: {
-              enabled: false,
-            },
-          },
-        },
-      });
-
-      const ingress = manifests.find(
-        (m) =>
-          m.kind === 'Ingress' && m.metadata.name === 'snow-white-test-release',
-      );
-      expect(ingress).toBeUndefined();
-    });
-
-    describe('annotations', () => {
-      it('should have none by default', async () => {
-        const ingress = await renderAndGetIngress();
-
-        const { metadata } = ingress;
-        expect(metadata).toBeDefined();
-
-        expect(metadata.annotations).toBeUndefined();
-      });
-
-      it('renders with custom annotations based on values', async () => {
-        const annotations = {
-          'nginx.ingress.kubernetes.io/rewrite-target': '/',
-          'nginx.ingress.kubernetes.io/ssl-redirect': 'false',
-        };
-
-        const ingress = await renderAndGetIngress(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                ingress: {
-                  enabled: true,
-                  annotations,
-                },
-              },
-            },
-          }),
-        );
-
-        const { metadata } = ingress;
-        expect(metadata).toBeDefined();
-
-        expect(metadata.annotations).toEqual(annotations);
-      });
-    });
-
-    describe('ingressClassName', () => {
-      it('should be nginx ingress by default', async () => {
-        const ingress = await renderAndGetIngress();
-
-        const { spec } = ingress;
-        expect(spec).toBeDefined();
-
-        expect(spec.ingressClassName).toBe('nginx');
-      });
-
-      it('should render with custom ingress class name based on values', async () => {
-        const ingressClassName = 'custom-nginx';
-
-        const ingress = await renderAndGetIngress(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                ingress: {
-                  className: ingressClassName,
-                },
-              },
-            },
-          }),
-        );
-
-        expect(ingress.spec.ingressClassName).toEqual(ingressClassName);
-      });
-    });
-
-    describe('host mappings', () => {
-      it('should map http port 80 by default', async () => {
-        const ingress = await renderAndGetIngress();
-
-        const { spec } = ingress;
-        expect(spec).toBeDefined();
-
-        expect(spec.tls).toHaveLength(1);
-        const tls = spec.tls[0];
-        expect(tls.hosts).toHaveLength(1);
-        expect(tls.hosts[0]).toBe('localhost');
-
-        expect(spec.rules).toHaveLength(1);
-        const rule = spec.rules[0];
-        expect(rule.host).toBe('localhost');
-
-        expect(rule.http.paths).toHaveLength(1);
-        const path = rule.http.paths[0];
-        expect(path.path).toBe('/');
-        expect(path.pathType).toBe('Prefix');
-        expect(path.backend.service.name).toBe(
-          'snow-white-api-gateway-test-release',
-        );
-        expect(path.backend.service.port.name).toBe('http');
-      });
-
-      it('should adjust hostname based on values', async () => {
-        const hostname = 'not-localhost';
-
-        const ingress = await renderAndGetIngress(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                ingress: {
-                  host: hostname,
-                },
-              },
-            },
-          }),
-        );
-
-        expect(ingress.spec.tls).toHaveLength(1);
-        const tls = ingress.spec.tls[0];
-        expect(tls.hosts).toHaveLength(1);
-        expect(tls.hosts[0]).toBe(hostname);
-
-        expect(ingress.spec.rules).toHaveLength(1);
-        const rule = ingress.spec.rules[0];
-        expect(rule.host).toBe(hostname);
-      });
-
-      it('is required to specify a public host', async () => {
-        expectFailsWithMessageContaining(
-          async () =>
-            await renderHelmChart({
-              chartPath: 'charts/snow-white',
-              withDefaultValues: false,
-            }),
-          "ERROR: You must set 'snowWhite.ingress.host' to the public URL!",
-        );
-      });
-
-      const expectFailsWithMessageContaining = async (
-        callback: Function,
-        part: string,
-      ): Promise<void> => {
-        try {
-          await callback();
-        } catch (error) {
-          expect(error.message).contains(part);
-
-          return;
-        }
-
-        expect.fail(
-          `Expected code to throw exception containing message '${part}'!`,
-        );
-      };
     });
   });
 });
