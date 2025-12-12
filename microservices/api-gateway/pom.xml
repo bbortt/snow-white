@@ -118,18 +118,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.groovy</groupId>
-      <artifactId>groovy</artifactId>
-      <version>4.0.28</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.groovy</groupId>
-      <artifactId>groovy-json</artifactId>
-      <version>4.0.28</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-webtestclient</artifactId>
       <scope>test</scope>
