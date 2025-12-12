@@ -1,9 +1,9 @@
-{{- $labels := include "snow-white.labels" (dict "name" "quality-gate-api" "context" .) | nindent 0 }}
-{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "quality-gate-api" "context" .) | nindent 0 }}
+{{- $labels := include "snow-white.labels" (dict "name" "report-coordinator-api" "context" .) | nindent 0 }}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "report-coordinator-api" "context" .) | nindent 0 }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -36,30 +36,38 @@ spec:
         nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
       {{- end }}
       containers:
-        - name: quality-gate-api
-          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/quality-gate-api:{{ .Values.snowWhite.qualityGateApi.image.tag | default .Chart.AppVersion }}"
+        - name: report-coordinator-api
+          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/report-coordinator-api:{{ .Values.snowWhite.reportCoordinatorApi.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
           {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
-            - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC'
+              value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS'
+              value: '{{ .Values.snowWhite.kafka.initTopics }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC'
+              value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL'
               value: '{{ include "snow-white.publicHost" . }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL'
+              value: '{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SPRING_DATASOURCE_URL'
-              value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/quality-gate-api'
+              value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/report-coordinator-api'
             - name: 'SPRING_DATASOURCE_USERNAME'
-              value: 'quality_gate_app'
+              value: 'report_coord_app'
             - name: 'SPRING_DATASOURCE_PASSWORD'
               valueFrom:
                 secretKeyRef:
                   name: "snow-white-postgresql-credentials"
-                  key: 'quality-gate-password'
+                  key: 'report-coord-password'
             - name: 'SPRING_FLYWAY_USER'
-              value: 'quality_gate_flyway'
+              value: 'report_coord_flyway'
             - name: 'SPRING_FLYWAY_PASSWORD'
               valueFrom:
                 secretKeyRef:
                   name: "snow-white-postgresql-credentials"
-                  key: 'quality-gate-flyway-password'
-          {{- with .Values.snowWhite.qualityGateApi.additionalEnvs }}
+                  key: 'report-coord-flyway-password'
+          {{- with .Values.snowWhite.reportCoordinatorApi.additionalEnvs }}
             {{- range $k, $v := . }}
             - name: {{ $k }}
               value: {{ $v }}
@@ -118,7 +126,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -130,7 +138,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
   labels:
    {{- $labels | nindent 4 }}
 spec:

@@ -4,13 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import { describe, it, expect } from 'vitest';
-import { parseDocument } from 'yaml';
+import { describe, expect, it } from 'vitest';
+import { parseAllDocuments } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
 
 describe('OTEL Collector', () => {
-  describe('deployment', () => {
+  describe('Deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({
@@ -515,8 +515,8 @@ describe('OTEL Collector', () => {
     });
   });
 
-  describe('service', () => {
-    const renderAndGetQualityGateApiService = async (manifests?: any[]) => {
+  describe('Service', () => {
+    const renderAndGetOtelCollectorService = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
@@ -533,7 +533,7 @@ describe('OTEL Collector', () => {
     };
 
     it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetQualityGateApiService();
+      const service = await renderAndGetOtelCollectorService();
 
       expect(service.apiVersion).toMatch('v1');
       expect(service.kind).toMatch('Service');
@@ -543,7 +543,7 @@ describe('OTEL Collector', () => {
     });
 
     it('should have default labels', async () => {
-      const service = await renderAndGetQualityGateApiService();
+      const service = await renderAndGetOtelCollectorService();
 
       const { metadata } = service;
       expect(metadata).toBeDefined();
@@ -578,7 +578,7 @@ describe('OTEL Collector', () => {
 
     describe('selector', () => {
       it('should contain immutable labels', async () => {
-        const service = await renderAndGetQualityGateApiService();
+        const service = await renderAndGetOtelCollectorService();
 
         const { spec } = service;
         expect(spec).toBeDefined();
@@ -595,7 +595,7 @@ describe('OTEL Collector', () => {
           chartPath: 'charts/snow-white',
         });
 
-        const service = await renderAndGetQualityGateApiService(manifests);
+        const service = await renderAndGetOtelCollectorService(manifests);
 
         const deployment = manifests.find(
           (m) =>
@@ -605,6 +605,107 @@ describe('OTEL Collector', () => {
 
         expect(deployment).toBeDefined();
       });
+    });
+  });
+
+  describe('ConfigMap', () => {
+    const renderAndGetOtelCollectorConfig = async (manifests?: any[]) => {
+      if (!manifests) {
+        manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+      }
+
+      const service = manifests.find(
+        (m) =>
+          m.kind === 'ConfigMap' &&
+          m.metadata.name === 'snow-white-otel-collector-test-release',
+      );
+      expect(service).toBeDefined();
+      return service;
+    };
+
+    it('should be Kubernetes Service', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      expect(configMap.apiVersion).toMatch('v1');
+      expect(configMap.kind).toMatch('ConfigMap');
+      expect(configMap.metadata.name).toMatch(
+        'snow-white-otel-collector-test-release',
+      );
+    });
+
+    it('should have default labels', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { metadata } = configMap;
+      expect(metadata).toBeDefined();
+
+      expect(metadata.labels).toEqual({
+        'app.kubernetes.io/managed-by': 'Helm',
+        'app.kubernetes.io/version': 'test-version',
+        'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/instance': 'test-release',
+        'app.kubernetes.io/name': 'otel-collector',
+        'app.kubernetes.io/part-of': 'snow-white',
+      });
+    });
+
+    function extractConfigMapData(data) {
+      const snowWhiteConfigDataName = 'snow-white.config.yml';
+      expect(data).toHaveProperty(snowWhiteConfigDataName);
+
+      const docs = parseAllDocuments(data[snowWhiteConfigDataName]);
+      const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
+      expect(json).toHaveLength(1);
+
+      return json[0];
+    }
+
+    it("should connect to 'kafka-connect' service by default", async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.receivers['kafka/snow-white'].brokers).toBe(
+        'snow-white-kafka-connect-test-release.svc.cluster.local.:9092',
+      );
+      expect(snowWhiteConfig.exporters['kafka/snow-white'].brokers).toBe(
+        'snow-white-kafka-connect-test-release.svc.cluster.local.:9092',
+      );
+    });
+
+    it('should override kafka broker from values', async () => {
+      const brokers = 'localhost:9092';
+      const configMap = await renderAndGetOtelCollectorConfig(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            snowWhite: {
+              otelCollector: {
+                kafka: {
+                  brokers,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.receivers['kafka/snow-white'].brokers).toBe(
+        brokers,
+      );
+      expect(snowWhiteConfig.exporters['kafka/snow-white'].brokers).toBe(
+        brokers,
+      );
     });
   });
 });
