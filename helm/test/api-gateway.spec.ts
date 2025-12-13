@@ -475,7 +475,7 @@ describe('API Gateway', () => {
             );
             expect(qualityGateUrl).toBeDefined();
             expect(qualityGateUrl.value).toBe(
-              'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:8080',
+              'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
             );
 
             const reportCoordinatorUrl = apiGateway.env.find(
@@ -485,7 +485,7 @@ describe('API Gateway', () => {
             );
             expect(reportCoordinatorUrl).toBeDefined();
             expect(reportCoordinatorUrl.value).toBe(
-              'http://snow-white-report-coordinator-api-test-release.default.svc.cluster.local.:8080',
+              'http://snow-white-report-coordinator-api-test-release.default.svc.cluster.local.:80',
             );
           });
 
