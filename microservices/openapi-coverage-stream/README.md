@@ -5,7 +5,8 @@ It **analyzes telemetry data** to determine how much of each endpoint, parameter
 
 ## Purpose
 
-This service is a core component of the **Snow White** application’s observability layer. It:
+This service is a core component of the **Snow White** application’s observability layer.
+It:
 
 - Queries telemetry data stored in InfluxDB.
 - Compares runtime API usage against stored OpenAPI specs.

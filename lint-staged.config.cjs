@@ -6,4 +6,5 @@
 
 module.exports = {
   '{,**/}*.{java,js,json,md,ts,xml,yaml,yml}': ['prettier --write'],
+    '{,**/}*.md': ['markdownlint --rules markdownlint-sentences-per-line --fix']
 };

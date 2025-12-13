@@ -161,6 +161,8 @@ end legend
 
 Each microservice completes a specific task.
 
+<!-- markdownlint-disable markdownlint-sentences-per-line -->
+
 | Microservice                                                       | Intent                                                                                                                                                                                |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [API Gateway](./microservices/api-gateway)                         | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
@@ -169,6 +171,8 @@ Each microservice completes a specific task.
 | [OpenAPI Coverage Stream](./microservices/openapi-coverage-stream) | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
 | [Quality-Gate API](./microservices/quality-gate-api)               | Handles quality gate evaluations and criteria management.                                                                                                                             |
 | [Report Coordinator API](./microservices/report-coordinator-api)   | Coordinates data aggregation and reporting logic across the application.                                                                                                              |
+
+<!-- markdownlint-enable markdownlint-sentences-per-line -->
 
 ### Building and Running Services
 
@@ -239,7 +243,7 @@ To run a [SonarQube](https://www.sonarsource.com/) analysis:
 
 2. Create a new Sonar project (`snow-white`) and token.
 
-   The initial login to http://localhost:9000 can be done with `admin:admin`.
+   The initial login to <http://localhost:9000> can be done with `admin:admin`.
    The password must be changed at first login.
 
    Enter into SonarQube and add a new project called `snow-white`.

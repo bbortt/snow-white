@@ -38,8 +38,10 @@ jobs:
           node-version: 24
       - name: Install Dependencies
         run: pnpm install
-      - name: Check Formatting
+      - name: Check Source Formatting
         run: pnpm run prettier:check
+      - name: Check Markdown Formatting
+        run: pnpm lint:markdown
   ci:
     name: 'Build and Test'
     runs-on: ubuntu-latest

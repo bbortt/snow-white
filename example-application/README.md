@@ -1,3 +1,5 @@
+# Example Application
+
 To create a Trace, run:
 
 ```shell

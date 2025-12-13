@@ -19,6 +19,8 @@ The service acts as an orchestrator for report-related workflows:
 
 These environment variables **must** be configured for the service to work properly:
 
+<!-- markdownlint-disable markdownlint-sentences-per-line -->
+
 | Property                                                               | Description                                                                                                | Example Value                                            |
 | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | `SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC`          | Kafka topic to which calculation requests are sent.                                                        | `snow-white-calculation-request`                         |
@@ -29,6 +31,8 @@ These environment variables **must** be configured for the service to work prope
 | `SPRING_DATASOURCE_USERNAME`                                           | Runtime database username (read/write).                                                                    | `report_coord_app`                                       |
 | `SPRING_DATASOURCE_PASSWORD`                                           | Runtime database password (of `${SPRING_DATASOURCE_PASSWORD}`).                                            | `strongpassword2`                                        |
 | `SPRING_KAFKA_BOOTSTRAP_SERVERS`                                       | Kafka bootstrap servers used for messaging.                                                                | `kafka:9094`                                             |
+
+<!-- markdownlint-enable markdownlint-sentences-per-line -->
 
 ### Optional Configuration
 
