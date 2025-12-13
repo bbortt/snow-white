@@ -22,17 +22,38 @@ Snow-White provides valuable insights on:
 - API Performance
 - And more.
 
+## Installation (for providers)
+
+Snow-White can be installed easily using Helm.
+Detailed instructions and available options are described in [`INSTALLATION.md`](./INSTALLATION.md).
+
+Individual images could also be used for a custom installation.
+The Docker compose file `dev/docker-compose.yaml` may be used as a starting point.
+
+## Onboarding (for users)
+
+// TODO!
+
 ## General Concept
+
+Here's a high-level overview of Snow-White.
+Detailed [architecture is depicted in `DEVELOPMENT.md`](./DEVELOPMENT.md#architecture-overview).
+
+1. **Synchronize API Specs** - Snow-White imports OpenAPI specifications from your central interface repository.
+2. **Ingest Telemetry** - It listens to OpenTelemetry tracing data emitted by your applications.
+3. **Correlate & Analyze** - Traces are matched with API operations using service, API name, and version metadata.
+4. **Evaluate Quality Gates** - Results are validated against your configured thresholds.
+5. **Visualize or Export Results** - Coverage and performance insights can be viewed in reports or integrated into CI pipelines.
+
+### Annotating APIs
 
 The core idea behind Snow-White is that it can only interpret runtime telemetry (e.g. traces) if it knows which API the data belongs to.
 This is achieved by a common annotation model applied both to the specifications and to the telemetry data.
 
-### Annotating APIs
-
 Every API must declare a few key identifiers:
 
 - **Service Name**: Identifies the logical unit or application that exposes the API.
-  - Required, because different applications may have identically named endpoints (e.g. /health).
+  - _Required_, because different applications may have identically named endpoints (e.g. `/health`).
 - **API Name**: Identifies the API within the service.
 - **Version**: Specifies the API version.
 
@@ -85,17 +106,6 @@ The CLI allows you to synchronize APIs, trigger coverage analysis, and validate 
 Coverage results are validated against Quality-Gate Configurations.
 These configurations define the rules and thresholds that your API data must satisfy.
 Snow-White comes with predefined quality gates to get started quickly, and you can customize them later.
-
-## How It Works
-
-Here's a high-level overview of Snow-White.
-Detailed [architecture is depicted in `DEVELOPMENT.md`](./DEVELOPMENT.md#architecture-overview).
-
-1. **Synchronize API Specs** - Snow-White imports OpenAPI specifications from your central interface repository.
-2. **Ingest Telemetry** - It listens to OpenTelemetry tracing data emitted by your applications.
-3. **Correlate & Analyze** - Traces are matched with API operations using service, API name, and version metadata.
-4. **Evaluate Quality Gates** - Results are validated against your configured thresholds.
-5. **Visualize or Export Results** - Coverage and performance insights can be viewed in reports or integrated into CI pipelines.
 
 ## Development & Contributing
 
