@@ -71,7 +71,7 @@ jobs:
         with:
           charts_dir: 'helm/charts'
   publish-images:
-    name: 'Publish Images'
+    name: 'Publish JDK-based Images'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -99,15 +99,44 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build JDK Images
         run: .github/scripts/build-oci-images.sh "${{ steps.version.outputs.VERSION }}" "ghcr.io" "--push"
-      - name: Build Native Images
+  publish-native-images:
+    name: 'Publish Native Image'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        service:
+          [otel-event-filter-stream, quality-gate-api, report-coordinator-api]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Extract Version from Tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Build with Maven
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} install
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Native Image
         run: |
           ./mvnw -B spring-boot:build-image \
             -b smart -T4C \
             -Dimage.tag="${{ steps.version.outputs.VERSION }}" \
             -DskipTests -Pnative,prod \
-            -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api
-      - name: Push Native Images
-        run: |
-          docker image push "ghcr.io/bbortt/snow-white/otel-event-filter-stream:${{ steps.version.outputs.VERSION }}"
-          docker image push "ghcr.io/bbortt/snow-white/quality-gate-api:${{ steps.version.outputs.VERSION }}"
-          docker image push "ghcr.io/bbortt/snow-white/report-coordinator-api:${{ steps.version.outputs.VERSION }}"
+            -pl :${{ matrix.service }}
+      - name: Push Native Image
+        run: docker image push "ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ steps.version.outputs.VERSION }}"
