@@ -18,6 +18,7 @@ helm upgrade --install \
   test-release \
   helm/charts/snow-white \
   --set snowWhite.ingress.host=localhost \
+  --set snowWhite.ingress.tls=false \
   --set snowWhite.apiGateway.image.tag=latest \
   --set snowWhite.qualityGateApi.image.tag=latest \
   --set snowWhite.reportCoordinatorApi.image.tag=latest

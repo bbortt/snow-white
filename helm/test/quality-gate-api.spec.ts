@@ -419,6 +419,53 @@ describe('Quality-Gate API', () => {
             expect(qualityGateApi.env).toHaveLength(8);
           });
 
+          it('should include public host configuration with tls enabled', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    ingress: {
+                      host: 'custom-host',
+                    },
+                  },
+                },
+              }),
+            );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('https://custom-host');
+          });
+
+          it('should include public host configuration with tls disabled', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    ingress: {
+                      host: 'custom-host',
+                      tls: false,
+                    },
+                  },
+                },
+              }),
+            );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('http://custom-host');
+          });
+
           it('should include configuration for the OTEL collector', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
 
@@ -446,7 +493,7 @@ describe('Quality-Gate API', () => {
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'jdbc:postgresql://test-release-postgresql.svc.cluster.local.:5432/quality-gate-api',
+              'jdbc:postgresql://test-release-postgresql.default.svc.cluster.local.:5432/quality-gate-api',
             );
           });
 

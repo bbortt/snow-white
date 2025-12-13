@@ -42,7 +42,11 @@ spec:
           env:
           {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
-              value: '{{ include "snow-white.publicHost" . }}'
+              {{- if .Values.snowWhite.ingress.tls }}
+              value: 'https://{{ include "snow-white.publicHost" . }}'
+              {{- else }}
+              value: 'http://{{ include "snow-white.publicHost" . }}'
+              {{- end }}
             - name: 'SPRING_DATASOURCE_URL'
               value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/quality-gate-api'
             - name: 'SPRING_DATASOURCE_USERNAME'

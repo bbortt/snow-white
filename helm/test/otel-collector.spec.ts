@@ -671,10 +671,10 @@ describe('OTEL Collector', () => {
       const snowWhiteConfig = extractConfigMapData(data);
 
       expect(snowWhiteConfig.receivers['kafka/snow-white'].brokers).toBe(
-        'snow-white-kafka-connect-test-release.svc.cluster.local.:9092',
+        'snow-white-kafka-connect-test-release.default.svc.cluster.local.:9092',
       );
       expect(snowWhiteConfig.exporters['kafka/snow-white'].brokers).toBe(
-        'snow-white-kafka-connect-test-release.svc.cluster.local.:9092',
+        'snow-white-kafka-connect-test-release.default.svc.cluster.local.:9092',
       );
     });
 
@@ -685,10 +685,8 @@ describe('OTEL Collector', () => {
           chartPath: 'charts/snow-white',
           values: {
             snowWhite: {
-              otelCollector: {
-                kafka: {
-                  brokers,
-                },
+              kafka: {
+                brokers,
               },
             },
           },
