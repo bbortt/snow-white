@@ -2,6 +2,8 @@ springdoc:
   packages-to-scan: io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource
 spring:
   jpa:
+    hibernate:
+      ddl-auto: validate
     open-in-view: false
   kafka:
     consumer:

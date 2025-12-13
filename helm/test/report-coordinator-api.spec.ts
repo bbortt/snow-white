@@ -82,7 +82,7 @@ describe('Report Coordinator API', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
+            'snow-white-report-coordinator-api-very-long-test-release-name-t',
       );
 
       expect(deployment).toBeDefined();
@@ -421,10 +421,59 @@ describe('Report Coordinator API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+6 environment variables by default', async () => {
+          it('should deploy 2+11 environment variables by default', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(8);
+            expect(reportCoordinatorApi.env).toHaveLength(13);
+          });
+
+          it('should include public host configuration with tls enabled', async () => {
+            const qualityGateApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      ingress: {
+                        host: 'custom-host',
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('https://custom-host');
+          });
+
+          it('should include public host configuration with tls disabled', async () => {
+            const qualityGateApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      ingress: {
+                        host: 'custom-host',
+                        tls: false,
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('http://custom-host');
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -446,6 +495,22 @@ describe('Report Coordinator API', () => {
             );
           });
 
+          it('should calculate quality-gate-api connection string', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const qualityGateApiUrl = reportCoordinatorApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL',
+            );
+            expect(qualityGateApiUrl).toBeDefined();
+
+            expect(qualityGateApiUrl.value).toBe(
+              'snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
+            );
+          });
+
           it('should calculate jdbc connection string', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
@@ -456,7 +521,7 @@ describe('Report Coordinator API', () => {
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'jdbc:postgresql://test-release-postgresql.svc.cluster.local.:5432/report-coordinator-api',
+              'jdbc:postgresql://test-release-postgresql.default.svc.cluster.local.:5432/report-coordinator-api',
             );
           });
 
@@ -534,8 +599,8 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            // 2 OTEL + 6 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(10);
+            // 2 OTEL + 11 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(15);
 
             const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',
@@ -582,7 +647,7 @@ describe('Report Coordinator API', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
+            'snow-white-report-coordinator-api-very-long-test-release-name-t',
       );
 
       expect(pdb).toBeDefined();
@@ -679,7 +744,7 @@ describe('Report Coordinator API', () => {
         (m) =>
           m.kind === 'Service' &&
           m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-that-ex',
+            'snow-white-report-coordinator-api-very-long-test-release-name-t',
       );
 
       expect(service).toBeDefined();

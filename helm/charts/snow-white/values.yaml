@@ -54,6 +54,7 @@ snowWhite:
     host: ''
     tls: true
   kafka:
+    brokers: []
     initTopics: 'true'
     calculationRequestTopic: 'snow-white-calculation-request'
     openapiCalculationResponseTopic: 'snow-white-openapi-calculation-response'
@@ -67,7 +68,6 @@ snowWhite:
       bucket: raw-data
       token: ${INFLUXDB_TOKEN}
     kafka:
-      brokers: []
       inboundTopic: snow-white_inbound
       outbountTopic: snow-white_outbound
     pipeline:
