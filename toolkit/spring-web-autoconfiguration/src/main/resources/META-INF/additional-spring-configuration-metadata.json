@@ -1,9 +1,0 @@
-{
-  "properties": [
-    {
-      "name": "io.github.bbortt.snow.white.toolkit.spring.web.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Option to disable auto configuration of Snow-White Spring interceptors. These interceptors would enhance OTEL spans with information of invoked OpenAPI endpoints if applicable."
-    }
-  ]
-}

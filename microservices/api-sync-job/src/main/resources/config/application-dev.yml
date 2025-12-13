@@ -1,8 +1,0 @@
-snow:
-  white:
-    api:
-      sync:
-        job:
-          service-interface:
-            index-uri: /localhost.json
-            base-url: http://localhost:3000

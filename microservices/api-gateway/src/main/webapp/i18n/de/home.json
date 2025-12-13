@@ -1,9 +1,0 @@
-{
-  "home": {
-    "title": "Willkommen in Snow-White \uD83C\uDF4E",
-    "introduction": "Snow-White makes API testing effortless by leveraging API specifications and OpenTelemetry (OTEL) data.\nIt works with both test environments and live production to analyze:",
-    "coverage": "API Abdeckung",
-    "performance": "Zeitleistung",
-    "insights": "Und weitere Informationen"
-  }
-}

@@ -1,8 +1,0 @@
-snow:
-  white:
-    kafka:
-      event:
-        filter:
-          inbound-topic-name: snow-white_inbound
-          init-topics: true
-          outbound-topic-name: snow-white_outbound
