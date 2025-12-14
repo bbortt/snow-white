@@ -1,76 +1,138 @@
-# Global (across snow-white and third parties)
 global:
+  # -- List of image pull secrets.
+  # @section -- Corporate Settings
   imagePullSecrets: []
 
+# -- Labels applied to infrastructure resources.
+# @default -- `app.kubernetes.io/part-of: snow-white`
+# @section -- Infrastructure
 commonLabels:
-  app.kubernetes.io/part-of: snow-white
+  app.kubernetes.io/part-of: 'snow-white'
 
-## @param podAffinityPreset InfluxDB(TM) Core Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
-## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
-##
+# -- Pod affinity preset.
+# Ignored if `affinity` is set.
+# Allowed values: `soft`, `hard`.
+# @section -- Scheduling and Affinity
 podAffinityPreset: ''
-## @param podAntiAffinityPreset InfluxDB(TM) Core Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
-## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
-##
-podAntiAffinityPreset: soft
-## Node affinity preset
-## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
-##
+
+# -- Pod anti-affinity preset.
+# Ignored if `affinity` is set.
+# Allowed values: `soft`, `hard`.
+# @section -- Scheduling and Affinity
+podAntiAffinityPreset: 'soft'
+
 nodeAffinityPreset:
-  ## @param nodeAffinityPreset.type InfluxDB(TM) Core Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+  # -- Node affinity preset configuration.
+  # Ignored if `affinity` is set.
+  # Allowed values: `soft` or `hard`,
+  # @section -- Scheduling and Affinity
   type: ''
-  ## @param nodeAffinityPreset.key InfluxDB(TM) Core Node label key to match Ignored if `affinity` is set.
-  ## E.g.
-  ## key: "kubernetes.io/e2e-az-name"
-  ##
+  # -- Node label key to match.
+  # Ignored if `affinity` is set.
+  # E.g.: `key: "kubernetes.io/e2e-az-name"`.
+  # @section -- Scheduling and Affinity
   key: ''
-  ## @param nodeAffinityPreset.values InfluxDB(TM) Core Node label values to match. Ignored if `affinity` is set.
-  ## E.g.
-  ## values:
-  ##   - e2e-az1
-  ##   - e2e-az2
-  ##
+  # -- Node label values to match.
+  # Ignored if `affinity` is set.
+  # E.g.: `values: [ 'e2e-az1', 'e2e-az2' ]`.
+  # @section -- Scheduling and Affinity
   values: []
-## @param affinity InfluxDB(TM) Core Affinity for pod assignment
-## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-## Note: podAffinityPreset, podAntiAffinityPreset, and  nodeAffinityPreset will be ignored when it's set
-##
+
+# -- Custom affinity rules.
+# Overrides all presets.
+# @section -- Scheduling and Affinity
 affinity: {}
 
 image:
-  pullPolicy: IfNotPresent
+  # -- Image pull policy.
+  # @section -- Image Parameters
+  pullPolicy: 'IfNotPresent'
 
-# Snow-White
 snowWhite:
-  mode: high-available
+  # -- Deployment mode of Snow-White.
+  # Allowed values: `minimal`, `high-available`, `autoscale`.
+  # @section -- Availability
+  mode: 'high-available'
+
   image:
+    # -- Image registry for Snow-White components.
+    # @section -- Corporate Settings
     registry: 'ghcr.io'
+
+  # -- Number of old ReplicaSets to retain.
+  # @section -- Advanced Configuration
   revisionHistoryLimit: 3
+
   rollout:
+    # -- Max pods above desired during rolling update.
+    # @section -- Availability
     maxSurge: '25%'
+
   ingress:
+    # -- Enable ingress.
+    # @section -- Snow-White Ingress
     enabled: true
-    className: 'nginx'
+    # -- Ingress class name.
+    # @section -- Snow-White Ingress
+    className: nginx
+    # -- .Ingress hostname.
+    # Must be specified when `ingress.enabled=true`.
+    # @section -- Snow-White Ingress
     host: ''
+    # -- Enable TLS.
+    # @section -- Snow-White Ingress
     tls: true
+
   kafka:
+    # -- Kafka bootstrap server list.
+    # @default -- The chart will connect to the provisioned Kafka StatefulSet automatically.
+    # @section -- Snow-White Kafka
     brokers: []
+    # -- Initialize Kafka topics.
+    # @section -- Snow-White Kafka
     initTopics: 'true'
+    # -- Calculation request topic.
+    # @section -- Snow-White Kafka
     calculationRequestTopic: 'snow-white-calculation-request'
+    # -- OpenAPI calculation response topic
+    # @section -- Snow-White Kafka
     openapiCalculationResponseTopic: 'snow-white-openapi-calculation-response'
+
   otelCollector:
     image:
+      # -- Image registry.
+      # @section -- OpenTelemetry Collector
       registry: 'docker.io'
+      # -- Image tag.
+      # @section -- OpenTelemetry Collector
       tag: '0.141.0'
+
     influxdb:
+      # -- InfluxDB endpoint.
+      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+      # @section -- OpenTelemetry Collector
       endpoint: ''
-      org: 'snow-white'
-      bucket: 'raw-data'
+      # -- InfluxDB organization.
+      # @section -- OpenTelemetry Collector
+      org: snow-white
+      # -- InfluxDB bucket.
+      # @section -- OpenTelemetry Collector
+      bucket: raw-data
+      # -- InfluxDB token.
+      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+      # @section -- OpenTelemetry Collector
       token: '${INFLUXDB_TOKEN}'
     kafka:
+      # -- The "inbound" Kafka topic for unfiltered events.
+      # @section -- OpenTelemetry Collector
       inboundTopic: snow-white_inbound
+      # -- The "outbound" Kafka filtered events being persisted to InfluxDB.
+      # @section -- OpenTelemetry Collector
       outbountTopic: snow-white_outbound
     pipeline:
+      # -- Attributes to clean up from span resources.
+      # Reduces required storage space, but limits filter functionality!
+      # @section -- OpenTelemetry Collector
       resourceCleanup:
         attributes:
           - action: delete
@@ -79,63 +141,128 @@ snowWhite:
             pattern: ^telemetry\..+
   apiGateway:
     image:
+      # -- Image tag.
+      # @section -- Snow-White API Gateway
       tag: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White API Gateway
     additionalEnvs: {}
     service:
+      # -- Type of Kubernetes service.
+      # @section -- Snow-White API Gateway
       type: ClusterIP
+      # -- Exposed port for the API Gateway service.
+      # @section -- Snow-White API Gateway
       port: 80
   qualityGateApi:
     image:
+      # -- Image tag.
+      # @section -- Snow-White Quality Gate API
       tag: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White Quality Gate API
     additionalEnvs: {}
   openapiCoverageStream:
     image:
+      # -- Image tag.
+      # @section -- Snow-White OpenAPI Coverage Stream
       tag: ''
+    # -- Number of replicas to deploy.
+    # @section -- Snow-White OpenAPI Coverage Stream
     replicas: 1
     influxdb:
+      # -- InfluxDB endpoint.
+      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+      # @section -- Snow-White OpenAPI Coverage Stream
       endpoint: ''
+      # -- InfluxDB organization.
+      # @section -- Snow-White OpenAPI Coverage Stream
       org: snow-white
+      # -- InfluxDB bucket.
+      # @section -- Snow-White OpenAPI Coverage Stream
       bucket: raw-data
+      # -- InfluxDB token.
+      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+      # @section -- Snow-White OpenAPI Coverage Stream
       token: ''
     redis:
+      # -- Redis host.
+      # @default -- The chart will connect to the provisioned Redis StatefulSet automatically.
+      # @section -- Snow-White OpenAPI Coverage Stream
       host: ''
+      # -- Additional environment variables forwarded to container.
+      # @section -- Snow-White OpenAPI Coverage Stream
     additionalEnvs: {}
   otelEventFilterStream:
     image:
+      # -- Image tag.
+      # @section -- Snow-White OTel Event Filter Stream
       tag: ''
+    # -- Number of replicas to deploy.
+    # @section -- Snow-White OTel Event Filter Stream
     replicas: 1
     redis:
+      # -- Redis host.
+      # @default -- The chart will connect to the provisioned Redis StatefulSet automatically.
+      # @section -- Snow-White OTel Event Filter Stream
       host: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White OTel Event Filter Stream
     additionalEnvs: {}
   reportCoordinatorApi:
     image:
+      # -- Image tag.
+      # @section -- Snow-White Report Coordinator API
       tag: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White Report Coordinator API
     additionalEnvs: {}
 
-# Infrastructure
-kafka:
-  enabled: true
-  replicaCount: 3
-  image:
-    registry: docker.io
-    name: confluentinc/cp-kafka
-    tag: 8.1.1
-  clusterId: 'NmE4MjRhYjI1MjkwNGI5ZG' # run "kafka-storage random-uuid"
-  storageClass: 'hostpath'
-  storageSize: 10Gi
-
 influxdb:
+  # -- Deploy InfluxDB StatefulSet alongside Snow-White.
+  # @section -- Infrastructure (InfluxDB)
   enabled: true
   config:
     http:
+      # Enable or disable HTTP authentication for InfluxDB.
       auth-enabled: true
   setDefaultUser:
+    # Enable or disable the creation of a default user for InfluxDB.
     enabled: true
 
-postgresql:
+kafka:
+  # -- Deploy Kafka StatefulSet alongside Snow-White.
+  # @section -- Infrastructure (Kafka)
   enabled: true
+  image:
+    # -- Image registry.
+    # @section -- Infrastructure (Kafka)
+    registry: docker.io
+    # -- Image name.
+    # @section -- Infrastructure (Kafka)
+    name: confluentinc/cp-kafka
+    # -- Image tag.
+    # @section -- Infrastructure (Kafka)
+    tag: 8.1.1
+  # -- Kafka cluster ID.
+  # Run "kafka-storage random-uuid" to generate one.
+  # @section -- Infrastructure (Kafka)
+  clusterId: 'NmE4MjRhYjI1MjkwNGI5ZG' # run "kafka-storage random-uuid"
+  # -- Storage class for Kafka persistent volumes.
+  # @section -- Infrastructure (Kafka)
+  storageClass: 'hostpath'
+  # -- Size of the storage for Kafka.
+  # @section -- Infrastructure (Kafka)
+  storageSize: 10Gi
+
+postgresql:
+  # -- Deploy PostgreSQL StatefulSet alongside Snow-White.
+  # @section -- Infrastructure (PostgreSQL)
+  enabled: true
+  # The architecture of the PostgreSQL deployment (e.g., standalone).
   architecture: standalone
   primary:
+    # Extra environment variables for the primary PostgreSQL container.
     extraEnvVars:
       - name: 'REPORT_COORDINATOR_DATASOURCE_PASSWORD'
         valueFrom:
@@ -158,6 +285,11 @@ postgresql:
             name: 'snow-white-postgresql-credentials'
             key: 'quality-gate-flyway-password'
     initdb:
+      # -- Name of the ConfigMap containing initialization scripts for PostgreSQL.
+      # @section -- Infrastructure (PostgreSQL)
       scriptsConfigMap: 'snow-white-postgresql-init-scripts'
+
 redis:
+  # -- Deploy Redis StatefulSet alongside Snow-White.
+  # @section -- Infrastructure (Redis)
   enabled: true

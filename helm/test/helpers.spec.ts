@@ -4,7 +4,8 @@
  * See LICENSE file for full details.
  */
 
-import { isSubset } from './helpers';
+import { expectFailsWithMessageContaining, isSubset } from './helpers';
+import { renderHelmChart } from './render-helm-chart';
 
 describe('helpers', () => {
   describe('isSubset', () => {
@@ -18,6 +19,23 @@ describe('helpers', () => {
 
     it('should return false when it is not a subset', () => {
       expect(isSubset({ foo: 'bar' }, {})).toBe(false);
+    });
+  });
+
+  describe('snow-white.replicas', () => {
+    it('should throw when snow-white.mode contains unexpected value', async () => {
+      await expectFailsWithMessageContaining(
+        async () =>
+          await renderHelmChart({
+            chartPath: 'charts/snow-white',
+            values: {
+              snowWhite: {
+                mode: 'custom',
+              },
+            },
+          }),
+        "⚠ ERROR: You must set 'snowWhite.mode' to a valid value: 'minimal', 'high-available' or 'autoscale'!",
+      );
     });
   });
 });

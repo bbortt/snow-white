@@ -36,6 +36,8 @@ Mode selection:
 replicas: 1
 {{ else if eq .Values.snowWhite.mode "high-available" }}
 replicas: 3
+{{ else if ne .Values.snowWhite.mode "autoscale" }}
+{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.mode' to a valid value: 'minimal', 'high-available' or 'autoscale'!" }}
 {{- end }}
 {{- end -}}
 
