@@ -80,6 +80,7 @@ describe('Kafka', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'kafka',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'kafka',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -165,6 +166,7 @@ describe('Kafka', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
+          'app.kubernetes.io/component': 'kafka',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'kafka',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -232,7 +234,7 @@ describe('Kafka', () => {
               podAffinityTerm: {
                 labelSelector: {
                   matchLabels: {
-                    'app.kubernetes.io/component': 'influxdb',
+                    'app.kubernetes.io/component': 'kafka',
                     'app.kubernetes.io/instance': 'test-release',
                     'app.kubernetes.io/name': 'kafka',
                   },
@@ -490,6 +492,7 @@ describe('Kafka', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'kafka',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'kafka',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -533,6 +536,7 @@ describe('Kafka', () => {
           'app.kubernetes.io/managed-by': 'Helm',
           'app.kubernetes.io/version': 'test-version',
           'helm.sh/chart': 'snow-white',
+          'app.kubernetes.io/component': 'kafka',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'kafka',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -558,6 +562,7 @@ describe('Kafka', () => {
           expect(spec).toBeDefined();
 
           expect(spec.selector).toEqual({
+            'app.kubernetes.io/component': 'kafka',
             'app.kubernetes.io/instance': 'test-release',
             'app.kubernetes.io/name': 'kafka',
             'app.kubernetes.io/part-of': 'snow-white',
@@ -619,6 +624,7 @@ describe('Kafka', () => {
           'app.kubernetes.io/managed-by': 'Helm',
           'app.kubernetes.io/version': 'test-version',
           'helm.sh/chart': 'snow-white',
+          'app.kubernetes.io/component': 'kafka',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'kafka',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -644,6 +650,7 @@ describe('Kafka', () => {
           expect(spec).toBeDefined();
 
           expect(spec.selector).toEqual({
+            'app.kubernetes.io/component': 'kafka',
             'app.kubernetes.io/instance': 'test-release',
             'app.kubernetes.io/name': 'kafka',
             'app.kubernetes.io/part-of': 'snow-white',

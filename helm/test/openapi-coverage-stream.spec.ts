@@ -9,7 +9,7 @@ import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
 
-describe('Report Coordinator API', () => {
+describe('OpenAPI Coverage Stream', () => {
   describe('Deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
@@ -21,7 +21,7 @@ describe('Report Coordinator API', () => {
       const deployment = manifests.find(
         (m) =>
           m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
+          m.metadata.name === 'snow-white-openapi-coverage-stream-test-release',
       );
       expect(deployment).toBeDefined();
 
@@ -51,7 +51,7 @@ describe('Report Coordinator API', () => {
       expect(metadata).toBeDefined();
 
       expect(metadata.name).toMatch(
-        'snow-white-report-coordinator-api-test-release',
+        'snow-white-openapi-coverage-stream-test-release',
       );
     });
 
@@ -65,9 +65,9 @@ describe('Report Coordinator API', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'report-coordinator-api',
+        'app.kubernetes.io/component': 'openapi-coverage-stream',
         'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'report-coordinator-api',
+        'app.kubernetes.io/name': 'openapi-coverage-stream',
         'app.kubernetes.io/part-of': 'snow-white',
       });
     });
@@ -83,57 +83,36 @@ describe('Report Coordinator API', () => {
         (m) =>
           m.kind === 'Deployment' &&
           m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-t',
+            'snow-white-openapi-coverage-stream-very-long-test-release-name',
       );
 
       expect(deployment).toBeDefined();
-      expect(deployment.metadata.name).toHaveLength(63);
+      expect(deployment.metadata.name).toHaveLength(62);
     });
 
     describe('replicas', () => {
-      it("should deploy three replica in 'high-available' mode", async () => {
-        const deployment = await renderAndGetDeployment(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                mode: 'high-available',
-              },
-            },
-          }),
-        );
-
-        expect(deployment.spec.replicas).toBe(3);
-      });
-
-      it("should deploy one replica in 'minimal' mode", async () => {
-        const deployment = await renderAndGetDeployment(
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                mode: 'minimal',
-              },
-            },
-          }),
-        );
+      it('should deploy one replica by default', async () => {
+        const deployment = await renderAndGetDeployment();
 
         expect(deployment.spec.replicas).toBe(1);
       });
 
-      it("should not specify replicas in 'auto-scaling' mode", async () => {
+      it('should override replica count from values', async () => {
+        const replicas = 3;
         const deployment = await renderAndGetDeployment(
           await renderHelmChart({
             chartPath: 'charts/snow-white',
             values: {
               snowWhite: {
-                mode: 'auto-scaling',
+                openapiCoverageStream: {
+                  replicas,
+                },
               },
             },
           }),
         );
 
-        expect(deployment.spec.replicas).toBeUndefined();
+        expect(deployment.spec.replicas).toBe(replicas);
       });
     });
 
@@ -144,7 +123,7 @@ describe('Report Coordinator API', () => {
         const { spec } = deployment;
         expect(spec).toBeDefined();
 
-        expect(spec.replicas).toBe(3);
+        expect(spec.replicas).toBe(1);
 
         const { strategy } = spec;
         expect(strategy).toBeDefined();
@@ -217,9 +196,9 @@ describe('Report Coordinator API', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
-          'app.kubernetes.io/component': 'report-coordinator-api',
+          'app.kubernetes.io/component': 'openapi-coverage-stream',
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'report-coordinator-api',
+          'app.kubernetes.io/name': 'openapi-coverage-stream',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -285,9 +264,9 @@ describe('Report Coordinator API', () => {
               podAffinityTerm: {
                 labelSelector: {
                   matchLabels: {
-                    'app.kubernetes.io/component': 'report-coordinator-api',
+                    'app.kubernetes.io/component': 'openapi-coverage-stream',
                     'app.kubernetes.io/instance': 'test-release',
-                    'app.kubernetes.io/name': 'report-coordinator-api',
+                    'app.kubernetes.io/name': 'openapi-coverage-stream',
                   },
                 },
                 topologyKey: 'kubernetes.io/hostname',
@@ -323,16 +302,16 @@ describe('Report Coordinator API', () => {
     });
 
     describe('containers', () => {
-      it('should have only one (report-coordinator-api)', async () => {
+      it('should have only one (openapi-coverage-stream)', async () => {
         const templateSpec = getPodSpec(await renderAndGetDeployment());
 
         const { containers } = templateSpec;
         expect(containers).toHaveLength(1);
 
-        expect(containers[0].name).toBe('report-coordinator-api');
+        expect(containers[0].name).toBe('openapi-coverage-stream');
       });
 
-      describe('report-coordinator-api', () => {
+      describe('openapi-coverage-stream', () => {
         const renderAndGetReportCoordinatorApiContainer = async (
           manifests?: any[],
         ) => {
@@ -348,18 +327,18 @@ describe('Report Coordinator API', () => {
 
         describe('image', () => {
           it('should be pulled from ghcr.io by default', async () => {
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer();
 
-            expect(reportCoordinatorApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
+            expect(openapiCoverageStream.image).toBe(
+              'ghcr.io/bbortt/snow-white/openapi-coverage-stream:v1.0.0-ci.0',
             );
           });
 
           it('should adjust the image registry from values', async () => {
             const customRegistry = 'custom.registry';
 
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
@@ -371,44 +350,44 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            expect(reportCoordinatorApi.image).toBe(
-              'custom.registry/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
+            expect(openapiCoverageStream.image).toBe(
+              'custom.registry/bbortt/snow-white/openapi-coverage-stream:v1.0.0-ci.0',
             );
           });
 
           it('should adjust the image tag from values', async () => {
             const customTag = 'custom.tag';
 
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
-                      reportCoordinatorApi: { image: { tag: customTag } },
+                      openapiCoverageStream: { image: { tag: customTag } },
                     },
                   },
                 }),
               );
 
-            expect(reportCoordinatorApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/report-coordinator-api:custom.tag',
+            expect(openapiCoverageStream.image).toBe(
+              'ghcr.io/bbortt/snow-white/openapi-coverage-stream:custom.tag',
             );
           });
         });
 
         describe('imagePullPolicy', () => {
           it('should pull images if they are not present by default', async () => {
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer();
 
-            expect(reportCoordinatorApi.imagePullPolicy).toBe('IfNotPresent');
+            expect(openapiCoverageStream.imagePullPolicy).toBe('IfNotPresent');
           });
 
           it('should adjust the image pull policy from values', async () => {
             const imagePullPolicy = 'my.policy';
 
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
@@ -418,28 +397,28 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            expect(reportCoordinatorApi.imagePullPolicy).toBe(imagePullPolicy);
+            expect(openapiCoverageStream.imagePullPolicy).toBe(imagePullPolicy);
           });
         });
 
         describe('env', () => {
-          it('should deploy 2+11 environment variables by default', async () => {
-            const reportCoordinatorApi =
+          it('should deploy 2+9 environment variables by default', async () => {
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(13);
+            expect(openapiCoverageStream.env).toHaveLength(11);
           });
 
           it('should include configuration for the OTEL collector', async () => {
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer();
 
-            const protocol = reportCoordinatorApi.env.find(
+            const protocol = openapiCoverageStream.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
             );
             expect(protocol).toBeDefined();
             expect(protocol.value).toBe('grpc');
 
-            const endpoint = reportCoordinatorApi.env.find(
+            const endpoint = openapiCoverageStream.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
             );
             expect(endpoint).toBeDefined();
@@ -448,139 +427,164 @@ describe('Report Coordinator API', () => {
             );
           });
 
-          it('should include public host configuration with tls enabled', async () => {
-            const qualityGateApi =
+          it('should calculate influxdb url by default', async () => {
+            const openapiCoverageStream =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const influxdbUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_URL',
+            );
+            expect(influxdbUrl).toBeDefined();
+
+            expect(influxdbUrl.value).toBe(
+              'test-release-influxdb.default.svc.cluster.local.:8086',
+            );
+          });
+
+          it('should override influxdb url from values', async () => {
+            const endpoint = 'endpoint';
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
-                      ingress: {
-                        host: 'custom-host',
+                      openapiCoverageStream: {
+                        influxdb: {
+                          endpoint,
+                        },
                       },
                     },
                   },
                 }),
               );
 
-            const publicApiGatewayUrl = qualityGateApi.env.find(
-              (env) =>
-                env.name ===
-                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            const influxdbUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_URL',
             );
-            expect(publicApiGatewayUrl).toBeDefined();
-            expect(publicApiGatewayUrl.value).toBe('https://custom-host');
+            expect(influxdbUrl).toBeDefined();
+
+            expect(influxdbUrl.value).toBe(endpoint);
           });
 
-          it('should include public host configuration with tls disabled', async () => {
-            const qualityGateApi =
+          it('should load influxdb token from secret by default', async () => {
+            const openapiCoverageStream =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const influxdbUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbUrl).toBeDefined();
+
+            const secretKeyRef = influxdbUrl.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe('test-release-influxdb-auth');
+            expect(secretKeyRef.key).toBe('influxdb-password');
+          });
+
+          it('should override influxdb token from values', async () => {
+            const token = 'token';
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
-                      ingress: {
-                        host: 'custom-host',
-                        tls: false,
+                      openapiCoverageStream: {
+                        influxdb: {
+                          token,
+                        },
                       },
                     },
                   },
                 }),
               );
 
-            const publicApiGatewayUrl = qualityGateApi.env.find(
-              (env) =>
-                env.name ===
-                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            const influxdbUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
             );
-            expect(publicApiGatewayUrl).toBeDefined();
-            expect(publicApiGatewayUrl.value).toBe('http://custom-host');
+            expect(influxdbUrl).toBeDefined();
+
+            expect(influxdbUrl.value).toBe(token);
           });
 
-          it('should calculate quality-gate-api connection string', async () => {
-            const reportCoordinatorApi =
+          it('should calculate redis host by default', async () => {
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer();
 
-            const qualityGateApiUrl = reportCoordinatorApi.env.find(
-              (env) =>
-                env.name ===
-                'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL',
-            );
-            expect(qualityGateApiUrl).toBeDefined();
-
-            expect(qualityGateApiUrl.value).toBe(
-              'snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
-            );
-          });
-
-          it('should calculate jdbc connection string', async () => {
-            const reportCoordinatorApi =
-              await renderAndGetReportCoordinatorApiContainer();
-
-            const springDatasourceUrl = reportCoordinatorApi.env.find(
-              (env) => env.name === 'SPRING_DATASOURCE_URL',
+            const springDatasourceUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'SPRING_DATA_REDIS_HOST',
             );
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'jdbc:postgresql://test-release-postgresql.default.svc.cluster.local.:5432/report-coordinator-api',
+              'test-release-redis-master.default.svc.cluster.local.:6379',
             );
           });
 
-          it('should calculate spring datasource password', async () => {
-            const manifests = await renderHelmChart({
-              chartPath: 'charts/snow-white',
-            });
-            const reportCoordinatorApi =
-              await renderAndGetReportCoordinatorApiContainer(manifests);
+          it('should override redis host from values', async () => {
+            const host = 'host';
+            const openapiCoverageStream =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: {
+                        redis: {
+                          host,
+                        },
+                      },
+                    },
+                  },
+                }),
+              );
 
-            const springDatasourcePassword = reportCoordinatorApi.env.find(
-              (env) => env.name === 'SPRING_DATASOURCE_PASSWORD',
+            const springDatasourceUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'SPRING_DATA_REDIS_HOST',
             );
-            expect(springDatasourcePassword).toBeDefined();
+            expect(springDatasourceUrl).toBeDefined();
 
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-credentials',
-            );
-            const secret = manifests.find(
-              (m) =>
-                m.kind === 'Secret' &&
-                m.metadata.name ===
-                  springDatasourcePassword.valueFrom.secretKeyRef.name,
-            );
-            expect(secret).toBeDefined();
+            expect(springDatasourceUrl.value).toBe(host);
+          });
 
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
-              'report-coord-password',
+          it('should calculate kafka bootstrap servers by default', async () => {
+            const openapiCoverageStream =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const springDatasourceUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'SPRING_KAFKA_BOOTSTRAP_SERVERS',
+            );
+            expect(springDatasourceUrl).toBeDefined();
+
+            expect(springDatasourceUrl.value).toBe(
+              'snow-white-kafka-connect-test-release.default.svc.cluster.local.:9092',
             );
           });
 
-          it('should calculate spring flyway password', async () => {
-            const manifests = await renderHelmChart({
-              chartPath: 'charts/snow-white',
-            });
-            const reportCoordinatorApi =
-              await renderAndGetReportCoordinatorApiContainer(manifests);
+          it('should override kafka bootstrap servers from values', async () => {
+            const brokers = 'brokers';
+            const openapiCoverageStream =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      kafka: {
+                        brokers,
+                      },
+                    },
+                  },
+                }),
+              );
 
-            const springDatasourcePassword = reportCoordinatorApi.env.find(
-              (env) => env.name === 'SPRING_FLYWAY_PASSWORD',
+            const springDatasourceUrl = openapiCoverageStream.env.find(
+              (env) => env.name === 'SPRING_KAFKA_BOOTSTRAP_SERVERS',
             );
-            expect(springDatasourcePassword).toBeDefined();
+            expect(springDatasourceUrl).toBeDefined();
 
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.name).toBe(
-              'snow-white-postgresql-credentials',
-            );
-            const secret = manifests.find(
-              (m) =>
-                m.kind === 'Secret' &&
-                m.metadata.name ===
-                  springDatasourcePassword.valueFrom.secretKeyRef.name,
-            );
-            expect(secret).toBeDefined();
-
-            expect(springDatasourcePassword.valueFrom.secretKeyRef.key).toBe(
-              'report-coord-flyway-password',
-            );
+            expect(springDatasourceUrl.value).toBe(brokers);
           });
 
           it('should accept additional environment variables', async () => {
@@ -589,28 +593,28 @@ describe('Report Coordinator API', () => {
               foo: 'bar',
             };
 
-            const reportCoordinatorApi =
+            const openapiCoverageStream =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
-                      reportCoordinatorApi: { additionalEnvs },
+                      openapiCoverageStream: { additionalEnvs },
                     },
                   },
                 }),
               );
 
-            // 2 OTEL + 11 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(15);
+            // 2 OTEL + 9 default + 2 additional
+            expect(openapiCoverageStream.env).toHaveLength(13);
 
-            const authorEnv = reportCoordinatorApi.env.find(
+            const authorEnv = openapiCoverageStream.env.find(
               (env) => env.name === 'author',
             );
             expect(authorEnv).toBeDefined();
             expect(authorEnv.value).toBe('bbortt');
 
-            const fooEnv = reportCoordinatorApi.env.find(
+            const fooEnv = openapiCoverageStream.env.find(
               (env) => env.name === 'foo',
             );
             expect(fooEnv).toBeDefined();
@@ -632,7 +636,7 @@ describe('Report Coordinator API', () => {
       const pdb = manifests.find(
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
-          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
+          m.metadata.name === 'snow-white-openapi-coverage-stream-test-release',
       );
       expect(pdb).toBeDefined();
       return pdb;
@@ -649,7 +653,7 @@ describe('Report Coordinator API', () => {
         (m) =>
           m.kind === 'PodDisruptionBudget' &&
           m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-t',
+            'snow-white-openapi-coverage-stream-very-long-test-release-name',
       );
 
       expect(pdb).toBeDefined();
@@ -666,9 +670,9 @@ describe('Report Coordinator API', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
-          'app.kubernetes.io/component': 'report-coordinator-api',
+          'app.kubernetes.io/component': 'openapi-coverage-stream',
           'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'report-coordinator-api',
+          'app.kubernetes.io/name': 'openapi-coverage-stream',
           'app.kubernetes.io/part-of': 'snow-white',
         });
       });
@@ -684,104 +688,6 @@ describe('Report Coordinator API', () => {
           (m) =>
             m.kind === 'Deployment' &&
             isSubset(pdb.spec.selector.matchLabels, m.metadata?.labels),
-        );
-
-        expect(deployment).toBeDefined();
-      });
-    });
-  });
-
-  describe('Service', () => {
-    const renderAndGetReportCoordinatorApiService = async (
-      manifests?: any[],
-    ) => {
-      if (!manifests) {
-        manifests = await renderHelmChart({
-          chartPath: 'charts/snow-white',
-        });
-      }
-
-      const service = manifests.find(
-        (m) =>
-          m.kind === 'Service' &&
-          m.metadata.name === 'snow-white-report-coordinator-api-test-release',
-      );
-      expect(service).toBeDefined();
-      return service;
-    };
-
-    it('should be Kubernetes Service', async () => {
-      const service = await renderAndGetReportCoordinatorApiService();
-
-      expect(service.apiVersion).toMatch('v1');
-      expect(service.kind).toMatch('Service');
-      expect(service.metadata.name).toMatch(
-        'snow-white-report-coordinator-api-test-release',
-      );
-    });
-
-    it('should have default labels', async () => {
-      const service = await renderAndGetReportCoordinatorApiService();
-
-      const { metadata } = service;
-      expect(metadata).toBeDefined();
-
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'report-coordinator-api',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'report-coordinator-api',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
-    });
-
-    it('should truncate long release name', async () => {
-      const manifests = await renderHelmChart({
-        chartPath: 'charts/snow-white',
-        // 53 chars is the max length for Helm release names
-        releaseName: 'very-long-test-release-name-that-exceeds-the-limit',
-      });
-
-      const service = manifests.find(
-        (m) =>
-          m.kind === 'Service' &&
-          m.metadata.name ===
-            'snow-white-report-coordinator-api-very-long-test-release-name-t',
-      );
-
-      expect(service).toBeDefined();
-      expect(service.metadata.name).toHaveLength(63);
-    });
-
-    describe('selector', () => {
-      it('should contain immutable labels', async () => {
-        const service = await renderAndGetReportCoordinatorApiService();
-
-        const { spec } = service;
-        expect(spec).toBeDefined();
-
-        expect(spec.selector).toEqual({
-          'app.kubernetes.io/component': 'report-coordinator-api',
-          'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'report-coordinator-api',
-          'app.kubernetes.io/part-of': 'snow-white',
-        });
-      });
-
-      it('should select correct pod based on selector labels', async () => {
-        const manifests = await renderHelmChart({
-          chartPath: 'charts/snow-white',
-        });
-
-        const service =
-          await renderAndGetReportCoordinatorApiService(manifests);
-
-        const deployment = manifests.find(
-          (m) =>
-            m.kind === 'Deployment' &&
-            isSubset(service.spec.selector, m.metadata?.labels),
         );
 
         expect(deployment).toBeDefined();

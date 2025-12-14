@@ -63,6 +63,7 @@ describe('Quality-Gate API', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'quality-gate-api',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'quality-gate-api',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -214,6 +215,7 @@ describe('Quality-Gate API', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
+          'app.kubernetes.io/component': 'quality-gate-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'quality-gate-api',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -281,7 +283,7 @@ describe('Quality-Gate API', () => {
               podAffinityTerm: {
                 labelSelector: {
                   matchLabels: {
-                    'app.kubernetes.io/component': 'influxdb',
+                    'app.kubernetes.io/component': 'quality-gate-api',
                     'app.kubernetes.io/instance': 'test-release',
                     'app.kubernetes.io/name': 'quality-gate-api',
                   },
@@ -419,6 +421,24 @@ describe('Quality-Gate API', () => {
             expect(qualityGateApi.env).toHaveLength(8);
           });
 
+          it('should include configuration for the OTEL collector', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer();
+
+            const protocol = qualityGateApi.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe('grpc');
+
+            const endpoint = qualityGateApi.env.find(
+              (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
+            );
+            expect(endpoint).toBeDefined();
+            expect(endpoint.value).toBe(
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:grpc',
+            );
+          });
+
           it('should include public host configuration with tls enabled', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer(
               await renderHelmChart({
@@ -464,24 +484,6 @@ describe('Quality-Gate API', () => {
             );
             expect(publicApiGatewayUrl).toBeDefined();
             expect(publicApiGatewayUrl.value).toBe('http://custom-host');
-          });
-
-          it('should include configuration for the OTEL collector', async () => {
-            const qualityGateApi = await renderAndGetQualityGateApiContainer();
-
-            const protocol = qualityGateApi.env.find(
-              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
-            );
-            expect(protocol).toBeDefined();
-            expect(protocol.value).toBe('grpc');
-
-            const endpoint = qualityGateApi.env.find(
-              (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
-            );
-            expect(endpoint).toBeDefined();
-            expect(endpoint.value).toBe(
-              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:grpc',
-            );
           });
 
           it('should calculate jdbc connection string', async () => {
@@ -633,6 +635,7 @@ describe('Quality-Gate API', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
+          'app.kubernetes.io/component': 'quality-gate-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'quality-gate-api',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -694,6 +697,7 @@ describe('Quality-Gate API', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'quality-gate-api',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'quality-gate-api',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -726,6 +730,7 @@ describe('Quality-Gate API', () => {
         expect(spec).toBeDefined();
 
         expect(spec.selector).toEqual({
+          'app.kubernetes.io/component': 'quality-gate-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'quality-gate-api',
           'app.kubernetes.io/part-of': 'snow-white',
