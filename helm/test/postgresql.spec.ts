@@ -164,6 +164,7 @@ describe('PostgreSQL', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'postgresql',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'postgresql',
         'app.kubernetes.io/part-of': 'snow-white',

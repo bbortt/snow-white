@@ -29,8 +29,8 @@ spec:
       affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
       {{- else }}
       affinity:
-        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
-        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "influxdb" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "otel-collector" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "otel-collector" "customLabels" $selectorLabels "context" .) | nindent 10 }}
         nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
       {{- end }}
       containers:
@@ -145,7 +145,7 @@ data:
   snow-white.config.yml: |
     receivers:
       kafka/snow-white:
-        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
         protocol_version: 4.0.0
         traces:
           encoding: otlp_json
@@ -222,7 +222,7 @@ data:
         verbosity: detailed
         sampling_initial: 5
       kafka/snow-white:
-        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
         partition_traces_by_id: true
         protocol_version: 4.0.0
         traces:
@@ -231,10 +231,14 @@ data:
           # encoding: otlp_proto
           topic: {{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}
       influxdb:
-        endpoint: {{ .Values.snowWhite.otelCollector.influxdb.endpoint | quote }}
+        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.snowWhite.otelCollector.influxdb.org | quote }}
         bucket: {{ .Values.snowWhite.otelCollector.influxdb.bucket | quote }}
+        {{- if ne .Values.snowWhite.otelCollector.influxdb.token "" }}
         token: {{ .Values.snowWhite.otelCollector.influxdb.token | quote }}
+        {{- else }}
+        token: '${INFLUXDB_TOKEN}'
+        {{- end }}
       prometheus:
         endpoint: "0.0.0.0:8090"
         send_timestamps: true
