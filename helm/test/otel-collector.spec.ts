@@ -63,6 +63,7 @@ describe('OTEL Collector', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'otel-collector',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'otel-collector',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -214,6 +215,7 @@ describe('OTEL Collector', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
+          'app.kubernetes.io/component': 'otel-collector',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -281,7 +283,7 @@ describe('OTEL Collector', () => {
               podAffinityTerm: {
                 labelSelector: {
                   matchLabels: {
-                    'app.kubernetes.io/component': 'influxdb',
+                    'app.kubernetes.io/component': 'otel-collector',
                     'app.kubernetes.io/instance': 'test-release',
                     'app.kubernetes.io/name': 'otel-collector',
                   },
@@ -491,6 +493,7 @@ describe('OTEL Collector', () => {
         expect(selector).toBeDefined();
 
         expect(selector.matchLabels).toEqual({
+          'app.kubernetes.io/component': 'otel-collector',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -552,6 +555,7 @@ describe('OTEL Collector', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'otel-collector',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'otel-collector',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -584,6 +588,7 @@ describe('OTEL Collector', () => {
         expect(spec).toBeDefined();
 
         expect(spec.selector).toEqual({
+          'app.kubernetes.io/component': 'otel-collector',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'otel-collector',
           'app.kubernetes.io/part-of': 'snow-white',
@@ -645,6 +650,7 @@ describe('OTEL Collector', () => {
         'app.kubernetes.io/managed-by': 'Helm',
         'app.kubernetes.io/version': 'test-version',
         'helm.sh/chart': 'snow-white',
+        'app.kubernetes.io/component': 'otel-collector',
         'app.kubernetes.io/instance': 'test-release',
         'app.kubernetes.io/name': 'otel-collector',
         'app.kubernetes.io/part-of': 'snow-white',
@@ -704,6 +710,44 @@ describe('OTEL Collector', () => {
       expect(snowWhiteConfig.exporters['kafka/snow-white'].brokers).toBe(
         brokers,
       );
+    });
+
+    it('should load influxdb token from environment variable by default', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters.influxdb.token).toBe(
+        '${INFLUXDB_TOKEN}',
+      );
+    });
+
+    it('should override influxdb token from environment values', async () => {
+      const token = 'token';
+      const configMap = await renderAndGetOtelCollectorConfig(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            snowWhite: {
+              otelCollector: {
+                influxdb: {
+                  token,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters.influxdb.token).toBe(token);
     });
   });
 });

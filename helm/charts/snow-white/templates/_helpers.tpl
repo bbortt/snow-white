@@ -19,6 +19,7 @@ helm.sh/chart: snow-white
 Selector labels
 */}}
 {{- define "snow-white.selectorLabels" -}}
+app.kubernetes.io/component: {{ .name }}
 app.kubernetes.io/instance: {{ .context.Release.Name }}
 app.kubernetes.io/name: {{ .name }}
 app.kubernetes.io/part-of: snow-white

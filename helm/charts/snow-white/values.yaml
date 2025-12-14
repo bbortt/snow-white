@@ -63,10 +63,10 @@ snowWhite:
       registry: 'docker.io'
       tag: '0.141.0'
     influxdb:
-      endpoint: http://influxdb:8086
-      org: snow-white
-      bucket: raw-data
-      token: ${INFLUXDB_TOKEN}
+      endpoint: ''
+      org: 'snow-white'
+      bucket: 'raw-data'
+      token: '${INFLUXDB_TOKEN}'
     kafka:
       inboundTopic: snow-white_inbound
       outbountTopic: snow-white_outbound
@@ -87,6 +87,18 @@ snowWhite:
   qualityGateApi:
     image:
       tag: ''
+    additionalEnvs: {}
+  openapiCoverageStream:
+    image:
+      tag: ''
+    replicas: 1
+    influxdb:
+      endpoint: ''
+      org: snow-white
+      bucket: raw-data
+      token: ''
+    redis:
+      host: ''
     additionalEnvs: {}
   reportCoordinatorApi:
     image:
