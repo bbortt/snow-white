@@ -1,4 +1,5 @@
 # Installation
+
 ## Adding the Helm Repository
 
 [Helm](https://helm.sh) must be installed to use the Snow-White chart.

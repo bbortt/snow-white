@@ -1,4 +1,5 @@
 # Snow-White CLI
+
 ## Exit Codes
 
 | Exit Code | Description                          |
