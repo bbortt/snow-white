@@ -17,7 +17,7 @@ import Header from 'app/shared/layout/header/header';
 import { getProfile } from 'app/shared/reducers/application-profile';
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { Card } from 'reactstrap';
 
 const baseHref = document.querySelector('base')?.getAttribute('href')?.replace(/\/$/, '');
@@ -27,6 +27,15 @@ export const App = () => {
 
   useEffect(() => {
     dispatch(getProfile());
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.type === 'online') {
+          toast.success('You are back online!');
+        } else if (event.data && event.data.type === 'offline') {
+          toast.warn('You are offline. Some features may not be available.');
+        }
+      });
+    }
   }, []);
 
   const currentLocale = useAppSelector(state => state.locale.currentLocale);

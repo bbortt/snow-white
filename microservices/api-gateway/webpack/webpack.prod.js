@@ -109,10 +109,9 @@ module.exports = async () =>
         minimize: true,
         debug: false,
       }),
-      new WorkboxPlugin.GenerateSW({
-        clientsClaim: true,
-        skipWaiting: true,
-        exclude: [/swagger-ui/],
+      new WorkboxPlugin.InjectManifest({
+        swSrc: './src/main/webapp/sw-custom.js',
+        swDest: 'sw.js',
       }),
     ],
   });
