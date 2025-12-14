@@ -1,3 +1,5 @@
 backstage/
 node_modules/
 opentelemetry-proto/
+
+helm/charts/snow-white/README.md
