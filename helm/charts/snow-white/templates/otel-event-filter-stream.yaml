@@ -1,0 +1,82 @@
+{{- $labels := include "snow-white.labels" (dict "name" "otel-event-filter-stream" "context" .) | nindent 0 }}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "otel-event-filter-stream" "context" .) | nindent 0 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "otel-event-filter-stream" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.snowWhite.otelEventFilterStream.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ $labels | nindent 8 }}
+    spec:
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        fsGroup: 101
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "otel-event-filter-stream" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "otel-event-filter-stream" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: otel-event-filter-stream
+          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/otel-event-filter-stream:{{ .Values.snowWhite.otelEventFilterStream.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME'
+              value: '{{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}'
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'
+              value: '{{ .Values.snowWhite.kafka.initTopics }}'
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME'
+              value: '{{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}'
+            - name: 'SPRING_DATA_REDIS_HOST'
+              value: '{{ default (printf "%s-redis-master.%s.svc.cluster.local.:6379" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.otelEventFilterStream.redis.host }}'
+            - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
+              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+          {{- with .Values.snowWhite.otelEventFilterStream.additionalEnvs }}
+            {{- range $k, $v := . }}
+            - name: {{ $k }}
+              value: {{ $v }}
+            {{- end }}
+          {{- end }}
+          resources:
+            limits:
+              memory: '512m'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.5'
+              memory: '512m'
+              ephemeral-storage: '50Mi'
+          securityContext:
+            allowPrivilegeEscalation: false
+            # readOnlyRootFilesystem: true
+            runAsUser: 100
+            runAsGroup: 101
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "otel-event-filter-stream" "context" .) }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  maxUnavailable: 25%

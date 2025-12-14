@@ -100,6 +100,13 @@ snowWhite:
     redis:
       host: ''
     additionalEnvs: {}
+  otelEventFilterStream:
+    image:
+      tag: ''
+    replicas: 1
+    redis:
+      host: ''
+    additionalEnvs: {}
   reportCoordinatorApi:
     image:
       tag: ''
