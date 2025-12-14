@@ -20,3 +20,4 @@ dependencies:
     version: 24.0.7
     repository: 'https://charts.bitnami.com/bitnami'
     condition: redis.enabled
+engine: gotpl
