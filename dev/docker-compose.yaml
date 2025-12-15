@@ -149,7 +149,7 @@ services:
       - internal
 
   influxdb:
-    image: influxdb:2.7.12-alpine
+    image: influxdb:2.8.0-alpine
     environment:
       DOCKER_INFLUXDB_INIT_MODE: 'setup'
       DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
