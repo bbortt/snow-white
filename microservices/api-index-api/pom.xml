@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white.microservices</groupId>
+    <artifactId>microservices</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>api-index-api</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <mainClass>
+      io.github.bbortt.snow.white.microservices.api.index.Main
+    </mainClass>
+
+    <maven.build.timestamp.format>
+      yyyy-MM-dd'T'HH:mm:ss'Z'
+    </maven.build.timestamp.format>
+
+    <!-- Default optimization configuration for native image during development -->
+    <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <docker.network>bridge</docker.network>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+      <artifactId>annotation-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>archunit-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-test-api-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${org.mapstruct.version}</version>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <version>0.2.0</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <compilerArg>-Amapstruct.unmappedTargetPolicy=ERROR</compilerArg>
+          </compilerArgs>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-otel-agent</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
+              <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
+              <outputDirectory>
+                ${project.build.directory}/opentelemetry-javaagent
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <classifier>executable</classifier>
+              <mainClass>${mainClass}</mainClass>
+            </configuration>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+            <artifactId>openapi-generator</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>generate-api-index-api-v1</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${project.basedir}/src/main/resources/openapi/v1-api-index-api.yml
+              </inputSpec>
+              <generatorName>snow-white-spring-server</generatorName>
+              <modelPackage>
+                io.github.bbortt.snow.white.microservices.api.index.api.rest.dto
+              </modelPackage>
+              <apiPackage>
+                io.github.bbortt.snow.white.microservices.api.index.api.rest
+              </apiPackage>
+              <configOptions>
+                <apiNameProperty>info.x-api-name</apiNameProperty>
+                <delegatePattern>true</delegatePattern>
+                <generateBuilders>true</generateBuilders>
+                <interfaceOnly>true</interfaceOnly>
+                <userOptional>true</userOptional>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+
+      <properties>
+        <!-- 03 tells GraalVM to optimize for peak performance -->
+        <native-maven-plugin.optimization>-O3</native-maven-plugin.optimization>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>native</id>
+
+      <properties>
+        <repackage.classifier>exec</repackage.classifier>
+        <modernizer.skip>true</modernizer.skip>
+      </properties>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <archive>
+                <manifestEntries>
+                  <Spring-Boot-Native-Processed>
+                    true
+                  </Spring-Boot-Native-Processed>
+                </manifestEntries>
+              </archive>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
+            <configuration>
+              <image>
+                <env>
+                  <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
+                  <BP_IMAGE_LABELS>
+                    org.opencontainers.image.name=api-index-api
+                  </BP_IMAGE_LABELS>
+                  <BP_OCI_TITLE>snow-white API Index API</BP_OCI_TITLE>
+                  <BP_OCI_DESCRIPTION>
+                    API Index Service of snow-white
+                  </BP_OCI_DESCRIPTION>
+                  <BP_OCI_URL>https://github.com/bbortt/snow-white</BP_OCI_URL>
+                  <BP_OCI_SOURCE>
+                    https://github.com/bbortt/snow-white/tree/main/microservices/api-index-api
+                  </BP_OCI_SOURCE>
+                  <BP_OCI_DOCUMENTATION>
+                    https://github.com/bbortt/snow-white#readme
+                  </BP_OCI_DOCUMENTATION>
+                  <BP_OCI_VERSION>${image.tag}</BP_OCI_VERSION>
+                  <BP_OCI_CREATED>${maven.build.timestamp}</BP_OCI_CREATED>
+                  <BP_OCI_AUTHORS>
+                    Timon Borter &lt; timon.borter@gmx.ch &gt;
+                  </BP_OCI_AUTHORS>
+                  <BP_OCI_LICENSES>
+                    https://polyformproject.org/licenses/small-business/1.0.0/
+                  </BP_OCI_LICENSES>
+                </env>
+              </image>
+              <imageName>
+                ${container.registry}/bbortt/snow-white/api-index-api:${image.tag}
+              </imageName>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>process-aot</id>
+                <goals>
+                  <goal>process-aot</goal>
+                </goals>
+                <configuration>
+                  <mainClass>${mainClass}</mainClass>
+                  <profiles>prod</profiles>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+
+            <configuration>
+              <buildArgs>
+                <buildArg>${native-maven-plugin.optimization}</buildArg>
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>--verbose</buildArg>
+              </buildArgs>
+              <classesDirectory>
+                ${project.build.outputDirectory}
+              </classesDirectory>
+              <metadataRepository>
+                <enabled>true</enabled>
+              </metadataRepository>
+              <verbose>true</verbose>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>add-reachability-metadata</id>
+                <goals>
+                  <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <build>
+        <resources>
+          <resource>
+            <directory>src/apptest/resources</directory>
+          </resource>
+        </resources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.1</version>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-openapi-codegen-maven-plugin</artifactId>
+            <version>${citrus.version}</version>
+            <executions>
+              <execution>
+                <id>generate-citrus-actions</id>
+                <goals>
+                  <goal>create-test-api</goal>
+                </goals>
+                <configuration>
+                  <apis>
+                    <api>
+                      <prefix>QualityGate</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-api-index-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
+                  </apis>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/api-index-api:${image.tag}
+                  </name>
+                  <alias>api-index-api</alias>
+                  <run>
+                    <env>
+                      <SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL>
+                        http://localhost
+                      </SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL>
+                      <SPRING_DATASOURCE_URL>
+                        jdbc:postgresql://postgres:5432/api-index-api
+                      </SPRING_DATASOURCE_URL>
+                      <SPRING_DATASOURCE_USERNAME>
+                        api_index_app
+                      </SPRING_DATASOURCE_USERNAME>
+                      <SPRING_DATASOURCE_PASSWORD>
+                        strongpassword6
+                      </SPRING_DATASOURCE_PASSWORD>
+                      <SPRING_FLYWAY_USER>api_index_flyway</SPRING_FLYWAY_USER>
+                      <SPRING_FLYWAY_PASSWORD>
+                        strongpassword5
+                      </SPRING_FLYWAY_PASSWORD>
+                    </env>
+                    <log>
+                      <prefix>api-index-api</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                    <ports>
+                      <port>8085:8080</port>
+                      <port>8095:8090</port>
+                    </ports>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-node-and-corepack</id>
+                <goals>
+                  <goal>install-node-and-corepack</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>pnpm-install</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <configuration>
+                  <arguments>pnpm install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>wait-on-ports</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <arguments>pnpm run apptest:wait</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

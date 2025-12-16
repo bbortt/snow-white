@@ -65,7 +65,7 @@ class ApiGatewayPropertiesTest {
     }
 
     @Test
-    void throwsExceptionWithMissingQualityGateApiUrl() {
+    void shouldThrowException_withMissingQualityGateApiUrl() {
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())
@@ -74,7 +74,7 @@ class ApiGatewayPropertiesTest {
     }
 
     @Test
-    void throwsExceptionWithMissingReportCoordinationServiceUrl() {
+    void shouldThrowException_withMissingReportCoordinationServiceUrl() {
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> fixture.afterPropertiesSet())

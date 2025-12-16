@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: API Index-API
+  description: A microservice for managing indexed API's
+  version: 1.0.0
+  x-api-name: api-index-api
+  x-service-name: api-index-api
+paths:
+  /api/rest/v1/apis:
+    post:
+      operationId: ingestApi
+      summary: Ingest an API specification
+      description: |
+        Uploads and indexes an API specification for Snow-White.
+        If an API with the same service name, API name, and version already exists, the request is rejected with HTTP 409 and the existing specification remains unchanged.
+      tags:
+        - api-index
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/ApiInformation.yml'
+      responses:
+        '201':
+          description: The API specification was successfully ingested and indexed.
+        '409':
+          description: An API specification with the same service name, API name, and version already exists.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+    get:
+      operationId: getAllApis
+      summary: List ingested APIs
+      description: Returns an overview of all API specifications currently indexed by the system.
+      tags:
+        - api-index
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-based index).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          description: Number of items per page.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: sort
+          in: query
+          description: |
+            Sorting criteria in the format: `property,(asc|desc)`.
+            Defaults to `initiatedAt,desc`.
+          required: false
+          schema:
+            type: string
+            example: initiatedAt,desc
+      responses:
+        '200':
+          description: The list of ingested API specifications was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './components/ApiInformation.yml'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+  /api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}:
+    get:
+      operationId: getApiDetails
+      summary: Get API details
+      description: Retrieves detailed information for a specific ingested API specification identified by service name, API name, and version.
+      tags:
+        - api-index
+      parameters:
+        - name: otelServiceName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiVersion
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested API specification was found and returned.
+          content:
+            application/json:
+              schema:
+                $ref: './components/ApiInformation.yml'
+        '404':
+          description: No API specification exists for the given service name, API name, and version.
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+  /api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}/exists:
+    get:
+      operationId: checkApiExists
+      summary: Check API existence
+      description: Lightweight endpoint to quickly verify whether a specific API specification has already been ingested.
+      tags:
+        - api-index
+      parameters:
+        - name: otelServiceName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiVersion
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The API specification exists.
+        '404':
+          description: The API specification does not exist.
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'

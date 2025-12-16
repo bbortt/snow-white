@@ -67,6 +67,9 @@ public class ApiTestResult {
   private ApiTest apiTest;
 
   @Data
+  @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
   public static class ApiTestResultId implements Serializable {
 
     private String apiTestCriteria;

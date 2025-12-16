@@ -166,6 +166,7 @@ Each microservice completes a specific task.
 | Microservice                                                       | Intent                                                                                                                                                                                |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [API Gateway](./microservices/api-gateway)                         | Handles incoming HTTP requests and routes them to internal services.                                                                                                                  |
+| [API Index](./microservices/api-index-api)                         | Manages indexed API specifications.                                                                                                                                                   |
 | [API Sync Job](./microservices/api-sync-job)                       | Periodically fetches API definitions from various sources and stores metadata for reference.                                                                                          |
 | [OTEL Event Filter](./microservices/otel-event-filter-stream)      | An optional service, in addition to the Open-Telemetry collector. Filters telemetry events from Kafka topics based on whether they're applicable for processing by Snow-White or not. |
 | [OpenAPI Coverage Stream](./microservices/openapi-coverage-stream) | Analyzes the coverage of actual API usage against declared OpenAPI specifications                                                                                                     |
@@ -202,6 +203,7 @@ Use the following steps for rapid local development:
 | ---------------------------------------------------------------------- | --------------------------- | -------------------------------------------------- |
 | [`example-application`](./example-application)                         | `8080`                      | `8080`                                             |
 | [`api-gateway`](./microservices/api-gateway)                           | `9080`                      | `80`                                               |
+| [`api-index-api`](./microservices/api-index-api)                       | `8085`                      | `8085`                                             |
 | [`api-sync-job`](./microservices/api-sync-job)                         | -                           | -                                                  |
 | [`otel-event-filter-stream`](./microservices/otel-event-filter-stream) | -                           | -                                                  |
 | [`openapi-coverage-stream`](./microservices/openapi-coverage-stream)   | -                           | -                                                  |
@@ -296,6 +298,7 @@ Alternatively, install all packages and microservices first, then simply run the
 
 These microservices support native image builds:
 
+- `api-index-api`
 - `otel-event-filter-stream`
 - `quality-gate-api`
 - `report-coordinator-api`
@@ -311,7 +314,7 @@ Build all native microservices:
 
 ```shell
 ./mvnw -b smart -Pprod install
-./mvnw -DskipTests -Pnative -b smart -pl :otel-event-filter-stream,:report-coordinator-api,:quality-gate-api spring-boot:build-image
+./mvnw -DskipTests -Pnative -b smart -pl :api-index-api,:otel-event-filter-stream,:report-coordinator-api,:quality-gate-api spring-boot:build-image
 ```
 
 For development, override `-Dimage.tag=latest` to build a "latest" image for usage with [Docker/Podman Compose](#quick-start).

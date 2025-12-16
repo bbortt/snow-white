@@ -1,5 +1,5 @@
 springdoc:
-  packages-to-scan: io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource
+  packages-to-scan: io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest
 spring:
   jpa:
     hibernate:

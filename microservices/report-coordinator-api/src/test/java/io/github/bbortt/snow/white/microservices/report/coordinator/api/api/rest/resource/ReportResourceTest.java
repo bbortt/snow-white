@@ -13,6 +13,7 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,10 +42,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -260,7 +263,7 @@ class ReportResourceTest {
     void shouldReturnListOfQualityGateReports() {
       var page = 0;
       var size = 10;
-      var sort = "createdAt,desc";
+      var sort = "createdAt,asc";
 
       var report1 = mock(QualityGateReport.class);
       var report2 = mock(QualityGateReport.class);
@@ -268,9 +271,10 @@ class ReportResourceTest {
       Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
       doReturn(2L).when(qualityGateReportsPage).getTotalElements();
 
+      ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllReports(any(Pageable.class));
+        .findAllReports(pageableArgumentCaptor.capture());
 
       doReturn(Stream.of(report1, report2))
         .when(qualityGateReportsPage)
@@ -296,24 +300,40 @@ class ReportResourceTest {
               .hasSize(1)
               .containsEntry(HEADER_X_TOTAL_COUNT, "2")
         );
+
+      assertThat(pageableArgumentCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          p -> assertThat(p.getPageNumber()).isEqualTo(page),
+          p -> assertThat(p.getOffset()).isEqualTo(page),
+          p -> assertThat(p.getPageSize()).isEqualTo(size),
+          p ->
+            assertThat(p.getSort()).isEqualTo(
+              Sort.by(Sort.Direction.ASC, "createdAt")
+            )
+        );
     }
 
     @Test
     void shouldHandleEmptyListOfQualityGateReports() {
-      var page = 0;
+      var page = 1;
       var size = 10;
       var sort = "createdAt,desc";
 
       Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
+
+      ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllReports(any(Pageable.class));
+        .findAllReports(pageableArgumentCaptor.capture());
 
       doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 
       ResponseEntity<
         @NonNull List<ListQualityGateReports200ResponseInner>
       > response = fixture.listQualityGateReports(page, size, sort);
+
+      verifyNoInteractions(qualityGateReportMapperMock);
 
       assertThat(response)
         .isNotNull()
@@ -326,7 +346,17 @@ class ReportResourceTest {
               .containsEntry(HEADER_X_TOTAL_COUNT, "0")
         );
 
-      verifyNoInteractions(qualityGateReportMapperMock);
+      assertThat(pageableArgumentCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          p -> assertThat(p.getPageNumber()).isEqualTo(page),
+          p -> assertThat(p.getOffset()).isEqualTo(page * size),
+          p -> assertThat(p.getPageSize()).isEqualTo(size),
+          p ->
+            assertThat(p.getSort()).isEqualTo(
+              Sort.by(Sort.Direction.DESC, "createdAt")
+            )
+        );
     }
   }
 }
