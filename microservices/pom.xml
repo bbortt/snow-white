@@ -24,6 +24,7 @@
 
   <modules>
     <module>api-gateway</module>
+    <module>api-index-api</module>
     <module>api-sync-job</module>
     <module>otel-event-filter-stream</module>
     <module>openapi-coverage-stream</module>

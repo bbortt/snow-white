@@ -1,0 +1,19 @@
+{
+  "name": "api-index-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application testing dependencies of snow-white api-index api",
+  "license": "PolyForm-Small-Business-1.0.0",
+  "author": {
+    "name": "Timon Borter",
+    "email": "timon.borter@gmx.ch"
+  },
+  "scripts": {
+    "apptest:wait": "run-p --print-label apptest:wait:*",
+    "apptest:wait:api-index-api": "wait-on --timeout 1m http-get:localhost:8095/actuator/health"
+  },
+  "devDependencies": {
+    "npm-run-all2": "8.0.4",
+    "wait-on": "9.0.3"
+  }
+}

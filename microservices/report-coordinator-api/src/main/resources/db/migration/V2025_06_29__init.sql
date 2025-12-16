@@ -38,8 +38,8 @@ CREATE TABLE attribute_filters
 CREATE TABLE api_test
 (
     id             BIGSERIAL PRIMARY KEY NOT NULL,
-    service_name   VARCHAR(256)          NOT NULL,
-    api_name       VARCHAR(256)          NOT NULL,
+    service_name   VARCHAR(64)          NOT NULL,
+    api_name       VARCHAR(64)          NOT NULL,
     api_version    VARCHAR(16),
     api_type       SMALLINT,
     calculation_id UUID                  NOT NULL,

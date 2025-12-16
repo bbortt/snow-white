@@ -236,6 +236,44 @@ services:
       - default
       - internal
 
+  microservices.api-index-api:
+    build:
+      context: ../microservices/api-index-api
+    hostname: api-index-api
+    environment:
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL: 'http://localhost'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/api-index-api'
+      SPRING_DATASOURCE_USERNAME: 'api_index_app'
+      SPRING_DATASOURCE_PASSWORD: 'strongpassword6'
+      SPRING_FLYWAY_USER: 'api_index_flyway'
+      SPRING_FLYWAY_PASSWORD: 'strongpassword5'
+    ports:
+      - '8085:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: wget -O - http://localhost:8090/management/health | grep UP || exit 1
+      interval: 1s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - default
+      - internal
+
   microservices.api-sync-job:
     build:
       context: ../microservices/api-sync-job
@@ -259,6 +297,8 @@ services:
       otel-collector:
         condition: service_started
       service-interface-repository:
+        condition: service_healthy
+      microservices.api-index-api:
         condition: service_healthy
     restart: on-failure
     networks:

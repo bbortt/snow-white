@@ -8,13 +8,13 @@ properties:
     description: 'The service name for which the Quality-Gate is being calculated'
     example: 'example-application'
     minLength: 1
-    maxLength: 256
+    maxLength: 64
   apiName:
     type: string
     description: 'The name of the OpenAPI for which the Quality-Gate is being calculated'
     example: 'ping-pong'
     minLength: 1
-    maxLength: 256
+    maxLength: 64
   apiVersion:
     type: string
     description: 'The version of the OpenAPI for which the Quality-Gate is being calculated - latest is being picked if non supplied'

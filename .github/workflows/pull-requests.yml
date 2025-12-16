@@ -143,7 +143,12 @@ jobs:
     strategy:
       matrix:
         service:
-          [otel-event-filter-stream, quality-gate-api, report-coordinator-api]
+          [
+            api-index-api,
+            otel-event-filter-stream,
+            quality-gate-api,
+            report-coordinator-api,
+          ]
       fail-fast: false
     services:
       kafka:
@@ -203,7 +208,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Init PostgreSQL Databases
-        if: ${{ matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api' }}
+        if: ${{ matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api' }}
         run: psql -h localhost -U postgres -d postgres -f ./dev/postgres/init.sql
         env:
           PGPASSWORD: postgres

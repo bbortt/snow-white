@@ -1,0 +1,38 @@
+type: object
+required:
+  - serviceName
+  - apiName
+  - apiVersion
+  - sourceUrl
+  - apiType
+properties:
+  serviceName:
+    type: string
+    description: 'The service name the referenced API belongs to'
+    example: 'example-application'
+    minLength: 1
+    maxLength: 64
+  apiName:
+    type: string
+    description: 'The name of the referenced API'
+    example: 'ping-pong'
+    minLength: 1
+    maxLength: 64
+  apiVersion:
+    type: string
+    description: 'The version of the referenced API'
+    example: '1.0.0'
+    maxLength: 16
+  sourceUrl:
+    type: string
+    description: 'URL to raw source (yaml)'
+    example: 'https://foo.bar'
+    maxLength: 512
+  apiType:
+    type: string
+    description: 'Type of the referenced API'
+    enum:
+      - UNSPECIFIED
+      - ASYNCAPI
+      - OPENAPI
+      - GRAPHQL
