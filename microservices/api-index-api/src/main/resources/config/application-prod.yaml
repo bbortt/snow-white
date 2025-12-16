@@ -1,0 +1,10 @@
+management:
+  server:
+    port: 8090
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  web:
+    error:
+      include-message: always

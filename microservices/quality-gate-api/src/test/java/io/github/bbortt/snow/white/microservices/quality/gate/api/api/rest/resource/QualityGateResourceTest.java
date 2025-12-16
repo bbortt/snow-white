@@ -10,6 +10,7 @@ import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_T
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -41,10 +42,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith({ MockitoExtension.class })
@@ -260,9 +263,9 @@ class QualityGateResourceTest {
 
     @Test
     void shouldReturnListOfQualityGates() {
-      var page = 0;
+      var page = 1;
       var size = 10;
-      var sort = "createdAt,desc";
+      var sort = "name,desc";
 
       var qualityGateConfiguration1 = mock(QualityGateConfiguration.class);
       var qualityGateConfiguration2 = mock(QualityGateConfiguration.class);
@@ -271,9 +274,10 @@ class QualityGateResourceTest {
         mock();
       doReturn(2L).when(qualityGateConfigurationPage).getTotalElements();
 
+      ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateConfigurationPage)
         .when(qualityGateServiceMock)
-        .findAllQualityGateConfigurations(any(Pageable.class));
+        .findAllQualityGateConfigurations(pageableArgumentCaptor.capture());
 
       doReturn(Stream.of(qualityGateConfiguration1, qualityGateConfiguration2))
         .when(qualityGateConfigurationPage)
@@ -303,24 +307,40 @@ class QualityGateResourceTest {
               "2"
             )
         );
+
+      assertThat(pageableArgumentCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          p -> assertThat(p.getPageNumber()).isEqualTo(page),
+          p -> assertThat(p.getOffset()).isEqualTo(page * size),
+          p -> assertThat(p.getPageSize()).isEqualTo(size),
+          p ->
+            assertThat(p.getSort()).isEqualTo(
+              Sort.by(Sort.Direction.DESC, "name")
+            )
+        );
     }
 
     @Test
     void shouldHandleEmptyListOfQualityGates() {
       var page = 0;
       var size = 10;
-      var sort = "createdAt,desc";
+      var sort = "name,desc";
 
       Page<@NonNull QualityGateConfiguration> qualityGateConfigurationPage =
         mock();
+
+      ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateConfigurationPage)
         .when(qualityGateServiceMock)
-        .findAllQualityGateConfigurations(any(Pageable.class));
+        .findAllQualityGateConfigurations(pageableArgumentCaptor.capture());
 
       doReturn(Stream.empty()).when(qualityGateConfigurationPage).stream();
 
       ResponseEntity<@NonNull List<QualityGateConfig>> response =
         fixture.getAllQualityGates(page, size, sort);
+
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
 
       assertThat(response)
         .isNotNull()
@@ -331,6 +351,18 @@ class QualityGateResourceTest {
             assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
               HEADER_X_TOTAL_COUNT,
               "0"
+            )
+        );
+
+      assertThat(pageableArgumentCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          p -> assertThat(p.getPageNumber()).isEqualTo(page),
+          p -> assertThat(p.getOffset()).isEqualTo(page),
+          p -> assertThat(p.getPageSize()).isEqualTo(size),
+          p ->
+            assertThat(p.getSort()).isEqualTo(
+              Sort.by(Sort.Direction.DESC, "name")
             )
         );
     }

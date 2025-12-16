@@ -51,12 +51,12 @@ public class ApiTest {
 
   @NotEmpty
   @Size(min = 1, max = 256)
-  @Column(nullable = false, updatable = false, length = 256)
+  @Column(nullable = false, updatable = false, length = 64)
   private String serviceName;
 
   @NotEmpty
   @Size(min = 1, max = 256)
-  @Column(nullable = false, updatable = false, length = 256)
+  @Column(nullable = false, updatable = false, length = 64)
   private String apiName;
 
   @Size(max = 16)

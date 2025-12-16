@@ -24,7 +24,10 @@ class JSpecifyTest {
   private static final Set<String> GENERATED_PACKAGES = Set.of(
     "io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage",
     "io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.api",
-    "io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto"
+    "io.github.bbortt.snow.white.microservices.api.sync.job.api.client.backstage.dto",
+    "io.github.bbortt.snow.white.microservices.api.sync.job.client.api",
+    "io.github.bbortt.snow.white.microservices.api.sync.job.client.dto",
+    "io.github.bbortt.snow.white.microservices.api.sync.job.client.invoker"
   );
 
   @ArchTest
