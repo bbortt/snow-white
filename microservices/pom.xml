@@ -35,7 +35,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
-    <citrus.version>4.8.2</citrus.version>
+    <citrus.version>4.9.0</citrus.version>
     <org.flywaydb.version>11.19.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.0</org.springdoc.version>
