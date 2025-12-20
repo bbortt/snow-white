@@ -88,7 +88,7 @@ public class ErrorResponseCodeCoverageCalculator
     try {
       int code = parseInt(statusCode);
       return code >= 400 && code <= 599;
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException _) {
       // Handle pattern codes like "4XX", "5XX", "default"
       String upperCode = statusCode.toUpperCase();
       return (

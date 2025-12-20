@@ -37,7 +37,7 @@ public class ApiIndexResource implements ApiIndexApi {
   ) {
     try {
       apiIndexService.persist(apiReferenceMapper.fromDto(apiInformation));
-    } catch (ApiAlreadyIndexedException e) {
+    } catch (ApiAlreadyIndexedException _) {
       return ResponseEntity.status(CONFLICT).build();
     }
 

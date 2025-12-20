@@ -14,8 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.wiremock.integrations.testcontainers.WireMockContainer;
 
 @ActiveProfiles("test")
@@ -42,10 +42,8 @@ public abstract class AbstractReportCoordinationServiceIT {
       9092
     );
 
-  static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
-    (PostgreSQLContainer<?>) new PostgreSQLContainer(
-      "postgres:18.1-alpine"
-    ).withExposedPorts(5432);
+  static final PostgreSQLContainer POSTGRESQL_CONTAINER =
+    new PostgreSQLContainer("postgres:18.1-alpine").withExposedPorts(5432);
 
   static final WireMockContainer WIRE_MOCK_CONTAINER = new WireMockContainer(
     "wiremock/wiremock:3x-alpine"

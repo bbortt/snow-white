@@ -31,7 +31,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
-public class ApiIndexResourceIT extends AbstractApiIndexApiIT {
+class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   private static final String ENTITY_API_URL = "/api/rest/v1/apis";
 
