@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @ActiveProfiles("test")
 @SpringBootTest(
@@ -21,10 +21,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 )
 public abstract class AbstractApiIndexApiIT {
 
-  static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
-    (PostgreSQLContainer<?>) new PostgreSQLContainer(
-      "postgres:18.1-alpine"
-    ).withExposedPorts(5432);
+  static final PostgreSQLContainer POSTGRESQL_CONTAINER =
+    new PostgreSQLContainer("postgres:18.1-alpine").withExposedPorts(5432);
 
   static {
     POSTGRESQL_CONTAINER.start();

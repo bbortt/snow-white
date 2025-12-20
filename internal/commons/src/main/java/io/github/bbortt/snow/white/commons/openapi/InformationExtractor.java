@@ -44,7 +44,7 @@ public class InformationExtractor {
   ) {
     try {
       return JsonPath.read(openApi, "$." + jsonPath);
-    } catch (PathNotFoundException e) {
+    } catch (PathNotFoundException _) {
       return null;
     }
   }

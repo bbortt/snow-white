@@ -59,7 +59,10 @@ public class NativeRuntimeHintsConfiguration {
   static class ConfigResourcesRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
       hints
         .resources()
         .registerResource(new ClassPathResource("config/application.yaml"));
