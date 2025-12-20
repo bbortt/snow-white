@@ -16,8 +16,7 @@ dependencies:
     version: 18.1.15
     repository: 'https://charts.bitnami.com/bitnami'
     condition: postgresql.enabled
-  - name: redis
-    version: 24.1.0
-    repository: 'https://charts.bitnami.com/bitnami'
-    condition: redis.enabled
+  - name: common
+    repository: 'oci://registry-1.docker.io/bitnamicharts'
+    version: 2.x.x
 engine: gotpl

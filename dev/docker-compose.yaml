@@ -123,31 +123,6 @@ services:
       - default
       - internal
 
-  redis:
-    image: redis/redis-stack-server:7.4.0-v7
-    ports:
-      - '6379:6379'
-    healthcheck:
-      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
-      interval: 1s
-      timeout: 3s
-      retries: 5
-    restart: on-failure
-    networks:
-      - internal
-
-  redis.insight:
-    image: redislabs/redisinsight:2.70.1
-    ports:
-      - '5540:5540'
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: on-failure
-    networks:
-      - default
-      - internal
-
   influxdb:
     image: influxdb:2.8.0-alpine
     environment:
@@ -284,7 +259,6 @@ services:
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
-      SPRING_DATA_REDIS_HOST: 'redis'
     deploy:
       resources:
         reservations:
@@ -317,7 +291,6 @@ services:
       SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
       SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS: 'true'
       SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
-      SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
     deploy:
       resources:
@@ -352,7 +325,6 @@ services:
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS: 'true'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'
-      SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9094'
     deploy:
       resources:
@@ -365,8 +337,6 @@ services:
     depends_on:
       otel-collector:
         condition: service_started
-      redis:
-        condition: service_healthy
       microservices.api-sync-job:
         condition: service_completed_successfully
     restart: on-failure

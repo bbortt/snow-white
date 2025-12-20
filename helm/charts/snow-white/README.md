@@ -63,12 +63,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | postgresql.enabled                         | bool   | `true`                                 | Deploy PostgreSQL StatefulSet alongside Snow-White.                     |
 | postgresql.primary.initdb.scriptsConfigMap | string | `"snow-white-postgresql-init-scripts"` | Name of the ConfigMap containing initialization scripts for PostgreSQL. |
 
-### Infrastructure (Redis)
-
-| Key           | Type | Default | Description                                    |
-| ------------- | ---- | ------- | ---------------------------------------------- |
-| redis.enabled | bool | `true`  | Deploy Redis StatefulSet alongside Snow-White. |
-
 ### Snow-White API Gateway
 
 | Key                                 | Type   | Default       | Description                                              |
