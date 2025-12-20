@@ -288,8 +288,3 @@ postgresql:
       # -- Name of the ConfigMap containing initialization scripts for PostgreSQL.
       # @section -- Infrastructure (PostgreSQL)
       scriptsConfigMap: 'snow-white-postgresql-init-scripts'
-
-redis:
-  # -- Deploy Redis StatefulSet alongside Snow-White.
-  # @section -- Infrastructure (Redis)
-  enabled: true
