@@ -16,8 +16,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData;
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaStreamsConfig;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -59,7 +59,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
 
   @BeforeEach
   void beforeEachSetup() {
-    var kafkaEventFilterProperties = new KafkaEventFilterProperties();
+    var kafkaEventFilterProperties = new OtelEventFilterStreamProperties();
     kafkaEventFilterProperties.setSchemaRegistryUrl(
       "mock://" + getClass().getSimpleName()
     );

@@ -44,7 +44,7 @@ class BackstageApiConfigTest {
   class Constructor {
 
     @Test
-    void shouldExtractQualityGateApiUrl() {
+    void shouldExtractBackstageUrl() {
       assertThat(fixture).hasNoNullFieldsOrProperties();
     }
   }

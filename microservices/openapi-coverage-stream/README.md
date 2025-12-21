@@ -19,15 +19,16 @@ It:
 
 These environment variables **must** be configured for the service to work properly:
 
+<!-- prettier-ignore -->
 | Property                                                                | Description                                                | Example Value                             |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
-| `INFLUXDB_URL`                                                          | URL of the InfluxDB instance used to read telemetry data.  | `http://influxdb:8086`                    |
+|-------------------------------------------------------------------------|------------------------------------------------------------|-------------------------------------------|
+| `INFLUXDB_URL`                                                          | URL of the InfluxDB instance used to read telemetry data.  | <http://influxdb:8086>                    |
 | `INFLUXDB_ORG`                                                          | Organization name used in InfluxDB.                        | `snow-white`                              |
 | `INFLUXDB_BUCKET`                                                       | Name of the InfluxDB bucket containing raw telemetry data. | `raw-data`                                |
-| `SPRING_DATA_REDIS_HOST`                                                | Redis host used to retrieve OpenAPI specifications.        | `redis`                                   |
-| `SPRING_KAFKA_BOOTSTRAP_SERVERS`                                        | Kafka bootstrap servers used for communication.            | `kafka:9094`                              |
+| `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL`                 | Base url to the `api-index-api` microservice.              | <http://localhost:8085>                   |
 | `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC`          | Kafka topic used to listen for calculation requests.       | `snow-white-calculation-request`          |
 | `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC` | Kafka topic used to publish coverage results.              | `snow-white-openapi-calculation-response` |
+| `SPRING_KAFKA_BOOTSTRAP_SERVERS`                                        | Kafka bootstrap servers used for communication.            | `kafka:9094`                              |
 
 ### Optional Configuration
 

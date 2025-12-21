@@ -6,11 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
@@ -23,14 +23,14 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicManager {
 
   private final Environment environment;
-  private final KafkaEventFilterProperties kafkaEventFilterProperties;
+  private final OtelEventFilterStreamProperties otelEventFilterStreamProperties;
 
   public KafkaTopicManager(
     Environment environment,
-    KafkaEventFilterProperties kafkaEventFilterProperties
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
     this.environment = environment;
-    this.kafkaEventFilterProperties = kafkaEventFilterProperties;
+    this.otelEventFilterStreamProperties = otelEventFilterStreamProperties;
   }
 
   @Bean
@@ -45,7 +45,8 @@ public class KafkaTopicManager {
       return null;
     }
 
-    var inboundTopicName = kafkaEventFilterProperties.getInboundTopicName();
+    var inboundTopicName =
+      otelEventFilterStreamProperties.getInboundTopicName();
 
     logger.info("Creating inbound topic '{}'...", inboundTopicName);
 
@@ -64,7 +65,8 @@ public class KafkaTopicManager {
       return null;
     }
 
-    var outboundTopicName = kafkaEventFilterProperties.getOutboundTopicName();
+    var outboundTopicName =
+      otelEventFilterStreamProperties.getOutboundTopicName();
 
     logger.info("Creating outbound topic '{}'...", outboundTopicName);
 

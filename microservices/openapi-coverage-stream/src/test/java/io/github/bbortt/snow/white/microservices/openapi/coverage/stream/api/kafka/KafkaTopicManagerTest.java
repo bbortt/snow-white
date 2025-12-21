@@ -6,13 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties.PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class KafkaTopicManagerTest {
   @BeforeEach
   void beforeEachSetup() {
     var openApiCoverageServiceProperties =
-      new OpenApiCoverageServiceProperties();
+      new OpenApiCoverageStreamProperties();
     openApiCoverageServiceProperties.setCalculationRequestTopic(
       TEST_REQUEST_TOPIC
     );
@@ -49,11 +49,11 @@ class KafkaTopicManagerTest {
     );
 
     var openApiCoverageServicePropertiesMock = mock(
-      OpenApiCoverageServiceProperties.class
+      OpenApiCoverageStreamProperties.class
     );
 
     contextRunner
-      .withBean(OpenApiCoverageServiceProperties.class, () ->
+      .withBean(OpenApiCoverageStreamProperties.class, () ->
         openApiCoverageServicePropertiesMock
       )
       .withPropertyValues(PREFIX + ".init-topics=true")

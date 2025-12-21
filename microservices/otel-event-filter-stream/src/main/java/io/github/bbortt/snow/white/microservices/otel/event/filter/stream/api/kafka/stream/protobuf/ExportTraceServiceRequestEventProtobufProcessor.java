@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.protobuf;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.AbstractExportTraceServiceRequestEventProcessor;
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +26,10 @@ public class ExportTraceServiceRequestEventProtobufProcessor
 
   public ExportTraceServiceRequestEventProtobufProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties,
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties,
     Serde<ExportTraceServiceRequest> protobufSerde
   ) {
-    super(otelInformationFilteringService, kafkaEventFilterProperties);
+    super(otelInformationFilteringService, otelEventFilterStreamProperties);
     this.protobufSerde = protobufSerde;
 
     logger.info("Enabled protobuf processing mode");

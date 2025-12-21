@@ -26,7 +26,7 @@ import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import java.util.List;
@@ -58,7 +58,7 @@ class OpenTelemetryServiceTest {
     influxDBProperties = new InfluxDBProperties();
 
     var openApiCoverageServiceProperties =
-      new OpenApiCoverageServiceProperties();
+      new OpenApiCoverageStreamProperties();
 
     fixture = new OpenTelemetryService(
       influxDBClientMock,

@@ -10,7 +10,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Stream.concat;
 import static org.springframework.util.StringUtils.hasText;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
@@ -38,11 +38,11 @@ public class OtelInformationFilteringService {
 
   public OtelInformationFilteringService(
     CachingService cachingService,
-    KafkaEventFilterProperties kafkaEventFilterProperties
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
     this.cachingService = cachingService;
 
-    var filteringProperties = kafkaEventFilterProperties.getFiltering();
+    var filteringProperties = otelEventFilterStreamProperties.getFiltering();
     this.apiNameProperty = filteringProperties.getApiNameProperty();
     this.apiVersionProperty = filteringProperties.getApiVersionProperty();
     this.serviceNameProperty = filteringProperties.getServiceNameProperty();
