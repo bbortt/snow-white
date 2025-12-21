@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.k
 
 import static java.util.Objects.nonNull;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +28,14 @@ public abstract class AbstractExportTraceServiceRequestEventProcessor {
 
   protected AbstractExportTraceServiceRequestEventProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
     this.otelInformationFilteringService = otelInformationFilteringService;
 
-    this.inboundTopicName = kafkaEventFilterProperties.getInboundTopicName();
-    this.outboundTopicName = kafkaEventFilterProperties.getOutboundTopicName();
+    this.inboundTopicName =
+      otelEventFilterStreamProperties.getInboundTopicName();
+    this.outboundTopicName =
+      otelEventFilterStreamProperties.getOutboundTopicName();
   }
 
   protected KStream<String, ExportTraceServiceRequest> resourceSpansStream(

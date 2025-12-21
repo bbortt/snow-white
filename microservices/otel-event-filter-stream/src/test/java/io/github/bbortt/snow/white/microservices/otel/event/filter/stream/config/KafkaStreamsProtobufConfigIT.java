@@ -26,6 +26,7 @@ import org.springframework.test.context.TestPropertySource;
 @IntegrationTest
 @TestPropertySource(
   properties = {
+    "snow.white.otel.event.filter.api-index.base-url=http://localhost:8085",
     "snow.white.otel.event.filter.consumer-mode=protobuf",
     "snow.white.otel.event.filter.schema-registry-url=mock://KafkaStreamsConfigIT",
   }
@@ -33,7 +34,7 @@ import org.springframework.test.context.TestPropertySource;
 class KafkaStreamsProtobufConfigIT {
 
   @Autowired
-  private KafkaEventFilterProperties kafkaEventFilterProperties;
+  private OtelEventFilterStreamProperties otelEventFilterStreamProperties;
 
   @Autowired
   private Properties snowWhiteKafkaProperties;
@@ -57,7 +58,7 @@ class KafkaStreamsProtobufConfigIT {
   @Test
   void snowWhiteKafkaPropertiesIsBean() {
     assertThat(snowWhiteKafkaProperties).isEqualTo(
-      fixture.snowWhiteKafkaProperties(kafkaEventFilterProperties)
+      fixture.snowWhiteKafkaProperties(otelEventFilterStreamProperties)
     );
   }
 

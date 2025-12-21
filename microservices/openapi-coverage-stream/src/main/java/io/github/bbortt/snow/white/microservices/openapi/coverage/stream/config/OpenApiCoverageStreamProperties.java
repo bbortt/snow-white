@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
 
 import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties.PREFIX;
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = PREFIX)
-public class OpenApiCoverageServiceProperties implements InitializingBean {
+public class OpenApiCoverageStreamProperties implements InitializingBean {
 
   public static final String PREFIX = "snow.white.openapi.coverage.stream";
 
@@ -32,11 +32,13 @@ public class OpenApiCoverageServiceProperties implements InitializingBean {
 
   private Boolean initTopics = false;
 
-  private final Filtering filtering = new Filtering();
+  private final ApiIndexProperties apiIndex = new ApiIndexProperties();
+  private final FilteringProperties filtering = new FilteringProperties();
 
   @Override
   public void afterPropertiesSet() {
     Map<String, String> fields = new HashMap<>();
+    fields.put(ApiIndexProperties.BASE_URL_PROPERTY_NAME, apiIndex.baseUrl);
     fields.put(PREFIX + ".calculation-request-topic", calculationRequestTopic);
     fields.put(
       PREFIX + ".openapi-calculation-response-topic",
@@ -48,7 +50,17 @@ public class OpenApiCoverageServiceProperties implements InitializingBean {
 
   @Getter
   @Setter
-  public static class Filtering {
+  public static class ApiIndexProperties {
+
+    public static final String BASE_URL_PROPERTY_NAME =
+      PREFIX + ".api-index.base-url";
+
+    private String baseUrl;
+  }
+
+  @Getter
+  @Setter
+  public static class FilteringProperties {
 
     private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
     private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";

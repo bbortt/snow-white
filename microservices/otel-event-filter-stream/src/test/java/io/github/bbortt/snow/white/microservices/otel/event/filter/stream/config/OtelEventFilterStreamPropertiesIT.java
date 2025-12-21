@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.INBOUND_TOPIC_PROPERTY_NAME;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.INBOUND_TOPIC_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.IntegrationTest;
@@ -19,10 +19,10 @@ import org.springframework.test.context.TestPropertySource;
 @IntegrationTest
 @TestPropertySource(
   properties = {
-    "snow.white.otel.event.filter.schema-registry-url=mock://KafkaEventFilterPropertiesIT",
+    "snow.white.otel.event.filter.api-index.base-url=http://localhost:8085",
   }
 )
-class KafkaEventFilterPropertiesIT {
+class OtelEventFilterStreamPropertiesIT {
 
   @Value("${" + INBOUND_TOPIC_PROPERTY_NAME + "}")
   private String inboundTopic;
@@ -31,19 +31,19 @@ class KafkaEventFilterPropertiesIT {
   private String outboundTopic;
 
   @Autowired
-  private KafkaEventFilterProperties kafkaEventFilterProperties;
+  private OtelEventFilterStreamProperties otelEventFilterStreamProperties;
 
   @Test
   void inboundTopicNameAndPropertyNameMatch() {
     assertThat(inboundTopic).isEqualTo(
-      kafkaEventFilterProperties.getInboundTopicName()
+      otelEventFilterStreamProperties.getInboundTopicName()
     );
   }
 
   @Test
   void outboundTopicNameAndPropertyNameMatch() {
     assertThat(outboundTopic).isEqualTo(
-      kafkaEventFilterProperties.getOutboundTopicName()
+      otelEventFilterStreamProperties.getOutboundTopicName()
     );
   }
 }

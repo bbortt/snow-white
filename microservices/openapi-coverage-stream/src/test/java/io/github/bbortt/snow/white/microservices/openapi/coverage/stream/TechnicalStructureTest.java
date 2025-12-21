@@ -16,7 +16,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -30,16 +30,14 @@ class TechnicalStructureTest {
     .consideringAllDependencies()
     .layer("Config").definedBy("..config..")
     .layer("Kafka").definedBy("..api.kafka..")
-    .layer("Redis").definedBy("..api.redis..")
     .layer("Service").definedBy("..service..")
 
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Kafka").mayOnlyBeAccessedByLayers("Config")
-    .whereLayer("Redis").mayOnlyBeAccessedByLayers("Config", "Service")
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Config", "Kafka")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
-    .ignoreDependency(alwaysTrue(), belongToAnyOf(InfluxDBProperties.class, OpenApiCoverageServiceProperties.class))
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(InfluxDBProperties.class, OpenApiCoverageStreamProperties.class))
     .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
     .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
 }

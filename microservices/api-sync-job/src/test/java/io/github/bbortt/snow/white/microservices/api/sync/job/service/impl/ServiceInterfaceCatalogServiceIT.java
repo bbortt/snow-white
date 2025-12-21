@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
+    "snow.white.api.sync.job.api-index.base-url=http://localhost:8085",
     "snow.white.api.sync.job.service-interface.base-url=${wiremock.server.baseUrl}",
     "snow.white.api.sync.job.service-interface.index-uri=/sir/index",
   }

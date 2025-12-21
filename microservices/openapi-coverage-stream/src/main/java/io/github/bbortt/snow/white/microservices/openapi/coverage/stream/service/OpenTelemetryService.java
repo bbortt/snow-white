@@ -19,7 +19,7 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import java.time.Instant;
@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -41,7 +40,7 @@ public class OpenTelemetryService {
   private final InfluxDBClient influxDBClient;
   private final InfluxDBProperties influxDBProperties;
 
-  private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
+  private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
 
   public Set<OpenTelemetryData> findOpenTelemetryTracingData(
     ApiInformation apiInformation,
@@ -67,7 +66,7 @@ public class OpenTelemetryService {
     String lookbackWindow,
     @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
-    var filteringProperties = openApiCoverageServiceProperties.getFiltering();
+    var filteringProperties = openApiCoverageStreamProperties.getFiltering();
 
     var fluxBuilder = new StringBuilder();
     fluxBuilder
@@ -135,7 +134,7 @@ public class OpenTelemetryService {
   }
 
   private String jsonToDimensionsMapping(
-    OpenApiCoverageServiceProperties.Filtering filteringProperties,
+    OpenApiCoverageStreamProperties.FilteringProperties filteringProperties,
     @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
     var apiNameMapping = filteringProperties.getApiNameProperty();

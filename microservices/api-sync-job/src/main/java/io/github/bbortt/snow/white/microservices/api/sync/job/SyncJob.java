@@ -83,7 +83,9 @@ public class SyncJob {
       return false;
     }
 
-    cachingService.publishApiInformation(apiInformation);
+    if (!cachingService.apiInformationIndexed(apiInformation)) {
+      cachingService.publishApiInformation(apiInformation);
+    }
 
     return true;
   }

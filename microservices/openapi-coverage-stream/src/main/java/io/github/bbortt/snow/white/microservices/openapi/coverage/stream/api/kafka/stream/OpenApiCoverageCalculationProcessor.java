@@ -16,7 +16,7 @@ import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
@@ -57,7 +57,7 @@ public class OpenApiCoverageCalculationProcessor {
   }
 
   private final OpenApiCoverageService openApiCoverageService;
-  private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
+  private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
   private final OpenApiService openApiService;
   private final OpenTelemetryService openTelemetryService;
 
@@ -119,7 +119,7 @@ public class OpenApiCoverageCalculationProcessor {
         )
       )
       .to(
-        openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic(),
+        openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic(),
         Produced.with(
           Serdes.String(),
           QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent()
@@ -135,7 +135,7 @@ public class OpenApiCoverageCalculationProcessor {
     StreamsBuilder streamsBuilder
   ) {
     return streamsBuilder.stream(
-      openApiCoverageServiceProperties.getCalculationRequestTopic(),
+      openApiCoverageStreamProperties.getCalculationRequestTopic(),
       Consumed.with(
         Serdes.String(),
         QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent()

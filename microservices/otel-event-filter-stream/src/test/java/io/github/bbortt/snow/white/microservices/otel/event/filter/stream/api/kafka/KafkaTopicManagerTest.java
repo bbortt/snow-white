@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +14,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -33,7 +33,7 @@ class KafkaTopicManagerTest {
   private Environment environmentMock;
 
   @Mock
-  private KafkaEventFilterProperties kafkaEventFilterPropertiesMock;
+  private OtelEventFilterStreamProperties otelEventFilterStreamPropertiesMock;
 
   private KafkaTopicManager fixture;
 
@@ -41,7 +41,7 @@ class KafkaTopicManagerTest {
   void beforeEachSetup() {
     fixture = new KafkaTopicManager(
       environmentMock,
-      kafkaEventFilterPropertiesMock
+      otelEventFilterStreamPropertiesMock
     );
   }
 
@@ -52,8 +52,8 @@ class KafkaTopicManagerTest {
     );
 
     contextRunner
-      .withBean(KafkaEventFilterProperties.class, () ->
-        kafkaEventFilterPropertiesMock
+      .withBean(OtelEventFilterStreamProperties.class, () ->
+        otelEventFilterStreamPropertiesMock
       )
       .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->
@@ -68,8 +68,8 @@ class KafkaTopicManagerTest {
           )
       );
 
-    verify(kafkaEventFilterPropertiesMock).getInboundTopicName();
-    verify(kafkaEventFilterPropertiesMock).getOutboundTopicName();
+    verify(otelEventFilterStreamPropertiesMock).getInboundTopicName();
+    verify(otelEventFilterStreamPropertiesMock).getOutboundTopicName();
   }
 
   @Nested
@@ -83,7 +83,7 @@ class KafkaTopicManagerTest {
 
       var testInboundTopic = "KafkaTopicManagerTest:inbound";
       doReturn(testInboundTopic)
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getInboundTopicName();
 
       NewTopic inboundTopic = fixture.inboundTopic();
@@ -112,7 +112,7 @@ class KafkaTopicManagerTest {
 
       var testOutboundTopic = "KafkaTopicManagerTest:outbound";
       doReturn(testOutboundTopic)
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getOutboundTopicName();
 
       NewTopic outboundTopic = fixture.outboundTopic();
