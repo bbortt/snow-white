@@ -36,6 +36,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
+    "snow.white.api.sync.job.api-index.base-url=http://localhost:8085",
     "snow.white.api.sync.job.backstage.base-url=${wiremock.server.baseUrl}",
     "snow.white.api.sync.job.minio.bucket-name=backstage-catalog-service-it",
     "snow.white.api.sync.job.minio.init-bucket=true",

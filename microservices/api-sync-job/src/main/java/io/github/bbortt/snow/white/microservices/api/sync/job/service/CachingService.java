@@ -9,5 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 
 public interface CachingService {
+  boolean apiInformationIndexed(ApiInformation apiInformation);
+
   void publishApiInformation(ApiInformation apiInformation);
 }

@@ -6,17 +6,21 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream;
 
-import static io.github.bbortt.snow.white.commons.redis.RedisHashUtils.generateRedisApiInformationId;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.KafkaEventFilterAppTest.KafkaMessageByKeySelector.MESSAGE_KEY_FILTER_KEY;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.API_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.API_VERSION;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.OTEL_SERVICE_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.TRACE_ID;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.wrapResourceSpans;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.INBOUND_TOPIC_PROPERTY_NAME;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.impl.redis.RedisCachingService.HASH_PREFIX;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.INBOUND_TOPIC_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.Objects.nonNull;
 import static org.citrusframework.actions.ReceiveMessageAction.Builder.receive;
@@ -25,6 +29,7 @@ import static org.citrusframework.container.RepeatOnErrorUntilTrue.Builder.repea
 import static org.citrusframework.kafka.endpoint.KafkaMessageFilter.kafkaMessageFilter;
 import static org.citrusframework.kafka.endpoint.selector.KafkaMessageSelectorFactory.KafkaMessageSelectorFactories.factoryWithKafkaMessageSelector;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.serialization.ExportTraceServiceRequestJsonDeserializer;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.serialization.ExportTraceServiceRequestJsonSerializer;
 import java.time.Duration;
@@ -38,9 +43,9 @@ import org.citrusframework.kafka.endpoint.KafkaEndpoint;
 import org.citrusframework.kafka.endpoint.selector.KafkaMessageSelector;
 import org.citrusframework.kafka.message.KafkaMessage;
 import org.citrusframework.spi.BindToRegistry;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.Jedis;
 
 @CitrusSupport
 class KafkaEventFilterAppTest {
@@ -48,14 +53,6 @@ class KafkaEventFilterAppTest {
   private static final String KAFKA_BOOTSTRAP_SERVERS = getProperty(
     "kafka.bootstrap.servers",
     "localhost:9092"
-  );
-
-  private static final String REDIS_HOST = getProperty(
-    "redis.host",
-    "localhost"
-  );
-  private static final int REDIS_PORT = parseInt(
-    getProperty("redis.port", "6379")
   );
 
   private final TestData testData = TestData.builder().build();
@@ -80,18 +77,12 @@ class KafkaEventFilterAppTest {
     .useThreadSafeConsumer()
     .build();
 
-  private static void writeApiInformationToRedis() {
-    try (var jedis = new Jedis(REDIS_HOST, REDIS_PORT)) {
-      jedis.set(
-        HASH_PREFIX +
-          generateRedisApiInformationId(
-            OTEL_SERVICE_NAME,
-            API_NAME,
-            API_VERSION
-          ),
-        "exists"
-      );
-    }
+  @BeforeAll
+  static void beforeAllSetup() {
+    WireMock.configureFor(
+      getProperty("wiremock.host", "localhost"),
+      parseInt(getProperty("wiremock.port", "9000"))
+    );
   }
 
   @BeforeEach
@@ -135,7 +126,17 @@ class KafkaEventFilterAppTest {
   void shouldPassThroughMatchingInboundEvent(
     @CitrusResource TestActionRunner runner
   ) {
-    writeApiInformationToRedis();
+    stubFor(
+      get(
+        urlPathTemplate(
+          "/api/rest/v1/apis/{serviceName}/{apiName}/{apiVersion}/exists"
+        )
+      )
+        .withPathParam("serviceName", equalTo(OTEL_SERVICE_NAME))
+        .withPathParam("apiName", equalTo(API_NAME))
+        .withPathParam("apiVersion", equalTo(API_VERSION))
+        .willReturn(ok())
+    );
 
     runner.run(
       send(inboundEndpoint).message(

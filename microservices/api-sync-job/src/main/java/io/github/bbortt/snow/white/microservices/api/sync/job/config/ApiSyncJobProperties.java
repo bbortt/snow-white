@@ -6,12 +6,15 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
+import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties.PREFIX;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 import static java.lang.String.format;
 import static org.springframework.util.StringUtils.hasText;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,6 +29,7 @@ public class ApiSyncJobProperties implements InitializingBean {
 
   public static final String PREFIX = "snow.white.api.sync.job";
 
+  private final ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final BackstageProperties backstage = new BackstageProperties();
   private final ServiceInterfaceProperties serviceInterface =
     new ServiceInterfaceProperties();
@@ -33,18 +37,10 @@ public class ApiSyncJobProperties implements InitializingBean {
 
   @Override
   public void afterPropertiesSet() {
-    if (
-      hasText(serviceInterface.baseUrl) && !hasText(serviceInterface.indexUri)
-    ) {
-      var sirPrefix = PREFIX + ".service-interface";
-      throw new IllegalArgumentException(
-        format(
-          "Both '%s.base-url' and '%s.index-uri' must be set!",
-          sirPrefix,
-          sirPrefix
-        )
-      );
-    }
+    Map<String, String> properties = new HashMap<>();
+    properties.put(ApiIndexProperties.BASE_URL_PROPERTY_NAME, apiIndex.baseUrl);
+
+    assertRequiredProperties(properties);
 
     if (
       hasText(backstage.baseUrl) &&
@@ -57,6 +53,19 @@ public class ApiSyncJobProperties implements InitializingBean {
     } else if (hasText(minio.endpoint) && !hasText(minio.bucketName)) {
       throw new IllegalArgumentException(
         "Please configure a MinIO bucket name!"
+      );
+    }
+
+    if (
+      hasText(serviceInterface.baseUrl) && !hasText(serviceInterface.indexUri)
+    ) {
+      var sirPrefix = PREFIX + ".service-interface";
+      throw new IllegalArgumentException(
+        format(
+          "Both '%s.base-url' and '%s.index-uri' must be set!",
+          sirPrefix,
+          sirPrefix
+        )
       );
     }
   }
@@ -72,6 +81,16 @@ public class ApiSyncJobProperties implements InitializingBean {
     private String secretKey;
 
     private Boolean initBucket = false;
+  }
+
+  @Getter
+  @Setter
+  public static class ApiIndexProperties {
+
+    public static final String BASE_URL_PROPERTY_NAME =
+      PREFIX + ".api-index.base-url";
+
+    private String baseUrl;
   }
 
   @Getter

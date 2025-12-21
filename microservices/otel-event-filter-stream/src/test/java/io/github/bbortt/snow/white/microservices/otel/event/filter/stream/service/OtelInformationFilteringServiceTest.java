@@ -17,7 +17,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData;
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
@@ -55,7 +55,7 @@ class OtelInformationFilteringServiceTest {
 
   @BeforeEach
   void beforeEachSetup() {
-    var kafkaEventFilterProperties = new KafkaEventFilterProperties();
+    var kafkaEventFilterProperties = new OtelEventFilterStreamProperties();
     kafkaEventFilterProperties
       .getFiltering()
       .setApiNameProperty(API_NAME_PROPERTY);

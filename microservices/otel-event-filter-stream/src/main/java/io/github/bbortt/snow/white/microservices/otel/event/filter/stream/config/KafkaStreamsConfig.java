@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 
 import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
 import static io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig.SPECIFIC_PROTOBUF_VALUE_TYPE;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.CONSUMER_MODE_PROPERTY_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.PropertyUtils.propertiesToMap;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -34,9 +34,9 @@ public class KafkaStreamsConfig {
     havingValue = "protobuf"
   )
   public Properties snowWhiteKafkaProperties(
-    KafkaEventFilterProperties kafkaEventFilterProperties
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
-    if (!hasText(kafkaEventFilterProperties.getSchemaRegistryUrl())) {
+    if (!hasText(otelEventFilterStreamProperties.getSchemaRegistryUrl())) {
       throw new IllegalArgumentException(
         "Kafka schema registry URL is required!"
       );
@@ -45,7 +45,7 @@ public class KafkaStreamsConfig {
     var properties = new Properties();
     properties.put(
       SCHEMA_REGISTRY_URL_CONFIG,
-      kafkaEventFilterProperties.getSchemaRegistryUrl()
+      otelEventFilterStreamProperties.getSchemaRegistryUrl()
     );
     properties.put(
       SPECIFIC_PROTOBUF_VALUE_TYPE,

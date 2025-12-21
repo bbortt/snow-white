@@ -15,7 +15,7 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -36,7 +36,7 @@ class TechnicalStructureTest {
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Kafka", "Config")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
-    .ignoreDependency(alwaysTrue(), belongToAnyOf(KafkaEventFilterProperties.class))
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(OtelEventFilterStreamProperties.class))
     .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
     .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
 }

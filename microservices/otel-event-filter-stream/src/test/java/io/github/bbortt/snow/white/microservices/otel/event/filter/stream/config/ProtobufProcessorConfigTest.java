@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.CONSUMER_MODE_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
@@ -35,7 +35,7 @@ class ProtobufProcessorConfigTest {
   private OtelInformationFilteringService otelInformationFilteringServiceMock;
 
   @Mock
-  private KafkaEventFilterProperties kafkaEventFilterPropertiesMock;
+  private OtelEventFilterStreamProperties otelEventFilterStreamPropertiesMock;
 
   private final StreamsBuilder streamsBuilder = new StreamsBuilder();
 
@@ -56,18 +56,18 @@ class ProtobufProcessorConfigTest {
       );
 
       doReturn("inboundTopicName")
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getInboundTopicName();
       doReturn("outboundTopicName")
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getOutboundTopicName();
 
       contextRunner
         .withBean(OtelInformationFilteringService.class, () ->
           otelInformationFilteringServiceMock
         )
-        .withBean(KafkaEventFilterProperties.class, () ->
-          kafkaEventFilterPropertiesMock
+        .withBean(OtelEventFilterStreamProperties.class, () ->
+          otelEventFilterStreamPropertiesMock
         )
         .withBean(StreamsBuilder.class, () -> streamsBuilder)
         .withPropertyValues(CONSUMER_MODE_PROPERTY_NAME + "=json")
@@ -87,7 +87,7 @@ class ProtobufProcessorConfigTest {
       assertThat(
         fixture.exportTraceServiceRequestJsonStream(
           otelInformationFilteringServiceMock,
-          kafkaEventFilterPropertiesMock,
+          otelEventFilterStreamPropertiesMock,
           streamsBuilder
         )
       ).isNull();
@@ -107,18 +107,18 @@ class ProtobufProcessorConfigTest {
       );
 
       doReturn("inboundTopicName")
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getInboundTopicName();
       doReturn("outboundTopicName")
-        .when(kafkaEventFilterPropertiesMock)
+        .when(otelEventFilterStreamPropertiesMock)
         .getOutboundTopicName();
 
       contextRunner
         .withBean(OtelInformationFilteringService.class, () ->
           otelInformationFilteringServiceMock
         )
-        .withBean(KafkaEventFilterProperties.class, () ->
-          kafkaEventFilterPropertiesMock
+        .withBean(OtelEventFilterStreamProperties.class, () ->
+          otelEventFilterStreamPropertiesMock
         )
         .withBean(Serde.class, () -> protobufSerdeMock)
         .withBean(StreamsBuilder.class, () -> streamsBuilder)
@@ -139,7 +139,7 @@ class ProtobufProcessorConfigTest {
       assertThat(
         fixture.exportTraceServiceRequestProtobufStream(
           otelInformationFilteringServiceMock,
-          kafkaEventFilterPropertiesMock,
+          otelEventFilterStreamPropertiesMock,
           protobufSerdeMock,
           streamsBuilder
         )
@@ -155,7 +155,7 @@ class ProtobufProcessorConfigTest {
       assertThatThrownBy(() ->
         fixture.exportTraceServiceRequestProtobufStream(
           otelInformationFilteringServiceMock,
-          kafkaEventFilterPropertiesMock,
+          otelEventFilterStreamPropertiesMock,
           null,
           streamsBuilder
         )

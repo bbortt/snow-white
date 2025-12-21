@@ -23,6 +23,7 @@ import org.testcontainers.utility.DockerImageName;
     "influxdb.org=snow-white",
     "influxdb.bucket=raw-data",
     "influxdb.token=" + ADMIN_TOKEN,
+    "snow.white.openapi.coverage.stream.api-index.base-url=http://localhost:8085",
     "snow.white.openapi.coverage.stream.calculation-request-topic=snow-white-calculation-request",
     "snow.white.openapi.coverage.stream.openapi-calculation-response-topic=snow-white-openapi-calculation-response",
   }
