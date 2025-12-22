@@ -24,7 +24,7 @@
   <properties>
     <!-- Dependency Management -->
     <git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
-    <spring-cloud.version>2025.1.0-M4</spring-cloud.version>
+    <spring-cloud.version>2025.1.0</spring-cloud.version>
 
     <!-- SonarQube properties -->
     <sonar.inclusions>
