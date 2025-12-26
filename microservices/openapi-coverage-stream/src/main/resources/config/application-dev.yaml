@@ -7,6 +7,8 @@ snow:
     openapi:
       coverage:
         stream:
+          api-index:
+            base-url: http://localhost:8085
           calculation-request-topic: snow-white-calculation-request
           init-topics: true
           openapi-calculation-response-topic: snow-white-openapi-calculation-response
