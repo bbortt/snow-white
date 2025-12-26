@@ -3,6 +3,8 @@ snow:
     otel:
       event:
         filter:
+          api-index:
+            base-url: http://localhost:8085
           inbound-topic-name: snow-white_inbound
           init-topics: true
           outbound-topic-name: snow-white_outbound

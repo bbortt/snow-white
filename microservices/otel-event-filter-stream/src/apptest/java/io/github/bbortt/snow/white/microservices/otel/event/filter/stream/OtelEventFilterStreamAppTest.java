@@ -11,7 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.KafkaEventFilterAppTest.KafkaMessageByKeySelector.MESSAGE_KEY_FILTER_KEY;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.OtelEventFilterStreamAppTest.KafkaMessageByKeySelector.MESSAGE_KEY_FILTER_KEY;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.API_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.API_VERSION;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.TestData.OTEL_SERVICE_NAME;
@@ -20,7 +20,6 @@ import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.INBOUND_TOPIC_PROPERTY_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.OUTBOUND_TOPIC_PROPERTY_NAME;
 import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.Objects.nonNull;
 import static org.citrusframework.actions.ReceiveMessageAction.Builder.receive;
@@ -48,7 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @CitrusSupport
-class KafkaEventFilterAppTest {
+class OtelEventFilterStreamAppTest {
 
   private static final String KAFKA_BOOTSTRAP_SERVERS = getProperty(
     "kafka.bootstrap.servers",

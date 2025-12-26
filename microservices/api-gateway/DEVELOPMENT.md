@@ -28,16 +28,24 @@ Before running tests, ensure:
 - Docker is installed and running.
 - The API Gateway Docker image is built (see [Building the Application](#building-the-application) above).
 
-### Step 1 - Start Docker Compose
+### Step 1 - Create Network
 
-The application tests depend on a running Wiremock instance.
-In **one terminal**, run:
+**Open a terminal** and run:
+
+```shell
+docker network create github_actions
+```
+
+### Step 2 - Start Docker Compose
+
+The application tests depends on a running Wiremock instance.
+In **the same terminal**, run:
 
 ```shell
 docker compose -f microservices/api-gateway/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
-### Step 2 - Run the API Gateway tests
+### Step 3 - Run the API Gateway tests
 
 In **another terminal**, run:
 

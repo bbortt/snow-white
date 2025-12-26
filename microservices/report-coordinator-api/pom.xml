@@ -338,6 +338,7 @@
               </modelPackage>
               <generatorName>java</generatorName>
               <configOptions>
+                <generateClientAsBean>true</generateClientAsBean>
                 <library>restclient</library>
                 <useJakartaEe>true</useJakartaEe>
               </configOptions>
@@ -494,11 +495,11 @@
       <id>apptest</id>
 
       <build>
-        <resources>
-          <resource>
+        <testResources>
+          <testResource>
             <directory>src/apptest/resources</directory>
-          </resource>
-        </resources>
+          </testResource>
+        </testResources>
 
         <plugins>
           <plugin>

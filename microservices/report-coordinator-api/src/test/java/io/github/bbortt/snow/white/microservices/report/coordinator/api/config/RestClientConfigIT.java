@@ -21,13 +21,13 @@ class RestClientConfigIT extends AbstractReportCoordinationServiceIT {
   private ApplicationContext applicationContext;
 
   @Nested
-  class RestClientBuilder {
+  class RestClientTest {
 
     @Test
     void isPrototypeBean() {
-      assertThat(
-        applicationContext.getBean(RestClient.Builder.class)
-      ).isNotSameAs(applicationContext.getBean(RestClient.Builder.class));
+      assertThat(applicationContext.getBean(RestClient.class))
+        .isInstanceOf(RestClient.class)
+        .isNotSameAs(applicationContext.getBean(RestClient.class));
     }
   }
 }
