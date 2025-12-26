@@ -23,13 +23,11 @@ class RestClientConfigTest {
   }
 
   @Nested
-  class RestClientBuilder {
+  class RestClientTest {
 
     @Test
     void createsRestClientBuilder() {
-      assertThat(fixture.restClientBuilder()).isInstanceOf(
-        RestClient.Builder.class
-      );
+      assertThat(fixture.restClient()).isInstanceOf(RestClient.class);
     }
   }
 }

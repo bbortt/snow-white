@@ -3,6 +3,8 @@ snow:
     api:
       sync:
         job:
+          api-index:
+            base-url: http://localhost:8085
           service-interface:
             index-uri: /localhost.json
             base-url: http://localhost:3000

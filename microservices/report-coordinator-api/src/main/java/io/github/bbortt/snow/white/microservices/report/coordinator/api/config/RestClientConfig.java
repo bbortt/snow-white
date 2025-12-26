@@ -16,7 +16,7 @@ public class RestClientConfig {
 
   @Bean
   @Scope("prototype")
-  public RestClient.Builder restClientBuilder() {
-    return RestClient.builder();
+  public RestClient restClient() {
+    return RestClient.builder().build();
   }
 }
