@@ -46,8 +46,10 @@ import org.citrusframework.spi.BindToRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.PropertySource;
 
 @CitrusSupport
+@PropertySource("classpath:citrus.properties")
 class KafkaEventFilterAppTest {
 
   private static final String KAFKA_BOOTSTRAP_SERVERS = getProperty(

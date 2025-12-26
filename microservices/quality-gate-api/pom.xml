@@ -390,11 +390,11 @@
       <id>apptest</id>
 
       <build>
-        <resources>
-          <resource>
+        <testResources>
+          <testResource>
             <directory>src/apptest/resources</directory>
-          </resource>
-        </resources>
+          </testResource>
+        </testResources>
 
         <plugins>
           <plugin>

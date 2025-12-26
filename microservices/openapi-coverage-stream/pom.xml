@@ -197,6 +197,7 @@
               <modelPackage>${baseClientPackage}.api.index.dto</modelPackage>
               <generatorName>java</generatorName>
               <configOptions>
+                <generateClientAsBean>true</generateClientAsBean>
                 <library>restclient</library>
                 <useJakartaEe>true</useJakartaEe>
               </configOptions>

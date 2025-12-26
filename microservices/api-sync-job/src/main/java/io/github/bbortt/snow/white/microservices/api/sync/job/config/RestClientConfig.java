@@ -22,6 +22,12 @@ public class RestClientConfig {
 
   @Bean
   @Scope("prototype")
+  public RestClient restClient(RestClient.Builder restClientBuilder) {
+    return restClientBuilder.build();
+  }
+
+  @Bean
+  @Scope("prototype")
   public RestClient.Builder restClientBuilder(JsonMapper jsonMapper) {
     var jacksonJsonHttpMessageConverter = new JacksonJsonHttpMessageConverter(
       jsonMapper
