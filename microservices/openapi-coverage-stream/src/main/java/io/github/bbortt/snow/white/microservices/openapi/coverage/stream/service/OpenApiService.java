@@ -10,8 +10,6 @@ import static java.util.Collections.emptyList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
-import io.github.bbortt.snow.white.commons.redis.ApiEndpointEntry;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.redis.ApiEndpointRepository;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -28,25 +26,19 @@ public class OpenApiService {
 
   private static final OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
 
-  private final ApiEndpointRepository apiEndpointRepository;
+  private final CachingService cachingService;
 
   public OpenAPI findAndParseOpenApi(ApiInformation apiInformation)
     throws OpenApiNotIndexedException, UnparseableOpenApiException {
-    var apiEndpointEntry = apiEndpointRepository
-      .findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
-        apiInformation.getServiceName(),
-        apiInformation.getApiName(),
-        apiInformation.getApiVersion()
-      )
-      .orElseThrow(() -> new OpenApiNotIndexedException(apiInformation));
+    var sourceUrl = cachingService.fetchApiSourceUrl(apiInformation);
 
-    return parseOpenApiSource(apiEndpointEntry);
+    return parseOpenApiSource(sourceUrl);
   }
 
-  private OpenAPI parseOpenApiSource(@NonNull ApiEndpointEntry apiEndpointEntry)
+  private OpenAPI parseOpenApiSource(@NonNull String sourceUrl)
     throws UnparseableOpenApiException {
     SwaggerParseResult swaggerParseResult = openAPIV3Parser.readLocation(
-      apiEndpointEntry.getSourceUrl(),
+      sourceUrl,
       emptyList(),
       new ParseOptions()
     );

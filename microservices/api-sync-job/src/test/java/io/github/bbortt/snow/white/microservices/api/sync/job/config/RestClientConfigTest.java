@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
@@ -37,7 +39,24 @@ class RestClientConfigTest {
   }
 
   @Nested
-  class RestClientBuilder {
+  class RestClientTest {
+
+    @Mock
+    private RestClient.Builder restClientBuilderMock;
+
+    @Test
+    void createsRestClient() {
+      var restClientMock = mock(RestClient.class);
+      doReturn(restClientMock).when(restClientBuilderMock).build();
+
+      var result = fixture.restClient(restClientBuilderMock);
+
+      assertThat(result).isEqualTo(restClientMock);
+    }
+  }
+
+  @Nested
+  class RestClientBuilderTest {
 
     @Mock
     private JsonMapper jsonMapperMock;

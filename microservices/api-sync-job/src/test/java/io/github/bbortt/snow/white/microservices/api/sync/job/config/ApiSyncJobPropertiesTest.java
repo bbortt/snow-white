@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -19,6 +20,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.InitializingBean;
 
 class ApiSyncJobPropertiesTest {
+
+  protected static Stream<String> emptyAndNullString() {
+    return Stream.of("", null);
+  }
 
   private ApiSyncJobProperties fixture;
 
@@ -33,80 +38,133 @@ class ApiSyncJobPropertiesTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
-    public static Stream<String> emptyAndNullString() {
-      return Stream.of("", null);
+    @Nested
+    class ApiIndexPropertiesTest {
+
+      static Stream<String> emptyAndNullString() {
+        return ApiSyncJobPropertiesTest.emptyAndNullString();
+      }
+
+      @Test
+      void shouldPass_whenBaseUrlIsSet() {
+        fixture.getApiIndex().setBaseUrl("api-index");
+
+        assertThatCode(() ->
+          fixture.afterPropertiesSet()
+        ).doesNotThrowAnyException();
+      }
+
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
+        fixture.getApiIndex().setBaseUrl(baseUrl);
+
+        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "All properties must be configured - missing: [snow.white.api.sync.job.api-index.base-url]."
+          );
+      }
     }
 
-    @ParameterizedTest
-    @MethodSource("emptyAndNullString")
-    void shouldPass_whenServiceInterface_baseUrlIsEmptyOrNull(String baseUrl) {
-      fixture.getServiceInterface().setBaseUrl(baseUrl);
+    @Nested
+    class BackstagePropertiesTest {
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      static Stream<String> emptyAndNullString() {
+        return ApiSyncJobPropertiesTest.emptyAndNullString();
+      }
+
+      @BeforeEach
+      void beforeEachSetup() {
+        fixture.getApiIndex().setBaseUrl("api-index");
+      }
+
+      @Test
+      void shouldPass_whenBackstage_isUsingCustomAnnotations() {
+        fixture.getBackstage().setBaseUrl("baseUrl");
+        fixture
+          .getBackstage()
+          .setCustomVersionAnnotation("customVersionAnnotation");
+
+        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      }
+
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsEmptyOrNull(
+        String endpoint
+      ) {
+        fixture.getBackstage().setBaseUrl("baseUrl");
+        fixture.getMinio().setEndpoint(endpoint);
+
+        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "Backstage API entities can only be parsed if a MinIO storage is configured!"
+          );
+      }
+
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsSet_butBucketNameIsEmptyOrNull(
+        String bucketName
+      ) {
+        fixture.getBackstage().setBaseUrl("baseUrl");
+        fixture.getMinio().setEndpoint("endpoint");
+        fixture.getMinio().setBucketName(bucketName);
+
+        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Please configure a MinIO bucket name!");
+      }
     }
 
-    @Test
-    void shouldPass_whenServiceInterface_propertiesAreSet() {
-      fixture.getServiceInterface().setBaseUrl("baseUrl");
-      fixture.getServiceInterface().setIndexUri("indexUri");
+    @Nested
+    class ServiceInterfacePropertiesTest {
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
-    }
+      public static Stream<String> emptyAndNullString() {
+        return ApiSyncJobPropertiesTest.emptyAndNullString();
+      }
 
-    @ParameterizedTest
-    @MethodSource("emptyAndNullString")
-    void shouldThrowException_whenServiceInterface_baseUrlIsSet_andIndexUriIsEmptyOrNull(
-      String indexUri
-    ) {
-      fixture.getServiceInterface().setBaseUrl("baseUrl");
-      fixture.getServiceInterface().setIndexUri(indexUri);
+      @BeforeEach
+      void beforeEachSetup() {
+        fixture.getApiIndex().setBaseUrl("api-index");
+      }
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-          "Both 'snow.white.api.sync.job.service-interface.base-url' and 'snow.white.api.sync.job.service-interface.index-uri' must be set!"
-        );
-    }
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldPass_whenServiceInterface_baseUrlIsEmptyOrNull(
+        String baseUrl
+      ) {
+        fixture.getServiceInterface().setBaseUrl(baseUrl);
 
-    @Test
-    void shouldPass_whenBackstage_isUsingCustomAnnotations() {
-      fixture.getBackstage().setBaseUrl("baseUrl");
-      fixture
-        .getBackstage()
-        .setCustomVersionAnnotation("customVersionAnnotation");
+        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      }
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
-    }
+      @Test
+      void shouldPass_whenServiceInterface_propertiesAreSet() {
+        fixture.getServiceInterface().setBaseUrl("baseUrl");
+        fixture.getServiceInterface().setIndexUri("indexUri");
 
-    @ParameterizedTest
-    @MethodSource("emptyAndNullString")
-    void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsEmptyOrNull(
-      String endpoint
-    ) {
-      fixture.getBackstage().setBaseUrl("baseUrl");
-      fixture.getMinio().setEndpoint(endpoint);
+        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      }
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-          "Backstage API entities can only be parsed if a MinIO storage is configured!"
-        );
-    }
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenServiceInterface_baseUrlIsSet_andIndexUriIsEmptyOrNull(
+        String indexUri
+      ) {
+        fixture.getServiceInterface().setBaseUrl("baseUrl");
+        fixture.getServiceInterface().setIndexUri(indexUri);
 
-    @ParameterizedTest
-    @MethodSource("emptyAndNullString")
-    void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsSet_butBucketNameIsEmptyOrNull(
-      String bucketName
-    ) {
-      fixture.getBackstage().setBaseUrl("baseUrl");
-      fixture.getMinio().setEndpoint("endpoint");
-      fixture.getMinio().setBucketName(bucketName);
-
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Please configure a MinIO bucket name!");
+        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "Both 'snow.white.api.sync.job.service-interface.base-url' and 'snow.white.api.sync.job.service-interface.index-uri' must be set!"
+          );
+      }
     }
   }
 }

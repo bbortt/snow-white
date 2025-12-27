@@ -37,7 +37,7 @@ class KafkaStreamsConfigTest {
 
     @Test
     void configuresSchemaRegistryUrl() {
-      var kafkaEventFilterProperties = new KafkaEventFilterProperties();
+      var kafkaEventFilterProperties = new OtelEventFilterStreamProperties();
       var schemaRegistryUrl = "mock://" + getClass().getSimpleName();
       kafkaEventFilterProperties.setSchemaRegistryUrl(schemaRegistryUrl);
 
@@ -61,7 +61,7 @@ class KafkaStreamsConfigTest {
     @MethodSource
     @ParameterizedTest
     void throwsExceptionWithoutSchemaRegistryUrl(String schemaRegistryUrl) {
-      var kafkaEventFilterProperties = new KafkaEventFilterProperties();
+      var kafkaEventFilterProperties = new OtelEventFilterStreamProperties();
       kafkaEventFilterProperties.setSchemaRegistryUrl(schemaRegistryUrl);
 
       assertThatThrownBy(() ->

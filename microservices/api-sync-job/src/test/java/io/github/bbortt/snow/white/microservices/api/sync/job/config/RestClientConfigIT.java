@@ -22,7 +22,18 @@ class RestClientConfigIT {
   private ApplicationContext applicationContext;
 
   @Nested
-  class RestClientBuilder {
+  class RestClientTest {
+
+    @Test
+    void isPrototypeBean() {
+      assertThat(applicationContext.getBean(RestClient.class)).isNotSameAs(
+        applicationContext.getBean(RestClient.Builder.class)
+      );
+    }
+  }
+
+  @Nested
+  class RestClientBuilderTest {
 
     @Test
     void isPrototypeBean() {

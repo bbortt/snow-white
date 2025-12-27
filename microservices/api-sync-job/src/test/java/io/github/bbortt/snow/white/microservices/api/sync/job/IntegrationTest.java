@@ -18,6 +18,11 @@ import org.wiremock.spring.EnableWireMock;
 @Target(TYPE)
 @Retention(RUNTIME)
 @EnableWireMock
-@SpringBootTest(classes = { Main.class })
+@SpringBootTest(
+  classes = { Main.class },
+  properties = {
+    "snow.white.api.sync.job.api-index.base-url=http://localhost:8085",
+  }
+)
 @ActiveProfiles("test")
 public @interface IntegrationTest {}

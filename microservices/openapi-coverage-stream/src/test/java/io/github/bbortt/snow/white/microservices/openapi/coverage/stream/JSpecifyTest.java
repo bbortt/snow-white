@@ -21,7 +21,11 @@ import java.util.Set;
 )
 class JSpecifyTest {
 
-  private static final Set<String> GENERATED_PACKAGES = Set.of();
+  private static final Set<String> GENERATED_PACKAGES = Set.of(
+    "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index",
+    "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.api",
+    "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.dto"
+  );
 
   @ArchTest
   static final ArchRule onlyUseJSpecifyNullable = onlyUseJSpecifyNullable()

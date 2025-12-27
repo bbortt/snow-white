@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.k
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.serialization.ExportTraceServiceRequestSerdes.JsonSerde;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.AbstractExportTraceServiceRequestEventProcessor;
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.OtelInformationFilteringService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +26,9 @@ public class ExportTraceServiceRequestEventJsonProcessor
 
   public ExportTraceServiceRequestEventJsonProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
-    super(otelInformationFilteringService, kafkaEventFilterProperties);
+    super(otelInformationFilteringService, otelEventFilterStreamProperties);
     logger.info("Enabled JSON processing mode");
   }
 

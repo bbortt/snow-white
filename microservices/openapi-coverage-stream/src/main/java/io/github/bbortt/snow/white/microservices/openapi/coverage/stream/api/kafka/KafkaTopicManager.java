@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties.PREFIX;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties.PREFIX;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageServiceProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,27 +25,27 @@ import org.springframework.kafka.config.TopicBuilder;
 )
 public class KafkaTopicManager {
 
-  private final OpenApiCoverageServiceProperties openApiCoverageServiceProperties;
+  private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
 
   public KafkaTopicManager(
-    OpenApiCoverageServiceProperties openApiCoverageServiceProperties
+    OpenApiCoverageStreamProperties openApiCoverageStreamProperties
   ) {
     logger.info("Creating topics...");
 
-    this.openApiCoverageServiceProperties = openApiCoverageServiceProperties;
+    this.openApiCoverageStreamProperties = openApiCoverageStreamProperties;
   }
 
   @Bean
   public NewTopic calculationRequestTopic() {
     return TopicBuilder.name(
-      openApiCoverageServiceProperties.getCalculationRequestTopic()
+      openApiCoverageStreamProperties.getCalculationRequestTopic()
     ).build();
   }
 
   @Bean
   public NewTopic openapiCalculationResponseTopic() {
     return TopicBuilder.name(
-      openApiCoverageServiceProperties.getOpenapiCalculationResponseTopic()
+      openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic()
     ).build();
   }
 }

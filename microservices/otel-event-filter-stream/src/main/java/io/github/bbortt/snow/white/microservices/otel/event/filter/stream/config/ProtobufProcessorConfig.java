@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.CONSUMER_MODE_PROPERTY_NAME;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.ConsumerMode.JSON;
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.KafkaEventFilterProperties.ConsumerMode.PROTOBUF;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.CONSUMER_MODE_PROPERTY_NAME;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.PROTOBUF;
 import static java.util.Objects.requireNonNull;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.json.ExportTraceServiceRequestEventJsonProcessor;
@@ -37,12 +37,12 @@ public class ProtobufProcessorConfig {
     ExportTraceServiceRequest
   > exportTraceServiceRequestJsonStream(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties,
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties,
     StreamsBuilder streamsBuilder
   ) {
     if (
       !JSON.equals(
-        KafkaEventFilterProperties.ConsumerMode.valueOf(
+        OtelEventFilterStreamProperties.ConsumerMode.valueOf(
           environment
             .getProperty(CONSUMER_MODE_PROPERTY_NAME, "json")
             .toUpperCase()
@@ -54,7 +54,7 @@ public class ProtobufProcessorConfig {
 
     return new ExportTraceServiceRequestEventJsonProcessor(
       otelInformationFilteringService,
-      kafkaEventFilterProperties
+      otelEventFilterStreamProperties
     ).resourceSpansStream(streamsBuilder);
   }
 
@@ -64,7 +64,7 @@ public class ProtobufProcessorConfig {
     ExportTraceServiceRequest
   > exportTraceServiceRequestProtobufStream(
     OtelInformationFilteringService otelInformationFilteringService,
-    KafkaEventFilterProperties kafkaEventFilterProperties,
+    OtelEventFilterStreamProperties otelEventFilterStreamProperties,
     @Autowired(required = false) @Nullable Serde<
       ExportTraceServiceRequest
     > protobufSerde,
@@ -72,7 +72,7 @@ public class ProtobufProcessorConfig {
   ) {
     if (
       !PROTOBUF.equals(
-        KafkaEventFilterProperties.ConsumerMode.valueOf(
+        OtelEventFilterStreamProperties.ConsumerMode.valueOf(
           environment
             .getProperty(CONSUMER_MODE_PROPERTY_NAME, "json")
             .toUpperCase()
@@ -86,7 +86,7 @@ public class ProtobufProcessorConfig {
 
     return new ExportTraceServiceRequestEventProtobufProcessor(
       otelInformationFilteringService,
-      kafkaEventFilterProperties,
+      otelEventFilterStreamProperties,
       protobufSerde
     ).resourceSpansStream(streamsBuilder);
   }
