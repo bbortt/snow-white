@@ -188,6 +188,16 @@ describe('PostgreSQL', () => {
       expect(secret.metadata.name).toHaveLength(33); // static name
     });
 
+    it('should define passwords for api-index-api database users', async () => {
+      const secret = await renderAndGetPostgresqlSecret();
+
+      const { data } = secret;
+      expect(data).toBeDefined();
+
+      expect(data['api-index-password']).toBeDefined();
+      expect(data['api-index-flyway-password']).toBeDefined();
+    });
+
     it('should define passwords for report-coordinator-api database users', async () => {
       const secret = await renderAndGetPostgresqlSecret();
 
@@ -250,6 +260,14 @@ describe('PostgreSQL', () => {
       expect(metadata).toBeDefined();
 
       expect(metadata.name).toMatch('snow-white-postgresql-init-scripts');
+    });
+
+    it('should define init script for api-index-api', async () => {
+      const configMap = await renderAndGetConfigMap();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+      expect(data['api-index.sh']).toBeDefined();
     });
 
     it('should define init script for report-coordinator-api', async () => {

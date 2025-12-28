@@ -28,8 +28,10 @@ After successfully doing so, get the Helm chart up and running:
 helm upgrade --install \
   test-release \
   helm/charts/snow-white \
+  --set snowWhite.mode=minimal \
   --set snowWhite.ingress.host=localhost \
   --set snowWhite.ingress.tls=false \
+  --set snowWhite.apiIndex.image.tag=latest \
   --set snowWhite.apiGateway.image.tag=latest \
   --set snowWhite.openapiCoverageStream.image.tag=latest \
   --set snowWhite.qualityGateApi.image.tag=latest \

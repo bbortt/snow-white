@@ -1,5 +1,13 @@
 {{- if .Values.postgresql.enabled }}
 {{- $secretName := "snow-white-postgresql-credentials" }}
+{{- $apiIndexPassword := include "common.secrets.lookup" (dict "secret" $secretName "key" "api-index-password" "defaultValue" "" "context" $) | trimAll "\"" | b64dec }}
+{{- if (empty $apiIndexPassword) }}
+{{- $apiIndexPassword = randAlphaNum 10 }}
+{{- end }}
+{{- $apiIndexFlywayPassword := include "common.secrets.lookup" (dict "secret" $secretName "key" "api-index-flyway-password" "defaultValue" "" "context" $) | trimAll "\"" | b64dec }}
+{{- if (empty $apiIndexFlywayPassword) }}
+{{- $apiIndexFlywayPassword = randAlphaNum 10 }}
+{{- end }}
 {{- $reportCoordPassword := include "common.secrets.lookup" (dict "secret" $secretName "key" "report-coord-password" "defaultValue" "" "context" $) | trimAll "\"" | b64dec }}
 {{- if (empty $reportCoordPassword) }}
 {{- $reportCoordPassword = randAlphaNum 10 }}
@@ -25,6 +33,12 @@ metadata:
     {{- $labels | nindent 4 }}
 type: Opaque
 data:
+  {{- if $apiIndexPassword }}
+  api-index-password: {{ $apiIndexPassword | b64enc | quote }}
+  {{- end }}
+  {{- if $apiIndexFlywayPassword }}
+  api-index-flyway-password: {{ $apiIndexFlywayPassword | b64enc | quote }}
+  {{- end }}
   {{- if $reportCoordPassword }}
   report-coord-password: {{ $reportCoordPassword | b64enc | quote }}
   {{- end }}
@@ -47,6 +61,36 @@ metadata:
   labels:
     {{- $labels | nindent 4 }}
 data:
+  api-index.sh: |
+    # Backup and enable trust auth for postgres temporarily
+    cp /opt/bitnami/postgresql/conf/pg_hba.conf /tmp/pg_hba.conf.backup
+    sed -i '1i local   all             postgres                                trust' /opt/bitnami/postgresql/conf/pg_hba.conf
+    kill -HUP $(cat /opt/bitnami/postgresql/tmp/postgresql.pid) 2>/dev/null || true
+    sleep 1
+
+    # Create database and user
+    PGPASSWORD="$POSTGRESQL_PASSWORD" psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USERNAME" --dbname "$POSTGRESQL_DATABASE" <<-EOSQL
+      CREATE USER api_index_flyway WITH PASSWORD '$API_INDEX_FLYWAY_PASSWORD';
+      CREATE USER api_index_app WITH PASSWORD '$API_INDEX_DATASOURCE_PASSWORD';
+
+      CREATE DATABASE "api-index-api" OWNER api_index_flyway;
+
+      \c "api-index-api"
+
+      GRANT CONNECT ON DATABASE "api-index-api" TO api_index_app;
+      GRANT USAGE ON SCHEMA public TO api_index_app;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_index_app;
+      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO api_index_app;
+
+      ALTER DEFAULT PRIVILEGES FOR USER api_index_flyway IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO api_index_app;
+      ALTER DEFAULT PRIVILEGES FOR USER api_index_flyway IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO api_index_app;
+    EOSQL
+
+    # Restore original auth config
+    cp /tmp/pg_hba.conf.backup /opt/bitnami/postgresql/conf/pg_hba.conf
+    kill -HUP $(cat /opt/bitnami/postgresql/tmp/postgresql.pid) 2>/dev/null || true
+
+    echo "SUCCESS: Created 'api-index-api' database and [ 'api_index_app', 'api_index_flyway' ] users"
   report-coordinator.sh: |
     # Backup and enable trust auth for postgres temporarily
     cp /opt/bitnami/postgresql/conf/pg_hba.conf /tmp/pg_hba.conf.backup
