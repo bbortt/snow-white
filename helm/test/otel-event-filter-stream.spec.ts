@@ -313,7 +313,7 @@ describe('OTEL Event Filter Stream', () => {
       });
 
       describe('otel-event-filter-stream', () => {
-        const renderAndGetReportCoordinatorApiContainer = async (
+        const renderAndGetOtelEventFilterStreamContainer = async (
           manifests?: any[],
         ) => {
           const templateSpec = getPodSpec(
@@ -329,7 +329,7 @@ describe('OTEL Event Filter Stream', () => {
         describe('image', () => {
           it('should be pulled from ghcr.io by default', async () => {
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+              await renderAndGetOtelEventFilterStreamContainer();
 
             expect(otelEventFilterStream.image).toBe(
               'ghcr.io/bbortt/snow-white/otel-event-filter-stream:v1.0.0-ci.0',
@@ -340,7 +340,7 @@ describe('OTEL Event Filter Stream', () => {
             const customRegistry = 'custom.registry';
 
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
+              await renderAndGetOtelEventFilterStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
@@ -360,7 +360,7 @@ describe('OTEL Event Filter Stream', () => {
             const customTag = 'custom.tag';
 
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
+              await renderAndGetOtelEventFilterStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
@@ -380,7 +380,7 @@ describe('OTEL Event Filter Stream', () => {
         describe('imagePullPolicy', () => {
           it('should pull images if they are not present by default', async () => {
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+              await renderAndGetOtelEventFilterStreamContainer();
 
             expect(otelEventFilterStream.imagePullPolicy).toBe('IfNotPresent');
           });
@@ -389,7 +389,7 @@ describe('OTEL Event Filter Stream', () => {
             const imagePullPolicy = 'my.policy';
 
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
+              await renderAndGetOtelEventFilterStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
@@ -405,13 +405,13 @@ describe('OTEL Event Filter Stream', () => {
         describe('env', () => {
           it('should deploy 2+5 environment variables by default', async () => {
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+              await renderAndGetOtelEventFilterStreamContainer();
             expect(otelEventFilterStream.env).toHaveLength(7);
           });
 
           it('should include configuration for the OTEL collector', async () => {
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+              await renderAndGetOtelEventFilterStreamContainer();
 
             const protocol = otelEventFilterStream.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
@@ -428,49 +428,24 @@ describe('OTEL Event Filter Stream', () => {
             );
           });
 
-          it('should calculate redis host by default', async () => {
-            const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+          it('should calculate api-index api base url', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOtelEventFilterStreamContainer();
 
-            const springDatasourceUrl = otelEventFilterStream.env.find(
-              (env) => env.name === 'SPRING_DATA_REDIS_HOST',
+            const springDatasourceUrl = openapiCoverageStream.env.find(
+              (env) =>
+                env.name === 'SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL',
             );
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'test-release-redis-master.default.svc.cluster.local.:6379',
+              'snow-white-api-index-api-test-release.default.svc.cluster.local.:9092',
             );
-          });
-
-          it('should override redis host from values', async () => {
-            const host = 'host';
-            const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
-                await renderHelmChart({
-                  chartPath: 'charts/snow-white',
-                  values: {
-                    snowWhite: {
-                      otelEventFilterStream: {
-                        redis: {
-                          host,
-                        },
-                      },
-                    },
-                  },
-                }),
-              );
-
-            const springDatasourceUrl = otelEventFilterStream.env.find(
-              (env) => env.name === 'SPRING_DATA_REDIS_HOST',
-            );
-            expect(springDatasourceUrl).toBeDefined();
-
-            expect(springDatasourceUrl.value).toBe(host);
           });
 
           it('should calculate kafka bootstrap servers by default', async () => {
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer();
+              await renderAndGetOtelEventFilterStreamContainer();
 
             const springDatasourceUrl = otelEventFilterStream.env.find(
               (env) => env.name === 'SPRING_KAFKA_BOOTSTRAP_SERVERS',
@@ -485,7 +460,7 @@ describe('OTEL Event Filter Stream', () => {
           it('should override kafka bootstrap servers from values', async () => {
             const brokers = 'brokers';
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
+              await renderAndGetOtelEventFilterStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
@@ -513,7 +488,7 @@ describe('OTEL Event Filter Stream', () => {
             };
 
             const otelEventFilterStream =
-              await renderAndGetReportCoordinatorApiContainer(
+              await renderAndGetOtelEventFilterStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {

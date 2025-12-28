@@ -139,6 +139,14 @@ snowWhite:
             pattern: ^process\..+
           - action: delete
             pattern: ^telemetry\..+
+  apiIndexApi:
+    image:
+      # -- Image tag.
+      # @section -- Snow-White Report Coordinator API
+      tag: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White Report Coordinator API
+    additionalEnvs: {}
   apiGateway:
     image:
       # -- Image tag.
@@ -264,6 +272,16 @@ postgresql:
   primary:
     # Extra environment variables for the primary PostgreSQL container.
     extraEnvVars:
+      - name: 'API_INDEX_DATASOURCE_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'api-index-password'
+      - name: 'API_INDEX_FLYWAY_PASSWORD'
+        valueFrom:
+          secretKeyRef:
+            name: 'snow-white-postgresql-credentials'
+            key: 'api-index-flyway-password'
       - name: 'REPORT_COORDINATOR_DATASOURCE_PASSWORD'
         valueFrom:
           secretKeyRef:
