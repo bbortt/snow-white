@@ -54,14 +54,14 @@ spec:
                   name: {{ printf "%s-%s" .Release.Name "influxdb-auth" }}
                   key: influxdb-password
             {{- end }}
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL'
+              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC'
               value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'
               value: '{{ .Values.snowWhite.kafka.initTopics }}'
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC'
               value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
-            - name: 'SPRING_DATA_REDIS_HOST'
-              value: '{{ default (printf "%s-redis-master.%s.svc.cluster.local.:6379" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.redis.host }}'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
           {{- with .Values.snowWhite.openapiCoverageStream.additionalEnvs }}
