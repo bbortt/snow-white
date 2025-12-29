@@ -97,7 +97,7 @@ jobs:
       fail-fast: false
     services:
       wiremock:
-        image: wiremock/wiremock:3.1.0-alpine
+        image: wiremock/wiremock:3.13.2-alpine
         ports:
           - '9000:8080'
         options: --name wiremock
@@ -188,7 +188,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       wiremock:
-        image: wiremock/wiremock:3.1.0-alpine
+        image: wiremock/wiremock:3.13.2-alpine
         ports:
           - '9000:8080'
         options: --name wiremock
