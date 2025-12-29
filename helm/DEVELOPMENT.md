@@ -31,9 +31,10 @@ helm upgrade --install \
   --set snowWhite.mode=minimal \
   --set snowWhite.ingress.host=localhost \
   --set snowWhite.ingress.tls=false \
-  --set snowWhite.apiIndex.image.tag=latest \
+  --set snowWhite.apiIndexApi.image.tag=latest \
   --set snowWhite.apiGateway.image.tag=latest \
   --set snowWhite.openapiCoverageStream.image.tag=latest \
+  --set snowWhite.otelEventFilterStream.image.tag=latest \
   --set snowWhite.qualityGateApi.image.tag=latest \
   --set snowWhite.reportCoordinatorApi.image.tag=latest
 ```
