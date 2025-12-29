@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Main {
 
-  // TODO: This still needs the full main method, otherwise GraalVM won't find it!
   public static void main(String[] args) {
     SpringApplication.run(Main.class, args);
   }
