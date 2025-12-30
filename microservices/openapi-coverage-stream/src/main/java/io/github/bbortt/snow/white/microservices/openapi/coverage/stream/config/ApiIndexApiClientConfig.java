@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.ApiClient;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.ApiClient;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

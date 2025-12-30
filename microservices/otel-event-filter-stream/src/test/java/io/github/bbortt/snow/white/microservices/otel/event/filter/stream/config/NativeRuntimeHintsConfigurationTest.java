@@ -6,12 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
+import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,14 +36,43 @@ class NativeRuntimeHintsConfigurationTest {
   @Mock
   private ClassLoader classLoaderMock;
 
+  private NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints apiIndexApiDtoRuntimeHints;
   private NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints confluentKafkaRuntimeHints;
   private NativeRuntimeHintsConfiguration.OtelRuntimeHints otelRuntimeHints;
 
   @BeforeEach
   void beforeEachSetup() {
+    apiIndexApiDtoRuntimeHints =
+      new NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints();
     confluentKafkaRuntimeHints =
       new NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints();
     otelRuntimeHints = new NativeRuntimeHintsConfiguration.OtelRuntimeHints();
+  }
+
+  @Test
+  void shouldRegisterApiIndexApiDtoRuntimeHints() {
+    doReturn(reflectionHintsMock).when(runtimeHintsMock).reflection();
+    doReturn(reflectionHintsMock)
+      .when(reflectionHintsMock)
+      .registerType(
+        any(Class.class),
+        eq(INVOKE_PUBLIC_CONSTRUCTORS),
+        eq(INVOKE_PUBLIC_METHODS)
+      );
+
+    apiIndexApiDtoRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
+
+    scanPackageForClassesRecursively(
+      "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.dto"
+    ).forEach(clazz ->
+      verify(reflectionHintsMock).registerType(
+        clazz,
+        INVOKE_PUBLIC_CONSTRUCTORS,
+        INVOKE_PUBLIC_METHODS
+      )
+    );
+
+    verifyNoInteractions(classLoaderMock);
   }
 
   @Test

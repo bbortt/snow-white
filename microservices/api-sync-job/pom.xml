@@ -214,9 +214,9 @@
               <inputSpec>
                 microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml
               </inputSpec>
-              <apiPackage>${baseClientPackage}.api.index.api</apiPackage>
-              <invokerPackage>${baseClientPackage}.api.index</invokerPackage>
-              <modelPackage>${baseClientPackage}.api.index.dto</modelPackage>
+              <apiPackage>${baseClientPackage}.apiindexapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.apiindexapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.apiindexapi.dto</modelPackage>
               <generatorName>java</generatorName>
               <configOptions>
                 <generateClientAsBean>true</generateClientAsBean>

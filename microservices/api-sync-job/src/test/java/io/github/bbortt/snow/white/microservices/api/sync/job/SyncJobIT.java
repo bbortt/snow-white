@@ -16,14 +16,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.util.TestUtils.getResourceContent;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import java.io.IOException;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;

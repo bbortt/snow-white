@@ -65,97 +65,7 @@ node toolkit/cli/target/cli/index.js calculate --configFile dev/snow-white.json
 **Snow-White** follows an event-driven architecture.
 The below diagram includes all microservices and their connections.
 
-```plantuml
-@startuml
-
-' Stylin'
-
-!theme vibrant
-left to right direction
-
-package "Snow-White" {
-
-    ' Snow-White components first
-
-    component "API Gateway" as gate #Darkorange {
-        component "Webapplication (UI)" as ui #Orange
-    }
-
-    component "API Sync Job" as sync #Darkorange
-    component "OTEL Event Filter" as filter #Darkorange
-    component "OpenAPI Coverage Stream" as coverage #Darkorange
-    component "Quality-Gate API" as qgate #Darkorange
-    component "Report Coordinator API" as coordinator #Darkorange
-
-    ' Third-party components next
-
-    database "InfluxDB" as influx #Teal
-
-    component "Kafka" #Teal {
-        queue "Inbound Topic" as inbound
-        queue "Outbound Topic" as outbound
-        queue "Request Topic" as request
-        queue "Response Topic" as response
-    }
-
-    component "Otel Collector" as otel #Teal
-    component "Redis" as redis #Teal
-}
-
-component "Backstage" as backstage #Teal
-component "Service Interface Repository" as sir #Teal
-
-' User connections (aka UI)
-
-actor User as user
-component CLI as cli #Darkorange
-
-user <--> ui: HTTP/S
-
-user ..> cli: uses
-cli --> gate: HTTP/S
-
-gate <--> qgate
-gate <--> coordinator
-
-' API Sync Job
-
-sync ---> backstage : Fetch API Index
-sync ---> sir : Fetch API Index
-sync --> redis : Store API Meta Information
-
-' OTEL Event Filter
-
-component "Example-Application" as app
-
-app --> otel: gRPC or Protobuf
-
-otel ..> inbound
-inbound .down.> filter
-filter <--> redis: Query API Meta Information
-filter .up.> outbound
-outbound ..> otel
-otel --> influx: Persist Telemetry Data
-
-' Report Coordinator API
-
-coordinator .down.> request
-response .up.> coordinator
-
-' OpenAPI Coverage Stream
-
-request .down.> coverage
-coverage <--> redis: Query API Meta Information
-coverage <-up-> influx: Query Telemetry Data
-coverage .up.> response
-
-legend right
-<back:Darkorange>+</back> Snow-White
-<back:Teal>+</back> Third Party
-end legend
-
-@enduml
-```
+[![Architecture Overview](./dev/architecture.png)](./dev/architecture.puml)
 
 ### Microservices
 
@@ -221,8 +131,6 @@ These services are only available inside Docker (or Podman) Compose:
 | OTEL Collector               | `1888`, `8888`, `8889`, `13133`, `4317`, `4318`, `55679` |
 | Kafka                        | `9092`, `9094`                                           |
 | Kafka UI                     | `8090`                                                   |
-| Redis                        | `6379`                                                   |
-| Redis Insight                | `5540`                                                   |
 | InfluxDB                     | `8086`                                                   |
 | PostgreSQL                   | `5432`                                                   |
 | Service Interface Repository | `3000`                                                   |
