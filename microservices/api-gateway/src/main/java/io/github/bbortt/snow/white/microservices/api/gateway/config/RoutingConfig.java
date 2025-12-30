@@ -6,8 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
+import static java.lang.String.format;
+
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.GatewayFilterSpec;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -22,21 +26,40 @@ public class RoutingConfig {
   private final ApiGatewayProperties apiGatewayProperties;
 
   @Bean
-  public RouteLocator snowWhiteRouteLocator(RouteLocatorBuilder builder) {
+  public RouteLocator reportCoordinatorApi(RouteLocatorBuilder builder) {
     return builder
       .routes()
       .route("report-coordinator-api", r ->
         r.path("/api/rest/v1/quality-gates/*/calculate", "/api/rest/v1/reports/**").uri(apiGatewayProperties.getReportCoordinatorApiUrl())
       )
+      .route("report-coordinator-api-swagger", r ->
+        r.path("/v3/api-docs/report-coordinator-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getReportCoordinatorApiUrl())
+      )
+      .build();
+  }
+
+  @Bean
+  public RouteLocator qualityGateApi(RouteLocatorBuilder builder) {
+    return builder
+      .routes()
       .route("quality-gate-api", r ->
         r.path("/api/rest/v1/criteria/**", "/api/rest/v1/quality-gates/**").uri(apiGatewayProperties.getQualityGateApiUrl())
       )
       .route("quality-gate-api-swagger", r ->
         r.path("/v3/api-docs/quality-gate-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getQualityGateApiUrl())
       )
-      .route("report-coordinator-api-swagger", r ->
-        r.path("/v3/api-docs/report-coordinator-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getReportCoordinatorApiUrl())
-      )
+      .build();
+  }
+
+  @Bean
+  @ConditionalOnExpression("${server.port:8080} != ${management.server.port:${server.port:8080}}")
+  public RouteLocator managementServer(
+    RouteLocatorBuilder builder,
+    @Value("${management.server.port:${server.port:8080}}") Integer managementServerPort
+  ) {
+    return builder
+      .routes()
+      .route("info-endpoint", r -> r.path("/management/info").uri(format("http://localhost:%d", managementServerPort)))
       .build();
   }
 
