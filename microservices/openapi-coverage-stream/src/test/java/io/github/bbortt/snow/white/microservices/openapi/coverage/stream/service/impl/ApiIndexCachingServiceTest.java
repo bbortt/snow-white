@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.api.ApiIndexApi;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;

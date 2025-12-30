@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.servi
 
 import static org.springframework.http.HttpStatus.OK;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.api.index.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.CachingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

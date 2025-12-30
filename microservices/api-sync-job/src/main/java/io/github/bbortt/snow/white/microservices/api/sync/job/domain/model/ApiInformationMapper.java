@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.domain.model;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

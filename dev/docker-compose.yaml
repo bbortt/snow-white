@@ -244,7 +244,6 @@ services:
         condition: service_healthy
     restart: on-failure
     networks:
-      - default
       - internal
 
   microservices.api-sync-job:
@@ -254,6 +253,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL: 'http://api-index-api:8080'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
       SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
@@ -286,7 +286,7 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL: 'http://api-index-api:8085'
+      SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL: 'http://api-index-api:8080'
       SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
       SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS: 'true'
       SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME: 'snow-white_outbound'
@@ -321,7 +321,7 @@ services:
       INFLUXDB_BUCKET: 'raw-data'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
-      SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL: 'http://api-index-api:8085'
+      SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL: 'http://api-index-api:8080'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS: 'true'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC: 'snow-white-openapi-calculation-response'

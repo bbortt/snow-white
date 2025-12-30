@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static java.util.Objects.nonNull;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.api.index.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.CachingService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import lombok.RequiredArgsConstructor;

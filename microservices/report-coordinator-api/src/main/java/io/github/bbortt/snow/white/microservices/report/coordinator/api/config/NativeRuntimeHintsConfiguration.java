@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 
 import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
@@ -84,7 +85,15 @@ public class NativeRuntimeHintsConfiguration {
     ) {
       scanPackageForClassesRecursively(
         "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto"
-      ).forEach(clazz -> hints.reflection().registerType(clazz));
+      ).forEach(clazz ->
+        hints
+          .reflection()
+          .registerType(
+            clazz,
+            INVOKE_PUBLIC_CONSTRUCTORS,
+            INVOKE_PUBLIC_METHODS
+          )
+      );
     }
   }
 
@@ -99,7 +108,13 @@ public class NativeRuntimeHintsConfiguration {
       scanPackageForClassesRecursively(
         "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto"
       ).forEach(clazz ->
-        hints.reflection().registerType(clazz, INVOKE_PUBLIC_METHODS)
+        hints
+          .reflection()
+          .registerType(
+            clazz,
+            INVOKE_PUBLIC_CONSTRUCTORS,
+            INVOKE_PUBLIC_METHODS
+          )
       );
     }
   }

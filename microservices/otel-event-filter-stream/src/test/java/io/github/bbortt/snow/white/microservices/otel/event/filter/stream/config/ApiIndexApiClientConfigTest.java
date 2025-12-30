@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.api.index.ApiClient;
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.ApiClient;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

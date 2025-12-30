@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
 import io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils;
@@ -89,7 +90,11 @@ class NativeRuntimeHintsConfigurationTest {
     doReturn(reflectionHintsMock).when(runtimeHintsMock).reflection();
     doReturn(reflectionHintsMock)
       .when(reflectionHintsMock)
-      .registerType(any(Class.class));
+      .registerType(
+        any(Class.class),
+        eq(INVOKE_PUBLIC_CONSTRUCTORS),
+        eq(INVOKE_PUBLIC_METHODS)
+      );
 
     qualityGateApiDtoRuntimeHints.registerHints(
       runtimeHintsMock,
@@ -98,7 +103,13 @@ class NativeRuntimeHintsConfigurationTest {
 
     scanPackageForClassesRecursively(
       "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto"
-    ).forEach(clazz -> verify(reflectionHintsMock).registerType(clazz));
+    ).forEach(clazz ->
+      verify(reflectionHintsMock).registerType(
+        clazz,
+        INVOKE_PUBLIC_CONSTRUCTORS,
+        INVOKE_PUBLIC_METHODS
+      )
+    );
 
     verifyNoInteractions(classLoaderMock);
   }
@@ -108,14 +119,22 @@ class NativeRuntimeHintsConfigurationTest {
     doReturn(reflectionHintsMock).when(runtimeHintsMock).reflection();
     doReturn(reflectionHintsMock)
       .when(reflectionHintsMock)
-      .registerType(any(Class.class), eq(INVOKE_PUBLIC_METHODS));
+      .registerType(
+        any(Class.class),
+        eq(INVOKE_PUBLIC_CONSTRUCTORS),
+        eq(INVOKE_PUBLIC_METHODS)
+      );
 
     restApiDtoHints.registerHints(runtimeHintsMock, classLoaderMock);
 
     scanPackageForClassesRecursively(
       "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.restapi.dto"
     ).forEach(clazz ->
-      verify(reflectionHintsMock).registerType(clazz, INVOKE_PUBLIC_METHODS)
+      verify(reflectionHintsMock).registerType(
+        clazz,
+        INVOKE_PUBLIC_CONSTRUCTORS,
+        INVOKE_PUBLIC_METHODS
+      )
     );
 
     verifyNoInteractions(classLoaderMock);

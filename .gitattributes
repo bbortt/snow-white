@@ -1,6 +1,6 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
 .github/logo.png filter=lfs diff=lfs merge=lfs -text
-dev/redis-insight-configuration.png filter=lfs diff=lfs merge=lfs -text
+dev/architecture.png filter=lfs diff=lfs merge=lfs -text
 dev/influxdb-token.png filter=lfs diff=lfs merge=lfs -text
 microservices/api-gateway/**/*.png filter=lfs diff=lfs merge=lfs -text

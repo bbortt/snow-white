@@ -193,13 +193,6 @@ snowWhite:
       # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
       # @section -- Snow-White OpenAPI Coverage Stream
       token: ''
-    redis:
-      # -- Redis host.
-      # @default -- The chart will connect to the provisioned Redis StatefulSet automatically.
-      # @section -- Snow-White OpenAPI Coverage Stream
-      host: ''
-      # -- Additional environment variables forwarded to container.
-      # @section -- Snow-White OpenAPI Coverage Stream
     additionalEnvs: {}
   otelEventFilterStream:
     image:
@@ -209,11 +202,6 @@ snowWhite:
     # -- Number of replicas to deploy.
     # @section -- Snow-White OTel Event Filter Stream
     replicas: 1
-    redis:
-      # -- Redis host.
-      # @default -- The chart will connect to the provisioned Redis StatefulSet automatically.
-      # @section -- Snow-White OTel Event Filter Stream
-      host: ''
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White OTel Event Filter Stream
     additionalEnvs: {}

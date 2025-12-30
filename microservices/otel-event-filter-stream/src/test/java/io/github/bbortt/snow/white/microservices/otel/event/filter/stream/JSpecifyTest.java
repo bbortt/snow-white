@@ -22,9 +22,9 @@ import java.util.Set;
 class JSpecifyTest {
 
   private static final Set<String> GENERATED_PACKAGES = Set.of(
-    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.api.index",
-    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.api.index.api",
-    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.api.index.dto"
+    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi",
+    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.api",
+    "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.dto"
   );
 
   @ArchTest
