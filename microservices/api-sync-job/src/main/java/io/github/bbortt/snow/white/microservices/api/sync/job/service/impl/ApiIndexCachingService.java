@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;

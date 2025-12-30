@@ -7,9 +7,12 @@
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
 import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.context.annotation.Configuration;
@@ -19,16 +22,43 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @Configuration
 @ImportRuntimeHints(
   {
+    NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
     NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints.class,
     NativeRuntimeHintsConfiguration.OtelRuntimeHints.class,
   }
 )
 public class NativeRuntimeHintsConfiguration {
 
+  @NullMarked
+  static class ApiIndexApiDtoRuntimeHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
+      scanPackageForClassesRecursively(
+        "io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.dto"
+      ).forEach(clazz ->
+        hints
+          .reflection()
+          .registerType(
+            clazz,
+            INVOKE_PUBLIC_CONSTRUCTORS,
+            INVOKE_PUBLIC_METHODS
+          )
+      );
+    }
+  }
+
+  @NullMarked
   static class ConfluentKafkaRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
       hints
         .reflection()
         .registerType(
@@ -75,10 +105,14 @@ public class NativeRuntimeHintsConfiguration {
     }
   }
 
+  @NullMarked
   static class OtelRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
       scanPackageForClassesRecursively("com.google.protobuf").forEach(clazz ->
         hints.reflection().registerType(clazz, INVOKE_PUBLIC_METHODS)
       );

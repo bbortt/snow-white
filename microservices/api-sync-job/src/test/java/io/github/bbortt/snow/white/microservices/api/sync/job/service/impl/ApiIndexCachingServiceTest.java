@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.redis;
+package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -13,11 +13,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.api.ApiIndexApi;
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.api.index.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
-import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.ApiIndexCachingService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.BeforeEach;
