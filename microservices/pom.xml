@@ -39,7 +39,7 @@
     <citrus.version>4.9.0</citrus.version>
     <org.flywaydb.version>11.20.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
-    <org.springdoc.version>3.0.0</org.springdoc.version>
+    <org.springdoc.version>3.0.1</org.springdoc.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
     <wiremock-spring-boot.version>4.0.8</wiremock-spring-boot.version>
 
