@@ -71,3 +71,32 @@ Common environment variables connecting microservices to OTEL collector service
 - name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
   value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:grpc'
 {{- end -}}
+
+{{/*
+Verifies that database connection information is present in environment variables.
+Only applicable if `postgresql.enabled=false`.
+*/}}
+{{- define "snow-white.verifyDatabaseConnectionEnvVariables" -}}
+{{- if eq .context.Values.postgresql.enabled false }}
+{{- $requiredKeys := list "SPRING_DATASOURCE_URL" "SPRING_DATASOURCE_USERNAME" "SPRING_DATASOURCE_PASSWORD" }}
+{{- $recommendedKeys := list "SPRING_FLYWAY_USER" "SPRING_FLYWAY_PASSWORD" }}
+{{- $envNames := list }}
+{{- range .envVars }}
+  {{- $envNames = append $envNames .name }}
+{{- end }}
+{{- range $requiredKey := $requiredKeys }}
+  {{- if not (has $requiredKey $envNames) }}
+    {{- fail (printf "Required environment variable '%s' is missing in snowWhite.%s.additionalEnvs" $requiredKey $.selector ) }}
+  {{- end }}
+{{- end }}
+{{- $missingRecommended := list }}
+{{- range $recommendedKey := $recommendedKeys }}
+  {{- if not (has $recommendedKey $envNames) }}
+    {{- $missingRecommended = append $missingRecommended $recommendedKey }}
+  {{- end }}
+{{- end }}
+{{- if $missingRecommended }}
+# WARNING: Missing recommended environment variables: {{ join ", " $missingRecommended }}
+{{- end }}
+{{- end }}
+{{- end -}}

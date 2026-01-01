@@ -64,11 +64,15 @@ spec:
               value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
-          {{- with .Values.snowWhite.openapiCoverageStream.additionalEnvs }}
-            {{- range $k, $v := . }}
-            - name: {{ $k }}
-              value: {{ $v }}
-            {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.openapiCoverageStream.additionalEnvs | default list }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
           {{- end }}
           resources:
             limits:

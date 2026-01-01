@@ -47,6 +47,7 @@ spec:
               {{- else }}
               value: 'http://{{ include "snow-white.publicHost" . }}'
               {{- end }}
+          {{- if .Values.postgresql.enabled }}
             - name: 'SPRING_DATASOURCE_URL'
               value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/api-index-api'
             - name: 'SPRING_DATASOURCE_USERNAME'
@@ -63,11 +64,17 @@ spec:
                 secretKeyRef:
                   name: "snow-white-postgresql-credentials"
                   key: 'api-index-flyway-password'
-          {{- with .Values.snowWhite.apiIndexApi.additionalEnvs }}
-            {{- range $k, $v := . }}
-            - name: {{ $k }}
-              value: {{ $v }}
-            {{- end }}
+          {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.apiIndexApi.additionalEnvs | default list }}
+          {{- include "snow-white.verifyDatabaseConnectionEnvVariables" (dict "context" . "envVars" $additionalEnvs "selector" "apiIndexApi") | nindent 12 }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
           {{- end }}
           ports:
             - name: http

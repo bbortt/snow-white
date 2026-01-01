@@ -55,6 +55,9 @@ spec:
               {{- end }}
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL'
               value: '{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+            - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
+              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+          {{- if .Values.postgresql.enabled }}
             - name: 'SPRING_DATASOURCE_URL'
               value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/report-coordinator-api'
             - name: 'SPRING_DATASOURCE_USERNAME'
@@ -71,13 +74,17 @@ spec:
                 secretKeyRef:
                   name: "snow-white-postgresql-credentials"
                   key: 'report-coord-flyway-password'
-            - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
-              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
-          {{- with .Values.snowWhite.reportCoordinatorApi.additionalEnvs }}
-            {{- range $k, $v := . }}
-            - name: {{ $k }}
-              value: {{ $v }}
-            {{- end }}
+          {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.reportCoordinatorApi.additionalEnvs | default list }}
+          {{- include "snow-white.verifyDatabaseConnectionEnvVariables" (dict "context" . "envVars" $additionalEnvs "selector" "reportCoordinatorApi") | nindent 12 }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
           {{- end }}
           ports:
             - name: http
