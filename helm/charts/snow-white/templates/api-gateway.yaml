@@ -52,11 +52,15 @@ spec:
               value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
-          {{- with .Values.snowWhite.apiGateway.additionalEnvs }}
-            {{- range $k, $v := . }}
-            - name: {{ $k }}
-              value: {{ $v }}
-            {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.apiGateway.additionalEnvs | default list }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
           {{- end }}
           ports:
             - name: http

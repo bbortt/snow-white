@@ -492,10 +492,10 @@ describe('API Gateway', () => {
           });
 
           it('should accept additional environment variables', async () => {
-            const additionalEnvs = {
-              author: 'bbortt',
-              foo: 'bar',
-            };
+            const additionalEnvs = [
+              { name: 'author', value: 'bbortt' },
+              { name: 'foo', value: 'bar' },
+            ];
 
             const apiGateway = await renderAndGetApiGatewayContainer(
               await renderHelmChart({

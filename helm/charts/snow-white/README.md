@@ -67,10 +67,19 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 | Key                                 | Type   | Default       | Description                                              |
 | ----------------------------------- | ------ | ------------- | -------------------------------------------------------- |
-| snowWhite.apiGateway.additionalEnvs | object | `{}`          | Additional environment variables forwarded to container. |
+| snowWhite.apiGateway.additionalEnvs | list   | `[]`          | Additional environment variables forwarded to container. |
 | snowWhite.apiGateway.image.tag      | string | `""`          | Image tag.                                               |
 | snowWhite.apiGateway.service.port   | int    | `80`          | Exposed port for the API Gateway service.                |
 | snowWhite.apiGateway.service.type   | string | `"ClusterIP"` | Type of Kubernetes service.                              |
+
+### Snow-White Report Coordinator API
+
+| Key                                           | Type   | Default | Description                                              |
+| --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.apiIndexApi.additionalEnvs          | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.apiIndexApi.image.tag               | string | `""`    | Image tag.                                               |
+| snowWhite.reportCoordinatorApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Snow-White Ingress
 
@@ -99,22 +108,22 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Snow-White OpenAPI Coverage Stream
 
-| Key                                               | Type   | Default                                                                       | Description                   |
-| ------------------------------------------------- | ------ | ----------------------------------------------------------------------------- | ----------------------------- |
-| snowWhite.openapiCoverageStream.image.tag         | string | `""`                                                                          | Image tag.                    |
-| snowWhite.openapiCoverageStream.influxdb.bucket   | string | `"raw-data"`                                                                  | InfluxDB bucket.              |
-| snowWhite.openapiCoverageStream.influxdb.endpoint | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB endpoint.            |
-| snowWhite.openapiCoverageStream.influxdb.org      | string | `"snow-white"`                                                                | InfluxDB organization.        |
-| snowWhite.openapiCoverageStream.influxdb.token    | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB token.               |
-| snowWhite.openapiCoverageStream.redis.host        | string | The chart will connect to the provisioned Redis StatefulSet automatically.    | Redis host.                   |
-| snowWhite.openapiCoverageStream.replicas          | int    | `1`                                                                           | Number of replicas to deploy. |
+| Key                                               | Type   | Default                                                                       | Description                                              |
+| ------------------------------------------------- | ------ | ----------------------------------------------------------------------------- | -------------------------------------------------------- |
+| snowWhite.openapiCoverageStream.additionalEnvs    | list   | `[]`                                                                          | Additional environment variables forwarded to container. |
+| snowWhite.openapiCoverageStream.image.tag         | string | `""`                                                                          | Image tag.                                               |
+| snowWhite.openapiCoverageStream.influxdb.bucket   | string | `"raw-data"`                                                                  | InfluxDB bucket.                                         |
+| snowWhite.openapiCoverageStream.influxdb.endpoint | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB endpoint.                                       |
+| snowWhite.openapiCoverageStream.influxdb.org      | string | `"snow-white"`                                                                | InfluxDB organization.                                   |
+| snowWhite.openapiCoverageStream.influxdb.token    | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB token.                                          |
+| snowWhite.openapiCoverageStream.replicas          | int    | `1`                                                                           | Number of replicas to deploy.                            |
 
 ### OpenTelemetry Collector
 
 | Key                                              | Type   | Default                                                                                                          | Description                                                                                                  |
 | ------------------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | snowWhite.otelCollector.image.registry           | string | `"docker.io"`                                                                                                    | Image registry.                                                                                              |
-| snowWhite.otelCollector.image.tag                | string | `"0.141.0"`                                                                                                      | Image tag.                                                                                                   |
+| snowWhite.otelCollector.image.tag                | string | `"0.142.0"`                                                                                                      | Image tag.                                                                                                   |
 | snowWhite.otelCollector.influxdb.bucket          | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                             |
 | snowWhite.otelCollector.influxdb.endpoint        | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                           |
 | snowWhite.otelCollector.influxdb.org             | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                       |
@@ -125,26 +134,18 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Snow-White OTel Event Filter Stream
 
-| Key                                            | Type   | Default                                                                    | Description                                              |
-| ---------------------------------------------- | ------ | -------------------------------------------------------------------------- | -------------------------------------------------------- |
-| snowWhite.otelEventFilterStream.additionalEnvs | object | `{}`                                                                       | Additional environment variables forwarded to container. |
-| snowWhite.otelEventFilterStream.image.tag      | string | `""`                                                                       | Image tag.                                               |
-| snowWhite.otelEventFilterStream.redis.host     | string | The chart will connect to the provisioned Redis StatefulSet automatically. | Redis host.                                              |
-| snowWhite.otelEventFilterStream.replicas       | int    | `1`                                                                        | Number of replicas to deploy.                            |
+| Key                                            | Type   | Default | Description                                              |
+| ---------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.otelEventFilterStream.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.otelEventFilterStream.image.tag      | string | `""`    | Image tag.                                               |
+| snowWhite.otelEventFilterStream.replicas       | int    | `1`     | Number of replicas to deploy.                            |
 
 ### Snow-White Quality Gate API
 
 | Key                                     | Type   | Default | Description                                              |
 | --------------------------------------- | ------ | ------- | -------------------------------------------------------- |
-| snowWhite.qualityGateApi.additionalEnvs | object | `{}`    | Additional environment variables forwarded to container. |
+| snowWhite.qualityGateApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
 | snowWhite.qualityGateApi.image.tag      | string | `""`    | Image tag.                                               |
-
-### Snow-White Report Coordinator API
-
-| Key                                           | Type   | Default | Description                                              |
-| --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
-| snowWhite.reportCoordinatorApi.additionalEnvs | object | `{}`    | Additional environment variables forwarded to container. |
-| snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Advanced Configuration
 
@@ -159,16 +160,21 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | influxdb.config.http.auth-enabled                              | bool   | `true`                                     |             |
 | influxdb.setDefaultUser.enabled                                | bool   | `true`                                     |             |
 | postgresql.architecture                                        | string | `"standalone"`                             |             |
-| postgresql.primary.extraEnvVars[0].name                        | string | `"REPORT_COORDINATOR_DATASOURCE_PASSWORD"` |             |
-| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key  | string | `"report-coord-password"`                  |             |
+| postgresql.primary.extraEnvVars[0].name                        | string | `"API_INDEX_DATASOURCE_PASSWORD"`          |             |
+| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key  | string | `"api-index-password"`                     |             |
 | postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
-| postgresql.primary.extraEnvVars[1].name                        | string | `"REPORT_COORDINATOR_FLYWAY_PASSWORD"`     |             |
-| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.key  | string | `"report-coord-flyway-password"`           |             |
+| postgresql.primary.extraEnvVars[1].name                        | string | `"API_INDEX_FLYWAY_PASSWORD"`              |             |
+| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.key  | string | `"api-index-flyway-password"`              |             |
 | postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
-| postgresql.primary.extraEnvVars[2].name                        | string | `"QUALITY_GATE_DATASOURCE_PASSWORD"`       |             |
-| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.key  | string | `"quality-gate-password"`                  |             |
+| postgresql.primary.extraEnvVars[2].name                        | string | `"REPORT_COORDINATOR_DATASOURCE_PASSWORD"` |             |
+| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.key  | string | `"report-coord-password"`                  |             |
 | postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
-| postgresql.primary.extraEnvVars[3].name                        | string | `"QUALITY_GATE_FLYWAY_PASSWORD"`           |             |
-| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.key  | string | `"quality-gate-flyway-password"`           |             |
+| postgresql.primary.extraEnvVars[3].name                        | string | `"REPORT_COORDINATOR_FLYWAY_PASSWORD"`     |             |
+| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.key  | string | `"report-coord-flyway-password"`           |             |
 | postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
-| snowWhite.openapiCoverageStream.additionalEnvs                 | object | `{}`                                       |             |
+| postgresql.primary.extraEnvVars[4].name                        | string | `"QUALITY_GATE_DATASOURCE_PASSWORD"`       |             |
+| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.key  | string | `"quality-gate-password"`                  |             |
+| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[5].name                        | string | `"QUALITY_GATE_FLYWAY_PASSWORD"`           |             |
+| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.key  | string | `"quality-gate-flyway-password"`           |             |
+| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
