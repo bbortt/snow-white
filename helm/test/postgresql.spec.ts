@@ -7,6 +7,12 @@
 import { describe, it, expect } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
 
+export const onPremDatasourceProperties = [
+  { name: 'SPRING_DATASOURCE_URL', value: 'value' },
+  { name: 'SPRING_DATASOURCE_USERNAME', value: 'value' },
+  { name: 'SPRING_DATASOURCE_PASSWORD', value: 'value' },
+];
+
 const getStatefulSet = (manifests: any[]) => {
   const statefulSet = manifests.find(
     (m) =>
@@ -36,6 +42,17 @@ describe('PostgreSQL', () => {
         values: {
           postgresql: {
             enabled: false,
+          },
+          snowWhite: {
+            apiIndexApi: {
+              additionalEnvs: onPremDatasourceProperties,
+            },
+            qualityGateApi: {
+              additionalEnvs: onPremDatasourceProperties,
+            },
+            reportCoordinatorApi: {
+              additionalEnvs: onPremDatasourceProperties,
+            },
           },
         },
       });

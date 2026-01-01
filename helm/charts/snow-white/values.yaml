@@ -146,7 +146,7 @@ snowWhite:
       tag: ''
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Report Coordinator API
-    additionalEnvs: {}
+    additionalEnvs: []
   apiGateway:
     image:
       # -- Image tag.
@@ -154,7 +154,7 @@ snowWhite:
       tag: ''
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White API Gateway
-    additionalEnvs: {}
+    additionalEnvs: []
     service:
       # -- Type of Kubernetes service.
       # @section -- Snow-White API Gateway
@@ -169,7 +169,7 @@ snowWhite:
       tag: ''
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Quality Gate API
-    additionalEnvs: {}
+    additionalEnvs: []
   openapiCoverageStream:
     image:
       # -- Image tag.
@@ -193,7 +193,9 @@ snowWhite:
       # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
       # @section -- Snow-White OpenAPI Coverage Stream
       token: ''
-    additionalEnvs: {}
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White OpenAPI Coverage Stream
+    additionalEnvs: []
   otelEventFilterStream:
     image:
       # -- Image tag.
@@ -204,7 +206,7 @@ snowWhite:
     replicas: 1
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White OTel Event Filter Stream
-    additionalEnvs: {}
+    additionalEnvs: []
   reportCoordinatorApi:
     image:
       # -- Image tag.
@@ -212,7 +214,7 @@ snowWhite:
       tag: ''
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Report Coordinator API
-    additionalEnvs: {}
+    additionalEnvs: []
 
 influxdb:
   # -- Deploy InfluxDB StatefulSet alongside Snow-White.

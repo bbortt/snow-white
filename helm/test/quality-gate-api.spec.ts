@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
 import { isSubset } from './helpers';
+import { onPremDatasourceProperties } from './postgresql.spec';
 
 describe('Quality-Gate API', () => {
   describe('Deployment', () => {
@@ -556,10 +557,10 @@ describe('Quality-Gate API', () => {
           });
 
           it('should accept additional environment variables', async () => {
-            const additionalEnvs = {
-              author: 'bbortt',
-              foo: 'bar',
-            };
+            const additionalEnvs = [
+              { name: 'author', value: 'bbortt' },
+              { name: 'foo', value: 'bar' },
+            ];
 
             const qualityGateApi = await renderAndGetQualityGateApiContainer(
               await renderHelmChart({
@@ -584,6 +585,88 @@ describe('Quality-Gate API', () => {
             const fooEnv = qualityGateApi.env.find((env) => env.name === 'foo');
             expect(fooEnv).toBeDefined();
             expect(fooEnv.value).toBe('bar');
+          });
+        });
+
+        describe('with postgresql disabled', () => {
+          it('should fail without defined SPRING_DATASOURCE_URL environment variable', async () => {
+            await expect(
+              renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  postgresql: {
+                    enabled: false,
+                  },
+                  snowWhite: {
+                    apiIndexApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                    reportCoordinatorApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                  },
+                },
+              }),
+            ).rejects.toThrow(
+              "Required environment variable 'SPRING_DATASOURCE_URL' is missing in snowWhite.qualityGateApi.additionalEnvs",
+            );
+          });
+
+          it('should fail without defined SPRING_DATASOURCE_USERNAME environment variable', async () => {
+            await expect(
+              renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  postgresql: {
+                    enabled: false,
+                  },
+                  snowWhite: {
+                    apiIndexApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                    qualityGateApi: {
+                      additionalEnvs: [
+                        { name: 'SPRING_DATASOURCE_URL', value: 'value' },
+                      ],
+                    },
+                    reportCoordinatorApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                  },
+                },
+              }),
+            ).rejects.toThrow(
+              "Required environment variable 'SPRING_DATASOURCE_USERNAME' is missing in snowWhite.qualityGateApi.additionalEnvs",
+            );
+          });
+
+          it('should fail without defined SPRING_DATASOURCE_PASSWORD environment variable', async () => {
+            await expect(
+              renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  postgresql: {
+                    enabled: false,
+                  },
+                  snowWhite: {
+                    apiIndexApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                    qualityGateApi: {
+                      additionalEnvs: [
+                        { name: 'SPRING_DATASOURCE_URL', value: 'value' },
+                        { name: 'SPRING_DATASOURCE_USERNAME', value: 'value' },
+                      ],
+                    },
+                    reportCoordinatorApi: {
+                      additionalEnvs: onPremDatasourceProperties,
+                    },
+                  },
+                },
+              }),
+            ).rejects.toThrow(
+              "Required environment variable 'SPRING_DATASOURCE_PASSWORD' is missing in snowWhite.qualityGateApi.additionalEnvs",
+            );
           });
         });
       });

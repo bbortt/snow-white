@@ -482,10 +482,10 @@ describe('OTEL Event Filter Stream', () => {
           });
 
           it('should accept additional environment variables', async () => {
-            const additionalEnvs = {
-              author: 'bbortt',
-              foo: 'bar',
-            };
+            const additionalEnvs = [
+              { name: 'author', value: 'bbortt' },
+              { name: 'foo', value: 'bar' },
+            ];
 
             const otelEventFilterStream =
               await renderAndGetOtelEventFilterStreamContainer(
