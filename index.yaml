@@ -54,6 +54,31 @@ entries:
     - https://github.com/bbortt/snow-white/releases/download/snow-white-1.0.0-ci.1/snow-white-1.0.0-ci.1.tgz
     version: 1.0.0-ci.1
   - apiVersion: v2
+    appVersion: 1.0.0-alpha.2
+    created: "2026-01-02T11:37:23.846222743Z"
+    dependencies:
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.12.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 18.2.0
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.31.4
+    description: A Helm chart for deploying snow-white
+    digest: 5006613a2443aff2bc1f67ca2894e86d5d77afd3dd42175886ba099c4daef479
+    maintainers:
+    - email: timon.borter@gmx.ch
+      name: Timon Borter
+    name: snow-white
+    type: application
+    urls:
+    - https://github.com/bbortt/snow-white/releases/download/snow-white-1.0.0-alpha.2/snow-white-1.0.0-alpha.2.tgz
+    version: 1.0.0-alpha.2
+  - apiVersion: v2
     appVersion: 1.0.0-alpha.1
     created: "2025-12-30T14:36:30.025915869Z"
     dependencies:
@@ -104,4 +129,4 @@ entries:
     urls:
     - https://github.com/bbortt/snow-white/releases/download/snow-white-1.0.0-alpha.0/snow-white-1.0.0-alpha.0.tgz
     version: 1.0.0-alpha.0
-generated: "2025-12-30T14:36:30.025942999Z"
+generated: "2026-01-02T11:37:23.846275117Z"
