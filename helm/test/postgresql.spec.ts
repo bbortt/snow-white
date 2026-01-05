@@ -36,7 +36,7 @@ describe('PostgreSQL', () => {
       );
     });
 
-    it('can be disabled via properties', async () => {
+    it('can be disabled with values', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
@@ -235,7 +235,7 @@ describe('PostgreSQL', () => {
       expect(data['quality-gate-flyway-password']).toBeDefined();
     });
 
-    it('should not be rendered when postgresql is disabled via properties', async () => {
+    it('should not be rendered when postgresql is disabled with values', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
       });

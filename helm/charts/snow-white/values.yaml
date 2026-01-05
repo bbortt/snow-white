@@ -106,6 +106,9 @@ snowWhite:
       # -- Image tag.
       # @section -- OpenTelemetry Collector
       tag: '0.142.0'
+    # -- Whether to expose the OTeL collector through the (public) ingress.
+    # @section -- OpenTelemetry Collector
+    exposeThroughIngress: true
 
     influxdb:
       # -- InfluxDB endpoint.
