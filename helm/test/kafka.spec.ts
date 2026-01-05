@@ -26,7 +26,7 @@ const renderAndGetKafkaStatefulSet = async (manifests?: any[]) => {
 };
 
 describe('Kafka', () => {
-  it('can be disabled via properties', async () => {
+  it('can be disabled with values', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
       values: {

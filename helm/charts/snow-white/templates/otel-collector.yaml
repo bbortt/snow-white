@@ -1,9 +1,10 @@
+{{- $name := include "snow-white.name" (dict "name" "otel-collector" "context" .) -}}
 {{- $labels := include "snow-white.labels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+  name: {{ $name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -50,6 +51,9 @@ spec:
           ports:
             - name: grpc
               containerPort: 4317
+              protocol: TCP
+            - name: http
+              containerPort: 4318
               protocol: TCP
             - name: prometheus
               containerPort: 8090
@@ -102,7 +106,7 @@ spec:
               mountPath: /appl
       volumes:
         - configMap:
-            name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+            name: {{ $name }}
             items:
               - key: snow-white.config.yml
                 path: snow-white.config.yml
@@ -111,7 +115,7 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+  name: {{ $name }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -123,7 +127,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+  name: {{ $name }}
   labels:
    {{- $labels | nindent 4 }}
 spec:
@@ -134,11 +138,15 @@ spec:
       port: 4317
       protocol: TCP
       targetPort: grpc
+    - name: http
+      port: 4318
+      protocol: TCP
+      targetPort: http
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+  name: {{ $name }}
   labels:
     {{- $labels | nindent 4 }}
 data:
@@ -156,6 +164,8 @@ data:
         protocols:
           grpc:
             endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
     processors:
       batch:
         send_batch_size: 512
