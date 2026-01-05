@@ -1,0 +1,40 @@
+{{- if .Values.snowWhite.ingress.enabled }}
+{{- $labels := include "snow-white.labels" (dict "name" "ingress" "context" .) | nindent 0 -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- $labels | nindent 4 }}
+  {{- with .Values.snowWhite.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.snowWhite.ingress.className }}
+  {{- if .Values.snowWhite.ingress.tls }}
+  tls:
+    - hosts:
+        - '{{ include "snow-white.publicHost" . }}'
+  {{- end }}
+  rules:
+    - host: {{ include "snow-white.publicHost" . }}
+      http:
+         paths:
+          {{- if .Values.snowWhite.otelCollector.exposeThroughIngress }}
+          - path: /v1/traces
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+                port:
+                  name: http
+          {{- end }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+                port:
+                  name: http
+{{- end }}

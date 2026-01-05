@@ -138,34 +138,3 @@ spec:
       protocol: TCP
       port: {{ .Values.snowWhite.apiGateway.service.port }}
       targetPort: http
----
-{{- if .Values.snowWhite.ingress.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
-  labels:
-    {{- $labels | nindent 4 }}
-  {{- with .Values.snowWhite.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  ingressClassName: {{ .Values.snowWhite.ingress.className }}
-  {{- if .Values.snowWhite.ingress.tls }}
-  tls:
-    - hosts:
-        - '{{ include "snow-white.publicHost" . }}'
-  {{- end }}
-  rules:
-    - host: {{ include "snow-white.publicHost" . }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ $name }}
-                port:
-                  name: http
-{{- end }}

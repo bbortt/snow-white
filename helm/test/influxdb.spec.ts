@@ -38,7 +38,7 @@ describe('InfluxDB', () => {
     expect(statefulSet.spec.replicas).toBe(1);
   });
 
-  it('can be disabled via properties', async () => {
+  it('can be disabled with values', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
       values: {
