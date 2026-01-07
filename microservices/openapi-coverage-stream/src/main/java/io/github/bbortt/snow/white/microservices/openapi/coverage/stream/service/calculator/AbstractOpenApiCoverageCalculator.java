@@ -20,7 +20,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 abstract class AbstractOpenApiCoverageCalculator
-  implements OpenApiCoverageCalculator {
+  implements OpenApiCoverageCalculator
+{
 
   @Override
   public boolean accepts(OpenApiCriteria openApiCriteria) {
