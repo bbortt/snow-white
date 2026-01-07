@@ -12,7 +12,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import org.apache.kafka.common.serialization.Deserializer;
 
 public class ExportTraceServiceRequestJsonDeserializer
-  implements Deserializer<ExportTraceServiceRequest> {
+  implements Deserializer<ExportTraceServiceRequest>
+{
 
   private static final JsonFormat.Parser parser =
     JsonFormat.parser().ignoringUnknownFields();

@@ -34,7 +34,8 @@ import tools.jackson.databind.node.ArrayNode;
 
 @JacksonComponent
 public class ApiInformationDeserializer
-  extends ObjectValueDeserializer<ApiInformation> {
+  extends ObjectValueDeserializer<ApiInformation>
+{
 
   private static final String KEY_PROPERTY = "key";
   private static final String VALUE_PROPERTY = "value";

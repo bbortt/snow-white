@@ -15,7 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QualityGateConfigurationRepository
-  extends JpaRepository<@NonNull QualityGateConfiguration, @NonNull Long> {
+  extends JpaRepository<@NonNull QualityGateConfiguration, @NonNull Long>
+{
   boolean existsByName(@Param("name") String name);
   Optional<QualityGateConfiguration> findByName(@Param("name") String name);
   void deleteByName(@Param("name") String name);

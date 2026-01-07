@@ -12,7 +12,8 @@ import java.time.Duration;
 
 @Converter(autoApply = true)
 public class DurationToLongConverter
-  implements AttributeConverter<Duration, Long> {
+  implements AttributeConverter<Duration, Long>
+{
 
   @Override
   public Long convertToDatabaseColumn(Duration duration) {

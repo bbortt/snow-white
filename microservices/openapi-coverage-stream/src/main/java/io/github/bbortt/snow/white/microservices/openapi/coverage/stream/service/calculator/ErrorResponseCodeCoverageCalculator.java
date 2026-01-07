@@ -32,7 +32,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ErrorResponseCodeCoverageCalculator
-  extends ResponseCodeCoverageCalculator {
+  extends ResponseCodeCoverageCalculator
+{
 
   @Override
   protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {

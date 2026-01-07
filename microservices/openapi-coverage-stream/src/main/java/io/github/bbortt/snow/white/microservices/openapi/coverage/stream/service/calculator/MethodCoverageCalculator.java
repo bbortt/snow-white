@@ -32,7 +32,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class MethodCoverageCalculator
-  extends AbstractOpenApiCoverageCalculator {
+  extends AbstractOpenApiCoverageCalculator
+{
 
   @Override
   protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {

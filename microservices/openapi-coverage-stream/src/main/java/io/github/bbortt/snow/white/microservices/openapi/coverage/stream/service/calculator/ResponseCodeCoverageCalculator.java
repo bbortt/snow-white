@@ -41,7 +41,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ResponseCodeCoverageCalculator
-  extends AbstractOpenApiCoverageCalculator {
+  extends AbstractOpenApiCoverageCalculator
+{
 
   public static final Pattern SINGLE_DIGIT_PATTERN = compile("^\\dXX$");
 

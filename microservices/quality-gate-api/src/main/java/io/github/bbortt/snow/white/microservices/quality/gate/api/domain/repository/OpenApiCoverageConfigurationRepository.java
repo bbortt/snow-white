@@ -15,7 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OpenApiCoverageConfigurationRepository
-  extends JpaRepository<@NonNull OpenApiCoverageConfiguration, @NonNull Long> {
+  extends JpaRepository<@NonNull OpenApiCoverageConfiguration, @NonNull Long>
+{
   boolean existsByName(@Param("name") String name);
   Optional<OpenApiCoverageConfiguration> findByName(@Param("name") String name);
 }

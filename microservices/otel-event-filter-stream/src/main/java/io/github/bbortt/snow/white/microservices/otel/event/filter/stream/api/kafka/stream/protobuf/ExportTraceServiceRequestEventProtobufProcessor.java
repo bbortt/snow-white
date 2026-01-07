@@ -20,7 +20,8 @@ import org.springframework.context.annotation.Bean;
 
 @Slf4j
 public class ExportTraceServiceRequestEventProtobufProcessor
-  extends AbstractExportTraceServiceRequestEventProcessor {
+  extends AbstractExportTraceServiceRequestEventProcessor
+{
 
   private final Serde<ExportTraceServiceRequest> protobufSerde;
 

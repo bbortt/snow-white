@@ -107,7 +107,8 @@ public final class JSpecifyRules {
   }
 
   static class AnnotationsShouldSatisfyCondition
-    extends ArchCondition<JavaClass> {
+    extends ArchCondition<JavaClass>
+  {
 
     private final Set<String> forbiddenAnnotations;
     private final String errorMessage;

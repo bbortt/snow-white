@@ -22,7 +22,8 @@ import org.springframework.context.annotation.Bean;
 
 @Slf4j
 public class ExportTraceServiceRequestEventJsonProcessor
-  extends AbstractExportTraceServiceRequestEventProcessor {
+  extends AbstractExportTraceServiceRequestEventProcessor
+{
 
   public ExportTraceServiceRequestEventJsonProcessor(
     OtelInformationFilteringService otelInformationFilteringService,
