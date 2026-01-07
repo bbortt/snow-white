@@ -161,8 +161,9 @@ class OtelEventFilterStreamAppTest {
     );
   }
 
-  record KafkaMessageByKeySelector(String key) implements
-    KafkaMessageSelector<String> {
+  record KafkaMessageByKeySelector(
+    String key
+  ) implements KafkaMessageSelector<String> {
     static final String MESSAGE_KEY_FILTER_KEY = "message-key";
 
     @Override

@@ -35,7 +35,8 @@ import org.springframework.context.annotation.Configuration;
   havingValue = "true"
 )
 public class MinioBucketConfig
-  implements ApplicationListener<ApplicationReadyEvent> {
+  implements ApplicationListener<ApplicationReadyEvent>
+{
 
   @VisibleForTesting
   static final String PUBLIC_BUCKET_POLICY_TEMPLATE = """

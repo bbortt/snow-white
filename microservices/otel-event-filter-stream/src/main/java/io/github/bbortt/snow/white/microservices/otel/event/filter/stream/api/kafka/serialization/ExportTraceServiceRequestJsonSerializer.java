@@ -12,7 +12,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import org.apache.kafka.common.serialization.Serializer;
 
 public class ExportTraceServiceRequestJsonSerializer
-  implements Serializer<ExportTraceServiceRequest> {
+  implements Serializer<ExportTraceServiceRequest>
+{
 
   private final JsonFormat.Printer printer = JsonFormat.printer();
 

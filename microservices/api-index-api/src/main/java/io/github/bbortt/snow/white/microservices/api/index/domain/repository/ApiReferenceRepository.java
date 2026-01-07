@@ -16,7 +16,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApiReferenceRepository
   extends
-    JpaRepository<@NonNull ApiReference, ApiReference.@NonNull ApiReferenceId> {
+    JpaRepository<@NonNull ApiReference, ApiReference.@NonNull ApiReferenceId>
+{
   boolean existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
     @Param("otelServiceName") String otelServiceName,
     @Param("apiName") String apiName,
