@@ -11,6 +11,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
@@ -25,17 +26,16 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalog
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import lombok.With;
+import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -73,6 +73,7 @@ public class BackstageCatalogService implements ApiCatalogService {
       backstageEntityApi,
       jsonMapper,
       openApiValidationService,
+      taskExecutor,
       minioService,
       new InformationExtractor(
         backstageProperties.getCustomApiNameJsonPath(),
@@ -99,11 +100,13 @@ public class BackstageCatalogService implements ApiCatalogService {
     this.openApiValidationService = openApiValidationService;
     this.taskExecutor = taskExecutor;
     this.minioService = minioService;
+    this.informationExtractor = informationExtractor;
+    this.openAPIV3Parser = openAPIV3Parser;
   }
 
   @Override
   public CompletableFuture<Set<ApiInformation>> fetchApiIndex() {
-    return CompletableFuture.supplyAsync(
+    return supplyAsync(
       () -> {
         var streamEnhancer = getStreamEnhancerBasedOnSpecLocation();
 
@@ -256,10 +259,7 @@ public class BackstageCatalogService implements ApiCatalogService {
         .filter(Objects::nonNull)
         // TODO: This currently only supports OpenAPI
         .filter(spec ->
-          Optional.ofNullable(spec.get("type"))
-            .map(JsonNode::asText)
-            .orElse("")
-            .equals("openapi")
+          Optional.ofNullable(spec.get("type")).orElse("").equals("openapi")
         )
         .map(jsonMapper::<JsonNode>valueToTree)
         .map(jsonNode -> jsonNode.get("definition"))
