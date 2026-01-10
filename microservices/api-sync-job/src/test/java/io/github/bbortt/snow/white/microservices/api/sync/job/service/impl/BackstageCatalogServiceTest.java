@@ -12,6 +12,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
@@ -43,7 +44,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 import org.assertj.core.api.ThrowingConsumer;
 import org.jspecify.annotations.NonNull;
@@ -57,7 +59,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tools.jackson.databind.JsonNode;
+import org.springframework.core.task.AsyncTaskExecutor;
 import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
@@ -77,6 +79,9 @@ class BackstageCatalogServiceTest {
 
   @Mock
   private OpenApiValidationService openApiValidationServiceMock;
+
+  @Mock
+  private AsyncTaskExecutor taskExecutorMock;
 
   @Mock
   private OpenAPIV3Parser openAPIV3ParserMock;
@@ -110,6 +115,7 @@ class BackstageCatalogServiceTest {
         backstageEntityApiMock,
         jsonMapperMock,
         openApiValidationServiceMock,
+        taskExecutorMock,
         minioServiceMock,
         informationExtractorMock,
         openAPIV3ParserMock
@@ -117,14 +123,15 @@ class BackstageCatalogServiceTest {
     }
 
     @Test
-    void shouldReturnEmptySet_whenNoEntities() {
+    void shouldReturnEmptySet_whenNoEntities()
+      throws ExecutionException, InterruptedException, TimeoutException {
       getEntitiesByQuery(
         doReturn(new EntitiesQueryResponse().totalItems(ZERO)).when(
           backstageEntityApiMock
         )
       );
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result).isEmpty();
 
@@ -133,7 +140,8 @@ class BackstageCatalogServiceTest {
     }
 
     @Test
-    void shouldReturnMappedApiInformation_withCustomVersionAnnotation_andSuccessfulParsing() {
+    void shouldReturnMappedApiInformation_withCustomVersionAnnotation_andSuccessfulParsing()
+      throws ExecutionException, InterruptedException, TimeoutException {
       var customAnnotation = "customAnnotation";
       doReturn(customAnnotation)
         .when(backstagePropertiesMock)
@@ -182,7 +190,7 @@ class BackstageCatalogServiceTest {
         swaggerParseResult
       );
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result)
         .hasSize(2)
@@ -209,7 +217,8 @@ class BackstageCatalogServiceTest {
     }
 
     @Test
-    void shouldSkipSwaggerParseResult_withCustomVersionAnnotation() {
+    void shouldSkipSwaggerParseResult_withCustomVersionAnnotation()
+      throws ExecutionException, InterruptedException, TimeoutException {
       var customAnnotation = "customAnnotation";
       doReturn(customAnnotation)
         .when(backstagePropertiesMock)
@@ -258,13 +267,14 @@ class BackstageCatalogServiceTest {
         .when(swaggerParseResult)
         .getMessages();
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result).isEmpty();
     }
 
     @Test
-    void shouldReturnMappedApiInformation_fromBackstage() {
+    void shouldReturnMappedApiInformation_fromBackstage()
+      throws ExecutionException, InterruptedException, TimeoutException {
       getEntitiesByQuery(
         doReturn(new EntitiesQueryResponse().totalItems(ONE)).when(
           backstageEntityApiMock
@@ -295,12 +305,6 @@ class BackstageCatalogServiceTest {
           null
         );
 
-      var jsonNodeMock = mock(JsonNode.class);
-      doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
-      doReturn(openApiDefinition).when(jsonNodeMock).asString();
-
-      doReturn(jsonNodeMock).when(jsonMapperMock).valueToTree(spec);
-
       var swaggerParseResultMock = mock(SwaggerParseResult.class);
       doReturn(swaggerParseResultMock)
         .when(openAPIV3ParserMock)
@@ -312,15 +316,14 @@ class BackstageCatalogServiceTest {
 
       assertThat(openApiStringCaptor.getAllValues()).isEmpty();
 
-      ArgumentCaptor<
-        BackstageCatalogService.OpenAPIParameters
-      > openAPIParametersArgumentCaptor = captor();
+      ArgumentCaptor<OpenAPIParameters> openAPIParametersArgumentCaptor =
+        captor();
       var apiInformation = mock(ApiInformation.class);
       doReturn(apiInformation)
         .when(minioServiceMock)
         .storeBackstageApiEntity(openAPIParametersArgumentCaptor.capture());
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
       assertThat(result).containsExactly(apiInformation);
 
       assertThat(openAPIParametersArgumentCaptor.getValue())
@@ -338,7 +341,8 @@ class BackstageCatalogServiceTest {
     }
 
     @Test
-    void shouldSkipSwaggerParseErrors_fromBackstage() {
+    void shouldSkipSwaggerParseErrors_fromBackstage()
+      throws ExecutionException, InterruptedException, TimeoutException {
       getEntitiesByQuery(
         doReturn(new EntitiesQueryResponse().totalItems(ONE)).when(
           backstageEntityApiMock
@@ -369,12 +373,6 @@ class BackstageCatalogServiceTest {
           null
         );
 
-      var jsonNodeMock = mock(JsonNode.class);
-      doReturn(jsonNodeMock).when(jsonNodeMock).get("definition");
-      doReturn(openApiDefinition).when(jsonNodeMock).asString();
-
-      doReturn(jsonNodeMock).when(jsonMapperMock).valueToTree(spec);
-
       var swaggerParseResultMock = mock(SwaggerParseResult.class);
       doReturn(swaggerParseResultMock)
         .when(openAPIV3ParserMock)
@@ -384,13 +382,14 @@ class BackstageCatalogServiceTest {
         .when(swaggerParseResultMock)
         .getMessages();
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result).isEmpty();
     }
 
     @Test
-    void shouldSkipNonOpenAPISpecifications_fromBackstage() {
+    void shouldSkipNonOpenAPISpecifications_fromBackstage()
+      throws ExecutionException, InterruptedException, TimeoutException {
       getEntitiesByQuery(
         doReturn(new EntitiesQueryResponse().totalItems(ONE)).when(
           backstageEntityApiMock
@@ -414,7 +413,7 @@ class BackstageCatalogServiceTest {
           null
         );
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result).isEmpty();
     }
@@ -436,7 +435,7 @@ class BackstageCatalogServiceTest {
         .when(backstagePropertiesMock)
         .getCustomVersionAnnotation();
 
-      assertThatThrownBy(() -> fixture.fetchApiIndex())
+      assertThatThrownBy(() -> fixture.fetchApiIndex().get(1, SECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "MinIO connection is required when resolving Entities from Backstage!"
@@ -446,7 +445,8 @@ class BackstageCatalogServiceTest {
     }
 
     @Test
-    void shouldSkipNullSpecs() {
+    void shouldSkipNullSpecs()
+      throws ExecutionException, InterruptedException, TimeoutException {
       // That's two pages that should be fetched
       ArgumentCaptor<List<String>> fieldsArgumentCaptor = captor();
       ArgumentCaptor<Integer> limitArgumentCaptor = captor();
@@ -469,7 +469,7 @@ class BackstageCatalogServiceTest {
           isNull()
         );
 
-      Set<ApiInformation> result = fixture.fetchApiIndex();
+      var result = fixture.fetchApiIndex().get(1, SECONDS);
 
       assertThat(result).isEmpty();
 
@@ -526,6 +526,7 @@ class BackstageCatalogServiceTest {
         backstageEntityApiMock,
         jsonMapperMock,
         openApiValidationServiceMock,
+        taskExecutorMock,
         minioServiceMock
       );
 
@@ -536,40 +537,6 @@ class BackstageCatalogServiceTest {
         apiInformation,
         parsingMode
       );
-    }
-  }
-
-  @Nested
-  class OpenAPIParameters {
-
-    @Test
-    void constructorWith_SwaggerParseResult() {
-      assertThat(
-        new BackstageCatalogService.OpenAPIParameters(
-          mock(SwaggerParseResult.class)
-        )
-      ).hasAllNullFieldsOrPropertiesExcept("swaggerParseResult");
-    }
-
-    @Test
-    void constructorWith_locationAndSwaggerParseResult() {
-      assertThat(
-        new BackstageCatalogService.OpenAPIParameters(
-          "sourceUrl",
-          mock(SwaggerParseResult.class)
-        )
-      ).hasNoNullFieldsOrPropertiesExcept("apiInformation");
-    }
-
-    @Test
-    void allArgsConstructor() {
-      assertThat(
-        new BackstageCatalogService.OpenAPIParameters(
-          "sourceUrl",
-          mock(SwaggerParseResult.class),
-          mock(ApiInformation.class)
-        )
-      ).hasNoNullFieldsOrProperties();
     }
   }
 }

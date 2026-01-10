@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
@@ -17,8 +16,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.task.AsyncTaskExecutor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -52,18 +51,18 @@ public class SyncJob {
         return CompletableFuture.allOf(
           validationFutures.toArray(new CompletableFuture[0])
         ).thenApply(v -> {
-            var validApis = validationFutures
-              .stream()
-              .map(CompletableFuture::join)
-              .filter(this::publishLoadedApi)
-              .toList();
-            logger.info(
-              "Updated {} of {} valid APIs",
-              validApis.size(),
-              apiInformationCount
-            );
-            return validApis;
-          });
+          var validApis = validationFutures
+            .stream()
+            .map(CompletableFuture::join)
+            .filter(this::publishLoadedApi)
+            .toList();
+          logger.info(
+            "Updated {} of {} valid APIs",
+            validApis.size(),
+            apiInformationCount
+          );
+          return validApis;
+        });
       })
       .join();
   }

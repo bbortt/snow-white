@@ -20,30 +20,24 @@ abstract class AbstractApiCatalogServiceIT {
   ) {
     var apiIndex = fixture.fetchApiIndex();
 
-    assertThat(apiIndex)
-      .hasSize(1)
-      .first()
-      .satisfies(
-        apiInformation ->
-          assertThat(apiInformation.getTitle()).isEqualTo(
-            "Swagger Petstore - OpenAPI 3.1"
-          ),
-        apiInformation ->
-          assertThat(apiInformation.getVersion()).isEqualTo("1.2.3"),
-        apiInformation ->
-          assertThat(apiInformation.getName()).isEqualTo(
-            "Swagger Petstore - OpenAPI 3.1"
-          ),
-        apiInformation ->
-          assertThat(apiInformation.getServiceName()).isEqualTo(
-            "example-application"
-          ),
-        apiInformation ->
-          assertThat(apiInformation.getApiType()).isEqualTo(OPENAPI),
-        apiInformation ->
-          assertThat(apiInformation.getLoadStatus()).isEqualTo(UNLOADED)
-      );
+    assertThat(apiIndex).isCompletedWithValueMatching(
+      index -> index.size() == 1,
+      "should contain one element"
+    );
 
-    return apiIndex.iterator().next();
+    var apiInformation = apiIndex.join().iterator().next();
+    assertThat(apiInformation).satisfies(
+      info ->
+        assertThat(info.getTitle()).isEqualTo("Swagger Petstore - OpenAPI 3.1"),
+      info -> assertThat(info.getVersion()).isEqualTo("1.2.3"),
+      info ->
+        assertThat(info.getName()).isEqualTo("Swagger Petstore - OpenAPI 3.1"),
+      info ->
+        assertThat(info.getServiceName()).isEqualTo("example-application"),
+      info -> assertThat(info.getApiType()).isEqualTo(OPENAPI),
+      info -> assertThat(info.getLoadStatus()).isEqualTo(UNLOADED)
+    );
+
+    return apiInformation;
   }
 }

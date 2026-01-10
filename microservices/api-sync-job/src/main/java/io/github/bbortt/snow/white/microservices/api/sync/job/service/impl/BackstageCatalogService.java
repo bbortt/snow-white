@@ -41,7 +41,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.AsyncTaskExecutor;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
@@ -259,11 +258,12 @@ public class BackstageCatalogService implements ApiCatalogService {
         .filter(Objects::nonNull)
         // TODO: This currently only supports OpenAPI
         .filter(spec ->
-          Optional.ofNullable(spec.get("type")).orElse("").equals("openapi")
+          Optional.ofNullable(spec.get("type"))
+            .map(String::valueOf)
+            .orElse("")
+            .equals("openapi")
         )
-        .map(jsonMapper::<JsonNode>valueToTree)
-        .map(jsonNode -> jsonNode.get("definition"))
-        .map(JsonNode::asString)
+        .map(spec -> (String) spec.get("definition"))
         .map(definition ->
           taskExecutor.submit(() ->
             new OpenAPIParameters(openAPIV3Parser.readContents(definition))
