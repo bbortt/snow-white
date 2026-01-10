@@ -1,0 +1,26 @@
+{
+  "name": "api-sync-job",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application testing dependencies of snow-white api-syn-job.",
+  "author": {
+    "name": "Timon Borter",
+    "email": "timon.borter@gmx.ch"
+  },
+  "scripts": {
+    "apptest": "run-p --print-label --race apptest:*",
+    "apptest:wiremock": "wiremock",
+    "apptest:test": "run-s --print-label apptest:test:*",
+    "apptest:test:wait-for-wiremock": "wait-on --timeout 1m http-get:localhost:8080/__admin/health",
+    "apptest:test:vitest": "vitest run --config vitest.config.ts --dir src/apptest/vitest"
+  },
+  "devDependencies": {
+    "execa": "9.6.0",
+    "npm-run-all2": "8.0.4",
+    "vitest": "4.0.9",
+    "wait-on": "9.0.3",
+    "wiremock": "3.13.2",
+    "wiremock-captain": "4.1.3"
+  },
+  "packageManager": "pnpm@10.15.0"
+}
