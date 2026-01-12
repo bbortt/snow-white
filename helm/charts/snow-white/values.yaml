@@ -105,7 +105,7 @@ snowWhite:
       registry: 'docker.io'
       # -- Image tag.
       # @section -- OpenTelemetry Collector
-      tag: '0.142.0'
+      tag: '0.143.1'
     # -- Whether to expose the OTeL collector through the (public) ingress.
     # @section -- OpenTelemetry Collector
     exposeThroughIngress: true
