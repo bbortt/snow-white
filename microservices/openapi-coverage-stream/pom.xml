@@ -26,7 +26,7 @@
       io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client
     </baseClientPackage>
 
-    <influxdb.version>7.4.0</influxdb.version>
+    <influxdb.version>7.5.0</influxdb.version>
     <tablesaw.version>0.44.1</tablesaw.version>
   </properties>
 
