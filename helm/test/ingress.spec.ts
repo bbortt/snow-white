@@ -226,10 +226,8 @@ describe('Ingress', () => {
         await renderHelmChart({
           chartPath: 'charts/snow-white',
           values: {
-            snowWhite: {
-              otelCollector: {
-                exposeThroughIngress: false,
-              },
+            otelCollector: {
+              exposeThroughIngress: false,
             },
           },
         }),

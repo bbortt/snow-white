@@ -36,7 +36,7 @@ spec:
       {{- end }}
       containers:
         - name: otel-collector
-          image: {{ .Values.snowWhite.otelCollector.image.registry }}/otel/opentelemetry-collector-contrib:{{ .Values.snowWhite.otelCollector.image.tag }}
+          image: {{ .Values.otelCollector.image.registry }}/otel/opentelemetry-collector-contrib:{{ .Values.otelCollector.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           args:
             - '--config=/appl/snow-white.config.yml'
@@ -159,7 +159,7 @@ data:
           encoding: otlp_json
           # TODO https://github.com/bbortt/snow-white/issues/287
           # encoding: otlp_proto
-          topic: {{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}
+          topic: {{ .Values.otelCollector.kafka.outbountTopic }}
       otlp:
         protocols:
           grpc:
@@ -215,7 +215,7 @@ data:
         check_interval: 5s
         limit_percentage: 80
         spike_limit_percentage: 25
-      {{- with .Values.snowWhite.otelCollector.pipeline.resourceCleanup }}
+      {{- with .Values.otelCollector.pipeline.resourceCleanup }}
       resource/cleanup:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -241,13 +241,13 @@ data:
           encoding: otlp_json
           # TODO https://github.com/bbortt/snow-white/issues/287
           # encoding: otlp_proto
-          topic: {{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}
+          topic: {{ .Values.otelCollector.kafka.inboundTopic }}
       influxdb:
-        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.otelCollector.influxdb.endpoint | quote }}
-        org: {{ .Values.snowWhite.otelCollector.influxdb.org | quote }}
-        bucket: {{ .Values.snowWhite.otelCollector.influxdb.bucket | quote }}
-        {{- if ne .Values.snowWhite.otelCollector.influxdb.token "" }}
-        token: {{ .Values.snowWhite.otelCollector.influxdb.token | quote }}
+        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
+        org: {{ .Values.otelCollector.influxdb.org | quote }}
+        bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
+        {{- if ne .Values.otelCollector.influxdb.token "" }}
+        token: {{ .Values.otelCollector.influxdb.token | quote }}
         {{- else }}
         token: '${INFLUXDB_TOKEN}'
         {{- end }}
