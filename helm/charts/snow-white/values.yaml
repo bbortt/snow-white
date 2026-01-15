@@ -98,50 +98,6 @@ snowWhite:
     # @section -- Snow-White Kafka
     openapiCalculationResponseTopic: 'snow-white-openapi-calculation-response'
 
-  otelCollector:
-    image:
-      # -- Image registry.
-      # @section -- OpenTelemetry Collector
-      registry: 'docker.io'
-      # -- Image tag.
-      # @section -- OpenTelemetry Collector
-      tag: '0.143.1'
-    # -- Whether to expose the OTeL collector through the (public) ingress.
-    # @section -- OpenTelemetry Collector
-    exposeThroughIngress: true
-
-    influxdb:
-      # -- InfluxDB endpoint.
-      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
-      # @section -- OpenTelemetry Collector
-      endpoint: ''
-      # -- InfluxDB organization.
-      # @section -- OpenTelemetry Collector
-      org: snow-white
-      # -- InfluxDB bucket.
-      # @section -- OpenTelemetry Collector
-      bucket: raw-data
-      # -- InfluxDB token.
-      # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
-      # @section -- OpenTelemetry Collector
-      token: '${INFLUXDB_TOKEN}'
-    kafka:
-      # -- The "inbound" Kafka topic for unfiltered events.
-      # @section -- OpenTelemetry Collector
-      inboundTopic: snow-white_inbound
-      # -- The "outbound" Kafka filtered events being persisted to InfluxDB.
-      # @section -- OpenTelemetry Collector
-      outbountTopic: snow-white_outbound
-    pipeline:
-      # -- Attributes to clean up from span resources.
-      # Reduces required storage space, but limits filter functionality!
-      # @section -- OpenTelemetry Collector
-      resourceCleanup:
-        attributes:
-          - action: delete
-            pattern: ^process\..+
-          - action: delete
-            pattern: ^telemetry\..+
   apiIndexApi:
     image:
       # -- Image tag.
@@ -255,6 +211,51 @@ kafka:
   # -- Size of the storage for Kafka.
   # @section -- Infrastructure (Kafka)
   storageSize: 10Gi
+
+otelCollector:
+  image:
+    # -- Image registry.
+    # @section -- OpenTelemetry Collector
+    registry: docker.io
+    # -- Image tag.
+    # @section -- OpenTelemetry Collector
+    tag: '0.143.1'
+  # -- Whether to expose the OTeL collector through the (public) ingress.
+  # @section -- OpenTelemetry Collector
+  exposeThroughIngress: true
+
+  influxdb:
+    # -- InfluxDB endpoint.
+    # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+    # @section -- OpenTelemetry Collector
+    endpoint: ''
+    # -- InfluxDB organization.
+    # @section -- OpenTelemetry Collector
+    org: snow-white
+    # -- InfluxDB bucket.
+    # @section -- OpenTelemetry Collector
+    bucket: raw-data
+    # -- InfluxDB token.
+    # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
+    # @section -- OpenTelemetry Collector
+    token: '${INFLUXDB_TOKEN}'
+  kafka:
+    # -- The "inbound" Kafka topic for unfiltered events.
+    # @section -- OpenTelemetry Collector
+    inboundTopic: snow-white_inbound
+    # -- The "outbound" Kafka filtered events being persisted to InfluxDB.
+    # @section -- OpenTelemetry Collector
+    outbountTopic: snow-white_outbound
+  pipeline:
+    # -- Attributes to clean up from span resources.
+    # Reduces required storage space, but limits filter functionality!
+    # @section -- OpenTelemetry Collector
+    resourceCleanup:
+      attributes:
+        - action: delete
+          pattern: ^process\..+
+        - action: delete
+          pattern: ^telemetry\..+
 
 postgresql:
   # -- Deploy PostgreSQL StatefulSet alongside Snow-White.

@@ -56,6 +56,21 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | kafka.storageClass   | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
 | kafka.storageSize    | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
 
+### OpenTelemetry Collector
+
+| Key                                    | Type   | Default                                                                                                          | Description                                                                                                  |
+| -------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| otelCollector.exposeThroughIngress     | bool   | `true`                                                                                                           | Whether to expose the OTeL collector through the (public) ingress.                                           |
+| otelCollector.image.registry           | string | `"docker.io"`                                                                                                    | Image registry.                                                                                              |
+| otelCollector.image.tag                | string | `"0.143.1"`                                                                                                      | Image tag.                                                                                                   |
+| otelCollector.influxdb.bucket          | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                             |
+| otelCollector.influxdb.endpoint        | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                           |
+| otelCollector.influxdb.org             | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                       |
+| otelCollector.influxdb.token           | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB token.                                                                                              |
+| otelCollector.kafka.inboundTopic       | string | `"snow-white_inbound"`                                                                                           | The "inbound" Kafka topic for unfiltered events.                                                             |
+| otelCollector.kafka.outbountTopic      | string | `"snow-white_outbound"`                                                                                          | The "outbound" Kafka filtered events being persisted to InfluxDB.                                            |
+| otelCollector.pipeline.resourceCleanup | object | `{"attributes":[{"action":"delete","pattern":"^process\\..+"},{"action":"delete","pattern":"^telemetry\\..+"}]}` | Attributes to clean up from span resources. Reduces required storage space, but limits filter functionality! |
+
 ### Infrastructure (PostgreSQL)
 
 | Key                                        | Type   | Default                                | Description                                                             |
@@ -117,21 +132,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.openapiCoverageStream.influxdb.org      | string | `"snow-white"`                                                                | InfluxDB organization.                                   |
 | snowWhite.openapiCoverageStream.influxdb.token    | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB token.                                          |
 | snowWhite.openapiCoverageStream.replicas          | int    | `1`                                                                           | Number of replicas to deploy.                            |
-
-### OpenTelemetry Collector
-
-| Key                                              | Type   | Default                                                                                                          | Description                                                                                                  |
-| ------------------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| snowWhite.otelCollector.exposeThroughIngress     | bool   | `true`                                                                                                           | Whether to expose the OTeL collector through the (public) ingress.                                           |
-| snowWhite.otelCollector.image.registry           | string | `"docker.io"`                                                                                                    | Image registry.                                                                                              |
-| snowWhite.otelCollector.image.tag                | string | `"0.142.0"`                                                                                                      | Image tag.                                                                                                   |
-| snowWhite.otelCollector.influxdb.bucket          | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                             |
-| snowWhite.otelCollector.influxdb.endpoint        | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                           |
-| snowWhite.otelCollector.influxdb.org             | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                       |
-| snowWhite.otelCollector.influxdb.token           | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB token.                                                                                              |
-| snowWhite.otelCollector.kafka.inboundTopic       | string | `"snow-white_inbound"`                                                                                           | The "inbound" Kafka topic for unfiltered events.                                                             |
-| snowWhite.otelCollector.kafka.outbountTopic      | string | `"snow-white_outbound"`                                                                                          | The "outbound" Kafka filtered events being persisted to InfluxDB.                                            |
-| snowWhite.otelCollector.pipeline.resourceCleanup | object | `{"attributes":[{"action":"delete","pattern":"^process\\..+"},{"action":"delete","pattern":"^telemetry\\..+"}]}` | Attributes to clean up from span resources. Reduces required storage space, but limits filter functionality! |
 
 ### Snow-White OTel Event Filter Stream
 

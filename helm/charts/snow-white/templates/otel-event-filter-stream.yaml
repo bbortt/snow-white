@@ -42,11 +42,11 @@ spec:
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL'
               value: {{ printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME'
-              value: '{{ .Values.snowWhite.otelCollector.kafka.inboundTopic }}'
+              value: '{{ .Values.otelCollector.kafka.inboundTopic }}'
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'
               value: '{{ .Values.snowWhite.kafka.initTopics }}'
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME'
-              value: '{{ .Values.snowWhite.otelCollector.kafka.outbountTopic }}'
+              value: '{{ .Values.otelCollector.kafka.outbountTopic }}'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
           {{- $additionalEnvs := .Values.snowWhite.otelEventFilterStream.additionalEnvs | default list }}
