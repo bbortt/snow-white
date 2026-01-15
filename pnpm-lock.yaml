@@ -13,7 +13,7 @@ importers:
         version: 20.3.1
       '@prettier/plugin-xml':
         specifier: 3.4.2
-        version: 3.4.2(prettier@3.7.4)
+        version: 3.4.2(prettier@3.8.0)
       commitlint:
         specifier: 20.3.1
         version: 20.3.1(@types/node@25.0.3)(typescript@5.9.2)
@@ -30,14 +30,14 @@ importers:
         specifier: 0.1.1
         version: 0.1.1(markdownlint@0.40.0)
       prettier:
-        specifier: 3.7.4
-        version: 3.7.4
+        specifier: 3.8.0
+        version: 3.8.0
       prettier-plugin-java:
         specifier: 2.8.1
-        version: 2.8.1(prettier@3.7.4)
+        version: 2.8.1(prettier@3.8.0)
       prettier-plugin-packagejson:
         specifier: 2.5.21
-        version: 2.5.21(prettier@3.7.4)
+        version: 2.5.21(prettier@3.8.0)
     optionalDependencies:
       npm-check-updates:
         specifier: 19.3.1
@@ -758,8 +758,8 @@ packages:
       prettier:
         optional: true
 
-  prettier@3.7.4:
-    resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
+  prettier@3.8.0:
+    resolution: {integrity: sha512-yEPsovQfpxYfgWNhCfECjG5AQaO+K3dp6XERmOepyPDVqcJm+bjyCVO3pmU+nAPe0N5dDvekfGezt/EIiRe1TA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -1064,10 +1064,10 @@ snapshots:
     dependencies:
       '@isaacs/balanced-match': 4.0.1
 
-  '@prettier/plugin-xml@3.4.2(prettier@3.7.4)':
+  '@prettier/plugin-xml@3.4.2(prettier@3.8.0)':
     dependencies:
       '@xml-tools/parser': 1.0.11
-      prettier: 3.7.4
+      prettier: 3.8.0
 
   '@types/conventional-commits-parser@5.0.2':
     dependencies:
@@ -1722,18 +1722,18 @@ snapshots:
 
   pidtree@0.6.0: {}
 
-  prettier-plugin-java@2.8.1(prettier@3.7.4):
+  prettier-plugin-java@2.8.1(prettier@3.8.0):
     dependencies:
       java-parser: 3.0.1
-      prettier: 3.7.4
+      prettier: 3.8.0
 
-  prettier-plugin-packagejson@2.5.21(prettier@3.7.4):
+  prettier-plugin-packagejson@2.5.21(prettier@3.8.0):
     dependencies:
       sort-package-json: 3.5.0
     optionalDependencies:
-      prettier: 3.7.4
+      prettier: 3.8.0
 
-  prettier@3.7.4: {}
+  prettier@3.8.0: {}
 
   punycode.js@2.3.1: {}
 
