@@ -53,6 +53,7 @@ data:
   {{- end }}
 {{- end }}
 ---
+{{- if .Values.postgresql.enabled }}
 {{- $labels := include "snow-white.labels" (dict "name" "postgresql" "context" .) | nindent 0 -}}
 apiVersion: v1
 kind: ConfigMap
@@ -151,3 +152,4 @@ data:
     kill -HUP $(cat /opt/bitnami/postgresql/tmp/postgresql.pid) 2>/dev/null || true
 
     echo "SUCCESS: Created 'quality-gate-api' database and [ 'quality_gate_app', 'quality_gate_flyway' ] users"
+{{- end }}

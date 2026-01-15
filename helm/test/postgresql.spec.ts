@@ -25,7 +25,7 @@ const getStatefulSet = (manifests: any[]) => {
 
 describe('PostgreSQL', () => {
   describe('chart', () => {
-    it('should be enabled primary by default', async () => {
+    it('should be enabled by default', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
       });
@@ -60,8 +60,14 @@ describe('PostgreSQL', () => {
       const postgresqlResources = manifests.find((m) =>
         m.metadata.name.startsWith('test-release-postgresql'),
       );
-
       expect(postgresqlResources).toBeUndefined();
+
+      const initScripts = manifests.find(
+        (m) =>
+          m.kind === 'ConfigMap' &&
+          m.metadata.name === 'snow-white-postgresql-init-scripts',
+      );
+      expect(initScripts).toBeUndefined();
     });
 
     it('should be enhanced with password environment variables', async () => {
