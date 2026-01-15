@@ -360,9 +360,7 @@ describe('OTEL Collector', () => {
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
-                  snowWhite: {
-                    otelCollector: { image: { registry: customRegistry } },
-                  },
+                  otelCollector: { image: { registry: customRegistry } },
                 },
               }),
             );
@@ -379,9 +377,7 @@ describe('OTEL Collector', () => {
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
-                  snowWhite: {
-                    otelCollector: { image: { tag: customTag } },
-                  },
+                  otelCollector: { image: { tag: customTag } },
                 },
               }),
             );
@@ -731,11 +727,9 @@ describe('OTEL Collector', () => {
         await renderHelmChart({
           chartPath: 'charts/snow-white',
           values: {
-            snowWhite: {
-              otelCollector: {
-                influxdb: {
-                  token,
-                },
+            otelCollector: {
+              influxdb: {
+                token,
               },
             },
           },
