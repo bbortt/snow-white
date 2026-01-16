@@ -80,11 +80,6 @@ data:
 
       GRANT CONNECT ON DATABASE "api-index-api" TO api_index_app;
       GRANT USAGE ON SCHEMA public TO api_index_app;
-      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_index_app;
-      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO api_index_app;
-
-      ALTER DEFAULT PRIVILEGES FOR USER api_index_flyway IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO api_index_app;
-      ALTER DEFAULT PRIVILEGES FOR USER api_index_flyway IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO api_index_app;
     EOSQL
 
     # Restore original auth config
@@ -110,11 +105,6 @@ data:
 
       GRANT CONNECT ON DATABASE "report-coordinator-api" TO report_coord_app;
       GRANT USAGE ON SCHEMA public TO report_coord_app;
-      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO report_coord_app;
-      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO report_coord_app;
-
-      ALTER DEFAULT PRIVILEGES FOR USER report_coord_flyway IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO report_coord_app;
-      ALTER DEFAULT PRIVILEGES FOR USER report_coord_flyway IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO report_coord_app;
     EOSQL
 
     # Restore original auth config
@@ -140,11 +130,6 @@ data:
 
       GRANT CONNECT ON DATABASE "quality-gate-api" TO quality_gate_app;
       GRANT USAGE ON SCHEMA public TO quality_gate_app;
-      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO quality_gate_app;
-      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO quality_gate_app;
-
-      ALTER DEFAULT PRIVILEGES FOR USER quality_gate_flyway IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO quality_gate_app;
-      ALTER DEFAULT PRIVILEGES FOR USER quality_gate_flyway IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO quality_gate_app;
     EOSQL
 
     # Restore original auth config
