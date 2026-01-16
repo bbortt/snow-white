@@ -109,7 +109,7 @@
     "jest-sonar": "0.2.16",
     "json-loader": "0.5.7",
     "merge-jsons-webpack-plugin": "2.0.1",
-    "mini-css-extract-plugin": "2.9.4",
+    "mini-css-extract-plugin": "2.10.0",
     "npm-run-all2": "8.0.4",
     "path-browserify": "1.0.1",
     "postcss-loader": "8.2.0",
