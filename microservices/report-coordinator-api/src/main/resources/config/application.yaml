@@ -1,6 +1,10 @@
 springdoc:
   packages-to-scan: io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 spring:
+  flyway:
+    placeholders:
+      app_user: ${spring.datasource.username}
+      app_schema: ${spring.flyway.schemas:public}
   jpa:
     hibernate:
       ddl-auto: validate
