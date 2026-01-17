@@ -8,6 +8,7 @@ import type { FieldErrorVM } from 'app/shared/jhipster/problem-details';
 
 import { getMessageFromHeaders } from 'app/shared/jhipster/headers';
 import { isProblemWithMessage } from 'app/shared/jhipster/problem-details';
+import { setPerformanceImpacted } from 'app/shared/reducers/application-profile';
 import { isFulfilledAction, isRejectedAction } from 'app/shared/reducers/reducer.utils';
 import { isAxiosError } from 'axios';
 import { translate } from 'react-jhipster';
@@ -34,7 +35,8 @@ const getFieldErrorsToasts = (fieldErrors: FieldErrorVM[]): ToastMessage[] =>
     return { message: `Error on field "${fieldName}"`, key: `error.${fieldError.message}`, data: { fieldName } };
   });
 
-export default () => next => action => {
+export default store => next => action => {
+  const { dispatch } = store;
   const { error, payload } = action;
 
   /**
@@ -46,6 +48,7 @@ export default () => next => action => {
     if (alert) {
       toast.success(translate(alert, { param }));
     }
+    dispatch(setPerformanceImpacted(false));
   }
 
   if (isRejectedAction(action) && isAxiosError(error)) {
@@ -69,7 +72,9 @@ export default () => next => action => {
           getFieldErrorsToasts(problem.fieldErrors).forEach(message => addErrorAlert(message));
         } else {
           const { error: toastError, param } = getMessageFromHeaders((response.headers as any) ?? {});
-          if (toastError) {
+          if (toastError === 'DOWNSTREAM_UNAVAILABLE') {
+            dispatch(setPerformanceImpacted(true));
+          } else if (toastError) {
             const entityName = translate(`global.menu.entities.${param}`);
             addErrorAlert({ key: toastError, data: { entityName } });
           } else if (problem?.message) {
