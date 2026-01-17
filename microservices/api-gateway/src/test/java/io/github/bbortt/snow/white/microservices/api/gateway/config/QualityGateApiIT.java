@@ -21,7 +21,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import io.github.bbortt.snow.white.microservices.api.gateway.Main;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.wiremock.spring.EnableWireMock;
 
-@Disabled("Enable this once wiremock-spring-boot supports Spring-Boot 4.0!")
 @Isolated
 @DirtiesContext
 @EnableWireMock

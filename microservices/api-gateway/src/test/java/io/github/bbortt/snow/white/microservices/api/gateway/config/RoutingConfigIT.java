@@ -8,21 +8,14 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.microservices.api.gateway.Main;
+import io.github.bbortt.snow.white.microservices.api.gateway.IntegrationTest;
 import java.net.URI;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.route.RouteLocator;
 
-@SpringBootTest(
-  classes = { Main.class },
-  properties = {
-    "snow.white.api.gateway.quality-gate-api-url=http://localhost:8081",
-    "snow.white.api.gateway.report-coordinator-api-url=http://localhost:8084",
-  }
-)
+@IntegrationTest
 class RoutingConfigIT {
 
   @Autowired

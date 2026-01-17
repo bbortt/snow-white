@@ -15,7 +15,7 @@ export const Home = () => {
   return (
     <Row>
       <Col md="4">
-        <Card className="mt-4">
+        <Card>
           <CardBody>
             <div className="text-center mb-3">
               <img src="content/images/logo.png" alt="Snow-White Logo" width="80" />
