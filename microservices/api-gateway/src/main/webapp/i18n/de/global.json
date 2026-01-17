@@ -27,6 +27,16 @@
     "ribbon": {
       "dev": "Entwicklung"
     },
+    "backend": {
+      "impacted": {
+        "header": "Snow-White arbeitet mit eingeschränkter Leistung.",
+        "body": "Wenn Sie Probleme haben, versuchen Sie es bitte später erneut."
+      },
+      "unavailable": {
+        "header": "Snow-White ist derzeit nicht verfügbar.",
+        "body": "Wir arbeiten daran, den Dienst wiederherzustellen. Bitte versuchen Sie es später erneut."
+      }
+    },
     "item-count": "Ergebnis {{first}} - {{second}} von {{total}} Elemente."
   },
   "entity": {
@@ -69,6 +79,7 @@
     }
   },
   "error": {
+    "DOWNSTREAM_UNAVAILABLE": "asdf",
     "internalServerError": "Interner Serverfehler",
     "server.not.reachable": "Server ist nicht erreichbar",
     "url.not.found": "Nicht gefunden",

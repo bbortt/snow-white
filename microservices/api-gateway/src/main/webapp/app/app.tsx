@@ -11,6 +11,7 @@ import './app.scss';
 import 'app/config/dayjs';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import AppRoutes from 'app/routes';
+import BackendUnavailableBanner from 'app/shared/error/backend-unavailable-banner';
 import ErrorBoundary from 'app/shared/error/error-boundary';
 import Footer from 'app/shared/layout/footer/footer';
 import Header from 'app/shared/layout/header/header';
@@ -32,6 +33,8 @@ export const App = () => {
   const currentLocale = useAppSelector(state => state.locale.currentLocale);
   const ribbonEnv = useAppSelector(state => state.applicationProfile.ribbonEnv);
   const isInProduction = useAppSelector(state => state.applicationProfile.inProduction);
+  const impactedPerformance = useAppSelector(state => state.applicationProfile.impactedPerformance);
+  const isBackendUnavailable = useAppSelector(state => state.applicationProfile.isBackendUnavailable);
 
   const paddingTop = '60px';
   return (
@@ -44,6 +47,19 @@ export const App = () => {
         <div className="container-fluid view-container" id="app-view-container">
           <Card className="jh-card">
             <ErrorBoundary>
+              {impactedPerformance && (
+                <BackendUnavailableBanner
+                  color={'info'}
+                  headerTranslationKey={'global.backend.impacted.header'}
+                  bodyTranslationKey={'global.backend.impacted.body'}
+                />
+              )}
+              {isBackendUnavailable && (
+                <BackendUnavailableBanner
+                  headerTranslationKey={'global.backend.unavailable.header'}
+                  bodyTranslationKey={'global.backend.unavailable.body'}
+                />
+              )}
               <AppRoutes />
             </ErrorBoundary>
           </Card>
