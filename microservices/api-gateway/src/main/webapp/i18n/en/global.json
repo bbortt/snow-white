@@ -27,6 +27,16 @@
     "ribbon": {
       "dev": "Development"
     },
+    "backend": {
+      "impacted": {
+        "header": "Snow-White is working in degraded performance.",
+        "body": "If you encounter problems, please try again later."
+      },
+      "unavailable": {
+        "header": "Snow-White is currently unavailable.",
+        "body": "We’re working to restore service. Please try again later."
+      }
+    },
     "item-count": "Showing {{first}} - {{second}} of {{total}} items."
   },
   "entity": {
