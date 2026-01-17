@@ -1,20 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
   ~ Licensed under the Polyform Small Business License 1.0.0
   ~ See LICENSE file for full details.
   -->
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>io.github.bbortt.snow-white.microservices</groupId>
     <artifactId>microservices</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-ci.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -361,10 +357,7 @@
             <configuration>
               <target>
                 <delete>
-                  <fileset
-                    dir="${project.build.directory}/generated-sources/openapi/src"
-                    includes="test/**"
-                  />
+                  <fileset dir="${project.build.directory}/generated-sources/openapi/src" includes="test/**"/>
                 </delete>
               </target>
             </configuration>
@@ -586,15 +579,13 @@
                   <alias>report-coordinator-api</alias>
                   <run>
                     <env>
-                      <SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC
-                      >
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC>
                         snow-white-calculation-request
                       </SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC>
                       <SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS>
                         true
                       </SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS>
-                      <SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC
-                      >
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC>
                         snow-white-openapi-calculation-response
                       </SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC>
                       <SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC-API-GATEWAY-URL>
