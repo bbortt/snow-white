@@ -58,7 +58,10 @@ updates:
         patterns:
           - '*'
   - package-ecosystem: 'npm'
-    directory: '/microservices/'
+    directories:
+      - '/microservices/api-sync-job/'
+      - '/microservices/quality-gate-api'
+      - '/microservices/report-coordinator-api'
     schedule:
       interval: 'weekly'
     assignees:
@@ -70,9 +73,7 @@ updates:
     groups:
       apptest-dependencies:
         patterns:
-          - 'quality-gate-api/package*.json'
-          - 'report-coordinator-api/package*.json'
-          - 'api-sync-job/package*.json'
+          - '*'
   - package-ecosystem: 'bun'
     directory: '/toolkit/cli/'
     schedule:
