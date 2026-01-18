@@ -4,7 +4,9 @@
  * See LICENSE file for full details.
  */
 
+const pattern = '{,**/}*.{ts,tsx,css,scss}';
+
 module.exports = {
-  '{,**/}*.{cjs,js,mjs,ts,tsx}': ['eslint --fix'],
-  '{,**/}*.{json,md,ts,tsx,xml,yaml,yml}': ['prettier --write --config prettier.config.js'],
+  [pattern]: ['eslint --fix'],
+  [pattern]: ['prettier --write --config prettier.config.js'],
 };
