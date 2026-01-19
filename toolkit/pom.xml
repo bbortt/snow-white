@@ -31,7 +31,7 @@
   </modules>
 
   <properties>
-    <openapi-generator.version>7.18.0</openapi-generator.version>
+    <openapi-generator.version>7.19.0</openapi-generator.version>
   </properties>
 
   <dependencies>
