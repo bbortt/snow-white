@@ -42,7 +42,7 @@ describe('InfluxDB', () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
       values: {
-        influxdb: {
+        influxdb2: {
           enabled: false,
         },
       },
@@ -55,16 +55,41 @@ describe('InfluxDB', () => {
     expect(influxdbResources).toBeUndefined();
   });
 
-  it('exposes credentials using secret', async () => {
-    const manifests = await renderHelmChart({
-      chartPath: 'charts/snow-white',
+  describe('authentication', () => {
+    const extractSecret = (manifests: Array<any>): any | undefined => {
+      return manifests.find(
+        (m) =>
+          m.kind === 'Secret' &&
+          m.metadata.name === 'test-release-influxdb2-auth',
+      );
+    };
+
+    it('exposes credentials using secret by default', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+      });
+
+      const influxdbSecret = extractSecret(manifests);
+
+      expect(influxdbSecret).toBeDefined();
+      expect(influxdbSecret.data['admin-token']).toBeDefined();
     });
 
-    const influxdbSecret = manifests.find(
-      (m) =>
-        m.kind === 'Secret' && m.metadata.name === 'test-release-influxdb-auth',
-    );
+    it('does not expose secret if defined by user', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          influxdb2: {
+            adminUser: {
+              existingSecret: 'influxdb-auth',
+            },
+          },
+        },
+      });
 
-    expect(influxdbSecret).toBeDefined();
+      const influxdbSecret = extractSecret(manifests);
+
+      expect(influxdbSecret).toBeUndefined();
+    });
   });
 });
