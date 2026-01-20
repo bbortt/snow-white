@@ -467,46 +467,48 @@ describe('OpenAPI Coverage Stream', () => {
             expect(influxdbUrl.value).toBe(endpoint);
           });
 
-          it('should load influxdb token from secret by default', async () => {
+          it('should load influxdb token from chart secret by default', async () => {
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer();
 
-            const influxdbUrl = openapiCoverageStream.env.find(
+            const influxdbToken = openapiCoverageStream.env.find(
               (env) => env.name === 'INFLUXDB_TOKEN',
             );
-            expect(influxdbUrl).toBeDefined();
+            expect(influxdbToken).toBeDefined();
 
-            const secretKeyRef = influxdbUrl.valueFrom.secretKeyRef;
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
             expect(secretKeyRef).toBeDefined();
 
-            expect(secretKeyRef.name).toBe('test-release-influxdb-auth');
-            expect(secretKeyRef.key).toBe('influxdb-password');
+            expect(secretKeyRef.name).toBe('test-release-influxdb2-auth');
+            expect(secretKeyRef.key).toBe('admin-token');
           });
 
-          it('should override influxdb token from values', async () => {
-            const token = 'token';
+          it('should override influxdb token from custom secret if defined', async () => {
+            const existingSecret = 'influxdb-auth';
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
                   values: {
-                    snowWhite: {
-                      openapiCoverageStream: {
-                        influxdb: {
-                          token,
-                        },
+                    influxdb2: {
+                      adminUser: {
+                        existingSecret,
                       },
                     },
                   },
                 }),
               );
 
-            const influxdbUrl = openapiCoverageStream.env.find(
+            const influxdbToken = openapiCoverageStream.env.find(
               (env) => env.name === 'INFLUXDB_TOKEN',
             );
-            expect(influxdbUrl).toBeDefined();
+            expect(influxdbToken).toBeDefined();
 
-            expect(influxdbUrl.value).toBe(token);
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe(existingSecret);
+            expect(secretKeyRef.key).toBe('admin-token');
           });
 
           it('should calculate api-index api base url', async () => {
