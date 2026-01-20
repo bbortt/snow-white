@@ -331,7 +331,7 @@ describe('OTEL Collector', () => {
       });
 
       describe('otel-collector', () => {
-        const renderAndGetQualityGateApiContainer = async (
+        const renderAndGetOtelCollectorContainer = async (
           manifests?: any[],
         ) => {
           const templateSpec = getPodSpec(
@@ -346,7 +346,7 @@ describe('OTEL Collector', () => {
 
         describe('image', () => {
           it('should be pulled from docker.io by default', async () => {
-            const otelCollector = await renderAndGetQualityGateApiContainer();
+            const otelCollector = await renderAndGetOtelCollectorContainer();
 
             expect(otelCollector.image).toMatch(
               /^docker\.io\/otel\/opentelemetry-collector-contrib:.+$/,
@@ -356,7 +356,7 @@ describe('OTEL Collector', () => {
           it('should adjust the image registry from values', async () => {
             const customRegistry = 'custom.registry';
 
-            const otelCollector = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetOtelCollectorContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
@@ -373,7 +373,7 @@ describe('OTEL Collector', () => {
           it('should adjust the image tag from values', async () => {
             const customTag = 'custom.tag';
 
-            const otelCollector = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetOtelCollectorContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
@@ -390,7 +390,7 @@ describe('OTEL Collector', () => {
 
         describe('imagePullPolicy', () => {
           it('should pull images if they are not present by default', async () => {
-            const otelCollector = await renderAndGetQualityGateApiContainer();
+            const otelCollector = await renderAndGetOtelCollectorContainer();
 
             expect(otelCollector.imagePullPolicy).toBe('IfNotPresent');
           });
@@ -398,7 +398,7 @@ describe('OTEL Collector', () => {
           it('should adjust the image pull policy from values', async () => {
             const imagePullPolicy = 'my.policy';
 
-            const otelCollector = await renderAndGetQualityGateApiContainer(
+            const otelCollector = await renderAndGetOtelCollectorContainer(
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
@@ -408,6 +408,50 @@ describe('OTEL Collector', () => {
             );
 
             expect(otelCollector.imagePullPolicy).toBe(imagePullPolicy);
+          });
+        });
+
+        describe('env', () => {
+          it('should load influxdb token from chart secret by default', async () => {
+            const otelCollector = await renderAndGetOtelCollectorContainer();
+
+            const influxdbToken = otelCollector.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeDefined();
+
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe('test-release-influxdb2-auth');
+            expect(secretKeyRef.key).toBe('admin-token');
+          });
+
+          it('should override influxdb token from custom secret if defined', async () => {
+            const existingSecret = 'influxdb-auth';
+            const otelCollector = await renderAndGetOtelCollectorContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  influxdb2: {
+                    adminUser: {
+                      existingSecret,
+                    },
+                  },
+                },
+              }),
+            );
+
+            const influxdbToken = otelCollector.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeDefined();
+
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe(existingSecret);
+            expect(secretKeyRef.key).toBe('admin-token');
           });
         });
       });

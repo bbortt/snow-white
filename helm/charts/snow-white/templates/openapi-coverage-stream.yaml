@@ -46,14 +46,14 @@ spec:
             - name: 'INFLUXDB_BUCKET'
               value: '{{ .Values.snowWhite.openapiCoverageStream.influxdb.bucket }}'
             - name: 'INFLUXDB_TOKEN'
-            {{- if ne .Values.snowWhite.openapiCoverageStream.influxdb.token "" }}
-              value: '{{ .Values.snowWhite.openapiCoverageStream.influxdb.token }}'
-            {{- else }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "%s-%s" .Release.Name "influxdb-auth" }}
-                  key: influxdb-password
-            {{- end }}
+                  {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
+                  name: {{ .Values.influxdb2.adminUser.existingSecret -}}
+                  {{- else }}
+                  name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- end }}
+                  key: admin-token
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC'

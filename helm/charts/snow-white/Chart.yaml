@@ -8,10 +8,10 @@ maintainers:
   - name: Timon Borter
     email: timon.borter@gmx.ch
 dependencies:
-  - name: influxdb
-    version: 4.12.5
+  - name: influxdb2
+    version: 2.1.2
     repository: 'https://helm.influxdata.com/'
-    condition: influxdb.enabled
+    condition: influxdb2.enabled
   - name: postgresql
     version: 18.2.3
     repository: 'https://charts.bitnami.com/bitnami'
