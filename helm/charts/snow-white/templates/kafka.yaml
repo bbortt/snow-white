@@ -124,7 +124,10 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.kafka.storageSize }}
+      storage: {{ .Values.kafka.persistence.size | quote }}
+  {{- if .Values.kafka.persistence.storageClass }}
+  storageClassName: "{{ .Values.kafka.persistence.storageClass }}"
+  {{- end }}
 ---
 apiVersion: v1
 kind: Service

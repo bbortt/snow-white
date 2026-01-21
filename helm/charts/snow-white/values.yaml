@@ -205,12 +205,13 @@ kafka:
   # Run "kafka-storage random-uuid" to generate one.
   # @section -- Infrastructure (Kafka)
   clusterId: 'NmE4MjRhYjI1MjkwNGI5ZG' # run "kafka-storage random-uuid"
-  # -- Storage class for Kafka persistent volumes.
-  # @section -- Infrastructure (Kafka)
-  storageClass: 'hostpath'
-  # -- Size of the storage for Kafka.
-  # @section -- Infrastructure (Kafka)
-  storageSize: 10Gi
+  persistence:
+    # -- Storage class for Kafka persistent volumes.
+    # @section -- Infrastructure (Kafka)
+    storageClass: 'hostpath'
+    # -- Size of the storage for Kafka.
+    # @section -- Infrastructure (Kafka)
+    size: 10Gi
 
 otelCollector:
   image:
