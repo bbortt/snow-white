@@ -473,9 +473,10 @@ describe('Kafka', () => {
   });
 
   describe('PersistentVolumeClaim', () => {
-    it('should have default labels', async () => {
+    const renderAndGetPvc = async (values?: object): Promise<any> => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
+        values,
       });
 
       const pvc = manifests.find(
@@ -484,6 +485,12 @@ describe('Kafka', () => {
           m.metadata.name === 'snow-white-kafka-test-release',
       );
       expect(pvc).toBeDefined();
+
+      return pvc;
+    };
+
+    it('should have default labels', async () => {
+      const pvc = await renderAndGetPvc();
 
       const { metadata } = pvc;
       expect(metadata).toBeDefined();
@@ -497,6 +504,64 @@ describe('Kafka', () => {
         'app.kubernetes.io/name': 'kafka',
         'app.kubernetes.io/part-of': 'snow-white',
       });
+    });
+
+    it('should have default request size', async () => {
+      const pvc = await renderAndGetPvc();
+
+      const { spec } = pvc;
+      expect(spec).toBeDefined();
+
+      const { resources } = spec;
+      expect(resources).toBeDefined();
+
+      const { requests } = resources;
+      expect(requests).toBeDefined();
+      expect(requests.storage).toBe('10Gi');
+    });
+
+    it('should respect custom request size from values', async () => {
+      const size = '20Gi';
+      const pvc = await renderAndGetPvc({
+        kafka: {
+          persistence: {
+            size,
+          },
+        },
+      });
+
+      const { spec } = pvc;
+      expect(spec).toBeDefined();
+
+      const { resources } = spec;
+      expect(resources).toBeDefined();
+
+      const { requests } = resources;
+      expect(requests).toBeDefined();
+      expect(requests.storage).toBe(size);
+    });
+
+    it('should have default storage class name assigned', async () => {
+      const pvc = await renderAndGetPvc();
+
+      const { spec } = pvc;
+      expect(spec).toBeDefined();
+      expect(spec.storageClassName).toBe('hostpath');
+    });
+
+    it('should respect custom storage class name from values', async () => {
+      const storageClass = 'nfs';
+      const pvc = await renderAndGetPvc({
+        kafka: {
+          persistence: {
+            storageClass,
+          },
+        },
+      });
+
+      const { spec } = pvc;
+      expect(spec).toBeDefined();
+      expect(spec.storageClassName).toBe(storageClass);
     });
   });
 
