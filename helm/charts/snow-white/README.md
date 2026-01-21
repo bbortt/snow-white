@@ -46,15 +46,15 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Infrastructure (Kafka)
 
-| Key                  | Type   | Default                    | Description                                                        |
-| -------------------- | ------ | -------------------------- | ------------------------------------------------------------------ |
-| kafka.clusterId      | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
-| kafka.enabled        | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
-| kafka.image.name     | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
-| kafka.image.registry | string | `"docker.io"`              | Image registry.                                                    |
-| kafka.image.tag      | string | `"8.1.1"`                  | Image tag.                                                         |
-| kafka.storageClass   | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
-| kafka.storageSize    | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
+| Key                            | Type   | Default                    | Description                                                        |
+| ------------------------------ | ------ | -------------------------- | ------------------------------------------------------------------ |
+| kafka.clusterId                | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
+| kafka.enabled                  | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
+| kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
+| kafka.image.registry           | string | `"docker.io"`              | Image registry.                                                    |
+| kafka.image.tag                | string | `"8.1.1"`                  | Image tag.                                                         |
+| kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
+| kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
 
 ### OpenTelemetry Collector
 
