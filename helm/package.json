@@ -18,9 +18,9 @@
   },
   "devDependencies": {
     "@types/lodash": "4.17.23",
-    "@types/node": "25.0.9",
+    "@types/node": "25.0.10",
     "@vitest/coverage-v8": "4.0.17",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "ts-node": "10.9.2",
     "vitest": "4.0.17"
   },
