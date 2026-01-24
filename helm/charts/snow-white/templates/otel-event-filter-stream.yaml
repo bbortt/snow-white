@@ -43,7 +43,7 @@ spec:
               value: {{ printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME'
               value: '{{ .Values.otelCollector.kafka.inboundTopic }}'
-            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS'
               value: '{{ .Values.snowWhite.kafka.initTopics }}'
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_OUTBOUND_TOPIC_NAME'
               value: '{{ .Values.otelCollector.kafka.outbountTopic }}'
