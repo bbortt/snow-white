@@ -752,7 +752,7 @@ describe('OTEL Collector', () => {
       );
     });
 
-    it('should load influxdb token from environment variable by default', async () => {
+    it('should load influxdb token from environment variable', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 
       const { data } = configMap;
@@ -763,29 +763,6 @@ describe('OTEL Collector', () => {
       expect(snowWhiteConfig.exporters.influxdb.token).toBe(
         '${INFLUXDB_TOKEN}',
       );
-    });
-
-    it('should override influxdb token from environment values', async () => {
-      const token = 'token';
-      const configMap = await renderAndGetOtelCollectorConfig(
-        await renderHelmChart({
-          chartPath: 'charts/snow-white',
-          values: {
-            otelCollector: {
-              influxdb: {
-                token,
-              },
-            },
-          },
-        }),
-      );
-
-      const { data } = configMap;
-      expect(data).toBeDefined();
-
-      const snowWhiteConfig = extractConfigMapData(data);
-
-      expect(snowWhiteConfig.exporters.influxdb.token).toBe(token);
     });
   });
 });
