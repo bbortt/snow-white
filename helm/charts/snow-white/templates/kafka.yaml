@@ -121,7 +121,7 @@ metadata:
    {{- $labels | nindent 4 }}
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: {{ .Values.kafka.persistence.size | quote }}
