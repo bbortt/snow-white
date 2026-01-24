@@ -236,10 +236,6 @@ otelCollector:
     # -- InfluxDB bucket.
     # @section -- OpenTelemetry Collector
     bucket: raw-data
-    # -- InfluxDB token.
-    # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
-    # @section -- OpenTelemetry Collector
-    token: '${INFLUXDB_TOKEN}'
   kafka:
     # -- The "inbound" Kafka topic for unfiltered events.
     # @section -- OpenTelemetry Collector
