@@ -69,7 +69,7 @@ spec:
               ephemeral-storage: '50Mi'
           securityContext:
             allowPrivilegeEscalation: false
-            # readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: true
             runAsUser: 100
             runAsGroup: 101
 ---
