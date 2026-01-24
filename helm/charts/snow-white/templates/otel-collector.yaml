@@ -250,11 +250,7 @@ data:
         endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.otelCollector.influxdb.org | quote }}
         bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
-        {{- if ne .Values.otelCollector.influxdb.token "" }}
-        token: {{ .Values.otelCollector.influxdb.token | quote }}
-        {{- else }}
         token: '${INFLUXDB_TOKEN}'
-        {{- end }}
       prometheus:
         endpoint: "0.0.0.0:8090"
         send_timestamps: true
