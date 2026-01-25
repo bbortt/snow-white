@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { isSubset } from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
 
 describe('OpenAPI Coverage Stream', () => {
   describe('Deployment', () => {
@@ -61,15 +61,10 @@ describe('OpenAPI Coverage Stream', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'openapi-coverage-stream',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'openapi-coverage-stream',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'openapi-coverage-stream',
+      );
     });
 
     it('should truncate long release name', async () => {

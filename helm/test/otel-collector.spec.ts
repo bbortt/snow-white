@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseAllDocuments } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { isSubset } from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
 
 describe('OTEL Collector', () => {
   describe('Deployment', () => {
@@ -59,15 +59,10 @@ describe('OTEL Collector', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'otel-collector',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'otel-collector',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
     });
 
     it('should truncate long release name', async () => {
@@ -591,15 +586,10 @@ describe('OTEL Collector', () => {
       const { metadata } = service;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'otel-collector',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'otel-collector',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
     });
 
     it('should truncate long release name', async () => {
@@ -686,15 +676,10 @@ describe('OTEL Collector', () => {
       const { metadata } = configMap;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'otel-collector',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'otel-collector',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
     });
 
     function extractConfigMapData(data) {

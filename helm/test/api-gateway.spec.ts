@@ -7,7 +7,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { expectFailsWithMessageContaining, isSubset } from './helpers';
+import {
+  expectFailsWithMessageContaining,
+  expectToHaveDefaultLabelsForMicroservice,
+  isSubset,
+} from './helpers';
 
 describe('API Gateway', () => {
   describe('Deployment', () => {
@@ -59,15 +63,7 @@ describe('API Gateway', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'api-gateway',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-gateway',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'api-gateway');
     });
 
     it('should truncate long release name', async () => {
@@ -626,15 +622,7 @@ describe('API Gateway', () => {
       const { metadata } = service;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'api-gateway',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-gateway',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'api-gateway');
     });
 
     it('truncates long release name', async () => {
