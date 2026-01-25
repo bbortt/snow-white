@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { isSubset } from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
 import { onPremDatasourceProperties } from './postgresql.spec';
 
 describe('Report Coordinator API', () => {
@@ -62,15 +62,10 @@ describe('Report Coordinator API', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'report-coordinator-api',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'report-coordinator-api',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'report-coordinator-api',
+      );
     });
 
     it('should truncate long release name', async () => {
@@ -424,10 +419,10 @@ describe('Report Coordinator API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+11 environment variables by default', async () => {
+          it('should deploy 2+1+11 environment variables by default', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(13);
+            expect(reportCoordinatorApi.env).toHaveLength(14);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -602,8 +597,8 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            // 2 OTEL + 11 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(15);
+            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(16);
 
             const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',
@@ -809,15 +804,10 @@ describe('Report Coordinator API', () => {
       const { metadata } = service;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'report-coordinator-api',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'report-coordinator-api',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'report-coordinator-api',
+      );
     });
 
     it('should truncate long release name', async () => {

@@ -109,8 +109,11 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
             runAsUser: 100
             runAsGroup: 101
+            seccompProfile:
+              type: RuntimeDefault
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

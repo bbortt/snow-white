@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
+import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
 
 export const onPremDatasourceProperties = [
   { name: 'SPRING_DATASOURCE_URL', value: 'value' },
@@ -183,15 +184,7 @@ describe('PostgreSQL', () => {
       const { metadata } = secret;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'postgresql',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'postgresql',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'postgresql');
     });
 
     it('should truncate long release name', async () => {

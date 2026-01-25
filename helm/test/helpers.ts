@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import { expect } from 'vitest';
+
 export const expectFailsWithMessageContaining = async (
   callback: Function,
   part: string,
@@ -34,4 +36,19 @@ export const isSubset = (
   }
 
   return true;
+};
+
+export const expectToHaveDefaultLabelsForMicroservice = (
+  labels: { [key: string]: string },
+  microservice: string,
+) => {
+  expect(labels).toEqual({
+    'app.kubernetes.io/managed-by': 'Helm',
+    'app.kubernetes.io/version': 'test-version',
+    'helm.sh/chart': 'snow-white',
+    'app.kubernetes.io/component': microservice,
+    'app.kubernetes.io/instance': 'test-release',
+    'app.kubernetes.io/name': microservice,
+    'app.kubernetes.io/part-of': 'snow-white',
+  });
 };

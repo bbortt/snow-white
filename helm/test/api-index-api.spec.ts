@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { isSubset } from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
 import { onPremDatasourceProperties } from './postgresql.spec';
 
 describe('API Index API', () => {
@@ -60,15 +60,10 @@ describe('API Index API', () => {
       const { metadata } = deployment;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'api-index-api',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-index-api',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'api-index-api',
+      );
     });
 
     it('should truncate long release name', async () => {
@@ -415,9 +410,9 @@ describe('API Index API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+6 environment variables by default', async () => {
+          it('should deploy 2+1+6 environment variables by default', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
-            expect(apiIndexApi.env).toHaveLength(8);
+            expect(apiIndexApi.env).toHaveLength(9);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -569,8 +564,8 @@ describe('API Index API', () => {
               }),
             );
 
-            // 2 OTEL + 6 default + 2 additional
-            expect(apiIndexApi.env).toHaveLength(10);
+            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 6 default + 2 additional
+            expect(apiIndexApi.env).toHaveLength(11);
 
             const authorEnv = apiIndexApi.env.find(
               (env) => env.name === 'author',
@@ -772,15 +767,10 @@ describe('API Index API', () => {
       const { metadata } = service;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'api-index-api',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'api-index-api',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'api-index-api',
+      );
     });
 
     it('should truncate long release name', async () => {
