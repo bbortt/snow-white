@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
-import { isSubset } from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
 
 const renderAndGetKafkaStatefulSet = async (manifests?: any[]) => {
   if (!manifests) {
@@ -76,15 +76,7 @@ describe('Kafka', () => {
       const { metadata } = statefulSet;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'kafka',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'kafka',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'kafka');
     });
 
     describe('replicas', () => {
@@ -495,15 +487,7 @@ describe('Kafka', () => {
       const { metadata } = pvc;
       expect(metadata).toBeDefined();
 
-      expect(metadata.labels).toEqual({
-        'app.kubernetes.io/managed-by': 'Helm',
-        'app.kubernetes.io/version': 'test-version',
-        'helm.sh/chart': 'snow-white',
-        'app.kubernetes.io/component': 'kafka',
-        'app.kubernetes.io/instance': 'test-release',
-        'app.kubernetes.io/name': 'kafka',
-        'app.kubernetes.io/part-of': 'snow-white',
-      });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'kafka');
     });
 
     it('should have default request size', async () => {
@@ -597,15 +581,7 @@ describe('Kafka', () => {
         const { metadata } = service;
         expect(metadata).toBeDefined();
 
-        expect(metadata.labels).toEqual({
-          'app.kubernetes.io/managed-by': 'Helm',
-          'app.kubernetes.io/version': 'test-version',
-          'helm.sh/chart': 'snow-white',
-          'app.kubernetes.io/component': 'kafka',
-          'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'kafka',
-          'app.kubernetes.io/part-of': 'snow-white',
-        });
+        expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'kafka');
       });
 
       describe('type', async () => {
@@ -685,15 +661,7 @@ describe('Kafka', () => {
         const { metadata } = service;
         expect(metadata).toBeDefined();
 
-        expect(metadata.labels).toEqual({
-          'app.kubernetes.io/managed-by': 'Helm',
-          'app.kubernetes.io/version': 'test-version',
-          'helm.sh/chart': 'snow-white',
-          'app.kubernetes.io/component': 'kafka',
-          'app.kubernetes.io/instance': 'test-release',
-          'app.kubernetes.io/name': 'kafka',
-          'app.kubernetes.io/part-of': 'snow-white',
-        });
+        expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'kafka');
       });
 
       describe('type', async () => {

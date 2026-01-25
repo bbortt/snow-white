@@ -1,5 +1,8 @@
 import { renderHelmChart } from './render-helm-chart';
-import { expectFailsWithMessageContaining } from './helpers';
+import {
+  expectFailsWithMessageContaining,
+  expectToHaveDefaultLabelsForMicroservice,
+} from './helpers';
 
 describe('Ingress', () => {
   const renderAndGetIngress = async (manifests?: any[]) => {
@@ -32,15 +35,7 @@ describe('Ingress', () => {
     const { metadata } = ingress;
     expect(metadata).toBeDefined();
 
-    expect(metadata.labels).toEqual({
-      'app.kubernetes.io/managed-by': 'Helm',
-      'app.kubernetes.io/version': 'test-version',
-      'helm.sh/chart': 'snow-white',
-      'app.kubernetes.io/component': 'ingress',
-      'app.kubernetes.io/instance': 'test-release',
-      'app.kubernetes.io/name': 'ingress',
-      'app.kubernetes.io/part-of': 'snow-white',
-    });
+    expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'ingress');
   });
 
   it('should be the only exposed ingress', async () => {
