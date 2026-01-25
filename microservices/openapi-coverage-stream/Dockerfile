@@ -1,7 +1,7 @@
 FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.compiler,java.desktop,java.instrument,java.logging,java.management,java.security.sasl,java.sql"
+ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.sql"
 
 RUN apk add --no-cache binutils
 
@@ -46,11 +46,7 @@ LABEL org.opencontainers.image.title="snow-white OpenAPI Coverage Stream" \
       org.opencontainers.image.authors="Timon Borter <timon.borter@gmx.ch>" \
       org.opencontainers.image.licenses="Polyform-Small-Business-1.0.0"
 
-RUN apk add --no-cache \
-    gcompat \
-    libstdc++ \
-    tzdata \
-    && addgroup -S openapi-coverage-stream \
+RUN addgroup -S openapi-coverage-stream \
     && adduser -S openapi-coverage-stream -G openapi-coverage-stream
 
 COPY --from=jlink-builder /custom-jre /opt/java
@@ -59,7 +55,7 @@ COPY target/*-executable.jar /tmp/app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
 ENV JAVA_HOME="/opt/java" \
-    AOT_CACHE="/app/api-gateway.aot" \
+    AOT_CACHE="/app/openapi-coverage-stream.aot" \
     OTEL_SERVICE_NAME="openapi-coverage-stream" \
     OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
