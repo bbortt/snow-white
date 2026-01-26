@@ -112,3 +112,46 @@ To follow this recommendation, additionally configure the following environment 
 - `SPRING_FLYWAY_PASSWORD`
 
 This allows Snow-White to apply schema migrations using a privileged user while keeping the runtime database access restricted.
+
+### Disable InfluxDB
+
+Disabling InfluxDB is currently **not safely supported**.
+At the moment, there are no safeguards or validations for missing configuration values, which may lead to runtime errors.
+Until this is properly implemented, disabling InfluxDB is **not recommended**.
+
+#### Using Static Passwords and Tokens
+
+When installing Snow-White using a GitOps operator such as Argo CD, special care must be taken when handling InfluxDB credentials.
+
+Typically, a Git repository containing deployment manifests has no knowledge of the target runtime namespace.
+As a result, InfluxDB passwords and tokens may be re-generated on each deployment.
+In most cases, this behavior is undesirable, as it can break connectivity for dependent components.
+
+To avoid this, you can provide **static credentials** via a Kubernetes `Secret`.
+
+##### Creating the Secret
+
+Create a secret containing the keys `admin-token` and `admin-password`, for example:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-influxdb-credentials
+data:
+  admin-password: YWRtaW4tcGFzc3dvcmQ=
+  admin-token: YWRtaW4tdG9rZW4=
+```
+
+> Note: The values must be Base64-encoded.
+
+##### Referencing the Secret
+
+Next, reference the secret in your `custom_values.yaml`.
+Both InfluxDB and all connected microservices will use the credentials defined in this secret.
+
+```yaml
+influxdb2:
+  adminUser:
+    existingSecret: custom-influxdb-credentials
+```
