@@ -377,7 +377,7 @@ describe('OTEL Event Filter Stream', () => {
             const otelEventFilterStream =
               await renderAndGetOtelEventFilterStreamContainer();
 
-            expect(otelEventFilterStream.imagePullPolicy).toBe('IfNotPresent');
+            expect(otelEventFilterStream.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

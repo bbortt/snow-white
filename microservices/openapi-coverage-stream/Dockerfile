@@ -46,8 +46,8 @@ LABEL org.opencontainers.image.title="snow-white OpenAPI Coverage Stream" \
       org.opencontainers.image.authors="Timon Borter <timon.borter@gmx.ch>" \
       org.opencontainers.image.licenses="Polyform-Small-Business-1.0.0"
 
-RUN addgroup -S openapi-coverage-stream \
-    && adduser -S openapi-coverage-stream -G openapi-coverage-stream
+RUN addgroup -S openapi-coverage-stream --gid 12345 && \
+    adduser -S openapi-coverage-stream -u 10000 -G openapi-coverage-stream -H
 
 COPY --from=jlink-builder /custom-jre /opt/java
 

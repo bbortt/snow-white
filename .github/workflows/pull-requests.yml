@@ -42,6 +42,27 @@ jobs:
         run: pnpm run prettier:check
       - name: Check Markdown Formatting
         run: pnpm lint:markdown
+  kube-score:
+    name: 'Score Helm Chart'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com/
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Score Helm Chart
+        run: |
+          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+            docker run --rm -i zegl/kube-score:latest score \
+            --ignore-container-cpu-limit \
+            --ignore-test pod-networkpolicy \
+            -
   ci:
     name: 'Build and Test'
     runs-on: ubuntu-latest

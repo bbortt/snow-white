@@ -143,7 +143,7 @@ Run all unit/integration tests and aggregate coverage:
 ./mvnw verify -T 1C
 ```
 
-To run a [SonarQube](https://www.sonarsource.com/) analysis:
+To run a [SonarQube](https://www.sonarsource.com) analysis:
 
 1. Start Sonar:
 

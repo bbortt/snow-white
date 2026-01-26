@@ -376,7 +376,7 @@ describe('OpenAPI Coverage Stream', () => {
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer();
 
-            expect(openapiCoverageStream.imagePullPolicy).toBe('IfNotPresent');
+            expect(openapiCoverageStream.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

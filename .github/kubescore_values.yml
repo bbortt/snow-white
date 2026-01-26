@@ -1,0 +1,34 @@
+snowWhite:
+  ingress:
+    host: bbortt.github.io/snow-white
+  apiIndexApi:
+    additionalEnvs:
+      - name: 'SPRING_DATASOURCE_URL'
+        value: 'url'
+      - name: 'SPRING_DATASOURCE_USERNAME'
+        value: 'username'
+      - name: 'SPRING_DATASOURCE_PASSWORD'
+        value: 'password'
+  qualityGateApi:
+    additionalEnvs:
+      - name: 'SPRING_DATASOURCE_URL'
+        value: 'url'
+      - name: 'SPRING_DATASOURCE_USERNAME'
+        value: 'username'
+      - name: 'SPRING_DATASOURCE_PASSWORD'
+        value: 'password'
+  reportCoordinatorApi:
+    additionalEnvs:
+      - name: 'SPRING_DATASOURCE_URL'
+        value: 'url'
+      - name: 'SPRING_DATASOURCE_USERNAME'
+        value: 'username'
+      - name: 'SPRING_DATASOURCE_PASSWORD'
+        value: 'password'
+
+influxdb2:
+  enabled: false
+kafka:
+  enabled: false
+postgresql:
+  enabled: false

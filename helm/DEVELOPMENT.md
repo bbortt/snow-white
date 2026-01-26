@@ -30,6 +30,7 @@ helm upgrade --install \
   helm/charts/snow-white \
   --set influxdb2.persistence.size=5Gi \
   --set kafka.persistence.size=5Gi \
+  --set image.pullPolicy=IfNotPresent \
   --set snowWhite.mode=minimal \
   --set snowWhite.ingress.host=localhost \
   --set snowWhite.ingress.tls=false \
@@ -40,3 +41,21 @@ helm upgrade --install \
   --set snowWhite.qualityGateApi.image.tag=latest \
   --set snowWhite.reportCoordinatorApi.image.tag=latest
 ```
+
+## Kubescore
+
+The GitHub Actions pipeline runs [`kube-score`](https://github.com/zegl/kube-score) against the Helm chart to verify Kubernetes best practices.
+
+To perform the same static template analysis locally, you can run `kube-score` using Docker (or a comparable container runtime).
+
+### Local Execution
+
+```shell
+helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+    docker run --rm -i zegl/kube-score:latest score \
+      --ignore-container-cpu-limit \
+      --ignore-test pod-networkpolicy \
+      -
+```
+
+Replace `<path-to-your-snow-white-repo>` with the absolute path to your local Snow-White repository.

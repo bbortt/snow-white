@@ -398,7 +398,7 @@ describe('Report Coordinator API', () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
 
-            expect(reportCoordinatorApi.imagePullPolicy).toBe('IfNotPresent');
+            expect(reportCoordinatorApi.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

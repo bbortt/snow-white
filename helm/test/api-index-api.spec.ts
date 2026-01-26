@@ -390,7 +390,7 @@ describe('API Index API', () => {
           it('should pull images if they are not present by default', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
 
-            expect(apiIndexApi.imagePullPolicy).toBe('IfNotPresent');
+            expect(apiIndexApi.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {
