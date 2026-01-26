@@ -40,7 +40,7 @@ spec:
           env:
           {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
             - name: 'INFLUXDB_URL'
-              value: '{{ default (printf "%s-influxdb.%s.svc.cluster.local.:8086" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
+              value: '{{ default (printf "http://%s-influxdb.%s.svc.cluster.local.:8086" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
             - name: 'INFLUXDB_ORG'
               value: '{{ .Values.snowWhite.openapiCoverageStream.influxdb.org }}'
             - name: 'INFLUXDB_BUCKET'
@@ -76,11 +76,11 @@ spec:
           {{- end }}
           resources:
             limits:
-              memory: '512m'
+              memory: '512Mi'
               ephemeral-storage: '2Gi'
             requests:
               cpu: '0.5'
-              memory: '512m'
+              memory: '512Mi'
               ephemeral-storage: '50Mi'
           securityContext:
             allowPrivilegeEscalation: false
