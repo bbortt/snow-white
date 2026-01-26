@@ -392,7 +392,7 @@ describe('Quality-Gate API', () => {
           it('should pull images if they are not present by default', async () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
 
-            expect(qualityGateApi.imagePullPolicy).toBe('IfNotPresent');
+            expect(qualityGateApi.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

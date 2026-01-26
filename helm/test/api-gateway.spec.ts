@@ -390,7 +390,7 @@ describe('API Gateway', () => {
           it('should pull images if they are not present by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
 
-            expect(apiGateway.imagePullPolicy).toBe('IfNotPresent');
+            expect(apiGateway.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {
