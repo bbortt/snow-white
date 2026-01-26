@@ -1,7 +1,7 @@
 FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.sql"
+ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.security.sasl,java.sql"
 
 RUN apk add --no-cache binutils
 
