@@ -46,7 +46,7 @@ affinity: {}
 image:
   # -- Image pull policy.
   # @section -- Image Parameters
-  pullPolicy: 'IfNotPresent'
+  pullPolicy: 'Always'
 
 snowWhite:
   # -- Deployment mode of Snow-White.

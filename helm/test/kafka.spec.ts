@@ -350,7 +350,7 @@ describe('Kafka', () => {
           it('should pull images if they are not present by default', async () => {
             const kafka = await renderAndGetKafkaContainer();
 
-            expect(kafka.imagePullPolicy).toBe('IfNotPresent');
+            expect(kafka.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

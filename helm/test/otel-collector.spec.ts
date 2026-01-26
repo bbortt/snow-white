@@ -387,7 +387,7 @@ describe('OTEL Collector', () => {
           it('should pull images if they are not present by default', async () => {
             const otelCollector = await renderAndGetOtelCollectorContainer();
 
-            expect(otelCollector.imagePullPolicy).toBe('IfNotPresent');
+            expect(otelCollector.imagePullPolicy).toBe('Always');
           });
 
           it('should adjust the image pull policy from values', async () => {

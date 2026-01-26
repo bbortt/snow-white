@@ -138,8 +138,8 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-            runAsUser: 100
-            runAsGroup: 101
+            runAsUser: 10000
+            runAsGroup: 12345
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:

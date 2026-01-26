@@ -105,6 +105,14 @@ spec:
             periodSeconds: 10      # liveness can be less frequent to reduce load
             successThreshold: 1
             failureThreshold: 3    # don’t restart on minor hiccups
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10000
+            runAsGroup: 10000
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - name: otel-collector-config-vol
               mountPath: /appl

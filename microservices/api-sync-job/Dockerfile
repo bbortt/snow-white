@@ -46,8 +46,8 @@ LABEL org.opencontainers.image.title="snow-white API Sync Job" \
       org.opencontainers.image.authors="Timon Borter <timon.borter@gmx.ch>" \
       org.opencontainers.image.licenses="Polyform-Small-Business-1.0.0"
 
-RUN addgroup -S api-sync-job \
-    && adduser -S api-sync-job -G api-sync-job
+RUN addgroup -S api-sync-job --gid 12345 && \
+    adduser -S api-sync-job -u 10000 -G api-sync-job -H
 
 COPY --from=jlink-builder /custom-jre /opt/java
 

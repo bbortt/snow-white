@@ -49,8 +49,8 @@ LABEL org.opencontainers.image.title="snow-white API Gateway" \
       org.opencontainers.image.authors="Timon Borter <timon.borter@gmx.ch>" \
       org.opencontainers.image.licenses="Polyform-Small-Business-1.0.0"
 
-RUN addgroup -S api-gateway && \
-    adduser -S api-gateway -G api-gateway
+RUN addgroup -S api-gateway --gid 12345 && \
+    adduser -S api-gateway -u 10000 -G api-gateway -H
 
 COPY --from=jlink-builder /custom-jre /opt/java
 

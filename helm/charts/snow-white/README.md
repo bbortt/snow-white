@@ -34,9 +34,9 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Image Parameters
 
-| Key              | Type   | Default          | Description        |
-| ---------------- | ------ | ---------------- | ------------------ |
-| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy. |
+| Key              | Type   | Default    | Description        |
+| ---------------- | ------ | ---------- | ------------------ |
+| image.pullPolicy | string | `"Always"` | Image pull policy. |
 
 ### Infrastructure (InfluxDB)
 

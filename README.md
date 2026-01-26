@@ -10,7 +10,7 @@
 
 Snow-White connects API specifications with runtime telemetry data to provide insights into your API tests - such as coverage, performance, and usage behavior.
 
-Snow-White makes such analysis effortless by leveraging API specifications and [OpenTelemetry (OTEL)](https://opentelemetry.io/) data.
+Snow-White makes such analysis effortless by leveraging API specifications and [OpenTelemetry (OTEL)](https://opentelemetry.io) data.
 OTEL is a standardized protocol that allows flexible data sourcing.
 
 Most commonly, Snow-White listens to **black-box tests of your application**, such as system or integration tests.
@@ -85,7 +85,7 @@ Next, the running service must provide OpenTelemetry (OTEL) tracing data.
 At the moment, only tracing is relevant (metrics and logs are not used yet).
 The traces must be enhanced with the same annotation information used in the specifications:
 
-- Service Name: [`service.name` attribute](https://opentelemetry.io/docs/specs/semconv/registry/attributes/service/)
+- Service Name: [`service.name` attribute](https://opentelemetry.io/docs/specs/semconv/registry/attributes/service)
 - API Name: [`api.name` attribute](./semantic-convention/openapi.md)
 - API Version: [`api.version` attribute](./semantic-convention/openapi.md)
 
@@ -136,7 +136,7 @@ Please review our contributing guide and code of conduct before submitting a PR.
 
 ## License
 
-This project is licensed under the [Polyform Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0/).
+This project is licensed under the [Polyform Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0).
 
 This means you can freely use, modify, and distribute the software **if your company generates less than $1 million USD in annual revenue** and meets other conditions in the license.
 
