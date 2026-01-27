@@ -8,15 +8,19 @@ maintainers:
   - name: Timon Borter
     email: timon.borter@gmx.ch
 dependencies:
+  - name: common
+    repository: 'oci://registry-1.docker.io/bitnamicharts'
+    version: 2.31.4
   - name: influxdb2
     version: 2.1.2
-    repository: 'https://helm.influxdata.com/'
+    repository: 'https://helm.influxdata.com'
     condition: influxdb2.enabled
+  - name: minio
+    version: 5.4.0
+    repository: 'https://charts.min.io'
+    condition: minio.enabled
   - name: postgresql
     version: 18.2.3
     repository: 'https://charts.bitnami.com/bitnami'
     condition: postgresql.enabled
-  - name: common
-    repository: 'oci://registry-1.docker.io/bitnamicharts'
-    version: 2.31.4
 engine: gotpl

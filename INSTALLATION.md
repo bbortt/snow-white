@@ -34,6 +34,17 @@ helm uninstall my-snow-white
 kubectl delete pvc --all
 ```
 
+## Infrastructure Components
+
+By default, the Snow-White Helm chart is self-contained and automatically deploys the following infrastructure components:
+
+- InfluxDB
+- Kafka
+- OTel Collector
+- PostgreSQL
+
+**Exception:** MinIO is only deployed when using Backstage as your backing API index.
+
 ## Replacing Infrastructure with Existing Infrastructure
 
 You may already operate parts of the required infrastructure (for example PostgreSQL, Kafka, or other shared services) outside of the Snow-White Helm chart.

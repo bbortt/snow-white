@@ -60,7 +60,8 @@ jobs:
       - name: Add Helm Repos
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com/
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add minio https://charts.min.io
       - name: Git Configuration
         run: |
           git config user.name "Timon Borter"

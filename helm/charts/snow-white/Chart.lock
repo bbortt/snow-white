@@ -1,12 +1,15 @@
 dependencies:
-- name: influxdb2
-  repository: https://helm.influxdata.com/
-  version: 2.1.2
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 18.2.3
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 2.31.4
-digest: sha256:616507656bc59819a82c1b08b120d819fee9b8ac227e52514ae779a9861f1c67
-generated: "2026-01-20T21:04:28.684476+01:00"
+- name: influxdb2
+  repository: https://helm.influxdata.com
+  version: 2.1.2
+- name: minio
+  repository: https://charts.min.io
+  version: 5.4.0
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.2.3
+digest: sha256:16d940e5db9fe54086ac91c8ca2982eb244e1fe48ef2d635f5a1133da1200300
+generated: "2026-01-27T17:59:22.1724523+01:00"

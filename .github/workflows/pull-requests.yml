@@ -53,7 +53,8 @@ jobs:
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com/
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add minio https://charts.min.io
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Score Helm Chart
@@ -84,7 +85,8 @@ jobs:
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com/
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add minio https://charts.min.io
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Build with Maven

@@ -209,9 +209,21 @@ kafka:
     # -- Storage class for Kafka persistent volumes.
     # @section -- Infrastructure (Kafka)
     storageClass: 'hostpath'
-    # -- Size of the storage for Kafka.
+    # -- Size of persistent storage for Kafka.
     # @section -- Infrastructure (Kafka)
     size: 10Gi
+
+minio:
+  # -- Deploy MinIO StatefulSet alongside Snow-White.
+  # @section -- Infrastructure (MinIO)
+  enabled: false
+  # -- Number of MinIO containers running.
+  # @section -- Infrastructure (MinIO)
+  replicas: 3
+  persistence:
+    # -- Size of persistent storage for MinIO.
+    # @section -- Infrastructure (MinIO)
+    size: 5Gi
 
 otelCollector:
   image:

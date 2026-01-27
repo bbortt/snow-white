@@ -53,8 +53,16 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
 | kafka.image.registry           | string | `"docker.io"`              | Image registry.                                                    |
 | kafka.image.tag                | string | `"8.1.1"`                  | Image tag.                                                         |
-| kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
+| kafka.persistence.size         | string | `"10Gi"`                   | Size of persistent storage for Kafka.                              |
 | kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
+
+### Infrastructure (MinIO)
+
+| Key                    | Type   | Default | Description                                    |
+| ---------------------- | ------ | ------- | ---------------------------------------------- |
+| minio.enabled          | bool   | `false` | Deploy MinIO StatefulSet alongside Snow-White. |
+| minio.persistence.size | string | `"5Gi"` | Size of persistent storage for MinIO.          |
+| minio.replicas         | int    | `3`     | Number of MinIO containers running.            |
 
 ### OpenTelemetry Collector
 
@@ -62,7 +70,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | -------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | otelCollector.exposeThroughIngress     | bool   | `true`                                                                                                           | Whether to expose the OTeL collector through the (public) ingress.                                           |
 | otelCollector.image.registry           | string | `"docker.io"`                                                                                                    | Image registry.                                                                                              |
-| otelCollector.image.tag                | string | `"0.143.1"`                                                                                                      | Image tag.                                                                                                   |
+| otelCollector.image.tag                | string | `"0.144.0"`                                                                                                      | Image tag.                                                                                                   |
 | otelCollector.influxdb.bucket          | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                             |
 | otelCollector.influxdb.endpoint        | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                           |
 | otelCollector.influxdb.org             | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                       |
