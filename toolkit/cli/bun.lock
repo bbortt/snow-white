@@ -39,7 +39,7 @@
         "wiremock-captain": "4.1.3",
       },
       "optionalDependencies": {
-        "npm-check-updates": "19.3.1",
+        "npm-check-updates": "19.3.2",
       },
     },
   },
@@ -598,7 +598,7 @@
 
     "normalize-path": ["normalize-path@3.0.0", "", {}, "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="],
 
-    "npm-check-updates": ["npm-check-updates@19.3.1", "", { "bin": { "npm-check-updates": "build/cli.js", "ncu": "build/cli.js" } }, "sha512-v92fHH8fmf9VVmQwwL5JWpX8GDEe8BDyrz4w3GF6D6JBUZKpQNcTfBBgxVkCcAPzVUjCHSZEXYmZAAKfLTsDBA=="],
+    "npm-check-updates": ["npm-check-updates@19.3.2", "", { "bin": { "npm-check-updates": "build/cli.js", "ncu": "build/cli.js" } }, "sha512-9rr3z7znFjCSuaFxHGTFR2ZBOvLWaJcpLKmIquoTbDBNrwAGiHhv4MZyty6EJ9Xo/aMn35+2ISPSMgWIXx5Xkg=="],
 
     "npm-java-runner": ["npm-java-runner@2.0.0", "", {}, "sha512-vYkU45l0J6rNoXJdHHSPzmW9mpbBDR/RmO0w60tnJOmlW3Tki6J9lNK/OQq8EQZSsBe1U3NL9TgJKWL+2YeXxw=="],
 
