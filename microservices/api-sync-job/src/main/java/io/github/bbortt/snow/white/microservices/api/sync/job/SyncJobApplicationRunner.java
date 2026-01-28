@@ -20,7 +20,7 @@ public class SyncJobApplicationRunner implements ApplicationRunner {
   private final SyncJob syncJob;
 
   @Override
-  public void run(ApplicationArguments args) {
+  public void run(ApplicationArguments args) throws InterruptedException {
     syncJob.syncCatalog();
   }
 }

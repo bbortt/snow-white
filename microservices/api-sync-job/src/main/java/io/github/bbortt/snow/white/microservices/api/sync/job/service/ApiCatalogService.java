@@ -7,11 +7,10 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.service;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 public interface ApiCatalogService {
-  CompletableFuture<Set<ApiInformation>> fetchApiIndex();
-
-  ApiInformation validateApiInformation(ApiInformation apiInformation);
+  List<Supplier<@Nullable ApiInformation>> getApiSpecificationLoaders();
 }
