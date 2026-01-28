@@ -7,17 +7,20 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.nonNull;
+import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.StructuredTaskScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
-import org.springframework.core.task.AsyncTaskExecutor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,82 +28,52 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SyncJob {
 
+  private final Semaphore rateLimiter = new Semaphore(1);
+
   private final List<ApiCatalogService> apiCatalogServices;
   private final CachingService cachingService;
-  private final AsyncTaskExecutor taskExecutor;
 
-  void syncCatalog() {
-    loadApiCatalogFromServices()
-      .thenCompose(apiCatalogIndices -> {
-        long apiInformationCount = apiCatalogIndices
-          .stream()
-          .map(ApiCatalogIndex::apiInformation)
-          .mapToLong(Collection::size)
-          .sum();
-        logger.info(
-          "Validating {} APIs loaded from index",
-          apiInformationCount
+  void syncCatalog() throws InterruptedException {
+    try (var scope = StructuredTaskScope.open(allSuccessfulOrThrow())) {
+      apiCatalogServices
+        .stream()
+        .map(ApiCatalogService::getApiSpecificationLoaders)
+        .flatMap(Collection::stream)
+        .forEach(supplier ->
+          scope.fork(() -> {
+            rateLimiter.acquire();
+            try {
+              var apiInformation = supplier.get();
+              return publishLoadedApi(apiInformation);
+            } finally {
+              rateLimiter.release();
+            }
+          })
         );
 
-        var validationFutures = apiCatalogIndices
-          .stream()
-          .map(ApiCatalogIndex::validateApiInformation)
-          .flatMap(Collection::stream)
-          .toList();
+      var successfullyPublishedSpecifications = scope
+        .join()
+        .map(StructuredTaskScope.Subtask::get)
+        .filter(TRUE::equals)
+        .count();
 
-        return CompletableFuture.allOf(
-          validationFutures.toArray(new CompletableFuture[0])
-        ).thenApply(v -> {
-          var validApis = validationFutures
-            .stream()
-            .map(CompletableFuture::join)
-            .filter(this::publishLoadedApi)
-            .toList();
-          logger.info(
-            "Updated {} of {} valid APIs",
-            validApis.size(),
-            apiInformationCount
-          );
-          return validApis;
-        });
-      })
-      .join();
-  }
-
-  private @NonNull CompletableFuture<
-    List<ApiCatalogIndex>
-  > loadApiCatalogFromServices() {
-    var futures = apiCatalogServices
-      .stream()
-      .map(apiCatalogService ->
-        apiCatalogService
-          .fetchApiIndex()
-          .thenApply(apiInformation ->
-            new ApiCatalogIndex(apiCatalogService, apiInformation, taskExecutor)
-          )
-      )
-      .toList();
-
-    return CompletableFuture.allOf(
-      futures.toArray(new CompletableFuture[0])
-    ).thenApply(v -> futures.stream().map(CompletableFuture::join).toList());
-  }
-
-  private boolean publishLoadedApi(ApiInformation apiInformation) {
-    if (!LOADED.equals(apiInformation.getLoadStatus())) {
-      logger.warn(
-        "Failed to load API '{}', status is '{}'",
-        apiInformation.getTitle(),
-        apiInformation.getLoadStatus()
+      logger.info(
+        "Successfully synchronized {} api specifications",
+        successfullyPublishedSpecifications
       );
-
-      return false;
     }
+  }
 
-    if (!cachingService.apiInformationIndexed(apiInformation)) {
+  private boolean publishLoadedApi(@Nullable ApiInformation apiInformation) {
+    if (
+      nonNull(apiInformation) &&
+      LOADED.equals(apiInformation.getLoadStatus()) &&
+      !cachingService.apiInformationIndexed(apiInformation)
+    ) {
       cachingService.publishApiInformation(apiInformation);
+      return true;
     }
 
-    return true;
+    return false;
   }
 }

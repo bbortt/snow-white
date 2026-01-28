@@ -25,4 +25,14 @@ class ApiCatalogExceptionTest {
     var message = "test";
     assertThat(new ApiCatalogException(message)).hasMessage(message);
   }
+
+  @Test
+  void shouldAcceptCause() {
+    var message = "test";
+    var cause = new IllegalArgumentException();
+
+    assertThat(new ApiCatalogException(message, cause))
+      .hasCause(cause)
+      .hasMessageContaining(message);
+  }
 }

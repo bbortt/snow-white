@@ -13,6 +13,8 @@ public enum ApiLoadStatus {
   LOADED,
   // Load failed
   LOAD_FAILED,
+  // One of service name, API name or version is missing
+  MANDATORY_INFORMATION_MISSING,
   // No source url provided
   NO_SOURCE,
 }

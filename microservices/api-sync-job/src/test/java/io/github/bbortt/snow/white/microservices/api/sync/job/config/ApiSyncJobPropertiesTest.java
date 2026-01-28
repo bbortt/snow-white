@@ -47,6 +47,13 @@ class ApiSyncJobPropertiesTest {
         return ApiSyncJobPropertiesTest.emptyAndNullString();
       }
 
+      @BeforeEach
+      void beforeEachSetup() {
+        fixture.getArtifactory().setBaseUrl("baseUrl");
+        fixture.getArtifactory().setAccessToken("accessToken");
+        fixture.getArtifactory().setRepository("repository");
+      }
+
       @Test
       void shouldPass_whenBaseUrlIsSet() {
         fixture.getApiIndex().setBaseUrl("api-index");
@@ -70,59 +77,7 @@ class ApiSyncJobPropertiesTest {
     }
 
     @Nested
-    class BackstagePropertiesTest {
-
-      static Stream<String> emptyAndNullString() {
-        return ApiSyncJobPropertiesTest.emptyAndNullString();
-      }
-
-      @BeforeEach
-      void beforeEachSetup() {
-        fixture.getApiIndex().setBaseUrl("api-index");
-      }
-
-      @Test
-      void shouldPass_whenBackstage_isUsingCustomAnnotations() {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture
-          .getBackstage()
-          .setCustomVersionAnnotation("customVersionAnnotation");
-
-        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
-      }
-
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsEmptyOrNull(
-        String endpoint
-      ) {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture.getMinio().setEndpoint(endpoint);
-
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage(
-            "Backstage API entities can only be parsed if a MinIO storage is configured!"
-          );
-      }
-
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsSet_butBucketNameIsEmptyOrNull(
-        String bucketName
-      ) {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture.getMinio().setEndpoint("endpoint");
-        fixture.getMinio().setBucketName(bucketName);
-
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("Please configure a MinIO bucket name!");
-      }
-    }
-
-    @Nested
-    class ServiceInterfacePropertiesTest {
+    class ArtifactoryPropertiesTest {
 
       public static Stream<String> emptyAndNullString() {
         return ApiSyncJobPropertiesTest.emptyAndNullString();
@@ -133,37 +88,51 @@ class ApiSyncJobPropertiesTest {
         fixture.getApiIndex().setBaseUrl("api-index");
       }
 
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
-      void shouldPass_whenServiceInterface_baseUrlIsEmptyOrNull(
-        String baseUrl
-      ) {
-        fixture.getServiceInterface().setBaseUrl(baseUrl);
-
-        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
-      }
-
       @Test
-      void shouldPass_whenServiceInterface_propertiesAreSet() {
-        fixture.getServiceInterface().setBaseUrl("baseUrl");
-        fixture.getServiceInterface().setIndexUri("indexUri");
+      void shouldPass_whenAllPropertiesAreSet() {
+        fixture.getArtifactory().setBaseUrl("baseUrl");
+        fixture.getArtifactory().setAccessToken("accessToken");
+        fixture.getArtifactory().setRepository("repository");
 
         assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
       }
 
       @ParameterizedTest
       @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenServiceInterface_baseUrlIsSet_andIndexUriIsEmptyOrNull(
-        String indexUri
-      ) {
-        fixture.getServiceInterface().setBaseUrl("baseUrl");
-        fixture.getServiceInterface().setIndexUri(indexUri);
+      void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
+        fixture.getArtifactory().setBaseUrl(baseUrl);
+        fixture.getArtifactory().setAccessToken("accessToken");
+        fixture.getArtifactory().setRepository("repository");
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage(
-            "Both 'snow.white.api.sync.job.service-interface.base-url' and 'snow.white.api.sync.job.service-interface.index-uri' must be set!"
-          );
+        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+          "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.base-url]."
+        );
+      }
+
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenAccessTokenIsEmptyOrNull(
+        String accessToken
+      ) {
+        fixture.getArtifactory().setBaseUrl("baseUrl");
+        fixture.getArtifactory().setAccessToken(accessToken);
+        fixture.getArtifactory().setRepository("repository");
+
+        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+          "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.access-token]."
+        );
+      }
+
+      @ParameterizedTest
+      @MethodSource("emptyAndNullString")
+      void shouldThrowException_whenRepositoryIsEmptyOrNull(String repository) {
+        fixture.getArtifactory().setBaseUrl("baseUrl");
+        fixture.getArtifactory().setAccessToken("accessToken");
+        fixture.getArtifactory().setRepository(repository);
+
+        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+          "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.repository]."
+        );
       }
     }
   }

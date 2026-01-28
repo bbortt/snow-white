@@ -65,7 +65,7 @@ class SyncJobApplicationRunnerTest {
   class Run {
 
     @Test
-    void shouldInvokeSyncCatalog() {
+    void shouldInvokeSyncCatalog() throws InterruptedException {
       fixture.run(new DefaultApplicationArguments());
 
       verify(syncJobMock).syncCatalog();

@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.MANDATORY_INFORMATION_MISSING;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.NO_SOURCE;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.String.format;
@@ -25,6 +26,23 @@ public class OpenApiValidationService {
     ApiInformation apiInformation,
     ParsingMode parsingMode
   ) {
+    if (
+      !hasLength(apiInformation.getServiceName()) ||
+      !hasLength(apiInformation.getName()) ||
+      !hasLength(apiInformation.getVersion())
+    ) {
+      if (STRICT.equals(parsingMode)) {
+        throw new IllegalArgumentException(
+          format(
+            "Encountered API in index mandatory fields service name, API name and version: %s!",
+            apiInformation.getTitle()
+          )
+        );
+      } else {
+        return apiInformation.withLoadStatus(MANDATORY_INFORMATION_MISSING);
+      }
+    }
+
     if (!hasLength(apiInformation.getSourceUrl())) {
       if (STRICT.equals(parsingMode)) {
         throw new IllegalArgumentException(

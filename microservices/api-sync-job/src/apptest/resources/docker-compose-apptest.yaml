@@ -14,16 +14,3 @@ services:
     restart: on-failure
     networks:
       - default
-
-  minio:
-    image: minio/minio:latest-cicd
-    command: server /home/shared
-    ports:
-      - '9090:9000'
-    networks:
-      - default
-    healthcheck:
-      test: ['CMD', 'mc', 'ready', 'local']
-      interval: 5s
-      timeout: 5s
-      retries: 5

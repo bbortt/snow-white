@@ -1,7 +1,7 @@
 FROM eclipse-temurin:25-jdk-alpine AS jlink-builder
 
 # Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management"
+ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.naming"
 
 RUN apk add --no-cache binutils
 
@@ -69,4 +69,4 @@ ENV PATH="$PATH:$JAVA_HOME/bin"
 
 USER api-sync-job
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -javaagent:/opt/opentelemetry-javaagent.jar -jar /app/sync-job.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS --enable-preview -javaagent:/opt/opentelemetry-javaagent.jar -jar /app/sync-job.jar" ]

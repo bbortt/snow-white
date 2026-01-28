@@ -2,8 +2,7 @@ snow:
   white:
     api:
       index:
-        api:
-          public-api-gateway-url: http://localhost:8090
+        public-api-gateway-url: http://localhost:8090
 spring:
   devtools:
     livereload:

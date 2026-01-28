@@ -12,6 +12,10 @@ opentelemetry-proto/
 
 target/
 
+# Dev Tools
+dev/artifactory/
+dev/postgresql/
+
 # Must have no newline at end of file
 tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openapitools.codegen.CodegenConfig
 

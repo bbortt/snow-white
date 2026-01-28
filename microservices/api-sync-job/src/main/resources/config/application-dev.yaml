@@ -5,9 +5,9 @@ snow:
         job:
           api-index:
             base-url: http://localhost:8085
-          service-interface:
-            index-uri: /localhost.json
-            base-url: http://localhost:3000
+          artifactory:
+            base-url: http://localhost:3000/artifactory
+            repository: snow-white-generic-local
 spring:
   devtools:
     livereload:
