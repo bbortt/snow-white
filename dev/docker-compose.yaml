@@ -158,16 +158,27 @@ services:
     networks:
       - internal
 
-  service-interface-repository:
-    build:
-      context: ./sir
+  artifactory:
+    image: releases-docker.jfrog.io/jfrog/artifactory-oss:7.133.3
+    environment:
+      ENABLE_MIGRATION: 'y'
+      JF_SHARED_DATABASE_TYPE: 'postgresql'
+      JF_SHARED_DATABASE_USERNAME: 'artifactory'
+      JF_SHARED_DATABASE_PASSWORD: 'artifactory'
+      JF_SHARED_DATABASE_URL: 'jdbc:postgresql://postgres:5432/artifactory'
+      JF_SHARED_DATABASE_DRIVER: 'org.postgresql.Driver'
     ports:
-      - '3000:3000'
-    healthcheck:
-      test: nc -z localhost 3000 || exit 1
-      interval: 1s
-      timeout: 60s
-      retries: 60
+      - 3000:8082
+    volumes:
+      - ./artifactory/var:/var/opt/jfrog/artifactory
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: on-failure
     networks:
       - internal
@@ -268,7 +279,7 @@ services:
     depends_on:
       otel-collector:
         condition: service_started
-      service-interface-repository:
+      artifactory:
         condition: service_healthy
       microservices.api-index-api:
         condition: service_started

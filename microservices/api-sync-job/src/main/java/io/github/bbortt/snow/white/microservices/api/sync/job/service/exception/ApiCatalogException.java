@@ -13,4 +13,8 @@ public class ApiCatalogException extends JacksonException {
   public ApiCatalogException(String message) {
     super(message);
   }
+
+  public ApiCatalogException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -4,9 +4,10 @@
  * See LICENSE file for full details.
  */
 
+package io.github.bbortt.snow.white.toolkit.annotation;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation;
 import org.junit.jupiter.api.Test;
 
 class AnnotationTest {

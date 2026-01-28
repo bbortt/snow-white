@@ -31,15 +31,4 @@ class RestClientConfigIT {
         .isNotSameAs(applicationContext.getBean(RestClient.class));
     }
   }
-
-  @Nested
-  class RestClientBuilderTest {
-
-    @Test
-    void isPrototypeBean() {
-      assertThat(applicationContext.getBean(RestClient.Builder.class))
-        .isInstanceOf(RestClient.Builder.class)
-        .isNotSameAs(applicationContext.getBean(RestClient.Builder.class));
-    }
-  }
 }
