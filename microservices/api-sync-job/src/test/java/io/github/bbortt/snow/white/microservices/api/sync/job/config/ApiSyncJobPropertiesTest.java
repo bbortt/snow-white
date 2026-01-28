@@ -70,59 +70,7 @@ class ApiSyncJobPropertiesTest {
     }
 
     @Nested
-    class BackstagePropertiesTest {
-
-      static Stream<String> emptyAndNullString() {
-        return ApiSyncJobPropertiesTest.emptyAndNullString();
-      }
-
-      @BeforeEach
-      void beforeEachSetup() {
-        fixture.getApiIndex().setBaseUrl("api-index");
-      }
-
-      @Test
-      void shouldPass_whenBackstage_isUsingCustomAnnotations() {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture
-          .getBackstage()
-          .setCustomVersionAnnotation("customVersionAnnotation");
-
-        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
-      }
-
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsEmptyOrNull(
-        String endpoint
-      ) {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture.getMinio().setEndpoint(endpoint);
-
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage(
-            "Backstage API entities can only be parsed if a MinIO storage is configured!"
-          );
-      }
-
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenBackstage_baseUrlIsSet_andMinioEndpointIsSet_butBucketNameIsEmptyOrNull(
-        String bucketName
-      ) {
-        fixture.getBackstage().setBaseUrl("baseUrl");
-        fixture.getMinio().setEndpoint("endpoint");
-        fixture.getMinio().setBucketName(bucketName);
-
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessage("Please configure a MinIO bucket name!");
-      }
-    }
-
-    @Nested
-    class ServiceInterfacePropertiesTest {
+    class ArtifactoryPropertiesTest {
 
       public static Stream<String> emptyAndNullString() {
         return ApiSyncJobPropertiesTest.emptyAndNullString();

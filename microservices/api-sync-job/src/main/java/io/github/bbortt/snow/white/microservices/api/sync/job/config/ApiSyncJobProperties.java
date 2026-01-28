@@ -8,11 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
 import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties.PREFIX;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
-import static java.lang.String.format;
-import static org.springframework.util.StringUtils.hasText;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -30,57 +26,18 @@ public class ApiSyncJobProperties implements InitializingBean {
   public static final String PREFIX = "snow.white.api.sync.job";
 
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
-  private final BackstageProperties backstage = new BackstageProperties();
-  private final ServiceInterfaceProperties serviceInterface =
-    new ServiceInterfaceProperties();
-  private final MinIOProperties minio = new MinIOProperties();
+  private final ArtifactoryProperties artifactory = new ArtifactoryProperties();
 
   @Override
   public void afterPropertiesSet() {
     Map<String, String> properties = new HashMap<>();
     properties.put(ApiIndexProperties.BASE_URL_PROPERTY_NAME, apiIndex.baseUrl);
+    properties.put(
+      ArtifactoryProperties.BASE_URL_PROPERTY_NAME,
+      artifactory.baseUrl
+    );
 
     assertRequiredProperties(properties);
-
-    if (
-      hasText(backstage.baseUrl) &&
-      !hasText(backstage.customVersionAnnotation) &&
-      !hasText(minio.endpoint)
-    ) {
-      throw new IllegalArgumentException(
-        "Backstage API entities can only be parsed if a MinIO storage is configured!"
-      );
-    } else if (hasText(minio.endpoint) && !hasText(minio.bucketName)) {
-      throw new IllegalArgumentException(
-        "Please configure a MinIO bucket name!"
-      );
-    }
-
-    if (
-      hasText(serviceInterface.baseUrl) && !hasText(serviceInterface.indexUri)
-    ) {
-      var sirPrefix = PREFIX + ".service-interface";
-      throw new IllegalArgumentException(
-        format(
-          "Both '%s.base-url' and '%s.index-uri' must be set!",
-          sirPrefix,
-          sirPrefix
-        )
-      );
-    }
-  }
-
-  @Getter
-  @Setter
-  public static class MinIOProperties {
-
-    private String endpoint;
-    private String bucketName;
-
-    private String accessKey;
-    private String secretKey;
-
-    private Boolean initBucket = false;
   }
 
   @Getter
@@ -95,39 +52,12 @@ public class ApiSyncJobProperties implements InitializingBean {
 
   @Getter
   @Setter
-  public static class BackstageProperties {
+  public static class ArtifactoryProperties {
 
     public static final String BASE_URL_PROPERTY_NAME =
-      PREFIX + ".backstage.base-url";
+      PREFIX + ".artifactory.base-url";
 
     private String baseUrl;
-
-    private String customVersionAnnotation;
-
-    private String customApiNameJsonPath = "info.title";
-    private String customApiVersionJsonPath = "info.version";
-    private String customServiceNameJsonPath = "info.extensions.x-service-name";
-
-    private ParsingMode parsingMode = GRACEFUL;
-  }
-
-  @Getter
-  @Setter
-  public static class ServiceInterfaceProperties {
-
-    public static final String BASE_URL_PROPERTY_NAME =
-      PREFIX + ".service-interface.base-url";
-
-    private static final String DEFAULT_OTEL_SERVICE_NAME_PROPERTY =
-      "oas.info.x-service-name";
-
-    private String baseUrl;
-    private String indexUri;
-
-    private String apiNameProperty;
-    private String apiVersionProperty;
-    private String serviceNameProperty = DEFAULT_OTEL_SERVICE_NAME_PROPERTY;
-
-    private ParsingMode parsingMode = GRACEFUL;
+    private String accessToken;
   }
 }
