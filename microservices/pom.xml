@@ -41,7 +41,7 @@
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.1</org.springdoc.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
-    <wiremock-spring-boot.version>4.0.9</wiremock-spring-boot.version>
+    <wiremock-spring-boot.version>4.1.0</wiremock-spring-boot.version>
 
     <container.registry>ghcr.io</container.registry>
     <image.tag>${project.version}</image.tag>
