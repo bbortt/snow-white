@@ -17,7 +17,7 @@
   "devDependencies": {
     "execa": "9.6.1",
     "npm-run-all2": "8.0.4",
-    "vitest": "4.0.17",
+    "vitest": "4.0.18",
     "wait-on": "9.0.3",
     "wiremock-captain": "4.1.3"
   },
