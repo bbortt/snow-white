@@ -24,16 +24,16 @@ describe('helpers', () => {
 
   describe('snow-white.replicas', () => {
     it('should throw when snow-white.mode contains unexpected value', async () => {
-      await expectFailsWithMessageContaining(
-        async () =>
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            values: {
-              snowWhite: {
-                mode: 'custom',
-              },
+      await expect(() =>
+        renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            snowWhite: {
+              mode: 'custom',
             },
-          }),
+          },
+        }),
+      ).rejects.toThrow(
         "⚠ ERROR: You must set 'snowWhite.mode' to a valid value: 'minimal', 'high-available' or 'autoscale'!",
       );
     });

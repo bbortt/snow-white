@@ -7,7 +7,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseDocument } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
-import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
+import {
+  expectToHaveDefaultLabelsForMicroservice,
+  getPodSpec,
+  isSubset,
+} from './helpers';
 
 describe('OTEL Event Filter Stream', () => {
   describe('Deployment', () => {
@@ -27,19 +31,6 @@ describe('OTEL Event Filter Stream', () => {
       expect(deployment).toBeDefined();
 
       return deployment;
-    };
-
-    const getPodSpec = (deployment) => {
-      const { spec } = deployment;
-      expect(spec).toBeDefined();
-
-      const { template } = spec;
-      expect(template).toBeDefined();
-
-      const templateSpec = template.spec;
-      expect(templateSpec).toBeDefined();
-
-      return templateSpec;
     };
 
     it('should be kubernetes Deployment', async () => {

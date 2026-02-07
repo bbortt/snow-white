@@ -34,6 +34,55 @@ helm uninstall my-snow-white
 kubectl delete pvc --all
 ```
 
+## API Indexation
+
+By default, Snow-White does not deploy an API synchronization job.
+
+For simple installations - or if you just want to explore Snow-White - API specifications can be indexed manually using `curl`.
+The [`api-index-api` OpenAPI specification](./microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml) describes in detail how to register a specification.
+
+For production environments, however, it is recommended to index API specifications automatically and on a regular basis.
+This can be achieved by enabling the bundled `CronJob`:
+
+```yaml
+snowWhite.apiSyncJob.enabled=true
+```
+
+Currently, JFrog Artifactory is the only supported API source.
+Snow-White expects a [generic Artifactory repository](https://jfrog.com/help/r/jfrog-artifactory-documentation/generic-repositories) containing API specifications as plain text files.
+The synchronization job scans all files in the repository, attempts to interpret them as API specifications, and forwards valid ones to Snow-White’s internal API index.
+
+Tell Snow-White were your API specifications are located with the following values:
+
+```yaml
+snowWhite.apiSyncJob.artifactory.baseUrl: 'http://localhost:8082/artifactory'
+snowWhite.apiSyncJob.artifactory.repository: 'snow-white-generica-local'
+```
+
+If you have requirements for additional API sources, feel free to [open an issue](https://github.com/bbortt/snow-white/issues/new) - we’re happy to discuss integrations.
+
+### Artifactory Access Token
+
+When the sync job is enabled, Snow-White requires an access token to authenticate against Artifactory.
+It is strongly recommended to provide this token via a Kubernetes `Secret`.
+
+Helm supports injecting the token as an environment variable, for example:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    additionalEnvs:
+      - name: SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: artifactory-secret
+            key: artifactory-token
+```
+
+> ⚠️ Important: Snow-White stores only references to API specifications, not the specifications themselves.
+> Artifactory must therefore remain available at all times.
+> Snow-White is neither a mirror nor a complete standalone API index.
+
 ## Replacing Infrastructure with Existing Infrastructure
 
 You may already operate parts of the required infrastructure (for example PostgreSQL, Kafka, or other shared services) outside of the Snow-White Helm chart.
