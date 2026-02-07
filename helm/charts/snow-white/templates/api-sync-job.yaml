@@ -1,0 +1,62 @@
+{{- if eq .Values.snowWhite.apiSyncJob.enabled true }}
+{{- $labels := include "snow-white.labels" (dict "name" "api-sync-job" "context" .) | nindent 0 }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "api-sync-job" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  schedule: '{{ .Values.snowWhite.apiSyncJob.schedule }}'
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{ include "snow-white.imagePullSecrets" . | nindent 10 }}
+          securityContext:
+            fsGroup: 101
+          containers:
+            - name: api-sync-job
+              image: '{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-sync-job:{{ .Values.snowWhite.apiSyncJob.image.tag | default .Chart.AppVersion }}'
+              imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+              env:
+              {{- include "snow-white.otelExporterEnvVariables" . | nindent 16 }}
+                - name: JAVA_TOOL_OPTIONS
+                  value: >-
+                    -Djava.io.tmpdir=/tmp
+                    -XX:+ExitOnOutOfMemoryError
+                - name: 'SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL'
+                  value: '{{ printf "http://%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}'
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_BASE-URL'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.baseUrl }}'
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.repository }}'
+              {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
+              {{- include "snow-white.verifyArtifactoryCredentials" (dict "context" . "envVars" $additionalEnvs "selector" "apiSyncJob") | nindent 16 }}
+              {{- range $additionalEnvs }}
+                - name: {{ .name }}
+                  {{- if .value }}
+                  value: {{ .value | quote }}
+                  {{- else if .valueFrom }}
+                  valueFrom:
+                    {{- toYaml .valueFrom | nindent 20 }}
+                  {{- end }}
+              {{- end }}
+              resources:
+                limits:
+                  memory: '0.5Gi'
+                  ephemeral-storage: '2Gi'
+                requests:
+                  cpu: '0.5'
+                  memory: '0.5Gi'
+                  ephemeral-storage: '50Mi'
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 10000
+                runAsGroup: 12345
+                seccompProfile:
+                  type: RuntimeDefault
+          restartPolicy: OnFailure
+{{- end }}

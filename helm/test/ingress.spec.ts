@@ -1,8 +1,5 @@
 import { renderHelmChart } from './render-helm-chart';
-import {
-  expectFailsWithMessageContaining,
-  expectToHaveDefaultLabelsForMicroservice,
-} from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
 
 describe('Ingress', () => {
   const renderAndGetIngress = async (manifests?: any[]) => {
@@ -282,12 +279,12 @@ describe('Ingress', () => {
     });
 
     it('is required to specify a public host', async () => {
-      await expectFailsWithMessageContaining(
-        async () =>
-          await renderHelmChart({
-            chartPath: 'charts/snow-white',
-            withDefaultValues: false,
-          }),
+      await expect(() =>
+        renderHelmChart({
+          chartPath: 'charts/snow-white',
+          withDefaultValues: false,
+        }),
+      ).rejects.toThrow(
         "⚠ ERROR: You must set 'snowWhite.ingress.host' to the public URL!",
       );
     });

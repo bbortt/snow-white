@@ -62,7 +62,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | -------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | otelCollector.exposeThroughIngress     | bool   | `true`                                                                                                           | Whether to expose the OTeL collector through the (public) ingress.                                           |
 | otelCollector.image.registry           | string | `"docker.io"`                                                                                                    | Image registry.                                                                                              |
-| otelCollector.image.tag                | string | `"0.143.1"`                                                                                                      | Image tag.                                                                                                   |
+| otelCollector.image.tag                | string | `"0.145.0"`                                                                                                      | Image tag.                                                                                                   |
 | otelCollector.influxdb.bucket          | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                             |
 | otelCollector.influxdb.endpoint        | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                           |
 | otelCollector.influxdb.org             | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                       |
@@ -86,14 +86,23 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.apiGateway.service.port   | int    | `80`          | Exposed port for the API Gateway service.                |
 | snowWhite.apiGateway.service.type   | string | `"ClusterIP"` | Type of Kubernetes service.                              |
 
-### Snow-White Report Coordinator API
+### Snow-White API Index API
 
-| Key                                           | Type   | Default | Description                                              |
-| --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
-| snowWhite.apiIndexApi.additionalEnvs          | list   | `[]`    | Additional environment variables forwarded to container. |
-| snowWhite.apiIndexApi.image.tag               | string | `""`    | Image tag.                                               |
-| snowWhite.reportCoordinatorApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
-| snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
+| Key                                  | Type   | Default | Description                                              |
+| ------------------------------------ | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.apiIndexApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.apiIndexApi.image.tag      | string | `""`    | Image tag.                                               |
+
+### Snow-White API Sync Job
+
+| Key                                         | Type   | Default       | Description                                                    |
+| ------------------------------------------- | ------ | ------------- | -------------------------------------------------------------- |
+| snowWhite.apiSyncJob.additionalEnvs         | list   | `[]`          | Additional environment variables forwarded to container.       |
+| snowWhite.apiSyncJob.artifactory.baseUrl    | string | `""`          | Artifactory Base URL (e.g. http://localhost:8092/artifactory). |
+| snowWhite.apiSyncJob.artifactory.repository | string | `""`          | Artifactory repository holding API index.                      |
+| snowWhite.apiSyncJob.enabled                | bool   | `false`       | Deploy CronJob for API ingestion alongside Snow-White.         |
+| snowWhite.apiSyncJob.image.tag              | string | `""`          | Image tag.                                                     |
+| snowWhite.apiSyncJob.schedule               | string | `"0 * * * *"` | Cron schedule for API synchronization.                         |
 
 ### Snow-White Ingress
 
@@ -146,6 +155,13 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | --------------------------------------- | ------ | ------- | -------------------------------------------------------- |
 | snowWhite.qualityGateApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
 | snowWhite.qualityGateApi.image.tag      | string | `""`    | Image tag.                                               |
+
+### Snow-White Report Coordinator API
+
+| Key                                           | Type   | Default | Description                                              |
+| --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.reportCoordinatorApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Advanced Configuration
 
