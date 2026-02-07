@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Application testing dependencies of snow-white api-index api",
-  "license": "PolyForm-Small-Business-1.0.0",
   "author": {
     "name": "Timon Borter",
     "email": "timon.borter@gmx.ch"
@@ -15,5 +14,12 @@
   "devDependencies": {
     "npm-run-all2": "8.0.4",
     "wait-on": "9.0.3"
-  }
+  },
+  "packageManager": "pnpm@10.29.1",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ]
 }

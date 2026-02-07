@@ -10,6 +10,7 @@ import { renderHelmChart } from './render-helm-chart';
 import {
   expectFailsWithMessageContaining,
   expectToHaveDefaultLabelsForMicroservice,
+  getPodSpec,
   isSubset,
 } from './helpers';
 
@@ -30,19 +31,6 @@ describe('API Gateway', () => {
       expect(deployment).toBeDefined();
 
       return deployment;
-    };
-
-    const getPodSpec = (deployment) => {
-      const { spec } = deployment;
-      expect(spec).toBeDefined();
-
-      const { template } = spec;
-      expect(template).toBeDefined();
-
-      const templateSpec = template.spec;
-      expect(templateSpec).toBeDefined();
-
-      return templateSpec;
     };
 
     it('should be kubernetes Deployment', async () => {

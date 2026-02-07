@@ -101,10 +101,10 @@ snowWhite:
   apiIndexApi:
     image:
       # -- Image tag.
-      # @section -- Snow-White Report Coordinator API
+      # @section -- Snow-White API Index API
       tag: ''
     # -- Additional environment variables forwarded to container.
-    # @section -- Snow-White Report Coordinator API
+    # @section -- Snow-White API Index API
     additionalEnvs: []
   apiGateway:
     image:
@@ -129,6 +129,27 @@ snowWhite:
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Quality Gate API
     additionalEnvs: []
+  apiSyncJob:
+    # -- Deploy CronJob for API ingestion alongside Snow-White.
+    # @section -- Snow-White API Sync Job
+    enabled: false
+    image:
+      # -- Image tag.
+      # @section -- Snow-White API Sync Job
+      tag: ''
+    # -- Additional environment variables forwarded to container.
+    # @section -- Snow-White API Sync Job
+    additionalEnvs: []
+    artifactory:
+      # -- Artifactory Base URL (e.g. http://localhost:8092/artifactory).
+      # @section -- Snow-White API Sync Job
+      baseUrl: ''
+      # -- Artifactory repository holding API index.
+      # @section -- Snow-White API Sync Job
+      repository: ''
+    # -- Cron schedule for API synchronization.
+    # @section -- Snow-White API Sync Job
+    schedule: '0 * * * *'
   openapiCoverageStream:
     image:
       # -- Image tag.

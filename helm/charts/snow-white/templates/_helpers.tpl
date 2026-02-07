@@ -100,3 +100,19 @@ Only applicable if `postgresql.enabled=false`.
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Verifies that credentials for JFrog Artifactory are present in environment variables.
+*/}}
+{{- define "snow-white.verifyArtifactoryCredentials" -}}
+{{- $requiredKeys := list "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN" }}
+{{- $envNames := list }}
+{{- range .envVars }}
+  {{- $envNames = append $envNames .name }}
+{{- end }}
+{{- range $requiredKey := $requiredKeys }}
+  {{- if not (has $requiredKey $envNames) }}
+    {{- fail (printf "Required environment variable '%s' is missing in snowWhite.%s.additionalEnvs" $requiredKey $.selector ) }}
+  {{- end }}
+{{- end }}
+{{- end -}}

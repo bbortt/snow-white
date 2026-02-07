@@ -6,23 +6,17 @@
 
 import { expect } from 'vitest';
 
-export const expectFailsWithMessageContaining = async (
-  callback: Function,
-  part: string,
-): Promise<void> => {
-  let errorMessage: string | undefined;
-  try {
-    await callback();
-  } catch (error) {
-    errorMessage = error.message;
-    expect(error.message).contains(part);
+export const getPodSpec = (deployment: any): any => {
+  const { spec } = deployment;
+  expect(spec).toBeDefined();
 
-    return;
-  }
+  const { template } = spec;
+  expect(template).toBeDefined();
 
-  console.error('Error message didn match:', errorMessage);
+  const templateSpec = template.spec;
+  expect(templateSpec).toBeDefined();
 
-  expect.fail(`Expected code to throw exception containing message '${part}'!`);
+  return templateSpec;
 };
 
 export const isSubset = (

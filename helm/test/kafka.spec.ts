@@ -6,7 +6,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
-import { expectToHaveDefaultLabelsForMicroservice, isSubset } from './helpers';
+import {
+  expectToHaveDefaultLabelsForMicroservice,
+  getPodSpec,
+  isSubset,
+} from './helpers';
 
 const renderAndGetKafkaStatefulSet = async (manifests?: any[]) => {
   if (!manifests) {
@@ -44,19 +48,6 @@ describe('Kafka', () => {
   });
 
   describe('StatefulSet', () => {
-    const getPodSpec = (statefulSet) => {
-      const { spec } = statefulSet;
-      expect(spec).toBeDefined();
-
-      const { template } = spec;
-      expect(template).toBeDefined();
-
-      const templateSpec = template.spec;
-      expect(templateSpec).toBeDefined();
-
-      return templateSpec;
-    };
-
     it('is enabled by default', async () => {
       const statefulSet = await renderAndGetKafkaStatefulSet();
 

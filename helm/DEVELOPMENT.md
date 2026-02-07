@@ -36,6 +36,13 @@ helm upgrade --install \
   --set snowWhite.ingress.tls=false \
   --set snowWhite.apiIndexApi.image.tag=latest \
   --set snowWhite.apiGateway.image.tag=latest \
+  --set snowWhite.apiSyncJob.image.tag=latest \
+  --set-json snowWhite.apiSyncJob.additionalEnvs='[
+      {
+        "name": "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN",
+        "value": "test-token"
+      }
+    ]' \
   --set snowWhite.openapiCoverageStream.image.tag=latest \
   --set snowWhite.otelEventFilterStream.image.tag=latest \
   --set snowWhite.qualityGateApi.image.tag=latest \

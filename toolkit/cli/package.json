@@ -68,5 +68,12 @@
   },
   "optionalDependencies": {
     "npm-check-updates": "19.3.2"
-  }
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ],
+  "licenseUrl": "https://polyformproject.org/licenses/small-business/1.0.0/"
 }
