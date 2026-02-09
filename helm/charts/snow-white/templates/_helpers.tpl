@@ -69,7 +69,7 @@ Common environment variables connecting microservices to OTEL collector service
 - name: 'OTEL_EXPORTER_OTLP_PROTOCOL'
   value: 'grpc'
 - name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
-  value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:grpc'
+  value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:4317'
 {{- end -}}
 
 {{/*

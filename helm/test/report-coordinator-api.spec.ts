@@ -430,7 +430,7 @@ describe('Report Coordinator API', () => {
             );
             expect(endpoint).toBeDefined();
             expect(endpoint.value).toBe(
-              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:grpc',
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4317',
             );
           });
 
