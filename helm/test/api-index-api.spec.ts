@@ -334,7 +334,7 @@ describe('API Index API', () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
 
             expect(apiIndexApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/api-index-api:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/api-index-api:v1.0.0',
             );
           });
 
@@ -353,7 +353,7 @@ describe('API Index API', () => {
             );
 
             expect(apiIndexApi.image).toBe(
-              'custom.registry/bbortt/snow-white/api-index-api:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/api-index-api:v1.0.0',
             );
           });
 

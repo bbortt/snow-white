@@ -318,7 +318,7 @@ describe('OTEL Event Filter Stream', () => {
               await renderAndGetOtelEventFilterStreamContainer();
 
             expect(otelEventFilterStream.image).toBe(
-              'ghcr.io/bbortt/snow-white/otel-event-filter-stream:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/otel-event-filter-stream:v1.0.0',
             );
           });
 
@@ -338,7 +338,7 @@ describe('OTEL Event Filter Stream', () => {
               );
 
             expect(otelEventFilterStream.image).toBe(
-              'custom.registry/bbortt/snow-white/otel-event-filter-stream:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/otel-event-filter-stream:v1.0.0',
             );
           });
 

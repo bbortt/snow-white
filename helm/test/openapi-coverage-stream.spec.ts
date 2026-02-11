@@ -317,7 +317,7 @@ describe('OpenAPI Coverage Stream', () => {
               await renderAndGetOpenapiCoverageStreamContainer();
 
             expect(openapiCoverageStream.image).toBe(
-              'ghcr.io/bbortt/snow-white/openapi-coverage-stream:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/openapi-coverage-stream:v1.0.0',
             );
           });
 
@@ -337,7 +337,7 @@ describe('OpenAPI Coverage Stream', () => {
               );
 
             expect(openapiCoverageStream.image).toBe(
-              'custom.registry/bbortt/snow-white/openapi-coverage-stream:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/openapi-coverage-stream:v1.0.0',
             );
           });
 

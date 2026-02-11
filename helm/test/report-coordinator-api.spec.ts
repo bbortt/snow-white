@@ -338,7 +338,7 @@ describe('Report Coordinator API', () => {
               await renderAndGetReportCoordinatorApiContainer();
 
             expect(reportCoordinatorApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/report-coordinator-api:v1.0.0',
             );
           });
 
@@ -358,7 +358,7 @@ describe('Report Coordinator API', () => {
               );
 
             expect(reportCoordinatorApi.image).toBe(
-              'custom.registry/bbortt/snow-white/report-coordinator-api:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/report-coordinator-api:v1.0.0',
             );
           });
 

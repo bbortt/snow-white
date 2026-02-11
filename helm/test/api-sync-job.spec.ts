@@ -190,7 +190,7 @@ describe('API Sync Job', () => {
           const apiSyncJob = await renderAndGetApiSyncJobContainer();
 
           expect(apiSyncJob.image).toBe(
-            'ghcr.io/bbortt/snow-white/api-sync-job:v1.0.0-ci.0',
+            'ghcr.io/bbortt/snow-white/api-sync-job:v1.0.0',
           );
         });
 
@@ -210,7 +210,7 @@ describe('API Sync Job', () => {
           );
 
           expect(apiSyncJob.image).toBe(
-            'custom.registry/bbortt/snow-white/api-sync-job:v1.0.0-ci.0',
+            'custom.registry/bbortt/snow-white/api-sync-job:v1.0.0',
           );
         });
 
