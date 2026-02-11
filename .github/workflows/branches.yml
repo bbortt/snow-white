@@ -63,3 +63,37 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
+  prettier-post-release:
+    name: 'Run Prettier on Release PR'
+    if: ${{ startsWith(github.head_ref, 'release-please-') }}
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Run prettier:format
+        run: pnpm run prettier:format
+      - name: Git Configuration
+        run: |
+          git config user.name "Timon Borter"
+          git config user.email "timon.borter@gmx.ch"
+      - name: Commit Changes (if any)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -a -m "chore(release-please): release changes cleanup"
+            git push
+          fi
