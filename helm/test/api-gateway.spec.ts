@@ -331,7 +331,7 @@ describe('API Gateway', () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
 
             expect(apiGateway.image).toBe(
-              'ghcr.io/bbortt/snow-white/api-gateway:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/api-gateway:v1.0.0',
             );
           });
 
@@ -350,7 +350,7 @@ describe('API Gateway', () => {
             );
 
             expect(apiGateway.image).toBe(
-              'custom.registry/bbortt/snow-white/api-gateway:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/api-gateway:v1.0.0',
             );
           });
 

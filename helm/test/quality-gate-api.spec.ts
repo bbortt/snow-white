@@ -336,7 +336,7 @@ describe('Quality-Gate API', () => {
             const qualityGateApi = await renderAndGetQualityGateApiContainer();
 
             expect(qualityGateApi.image).toBe(
-              'ghcr.io/bbortt/snow-white/quality-gate-api:v1.0.0-ci.0',
+              'ghcr.io/bbortt/snow-white/quality-gate-api:v1.0.0',
             );
           });
 
@@ -355,7 +355,7 @@ describe('Quality-Gate API', () => {
             );
 
             expect(qualityGateApi.image).toBe(
-              'custom.registry/bbortt/snow-white/quality-gate-api:v1.0.0-ci.0',
+              'custom.registry/bbortt/snow-white/quality-gate-api:v1.0.0',
             );
           });
 
