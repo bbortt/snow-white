@@ -8,8 +8,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 
 import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties.PREFIX;
-import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 
+import io.github.bbortt.snow.white.commons.DefaultFilteringProperties;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -60,15 +60,5 @@ public class OpenApiCoverageStreamProperties implements InitializingBean {
 
   @Getter
   @Setter
-  public static class FilteringProperties {
-
-    private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
-    private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";
-    private static final String DEFAULT_SERVICE_NAME_PROPERTY =
-      SERVICE_NAME.getKey();
-
-    private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
-    private String apiVersionProperty = DEFAULT_API_VERSION_PROPERTY;
-    private String serviceNameProperty = DEFAULT_SERVICE_NAME_PROPERTY;
-  }
+  public static class FilteringProperties extends DefaultFilteringProperties {}
 }

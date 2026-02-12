@@ -49,6 +49,18 @@ spec:
               value: '{{ .Values.otelCollector.kafka.outbountTopic }}'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+          {{- if ne .Values.otelCollector.apiNameAttributeKey "" }}
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_API-NAME-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.apiNameAttributeKey }}'
+          {{- end }}
+          {{- if ne .Values.otelCollector.apiVersionAttributeKey "" }}
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_API-VERSION-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.apiVersionAttributeKey }}'
+          {{- end }}
+          {{- if ne .Values.otelCollector.serviceNameAttributeKey "" }}
+            - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_SERVICE-NAME-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.serviceNameAttributeKey }}'
+          {{- end }}
           {{- $additionalEnvs := .Values.snowWhite.otelEventFilterStream.additionalEnvs | default list }}
           {{- range $additionalEnvs }}
             - name: {{ .name }}

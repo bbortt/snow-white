@@ -34,17 +34,19 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
 
   public static final String NAME = "snow-white-spring-server";
 
-  public static final String API_NAME_PROPERTY = "apiNameProperty";
+  public static final String API_NAME_ATTRIBUTE_KEY = "apiNameAttributeKey";
 
   @Setter
   protected String apiName;
 
-  public static final String API_VERSION_PROPERTY = "apiVersionProperty";
+  public static final String API_VERSION_ATTRIBUTE_KEY =
+    "apiVersionAttributeKey";
 
   @Setter
   protected String apiVersion;
 
-  public static final String SERVICE_NAME_PROPERTY = "serviceNameProperty";
+  public static final String SERVICE_NAME_ATTRIBUTE_KEY =
+    "serviceNameAttributeKey";
 
   @Setter
   protected String serviceName;
@@ -83,19 +85,19 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
 
     cliOptions.add(
       CliOption.newString(
-        API_NAME_PROPERTY,
+        API_NAME_ATTRIBUTE_KEY,
         "Property from which to extract the API name"
       )
     );
     cliOptions.add(
       CliOption.newString(
-        API_VERSION_PROPERTY,
+        API_VERSION_ATTRIBUTE_KEY,
         "Property from which to extract the API version"
       )
     );
     cliOptions.add(
       CliOption.newString(
-        SERVICE_NAME_PROPERTY,
+        SERVICE_NAME_ATTRIBUTE_KEY,
         "Property from which to extract the service name, the name of the API provider"
       )
     );
@@ -115,13 +117,16 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   public void processOpts() {
     super.processOpts();
 
-    convertPropertyToStringAndWriteBack(API_NAME_PROPERTY, this::setApiName);
     convertPropertyToStringAndWriteBack(
-      API_VERSION_PROPERTY,
+      API_NAME_ATTRIBUTE_KEY,
+      this::setApiName
+    );
+    convertPropertyToStringAndWriteBack(
+      API_VERSION_ATTRIBUTE_KEY,
       this::setApiVersion
     );
     convertPropertyToStringAndWriteBack(
-      SERVICE_NAME_PROPERTY,
+      SERVICE_NAME_ATTRIBUTE_KEY,
       this::setServiceName
     );
   }

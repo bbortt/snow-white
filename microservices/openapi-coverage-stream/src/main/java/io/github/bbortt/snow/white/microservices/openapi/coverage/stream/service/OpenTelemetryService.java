@@ -75,7 +75,7 @@ public class OpenTelemetryService {
       .append(" |> filter(fn: (r) => r._measurement == \"spans\") ")
       .append(
         buildNullableAttributeFilter(
-          filteringProperties.getServiceNameProperty(),
+          filteringProperties.getServiceNameAttributeKey(),
           apiInformation.getServiceName()
         )
       )
@@ -85,13 +85,13 @@ public class OpenTelemetryService {
       )
       .append(
         buildNullableAttributeFilter(
-          filteringProperties.getApiNameProperty().replace(".", "_"),
+          filteringProperties.getApiNameAttributeKey().replace(".", "_"),
           apiInformation.getApiName()
         )
       )
       .append(
         buildNullableAttributeFilter(
-          filteringProperties.getApiVersionProperty().replace(".", "_"),
+          filteringProperties.getApiVersionAttributeKey().replace(".", "_"),
           apiInformation.getApiVersion()
         )
       );
@@ -137,8 +137,8 @@ public class OpenTelemetryService {
     OpenApiCoverageStreamProperties.FilteringProperties filteringProperties,
     @Nullable Set<FluxAttributeFilter> fluxAttributeFilters
   ) {
-    var apiNameMapping = filteringProperties.getApiNameProperty();
-    var apiVersionMapping = filteringProperties.getApiVersionProperty();
+    var apiNameMapping = filteringProperties.getApiNameAttributeKey();
+    var apiVersionMapping = filteringProperties.getApiVersionAttributeKey();
 
     var attributesToMapToDimensions = Stream.of(
       apiNameMapping,

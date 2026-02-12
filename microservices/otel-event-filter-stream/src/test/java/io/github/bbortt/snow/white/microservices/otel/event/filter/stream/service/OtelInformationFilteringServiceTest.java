@@ -35,17 +35,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith({ MockitoExtension.class })
 class OtelInformationFilteringServiceTest {
 
-  private static final String SERVICE_NAME_PROPERTY =
+  private static final String SERVICE_NAME_ATTRIBUTE_KEY =
     "OtelInformationFilteringServiceTest:serviceName";
-  private static final String API_NAME_PROPERTY =
+  private static final String API_NAME_ATTRIBUTE_KEY =
     "OtelInformationFilteringServiceTest:apiName";
-  private static final String API_VERSION_PROPERTY =
+  private static final String API_VERSION_ATTRIBUTE_KEY =
     "OtelInformationFilteringServiceTest:apiVersion";
 
   private static final TestData TEST_DATA = TestData.builder()
-    .serviceNameProperty(SERVICE_NAME_PROPERTY)
-    .apiNameProperty(API_NAME_PROPERTY)
-    .apiVersionProperty(API_VERSION_PROPERTY)
+    .serviceNameAttributeKey(SERVICE_NAME_ATTRIBUTE_KEY)
+    .apiNameAttributeKey(API_NAME_ATTRIBUTE_KEY)
+    .apiVersionAttributeKey(API_VERSION_ATTRIBUTE_KEY)
     .build();
 
   @Mock
@@ -58,13 +58,13 @@ class OtelInformationFilteringServiceTest {
     var kafkaEventFilterProperties = new OtelEventFilterStreamProperties();
     kafkaEventFilterProperties
       .getFiltering()
-      .setApiNameProperty(API_NAME_PROPERTY);
+      .setApiNameAttributeKey(API_NAME_ATTRIBUTE_KEY);
     kafkaEventFilterProperties
       .getFiltering()
-      .setApiVersionProperty(API_VERSION_PROPERTY);
+      .setApiVersionAttributeKey(API_VERSION_ATTRIBUTE_KEY);
     kafkaEventFilterProperties
       .getFiltering()
-      .setServiceNameProperty(SERVICE_NAME_PROPERTY);
+      .setServiceNameAttributeKey(SERVICE_NAME_ATTRIBUTE_KEY);
 
     fixture = new OtelInformationFilteringService(
       cachingServiceMock,
