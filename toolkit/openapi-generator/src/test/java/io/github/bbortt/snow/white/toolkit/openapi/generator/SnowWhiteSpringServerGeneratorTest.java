@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_PROPERTY;
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY;
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_ATTRIBUTE_KEY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_ATTRIBUTE_KEY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_ATTRIBUTE_KEY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -115,19 +115,21 @@ class SnowWhiteSpringServerGeneratorTest {
           assertThat(option)
             .asInstanceOf(type(CliOption.class))
             .extracting(CliOption::getOpt)
-            .isEqualTo(API_NAME_PROPERTY)
+            .isEqualTo(API_NAME_ATTRIBUTE_KEY)
         )
         .anySatisfy(option ->
           assertThat(option)
             .asInstanceOf(type(CliOption.class))
             .extracting(CliOption::getOpt)
-            .isEqualTo(SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY)
+            .isEqualTo(SnowWhiteSpringServerGenerator.API_VERSION_ATTRIBUTE_KEY)
         )
         .anySatisfy(option ->
           assertThat(option)
             .asInstanceOf(type(CliOption.class))
             .extracting(CliOption::getOpt)
-            .isEqualTo(SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY)
+            .isEqualTo(
+              SnowWhiteSpringServerGenerator.SERVICE_NAME_ATTRIBUTE_KEY
+            )
         );
     }
   }
@@ -165,7 +167,9 @@ class SnowWhiteSpringServerGeneratorTest {
 
     @Test
     void processesApiNameProperty() {
-      fixture.additionalProperties().put(API_NAME_PROPERTY, VALID_API_NAME);
+      fixture
+        .additionalProperties()
+        .put(API_NAME_ATTRIBUTE_KEY, VALID_API_NAME);
 
       fixture.processOpts();
 
@@ -180,7 +184,7 @@ class SnowWhiteSpringServerGeneratorTest {
     void processesApiVersionProperty() {
       fixture
         .additionalProperties()
-        .put(API_VERSION_PROPERTY, VALID_API_VERSION);
+        .put(API_VERSION_ATTRIBUTE_KEY, VALID_API_VERSION);
 
       fixture.processOpts();
 
@@ -195,7 +199,7 @@ class SnowWhiteSpringServerGeneratorTest {
     void processesServiceNameProperty() {
       fixture
         .additionalProperties()
-        .put(SERVICE_NAME_PROPERTY, VALID_SERVICE_NAME);
+        .put(SERVICE_NAME_ATTRIBUTE_KEY, VALID_SERVICE_NAME);
 
       fixture.processOpts();
 

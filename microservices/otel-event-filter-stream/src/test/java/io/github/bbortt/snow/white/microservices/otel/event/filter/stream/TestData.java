@@ -32,13 +32,13 @@ public final class TestData {
   public static final String SPAN_ID = "f3a7b2c9d4e8f1a6";
 
   @Builder.Default
-  private final String serviceNameProperty = "service.name";
+  private final String serviceNameAttributeKey = "service.name";
 
   @Builder.Default
-  private final String apiNameProperty = "api.name";
+  private final String apiNameAttributeKey = "api.name";
 
   @Builder.Default
-  private final String apiVersionProperty = "api.version";
+  private final String apiVersionAttributeKey = "api.version";
 
   // -------------------------------------------
   // Utility Method
@@ -62,17 +62,17 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiVersionProperty)
+              .setKey(apiVersionAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(serviceNameProperty)
+              .setKey(serviceNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -90,17 +90,17 @@ public final class TestData {
             InstrumentationScope.newBuilder()
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(apiNameProperty)
+                  .setKey(apiNameAttributeKey)
                   .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
               )
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(apiVersionProperty)
+                  .setKey(apiVersionAttributeKey)
                   .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
               )
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(serviceNameProperty)
+                  .setKey(serviceNameAttributeKey)
                   .setValue(
                     AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                   )
@@ -120,17 +120,17 @@ public final class TestData {
             .setSpanId(fromHex(SPAN_ID))
             .addAttributes(
               KeyValue.newBuilder()
-                .setKey(apiNameProperty)
+                .setKey(apiNameAttributeKey)
                 .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
             )
             .addAttributes(
               KeyValue.newBuilder()
-                .setKey(apiVersionProperty)
+                .setKey(apiVersionAttributeKey)
                 .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
             )
             .addAttributes(
               KeyValue.newBuilder()
-                .setKey(serviceNameProperty)
+                .setKey(serviceNameAttributeKey)
                 .setValue(
                   AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                 )
@@ -145,7 +145,7 @@ public final class TestData {
       .setResource(
         Resource.newBuilder().addAttributes(
           KeyValue.newBuilder()
-            .setKey(apiNameProperty)
+            .setKey(apiNameAttributeKey)
             .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
         )
       )
@@ -154,7 +154,7 @@ public final class TestData {
           .setScope(
             InstrumentationScope.newBuilder().addAttributes(
               KeyValue.newBuilder()
-                .setKey(apiVersionProperty)
+                .setKey(apiVersionAttributeKey)
                 .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
             )
           )
@@ -164,7 +164,7 @@ public final class TestData {
               .setSpanId(fromHex("f3a7b2c9d4e8f1a6"))
               .addAttributes(
                 KeyValue.newBuilder()
-                  .setKey(serviceNameProperty)
+                  .setKey(serviceNameAttributeKey)
                   .setValue(
                     AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME)
                   )
@@ -184,12 +184,12 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiVersionProperty)
+              .setKey(apiVersionAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(serviceNameProperty)
+              .setKey(serviceNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -205,12 +205,12 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(serviceNameProperty)
+              .setKey(serviceNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -226,12 +226,12 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
       )
@@ -247,17 +247,17 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiVersionProperty)
+              .setKey(apiVersionAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(serviceNameProperty)
+              .setKey(serviceNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )
@@ -270,17 +270,17 @@ public final class TestData {
         Resource.newBuilder()
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiNameProperty)
+              .setKey(apiNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_NAME))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(apiVersionProperty)
+              .setKey(apiVersionAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(API_VERSION))
           )
           .addAttributes(
             KeyValue.newBuilder()
-              .setKey(serviceNameProperty)
+              .setKey(serviceNameAttributeKey)
               .setValue(AnyValue.newBuilder().setStringValue(OTEL_SERVICE_NAME))
           )
       )

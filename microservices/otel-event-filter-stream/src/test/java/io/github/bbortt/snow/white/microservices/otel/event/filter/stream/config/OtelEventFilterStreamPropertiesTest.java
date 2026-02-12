@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
+import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -155,14 +156,21 @@ class OtelEventFilterStreamPropertiesTest {
   }
 
   @Nested
-  class SemanticConventionTest {
+  class FilteringPropertiesTest {
 
     @Test
-    void defaultFilterPropertiesAlignWithSemanticConvention() {
-      assertThat(fixture.getFiltering()).satisfies(
-        f -> assertThat(f.getApiNameProperty()).isEqualTo("api.name"),
-        f -> assertThat(f.getApiVersionProperty()).isEqualTo("api.version")
-      );
+    void shouldHaveDefaultValues() {
+      assertThat(fixture.getFiltering())
+        .isNotNull()
+        .satisfies(
+          f -> assertThat(f.getApiNameAttributeKey()).isEqualTo("api.name"),
+          f ->
+            assertThat(f.getApiVersionAttributeKey()).isEqualTo("api.version"),
+          f ->
+            assertThat(f.getServiceNameAttributeKey()).isEqualTo(
+              SERVICE_NAME.getKey()
+            )
+        );
     }
   }
 }
