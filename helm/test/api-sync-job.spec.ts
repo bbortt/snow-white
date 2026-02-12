@@ -347,6 +347,70 @@ describe('API Sync Job', () => {
           );
         });
 
+        it.each([
+          {
+            artifactory: {
+              customApiNameJsonPath: 'custom-api-name',
+            },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH',
+            envVarValue: 'custom-api-name',
+          },
+          {
+            artifactory: {
+              customApiVersionJsonPath: 'custom-api-version',
+            },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_VERSION_JSON_PATH',
+            envVarValue: 'custom-api-version',
+          },
+          {
+            artifactory: {
+              customServiceNameJsonPath: 'custom-service-name',
+            },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH',
+            envVarValue: 'custom-service-name',
+          },
+        ])(
+          'should accept custom json path from values: $envVarName',
+          async ({
+            artifactory,
+            envVarName,
+            envVarValue,
+          }: {
+            artifactory: any;
+            envVarName: string;
+            envVarValue: string;
+          }) => {
+            const apiSyncJob = await renderAndGetApiSyncJobContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    apiSyncJob: {
+                      enabled: true,
+                      artifactory,
+                      additionalEnvs:
+                        valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob
+                          .additionalEnvs,
+                    },
+                  },
+                },
+              }),
+            );
+
+            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 1 custom configuration
+            expect(apiSyncJob.env).toHaveLength(8);
+
+            const customEnv = apiSyncJob.env.find(
+              (env) => env.name === envVarName,
+            );
+            expect(customEnv).toBeDefined();
+            expect(customEnv.value).toBe(envVarValue);
+          },
+        );
+
         it('should accept additional environment variables', async () => {
           const additionalEnvs = [
             ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob.additionalEnvs,

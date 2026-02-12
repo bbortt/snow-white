@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.toolkit.spring.web.interceptor;
 
+import static java.util.UUID.randomUUID;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -21,7 +22,6 @@ import io.opentelemetry.api.trace.Span;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
-import java.util.UUID;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -41,10 +41,10 @@ class OpenApiInformationEnhancerTest {
   private static final String API_VERSION = "v1.0.0";
   private static final String SERVICE_NAME = "test-service";
 
-  private String apiNameProperty;
-  private String apiVersionProperty;
-  private String serviceNameProperty;
-  private String operationIdProperty;
+  private String apiNameAttributeKey;
+  private String apiVersionAttributeKey;
+  private String serviceNameAttributeKey;
+  private String operationIdAttributeKey;
 
   @Mock
   private HttpServletRequest httpServletRequestMock;
@@ -102,10 +102,10 @@ class OpenApiInformationEnhancerTest {
 
   @BeforeEach
   void beforeEachSetup() {
-    apiNameProperty = "custom.api.name" + UUID.randomUUID();
-    apiVersionProperty = "custom.api.version" + UUID.randomUUID();
-    serviceNameProperty = "custom.service.name" + UUID.randomUUID();
-    operationIdProperty = "custom.operation.id" + UUID.randomUUID();
+    apiNameAttributeKey = "custom.api.name" + randomUUID();
+    apiVersionAttributeKey = "custom.api.version" + randomUUID();
+    serviceNameAttributeKey = "custom.service.name" + randomUUID();
+    operationIdAttributeKey = "custom.operation.id" + randomUUID();
 
     fixture = new OpenApiInformationEnhancer(propertiesMock);
 
@@ -149,7 +149,7 @@ class OpenApiInformationEnhancerTest {
 
   @Test
   void invocationWithAnnotationSetsSpanAttributes() {
-    configureMockProperties(serviceNameProperty, operationIdProperty);
+    configureMockProperties(serviceNameAttributeKey, operationIdAttributeKey);
 
     var operationId = "operationId";
     var annotation = createMockAnnotation(operationId);
@@ -162,10 +162,10 @@ class OpenApiInformationEnhancerTest {
       handlerMethodMock
     );
 
-    verify(spanMock).setAttribute(apiNameProperty, API_NAME);
-    verify(spanMock).setAttribute(apiVersionProperty, API_VERSION);
-    verify(spanMock).setAttribute(serviceNameProperty, SERVICE_NAME);
-    verify(spanMock).setAttribute(operationIdProperty, operationId);
+    verify(spanMock).setAttribute(apiNameAttributeKey, API_NAME);
+    verify(spanMock).setAttribute(apiVersionAttributeKey, API_VERSION);
+    verify(spanMock).setAttribute(serviceNameAttributeKey, SERVICE_NAME);
+    verify(spanMock).setAttribute(operationIdAttributeKey, operationId);
   }
 
   public static Stream<String> nullAndEmptyStrings() {
@@ -175,9 +175,9 @@ class OpenApiInformationEnhancerTest {
   @ParameterizedTest
   @MethodSource("nullAndEmptyStrings")
   void invocationWithAnnotationButNoServiceNamePropertySetsSpanAttributes(
-    @Nullable String serviceNameProperty
+    @Nullable String serviceNameAttributeKey
   ) {
-    configureMockProperties(serviceNameProperty, null);
+    configureMockProperties(serviceNameAttributeKey, null);
 
     var annotation = createMockAnnotation(null);
     fullMockConfiguration(annotation);
@@ -188,8 +188,8 @@ class OpenApiInformationEnhancerTest {
       handlerMethodMock
     );
 
-    verify(spanMock).setAttribute(apiNameProperty, API_NAME);
-    verify(spanMock).setAttribute(apiVersionProperty, API_VERSION);
+    verify(spanMock).setAttribute(apiNameAttributeKey, API_NAME);
+    verify(spanMock).setAttribute(apiVersionAttributeKey, API_VERSION);
     verifyNoMoreInteractions(spanMock);
   }
 
@@ -209,20 +209,22 @@ class OpenApiInformationEnhancerTest {
       handlerMethodMock
     );
 
-    verify(spanMock).setAttribute(apiNameProperty, API_NAME);
-    verify(spanMock).setAttribute(apiVersionProperty, API_VERSION);
+    verify(spanMock).setAttribute(apiNameAttributeKey, API_NAME);
+    verify(spanMock).setAttribute(apiVersionAttributeKey, API_VERSION);
     verifyNoMoreInteractions(spanMock);
   }
 
   private void configureMockProperties(
-    String serviceNameProperty,
+    String serviceNameAttributeKey,
     String operationIdProperty
   ) {
-    doReturn(apiNameProperty).when(propertiesMock).getApiNameAttribute();
-    doReturn(apiVersionProperty).when(propertiesMock).getApiVersionAttribute();
+    doReturn(apiNameAttributeKey).when(propertiesMock).getApiNameAttribute();
+    doReturn(apiVersionAttributeKey)
+      .when(propertiesMock)
+      .getApiVersionAttribute();
 
-    if (hasText(serviceNameProperty)) {
-      doReturn(serviceNameProperty)
+    if (hasText(serviceNameAttributeKey)) {
+      doReturn(serviceNameAttributeKey)
         .when(propertiesMock)
         .getOtelServiceNameAttribute();
     }

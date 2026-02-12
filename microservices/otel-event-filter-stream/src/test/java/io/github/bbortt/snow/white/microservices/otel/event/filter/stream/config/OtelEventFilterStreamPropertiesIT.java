@@ -11,6 +11,7 @@ import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.IntegrationTest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,5 +46,32 @@ class OtelEventFilterStreamPropertiesIT {
     assertThat(outboundTopic).isEqualTo(
       otelEventFilterStreamProperties.getOutboundTopicName()
     );
+  }
+
+  @Nested
+  @TestPropertySource(
+    locations = {
+      "classpath:/OtelEventFilterStreamPropertiesIT/application.properties",
+    }
+  )
+  class FilteringPropertiesIT {
+
+    @Test
+    void shouldHavePropertiesFromValues() {
+      assertThat(otelEventFilterStreamProperties.getFiltering())
+        .isNotNull()
+        .satisfies(
+          f ->
+            assertThat(f.getApiNameAttributeKey()).isEqualTo("custom-api-name"),
+          f ->
+            assertThat(f.getApiVersionAttributeKey()).isEqualTo(
+              "custom-api-version"
+            ),
+          f ->
+            assertThat(f.getServiceNameAttributeKey()).isEqualTo(
+              "custom-service-name"
+            )
+        );
+    }
   }
 }

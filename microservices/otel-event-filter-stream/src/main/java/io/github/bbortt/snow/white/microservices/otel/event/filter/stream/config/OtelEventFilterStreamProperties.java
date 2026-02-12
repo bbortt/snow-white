@@ -9,10 +9,8 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
-import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
-import static java.lang.String.format;
-import static org.springframework.util.StringUtils.hasText;
 
+import io.github.bbortt.snow.white.commons.DefaultFilteringProperties;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -46,7 +44,7 @@ public class OtelEventFilterStreamProperties implements InitializingBean {
   private String schemaRegistryUrl;
 
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
-  private final Filtering filtering = new Filtering();
+  private final FilteringProperties filtering = new FilteringProperties();
 
   @Override
   public void afterPropertiesSet() {
@@ -70,17 +68,7 @@ public class OtelEventFilterStreamProperties implements InitializingBean {
 
   @Getter
   @Setter
-  public static class Filtering {
-
-    private static final String DEFAULT_API_NAME_PROPERTY = "api.name";
-    private static final String DEFAULT_API_VERSION_PROPERTY = "api.version";
-    private static final String DEFAULT_SERVICE_NAME_PROPERTY =
-      SERVICE_NAME.getKey();
-
-    private String apiNameProperty = DEFAULT_API_NAME_PROPERTY;
-    private String apiVersionProperty = DEFAULT_API_VERSION_PROPERTY;
-    private String serviceNameProperty = DEFAULT_SERVICE_NAME_PROPERTY;
-  }
+  public static class FilteringProperties extends DefaultFilteringProperties {}
 
   public enum ConsumerMode {
     JSON,

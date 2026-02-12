@@ -179,7 +179,7 @@
                 io.github.bbortt.snow.white.example.application.api
               </apiPackage>
               <configOptions>
-                <apiNameProperty>info.x-api-name</apiNameProperty>
+                <apiNameAttributeKey>info.x-api-name</apiNameAttributeKey>
                 <delegatePattern>true</delegatePattern>
                 <generateBuilders>true</generateBuilders>
                 <interfaceOnly>true</interfaceOnly>

@@ -147,6 +147,18 @@ snowWhite:
       # -- Artifactory repository holding API index.
       # @section -- Snow-White API Sync Job
       repository: ''
+      # -- Custom JSON path to the API name inside an OpenAPI specification.
+      # @default -- `info.title`
+      # @section -- Snow-White API Sync Job
+      customApiNameJsonPath: ''
+      # -- Custom JSON path to the API version inside an OpenAPI specification.
+      # @default -- `info.version`
+      # @section -- Snow-White API Sync Job
+      customApiVersionJsonPath: ''
+      # -- Custom JSON path to the service name inside an OpenAPI specification.
+      # @default -- `info.extensions.x-service-name`
+      # @section -- Snow-White API Sync Job
+      customServiceNameJsonPath: ''
     # -- Cron schedule for API synchronization.
     # @section -- Snow-White API Sync Job
     schedule: '0 * * * *'
@@ -245,6 +257,18 @@ otelCollector:
   # -- Whether to expose the OTeL collector through the (public) ingress.
   # @section -- OpenTelemetry Collector
   exposeThroughIngress: true
+  # -- Custom attribute key identifying the API name.
+  # @default -- `api.name`
+  # @section -- OpenTelemetry Collector
+  apiNameAttributeKey: ''
+  # -- Custom attribute key identifying the API version.
+  # @default -- `api.version`
+  # @section -- OpenTelemetry Collector
+  apiVersionAttributeKey: ''
+  # -- Custom attribute key identifying the Service name.
+  # @default -- `service.name`
+  # @section -- OpenTelemetry Collector
+  serviceNameAttributeKey: ''
 
   influxdb:
     # -- InfluxDB endpoint.

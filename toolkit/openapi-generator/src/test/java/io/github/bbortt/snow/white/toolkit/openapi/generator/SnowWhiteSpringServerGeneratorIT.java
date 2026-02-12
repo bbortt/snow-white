@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.toolkit.openapi.generator;
 
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_PROPERTY;
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_PROPERTY;
-import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_PROPERTY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_NAME_ATTRIBUTE_KEY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.API_VERSION_ATTRIBUTE_KEY;
+import static io.github.bbortt.snow.white.toolkit.openapi.generator.SnowWhiteSpringServerGenerator.SERVICE_NAME_ATTRIBUTE_KEY;
 import static java.nio.file.Files.readAllBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -100,15 +100,15 @@ class SnowWhiteSpringServerGeneratorIT {
 
     var codegenConfigurator = getCodegenConfigurator(inputSpec, outputDir);
     codegenConfigurator.addAdditionalProperty(
-      API_NAME_PROPERTY,
+      API_NAME_ATTRIBUTE_KEY,
       "info.x-custom-api-name"
     );
     codegenConfigurator.addAdditionalProperty(
-      API_VERSION_PROPERTY,
+      API_VERSION_ATTRIBUTE_KEY,
       "info.x-custom-api-version"
     );
     codegenConfigurator.addAdditionalProperty(
-      SERVICE_NAME_PROPERTY,
+      SERVICE_NAME_ATTRIBUTE_KEY,
       "info.x-custom-service-name"
     );
 

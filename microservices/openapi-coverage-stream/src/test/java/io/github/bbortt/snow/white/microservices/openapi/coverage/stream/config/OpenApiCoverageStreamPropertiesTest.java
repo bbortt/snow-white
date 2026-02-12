@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
 
+import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -112,6 +113,25 @@ class OpenApiCoverageStreamPropertiesTest {
             "All properties must be configured - missing: [snow.white.openapi.coverage.stream.openapi-calculation-response-topic]."
           );
       }
+    }
+  }
+
+  @Nested
+  class FilteringPropertiesTest {
+
+    @Test
+    void shouldHaveDefaultValues() {
+      assertThat(fixture.getFiltering())
+        .isNotNull()
+        .satisfies(
+          f -> assertThat(f.getApiNameAttributeKey()).isEqualTo("api.name"),
+          f ->
+            assertThat(f.getApiVersionAttributeKey()).isEqualTo("api.version"),
+          f ->
+            assertThat(f.getServiceNameAttributeKey()).isEqualTo(
+              SERVICE_NAME.getKey()
+            )
+        );
     }
   }
 }

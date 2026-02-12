@@ -467,6 +467,63 @@ describe('OTEL Event Filter Stream', () => {
             expect(springDatasourceUrl.value).toBe(brokers);
           });
 
+          it.each([
+            {
+              otelCollector: {
+                apiNameAttributeKey: 'custom-api-name',
+              },
+              envVarName:
+                'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_API-NAME-ATTRIBUTE-KEY',
+              envVarValue: 'custom-api-name',
+            },
+            {
+              otelCollector: {
+                apiVersionAttributeKey: 'custom-api-version',
+              },
+              envVarName:
+                'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_API-VERSION-ATTRIBUTE-KEY',
+              envVarValue: 'custom-api-version',
+            },
+            {
+              otelCollector: {
+                serviceNameAttributeKey: 'custom-service-name',
+              },
+              envVarName:
+                'SNOW_WHITE_OTEL_EVENT_FILTER_FILTERING_SERVICE-NAME-ATTRIBUTE-KEY',
+              envVarValue: 'custom-service-name',
+            },
+          ])(
+            'should accept custom attribute key from values: $envVarName',
+            async ({
+              otelCollector,
+              envVarName,
+              envVarValue,
+            }: {
+              otelCollector: any;
+              envVarName: string;
+              envVarValue: string;
+            }) => {
+              const otelEventFilterStream =
+                await renderAndGetOtelEventFilterStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      otelCollector,
+                    },
+                  }),
+                );
+
+              // 2 OTEL + 5 default + 1 custom configuration
+              expect(otelEventFilterStream.env).toHaveLength(8);
+
+              const customEnv = otelEventFilterStream.env.find(
+                (env) => env.name === envVarName,
+              );
+              expect(customEnv).toBeDefined();
+              expect(customEnv.value).toBe(envVarValue);
+            },
+          );
+
           it('should accept additional environment variables', async () => {
             const additionalEnvs = [
               { name: 'author', value: 'bbortt' },

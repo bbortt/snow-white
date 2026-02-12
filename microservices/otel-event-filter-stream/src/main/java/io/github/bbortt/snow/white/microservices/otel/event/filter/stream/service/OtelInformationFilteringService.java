@@ -32,9 +32,9 @@ public class OtelInformationFilteringService {
 
   private final CachingService cachingService;
 
-  private final String apiNameProperty;
-  private final String apiVersionProperty;
-  private final String serviceNameProperty;
+  private final String apiNameAttributeKey;
+  private final String apiVersionAttributeKey;
+  private final String serviceNameAttributeKey;
 
   public OtelInformationFilteringService(
     CachingService cachingService,
@@ -43,9 +43,11 @@ public class OtelInformationFilteringService {
     this.cachingService = cachingService;
 
     var filteringProperties = otelEventFilterStreamProperties.getFiltering();
-    this.apiNameProperty = filteringProperties.getApiNameProperty();
-    this.apiVersionProperty = filteringProperties.getApiVersionProperty();
-    this.serviceNameProperty = filteringProperties.getServiceNameProperty();
+    this.apiNameAttributeKey = filteringProperties.getApiNameAttributeKey();
+    this.apiVersionAttributeKey =
+      filteringProperties.getApiVersionAttributeKey();
+    this.serviceNameAttributeKey =
+      filteringProperties.getServiceNameAttributeKey();
 
     logger.info("Filter is in place: {}", filteringProperties);
   }
@@ -169,21 +171,21 @@ public class OtelInformationFilteringService {
   ) {
     var apiName = attributes
       .stream()
-      .filter(attribute -> attribute.getKey().equals(apiNameProperty))
+      .filter(attribute -> attribute.getKey().equals(apiNameAttributeKey))
       .findFirst()
       .map(KeyValue::getValue)
       .map(AnyValue::getStringValue)
       .orElse(null);
     var apiVersion = attributes
       .stream()
-      .filter(attribute -> attribute.getKey().equals(apiVersionProperty))
+      .filter(attribute -> attribute.getKey().equals(apiVersionAttributeKey))
       .findFirst()
       .map(KeyValue::getValue)
       .map(AnyValue::getStringValue)
       .orElse(null);
     var otelServiceName = attributes
       .stream()
-      .filter(attribute -> attribute.getKey().equals(serviceNameProperty))
+      .filter(attribute -> attribute.getKey().equals(serviceNameAttributeKey))
       .findFirst()
       .map(KeyValue::getValue)
       .map(AnyValue::getStringValue)
