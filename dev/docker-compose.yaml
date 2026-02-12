@@ -159,7 +159,7 @@ services:
       - internal
 
   artifactory:
-    image: releases-docker.jfrog.io/jfrog/artifactory-oss:7.133.3
+    image: releases-docker.jfrog.io/jfrog/artifactory-oss:7.133.8
     environment:
       ENABLE_MIGRATION: 'y'
       JF_SHARED_DATABASE_TYPE: 'postgresql'
