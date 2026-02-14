@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-module.exports = {
+export default {
   '{,**/}*.{java,js,json,md,ts,xml,yaml,yml}': ['prettier --write'],
-    '{,**/}*.md': ['markdownlint --rules markdownlint-sentences-per-line --fix']
+  '{,**/}*.md': ['markdownlint --rules markdownlint-sentences-per-line --fix'],
 };

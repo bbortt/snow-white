@@ -41,7 +41,3 @@ GRANT USAGE ON SCHEMA public TO report_coord_app;
 -- grant privileges for runtime user
 GRANT CONNECT ON DATABASE "quality-gate-api" TO quality_gate_app;
 GRANT USAGE ON SCHEMA public TO quality_gate_app;
-
--- Users for JFROG Artifactory
-CREATE USER artifactory WITH PASSWORD 'artifactory';
-CREATE DATABASE "artifactory" OWNER artifactory;
