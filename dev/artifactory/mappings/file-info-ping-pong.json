@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/storage/snow-white-generic-local/ping-pong.yml",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer private-token"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "downloadUri": "http://artifactory:8080/artifactory/snow-white-generic-local/ping-pong.yml"
+    }
+  }
+}

@@ -97,12 +97,12 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.basedir}/specs</outputDirectory>
+              <outputDirectory>
+                ${maven.multiModuleProjectDirectory}/dev/artifactory/__files
+              </outputDirectory>
               <resources>
                 <resource>
-                  <directory>
-                    ${maven.multiModuleProjectDirectory}/dev/sir
-                  </directory>
+                  <directory>${project.basedir}/specs</directory>
                   <includes>
                     <include>ping-pong.yml</include>
                   </includes>

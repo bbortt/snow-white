@@ -159,23 +159,11 @@ services:
       - internal
 
   artifactory:
-    image: releases-docker.jfrog.io/jfrog/artifactory-oss:7.133.8
-    environment:
-      ENABLE_MIGRATION: 'y'
-      JF_SHARED_DATABASE_TYPE: 'postgresql'
-      JF_SHARED_DATABASE_USERNAME: 'artifactory'
-      JF_SHARED_DATABASE_PASSWORD: 'artifactory'
-      JF_SHARED_DATABASE_URL: 'jdbc:postgresql://postgres:5432/artifactory'
-      JF_SHARED_DATABASE_DRIVER: 'org.postgresql.Driver'
-    ports:
-      - 3000:8082
+    image: wiremock/wiremock:3.13.2-alpine
     volumes:
-      - ./artifactory/var:/var/opt/jfrog/artifactory
-    ulimits:
-      nproc: 65535
-      nofile:
-        soft: 32000
-        hard: 40000
+      - ./artifactory:/home/wiremock
+    ports:
+      - '3000:8080'
     depends_on:
       postgres:
         condition: service_healthy
@@ -265,9 +253,10 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL: 'http://api-index-api:8080'
-      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_API-NAME-PROPERTY: 'oas.info.x-api-name'
-      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_BASE-URL: 'http://service-interface-repository:3000'
-      SNOW_WHITE_API_SYNC_JOB_SERVICE-INTERFACE_INDEX-URI: '/docker-compose.json'
+      SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN: 'private-token'
+      SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_BASE-URL: 'http://artifactory:8080'
+      SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH: 'info.extensions.x-api-name'
+      SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY: 'snow-white-generic-local'
     deploy:
       resources:
         reservations:

@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-module.exports = {
+export default {
   endOfLine: 'lf',
   plugins: [
     '@prettier/plugin-xml',

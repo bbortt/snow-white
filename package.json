@@ -26,7 +26,7 @@
   "scripts": {
     "lint:markdown": "markdownlint --rules markdownlint-sentences-per-line -- **/*.md",
     "prepare": "husky",
-    "prettier": "prettier \"{,**/}*.{java,js,json,md,ts,xml,yaml,yml}\"",
+    "prettier": "prettier \"{,**/}*.{cjs,java,js,json,md,mjs,ts,xml,yaml,yml}\"",
     "prettier:check": "npm run prettier -- --list-different",
     "prettier:format": "npm run prettier -- --write"
   },
