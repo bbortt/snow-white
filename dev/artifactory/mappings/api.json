@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "put your url as per your requirement"
+  },
+  "response": {
+    "status": 200,
+    "body": "put your body here"
+  }
+}
