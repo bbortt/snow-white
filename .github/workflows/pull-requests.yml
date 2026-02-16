@@ -139,7 +139,6 @@ jobs:
             -b smart -T4C \
             -Pnode,prod \
             -DskipTests \
-            -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
             -pl :${{ matrix.service }} -am
       - name: Build ${{ matrix.service }} Image
