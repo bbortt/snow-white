@@ -1,6 +1,22 @@
 management:
   server:
     port: 8090
+server:
+  compression:
+    enabled: true
+    min-response-size: 1KB
+    mime-types:
+      - image/png
+      - image/jpeg
+      - image/svg+xml
+      - text/html
+      - text/css
+      - application/javascript
+      - application/json
+spring:
+  web:
+    resources:
+      add-mappings: true
 springdoc:
   swagger-ui:
     urls:
