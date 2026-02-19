@@ -17,7 +17,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 public abstract class AbstractQualityGateApiIT {
 
   static final PostgreSQLContainer POSTGRESQL_CONTAINER =
-    new PostgreSQLContainer("postgres:18.1-alpine").withExposedPorts(5432);
+    new PostgreSQLContainer("postgres:18.2-alpine").withExposedPorts(5432);
 
   static {
     POSTGRESQL_CONTAINER.start();
