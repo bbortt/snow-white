@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "npm-run-all2": "8.0.4",
-    "wait-on": "9.0.3"
+    "wait-on": "9.0.4"
   },
   "packageManager": "pnpm@10.29.1",
   "engines": {
