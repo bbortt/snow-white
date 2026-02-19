@@ -8,7 +8,7 @@ networks:
 
 services:
   postgres:
-    image: postgres:18.1-alpine
+    image: postgres:18.2-alpine
     shm_size: 128mb
     environment:
       POSTGRES_USER: 'snow-white'

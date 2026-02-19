@@ -197,7 +197,7 @@ jobs:
           - '9092:9092'
           - '9094:9094'
       postgres:
-        image: postgres:18.1-alpine
+        image: postgres:18.2-alpine
         env:
           POSTGRES_PASSWORD: postgres
         ports:
