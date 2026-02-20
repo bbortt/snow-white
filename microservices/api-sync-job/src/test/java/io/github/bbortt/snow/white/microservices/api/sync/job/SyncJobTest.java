@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
@@ -45,14 +47,34 @@ class SyncJobTest {
   @Mock
   private CachingService cachingServiceMock;
 
+  @Mock
+  private ApiSyncJobProperties apiSyncJobPropertiesMock;
+
   private SyncJob fixture;
 
   @BeforeEach
   void beforeEachSetup() {
+    doReturn(1234).when(apiSyncJobPropertiesMock).getMaxParallelSyncTasks();
+
     fixture = new SyncJob(
       List.of(apiCatalogService1, apiCatalogService2),
-      cachingServiceMock
+      cachingServiceMock,
+      apiSyncJobPropertiesMock
     );
+  }
+
+  @Nested
+  class ConstructorTest {
+
+    @Test
+    void shouldAssignAllFields() {
+      assertThat(fixture).hasNoNullFieldsOrProperties();
+    }
+
+    @Test
+    void shouldExtractMaxParallelSyncTasksFromProperties() {
+      verify(apiSyncJobPropertiesMock).getMaxParallelSyncTasks();
+    }
   }
 
   @Nested
@@ -138,7 +160,11 @@ class SyncJobTest {
 
     @Test
     void shouldHandleEmptyCatalogServices() {
-      fixture = new SyncJob(emptyList(), cachingServiceMock);
+      fixture = new SyncJob(
+        emptyList(),
+        cachingServiceMock,
+        apiSyncJobPropertiesMock
+      );
 
       assertDoesNotThrow(() -> fixture.syncCatalog());
 

@@ -11,6 +11,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Objects.nonNull;
 import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
+import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
@@ -18,20 +19,30 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.StructuredTaskScope;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class SyncJob {
-
-  private final Semaphore rateLimiter = new Semaphore(1);
 
   private final List<ApiCatalogService> apiCatalogServices;
   private final CachingService cachingService;
+
+  private final Semaphore rateLimiter;
+
+  public SyncJob(
+    List<ApiCatalogService> apiCatalogServices,
+    CachingService cachingService,
+    ApiSyncJobProperties apiSyncJobProperties
+  ) {
+    this.apiCatalogServices = apiCatalogServices;
+    this.cachingService = cachingService;
+    this.rateLimiter = new Semaphore(
+      apiSyncJobProperties.getMaxParallelSyncTasks()
+    );
+  }
 
   void syncCatalog() throws InterruptedException {
     try (var scope = StructuredTaskScope.open(allSuccessfulOrThrow())) {
