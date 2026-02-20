@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +28,11 @@ public class ApiSyncJobProperties implements InitializingBean {
 
   public static final String PREFIX = "snow.white.api.sync.job";
 
-  private final ApiIndexProperties apiIndex = new ApiIndexProperties();
-  private final ArtifactoryProperties artifactory = new ArtifactoryProperties();
+  private @NonNull Integer maxParallelSyncTasks = 10;
+
+  private final @NonNull ApiIndexProperties apiIndex = new ApiIndexProperties();
+  private final @NonNull ArtifactoryProperties artifactory =
+    new ArtifactoryProperties();
 
   @Override
   public void afterPropertiesSet() {
