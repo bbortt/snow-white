@@ -126,6 +126,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          lfs: true
           submodules: true
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -137,7 +138,7 @@ jobs:
         run: |
           ./mvnw -B clean install \
             -b smart -T4C \
-            -Pnode,prod \
+            -Pprod \
             -DskipTests \
             -Dfrontend.test.skip=true \
             -pl :${{ matrix.service }} -am
@@ -146,6 +147,8 @@ jobs:
           docker build \
             -f microservices/${{ matrix.service }}/Dockerfile \
             -t ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }} \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg PROJECT_VERSION="${{ github.sha }}" \
             microservices/${{ matrix.service }}
       - name: Test ${{ matrix.service }} Image
         run: |
