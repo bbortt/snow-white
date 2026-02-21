@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :commons,:annotation-api,:openapi-generator,:spring-web-autoconfiguration -am deploy
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :commons,:annotation-api,:openapi-generator,:spring-web-autoconfiguration -am clean deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish-cli:
@@ -40,7 +40,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am install
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am clean install
       - name: Upload CLI Artifacts
         if: ${{ steps.release.outputs.release_created }}
         env:
@@ -111,7 +111,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl '!:cli,!:helm' install
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl '!:cli,!:helm' clean install
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
         with:
@@ -151,7 +151,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am install
+        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am clean install
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
         with:
