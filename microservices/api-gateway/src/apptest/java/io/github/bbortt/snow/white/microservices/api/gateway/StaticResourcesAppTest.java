@@ -10,6 +10,7 @@ import static io.restassured.RestAssured.when;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
+import static org.apache.http.HttpHeaders.CONTENT_ENCODING;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
@@ -48,10 +49,12 @@ class StaticResourcesAppTest {
       .get("/content/images/logo.png")
       .then()
       .statusCode(200)
+      .header(CONTENT_ENCODING, "gzip")
       .header(CONTENT_TYPE, IMAGE_PNG_VALUE)
       .extract()
       .asByteArray();
 
-    assertThat(responseBody).isNotEmpty();
+    // We assert on the PNG magic header (89 50 4E 47).
+    assertThat(responseBody).startsWith(new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47 });
   }
 }
