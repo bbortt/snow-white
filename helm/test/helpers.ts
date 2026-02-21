@@ -6,6 +6,18 @@
 
 import { expect } from 'vitest';
 
+export const getTemplateMetadata = (deployment: any): any => {
+  const { spec } = deployment;
+  expect(spec).toBeDefined();
+
+  const { template } = spec;
+  expect(template).toBeDefined();
+
+  const { metadata } = template;
+  expect(metadata).toBeDefined();
+
+  return metadata;
+};
 export const getPodSpec = (deployment: any): any => {
   const { spec } = deployment;
   expect(spec).toBeDefined();
