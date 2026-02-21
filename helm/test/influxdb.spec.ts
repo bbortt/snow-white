@@ -11,7 +11,7 @@ const getInfluxDBStatefulSet = (manifests: any[]) => {
   const statefulSet = manifests.find(
     (m) =>
       m.kind === 'StatefulSet' &&
-      m.metadata.name.startsWith('test-release-influxdb'),
+      m.metadata.name.startsWith('test-release-influxdb2'),
   );
   expect(statefulSet).toBeDefined();
   return statefulSet;
@@ -27,6 +27,19 @@ describe('InfluxDB', () => {
     expect(statefulSet.spec.template.spec.containers[0].image).toMatch(
       /^(registry-\d\.)?influxdb:.+$/,
     );
+  });
+
+  it('should have PodDisruptionBudget disabled by default', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const podDisruptionBudget = manifests.find(
+      (m) =>
+        m.kind === 'PodDisruptionBudget' &&
+        m.metadata.name.startsWith('test-release-influxdb2'),
+    );
+    expect(podDisruptionBudget).toBeUndefined();
   });
 
   it('is NOT high-available by default', async () => {
@@ -49,7 +62,7 @@ describe('InfluxDB', () => {
     });
 
     const influxdbResources = manifests.find((m) =>
-      m.metadata.name.startsWith('test-release-influxdb'),
+      m.metadata.name.startsWith('test-release-influxdb2'),
     );
 
     expect(influxdbResources).toBeUndefined();

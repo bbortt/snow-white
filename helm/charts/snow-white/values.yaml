@@ -208,17 +208,12 @@ snowWhite:
     # @section -- Snow-White Report Coordinator API
     additionalEnvs: []
 
-influxdb:
+influxdb2:
   # -- Deploy InfluxDB StatefulSet alongside Snow-White.
   # @section -- Infrastructure (InfluxDB)
   enabled: true
-  config:
-    http:
-      # Enable or disable HTTP authentication for InfluxDB.
-      auth-enabled: true
-  setDefaultUser:
-    # Enable or disable the creation of a default user for InfluxDB.
-    enabled: true
+  pdb:
+    create: false
 
 kafka:
   # -- Deploy Kafka StatefulSet alongside Snow-White.

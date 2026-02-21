@@ -40,9 +40,9 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Infrastructure (InfluxDB)
 
-| Key              | Type | Default | Description                                       |
-| ---------------- | ---- | ------- | ------------------------------------------------- |
-| influxdb.enabled | bool | `true`  | Deploy InfluxDB StatefulSet alongside Snow-White. |
+| Key               | Type | Default | Description                                       |
+| ----------------- | ---- | ------- | ------------------------------------------------- |
+| influxdb2.enabled | bool | `true`  | Deploy InfluxDB StatefulSet alongside Snow-White. |
 
 ### Infrastructure (Kafka)
 
@@ -179,8 +179,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 | Key                                                            | Type   | Default                                    | Description |
 | -------------------------------------------------------------- | ------ | ------------------------------------------ | ----------- |
-| influxdb.config.http.auth-enabled                              | bool   | `true`                                     |             |
-| influxdb.setDefaultUser.enabled                                | bool   | `true`                                     |             |
+| influxdb2.pdb.create                                           | bool   | `false`                                    |             |
 | postgresql.architecture                                        | string | `"standalone"`                             |             |
 | postgresql.primary.extraEnvVars[0].name                        | string | `"API_INDEX_DATASOURCE_PASSWORD"`          |             |
 | postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key  | string | `"api-index-password"`                     |             |
