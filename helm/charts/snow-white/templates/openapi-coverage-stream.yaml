@@ -19,6 +19,10 @@ spec:
       {{ $selectorLabels | nindent 6 }}
   template:
     metadata:
+      annotations:
+        {{- if .Values.snowWhite.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 8 }}
+        {{- end }}
       labels:
         {{ $labels | nindent 8 }}
     spec:

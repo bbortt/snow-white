@@ -155,6 +155,13 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.otelEventFilterStream.image.tag      | string | `""`    | Image tag.                                               |
 | snowWhite.otelEventFilterStream.replicas       | int    | `1`     | Number of replicas to deploy.                            |
 
+### Advanced Configuration
+
+| Key                            | Type   | Default | Description                          |
+| ------------------------------ | ------ | ------- | ------------------------------------ |
+| snowWhite.podAnnotations       | object | `{}`    | Annotations for Snow-White pods.     |
+| snowWhite.revisionHistoryLimit | int    | `3`     | Number of old ReplicaSets to retain. |
+
 ### Snow-White Quality Gate API
 
 | Key                                     | Type   | Default | Description                                              |
@@ -168,12 +175,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
 | snowWhite.reportCoordinatorApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
 | snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
-
-### Advanced Configuration
-
-| Key                            | Type | Default | Description                          |
-| ------------------------------ | ---- | ------- | ------------------------------------ |
-| snowWhite.revisionHistoryLimit | int  | `3`     | Number of old ReplicaSets to retain. |
 
 ### Other Values
 

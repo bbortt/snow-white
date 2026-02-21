@@ -11,6 +11,13 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          annotations:
+            {{- if .Values.snowWhite.podAnnotations }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 12 }}
+            {{- end }}
+          labels:
+            {{ $labels | nindent 12 }}
         spec:
           {{ include "snow-white.imagePullSecrets" . | nindent 10 }}
           securityContext:

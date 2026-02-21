@@ -1,9 +1,25 @@
 import { renderHelmChart } from './render-helm-chart';
 import { describe, it, expect } from 'vitest';
-import {
-  expectToHaveDefaultLabelsForMicroservice,
-  getPodSpec,
-} from './helpers';
+import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
+
+const getTemplateSpec = (cronJob: any) => {
+  const { spec } = cronJob;
+  expect(spec).toBeDefined();
+
+  const { jobTemplate } = spec;
+  expect(jobTemplate).toBeDefined();
+
+  const jobSpec = jobTemplate.spec;
+  expect(jobSpec).toBeDefined();
+
+  const { template } = jobSpec;
+  expect(template).toBeDefined();
+
+  const templateSpec = template.spec;
+  expect(templateSpec).toBeDefined();
+
+  return templateSpec;
+};
 
 const valuesWithEnabledApiSyncJob = {
   snowWhite: {
@@ -113,53 +129,93 @@ describe('API Sync Job', () => {
     expect(cronJob.metadata.name).toHaveLength(63);
   });
 
-  const getTemplateSpec = (cronJob: any) => {
-    const { spec } = cronJob;
-    expect(spec).toBeDefined();
-
-    const { jobTemplate } = spec;
-    expect(jobTemplate).toBeDefined();
-
-    const jobSpec = jobTemplate.spec;
-    expect(jobSpec).toBeDefined();
-
-    const { template } = jobSpec;
-    expect(template).toBeDefined();
-
-    const templateSpec = template.spec;
-    expect(templateSpec).toBeDefined();
-
-    return templateSpec;
-  };
-
-  describe('imagePullSecrets', () => {
-    it('should have none by default', async () => {
-      const cronJob = await renderAndGetCronJob();
-
+  describe('template metadata', () => {
+    const getTemplateMetadata = (cronJob: any) => {
       const { spec } = cronJob;
       expect(spec).toBeDefined();
 
-      expect(spec.imagePullSecrets).toBeUndefined();
+      const { jobTemplate } = spec;
+      expect(jobTemplate).toBeDefined();
+
+      const jobSpec = jobTemplate.spec;
+      expect(jobSpec).toBeDefined();
+
+      const { template } = jobSpec;
+      expect(template).toBeDefined();
+
+      const { metadata } = template;
+      expect(metadata).toBeDefined();
+
+      return metadata;
+    };
+
+    describe('annotations', () => {
+      it('should not have any annotations by default', async () => {
+        const metadata = await getTemplateMetadata(await renderAndGetCronJob());
+
+        expect(metadata.annotations).toBeNull();
+      });
+
+      it('should include optional annotations', async () => {
+        const podAnnotations = {
+          foo: 'bar',
+        };
+
+        const metadata = await getTemplateMetadata(
+          await renderAndGetCronJob(
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              values: {
+                snowWhite: {
+                  ...valuesWithEnabledApiSyncJob.snowWhite,
+                  podAnnotations,
+                },
+              },
+            }),
+          ),
+        );
+
+        expect(metadata.annotations).toEqual(podAnnotations);
+      });
     });
 
-    it('renders with custom image pull secret based on values', async () => {
-      const token = 'something';
-      const cronJob = await renderAndGetCronJob(
-        await renderHelmChart({
-          chartPath: 'charts/snow-white',
-          values: {
-            global: {
-              imagePullSecrets: {
-                token,
-              },
-            },
-            ...valuesWithEnabledApiSyncJob,
-          },
-        }),
-      );
+    it('should have default labels', async () => {
+      const metadata = await getTemplateMetadata(await renderAndGetCronJob());
 
-      const templateSpec = getTemplateSpec(cronJob);
-      expect(templateSpec.imagePullSecrets).toEqual({ token });
+      expectToHaveDefaultLabelsForMicroservice(metadata.labels, 'api-sync-job');
+    });
+  });
+
+  describe('template spec', () => {
+    describe('imagePullSecrets', () => {
+      it('should have none by default', async () => {
+        const cronJob = await renderAndGetCronJob();
+
+        const { spec } = cronJob;
+        expect(spec).toBeDefined();
+
+        expect(spec.imagePullSecrets).toBeUndefined();
+      });
+
+      it('renders with custom image pull secret based on values', async () => {
+        const token = 'something';
+        const cronJob = await renderAndGetCronJob(
+          await renderHelmChart({
+            chartPath: 'charts/snow-white',
+            values: {
+              global: {
+                imagePullSecrets: {
+                  token,
+                },
+              },
+              ...valuesWithEnabledApiSyncJob,
+            },
+          }),
+        );
+
+        const templateSpec = getTemplateSpec(cronJob);
+        expect(templateSpec.imagePullSecrets).toEqual({ token });
+      });
     });
   });
 

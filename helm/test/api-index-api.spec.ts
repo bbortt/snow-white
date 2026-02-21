@@ -10,6 +10,7 @@ import { renderHelmChart } from './render-helm-chart';
 import {
   expectToHaveDefaultLabelsForMicroservice,
   getPodSpec,
+  getTemplateMetadata,
   isSubset,
 } from './helpers';
 import { onPremDatasourceProperties } from './postgresql.spec';
@@ -227,82 +228,128 @@ describe('API Index API', () => {
       });
     });
 
-    describe('imagePullSecrets', () => {
-      it('should have none by default', async () => {
-        const deployment = await renderAndGetDeployment();
+    describe('template metadata', () => {
+      describe('annotations', () => {
+        it('should not have any annotations by default', async () => {
+          const metadata = await getTemplateMetadata(
+            await renderAndGetDeployment(),
+          );
 
-        const { spec } = deployment;
-        expect(spec).toBeDefined();
+          expect(metadata.annotations).toBeNull();
+        });
 
-        expect(spec.imagePullSecrets).toBeUndefined();
-      });
+        it('should include optional annotations', async () => {
+          const podAnnotations = {
+            foo: 'bar',
+          };
 
-      it('renders with custom image pull secret based on values', async () => {
-        const token = 'something';
-        const templateSpec = getPodSpec(
-          await renderAndGetDeployment(
-            await renderHelmChart({
-              chartPath: 'charts/snow-white',
-              values: {
-                global: {
-                  imagePullSecrets: {
-                    token,
+          const metadata = await getTemplateMetadata(
+            await renderAndGetDeployment(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    podAnnotations,
                   },
                 },
-              },
-            }),
-          ),
-        );
+              }),
+            ),
+          );
 
-        expect(templateSpec.imagePullSecrets).toEqual({ token });
-      });
-    });
-
-    describe('affinities', () => {
-      it('should define hostname pod anti affinity by default', async () => {
-        const templateSpec = getPodSpec(await renderAndGetDeployment());
-
-        expect(templateSpec.affinity.nodeAffinity).toBeNull();
-        expect(templateSpec.affinity.podAffinity).toBeNull();
-        expect(templateSpec.affinity.podAntiAffinity).toEqual({
-          preferredDuringSchedulingIgnoredDuringExecution: [
-            {
-              podAffinityTerm: {
-                labelSelector: {
-                  matchLabels: {
-                    'app.kubernetes.io/component': 'api-index-api',
-                    'app.kubernetes.io/instance': 'test-release',
-                    'app.kubernetes.io/name': 'api-index-api',
-                  },
-                },
-                topologyKey: 'kubernetes.io/hostname',
-              },
-              weight: 1,
-            },
-          ],
+          expect(metadata.annotations).toEqual(podAnnotations);
         });
       });
 
-      it('should override all other affinities with custom affinity from values', async () => {
-        const templateSpec = getPodSpec(
-          await renderAndGetDeployment(
-            await renderHelmChart({
-              chartPath: 'charts/snow-white',
-              values: {
-                affinity: {
-                  myAffinity: {
-                    just: 'an example',
-                  },
-                },
-              },
-            }),
-          ),
+      it('should have default labels', async () => {
+        const metadata = await getTemplateMetadata(
+          await renderAndGetDeployment(),
         );
 
-        expect(templateSpec.affinity).toEqual({
-          myAffinity: {
-            just: 'an example',
-          },
+        expectToHaveDefaultLabelsForMicroservice(
+          metadata.labels,
+          'api-index-api',
+        );
+      });
+    });
+
+    describe('template spec', () => {
+      describe('imagePullSecrets', () => {
+        it('should have none by default', async () => {
+          const deployment = await renderAndGetDeployment();
+
+          const { spec } = deployment;
+          expect(spec).toBeDefined();
+
+          expect(spec.imagePullSecrets).toBeUndefined();
+        });
+
+        it('renders with custom image pull secret based on values', async () => {
+          const token = 'something';
+          const templateSpec = getPodSpec(
+            await renderAndGetDeployment(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  global: {
+                    imagePullSecrets: {
+                      token,
+                    },
+                  },
+                },
+              }),
+            ),
+          );
+
+          expect(templateSpec.imagePullSecrets).toEqual({ token });
+        });
+      });
+
+      describe('affinities', () => {
+        it('should define hostname pod anti affinity by default', async () => {
+          const templateSpec = getPodSpec(await renderAndGetDeployment());
+
+          expect(templateSpec.affinity.nodeAffinity).toBeNull();
+          expect(templateSpec.affinity.podAffinity).toBeNull();
+          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+            preferredDuringSchedulingIgnoredDuringExecution: [
+              {
+                podAffinityTerm: {
+                  labelSelector: {
+                    matchLabels: {
+                      'app.kubernetes.io/component': 'api-index-api',
+                      'app.kubernetes.io/instance': 'test-release',
+                      'app.kubernetes.io/name': 'api-index-api',
+                    },
+                  },
+                  topologyKey: 'kubernetes.io/hostname',
+                },
+                weight: 1,
+              },
+            ],
+          });
+        });
+
+        it('should override all other affinities with custom affinity from values', async () => {
+          const templateSpec = getPodSpec(
+            await renderAndGetDeployment(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  affinity: {
+                    myAffinity: {
+                      just: 'an example',
+                    },
+                  },
+                },
+              }),
+            ),
+          );
+
+          expect(templateSpec.affinity).toEqual({
+            myAffinity: {
+              just: 'an example',
+            },
+          });
         });
       });
     });
