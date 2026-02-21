@@ -63,6 +63,10 @@ snowWhite:
   # @section -- Advanced Configuration
   revisionHistoryLimit: 3
 
+  # -- Annotations for Snow-White pods.
+  # @section -- Advanced Configuration
+  podAnnotations: {}
+
   rollout:
     # -- Max pods above desired during rolling update.
     # @section -- Availability
