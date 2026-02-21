@@ -135,7 +135,7 @@ jobs:
           java-version: 25
       - name: Rebuild JAR
         run: |
-          ./mvnw -B install \
+          ./mvnw -B clean install \
             -b smart -T4C \
             -Pnode,prod \
             -DskipTests \
@@ -230,7 +230,7 @@ jobs:
           PGPASSWORD: postgres
       - name: Rebuild JAR
         run: |
-          ./mvnw -B install \
+          ./mvnw -B clean install \
             -b smart -T4C \
             -Pprod \
             -DskipTests \
