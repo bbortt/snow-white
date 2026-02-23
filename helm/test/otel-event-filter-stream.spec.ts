@@ -13,6 +13,7 @@ import {
   getTemplateMetadata,
   isSubset,
 } from './helpers';
+import { defaultLogPattern } from './constants';
 
 describe('OTEL Event Filter Stream', () => {
   describe('Deployment', () => {
@@ -436,10 +437,21 @@ describe('OTEL Event Filter Stream', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+5 environment variables by default', async () => {
+          it('should deploy 3+5 environment variables by default', async () => {
             const otelEventFilterStream =
               await renderAndGetOtelEventFilterStreamContainer();
-            expect(otelEventFilterStream.env).toHaveLength(7);
+            expect(otelEventFilterStream.env).toHaveLength(8);
+          });
+
+          it('should include default log pattern', async () => {
+            const otelEventFilterStream =
+              await renderAndGetOtelEventFilterStreamContainer();
+
+            const protocol = otelEventFilterStream.env.find(
+              (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe(defaultLogPattern);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -560,8 +572,8 @@ describe('OTEL Event Filter Stream', () => {
                   }),
                 );
 
-              // 2 OTEL + 5 default + 1 custom configuration
-              expect(otelEventFilterStream.env).toHaveLength(8);
+              // 1 Logging + 2 OTEL + 5 default + 1 custom configuration
+              expect(otelEventFilterStream.env).toHaveLength(9);
 
               const customEnv = otelEventFilterStream.env.find(
                 (env) => env.name === envVarName,
@@ -589,8 +601,8 @@ describe('OTEL Event Filter Stream', () => {
                 }),
               );
 
-            // 2 OTEL + 5 default + 2 additional
-            expect(otelEventFilterStream.env).toHaveLength(9);
+            // 1 Logging + 2 OTEL + 5 default + 2 additional
+            expect(otelEventFilterStream.env).toHaveLength(10);
 
             const authorEnv = otelEventFilterStream.env.find(
               (env) => env.name === 'author',

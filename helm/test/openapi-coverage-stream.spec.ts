@@ -13,6 +13,7 @@ import {
   getTemplateMetadata,
   isSubset,
 } from './helpers';
+import { defaultLogPattern } from './constants';
 
 describe('OpenAPI Coverage Stream', () => {
   describe('Deployment', () => {
@@ -435,10 +436,21 @@ describe('OpenAPI Coverage Stream', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+9 environment variables by default', async () => {
+          it('should deploy 3+9 environment variables by default', async () => {
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer();
-            expect(openapiCoverageStream.env).toHaveLength(11);
+            expect(openapiCoverageStream.env).toHaveLength(12);
+          });
+
+          it('should include default log pattern', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            const protocol = openapiCoverageStream.env.find(
+              (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe(defaultLogPattern);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -644,8 +656,8 @@ describe('OpenAPI Coverage Stream', () => {
                   }),
                 );
 
-              // 2 OTEL + 9 default + 1 custom configuration
-              expect(openapiCoverageStream.env).toHaveLength(12);
+              // 1 Logging + 2 OTEL + 9 default + 1 custom configuration
+              expect(openapiCoverageStream.env).toHaveLength(13);
 
               const customEnv = openapiCoverageStream.env.find(
                 (env) => env.name === envVarName,
@@ -673,8 +685,8 @@ describe('OpenAPI Coverage Stream', () => {
                 }),
               );
 
-            // 2 OTEL + 9 default + 2 additional
-            expect(openapiCoverageStream.env).toHaveLength(13);
+            // 1 Logging + 2 OTEL + 9 default + 2 additional
+            expect(openapiCoverageStream.env).toHaveLength(14);
 
             const authorEnv = openapiCoverageStream.env.find(
               (env) => env.name === 'author',

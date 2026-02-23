@@ -42,7 +42,7 @@ spec:
           image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/openapi-coverage-stream:{{ .Values.snowWhite.openapiCoverageStream.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
-          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
+          {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
             - name: 'INFLUXDB_URL'
               value: '{{ default (printf "http://%s-influxdb.%s.svc.cluster.local.:8086" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
             - name: 'INFLUXDB_ORG'
