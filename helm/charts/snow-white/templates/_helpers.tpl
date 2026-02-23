@@ -65,7 +65,9 @@ Helper function making sure that the public domain (exposed through ingress) is 
 {{/*
 Common environment variables connecting microservices to OTEL collector service
 */}}
-{{- define "snow-white.otelExporterEnvVariables" -}}
+{{- define "snow-white.commonPodEnvironmentVariables" -}}
+- name: 'LOGGING_PATTERN_CONSOLE'
+  value: {{ .Values.snowWhite.logPattern | quote }}
 - name: 'OTEL_EXPORTER_OTLP_PROTOCOL'
   value: 'grpc'
 - name: 'OTEL_EXPORTER_OTLP_ENDPOINT'

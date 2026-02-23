@@ -14,6 +14,7 @@ import {
   getTemplateMetadata,
   isSubset,
 } from './helpers';
+import { defaultLogPattern } from './constants';
 
 describe('API Gateway', () => {
   describe('Deployment', () => {
@@ -443,9 +444,19 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+3 environment variables by default', async () => {
+          it('should deploy 3+3 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(5);
+            expect(apiGateway.env).toHaveLength(6);
+          });
+
+          it('should include default log pattern', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            const protocol = apiGateway.env.find(
+              (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe(defaultLogPattern);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -537,8 +548,8 @@ describe('API Gateway', () => {
               }),
             );
 
-            // 2 OTEL + 3 default + 2 additional
-            expect(apiGateway.env).toHaveLength(7);
+            // 1 Logging + 2 OTEL + 3 default + 2 additional
+            expect(apiGateway.env).toHaveLength(8);
 
             const authorEnv = apiGateway.env.find(
               (env) => env.name === 'author',

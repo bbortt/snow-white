@@ -1,6 +1,7 @@
 import { renderHelmChart } from './render-helm-chart';
 import { describe, it, expect } from 'vitest';
 import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
+import { defaultLogPattern } from './constants';
 
 const getTemplateSpec = (cronJob: any) => {
   const { spec } = cronJob;
@@ -318,9 +319,19 @@ describe('API Sync Job', () => {
       });
 
       describe('env', () => {
-        it('should deploy 2+1+3+1 environment variables by default', async () => {
+        it('should deploy 3+1+3+1 environment variables by default', async () => {
           const apiSyncJob = await renderAndGetApiSyncJobContainer();
-          expect(apiSyncJob.env).toHaveLength(7);
+          expect(apiSyncJob.env).toHaveLength(8);
+        });
+
+        it('should include default log pattern', async () => {
+          const apiSyncJob = await renderAndGetApiSyncJobContainer();
+
+          const protocol = apiSyncJob.env.find(
+            (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+          );
+          expect(protocol).toBeDefined();
+          expect(protocol.value).toBe(defaultLogPattern);
         });
 
         it('should include configuration for the OTEL collector', async () => {
@@ -456,8 +467,8 @@ describe('API Sync Job', () => {
               }),
             );
 
-            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 1 custom configuration
-            expect(apiSyncJob.env).toHaveLength(8);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 1 custom configuration
+            expect(apiSyncJob.env).toHaveLength(9);
 
             const customEnv = apiSyncJob.env.find(
               (env) => env.name === envVarName,
@@ -488,8 +499,8 @@ describe('API Sync Job', () => {
             }),
           );
 
-          // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 2 additional
-          expect(apiSyncJob.env).toHaveLength(9);
+          // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 2 additional
+          expect(apiSyncJob.env).toHaveLength(10);
 
           const authorEnv = apiSyncJob.env.find((env) => env.name === 'author');
           expect(authorEnv).toBeDefined();
