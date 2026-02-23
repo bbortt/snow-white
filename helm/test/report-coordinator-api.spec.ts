@@ -13,6 +13,7 @@ import {
   isSubset,
 } from './helpers';
 import { onPremDatasourceProperties } from './postgresql.spec';
+import { defaultLogPattern } from './constants';
 
 describe('Report Coordinator API', () => {
   describe('Deployment', () => {
@@ -456,10 +457,21 @@ describe('Report Coordinator API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+1+11 environment variables by default', async () => {
+          it('should deploy 3+1+11 environment variables by default', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(14);
+            expect(reportCoordinatorApi.env).toHaveLength(15);
+          });
+
+          it('should include default log pattern', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const protocol = reportCoordinatorApi.env.find(
+              (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe(defaultLogPattern);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -634,8 +646,8 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(16);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(17);
 
             const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',

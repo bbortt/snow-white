@@ -45,7 +45,7 @@ spec:
           image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-gateway:{{ .Values.snowWhite.apiGateway.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
-          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
+          {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
               {{- if .Values.snowWhite.ingress.tls }}
               value: 'https://{{ include "snow-white.publicHost" . }}'

@@ -14,6 +14,7 @@ import {
   isSubset,
 } from './helpers';
 import { onPremDatasourceProperties } from './postgresql.spec';
+import { defaultLogPattern } from './constants';
 
 describe('API Index API', () => {
   describe('Deployment', () => {
@@ -448,9 +449,19 @@ describe('API Index API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+1+6 environment variables by default', async () => {
+          it('should deploy 3+1+6 environment variables by default', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
-            expect(apiIndexApi.env).toHaveLength(9);
+            expect(apiIndexApi.env).toHaveLength(10);
+          });
+
+          it('should include default log pattern', async () => {
+            const apiIndexApi = await renderAndGetApiIndexApiContainer();
+
+            const protocol = apiIndexApi.env.find(
+              (env) => env.name === 'LOGGING_PATTERN_CONSOLE',
+            );
+            expect(protocol).toBeDefined();
+            expect(protocol.value).toBe(defaultLogPattern);
           });
 
           it('should include configuration for the OTEL collector', async () => {
@@ -602,8 +613,8 @@ describe('API Index API', () => {
               }),
             );
 
-            // 2 OTEL + 1 JAVA_TOOL_OPTIONS + 6 default + 2 additional
-            expect(apiIndexApi.env).toHaveLength(11);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 6 default + 2 additional
+            expect(apiIndexApi.env).toHaveLength(12);
 
             const authorEnv = apiIndexApi.env.find(
               (env) => env.name === 'author',

@@ -107,8 +107,10 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name` | Custom JSON path to the service name inside an OpenAPI specification. |
 | snowWhite.apiSyncJob.artifactory.repository                | string | `""`                             | Artifactory repository holding API index.                             |
 | snowWhite.apiSyncJob.enabled                               | bool   | `false`                          | Deploy CronJob for API ingestion alongside Snow-White.                |
+| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `1`                              | The number of failed finished jobs to keep.                           |
 | snowWhite.apiSyncJob.image.tag                             | string | `""`                             | Image tag.                                                            |
 | snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                |
+| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `3`                              | The number of successful finished jobs to keep.                       |
 
 ### Snow-White Ingress
 
@@ -127,6 +129,14 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.kafka.calculationRequestTopic         | string | `"snow-white-calculation-request"`                                         | Calculation request topic.         |
 | snowWhite.kafka.initTopics                      | string | `"true"`                                                                   | Initialize Kafka topics.           |
 | snowWhite.kafka.openapiCalculationResponseTopic | string | `"snow-white-openapi-calculation-response"`                                | OpenAPI calculation response topic |
+
+### Advanced Configuration
+
+| Key                            | Type   | Default                                                                                                                                                     | Description                          |
+| ------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%level thread=\"%thread\" logger=%logger{2}%replace( traceId=%mdc{trace_id}){' traceId=$', ''} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.     |
+| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                        | Annotations for Snow-White pods.     |
+| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                         | Number of old ReplicaSets to retain. |
 
 ### Availability
 
@@ -154,13 +164,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.otelEventFilterStream.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
 | snowWhite.otelEventFilterStream.image.tag      | string | `""`    | Image tag.                                               |
 | snowWhite.otelEventFilterStream.replicas       | int    | `1`     | Number of replicas to deploy.                            |
-
-### Advanced Configuration
-
-| Key                            | Type   | Default | Description                          |
-| ------------------------------ | ------ | ------- | ------------------------------------ |
-| snowWhite.podAnnotations       | object | `{}`    | Annotations for Snow-White pods.     |
-| snowWhite.revisionHistoryLimit | int    | `3`     | Number of old ReplicaSets to retain. |
 
 ### Snow-White Quality Gate API
 

@@ -8,6 +8,8 @@ metadata:
     {{- $labels | nindent 4 }}
 spec:
   schedule: '{{ .Values.snowWhite.apiSyncJob.schedule }}'
+  failedJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.successfulJobsHistoryLimit }}
   jobTemplate:
     spec:
       template:
@@ -27,7 +29,7 @@ spec:
               image: '{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-sync-job:{{ .Values.snowWhite.apiSyncJob.image.tag | default .Chart.AppVersion }}'
               imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
               env:
-              {{- include "snow-white.otelExporterEnvVariables" . | nindent 16 }}
+              {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 16 }}
                 - name: JAVA_TOOL_OPTIONS
                   value: >-
                     -Djava.io.tmpdir=/tmp

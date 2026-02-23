@@ -42,7 +42,7 @@ spec:
           image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/otel-event-filter-stream:{{ .Values.snowWhite.otelEventFilterStream.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
-          {{- include "snow-white.otelExporterEnvVariables" . | nindent 12 }}
+          {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL'
               value: {{ printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME'

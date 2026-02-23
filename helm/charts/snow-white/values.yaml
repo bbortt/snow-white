@@ -63,6 +63,10 @@ snowWhite:
   # @section -- Advanced Configuration
   revisionHistoryLimit: 3
 
+  # -- Log pattern for Snow-White pods.
+  # @section -- Advanced Configuration
+  logPattern: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level=%level thread="%thread" logger=%logger{2}%replace( traceId=%mdc{trace_id}){'' traceId=$'', ''''} msg="%msg"%n%ex'
+
   # -- Annotations for Snow-White pods.
   # @section -- Advanced Configuration
   podAnnotations: {}
@@ -137,6 +141,12 @@ snowWhite:
     # -- Deploy CronJob for API ingestion alongside Snow-White.
     # @section -- Snow-White API Sync Job
     enabled: false
+    # -- The number of failed finished jobs to keep.
+    # @section -- Snow-White API Sync Job
+    failedJobsHistoryLimit: 1
+    # -- The number of successful finished jobs to keep.
+    # @section -- Snow-White API Sync Job
+    successfulJobsHistoryLimit: 3
     image:
       # -- Image tag.
       # @section -- Snow-White API Sync Job
