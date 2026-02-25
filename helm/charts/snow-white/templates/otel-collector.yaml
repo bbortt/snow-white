@@ -169,8 +169,6 @@ data:
         protocol_version: 4.0.0
         traces:
           encoding: otlp_json
-          # TODO https://github.com/bbortt/snow-white/issues/287
-          # encoding: otlp_proto
           topic: {{ .Values.otelCollector.kafka.outbountTopic }}
       otlp:
         protocols:
@@ -189,19 +187,6 @@ data:
             - attributes["http.request.method"] == nil
             - attributes["api.name"] == nil
             - attributes["api.version"] == nil
-      filter/snow-white-internal:
-        error_mode: propagate
-        spans:
-          include:
-            match_type: strict
-            services:
-              - api-gateway
-              - api-index-api
-              - api-sync-job
-              - openapi-coverage-stream
-              - otel-event-filter-stream
-              - quality-gate-api
-              - report-coordinator-api
       filter/snow-white-microservices:
         error_mode: propagate
         spans:
@@ -215,6 +200,17 @@ data:
               - otel-event-filter-stream
               - quality-gate-api
               - report-coordinator-api
+      filter/all-external-services:
+        error_mode: propagate
+        traces:
+          span:
+            - |
+              resource.attributes["service.name"] != "api-gateway" and
+              resource.attributes["service.name"] != "api-sync-job" and
+              resource.attributes["service.name"] != "otel-event-filter-stream" and
+              resource.attributes["service.name"] != "openapi-coverage-stream" and
+              resource.attributes["service.name"] != "quality-gate-api" and
+              resource.attributes["service.name"] != "report-coordinator-api"
       groupbyattrs/service:
         keys:
           - service.name
@@ -259,18 +255,40 @@ data:
         org: {{ .Values.otelCollector.influxdb.org | quote }}
         bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
         token: '${INFLUXDB_TOKEN}'
-      prometheus:
-        endpoint: "0.0.0.0:8090"
-        send_timestamps: true
-        metric_expiration: 10m
-        enable_open_metrics: true
-        resource_to_telemetry_conversion:
-          enabled: true
+      {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+      otlp_grpc/infra:
+        {{- toYaml .Values.otelCollector.connectToExternalOtelCollector | nindent 8 }}
+      {{- end }}
     service:
       extensions:
         - health_check
         - zpages
       pipelines:
+        logs/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - batch
+          exporters:
+            - debug/basic
+            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
+        metrics/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - groupbyattrs/service
+            - batch
+          exporters:
+            - debug/basic
+            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
         traces/snow-white:
           receivers:
             - otlp
@@ -284,16 +302,31 @@ data:
           exporters:
             - debug/basic
             - kafka/snow-white
+        traces/influxdb:
+          receivers:
+            - kafka/snow-white
+          processors:
+            - memory_limiter
+            - groupbytrace
+            - batch
+          exporters:
+            - debug/basic
+            - influxdb
+        traces/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - groupbytrace
+            - batch
+          exporters:
+            - debug/basic
+            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
       telemetry:
         logs:
           level: INFO
           sampling:
             initial: 100
-        metrics:
-          level: detailed
-          readers:
-            - pull:
-                exporter:
-                  prometheus:
-                    host: '0.0.0.0'
-                    port: 8888

@@ -1,0 +1,55 @@
+logs/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - batch
+  exporters:
+    - debug/basic
+    - otlp_grpc/infra
+metrics/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - groupbyattrs/service
+    - batch
+  exporters:
+    - debug/basic
+    - otlp_grpc/infra
+traces/snow-white:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/snow-white-microservices
+    - filter/openapi-traces
+    - groupbytrace
+    - resource/cleanup
+    - batch
+  exporters:
+    - debug/basic
+    - kafka/snow-white
+traces/influxdb:
+  receivers:
+    - kafka/snow-white
+  processors:
+    - memory_limiter
+    - groupbytrace
+    - batch
+  exporters:
+    - debug/basic
+    - influxdb
+traces/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - groupbytrace
+    - batch
+  exporters:
+    - debug/basic
+    - otlp_grpc/infra

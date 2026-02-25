@@ -14,9 +14,6 @@ receivers:
         endpoint: '0.0.0.0:4317'
       http:
         endpoint: '0.0.0.0:4318'
-        cors:
-          allowed_origins:
-            - 'http://localhost:*'
 processors:
   memory_limiter:
     check_interval: 5s
@@ -42,6 +39,17 @@ processors:
         - resource.attributes["service.name"] == "openapi-coverage-stream"
         - resource.attributes["service.name"] == "quality-gate-api"
         - resource.attributes["service.name"] == "report-coordinator-api"
+  filter/all-external-services:
+    error_mode: propagate
+    traces:
+      span:
+        - |
+          resource.attributes["service.name"] != "api-gateway" and
+          resource.attributes["service.name"] != "api-sync-job" and
+          resource.attributes["service.name"] != "otel-event-filter-stream" and
+          resource.attributes["service.name"] != "openapi-coverage-stream" and
+          resource.attributes["service.name"] != "quality-gate-api" and
+          resource.attributes["service.name"] != "report-coordinator-api"
   groupbyattrs/service:
     keys:
       - service.name
@@ -85,25 +93,31 @@ exporters:
     org: snow-white
     bucket: raw-data
     token: ${INFLUXDB_TOKEN}
-  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
-  prometheus:
-    endpoint: '0.0.0.0:8090'
-    send_timestamps: true
-    metric_expiration: 10m
-    enable_open_metrics: true
-    resource_to_telemetry_conversion:
-      enabled: true
+  otlp_grpc/grafana:
+    endpoint: 'grafana:4317'
+    tls:
+      insecure: true
+  otlp_grpc/jaeger:
+    endpoint: 'jaeger:4317'
+    tls:
+      insecure: true
 service:
   extensions: [health_check, zpages]
   pipelines:
     logs/infra:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [debug/basic]
+      processors: [memory_limiter, filter/all-external-services, batch]
+      exporters: [debug/basic, otlp_grpc/grafana]
     metrics/infra:
       receivers: [otlp]
-      processors: [memory_limiter, groupbyattrs/service, batch]
-      exporters: [debug/basic]
+      processors:
+        [
+          memory_limiter,
+          filter/all-external-services,
+          groupbyattrs/service,
+          batch,
+        ]
+      exporters: [debug/basic, otlp_grpc/grafana]
     traces/snow-white:
       receivers: [otlp]
       processors:
@@ -116,20 +130,26 @@ service:
           batch,
         ]
       exporters: [debug/basic, kafka/snow-white]
-    traces/infra:
+    traces/influxdb:
       receivers: [kafka/snow-white]
       processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, influxdb]
+    traces/infra:
+      receivers: [otlp]
+      processors:
+        [memory_limiter, filter/all-external-services, groupbytrace, batch]
+      exporters: [debug/basic, otlp_grpc/grafana, otlp_grpc/jaeger]
   telemetry:
     logs:
       level: INFO # DEBUG
       sampling:
         initial: 100
     metrics:
-      level: detailed
       readers:
-        - pull:
+        - periodic:
             exporter:
-              prometheus:
-                host: '0.0.0.0'
-                port: 8888
+              otlp:
+                protocol: grpc
+                endpoint: http://grafana:4317
+    resource:
+      'service.namespace': 'io.github.bbortt.snow.white'

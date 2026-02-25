@@ -1,4 +1,13 @@
 management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/traces
+  otlp:
+    metrics:
+      export:
+        url: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/metrics
   server:
     port: 8090
 spring:

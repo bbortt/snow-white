@@ -437,10 +437,10 @@ describe('OTEL Event Filter Stream', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+5 environment variables by default', async () => {
+          it('should deploy 2+5 environment variables by default', async () => {
             const otelEventFilterStream =
               await renderAndGetOtelEventFilterStreamContainer();
-            expect(otelEventFilterStream.env).toHaveLength(8);
+            expect(otelEventFilterStream.env).toHaveLength(7);
           });
 
           it('should include default log pattern', async () => {
@@ -458,18 +458,12 @@ describe('OTEL Event Filter Stream', () => {
             const otelEventFilterStream =
               await renderAndGetOtelEventFilterStreamContainer();
 
-            const protocol = otelEventFilterStream.env.find(
-              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
-            );
-            expect(protocol).toBeDefined();
-            expect(protocol.value).toBe('grpc');
-
             const endpoint = otelEventFilterStream.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
             );
             expect(endpoint).toBeDefined();
             expect(endpoint.value).toBe(
-              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4317',
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4318',
             );
           });
 
@@ -572,8 +566,8 @@ describe('OTEL Event Filter Stream', () => {
                   }),
                 );
 
-              // 1 Logging + 2 OTEL + 5 default + 1 custom configuration
-              expect(otelEventFilterStream.env).toHaveLength(9);
+              // 1 Logging + 1 OTEL + 5 default + 1 custom configuration
+              expect(otelEventFilterStream.env).toHaveLength(8);
 
               const customEnv = otelEventFilterStream.env.find(
                 (env) => env.name === envVarName,
@@ -601,8 +595,8 @@ describe('OTEL Event Filter Stream', () => {
                 }),
               );
 
-            // 1 Logging + 2 OTEL + 5 default + 2 additional
-            expect(otelEventFilterStream.env).toHaveLength(10);
+            // 1 Logging + 1 OTEL + 5 default + 2 additional
+            expect(otelEventFilterStream.env).toHaveLength(9);
 
             const authorEnv = otelEventFilterStream.env.find(
               (env) => env.name === 'author',
@@ -621,7 +615,7 @@ describe('OTEL Event Filter Stream', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

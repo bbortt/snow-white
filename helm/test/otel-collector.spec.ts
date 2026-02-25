@@ -4,6 +4,7 @@
  * See LICENSE file for full details.
  */
 
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseAllDocuments } from 'yaml';
 import { renderHelmChart } from './render-helm-chart';
@@ -12,6 +13,7 @@ import {
   getPodSpec,
   isSubset,
 } from './helpers';
+import { join } from 'node:path';
 
 describe('OTEL Collector', () => {
   describe('Deployment', () => {
@@ -474,7 +476,7 @@ describe('OTEL Collector', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({
@@ -651,7 +653,7 @@ describe('OTEL Collector', () => {
       return service;
     };
 
-    it('should be Kubernetes Service', async () => {
+    it('should be Kubernetes ConfigMap', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 
       expect(configMap.apiVersion).toMatch('v1');
@@ -700,7 +702,7 @@ describe('OTEL Collector', () => {
       );
     });
 
-    it('should override kafka broker from values', async () => {
+    it('should override Kafka broker from values', async () => {
       const brokers = 'localhost:9092';
       const configMap = await renderAndGetOtelCollectorConfig(
         await renderHelmChart({
@@ -728,7 +730,7 @@ describe('OTEL Collector', () => {
       );
     });
 
-    it('should load influxdb token from environment variable', async () => {
+    it('should load InfluxDB token from environment variable', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 
       const { data } = configMap;
@@ -739,6 +741,96 @@ describe('OTEL Collector', () => {
       expect(snowWhiteConfig.exporters.influxdb.token).toBe(
         '${INFLUXDB_TOKEN}',
       );
+    });
+
+    it('should connect to OTeL collector from values', async () => {
+      const endpoint = 'http://custom.collector:1234';
+
+      const configMap = await renderAndGetOtelCollectorConfig(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            otelCollector: {
+              connectToExternalOtelCollector: {
+                endpoint,
+              },
+            },
+          },
+        }),
+      );
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters['otlp_grpc/infra']).toBeDefined();
+      expect(snowWhiteConfig.exporters['otlp_grpc/infra'].endpoint).toBe(
+        endpoint,
+      );
+      expect(snowWhiteConfig.exporters['otlp_grpc/infra'].tls.insecure).toBe(
+        true,
+      );
+    });
+
+    const loadResourceToJson = (resourceName: string): object => {
+      const docs = parseAllDocuments(
+        readFileSync(
+          join(__dirname, './resources/otel-collector', resourceName),
+          'utf-8',
+        ),
+      );
+      const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
+      expect(json).toHaveLength(1);
+
+      return json[0];
+    };
+
+    it('should export logs, metrics and traces to OTeL collector from values', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      const { pipelines } = snowWhiteConfig.service;
+      expect(pipelines).toBeDefined();
+
+      const pipelineWithInfraExporters = loadResourceToJson(
+        'standard-pipeline.yaml',
+      );
+
+      expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
+    });
+
+    it('should export logs, metrics and traces to OTeL collector from values', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            otelCollector: {
+              connectToExternalOtelCollector: {
+                endpoint: 'http://custom.collector:1234',
+              },
+            },
+          },
+        }),
+      );
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      const { pipelines } = snowWhiteConfig.service;
+      expect(pipelines).toBeDefined();
+
+      const pipelineWithInfraExporters = loadResourceToJson(
+        'pipeline-with-infra-exporters.yaml',
+      );
+
+      expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
     });
   });
 });
