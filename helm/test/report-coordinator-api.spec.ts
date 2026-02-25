@@ -457,10 +457,10 @@ describe('Report Coordinator API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+1+11 environment variables by default', async () => {
+          it('should deploy 2+1+11 environment variables by default', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(15);
+            expect(reportCoordinatorApi.env).toHaveLength(14);
           });
 
           it('should include default log pattern', async () => {
@@ -478,18 +478,12 @@ describe('Report Coordinator API', () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
 
-            const protocol = reportCoordinatorApi.env.find(
-              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
-            );
-            expect(protocol).toBeDefined();
-            expect(protocol.value).toBe('grpc');
-
             const endpoint = reportCoordinatorApi.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
             );
             expect(endpoint).toBeDefined();
             expect(endpoint.value).toBe(
-              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4317',
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4318',
             );
           });
 
@@ -646,8 +640,8 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(17);
+            // 1 Logging + 1 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(16);
 
             const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',
@@ -748,7 +742,7 @@ describe('Report Coordinator API', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

@@ -1,6 +1,16 @@
+management:
+  opentelemetry:
+    resource-attributes:
+      'service.namespace': 'io.github.bbortt.snow.white'
+  otlp:
+    metrics:
+      export:
+        step: 10s
 springdoc:
   packages-to-scan: io.github.bbortt.snow.white.microservices.api.index.api.rest
 spring:
+  application:
+    name: api-index-api
   flyway:
     placeholders:
       app_user: ${spring.datasource.username}

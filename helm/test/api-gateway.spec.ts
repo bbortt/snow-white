@@ -566,7 +566,7 @@ describe('API Gateway', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

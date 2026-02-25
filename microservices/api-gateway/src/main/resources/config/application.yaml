@@ -12,6 +12,8 @@ management:
     info:
       access: read_only
 spring:
+  application:
+    name: api-gateway
   profiles:
     default: prod
     include: api-docs

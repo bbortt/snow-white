@@ -705,7 +705,7 @@ describe('OpenAPI Coverage Stream', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

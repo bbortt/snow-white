@@ -58,7 +58,7 @@ RUN chown -R api-sync-job:api-sync-job /app /opt
 
 ENV JAVA_HOME="/opt/java" \
     OTEL_SERVICE_NAME="api-sync-job" \
-    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_RESOURCE_ATTRIBUTES="service.namespace=io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
     JAVA_OPTS="-XX:+UseContainerSupport \
         -XX:InitialRAMPercentage=75 \

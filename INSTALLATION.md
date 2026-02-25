@@ -83,6 +83,54 @@ snowWhite:
 > Artifactory must therefore remain available at all times.
 > Snow-White is neither a mirror nor a complete standalone API index.
 
+### Memory Management
+
+By default, the API sync job is deployed with the following resource configuration:
+
+**Memory**: 1024Mi (request and limit)
+
+**CPU**: 500m (request)
+
+In addition, the job processes up to 10 API specifications in parallel.
+
+Parsing large OpenAPI specifications can be memory-intensive.
+If your repository contains many large specifications, you may encounter increased memory usage or even out-of-memory (OOM) terminations.
+
+You can fine-tune the sync job in two ways:
+
+**1.
+Increase Memory Allocation**
+
+If you experience memory pressure, increase the memory request and limit:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    enabled: true
+    resources:
+      memory:
+        request: 2048Gi # <-- Your value goes here
+        limit: 2048Gi # <-- Your value goes here
+```
+
+> 💡 It is recommended to keep request and limit aligned unless you have specific scheduling requirements.
+
+**2.
+Reduce Parallel Processing**
+
+Another effective way to reduce memory consumption is to lower the number of parallel synchronization tasks:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    enabled: true
+    additionalEnvs:
+      - name: SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS
+        value: 3
+```
+
+Reducing parallelism decreases peak memory usage but increases total synchronization time.
+
 ## Replacing Infrastructure with Existing Infrastructure
 
 You may already operate parts of the required infrastructure (for example PostgreSQL, Kafka, or other shared services) outside of the Snow-White Helm chart.

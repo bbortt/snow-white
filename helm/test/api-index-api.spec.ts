@@ -449,9 +449,9 @@ describe('API Index API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+1+6 environment variables by default', async () => {
+          it('should deploy 2+1+6 environment variables by default', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
-            expect(apiIndexApi.env).toHaveLength(10);
+            expect(apiIndexApi.env).toHaveLength(9);
           });
 
           it('should include default log pattern', async () => {
@@ -467,18 +467,12 @@ describe('API Index API', () => {
           it('should include configuration for the OTEL collector', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
 
-            const protocol = apiIndexApi.env.find(
-              (env) => env.name === 'OTEL_EXPORTER_OTLP_PROTOCOL',
-            );
-            expect(protocol).toBeDefined();
-            expect(protocol.value).toBe('grpc');
-
             const endpoint = apiIndexApi.env.find(
               (env) => env.name === 'OTEL_EXPORTER_OTLP_ENDPOINT',
             );
             expect(endpoint).toBeDefined();
             expect(endpoint.value).toBe(
-              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4317',
+              'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4318',
             );
           });
 
@@ -613,8 +607,8 @@ describe('API Index API', () => {
               }),
             );
 
-            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 6 default + 2 additional
-            expect(apiIndexApi.env).toHaveLength(12);
+            // 1 Logging + 1 OTEL + 1 JAVA_TOOL_OPTIONS + 6 default + 2 additional
+            expect(apiIndexApi.env).toHaveLength(11);
 
             const authorEnv = apiIndexApi.env.find(
               (env) => env.name === 'author',
@@ -713,7 +707,7 @@ describe('API Index API', () => {
     });
   });
 
-  describe('pod disruption budget', () => {
+  describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({

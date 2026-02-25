@@ -280,8 +280,8 @@ describe('API Sync Job', () => {
               values: {
                 snowWhite: {
                   apiSyncJob: {
-                    image: { tag: customTag },
                     ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
+                    image: { tag: customTag },
                   },
                 },
               },
@@ -375,11 +375,11 @@ describe('API Sync Job', () => {
               values: {
                 snowWhite: {
                   apiSyncJob: {
+                    ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
                     artifactory: {
                       baseUrl,
                       repository,
                     },
-                    ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
                   },
                 },
               },
@@ -509,6 +509,42 @@ describe('API Sync Job', () => {
           const fooEnv = apiSyncJob.env.find((env) => env.name === 'foo');
           expect(fooEnv).toBeDefined();
           expect(fooEnv.value).toBe('bar');
+        });
+      });
+
+      describe('resources', () => {
+        it('should be deployed with 1024 GB memory by default', async () => {
+          const apiSyncJob = await renderAndGetApiSyncJobContainer();
+
+          expect(apiSyncJob.resources.limits.memory).toBe('1024Gi');
+          expect(apiSyncJob.resources.requests.memory).toBe('1024Gi');
+        });
+
+        it('should adjust memory request and limit based on values', async () => {
+          const request = 'my-request';
+          const limit = 'my-limit';
+
+          const apiSyncJob = await renderAndGetApiSyncJobContainer(
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              values: {
+                snowWhite: {
+                  apiSyncJob: {
+                    ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
+                    resources: {
+                      memory: {
+                        request,
+                        limit,
+                      },
+                    },
+                  },
+                },
+              },
+            }),
+          );
+
+          expect(apiSyncJob.resources.limits.memory).toBe(limit);
+          expect(apiSyncJob.resources.requests.memory).toBe(request);
         });
       });
     });

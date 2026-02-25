@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: openapi-coverage-stream
   kafka:
     streams:
       application-id: openapi-coverage-stream

@@ -18,6 +18,7 @@ export const getTemplateMetadata = (deployment: any): any => {
 
   return metadata;
 };
+
 export const getPodSpec = (deployment: any): any => {
   const { spec } = deployment;
   expect(spec).toBeDefined();
