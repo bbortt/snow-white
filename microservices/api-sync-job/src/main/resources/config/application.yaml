@@ -1,3 +1,5 @@
 spring:
+  application:
+    name: api-sync-job
   profiles:
     default: prod

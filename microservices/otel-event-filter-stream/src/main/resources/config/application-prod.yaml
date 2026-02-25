@@ -8,12 +8,3 @@ management:
     metrics:
       export:
         url: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/metrics
-  server:
-    port: 8090
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  web:
-    error:
-      include-message: always

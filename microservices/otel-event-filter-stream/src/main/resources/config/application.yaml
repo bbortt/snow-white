@@ -1,3 +1,11 @@
+management:
+  opentelemetry:
+    resource-attributes:
+      'service.namespace': 'io.github.bbortt.snow.white'
+  otlp:
+    metrics:
+      export:
+        step: 10s
 snow:
   white:
     otel:
@@ -5,6 +13,8 @@ snow:
         filter:
           consumer-mode: json
 spring:
+  application:
+    name: otel-event-filter-stream
   kafka:
     consumer:
       enable-auto-commit: false

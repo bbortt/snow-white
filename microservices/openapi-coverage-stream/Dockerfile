@@ -57,7 +57,7 @@ COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelem
 ENV JAVA_HOME="/opt/java" \
     AOT_CACHE="/app/openapi-coverage-stream.aot" \
     OTEL_SERVICE_NAME="openapi-coverage-stream" \
-    OTEL_SERVICE_NAMESPACE="io.github.bbortt.snow.white" \
+    OTEL_RESOURCE_ATTRIBUTES="service.namespace=io.github.bbortt.snow.white" \
     OTEL_SERVICE_VERSION="$PROJECT_VERSION" \
     JAVA_OPTS="-XX:+UseContainerSupport \
         -XX:InitialRAMPercentage=75 \
