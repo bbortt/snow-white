@@ -16,11 +16,12 @@ import org.jspecify.annotations.Nullable;
 
 public record OpenApiTestContext(
   ApiInformation apiInformation,
-  OpenAPI openAPI,
+  @Nullable OpenAPI openAPI,
   String lookbackWindow,
   Set<FluxAttributeFilter> fluxAttributeFilters,
   @With @Nullable Set<OpenTelemetryData> openTelemetryData,
-  @With @Nullable Set<OpenApiTestResult> openApiTestResults
+  @With @Nullable Set<OpenApiTestResult> openApiTestResults,
+  @Nullable String e
 ) {
   public OpenApiTestContext(
     ApiInformation apiInformation,
@@ -33,6 +34,7 @@ public record OpenApiTestContext(
       openAPI,
       lookbackWindow,
       fluxAttributeFilters,
+      null,
       null,
       null
     );

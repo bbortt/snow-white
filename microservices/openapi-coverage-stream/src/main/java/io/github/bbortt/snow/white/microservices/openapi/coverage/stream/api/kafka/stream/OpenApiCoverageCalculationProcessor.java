@@ -73,10 +73,6 @@ public class OpenApiCoverageCalculationProcessor {
         logger.debug("Handling message id '{}'", key)
       )
       .mapValues(this::fetchOpenApiSpecification)
-      .filter(
-        (key, openApiTestContext) ->
-          nonNull(openApiTestContext) && nonNull(openApiTestContext.openAPI())
-      )
       .processValues(
         (FixedKeyProcessorSupplier<
           String,
@@ -89,6 +85,12 @@ public class OpenApiCoverageCalculationProcessor {
               FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord
             ) {
               var openApiTestContext = kafkaEventRecord.value();
+
+              if (nonNull(openApiTestContext.e())) {
+                context().forward(kafkaEventRecord);
+                return;
+              }
+
               context().forward(
                 kafkaEventRecord.withValue(
                   openApiTestContext.withOpenTelemetryData(
@@ -104,20 +106,36 @@ public class OpenApiCoverageCalculationProcessor {
             }
           }
       )
-      .mapValues((key, openApiTestContext) ->
-        openApiTestContext.withOpenApiTestResults(
+      .mapValues((key, openApiTestContext) -> {
+        if (nonNull(openApiTestContext.e())) {
+          return openApiTestContext;
+        }
+
+        return openApiTestContext.withOpenApiTestResults(
           openApiCoverageService.testOpenApi(requireNonNull(openApiTestContext))
-        )
-      )
-      .flatMapValues((key, openApiTestContext) ->
-        singletonList(
+        );
+      })
+      .flatMapValues((key, openApiTestContext) -> {
+        if (nonNull(openApiTestContext.e())) {
+          return singletonList(
+            new OpenApiCoverageResponseEvent(
+              OPENAPI,
+              openApiTestContext.apiInformation(),
+              null,
+              openApiTestContext.e()
+            )
+          );
+        }
+
+        return singletonList(
           new OpenApiCoverageResponseEvent(
             OPENAPI,
             openApiTestContext.apiInformation(),
-            openApiTestContext.openApiTestResults()
+            openApiTestContext.openApiTestResults(),
+            null
           )
-        )
-      )
+        );
+      })
       .to(
         openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic(),
         Produced.with(
@@ -125,8 +143,6 @@ public class OpenApiCoverageCalculationProcessor {
           QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent()
         )
       );
-
-    // TODO: Error should not go unnoticed, but be sent to "dead letter queue"
 
     return stream;
   }
@@ -147,14 +163,16 @@ public class OpenApiCoverageCalculationProcessor {
     String key,
     QualityGateCalculationRequestEvent calculationRequestEvent
   ) {
+    var apiInformation = calculationRequestEvent.getApiInformation();
+    var lookbackWindow = calculationRequestEvent.getLookbackWindow();
+    var attributeFilters = calculationRequestEvent.getAttributeFilters();
+
     try {
       return new OpenApiTestContext(
-        calculationRequestEvent.getApiInformation(),
-        openApiService.findAndParseOpenApi(
-          calculationRequestEvent.getApiInformation()
-        ),
-        calculationRequestEvent.getLookbackWindow(),
-        mapToFluxAttributeFilters(calculationRequestEvent.getAttributeFilters())
+        apiInformation,
+        openApiService.findAndParseOpenApi(apiInformation),
+        lookbackWindow,
+        mapToFluxAttributeFilters(attributeFilters)
       );
     } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {
       logger.error(
@@ -164,7 +182,15 @@ public class OpenApiCoverageCalculationProcessor {
         e
       );
 
-      return null;
+      return new OpenApiTestContext(
+        apiInformation,
+        null,
+        lookbackWindow,
+        mapToFluxAttributeFilters(attributeFilters),
+        null,
+        null,
+        e.getMessage()
+      );
     }
   }
 }

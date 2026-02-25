@@ -460,6 +460,7 @@
             <groupId>io.fabric8</groupId>
             <artifactId>docker-maven-plugin</artifactId>
             <configuration>
+              <dockerHost>${env.DOCKER_HOST}</dockerHost>
               <images>
                 <image>
                   <name>
