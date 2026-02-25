@@ -38,8 +38,8 @@ importers:
         version: 4.0.18(@types/node@25.3.0)(yaml@2.8.2)
     optionalDependencies:
       npm-check-updates:
-        specifier: 19.4.1
-        version: 19.4.1
+        specifier: 19.5.0
+        version: 19.5.0
 
 packages:
 
@@ -587,8 +587,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  npm-check-updates@19.4.1:
-    resolution: {integrity: sha512-g3s+khrneBo0iGx7xqu/cQUk0Qc1XAHEYDptPCyCFF447RdhiBd6yPRxB7GkesbUBHXeNfmqV3ArlwxcI8h56w==}
+  npm-check-updates@19.5.0:
+    resolution: {integrity: sha512-isVbxtTABSULTmWUvoMOmaw6PdtF6t5vz78sCDlfAtzgQge8fd1kExCxe4e61BQADp20Q0SivWb8s9Y0azDUVg==}
     engines: {node: '>=20.0.0', npm: '>=8.12.1'}
     hasBin: true
 
@@ -1235,7 +1235,7 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  npm-check-updates@19.4.1:
+  npm-check-updates@19.5.0:
     optional: true
 
   npm-run-path@6.0.0:
