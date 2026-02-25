@@ -35,6 +35,14 @@ services:
     networks:
       - internal
 
+  jaeger:
+    image: jaegertracing/jaeger:2.15.1
+    ports:
+      - '16686:16686'
+    networks:
+      - default
+      - internal
+
   example-application:
     build:
       context: ../example-application
@@ -145,7 +153,7 @@ services:
       POSTGRES_USER: 'snow-white'
       POSTGRES_PASSWORD: 'snow-white'
     volumes:
-      - ./postgres/data/:/var/lib/postgresql/data/
+      - ./postgres/data/:/var/lib/postgresql
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
@@ -218,8 +226,7 @@ services:
     image: ghcr.io/bbortt/snow-white/api-index-api
     hostname: api-index-api
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
-      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL: 'http://localhost'
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/api-index-api'
       SPRING_DATASOURCE_USERNAME: 'api_index_app'
@@ -284,8 +291,7 @@ services:
     image: ghcr.io/bbortt/snow-white/otel-event-filter-stream
     hostname: otel-event-filter-stream
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
-      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL: 'http://api-index-api:8080'
       SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME: 'snow-white_inbound'
       SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS: 'true'
@@ -351,8 +357,7 @@ services:
     image: ghcr.io/bbortt/snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
-      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/quality-gate-api'
       SPRING_DATASOURCE_USERNAME: 'quality_gate_app'
@@ -386,8 +391,7 @@ services:
     image: ghcr.io/bbortt/snow-white/report-coordinator-api
     hostname: report-coordinator-api
     environment:
-      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
-      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
       SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS: 'true'
       SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'

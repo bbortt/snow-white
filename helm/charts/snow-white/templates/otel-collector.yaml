@@ -266,6 +266,10 @@ data:
         enable_open_metrics: true
         resource_to_telemetry_conversion:
           enabled: true
+      {{ if (empty .Values.otelCollector.connectoToExternalOtelCollector.endpoint) }}
+      otlp/infra:
+        {{- toYaml .Values.otelCollector.connectoToExternalOtelCollector | nindent 8 }}
+      {{- end -}}
     service:
       extensions:
         - health_check

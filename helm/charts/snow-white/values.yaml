@@ -65,7 +65,7 @@ snowWhite:
 
   # -- Log pattern for Snow-White pods.
   # @section -- Advanced Configuration
-  logPattern: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level=%level thread="%thread" logger=%logger{2}%replace( traceId=%mdc{trace_id}){'' traceId=$'', ''''} msg="%msg"%n%ex'
+  logPattern: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace( traceId="%mdc{trace_id}"){'' traceId=$'', ''''} msg="%msg"%n%ex'
 
   # -- Annotations for Snow-White pods.
   # @section -- Advanced Configuration
@@ -266,6 +266,14 @@ otelCollector:
   # -- Whether to expose the OTeL collector through the (public) ingress.
   # @section -- OpenTelemetry Collector
   exposeThroughIngress: true
+  connectoToExternalOtelCollector:
+    # -- Configure this endpoint to expose Snow-White internal telemetry data to external OTeL collector for monitoring.
+    # @section -- OpenTelemetry Collector
+    endpoint: ''
+    tls:
+      # -- Whether the external OTeL collector connection may be insecure.
+      # @section -- OpenTelemetry Collector
+      insecure: true
   # -- Custom attribute key identifying the API name.
   # @default -- `api.name`
   # @section -- OpenTelemetry Collector

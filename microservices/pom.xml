@@ -52,6 +52,14 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-bom</artifactId>
+        <version>2.25.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
         <groupId>org.citrusframework</groupId>
         <artifactId>citrus-bom</artifactId>
         <version>${citrus.version}</version>

@@ -42,6 +42,17 @@ processors:
         - resource.attributes["service.name"] == "openapi-coverage-stream"
         - resource.attributes["service.name"] == "quality-gate-api"
         - resource.attributes["service.name"] == "report-coordinator-api"
+  filter/all-external-services:
+    error_mode: propagate
+    traces:
+      span:
+        - |
+          resource.attributes["service.name"] != "api-gateway" and
+          resource.attributes["service.name"] != "api-sync-job" and
+          resource.attributes["service.name"] != "otel-event-filter-stream" and
+          resource.attributes["service.name"] != "openapi-coverage-stream" and
+          resource.attributes["service.name"] != "quality-gate-api" and
+          resource.attributes["service.name"] != "report-coordinator-api"
   groupbyattrs/service:
     keys:
       - service.name
@@ -85,7 +96,10 @@ exporters:
     org: snow-white
     bucket: raw-data
     token: ${INFLUXDB_TOKEN}
-  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusexporter
+  otlp/infra:
+    endpoint: 'jaeger:4317'
+    tls:
+      insecure: true
   prometheus:
     endpoint: '0.0.0.0:8090'
     send_timestamps: true
@@ -116,10 +130,15 @@ service:
           batch,
         ]
       exporters: [debug/basic, kafka/snow-white]
-    traces/infra:
+    traces/influxdb:
       receivers: [kafka/snow-white]
       processors: [memory_limiter, groupbytrace, batch]
       exporters: [debug/basic, influxdb]
+    traces/infra:
+      receivers: [otlp]
+      processors:
+        [memory_limiter, filter/all-external-services, groupbytrace, batch]
+      exporters: [debug/basic, otlp/infra]
   telemetry:
     logs:
       level: INFO # DEBUG

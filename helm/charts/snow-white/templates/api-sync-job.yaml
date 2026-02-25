@@ -40,15 +40,15 @@ spec:
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.baseUrl }}'
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.repository }}'
-              {{- if ne .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath "" }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}'
               {{- end }}
-              {{- if ne .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath "" }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_VERSION_JSON_PATH'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}'
               {{- end }}
-              {{- if ne .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath "" }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
               {{- end }}

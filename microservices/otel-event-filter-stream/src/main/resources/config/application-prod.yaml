@@ -4,12 +4,3 @@ management:
       export:
         otlp:
           endpoint: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/traces
-  server:
-    port: 8090
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  web:
-    error:
-      include-message: always
