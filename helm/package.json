@@ -18,14 +18,14 @@
   },
   "devDependencies": {
     "@types/lodash": "4.17.24",
-    "@types/node": "25.3.1",
+    "@types/node": "25.3.2",
     "@vitest/coverage-v8": "4.0.18",
     "lodash": "4.17.23",
     "ts-node": "10.9.2",
     "vitest": "4.0.18"
   },
   "optionalDependencies": {
-    "npm-check-updates": "19.5.0"
+    "npm-check-updates": "19.6.2"
   },
   "packageManager": "pnpm@10.29.1",
   "engines": {
