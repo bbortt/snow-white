@@ -65,7 +65,7 @@
     </sonar.junit.reportPaths>
 
     <!-- Dependency Management -->
-    <jackson-dataformat.version>3.0.4</jackson-dataformat.version>
+    <jackson-dataformat.version>3.1.0</jackson-dataformat.version>
     <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
     <org.projectlombok.version>1.18.42</org.projectlombok.version>
     <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>
