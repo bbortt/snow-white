@@ -65,7 +65,7 @@ snowWhite:
 
   # -- Log pattern for Snow-White pods.
   # @section -- Advanced Configuration
-  logPattern: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace( traceId="%mdc{trace_id}"){'' traceId=$'', ''''} msg="%msg"%n%ex'
+  logPattern: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
 
   # -- Annotations for Snow-White pods.
   # @section -- Advanced Configuration
@@ -180,10 +180,10 @@ snowWhite:
       memory:
         # -- Memory resource limit.
         # @section -- Snow-White API Sync Job
-        limit: '1024Gi'
+        limit: '1Gi'
         # -- Memory resource request.
         # @section -- Snow-White API Sync Job
-        request: '1024Gi'
+        request: '1Gi'
   openapiCoverageStream:
     image:
       # -- Image tag.

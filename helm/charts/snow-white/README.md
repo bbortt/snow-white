@@ -111,8 +111,8 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.apiSyncJob.enabled                               | bool   | `false`                          | Deploy CronJob for API ingestion alongside Snow-White.                |
 | snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `1`                              | The number of failed finished jobs to keep.                           |
 | snowWhite.apiSyncJob.image.tag                             | string | `""`                             | Image tag.                                                            |
-| snowWhite.apiSyncJob.resources.memory.limit                | string | `"1024Gi"`                       | Memory resource limit.                                                |
-| snowWhite.apiSyncJob.resources.memory.request              | string | `"1024Gi"`                       | Memory resource request.                                              |
+| snowWhite.apiSyncJob.resources.memory.limit                | string | `"1Gi"`                          | Memory resource limit.                                                |
+| snowWhite.apiSyncJob.resources.memory.request              | string | `"1Gi"`                          | Memory resource request.                                              |
 | snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                |
 | snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `3`                              | The number of successful finished jobs to keep.                       |
 

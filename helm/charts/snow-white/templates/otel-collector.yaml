@@ -81,30 +81,27 @@ spec:
               scheme: HTTP
               path: /
               port: health
-            # native apps start fast, so allow minimal delay
             initialDelaySeconds: 1
             periodSeconds: 1
             timeoutSeconds: 1
             successThreshold: 1
-            failureThreshold: 19  # tolerate a few slow startups just in case
+            failureThreshold: 19
           readinessProbe:
-            httpGet:
-              scheme: HTTP
-              path: /metrics
-              port: metrics
-            timeoutSeconds: 1
-            periodSeconds: 5
-            successThreshold: 1   # allow immediate readiness on success
-            failureThreshold: 2   # stop routing quickly if unhealthy
-          livenessProbe:
             httpGet:
               scheme: HTTP
               path: /
               port: health
             timeoutSeconds: 1
-            periodSeconds: 10      # liveness can be less frequent to reduce load
+            periodSeconds: 5
             successThreshold: 1
-            failureThreshold: 3    # don’t restart on minor hiccups
+            failureThreshold: 2
+          livenessProbe:
+            tcpSocket:
+              port: health
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -169,7 +166,8 @@ data:
         protocol_version: 4.0.0
         traces:
           encoding: otlp_json
-          topic: {{ .Values.otelCollector.kafka.outbountTopic }}
+          topics:
+            - {{ .Values.otelCollector.kafka.outbountTopic }}
       otlp:
         protocols:
           grpc:
@@ -249,7 +247,8 @@ data:
           encoding: otlp_json
           # TODO https://github.com/bbortt/snow-white/issues/287
           # encoding: otlp_proto
-          topic: {{ .Values.otelCollector.kafka.inboundTopic }}
+          topics:
+           - {{ .Values.otelCollector.kafka.inboundTopic }}
       influxdb:
         endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.otelCollector.influxdb.org | quote }}
