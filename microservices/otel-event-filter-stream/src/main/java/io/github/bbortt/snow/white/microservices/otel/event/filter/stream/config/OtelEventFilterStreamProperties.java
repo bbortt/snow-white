@@ -6,24 +6,20 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
-import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
 
 import io.github.bbortt.snow.white.commons.DefaultFilteringProperties;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
-@Configuration
 @ConfigurationProperties(PREFIX)
-public class OtelEventFilterStreamProperties implements InitializingBean {
+@Configuration(proxyBeanMethods = false)
+public class OtelEventFilterStreamProperties {
 
   public static final String PREFIX = "snow.white.otel.event.filter";
 
@@ -45,16 +41,6 @@ public class OtelEventFilterStreamProperties implements InitializingBean {
 
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final FilteringProperties filtering = new FilteringProperties();
-
-  @Override
-  public void afterPropertiesSet() {
-    Map<String, String> properties = new HashMap<>();
-    properties.put(INBOUND_TOPIC_PROPERTY_NAME, inboundTopicName);
-    properties.put(OUTBOUND_TOPIC_PROPERTY_NAME, outboundTopicName);
-    properties.put(ApiIndexProperties.BASE_URL_PROPERTY_NAME, apiIndex.baseUrl);
-
-    assertRequiredProperties(properties);
-  }
 
   @Getter
   @Setter
