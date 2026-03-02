@@ -4,18 +4,19 @@
  * See LICENSE file for full details.
  */
 
+import type { ChildProcess } from 'node:child_process';
+import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
+
+import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-
-import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
-import type { ChildProcess } from 'child_process';
-import { spawn } from 'child_process';
-import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
 import { MatchingAttributes, WireMock } from 'wiremock-captain';
 
 import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
+
 import { QUALITY_GATE_CALCULATION_FAILED } from './common/exit-codes';
 
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
@@ -31,17 +32,17 @@ const configureSuccessfulWireMockRequest = (): {
   const apiVersion = '1.0.0';
 
   const wireMockRequest: IWireMockRequest & { body: CalculateQualityGateRequest } = {
-    method: 'POST',
+    body: {
+      includeApis: [{ apiName, apiVersion, serviceName }],
+    },
     endpoint: '/api/rest/v1/quality-gates/test-quality-gate/calculate',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: {
-      includeApis: [{ serviceName, apiName, apiVersion }],
-    },
+    method: 'POST',
   };
 
-  return { serviceName, apiName, apiVersion, wireMockRequest };
+  return { apiName, apiVersion, serviceName, wireMockRequest };
 };
 
 const executeCLICommand = async (
@@ -55,34 +56,36 @@ const executeCLICommand = async (
 
   return new Promise((resolve, reject) => {
     const child: ChildProcess = spawn('bun', ['run', 'src/index.ts', ...args], {
-      stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let stdout = '';
     let stderr = '';
 
     child.stdout?.on('data', data => {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       stdout += data.toString();
     });
 
     child.stderr?.on('data', data => {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       stderr += data.toString();
     });
 
     child.on('close', code => {
       resolve({
         exitCode: code || 0,
-        stdout,
         stderr,
+        stdout,
       });
     });
 
     child.on('error', _ => {
       resolve({
         exitCode: 1,
-        stdout,
         stderr,
+        stdout,
       });
     });
 
@@ -141,47 +144,47 @@ describe('CLI', () => {
 
   [
     {
-      title: 'with explicit configuration',
       cliInvocationCommand: (serviceName: string, apiName: string, apiVersion: string) =>
         invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion),
+      title: 'with explicit configuration',
     },
     {
-      title: 'with configuration from file',
       cliInvocationCommand: async (serviceName: string, apiName: string, apiVersion: string) => {
         const tmpPath = join(tmpdir(), `temp-${randomBytes(16).toString('hex')}.json`);
         writeFileSync(
           tmpPath,
           JSON.stringify({
+            apiInformation: [{ apiName, apiVersion, serviceName }],
             qualityGate: qualityGateConfigName,
-            apiInformation: [{ serviceName, apiName, apiVersion }],
             url: WIREMOCK_URL,
           }),
         );
 
         return executeCLICommand(['calculate', '--configFile', tmpPath, '--url', WIREMOCK_URL]);
       },
+      title: 'with configuration from file',
     },
   ].forEach(testConfiguration => {
     describe('command: calculate', () => {
       describe(testConfiguration.title, () => {
         it('should successfully trigger quality gate calculation', async () => {
-          const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
+          const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
 
           const mockResponse: IWireMockResponse = {
-            status: 202,
+            body: {
+              apiName,
+              apiVersion,
+              createdAt: '2025-06-21T10:30:00Z',
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              qualityGateConfigName,
+              serviceName,
+              status: 'INITIATED',
+            },
             headers: {
               'Content-Type': 'application/json',
               Location: `${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
             },
-            body: {
-              id: '550e8400-e29b-41d4-a716-446655440000',
-              status: 'INITIATED',
-              qualityGateConfigName,
-              serviceName,
-              apiName,
-              apiVersion,
-              createdAt: '2025-06-21T10:30:00Z',
-            },
+            status: 202,
           };
 
           await wiremock.register(wireMockRequest, mockResponse, {
@@ -213,18 +216,18 @@ describe('CLI', () => {
 
     describe('error handling', () => {
       it('should exit when server responds with 404 bad request response', async () => {
-        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
+        const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
 
         const message = 'This is a forced error message!';
         const mockResponse: IWireMockResponse = {
-          status: 400,
+          body: {
+            message,
+            status: 'BAD_REQUEST',
+          },
           headers: {
             'Content-Type': 'application/json',
           },
-          body: {
-            status: 'BAD_REQUEST',
-            message,
-          },
+          status: 400,
         };
 
         await wiremock.register(wireMockRequest, mockResponse, {
@@ -251,18 +254,18 @@ describe('CLI', () => {
       });
 
       it('should exit when server responds with 404 not found response', async () => {
-        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
+        const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
 
         const message = 'Quality-Gate name not found';
         const mockResponse: IWireMockResponse = {
-          status: 404,
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: {
             code: 'NOT_FOUND',
             message,
           },
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          status: 404,
         };
 
         await wiremock.register(wireMockRequest, mockResponse, {
@@ -289,13 +292,13 @@ describe('CLI', () => {
       });
 
       it('should exit when server responds with 500 internal server error response', async () => {
-        const { serviceName, apiName, apiVersion, wireMockRequest } = configureSuccessfulWireMockRequest();
+        const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
 
         const mockResponse: IWireMockResponse = {
-          status: 500,
           headers: {
             'Content-Type': 'application/json',
           },
+          status: 500,
           // Message body is not guaranteed with HTTP 500 errors
         };
 

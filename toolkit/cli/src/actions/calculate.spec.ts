@@ -4,13 +4,14 @@
  * See LICENSE file for full details.
  */
 
-import { exit } from 'node:process';
-
 import type { AxiosResponse } from 'axios';
+
 import { AxiosError } from 'axios';
 import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
+
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { calculate } from './calculate';
 
@@ -37,7 +38,7 @@ describe('calculate action', () => {
   };
 
   const defaultOptions = {
-    apiInformation: [{ serviceName: 'test-service', apiName: 'test-api', apiVersion: '1.0.0' }],
+    apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
     qualityGate: 'test-gate',
     url: 'http://localhost:8080',
   };
@@ -56,21 +57,21 @@ describe('calculate action', () => {
   describe('successful calculation', () => {
     it('should successfully initiate quality gate calculation', async () => {
       const mockResponse: AxiosResponse = {
-        status: 202,
-        statusText: 'Accepted',
-        headers: {
-          location: 'http://localhost:8080/api/rest/v1/quality-gates/reports/123-456-789',
-        },
         config: {} as any,
         data: {
-          id: '123-456-789',
-          status: 'INITIATED',
-          qualityGateConfigName: 'test-gate',
-          serviceName: 'test-service',
           apiName: 'test-api',
           apiVersion: '1.0.0',
           createdAt: '2025-06-21T10:30:00Z',
+          id: '123-456-789',
+          qualityGateConfigName: 'test-gate',
+          serviceName: 'test-service',
+          status: 'INITIATED',
         },
+        headers: {
+          location: 'http://localhost:8080/api/rest/v1/quality-gates/reports/123-456-789',
+        },
+        status: 202,
+        statusText: 'Accepted',
       };
 
       qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
@@ -93,14 +94,14 @@ describe('calculate action', () => {
 
     it('should handle response without location header', async () => {
       const mockResponse: AxiosResponse = {
-        status: 202,
-        statusText: 'Accepted',
-        headers: {}, // No location header
         config: {} as any,
         data: {
           id: '123-456-789',
           status: 'INITIATED',
         },
+        headers: {}, // No location header
+        status: 202,
+        statusText: 'Accepted',
       };
 
       qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
@@ -116,11 +117,11 @@ describe('calculate action', () => {
   describe('error handling', () => {
     it('should handle AxiosError with response', () => {
       const mockErrorResponse = {
-        status: 404,
-        statusText: 'Not Found',
         data: {
           message: 'Quality-Gate configuration not found',
         },
+        status: 404,
+        statusText: 'Not Found',
       };
 
       const axiosError = new AxiosError('Request failed with status code 404', 'ERR_BAD_REQUEST', {} as any, {}, mockErrorResponse as any);
@@ -138,9 +139,9 @@ describe('calculate action', () => {
 
     it('should handle AxiosError with response but no data', () => {
       const mockErrorResponse = {
+        data: null,
         status: 501,
         statusText: 'Internal Server Error',
-        data: null,
       };
 
       const axiosError = new AxiosError(

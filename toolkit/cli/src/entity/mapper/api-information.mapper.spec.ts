@@ -10,7 +10,7 @@ import { toDtos } from './api-information.mapper';
 
 describe('API Information Mapper', () => {
   describe('toDtos', () => {
-    const genericApiInformation = { serviceName: 'Service1', apiName: 'API1', apiVersion: 'v1' };
+    const genericApiInformation = { apiName: 'API1', apiVersion: 'v1', serviceName: 'Service1' };
     expect(toDtos([genericApiInformation])).toEqual([genericApiInformation]);
   });
 });

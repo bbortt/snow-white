@@ -9,8 +9,8 @@ import type { ApiInformation } from '../../config/sanitized-options';
 
 export const toDtos = (apiInformation: ApiInformation[]): CalculateQualityGateRequestIncludeApisInner[] => {
   return apiInformation.map(api => ({
-    serviceName: api.serviceName,
     apiName: api.apiName,
     apiVersion: api.apiVersion,
+    serviceName: api.serviceName,
   }));
 };

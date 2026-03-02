@@ -4,16 +4,17 @@
  * See LICENSE file for full details.
  */
 
+import type { CosmiconfigResult } from 'cosmiconfig';
+import type { Config } from 'cosmiconfig/dist/types';
+
+import chalk from 'chalk';
+import { cosmiconfigSync } from 'cosmiconfig';
 import { existsSync } from 'node:fs';
 import { exit } from 'node:process';
 
-import chalk from 'chalk';
-import type { CosmiconfigResult } from 'cosmiconfig';
-import { cosmiconfigSync } from 'cosmiconfig';
-import type { Config } from 'cosmiconfig/dist/types';
+import type { CliOptions } from './cli-options';
 
 import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
-import type { CliOptions } from './cli-options';
 
 export interface ConfigExplorer {
   load(filepath: string): CosmiconfigResult;
