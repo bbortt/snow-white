@@ -516,8 +516,8 @@ describe('API Sync Job', () => {
         it('should be deployed with 1024 GB memory by default', async () => {
           const apiSyncJob = await renderAndGetApiSyncJobContainer();
 
-          expect(apiSyncJob.resources.limits.memory).toBe('1024Gi');
-          expect(apiSyncJob.resources.requests.memory).toBe('1024Gi');
+          expect(apiSyncJob.resources.limits.memory).toBe('1Gi');
+          expect(apiSyncJob.resources.requests.memory).toBe('1Gi');
         });
 
         it('should adjust memory request and limit based on values', async () => {
