@@ -4,31 +4,24 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.InitializingBean;
 
-class InfluxDBPropertiesTest {
+class InfluxDBPropertiesValidatorTest {
 
   private InfluxDBProperties fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     fixture = new InfluxDBProperties();
-  }
-
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -89,7 +82,7 @@ class InfluxDBPropertiesTest {
     }
 
     private void assertThatConnectionExceptionIsBeingThrown() {
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() -> new InfluxDBPropertiesValidator(fixture))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "InfluxDB connection not properly configured! Please read the docs."

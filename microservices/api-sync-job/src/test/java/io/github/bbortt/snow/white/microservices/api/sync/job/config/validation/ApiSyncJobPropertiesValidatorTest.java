@@ -4,22 +4,21 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.config;
+package io.github.bbortt.snow.white.microservices.api.sync.job.config.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.InitializingBean;
 
-class ApiSyncJobPropertiesTest {
+class ApiSyncJobPropertiesValidatorTest {
 
   protected static Stream<String> emptyAndNullString() {
     return Stream.of("", null);
@@ -32,11 +31,6 @@ class ApiSyncJobPropertiesTest {
     fixture = new ApiSyncJobProperties();
   }
 
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
-  }
-
   @Nested
   class AfterPropertiesSetTest {
 
@@ -44,7 +38,7 @@ class ApiSyncJobPropertiesTest {
     class ApiIndexPropertiesTest {
 
       static Stream<String> emptyAndNullString() {
-        return ApiSyncJobPropertiesTest.emptyAndNullString();
+        return ApiSyncJobPropertiesValidatorTest.emptyAndNullString();
       }
 
       @BeforeEach
@@ -59,7 +53,7 @@ class ApiSyncJobPropertiesTest {
         fixture.getApiIndex().setBaseUrl("api-index");
 
         assertThatCode(() ->
-          fixture.afterPropertiesSet()
+          new ApiSyncJobPropertiesValidator(fixture)
         ).doesNotThrowAnyException();
       }
 
@@ -68,7 +62,7 @@ class ApiSyncJobPropertiesTest {
       void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
         fixture.getApiIndex().setBaseUrl(baseUrl);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() -> new ApiSyncJobPropertiesValidator(fixture))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.api.sync.job.api-index.base-url]."
@@ -80,7 +74,7 @@ class ApiSyncJobPropertiesTest {
     class ArtifactoryPropertiesTest {
 
       public static Stream<String> emptyAndNullString() {
-        return ApiSyncJobPropertiesTest.emptyAndNullString();
+        return ApiSyncJobPropertiesValidatorTest.emptyAndNullString();
       }
 
       @BeforeEach
@@ -94,7 +88,9 @@ class ApiSyncJobPropertiesTest {
         fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository("repository");
 
-        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+        assertThatNoException().isThrownBy(() ->
+          new ApiSyncJobPropertiesValidator(fixture)
+        );
       }
 
       @ParameterizedTest
@@ -104,7 +100,9 @@ class ApiSyncJobPropertiesTest {
         fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository("repository");
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+        assertThatThrownBy(() ->
+          new ApiSyncJobPropertiesValidator(fixture)
+        ).hasMessage(
           "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.base-url]."
         );
       }
@@ -118,7 +116,9 @@ class ApiSyncJobPropertiesTest {
         fixture.getArtifactory().setAccessToken(accessToken);
         fixture.getArtifactory().setRepository("repository");
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+        assertThatThrownBy(() ->
+          new ApiSyncJobPropertiesValidator(fixture)
+        ).hasMessage(
           "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.access-token]."
         );
       }
@@ -130,7 +130,9 @@ class ApiSyncJobPropertiesTest {
         fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository(repository);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet()).hasMessage(
+        assertThatThrownBy(() ->
+          new ApiSyncJobPropertiesValidator(fixture)
+        ).hasMessage(
           "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.repository]."
         );
       }
