@@ -4,15 +4,16 @@
  * See LICENSE file for full details.
  */
 
-import { exit } from 'node:process';
-
 import type { AxiosResponse } from 'axios';
+
 import { AxiosError } from 'axios';
 import chalk from 'chalk';
+import { exit } from 'node:process';
 
 import type { CalculateQualityGate202Response, CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
-import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import type { SanitizedOptions } from '../config/sanitized-options';
+
+import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { toDtos } from '../entity/mapper/api-information.mapper';
 
 const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
@@ -49,7 +50,7 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Sanitiz
     if (error instanceof AxiosError && error.response) {
       console.error(chalk.red(`Status: ${error.response.status}`));
 
-      if (error.response.data && Object.prototype.hasOwnProperty.call(error.response.data, 'message')) {
+      if (error.response.data && Object.hasOwn(error.response.data as object, 'message')) {
         console.error(chalk.red(`Details: ${(error.response.data as { message: string }).message}`));
       } else {
         console.error(chalk.red(`Error: ${error.response.statusText}`));

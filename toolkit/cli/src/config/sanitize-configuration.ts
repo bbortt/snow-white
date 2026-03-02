@@ -4,14 +4,14 @@
  * See LICENSE file for full details.
  */
 
+import chalk from 'chalk';
 import { exit } from 'node:process';
 
-import chalk from 'chalk';
+import type { CliOptions } from './cli-options';
+import type { SanitizedOptions } from './sanitized-options';
 
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
-import type { CliOptions } from './cli-options';
 import { resolveConfig } from './resolve-config';
-import type { SanitizedOptions } from './sanitized-options';
 
 const exactConfigurationGroup = Object.freeze(['serviceName', 'apiName', 'apiVersion']);
 const distinctConfigGroups = Object.freeze([exactConfigurationGroup, ['configFile'], ['openApiSpecs']]);
@@ -29,8 +29,8 @@ const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
       chalk.red(
         JSON.stringify(
           {
+            apiInformation: [{ apiName: 'ping-pong', apiVersion: '1.0.0', serviceName: 'example-application' }],
             qualityGate: 'basic-coverage',
-            apiInformation: [{ serviceName: 'example-application', apiName: 'ping-pong', apiVersion: '1.0.0' }],
             url: 'http://localhost:9000',
           },
           null,
@@ -57,7 +57,8 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
 
   if (activeGroups.length === 0) {
     return validateConfigurationFromFile(resolveConfig());
-  } else if (options.configFile) {
+  }
+  if (options.configFile) {
     return validateConfigurationFromFile(resolveConfig(options.configFile));
   }
 
@@ -67,14 +68,14 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     exit(0);
   }
 
-  if (exactConfigurationGroup.some(opt => !Object.prototype.hasOwnProperty.call(options, opt))) {
+  if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
     console.error(chalk.red('❌ Either define a config file or all of these calculation parameters:'));
     exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- ${opt}`)));
     exitWithCodeInvalidConfig();
   }
 
-  const { qualityGate, serviceName, apiName, apiVersion, url } = options;
-  return { apiInformation: [{ serviceName, apiName, apiVersion }], qualityGate, url };
+  const { apiName, apiVersion, qualityGate, serviceName, url } = options;
+  return { apiInformation: [{ apiName, apiVersion, serviceName }], qualityGate, url };
 };
 
 export const validateConfiguration = (config: SanitizedOptions): SanitizedOptions => {

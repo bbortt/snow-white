@@ -4,14 +4,15 @@
  * See LICENSE file for full details.
  */
 
+import type { CosmiconfigResult } from 'cosmiconfig';
+
+import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { exit } from 'node:process';
 
-import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
-import type { CosmiconfigResult } from 'cosmiconfig';
+import type { ConfigExplorer, ConfigResolver } from './resolve-config';
 
 import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
-import type { ConfigExplorer, ConfigResolver } from './resolve-config';
 import { resolveConfigInternal } from './resolve-config';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
