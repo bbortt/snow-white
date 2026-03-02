@@ -37,6 +37,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
+      <version>${jackson-v2.version}</version>
     </dependency>
     <dependency>
       <groupId>jakarta.annotation</groupId>
