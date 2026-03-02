@@ -4,15 +4,15 @@
  * See LICENSE file for full details.
  */
 
+import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
 import { exit } from 'node:process';
 
-import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import type { CliOptions } from './cli-options';
+import type { SanitizedOptions } from './sanitized-options';
 
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
-import type { CliOptions } from './cli-options';
 import { resolveConfig } from './resolve-config';
 import { sanitizeConfiguration } from './sanitize-configuration';
-import type { SanitizedOptions } from './sanitized-options';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
@@ -35,21 +35,21 @@ const incompleteApiInformation = [
     apiVersion: 'test-version',
   },
   {
-    serviceName: 'test-service',
     apiVersion: 'test-version',
+    serviceName: 'test-service',
   },
   {
-    serviceName: 'test-service',
     apiName: 'test-api',
+    serviceName: 'test-service',
   },
 ];
 
 const sanitizedOptions: SanitizedOptions = {
   apiInformation: [
     {
-      serviceName: 'test-service',
-      apiVersion: 'api-version',
       apiName: 'test-api',
+      apiVersion: 'api-version',
+      serviceName: 'test-service',
     },
   ],
   qualityGate: 'quality-gate',
@@ -80,12 +80,12 @@ describe('sanitizeConfiguration', () => {
       serviceName: 'test-service',
     },
     {
-      configFile: 'config',
       apiName: 'test-api',
+      configFile: 'config',
     },
     {
-      configFile: 'config',
       apiVersion: 'test-version',
+      configFile: 'config',
     },
     // property openApiSpecs with any other property
     {
@@ -93,12 +93,12 @@ describe('sanitizeConfiguration', () => {
       serviceName: 'test-service',
     },
     {
-      openApiSpecs: 'some-glob-pattern',
       apiName: 'test-api',
+      openApiSpecs: 'some-glob-pattern',
     },
     {
-      openApiSpecs: 'some-glob-pattern',
       apiVersion: 'test-version',
+      openApiSpecs: 'some-glob-pattern',
     },
   ])('should exit with code 3 when combination of parameters is invalid: %s', (options: Partial<CliOptions>) => {
     // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
@@ -169,10 +169,10 @@ describe('sanitizeConfiguration', () => {
 
     it('should exit with code 3 if no URL is provided', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        serviceName: 'test-service',
         apiName: 'test-api',
         apiVersion: 'test-version',
         qualityGate: 'quality-gate',
+        serviceName: 'test-service',
       });
 
       expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
@@ -187,9 +187,9 @@ describe('sanitizeConfiguration', () => {
 
     it('should exit with code 3 if no Quality-Gate is provided', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        serviceName: 'test-service',
         apiName: 'test-api',
         apiVersion: 'test-version',
+        serviceName: 'test-service',
         url: 'url',
       });
 
@@ -206,10 +206,10 @@ describe('sanitizeConfiguration', () => {
     it('should return sanitized options when all required properties are provided', () => {
       expect(
         sanitizeConfiguration({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
           qualityGate: 'quality-gate',
           serviceName: 'test-service',
-          apiVersion: 'api-version',
-          apiName: 'test-api',
           url: 'url',
         }),
       ).toEqual(sanitizedOptions);
@@ -241,10 +241,10 @@ describe('sanitizeConfiguration', () => {
       // test is being done with explicit configuration, but validation applies to any configuration
       expect(() =>
         sanitizeConfiguration({
-          serviceName: 'test-service',
           apiName: 'test-api',
           apiVersion: 'test-version',
           qualityGate: 'quality-gate',
+          serviceName: 'test-service',
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
@@ -260,9 +260,9 @@ describe('sanitizeConfiguration', () => {
       // test is being done with explicit configuration, but validation applies to any configuration
       expect(() =>
         sanitizeConfiguration({
-          serviceName: 'test-service',
           apiName: 'test-api',
           apiVersion: 'test-version',
+          serviceName: 'test-service',
           url: 'url',
         } as CliOptions),
       ).toThrowError('Process exited with code 3');

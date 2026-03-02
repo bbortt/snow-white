@@ -12,6 +12,7 @@ import tseslint from 'typescript-eslint';
 import eslint from '@eslint/js';
 import reactRecommend from 'eslint-plugin-react/configs/recommended.js';
 import perfectionistPlugin from 'eslint-plugin-perfectionist';
+
 import { fixupConfigRules } from '@eslint/compat';
 
 const react = fixupConfigRules(reactRecommend);

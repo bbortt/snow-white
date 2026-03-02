@@ -5,8 +5,5 @@
  */
 
 module.exports = {
-  '{,src/**/}*.{cjs,js,mjs,ts,tsx}': [
-    // 'eslint --fix',
-    'prettier --write --config prettier.config.js',
-  ],
+  '{,src/**/}*.{cjs,js,mjs,ts,tsx}': ['eslint --fix', 'prettier --write --config prettier.config.js'],
 };

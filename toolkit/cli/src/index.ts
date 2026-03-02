@@ -9,9 +9,10 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 
+import type { CliOptions } from './config/cli-options';
+
 import { calculate } from './actions/calculate';
 import { getQualityGateApi } from './api/quality-gate-api';
-import type { CliOptions } from './config/cli-options';
 import { sanitizeConfiguration } from './config/sanitize-configuration';
 
 const program = new Command();
