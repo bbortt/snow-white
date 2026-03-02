@@ -4,29 +4,23 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.config.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.InitializingBean;
 
-class QualityGateReportCoordinationServicePropertiesTest {
+class ReportCoordinationServicePropertiesTest {
 
   private ReportCoordinationServiceProperties fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     fixture = new ReportCoordinationServiceProperties();
-  }
-
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -41,7 +35,9 @@ class QualityGateReportCoordinationServicePropertiesTest {
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      assertThatNoException().isThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      );
     }
 
     @Test
@@ -52,7 +48,9 @@ class QualityGateReportCoordinationServicePropertiesTest {
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [snow.white.report.coordinator.api.calculation-request-topic]."
@@ -65,7 +63,9 @@ class QualityGateReportCoordinationServicePropertiesTest {
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [snow.white.report.coordinator.api.openapi-calculation-response.topic]."
@@ -80,7 +80,9 @@ class QualityGateReportCoordinationServicePropertiesTest {
         .setTopic("openapiCalculationResponseTopic");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [snow.white.report.coordinator.api.public-api-gateway-url]."
@@ -95,7 +97,9 @@ class QualityGateReportCoordinationServicePropertiesTest {
         .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [snow.white.report.coordinator.api.quality-gate-api-url]."

@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.validation;
 
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,26 +12,21 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.InitializingBean;
 
-class OpenApiCoverageStreamPropertiesTest {
+class OpenApiCoverageStreamPropertiesValidatorTest {
 
   private OpenApiCoverageStreamProperties fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OpenApiCoverageStreamProperties();
-  }
-
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -55,7 +50,7 @@ class OpenApiCoverageStreamPropertiesTest {
         fixture.getApiIndex().setBaseUrl("api-index");
 
         assertThatCode(() ->
-          fixture.afterPropertiesSet()
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
         ).doesNotThrowAnyException();
       }
 
@@ -64,7 +59,9 @@ class OpenApiCoverageStreamPropertiesTest {
       void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
         fixture.getApiIndex().setBaseUrl(baseUrl);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.openapi.coverage.stream.api-index.base-url]."
@@ -87,7 +84,9 @@ class OpenApiCoverageStreamPropertiesTest {
           "openapiCalculationResponseTopic"
         );
 
-        assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+        assertThatNoException().isThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        );
       }
 
       @Test
@@ -96,7 +95,9 @@ class OpenApiCoverageStreamPropertiesTest {
           "openapiCalculationResponseTopic"
         );
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.openapi.coverage.stream.calculation-request-topic]."
@@ -107,7 +108,9 @@ class OpenApiCoverageStreamPropertiesTest {
       void throwsExceptionWithMissingOpenapiCalculationResponseTopic() {
         fixture.setCalculationRequestTopic("calculationRequestTopic");
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.openapi.coverage.stream.openapi-calculation-response-topic]."

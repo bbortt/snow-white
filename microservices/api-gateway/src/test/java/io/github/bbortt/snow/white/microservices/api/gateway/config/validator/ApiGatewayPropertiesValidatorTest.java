@@ -4,14 +4,9 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.gateway.config;
+package io.github.bbortt.snow.white.microservices.api.gateway.config.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
-
-import java.util.stream.Stream;
+import io.github.bbortt.snow.white.microservices.api.gateway.config.ApiGatewayProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,13 +15,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
+
 @ExtendWith({ MockitoExtension.class })
-class ApiGatewayPropertiesTest {
+class ApiGatewayPropertiesValidatorTest {
 
   private static final Profiles PROD = Profiles.of("prod");
 
@@ -40,16 +40,6 @@ class ApiGatewayPropertiesTest {
     fixture = new ApiGatewayProperties();
   }
 
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
-  }
-
-  @Test
-  void isEnvironmentAware() {
-    assertThat(fixture).isInstanceOf(EnvironmentAware.class);
-  }
-
   @Nested
   class AfterPropertiesSet {
 
@@ -61,14 +51,14 @@ class ApiGatewayPropertiesTest {
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      assertThatNoException().isThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock));
     }
 
     @Test
     void shouldThrowException_withMissingQualityGateApiUrl() {
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.report-coordinator-api-url].");
     }
@@ -77,7 +67,7 @@ class ApiGatewayPropertiesTest {
     void shouldThrowException_withMissingReportCoordinationServiceUrl() {
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.quality-gate-api-url].");
     }
@@ -95,7 +85,7 @@ class ApiGatewayPropertiesTest {
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.public-url].");
     }
@@ -110,7 +100,7 @@ class ApiGatewayPropertiesTest {
 
       fixture.setPublicUrl("publicUrl");
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      assertThatNoException().isThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock));
     }
   }
 

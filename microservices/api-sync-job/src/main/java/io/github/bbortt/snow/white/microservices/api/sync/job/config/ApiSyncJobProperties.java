@@ -6,25 +6,21 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
-import static io.github.bbortt.snow.white.commons.PropertyUtils.assertRequiredProperties;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties.PREFIX;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConfigurationProperties(PREFIX)
-public class ApiSyncJobProperties implements InitializingBean {
+public class ApiSyncJobProperties {
 
   public static final String PREFIX = "snow.white.api.sync.job";
 
@@ -33,26 +29,6 @@ public class ApiSyncJobProperties implements InitializingBean {
   private final @NonNull ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final @NonNull ArtifactoryProperties artifactory =
     new ArtifactoryProperties();
-
-  @Override
-  public void afterPropertiesSet() {
-    Map<String, String> properties = new HashMap<>();
-    properties.put(ApiIndexProperties.BASE_URL_PROPERTY_NAME, apiIndex.baseUrl);
-    properties.put(
-      ArtifactoryProperties.BASE_URL_PROPERTY_NAME,
-      artifactory.baseUrl
-    );
-    properties.put(
-      ArtifactoryProperties.ACCESS_TOKEN_PROPERTY_NAME,
-      artifactory.accessToken
-    );
-    properties.put(
-      ArtifactoryProperties.REPOSITORY_PROPERTY_NAME,
-      artifactory.repository
-    );
-
-    assertRequiredProperties(properties);
-  }
 
   @Getter
   @Setter

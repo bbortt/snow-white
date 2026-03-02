@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
@@ -19,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiVal
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.util.List;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -143,50 +145,68 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
         ? repoPath.getName()
         : basePath + "/" + repoPath.getName();
 
+    logger.debug("Downloading item: {}", filePath);
+
+    var swaggerParseResult = downloadAndParseFile(repository, filePath);
+    if (isNull(swaggerParseResult)) {
+      return null;
+    }
+
+    var openAPI = swaggerParseResult.getOpenAPI();
+
+    if (openAPI == null) {
+      var errorMessage = format(
+        "Failed to parse OpenAPI from '%s': %s",
+        filePath,
+        swaggerParseResult.getMessages()
+      );
+
+      if (STRICT.equals(artifactoryProperties.getParsingMode())) {
+        throw new ApiCatalogException(errorMessage);
+      } else {
+        logger.warn(errorMessage);
+        return null;
+      }
+    }
+
+    var openApiInformation = informationExtractor.extractFromOpenApi(
+      openApiAsJson(openAPI)
+    );
+
+    var downloadUrl = fetchPublicDownloadUrl(repository, filePath);
+
+    var apiInformation = ApiInformation.builder()
+      .title(openAPI.getInfo().getTitle())
+      .version(openApiInformation.apiVersion())
+      .sourceUrl(downloadUrl)
+      .name(openApiInformation.apiName())
+      .serviceName(openApiInformation.serviceName())
+      .apiType(OPENAPI)
+      .build();
+
+    logger.debug(
+      "API information for validation: {}",
+      JsonMapper.shared().writeValueAsString(apiInformation)
+    );
+
+    return openApiValidationService.validateApiInformationFromIndex(
+      apiInformation,
+      artifactoryProperties.getParsingMode()
+    );
+  }
+
+  private @Nullable SwaggerParseResult downloadAndParseFile(
+    String repository,
+    String filePath
+  ) {
     try (
       var inputStream = artifactory
         .repository(repository)
         .download(filePath)
         .doDownload()
     ) {
-      var swaggerParseResult = openAPIV3Parser.readContents(
+      return openAPIV3Parser.readContents(
         new String(inputStream.readAllBytes())
-      );
-      var openAPI = swaggerParseResult.getOpenAPI();
-
-      if (openAPI == null) {
-        var errorMessage = format(
-          "Failed to parse OpenAPI from '%s': %s",
-          filePath,
-          swaggerParseResult.getMessages()
-        );
-
-        if (STRICT.equals(artifactoryProperties.getParsingMode())) {
-          throw new ApiCatalogException(errorMessage);
-        } else {
-          logger.warn(errorMessage);
-          return null;
-        }
-      }
-
-      var openApiInformation = informationExtractor.extractFromOpenApi(
-        openApiAsJson(openAPI)
-      );
-
-      var downloadUrl = fetchPublicDownloadUrl(repository, filePath);
-
-      var apiInformation = ApiInformation.builder()
-        .title(openAPI.getInfo().getTitle())
-        .version(openApiInformation.apiVersion())
-        .sourceUrl(downloadUrl)
-        .name(openApiInformation.apiName())
-        .serviceName(openApiInformation.serviceName())
-        .apiType(OPENAPI)
-        .build();
-
-      return openApiValidationService.validateApiInformationFromIndex(
-        apiInformation,
-        artifactoryProperties.getParsingMode()
       );
     } catch (Exception e) {
       var errorMessage = format("Failed to parse OpenAPI from '%s'", filePath);

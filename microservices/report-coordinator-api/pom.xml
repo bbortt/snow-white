@@ -97,7 +97,7 @@
     <dependency>
       <groupId>tools.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>${jackson-dataformat.version}</version>
+      <version>${jackson.version}</version>
     </dependency>
 
     <dependency>

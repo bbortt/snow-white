@@ -4,32 +4,26 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.index.config;
+package io.github.bbortt.snow.white.microservices.api.index.config.validation;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.api.index.config.ApiIndexProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.InitializingBean;
 
 @ExtendWith({ MockitoExtension.class })
-class ApiIndexPropertiesTest {
+class ApiIndexPropertiesValidatorTest {
 
   private ApiIndexProperties fixture;
 
   @BeforeEach
   void beforeEachSetup() {
     fixture = new ApiIndexProperties();
-  }
-
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -39,12 +33,14 @@ class ApiIndexPropertiesTest {
     void doesNotThrowAnythingIfPropertiesSet() {
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
 
-      assertThatNoException().isThrownBy(() -> fixture.afterPropertiesSet());
+      assertThatNoException().isThrownBy(() ->
+        new ApiIndexPropertiesValidator(fixture)
+      );
     }
 
     @Test
     void shouldThrowException_withMissingPublicApiGatewayUrl() {
-      assertThatThrownBy(() -> fixture.afterPropertiesSet())
+      assertThatThrownBy(() -> new ApiIndexPropertiesValidator(fixture))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
           "All properties must be configured - missing: [snow.white.api.index.public-api-gateway-url]."

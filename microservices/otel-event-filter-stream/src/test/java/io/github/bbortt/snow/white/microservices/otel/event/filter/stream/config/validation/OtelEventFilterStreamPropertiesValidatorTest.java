@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
+package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.validation;
 
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
 import static io.opentelemetry.semconv.ServiceAttributes.SERVICE_NAME;
@@ -13,15 +13,15 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.InitializingBean;
 
-class OtelEventFilterStreamPropertiesTest {
+class OtelEventFilterStreamPropertiesValidatorTest {
 
   private OtelEventFilterStreamProperties fixture;
 
@@ -32,11 +32,6 @@ class OtelEventFilterStreamPropertiesTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OtelEventFilterStreamProperties();
-  }
-
-  @Test
-  void isInitializingBean() {
-    assertThat(fixture).isInstanceOf(InitializingBean.class);
   }
 
   @Nested
@@ -55,7 +50,7 @@ class OtelEventFilterStreamPropertiesTest {
     class ApiIndexPropertiesTest {
 
       static Stream<String> emptyAndNullString() {
-        return OtelEventFilterStreamPropertiesTest.emptyAndNullString();
+        return OtelEventFilterStreamPropertiesValidatorTest.emptyAndNullString();
       }
 
       @BeforeEach
@@ -69,7 +64,7 @@ class OtelEventFilterStreamPropertiesTest {
         fixture.getApiIndex().setBaseUrl("api-index");
 
         assertThatCode(() ->
-          fixture.afterPropertiesSet()
+          new OtelEventFilterStreamPropertiesValidator(fixture)
         ).doesNotThrowAnyException();
       }
 
@@ -78,7 +73,9 @@ class OtelEventFilterStreamPropertiesTest {
       void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
         fixture.getApiIndex().setBaseUrl(baseUrl);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OtelEventFilterStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.otel.event.filter.api-index.base-url]."
@@ -90,7 +87,7 @@ class OtelEventFilterStreamPropertiesTest {
     class KafkaTopicTest {
 
       static Stream<String> emptyAndNullString() {
-        return OtelEventFilterStreamPropertiesTest.emptyAndNullString();
+        return OtelEventFilterStreamPropertiesValidatorTest.emptyAndNullString();
       }
 
       @BeforeEach
@@ -106,7 +103,9 @@ class OtelEventFilterStreamPropertiesTest {
         fixture.setInboundTopicName(inbound);
         fixture.setOutboundTopicName(outbound);
 
-        assertDoesNotThrow(() -> fixture.afterPropertiesSet());
+        assertDoesNotThrow(() ->
+          new OtelEventFilterStreamPropertiesValidator(fixture)
+        );
 
         assertThat(fixture).satisfies(
           f -> assertThat(f.getInboundTopicName()).isEqualTo(inbound),
@@ -120,7 +119,9 @@ class OtelEventFilterStreamPropertiesTest {
         fixture.setInboundTopicName(inbound);
         fixture.setOutboundTopicName("outbound");
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OtelEventFilterStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.otel.event.filter.inbound-topic-name]."
@@ -133,7 +134,9 @@ class OtelEventFilterStreamPropertiesTest {
         fixture.setInboundTopicName("inbound");
         fixture.setOutboundTopicName(outbound);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OtelEventFilterStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.otel.event.filter.outbound-topic-name]."
@@ -146,7 +149,9 @@ class OtelEventFilterStreamPropertiesTest {
         fixture.setInboundTopicName(value);
         fixture.setOutboundTopicName(value);
 
-        assertThatThrownBy(() -> fixture.afterPropertiesSet())
+        assertThatThrownBy(() ->
+          new OtelEventFilterStreamPropertiesValidator(fixture)
+        )
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage(
             "All properties must be configured - missing: [snow.white.otel.event.filter.outbound-topic-name, snow.white.otel.event.filter.inbound-topic-name]."

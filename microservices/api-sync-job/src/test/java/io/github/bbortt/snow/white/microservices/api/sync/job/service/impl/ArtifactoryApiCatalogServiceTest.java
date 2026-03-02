@@ -224,8 +224,9 @@ class ArtifactoryApiCatalogServiceTest {
 
       assertThatThrownBy(openapiInformationStream::toList)
         .isInstanceOf(ApiCatalogException.class)
-        .hasMessageContaining("Failed to parse OpenAPI from 'apis/invalid.yml'")
-        .hasMessageContaining("at [No location information]");
+        .hasMessage(
+          "Failed to parse OpenAPI from 'apis/invalid.yml': [Invalid OpenAPI format]"
+        );
 
       verify(
         openApiValidationServiceMock,
@@ -368,7 +369,7 @@ class ArtifactoryApiCatalogServiceTest {
     }
 
     @Test
-    void shouldHandleFileInfoNotBeingFile() throws IOException {
+    void shouldThrowWhenFileInfoItNotAFile() throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "petstore.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
@@ -417,13 +418,14 @@ class ArtifactoryApiCatalogServiceTest {
       var folderImpl = mock(FolderImpl.class);
       doReturn(folderImpl).when(itemHandle).info();
 
-      var results = fixture
+      var apiInformationStream = fixture
         .getApiSpecificationLoaders()
         .stream()
-        .map(Supplier::get)
-        .toList();
+        .map(Supplier::get);
 
-      assertThat(results).containsExactly(new ApiInformation[] { null });
+      assertThatThrownBy(apiInformationStream::toList)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Encountered OpenAPI specification which is not a file!");
     }
 
     private AqlItem createAqlItem(String path, String name) {
