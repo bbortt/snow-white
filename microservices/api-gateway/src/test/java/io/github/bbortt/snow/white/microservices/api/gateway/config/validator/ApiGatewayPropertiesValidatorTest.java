@@ -1,12 +1,18 @@
 /*
- * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
  * Licensed under the Polyform Small Business License 1.0.0
  * See LICENSE file for full details.
  */
 
 package io.github.bbortt.snow.white.microservices.api.gateway.config.validation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
+
 import io.github.bbortt.snow.white.microservices.api.gateway.config.ApiGatewayProperties;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,13 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
-
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiGatewayPropertiesValidatorTest {

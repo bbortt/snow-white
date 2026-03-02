@@ -28,6 +28,12 @@ CREATE DATABASE "quality-gate-api" OWNER quality_gate_flyway;
 GRANT CONNECT ON DATABASE "api-index-api" TO api_index_app;
 GRANT USAGE ON SCHEMA public TO api_index_app;
 
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
 -- connect to the second database
 \c "report-coordinator-api"
 
