@@ -17,4 +17,6 @@ public enum ApiLoadStatus {
   MANDATORY_INFORMATION_MISSING,
   // No source url provided
   NO_SOURCE,
+  // Published to API index service
+  PUBLISHED,
 }

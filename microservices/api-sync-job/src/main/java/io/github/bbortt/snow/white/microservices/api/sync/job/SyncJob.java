@@ -7,18 +7,17 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
-import static java.lang.Boolean.TRUE;
-import static java.util.Objects.nonNull;
-import static java.util.concurrent.StructuredTaskScope.Joiner.allSuccessfulOrThrow;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
+import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
+import io.github.bbortt.snow.white.microservices.api.sync.job.processing.ApiSyncProcessor;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.StructuredTaskScope;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -28,56 +27,40 @@ import org.springframework.stereotype.Component;
 public class SyncJob {
 
   private final List<ApiCatalogService> apiCatalogServices;
+  private final ApiSyncProcessor apiSyncProcessor;
   private final CachingService cachingService;
-
-  private final Semaphore rateLimiter;
 
   public SyncJob(
     List<ApiCatalogService> apiCatalogServices,
-    CachingService cachingService,
-    ApiSyncJobProperties apiSyncJobProperties
+    ApiSyncProcessor apiSyncProcessor,
+    CachingService cachingService
   ) {
     this.apiCatalogServices = apiCatalogServices;
+    this.apiSyncProcessor = apiSyncProcessor;
     this.cachingService = cachingService;
-    this.rateLimiter = new Semaphore(
-      apiSyncJobProperties.getMaxParallelSyncTasks()
-    );
   }
 
   void syncCatalog() throws InterruptedException {
-    try (var scope = StructuredTaskScope.open(allSuccessfulOrThrow())) {
-      apiCatalogServices
-        .stream()
-        .map(ApiCatalogService::getApiSpecificationLoaders)
-        .flatMap(Collection::stream)
-        .forEach(supplier ->
-          scope.fork(() -> {
-            rateLimiter.acquire();
-            try {
-              var apiInformation = supplier.get();
-              return publishLoadedApi(apiInformation);
-            } finally {
-              rateLimiter.release();
-            }
-          })
-        );
+    List<Supplier<@Nullable ApiInformation>> suppliers = apiCatalogServices
+      .stream()
+      .map(ApiCatalogService::getApiSpecificationLoaders)
+      .flatMap(Collection::stream)
+      .toList();
 
-      var successfullyPublishedSpecifications = scope
-        .join()
-        .map(StructuredTaskScope.Subtask::get)
-        .filter(TRUE::equals)
-        .count();
+    Map<ApiLoadStatus, Long> apiLoadStatusCounts = apiSyncProcessor.process(
+      suppliers,
+      this::publishLoadedApi
+    );
 
-      logger.info(
-        "Successfully synchronized {} api specifications",
-        successfullyPublishedSpecifications
-      );
-    }
+    logger.info(
+      "Successfully synchronized {} api specifications",
+      apiLoadStatusCounts
+    );
   }
 
   private boolean publishLoadedApi(@Nullable ApiInformation apiInformation) {
     if (
-      nonNull(apiInformation) &&
+      Objects.nonNull(apiInformation) &&
       LOADED.equals(apiInformation.getLoadStatus()) &&
       !cachingService.apiInformationIndexed(apiInformation)
     ) {
