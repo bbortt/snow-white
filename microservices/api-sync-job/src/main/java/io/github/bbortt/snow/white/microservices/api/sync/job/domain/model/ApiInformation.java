@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
+import org.jspecify.annotations.NonNull;
 
 @With
 @Getter
@@ -33,6 +34,7 @@ public class ApiInformation {
 
   private ApiType apiType;
 
+  @NonNull
   @Builder.Default
   private ApiLoadStatus loadStatus = UNLOADED;
 }

@@ -18,13 +18,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
-@Configuration(proxyBeanMethods = false)
 @ConfigurationProperties(PREFIX)
+@Configuration(proxyBeanMethods = false)
 public class ApiSyncJobProperties {
 
   public static final String PREFIX = "snow.white.api.sync.job";
 
-  private @NonNull Integer maxParallelSyncTasks = 10;
+  private @NonNull Integer maxParallelSyncTasks = 3;
+  private @NonNull Integer workQueueCapacity = 30;
 
   private final @NonNull ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final @NonNull ArtifactoryProperties artifactory =
