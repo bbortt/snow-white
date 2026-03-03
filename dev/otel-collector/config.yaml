@@ -5,8 +5,6 @@ receivers:
     protocol_version: 4.0.0
     traces:
       encoding: otlp_json
-      # TODO https://github.com/bbortt/snow-white/issues/287
-      # encoding: otlp_proto
       topics:
         - snow-white_outbound
   otlp:
@@ -86,10 +84,7 @@ exporters:
     protocol_version: 4.0.0
     traces:
       encoding: otlp_json
-      # TODO https://github.com/bbortt/snow-white/issues/287
-      # encoding: otlp_proto
-      topics:
-        - snow-white_inbound
+      topic: snow-white_inbound
   influxdb:
     endpoint: http://influxdb:8086
     org: snow-white

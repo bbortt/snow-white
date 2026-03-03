@@ -245,10 +245,7 @@ data:
         protocol_version: 4.0.0
         traces:
           encoding: otlp_json
-          # TODO https://github.com/bbortt/snow-white/issues/287
-          # encoding: otlp_proto
-          topics:
-           - {{ .Values.otelCollector.kafka.inboundTopic }}
+          topic: {{ .Values.otelCollector.kafka.inboundTopic }}
       influxdb:
         endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.otelCollector.influxdb.org | quote }}
