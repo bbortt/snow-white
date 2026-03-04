@@ -136,6 +136,46 @@ describe('API Sync Job', () => {
     expect(cronJob.metadata.name).toHaveLength(63);
   });
 
+  const getJobTemplateSpec = (cronJob: any): any => {
+    const { spec } = cronJob;
+    expect(spec).toBeDefined();
+
+    const { jobTemplate } = spec;
+    expect(jobTemplate).toBeDefined();
+
+    const templateSpec = jobTemplate.spec;
+    expect(templateSpec).toBeDefined();
+    return templateSpec;
+  };
+
+  it('should have default active deadline seconds', async () => {
+    const cronJob = await renderAndGetCronJob();
+
+    const templateSpec = getJobTemplateSpec(cronJob);
+    expect(templateSpec.activeDeadlineSeconds).toBe(1800);
+  });
+
+  it('should include active deadline seconds from values', async () => {
+    const activeDeadlineSeconds = 1234;
+
+    const cronJob = await renderAndGetCronJob(
+      await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          snowWhite: {
+            apiSyncJob: {
+              activeDeadlineSeconds,
+              ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
+            },
+          },
+        },
+      }),
+    );
+
+    const templateSpec = getJobTemplateSpec(cronJob);
+    expect(templateSpec.activeDeadlineSeconds).toBe(activeDeadlineSeconds);
+  });
+
   describe('template metadata', () => {
     const getTemplateMetadata = (cronJob: any) => {
       const { spec } = cronJob;

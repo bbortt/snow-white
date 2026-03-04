@@ -91,7 +91,7 @@ By default, the API sync job is deployed with the following resource configurati
 
 **CPU**: 500m (request)
 
-In addition, the job processes up to 10 API specifications in parallel.
+In addition, the job processes up to 3 API specifications in parallel.
 
 Parsing large OpenAPI specifications can be memory-intensive.
 If your repository contains many large specifications, you may encounter increased memory usage or even out-of-memory (OOM) terminations.
@@ -126,10 +126,56 @@ snowWhite:
     enabled: true
     additionalEnvs:
       - name: SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS
-        value: 3
+        value: 1
 ```
 
 Reducing parallelism decreases peak memory usage but increases total synchronization time.
+
+## Exporting Snow-White Telemetry Data
+
+It is highly recommended that you monitor your Snow-White installation.
+Since Snow-White heavily relies on OTel data, using OTel connections for telemetry export is the natural choice.
+
+### Connecting to an External OTel Collector
+
+You can enable automatic export of logs, traces, and metrics by configuring an external OTel collector endpoint:
+
+```yaml
+otelCollector:
+  connectToExternalOtelCollector:
+    endpoint: 'my-endpoint:4317'
+```
+
+By default, this exports all telemetry types.
+You can selectively disable individual signal types:
+
+```yaml
+otelCollector:
+  connectToExternalOtelCollector:
+    endpoint: 'my-endpoint:4317'
+    exportLogs: true # default: true
+    exportMetrics: true # default: true
+    exportTraces: true # default: true
+```
+
+### Monitoring the OTel Collector Itself
+
+The Snow-White OTel Collector exposes its own metrics on port `8888` at the `/metrics` endpoint, but these cannot be exported via the OTel pipeline.
+Instead, you must configure a Prometheus scraper to collect them.
+
+Add the following annotations to enable Prometheus scraping:
+
+```yaml
+otelCollector:
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8888'
+    prometheus.io/path: '/metrics'
+    prometheus.io/scheme: 'http'
+```
+
+> ℹ️ **Note:** The exact annotations may vary depending on your Prometheus setup.
+> Consult your Prometheus Operator or scraper configuration for the correct annotation format.
 
 ## Replacing Infrastructure with Existing Infrastructure
 
