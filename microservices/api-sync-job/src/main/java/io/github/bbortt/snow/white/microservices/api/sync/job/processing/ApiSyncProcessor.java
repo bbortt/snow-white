@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.processing;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISHED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
 import static java.lang.Thread.currentThread;

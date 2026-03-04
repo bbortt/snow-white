@@ -119,7 +119,7 @@ class ApiSyncProcessorTest {
     }
 
     @Test
-    void shouldContinueWhenSupplierThrows() throws InterruptedException {
+    void shouldContinueWhenSupplierThrows() {
       Supplier<ApiInformation> failing = () -> {
         throw new RuntimeException("boom");
       };

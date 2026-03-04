@@ -13,7 +13,6 @@ import static java.nio.file.Files.readAllBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.codegen.ClientOptInput;
 import org.openapitools.codegen.CodegenConfigLoader;
@@ -39,17 +38,6 @@ class SnowWhiteSpringServerGeneratorIT {
     ClientOptInput clientOptInput = fixture.toClientOptInput();
     var generator = new DefaultGenerator();
     generator.opts(clientOptInput).generate();
-  }
-
-  private SnowWhiteSpringServerGenerator fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new SnowWhiteSpringServerGenerator();
-
-    fixture.additionalProperties().put("delegatePattern", true);
-    fixture.additionalProperties().put("interfaceOnly", true);
-    fixture.additionalProperties().put("useSpringBoot3", true);
   }
 
   @Test
