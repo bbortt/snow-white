@@ -120,7 +120,7 @@ jobs:
             -Dfrontend.test.skip=true \
             -pl :api-gateway,:api-sync-job,:openapi-coverage-stream -am
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -160,7 +160,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am clean install
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
