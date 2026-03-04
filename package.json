@@ -31,16 +31,16 @@
     "prettier:format": "npm run prettier -- --write"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "20.4.2",
+    "@commitlint/config-conventional": "20.4.3",
     "@prettier/plugin-xml": "3.4.2",
-    "commitlint": "20.4.2",
+    "commitlint": "20.4.3",
     "husky": "9.1.7",
-    "lint-staged": "16.3.1",
+    "lint-staged": "16.3.2",
     "markdownlint-cli": "0.48.0",
     "markdownlint-sentences-per-line": "0.1.3",
     "prettier": "3.8.1",
     "prettier-plugin-java": "2.8.1",
-    "prettier-plugin-packagejson": "3.0.0"
+    "prettier-plugin-packagejson": "3.0.1"
   },
   "optionalDependencies": {
     "npm-check-updates": "19.6.3"
