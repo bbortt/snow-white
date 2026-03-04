@@ -22,6 +22,11 @@ spec:
       {{ $selectorLabels | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/otel-collector-configmap.yaml") . | sha256sum }}
+        {{- with .Values.otelCollector.annotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         {{ $labels | nindent 8 }}
     spec:
@@ -58,9 +63,6 @@ spec:
               protocol: TCP
             - name: http
               containerPort: 4318
-              protocol: TCP
-            - name: prometheus
-              containerPort: 8090
               protocol: TCP
             - name: metrics
               containerPort: 8888
@@ -151,178 +153,3 @@ spec:
       port: 4318
       protocol: TCP
       targetPort: http
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ $name }}
-  labels:
-    {{- $labels | nindent 4 }}
-data:
-  snow-white.config.yml: |
-    receivers:
-      kafka/snow-white:
-        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
-        protocol_version: 4.0.0
-        traces:
-          encoding: otlp_json
-          topics:
-            - {{ .Values.otelCollector.kafka.outbountTopic }}
-      otlp:
-        protocols:
-          grpc:
-            endpoint: "0.0.0.0:4317"
-          http:
-            endpoint: "0.0.0.0:4318"
-    processors:
-      batch:
-        send_batch_size: 512
-        send_batch_max_size: 1024
-      filter/openapi-traces:
-        error_mode: ignore
-        traces:
-          span:
-            - attributes["http.request.method"] == nil
-            - attributes["api.name"] == nil
-            - attributes["api.version"] == nil
-      filter/snow-white-microservices:
-        error_mode: propagate
-        spans:
-          exclude:
-            match_type: strict
-            services:
-              - api-gateway
-              - api-index-api
-              - api-sync-job
-              - openapi-coverage-stream
-              - otel-event-filter-stream
-              - quality-gate-api
-              - report-coordinator-api
-      filter/all-external-services:
-        error_mode: propagate
-        traces:
-          span:
-            - |
-              resource.attributes["service.name"] != "api-gateway" and
-              resource.attributes["service.name"] != "api-sync-job" and
-              resource.attributes["service.name"] != "otel-event-filter-stream" and
-              resource.attributes["service.name"] != "openapi-coverage-stream" and
-              resource.attributes["service.name"] != "quality-gate-api" and
-              resource.attributes["service.name"] != "report-coordinator-api"
-      groupbyattrs/service:
-        keys:
-          - service.name
-          - service.namespace
-          - service.version
-      groupbytrace:
-        wait_duration: 5s
-        num_traces: 512
-      memory_limiter:
-        check_interval: 5s
-        limit_percentage: 80
-        spike_limit_percentage: 25
-      {{- with .Values.otelCollector.pipeline.resourceCleanup }}
-      resource/cleanup:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    extensions:
-      health_check:
-        endpoint: "0.0.0.0:13133"
-        check_collector_pipeline:
-          enabled: true
-          interval: 30s
-      zpages: { }
-    exporters:
-      debug/basic:
-        verbosity: basic
-        sampling_initial: 5
-      debug/detailed:
-        verbosity: detailed
-        sampling_initial: 5
-      kafka/snow-white:
-        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
-        partition_traces_by_id: true
-        protocol_version: 4.0.0
-        traces:
-          encoding: otlp_json
-          topic: {{ .Values.otelCollector.kafka.inboundTopic }}
-      influxdb:
-        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
-        org: {{ .Values.otelCollector.influxdb.org | quote }}
-        bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
-        token: '${INFLUXDB_TOKEN}'
-      {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
-      otlp_grpc/infra:
-        {{- toYaml .Values.otelCollector.connectToExternalOtelCollector | nindent 8 }}
-      {{- end }}
-    service:
-      extensions:
-        - health_check
-        - zpages
-      pipelines:
-        logs/infra:
-          receivers:
-            - otlp
-          processors:
-            - memory_limiter
-            - filter/all-external-services
-            - batch
-          exporters:
-            - debug/basic
-            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
-            - otlp_grpc/infra
-            {{- end }}
-        metrics/infra:
-          receivers:
-            - otlp
-          processors:
-            - memory_limiter
-            - filter/all-external-services
-            - groupbyattrs/service
-            - batch
-          exporters:
-            - debug/basic
-            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
-            - otlp_grpc/infra
-            {{- end }}
-        traces/snow-white:
-          receivers:
-            - otlp
-          processors:
-            - memory_limiter
-            - filter/snow-white-microservices
-            - filter/openapi-traces
-            - groupbytrace
-            - resource/cleanup
-            - batch
-          exporters:
-            - debug/basic
-            - kafka/snow-white
-        traces/influxdb:
-          receivers:
-            - kafka/snow-white
-          processors:
-            - memory_limiter
-            - groupbytrace
-            - batch
-          exporters:
-            - debug/basic
-            - influxdb
-        traces/infra:
-          receivers:
-            - otlp
-          processors:
-            - memory_limiter
-            - filter/all-external-services
-            - groupbytrace
-            - batch
-          exporters:
-            - debug/basic
-            {{ if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
-            - otlp_grpc/infra
-            {{- end }}
-      telemetry:
-        logs:
-          level: INFO
-          sampling:
-            initial: 100

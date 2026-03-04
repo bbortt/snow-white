@@ -66,6 +66,10 @@ Helper function making sure that the public domain (exposed through ingress) is 
 Common environment variables connecting for JDK-based microservices
 */}}
 {{- define "snow-white.commonPodEnvironmentVariables" -}}
+- name: JAVA_TOOL_OPTIONS
+  value: >-
+    -Djava.io.tmpdir=/tmp
+    -XX:+ExitOnOutOfMemoryError
 - name: 'LOGGING_PATTERN_CONSOLE'
   value: {{ .Values.snowWhite.logPattern | quote }}
 - name: 'OTEL_EXPORTER_OTLP_PROTOCOL'
@@ -78,6 +82,10 @@ Common environment variables connecting for JDK-based microservices
 Common environment variables connecting for native microservices
 */}}
 {{- define "snow-white.commonNativePodEnvironmentVariables" -}}
+- name: JAVA_TOOL_OPTIONS
+  value: >-
+    -Djava.io.tmpdir=/tmp
+    -XX:+ExitOnOutOfMemoryError
 - name: 'LOGGING_PATTERN_CONSOLE'
   value: {{ .Values.snowWhite.logPattern | quote }}
 - name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
