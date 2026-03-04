@@ -142,6 +142,7 @@ service:
       sampling:
         initial: 100
     metrics:
+      level: detailed
       readers:
         - periodic:
             exporter:
