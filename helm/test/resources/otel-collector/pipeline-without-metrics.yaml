@@ -8,18 +8,6 @@ logs/infra:
     - batch
   exporters:
     - debug/basic
-    - otlp_grpc/infra
-metrics/infra:
-  receivers:
-    - otlp
-  processors:
-    - memory_limiter
-    - filter/all-external-services
-    - k8s_attributes
-    - batch
-  exporters:
-    - debug/basic
-    - otlp_grpc/infra
 traces/snow-white:
   receivers:
     - otlp
@@ -54,4 +42,3 @@ traces/infra:
     - batch
   exporters:
     - debug/basic
-    - otlp_grpc/infra

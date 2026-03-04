@@ -30,10 +30,6 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
               env:
               {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 16 }}
-                - name: JAVA_TOOL_OPTIONS
-                  value: >-
-                    -Djava.io.tmpdir=/tmp
-                    -XX:+ExitOnOutOfMemoryError
                 - name: 'SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL'
                   value: '{{ printf "http://%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}'
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_BASE-URL'
@@ -79,5 +75,13 @@ spec:
                 runAsGroup: 12345
                 seccompProfile:
                   type: RuntimeDefault
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
           restartPolicy: OnFailure
+          volumes:
+            - name: tmp
+              emptyDir:
+                medium: ""
+                sizeLimit: 256Mi
 {{- end }}

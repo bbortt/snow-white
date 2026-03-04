@@ -16,24 +16,37 @@ import {
 import { join } from 'node:path';
 
 describe('OTEL Collector', () => {
+  const renderAndGetDeployment = async (manifests?: any[]) => {
+    if (!manifests) {
+      manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+      });
+    }
+
+    const deployment = manifests.find(
+      (m) =>
+        m.kind === 'Deployment' &&
+        m.metadata.name === 'snow-white-otel-collector-test-release',
+    );
+    expect(deployment).toBeDefined();
+
+    return deployment;
+  };
+
+  const getTemplateMetadata = (deployment: any): any => {
+    const { spec } = deployment;
+    expect(spec).toBeDefined();
+
+    const { template } = spec;
+    expect(template).toBeDefined();
+
+    const { metadata } = template;
+    expect(metadata).toBeDefined();
+
+    return metadata;
+  };
+
   describe('Deployment', () => {
-    const renderAndGetDeployment = async (manifests?: any[]) => {
-      if (!manifests) {
-        manifests = await renderHelmChart({
-          chartPath: 'charts/snow-white',
-        });
-      }
-
-      const deployment = manifests.find(
-        (m) =>
-          m.kind === 'Deployment' &&
-          m.metadata.name === 'snow-white-otel-collector-test-release',
-      );
-      expect(deployment).toBeDefined();
-
-      return deployment;
-    };
-
     it('should be kubernetes Deployment', async () => {
       const deployment = await renderAndGetDeployment();
 
@@ -225,6 +238,52 @@ describe('OTEL Collector', () => {
         expect(
           isSubset(deployment.spec.selector.matchLabels, metadata.labels),
         ).toBe(true);
+      });
+    });
+
+    describe('template', () => {
+      it('should contain configmap checksumn by default', async () => {
+        const deployment = await renderAndGetDeployment();
+        const metadata = getTemplateMetadata(deployment);
+
+        expect(metadata.annotations).toStrictEqual({
+          'checksum/config':
+            '18f2db0ac924db0e76e6272eb63ade6239b0abd2d466cdf0745608f73cc5df4c',
+        });
+      });
+
+      it('should include annotations from values', async () => {
+        const annotations = {
+          foo: 'bar',
+        };
+
+        const deployment = await renderAndGetDeployment(
+          await renderHelmChart({
+            chartPath: 'charts/snow-white',
+            values: {
+              otelCollector: {
+                annotations,
+              },
+            },
+          }),
+        );
+        const metadata = getTemplateMetadata(deployment);
+
+        expect(metadata.annotations).toStrictEqual({
+          'checksum/config':
+            '18f2db0ac924db0e76e6272eb63ade6239b0abd2d466cdf0745608f73cc5df4c',
+          ...annotations,
+        });
+      });
+
+      it('should template pod with labels', async () => {
+        const deployment = await renderAndGetDeployment();
+        const metadata = getTemplateMetadata(deployment);
+
+        expectToHaveDefaultLabelsForMicroservice(
+          metadata.labels,
+          'otel-collector',
+        );
       });
     });
 
@@ -786,7 +845,7 @@ describe('OTEL Collector', () => {
       return json[0];
     };
 
-    it('should export logs, metrics and traces to OTeL collector from values', async () => {
+    it('should export logs, metrics and traces to debug logger by default', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 
       const { data } = configMap;
@@ -832,5 +891,67 @@ describe('OTEL Collector', () => {
 
       expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
     });
+
+    it.each([
+      {
+        type: 'logs',
+        expectedFile: 'pipeline-without-logs.yaml',
+        connectToExternalOtelCollector: { exportLogs: false },
+        checksumn:
+          '56c2792a8d7223526a51ae206929af9f343457ffe016e09691ec15e6dc5a4929',
+      },
+      {
+        type: 'metrics',
+        expectedFile: 'pipeline-without-metrics.yaml',
+        connectToExternalOtelCollector: { exportMetrics: false },
+        checksumn:
+          '4cd2223b8d790f1fcc74552eb6f36303041b64b22d13fd9a95d1f5936a13cf6e',
+      },
+      {
+        type: 'traces',
+        expectedFile: 'pipeline-without-traces.yaml',
+        connectToExternalOtelCollector: { exportTraces: false },
+        checksumn:
+          '17ee0d4edb9e76cddbed8b9dda607acca16af7df57956dfa145ab88bdcf78232',
+      },
+    ])(
+      'should skip exporting: $type',
+      async ({
+        type,
+        expectedFile,
+        connectToExternalOtelCollector,
+        checksumn,
+      }) => {
+        const manifest = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            otelCollector: {
+              connectToExternalOtelCollector,
+            },
+          },
+        });
+
+        const configMap = await renderAndGetOtelCollectorConfig(manifest);
+
+        const { data } = configMap;
+        expect(data).toBeDefined();
+
+        const snowWhiteConfig = extractConfigMapData(data);
+
+        const { pipelines } = snowWhiteConfig.service;
+        expect(pipelines).toBeDefined();
+
+        const pipelineWithInfraExporters = loadResourceToJson(expectedFile);
+
+        expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
+
+        const deployment = await renderAndGetDeployment(manifest);
+        const metadata = getTemplateMetadata(deployment);
+
+        expect(metadata.annotations).toStrictEqual({
+          'checksum/config': checksumn,
+        });
+      },
+    );
   });
 });

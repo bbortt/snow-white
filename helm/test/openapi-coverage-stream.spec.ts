@@ -436,10 +436,10 @@ describe('OpenAPI Coverage Stream', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+9 environment variables by default', async () => {
+          it('should deploy 3+1+9 environment variables by default', async () => {
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer();
-            expect(openapiCoverageStream.env).toHaveLength(12);
+            expect(openapiCoverageStream.env).toHaveLength(13);
           });
 
           it('should include default log pattern', async () => {
@@ -656,8 +656,8 @@ describe('OpenAPI Coverage Stream', () => {
                   }),
                 );
 
-              // 1 Logging + 2 OTEL + 9 default + 1 custom configuration
-              expect(openapiCoverageStream.env).toHaveLength(13);
+              // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 9 default + 1 custom configuration
+              expect(openapiCoverageStream.env).toHaveLength(14);
 
               const customEnv = openapiCoverageStream.env.find(
                 (env) => env.name === envVarName,
@@ -685,8 +685,8 @@ describe('OpenAPI Coverage Stream', () => {
                 }),
               );
 
-            // 1 Logging + 2 OTEL + 9 default + 2 additional
-            expect(openapiCoverageStream.env).toHaveLength(14);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 9 default + 2 additional
+            expect(openapiCoverageStream.env).toHaveLength(15);
 
             const authorEnv = openapiCoverageStream.env.find(
               (env) => env.name === 'author',
