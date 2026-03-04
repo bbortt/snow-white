@@ -141,16 +141,19 @@ snowWhite:
     # -- Deploy CronJob for API ingestion alongside Snow-White.
     # @section -- Snow-White API Sync Job
     enabled: false
+    image:
+      # -- Image tag.
+      # @section -- Snow-White API Sync Job
+      tag: ''
     # -- The number of failed finished jobs to keep.
     # @section -- Snow-White API Sync Job
     failedJobsHistoryLimit: 1
     # -- The number of successful finished jobs to keep.
     # @section -- Snow-White API Sync Job
     successfulJobsHistoryLimit: 3
-    image:
-      # -- Image tag.
-      # @section -- Snow-White API Sync Job
-      tag: ''
+    # -- The duration in seconds relative to the startTime that the job may be active.
+    # @section -- Snow-White API Sync Job
+    activeDeadlineSeconds: 1800
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White API Sync Job
     additionalEnvs: []

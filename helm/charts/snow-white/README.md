@@ -10,203 +10,204 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Scheduling and Affinity
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| affinity | object | `{}` | Custom affinity rules. Overrides all presets. |
-| nodeAffinityPreset.key | string | `""` | Node label key to match. Ignored if `affinity` is set. E.g.: `key: "kubernetes.io/e2e-az-name"`. |
-| nodeAffinityPreset.type | string | `""` | Node affinity preset configuration. Ignored if `affinity` is set. Allowed values: `soft` or `hard`, |
-| nodeAffinityPreset.values | list | `[]` | Node label values to match. Ignored if `affinity` is set. E.g.: `values: [ 'e2e-az1', 'e2e-az2' ]`. |
-| podAffinityPreset | string | `""` | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft`, `hard`. |
-| podAntiAffinityPreset | string | `"soft"` | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft`, `hard`. |
+| Key                       | Type   | Default  | Description                                                                                         |
+| ------------------------- | ------ | -------- | --------------------------------------------------------------------------------------------------- |
+| affinity                  | object | `{}`     | Custom affinity rules. Overrides all presets.                                                       |
+| nodeAffinityPreset.key    | string | `""`     | Node label key to match. Ignored if `affinity` is set. E.g.: `key: "kubernetes.io/e2e-az-name"`.    |
+| nodeAffinityPreset.type   | string | `""`     | Node affinity preset configuration. Ignored if `affinity` is set. Allowed values: `soft` or `hard`, |
+| nodeAffinityPreset.values | list   | `[]`     | Node label values to match. Ignored if `affinity` is set. E.g.: `values: [ 'e2e-az1', 'e2e-az2' ]`. |
+| podAffinityPreset         | string | `""`     | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft`, `hard`.                  |
+| podAntiAffinityPreset     | string | `"soft"` | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft`, `hard`.             |
 
 ### Infrastructure
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| Key          | Type   | Default                                 | Description                                 |
+| ------------ | ------ | --------------------------------------- | ------------------------------------------- |
 | commonLabels | object | `app.kubernetes.io/part-of: snow-white` | Labels applied to infrastructure resources. |
 
 ### Corporate Settings
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| global.imagePullSecrets | list | `[]` | List of image pull secrets. |
+| Key                      | Type   | Default     | Description                               |
+| ------------------------ | ------ | ----------- | ----------------------------------------- |
+| global.imagePullSecrets  | list   | `[]`        | List of image pull secrets.               |
 | snowWhite.image.registry | string | `"ghcr.io"` | Image registry for Snow-White components. |
 
 ### Image Parameters
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| Key              | Type   | Default    | Description        |
+| ---------------- | ------ | ---------- | ------------------ |
 | image.pullPolicy | string | `"Always"` | Image pull policy. |
 
 ### Infrastructure (InfluxDB)
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| influxdb2.enabled | bool | `true` | Deploy InfluxDB StatefulSet alongside Snow-White. |
+| Key               | Type | Default | Description                                       |
+| ----------------- | ---- | ------- | ------------------------------------------------- |
+| influxdb2.enabled | bool | `true`  | Deploy InfluxDB StatefulSet alongside Snow-White. |
 
 ### Infrastructure (Kafka)
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| kafka.clusterId | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
-| kafka.enabled | bool | `true` | Deploy Kafka StatefulSet alongside Snow-White. |
-| kafka.image.name | string | `"confluentinc/cp-kafka"` | Image name. |
-| kafka.image.registry | string | `"docker.io"` | Image registry. |
-| kafka.image.tag | string | `"8.2.0"` | Image tag. |
-| kafka.persistence.size | string | `"10Gi"` | Size of the storage for Kafka. |
-| kafka.persistence.storageClass | string | `"hostpath"` | Storage class for Kafka persistent volumes. |
+| Key                            | Type   | Default                    | Description                                                        |
+| ------------------------------ | ------ | -------------------------- | ------------------------------------------------------------------ |
+| kafka.clusterId                | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
+| kafka.enabled                  | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
+| kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
+| kafka.image.registry           | string | `"docker.io"`              | Image registry.                                                    |
+| kafka.image.tag                | string | `"8.2.0"`                  | Image tag.                                                         |
+| kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
+| kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
 
 ### OpenTelemetry Collector
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| otelCollector.apiNameAttributeKey | string | `api.name` | Custom attribute key identifying the API name. |
-| otelCollector.apiVersionAttributeKey | string | `api.version` | Custom attribute key identifying the API version. |
-| otelCollector.connectToExternalOtelCollector.endpoint | string | `""` | Configure this endpoint to expose Snow-White internal telemetry data to external OTeL collector for monitoring. |
-| otelCollector.connectToExternalOtelCollector.exportLogs | bool | `true` | Disable (infrastructure) metrics export entirely. |
-| otelCollector.connectToExternalOtelCollector.exportMetrics | bool | `true` | Disable (infrastructure) metrics export entirely. |
-| otelCollector.connectToExternalOtelCollector.exportTraces | bool | `true` | Disable (infrastructure) traces export entirely. Snow-White internal tracing is still functional. |
-| otelCollector.connectToExternalOtelCollector.tls.insecure | bool | `true` | Whether the external OTeL collector connection may be insecure. |
-| otelCollector.exposeThroughIngress | bool | `true` | Whether to expose the OTeL collector through the (public) ingress. |
-| otelCollector.image.registry | string | `"docker.io"` | Image registry. |
-| otelCollector.image.tag | string | `"0.147.0"` | Image tag. |
-| otelCollector.influxdb.bucket | string | `"raw-data"` | InfluxDB bucket. |
-| otelCollector.influxdb.endpoint | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB endpoint. |
-| otelCollector.influxdb.org | string | `"snow-white"` | InfluxDB organization. |
-| otelCollector.kafka.inboundTopic | string | `"snow-white_inbound"` | The "inbound" Kafka topic for unfiltered events. |
-| otelCollector.kafka.outbountTopic | string | `"snow-white_outbound"` | The "outbound" Kafka filtered events being persisted to InfluxDB. |
-| otelCollector.pipeline.resourceCleanup | object | `{"attributes":[{"action":"delete","pattern":"^process\\..+"},{"action":"delete","pattern":"^telemetry\\..+"}]}` | Attributes to clean up from span resources. Reduces required storage space, but limits filter functionality! |
-| otelCollector.serviceNameAttributeKey | string | `service.name` | Custom attribute key identifying the Service name. |
+| Key                                                        | Type   | Default                                                                                                          | Description                                                                                                     |
+| ---------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| otelCollector.apiNameAttributeKey                          | string | `api.name`                                                                                                       | Custom attribute key identifying the API name.                                                                  |
+| otelCollector.apiVersionAttributeKey                       | string | `api.version`                                                                                                    | Custom attribute key identifying the API version.                                                               |
+| otelCollector.connectToExternalOtelCollector.endpoint      | string | `""`                                                                                                             | Configure this endpoint to expose Snow-White internal telemetry data to external OTeL collector for monitoring. |
+| otelCollector.connectToExternalOtelCollector.exportLogs    | bool   | `true`                                                                                                           | Disable (infrastructure) metrics export entirely.                                                               |
+| otelCollector.connectToExternalOtelCollector.exportMetrics | bool   | `true`                                                                                                           | Disable (infrastructure) metrics export entirely.                                                               |
+| otelCollector.connectToExternalOtelCollector.exportTraces  | bool   | `true`                                                                                                           | Disable (infrastructure) traces export entirely. Snow-White internal tracing is still functional.               |
+| otelCollector.connectToExternalOtelCollector.tls.insecure  | bool   | `true`                                                                                                           | Whether the external OTeL collector connection may be insecure.                                                 |
+| otelCollector.exposeThroughIngress                         | bool   | `true`                                                                                                           | Whether to expose the OTeL collector through the (public) ingress.                                              |
+| otelCollector.image.registry                               | string | `"docker.io"`                                                                                                    | Image registry.                                                                                                 |
+| otelCollector.image.tag                                    | string | `"0.147.0"`                                                                                                      | Image tag.                                                                                                      |
+| otelCollector.influxdb.bucket                              | string | `"raw-data"`                                                                                                     | InfluxDB bucket.                                                                                                |
+| otelCollector.influxdb.endpoint                            | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically.                                    | InfluxDB endpoint.                                                                                              |
+| otelCollector.influxdb.org                                 | string | `"snow-white"`                                                                                                   | InfluxDB organization.                                                                                          |
+| otelCollector.kafka.inboundTopic                           | string | `"snow-white_inbound"`                                                                                           | The "inbound" Kafka topic for unfiltered events.                                                                |
+| otelCollector.kafka.outbountTopic                          | string | `"snow-white_outbound"`                                                                                          | The "outbound" Kafka filtered events being persisted to InfluxDB.                                               |
+| otelCollector.pipeline.resourceCleanup                     | object | `{"attributes":[{"action":"delete","pattern":"^process\\..+"},{"action":"delete","pattern":"^telemetry\\..+"}]}` | Attributes to clean up from span resources. Reduces required storage space, but limits filter functionality!    |
+| otelCollector.serviceNameAttributeKey                      | string | `service.name`                                                                                                   | Custom attribute key identifying the Service name.                                                              |
 
 ### Infrastructure (PostgreSQL)
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| postgresql.enabled | bool | `true` | Deploy PostgreSQL StatefulSet alongside Snow-White. |
+| Key                                        | Type   | Default                                | Description                                                             |
+| ------------------------------------------ | ------ | -------------------------------------- | ----------------------------------------------------------------------- |
+| postgresql.enabled                         | bool   | `true`                                 | Deploy PostgreSQL StatefulSet alongside Snow-White.                     |
 | postgresql.primary.initdb.scriptsConfigMap | string | `"snow-white-postgresql-init-scripts"` | Name of the ConfigMap containing initialization scripts for PostgreSQL. |
 
 ### Snow-White API Gateway
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.apiGateway.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.apiGateway.image.tag | string | `""` | Image tag. |
-| snowWhite.apiGateway.service.port | int | `80` | Exposed port for the API Gateway service. |
-| snowWhite.apiGateway.service.type | string | `"ClusterIP"` | Type of Kubernetes service. |
+| Key                                 | Type   | Default       | Description                                              |
+| ----------------------------------- | ------ | ------------- | -------------------------------------------------------- |
+| snowWhite.apiGateway.additionalEnvs | list   | `[]`          | Additional environment variables forwarded to container. |
+| snowWhite.apiGateway.image.tag      | string | `""`          | Image tag.                                               |
+| snowWhite.apiGateway.service.port   | int    | `80`          | Exposed port for the API Gateway service.                |
+| snowWhite.apiGateway.service.type   | string | `"ClusterIP"` | Type of Kubernetes service.                              |
 
 ### Snow-White API Index API
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.apiIndexApi.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.apiIndexApi.image.tag | string | `""` | Image tag. |
+| Key                                  | Type   | Default | Description                                              |
+| ------------------------------------ | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.apiIndexApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.apiIndexApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Snow-White API Sync Job
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.apiSyncJob.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.apiSyncJob.artifactory.baseUrl | string | `""` | Artifactory Base URL (e.g. http://localhost:8092/artifactory). |
-| snowWhite.apiSyncJob.artifactory.customApiNameJsonPath | string | `info.title` | Custom JSON path to the API name inside an OpenAPI specification. |
-| snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath | string | `info.version` | Custom JSON path to the API version inside an OpenAPI specification. |
-| snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name` | Custom JSON path to the service name inside an OpenAPI specification. |
-| snowWhite.apiSyncJob.artifactory.repository | string | `""` | Artifactory repository holding API index. |
-| snowWhite.apiSyncJob.enabled | bool | `false` | Deploy CronJob for API ingestion alongside Snow-White. |
-| snowWhite.apiSyncJob.failedJobsHistoryLimit | int | `1` | The number of failed finished jobs to keep. |
-| snowWhite.apiSyncJob.image.tag | string | `""` | Image tag. |
-| snowWhite.apiSyncJob.resources.memory.limit | string | `"1Gi"` | Memory resource limit. |
-| snowWhite.apiSyncJob.resources.memory.request | string | `"1Gi"` | Memory resource request. |
-| snowWhite.apiSyncJob.schedule | string | `"0 * * * *"` | Cron schedule for API synchronization. |
-| snowWhite.apiSyncJob.successfulJobsHistoryLimit | int | `3` | The number of successful finished jobs to keep. |
+| Key                                                        | Type   | Default                          | Description                                                                   |
+| ---------------------------------------------------------- | ------ | -------------------------------- | ----------------------------------------------------------------------------- |
+| snowWhite.apiSyncJob.activeDeadlineSeconds                 | int    | `1800`                           | The duration in seconds relative to the startTime that the job may be active. |
+| snowWhite.apiSyncJob.additionalEnvs                        | list   | `[]`                             | Additional environment variables forwarded to container.                      |
+| snowWhite.apiSyncJob.artifactory.baseUrl                   | string | `""`                             | Artifactory Base URL (e.g. http://localhost:8092/artifactory).                |
+| snowWhite.apiSyncJob.artifactory.customApiNameJsonPath     | string | `info.title`                     | Custom JSON path to the API name inside an OpenAPI specification.             |
+| snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath  | string | `info.version`                   | Custom JSON path to the API version inside an OpenAPI specification.          |
+| snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name` | Custom JSON path to the service name inside an OpenAPI specification.         |
+| snowWhite.apiSyncJob.artifactory.repository                | string | `""`                             | Artifactory repository holding API index.                                     |
+| snowWhite.apiSyncJob.enabled                               | bool   | `false`                          | Deploy CronJob for API ingestion alongside Snow-White.                        |
+| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `1`                              | The number of failed finished jobs to keep.                                   |
+| snowWhite.apiSyncJob.image.tag                             | string | `""`                             | Image tag.                                                                    |
+| snowWhite.apiSyncJob.resources.memory.limit                | string | `"1Gi"`                          | Memory resource limit.                                                        |
+| snowWhite.apiSyncJob.resources.memory.request              | string | `"1Gi"`                          | Memory resource request.                                                      |
+| snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                        |
+| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `3`                              | The number of successful finished jobs to keep.                               |
 
 ### Snow-White Ingress
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.ingress.className | string | `"nginx"` | Ingress class name. |
-| snowWhite.ingress.enabled | bool | `true` | Enable ingress. |
-| snowWhite.ingress.host | string | `""` | .Ingress hostname. Must be specified when `ingress.enabled=true`. |
-| snowWhite.ingress.tls | bool | `true` | Enable TLS. |
+| Key                         | Type   | Default   | Description                                                       |
+| --------------------------- | ------ | --------- | ----------------------------------------------------------------- |
+| snowWhite.ingress.className | string | `"nginx"` | Ingress class name.                                               |
+| snowWhite.ingress.enabled   | bool   | `true`    | Enable ingress.                                                   |
+| snowWhite.ingress.host      | string | `""`      | .Ingress hostname. Must be specified when `ingress.enabled=true`. |
+| snowWhite.ingress.tls       | bool   | `true`    | Enable TLS.                                                       |
 
 ### Snow-White Kafka
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.kafka.brokers | list | The chart will connect to the provisioned Kafka StatefulSet automatically. | Kafka bootstrap server list. |
-| snowWhite.kafka.calculationRequestTopic | string | `"snow-white-calculation-request"` | Calculation request topic. |
-| snowWhite.kafka.initTopics | string | `"true"` | Initialize Kafka topics. |
-| snowWhite.kafka.openapiCalculationResponseTopic | string | `"snow-white-openapi-calculation-response"` | OpenAPI calculation response topic |
+| Key                                             | Type   | Default                                                                    | Description                        |
+| ----------------------------------------------- | ------ | -------------------------------------------------------------------------- | ---------------------------------- |
+| snowWhite.kafka.brokers                         | list   | The chart will connect to the provisioned Kafka StatefulSet automatically. | Kafka bootstrap server list.       |
+| snowWhite.kafka.calculationRequestTopic         | string | `"snow-white-calculation-request"`                                         | Calculation request topic.         |
+| snowWhite.kafka.initTopics                      | string | `"true"`                                                                   | Initialize Kafka topics.           |
+| snowWhite.kafka.openapiCalculationResponseTopic | string | `"snow-white-openapi-calculation-response"`                                | OpenAPI calculation response topic |
 
 ### Advanced Configuration
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.logPattern | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger\"{2}%replace(%mdc{trace_id}){^(.+)$, traceId=\"$1\"} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods. |
-| snowWhite.podAnnotations | object | `{}` | Annotations for Snow-White pods. |
-| snowWhite.revisionHistoryLimit | int | `3` | Number of old ReplicaSets to retain. |
+| Key                            | Type   | Default                                                                                                                                                          | Description                          |
+| ------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger\"{2}%replace(%mdc{trace_id}){^(.+)$, traceId=\"$1\"} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.     |
+| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                             | Annotations for Snow-White pods.     |
+| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                              | Number of old ReplicaSets to retain. |
 
 ### Availability
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.mode | string | `"high-available"` | Deployment mode of Snow-White. Allowed values: `minimal`, `high-available`, `autoscale`. |
-| snowWhite.rollout.maxSurge | string | `"25%"` | Max pods above desired during rolling update. |
+| Key                        | Type   | Default            | Description                                                                              |
+| -------------------------- | ------ | ------------------ | ---------------------------------------------------------------------------------------- |
+| snowWhite.mode             | string | `"high-available"` | Deployment mode of Snow-White. Allowed values: `minimal`, `high-available`, `autoscale`. |
+| snowWhite.rollout.maxSurge | string | `"25%"`            | Max pods above desired during rolling update.                                            |
 
 ### Snow-White OpenAPI Coverage Stream
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.openapiCoverageStream.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.openapiCoverageStream.image.tag | string | `""` | Image tag. |
-| snowWhite.openapiCoverageStream.influxdb.bucket | string | `"raw-data"` | InfluxDB bucket. |
-| snowWhite.openapiCoverageStream.influxdb.endpoint | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB endpoint. |
-| snowWhite.openapiCoverageStream.influxdb.org | string | `"snow-white"` | InfluxDB organization. |
-| snowWhite.openapiCoverageStream.influxdb.token | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB token. |
-| snowWhite.openapiCoverageStream.replicas | int | `1` | Number of replicas to deploy. |
+| Key                                               | Type   | Default                                                                       | Description                                              |
+| ------------------------------------------------- | ------ | ----------------------------------------------------------------------------- | -------------------------------------------------------- |
+| snowWhite.openapiCoverageStream.additionalEnvs    | list   | `[]`                                                                          | Additional environment variables forwarded to container. |
+| snowWhite.openapiCoverageStream.image.tag         | string | `""`                                                                          | Image tag.                                               |
+| snowWhite.openapiCoverageStream.influxdb.bucket   | string | `"raw-data"`                                                                  | InfluxDB bucket.                                         |
+| snowWhite.openapiCoverageStream.influxdb.endpoint | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB endpoint.                                       |
+| snowWhite.openapiCoverageStream.influxdb.org      | string | `"snow-white"`                                                                | InfluxDB organization.                                   |
+| snowWhite.openapiCoverageStream.influxdb.token    | string | The chart will connect to the provisioned InfluxDB StatefulSet automatically. | InfluxDB token.                                          |
+| snowWhite.openapiCoverageStream.replicas          | int    | `1`                                                                           | Number of replicas to deploy.                            |
 
 ### Snow-White OTel Event Filter Stream
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.otelEventFilterStream.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.otelEventFilterStream.image.tag | string | `""` | Image tag. |
-| snowWhite.otelEventFilterStream.replicas | int | `1` | Number of replicas to deploy. |
+| Key                                            | Type   | Default | Description                                              |
+| ---------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.otelEventFilterStream.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.otelEventFilterStream.image.tag      | string | `""`    | Image tag.                                               |
+| snowWhite.otelEventFilterStream.replicas       | int    | `1`     | Number of replicas to deploy.                            |
 
 ### Snow-White Quality Gate API
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.qualityGateApi.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.qualityGateApi.image.tag | string | `""` | Image tag. |
+| Key                                     | Type   | Default | Description                                              |
+| --------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.qualityGateApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.qualityGateApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Snow-White Report Coordinator API
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| snowWhite.reportCoordinatorApi.additionalEnvs | list | `[]` | Additional environment variables forwarded to container. |
-| snowWhite.reportCoordinatorApi.image.tag | string | `""` | Image tag. |
+| Key                                           | Type   | Default | Description                                              |
+| --------------------------------------------- | ------ | ------- | -------------------------------------------------------- |
+| snowWhite.reportCoordinatorApi.additionalEnvs | list   | `[]`    | Additional environment variables forwarded to container. |
+| snowWhite.reportCoordinatorApi.image.tag      | string | `""`    | Image tag.                                               |
 
 ### Other Values
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| influxdb2.pdb.create | bool | `false` |  |
-| postgresql.architecture | string | `"standalone"` |  |
-| postgresql.primary.extraEnvVars[0].name | string | `"API_INDEX_DATASOURCE_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key | string | `"api-index-password"` |  |
-| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
-| postgresql.primary.extraEnvVars[1].name | string | `"API_INDEX_FLYWAY_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.key | string | `"api-index-flyway-password"` |  |
-| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
-| postgresql.primary.extraEnvVars[2].name | string | `"REPORT_COORDINATOR_DATASOURCE_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.key | string | `"report-coord-password"` |  |
-| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
-| postgresql.primary.extraEnvVars[3].name | string | `"REPORT_COORDINATOR_FLYWAY_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.key | string | `"report-coord-flyway-password"` |  |
-| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
-| postgresql.primary.extraEnvVars[4].name | string | `"QUALITY_GATE_DATASOURCE_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.key | string | `"quality-gate-password"` |  |
-| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
-| postgresql.primary.extraEnvVars[5].name | string | `"QUALITY_GATE_FLYWAY_PASSWORD"` |  |
-| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.key | string | `"quality-gate-flyway-password"` |  |
-| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"` |  |
+| Key                                                            | Type   | Default                                    | Description |
+| -------------------------------------------------------------- | ------ | ------------------------------------------ | ----------- |
+| influxdb2.pdb.create                                           | bool   | `false`                                    |             |
+| postgresql.architecture                                        | string | `"standalone"`                             |             |
+| postgresql.primary.extraEnvVars[0].name                        | string | `"API_INDEX_DATASOURCE_PASSWORD"`          |             |
+| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key  | string | `"api-index-password"`                     |             |
+| postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[1].name                        | string | `"API_INDEX_FLYWAY_PASSWORD"`              |             |
+| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.key  | string | `"api-index-flyway-password"`              |             |
+| postgresql.primary.extraEnvVars[1].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[2].name                        | string | `"REPORT_COORDINATOR_DATASOURCE_PASSWORD"` |             |
+| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.key  | string | `"report-coord-password"`                  |             |
+| postgresql.primary.extraEnvVars[2].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[3].name                        | string | `"REPORT_COORDINATOR_FLYWAY_PASSWORD"`     |             |
+| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.key  | string | `"report-coord-flyway-password"`           |             |
+| postgresql.primary.extraEnvVars[3].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[4].name                        | string | `"QUALITY_GATE_DATASOURCE_PASSWORD"`       |             |
+| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.key  | string | `"quality-gate-password"`                  |             |
+| postgresql.primary.extraEnvVars[4].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
+| postgresql.primary.extraEnvVars[5].name                        | string | `"QUALITY_GATE_FLYWAY_PASSWORD"`           |             |
+| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.key  | string | `"quality-gate-flyway-password"`           |             |
+| postgresql.primary.extraEnvVars[5].valueFrom.secretKeyRef.name | string | `"snow-white-postgresql-credentials"`      |             |
