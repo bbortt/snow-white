@@ -444,9 +444,9 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+3 environment variables by default', async () => {
+          it('should deploy 3+1+3 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(6);
+            expect(apiGateway.env).toHaveLength(7);
           });
 
           it('should include default log pattern', async () => {
@@ -548,8 +548,8 @@ describe('API Gateway', () => {
               }),
             );
 
-            // 1 Logging + 2 OTEL + 3 default + 2 additional
-            expect(apiGateway.env).toHaveLength(8);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 3 default + 2 additional
+            expect(apiGateway.env).toHaveLength(9);
 
             const authorEnv = apiGateway.env.find(
               (env) => env.name === 'author',

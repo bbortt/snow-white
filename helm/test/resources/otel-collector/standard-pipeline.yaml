@@ -4,6 +4,7 @@ logs/infra:
   processors:
     - memory_limiter
     - filter/all-external-services
+    - k8s_attributes
     - batch
   exporters:
     - debug/basic
@@ -13,7 +14,7 @@ metrics/infra:
   processors:
     - memory_limiter
     - filter/all-external-services
-    - groupbyattrs/service
+    - k8s_attributes
     - batch
   exporters:
     - debug/basic
@@ -46,6 +47,7 @@ traces/infra:
   processors:
     - memory_limiter
     - filter/all-external-services
+    - k8s_attributes
     - groupbytrace
     - batch
   exporters:

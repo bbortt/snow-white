@@ -1,0 +1,194 @@
+{{- $name := include "snow-white.name" (dict "name" "otel-collector" "context" .) -}}
+{{- $labels := include "snow-white.labels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  snow-white.config.yml: |
+    receivers:
+      kafka/snow-white:
+        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
+        protocol_version: 4.0.0
+        traces:
+          encoding: otlp_json
+          topics:
+            - {{ .Values.otelCollector.kafka.outbountTopic }}
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+    processors:
+      batch:
+        send_batch_size: 512
+        send_batch_max_size: 1024
+      filter/openapi-traces:
+        error_mode: ignore
+        traces:
+          span:
+            - attributes["http.request.method"] == nil
+            - attributes["api.name"] == nil
+            - attributes["api.version"] == nil
+      filter/snow-white-microservices:
+        error_mode: propagate
+        spans:
+          exclude:
+            match_type: strict
+            services:
+              - api-gateway
+              - api-index-api
+              - api-sync-job
+              - openapi-coverage-stream
+              - otel-event-filter-stream
+              - quality-gate-api
+              - report-coordinator-api
+      filter/all-external-services:
+        error_mode: propagate
+        traces:
+          span:
+            - |
+              resource.attributes["service.name"] != "api-gateway" and
+              resource.attributes["service.name"] != "api-sync-job" and
+              resource.attributes["service.name"] != "otel-event-filter-stream" and
+              resource.attributes["service.name"] != "openapi-coverage-stream" and
+              resource.attributes["service.name"] != "quality-gate-api" and
+              resource.attributes["service.name"] != "report-coordinator-api"
+      groupbytrace:
+        wait_duration: 5s
+        num_traces: 512
+      k8s_attributes:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 80
+        spike_limit_percentage: 25
+      {{- with .Values.otelCollector.pipeline.resourceCleanup }}
+      resource/cleanup:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    extensions:
+      health_check:
+        endpoint: "0.0.0.0:13133"
+        check_collector_pipeline:
+          enabled: true
+          interval: 30s
+      zpages: { }
+    exporters:
+      debug/basic:
+        verbosity: basic
+        sampling_initial: 5
+      debug/detailed:
+        verbosity: detailed
+        sampling_initial: 5
+      kafka/snow-white:
+        brokers: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers | quote }}
+        partition_traces_by_id: true
+        protocol_version: 4.0.0
+        traces:
+          encoding: otlp_json
+          topic: {{ .Values.otelCollector.kafka.inboundTopic }}
+      influxdb:
+        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
+        org: {{ .Values.otelCollector.influxdb.org | quote }}
+        bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
+        token: '${INFLUXDB_TOKEN}'
+      {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+      otlp_grpc/infra:
+        endpoint: '{{ .Values.otelCollector.connectToExternalOtelCollector.endpoint }}'
+        tls:
+          insecure: {{ .Values.otelCollector.connectToExternalOtelCollector.tls.insecure }}
+      {{- end }}
+    service:
+      extensions:
+        - health_check
+        - zpages
+      pipelines:
+        {{- if .Values.otelCollector.connectToExternalOtelCollector.exportLogs }}
+        logs/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - k8s_attributes
+            - batch
+          exporters:
+            - debug/basic
+            {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
+        {{- end }}
+        {{- if .Values.otelCollector.connectToExternalOtelCollector.exportMetrics }}
+        metrics/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - k8s_attributes
+            - batch
+          exporters:
+            - debug/basic
+            {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
+        {{- end }}
+        traces/snow-white:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/snow-white-microservices
+            - filter/openapi-traces
+            - groupbytrace
+            - resource/cleanup
+            - batch
+          exporters:
+            - debug/basic
+            - kafka/snow-white
+        traces/influxdb:
+          receivers:
+            - kafka/snow-white
+          processors:
+            - memory_limiter
+            - groupbytrace
+            - batch
+          exporters:
+            - debug/basic
+            - influxdb
+        {{- if .Values.otelCollector.connectToExternalOtelCollector.exportTraces }}
+        traces/infra:
+          receivers:
+            - otlp
+          processors:
+            - memory_limiter
+            - filter/all-external-services
+            - k8s_attributes
+            - groupbytrace
+            - batch
+          exporters:
+            - debug/basic
+            {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+            - otlp_grpc/infra
+            {{- end }}
+        {{- end }}
+      telemetry:
+        logs:
+          level: INFO
+          sampling:
+            initial: 100
+        {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
+        metrics:
+          level: detailed
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: '0.0.0.0'
+                    port: 8888
+        {{- end }}
+        resource:
+          'service.namespace': 'io.github.bbortt.snow.white'

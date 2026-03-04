@@ -91,6 +91,14 @@ spec:
             runAsGroup: 12345
             seccompProfile:
               type: RuntimeDefault
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: ""
+            sizeLimit: 256Mi
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

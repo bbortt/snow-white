@@ -275,6 +275,15 @@ otelCollector:
   # @section -- OpenTelemetry Collector
   exposeThroughIngress: true
   connectToExternalOtelCollector:
+    # -- Disable (infrastructure) metrics export entirely.
+    # @section -- OpenTelemetry Collector
+    exportLogs: true
+    # -- Disable (infrastructure) metrics export entirely.
+    # @section -- OpenTelemetry Collector
+    exportMetrics: true
+    # -- Disable (infrastructure) traces export entirely. Snow-White internal tracing is still functional.
+    # @section -- OpenTelemetry Collector
+    exportTraces: true
     # -- Configure this endpoint to expose Snow-White internal telemetry data to external OTeL collector for monitoring.
     # @section -- OpenTelemetry Collector
     endpoint: ''
