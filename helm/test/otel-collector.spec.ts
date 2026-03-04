@@ -15,6 +15,9 @@ import {
 } from './helpers';
 import { join } from 'node:path';
 
+const defaultConfigmapChecksum =
+  'adf0c06e7770f7962a5589f237971533dd9370b77723b975de248c338b81a3bf';
+
 describe('OTEL Collector', () => {
   const renderAndGetDeployment = async (manifests?: any[]) => {
     if (!manifests) {
@@ -247,8 +250,7 @@ describe('OTEL Collector', () => {
         const metadata = getTemplateMetadata(deployment);
 
         expect(metadata.annotations).toStrictEqual({
-          'checksum/config':
-            '18f2db0ac924db0e76e6272eb63ade6239b0abd2d466cdf0745608f73cc5df4c',
+          'checksum/config': defaultConfigmapChecksum,
         });
       });
 
@@ -270,8 +272,7 @@ describe('OTEL Collector', () => {
         const metadata = getTemplateMetadata(deployment);
 
         expect(metadata.annotations).toStrictEqual({
-          'checksum/config':
-            '18f2db0ac924db0e76e6272eb63ade6239b0abd2d466cdf0745608f73cc5df4c',
+          'checksum/config': defaultConfigmapChecksum,
           ...annotations,
         });
       });
@@ -283,6 +284,22 @@ describe('OTEL Collector', () => {
         expectToHaveDefaultLabelsForMicroservice(
           metadata.labels,
           'otel-collector',
+        );
+      });
+
+      it('should have associated service account', async () => {
+        const deployment = await renderAndGetDeployment();
+
+        const { spec } = deployment;
+        expect(spec).toBeDefined();
+
+        const { template } = spec;
+        expect(template).toBeDefined();
+
+        const templateSpec = template.spec;
+        expect(templateSpec).toBeDefined();
+        expect(templateSpec.serviceAccountName).toBe(
+          'snow-white-otel-collector-test-release',
         );
       });
     });
@@ -703,13 +720,13 @@ describe('OTEL Collector', () => {
         });
       }
 
-      const service = manifests.find(
+      const configMap = manifests.find(
         (m) =>
           m.kind === 'ConfigMap' &&
           m.metadata.name === 'snow-white-otel-collector-test-release',
       );
-      expect(service).toBeDefined();
-      return service;
+      expect(configMap).toBeDefined();
+      return configMap;
     };
 
     it('should be Kubernetes ConfigMap', async () => {
@@ -898,21 +915,21 @@ describe('OTEL Collector', () => {
         expectedFile: 'pipeline-without-logs.yaml',
         connectToExternalOtelCollector: { exportLogs: false },
         checksumn:
-          '56c2792a8d7223526a51ae206929af9f343457ffe016e09691ec15e6dc5a4929',
+          '7895ad1e47c7bfa4102d390d9e661057fa5e8aa06462fbeb80960e5d156538fc',
       },
       {
         type: 'metrics',
         expectedFile: 'pipeline-without-metrics.yaml',
         connectToExternalOtelCollector: { exportMetrics: false },
         checksumn:
-          '4cd2223b8d790f1fcc74552eb6f36303041b64b22d13fd9a95d1f5936a13cf6e',
+          '023e8cbf74f57b52541b203684ffcd523582029baa5dd9789a1dd609aabb60c4',
       },
       {
         type: 'traces',
         expectedFile: 'pipeline-without-traces.yaml',
         connectToExternalOtelCollector: { exportTraces: false },
         checksumn:
-          '17ee0d4edb9e76cddbed8b9dda607acca16af7df57956dfa145ab88bdcf78232',
+          '6c40102331d50e1476650fe6f4996bcf9a28c22bd703ed5e927cae69796a8c54',
       },
     ])(
       'should skip exporting: $type',
@@ -953,5 +970,148 @@ describe('OTEL Collector', () => {
         });
       },
     );
+  });
+
+  describe('ServiceAccount', () => {
+    const renderAndGetOtelCollectorServiceAccount = async (
+      manifests?: any[],
+    ) => {
+      if (!manifests) {
+        manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+      }
+
+      const serviceAccount = manifests.find(
+        (m) =>
+          m.kind === 'ServiceAccount' &&
+          m.metadata.name === 'snow-white-otel-collector-test-release',
+      );
+      expect(serviceAccount).toBeDefined();
+      return serviceAccount;
+    };
+
+    it('should be Kubernetes ServiceAccount', async () => {
+      const serviceAccount = await renderAndGetOtelCollectorServiceAccount();
+
+      expect(serviceAccount.apiVersion).toMatch('v1');
+      expect(serviceAccount.kind).toMatch('ServiceAccount');
+      expect(serviceAccount.metadata.name).toMatch(
+        'snow-white-otel-collector-test-release',
+      );
+    });
+
+    it('should have default labels', async () => {
+      const serviceAccount = await renderAndGetOtelCollectorServiceAccount();
+
+      const { metadata } = serviceAccount;
+      expect(metadata).toBeDefined();
+
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
+    });
+  });
+
+  describe('Role', () => {
+    const renderAndGetOtelCollectorRole = async (manifests?: any[]) => {
+      if (!manifests) {
+        manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+      }
+
+      const role = manifests.find(
+        (m) =>
+          m.kind === 'Role' &&
+          m.metadata.name === 'snow-white-otel-collector-test-release',
+      );
+      expect(role).toBeDefined();
+      return role;
+    };
+
+    it('should be Kubernetes Role', async () => {
+      const role = await renderAndGetOtelCollectorRole();
+
+      expect(role.apiVersion).toMatch('v1');
+      expect(role.kind).toMatch('Role');
+      expect(role.metadata.name).toMatch(
+        'snow-white-otel-collector-test-release',
+      );
+    });
+
+    it('should have default labels', async () => {
+      const role = await renderAndGetOtelCollectorRole();
+
+      const { metadata } = role;
+      expect(metadata).toBeDefined();
+
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
+    });
+  });
+
+  describe('RoleBinding', () => {
+    const renderAndGetOtelCollectorRoleBinding = async (manifests?: any[]) => {
+      if (!manifests) {
+        manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+      }
+
+      const roleBinding = manifests.find(
+        (m) =>
+          m.kind === 'RoleBinding' &&
+          m.metadata.name === 'snow-white-otel-collector-test-release',
+      );
+      expect(roleBinding).toBeDefined();
+      return roleBinding;
+    };
+
+    it('should be Kubernetes RoleBinding', async () => {
+      const roleBinding = await renderAndGetOtelCollectorRoleBinding();
+
+      expect(roleBinding.apiVersion).toMatch('v1');
+      expect(roleBinding.kind).toMatch('RoleBinding');
+      expect(roleBinding.metadata.name).toMatch(
+        'snow-white-otel-collector-test-release',
+      );
+    });
+
+    it('should have default labels', async () => {
+      const roleBinding = await renderAndGetOtelCollectorRoleBinding();
+
+      const { metadata } = roleBinding;
+      expect(metadata).toBeDefined();
+
+      expectToHaveDefaultLabelsForMicroservice(
+        metadata.labels,
+        'otel-collector',
+      );
+    });
+
+    it('should link ServiceAccount to Role', async () => {
+      const roleBinding = await renderAndGetOtelCollectorRoleBinding();
+
+      const { subjects } = roleBinding;
+      expect(subjects).toBeDefined();
+      expect(subjects).toHaveLength(1);
+
+      const serviceAccount = subjects[0];
+      expect(serviceAccount.kind).toBe('ServiceAccount');
+      expect(serviceAccount.name).toBe(
+        'snow-white-otel-collector-test-release',
+      );
+      expect(serviceAccount.namespace).toBe('default');
+
+      const { roleRef } = roleBinding;
+      expect(roleRef).toBeDefined();
+      expect(roleRef.kind).toBe('Role');
+      expect(roleRef.name).toBe('snow-white-otel-collector-test-release');
+      expect(roleRef.apiGroup).toBe('rbac.authorization.k8s.io');
+    });
   });
 });
