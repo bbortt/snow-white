@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.toolkit.spring.web.interceptor;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.springframework.util.StringUtils.hasText;
 
 import io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformation;

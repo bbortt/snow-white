@@ -157,7 +157,7 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
         var topologyTestDriver = new TopologyTestDriver(
           topology,
           snowWhiteKafkaProperties
-        );
+        )
       ) {
         var inputTopic = topologyTestDriver.createInputTopic(
           inboundTopicName,
