@@ -12,6 +12,7 @@ spec:
   successfulJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.successfulJobsHistoryLimit }}
   jobTemplate:
     spec:
+      activeDeadlineSeconds: {{ .Values.snowWhite.apiSyncJob.activeDeadlineSeconds }}
       template:
         metadata:
           annotations:
