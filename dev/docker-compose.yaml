@@ -189,6 +189,7 @@ services:
       context: ../microservices/api-gateway
     hostname: api-gateway
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
@@ -231,6 +232,7 @@ services:
     image: ghcr.io/bbortt/snow-white/api-index-api
     hostname: api-index-api
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL: 'http://localhost'
@@ -263,6 +265,7 @@ services:
       context: ../microservices/api-sync-job
     hostname: api-sync-job
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL: 'http://api-index-api:8080'
@@ -297,6 +300,7 @@ services:
     image: ghcr.io/bbortt/snow-white/otel-event-filter-stream
     hostname: otel-event-filter-stream
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL: 'http://api-index-api:8080'
@@ -332,6 +336,7 @@ services:
       INFLUXDB_URL: 'http://influxdb:8086'
       INFLUXDB_ORG: 'snow-white'
       INFLUXDB_BUCKET: 'raw-data'
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL: 'http://api-index-api:8080'
@@ -364,6 +369,7 @@ services:
     image: ghcr.io/bbortt/snow-white/quality-gate-api
     hostname: quality-gate-api
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL: 'http://localhost'
@@ -399,6 +405,7 @@ services:
     image: ghcr.io/bbortt/snow-white/report-coordinator-api
     hostname: report-coordinator-api
     environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
       SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
