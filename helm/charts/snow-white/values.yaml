@@ -270,7 +270,7 @@ otelCollector:
     registry: docker.io
     # -- Image tag.
     # @section -- OpenTelemetry Collector
-    tag: '0.146.1'
+    tag: '0.147.0'
   # -- Whether to expose the OTeL collector through the (public) ingress.
   # @section -- OpenTelemetry Collector
   exposeThroughIngress: true
