@@ -52,7 +52,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | kafka.enabled                  | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
 | kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
 | kafka.image.registry           | string | `"docker.io"`              | Image registry.                                                    |
-| kafka.image.tag                | string | `"8.1.1"`                  | Image tag.                                                         |
+| kafka.image.tag                | string | `"8.2.0"`                  | Image tag.                                                         |
 | kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
 | kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
 
