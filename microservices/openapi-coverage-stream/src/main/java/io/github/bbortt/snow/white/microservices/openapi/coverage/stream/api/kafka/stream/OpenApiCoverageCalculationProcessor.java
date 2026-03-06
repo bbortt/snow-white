@@ -7,6 +7,8 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.Propagators.KAFKA_HEADERS_GETTER;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.Propagators.KAFKA_HEADERS_SETTER;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -24,6 +26,9 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +50,18 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
+
+  private static void injectTraceContext(
+    FixedKeyRecord<String, OpenApiTestContext> outgoingRecord
+  ) {
+    GlobalOpenTelemetry.getPropagators()
+      .getTextMapPropagator()
+      .inject(
+        Context.current(),
+        outgoingRecord.headers(),
+        KAFKA_HEADERS_SETTER
+      );
+  }
 
   private static @NonNull Set<FluxAttributeFilter> mapToFluxAttributeFilters(
     Set<AttributeFilter> attributeFilters
@@ -88,19 +105,22 @@ public class OpenApiCoverageCalculationProcessor {
             public void process(
               FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord
             ) {
-              var openApiTestContext = kafkaEventRecord.value();
-              context().forward(
-                kafkaEventRecord.withValue(
-                  openApiTestContext.withOpenTelemetryData(
-                    openTelemetryService.findOpenTelemetryTracingData(
-                      openApiTestContext.apiInformation(),
-                      kafkaEventRecord.timestamp(),
-                      openApiTestContext.lookbackWindow(),
-                      openApiTestContext.fluxAttributeFilters()
-                    )
-                  )
-                )
+              var extractedContext = extractTraceContextFromIncomingHeaders(
+                kafkaEventRecord
               );
+
+              try (Scope ignored = extractedContext.makeCurrent()) {
+                var openApiTestContext = kafkaEventRecord.value();
+
+                var outgoingRecord = buildOutboundRecord(
+                  kafkaEventRecord,
+                  openApiTestContext
+                );
+
+                injectTraceContext(outgoingRecord);
+
+                context().forward(outgoingRecord);
+              }
             }
           }
       )
@@ -166,5 +186,36 @@ public class OpenApiCoverageCalculationProcessor {
 
       return null;
     }
+  }
+
+  private static Context extractTraceContextFromIncomingHeaders(
+    FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord
+  ) {
+    return GlobalOpenTelemetry.getPropagators()
+      .getTextMapPropagator()
+      .extract(
+        Context.current(),
+        kafkaEventRecord.headers(),
+        KAFKA_HEADERS_GETTER
+      );
+  }
+
+  private @NonNull FixedKeyRecord<
+    String,
+    OpenApiTestContext
+  > buildOutboundRecord(
+    FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord,
+    OpenApiTestContext openApiTestContext
+  ) {
+    return kafkaEventRecord.withValue(
+      openApiTestContext.withOpenTelemetryData(
+        openTelemetryService.findOpenTelemetryTracingData(
+          openApiTestContext.apiInformation(),
+          kafkaEventRecord.timestamp(),
+          openApiTestContext.lookbackWindow(),
+          openApiTestContext.fluxAttributeFilters()
+        )
+      )
+    );
   }
 }
