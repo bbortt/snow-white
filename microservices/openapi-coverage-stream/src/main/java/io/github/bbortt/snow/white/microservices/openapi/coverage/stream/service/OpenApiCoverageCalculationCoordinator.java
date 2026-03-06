@@ -25,6 +25,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -65,6 +66,7 @@ class OpenApiCoverageCalculationCoordinator {
     );
   }
 
+  @WithSpan
   public Set<OpenApiTestResult> calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap

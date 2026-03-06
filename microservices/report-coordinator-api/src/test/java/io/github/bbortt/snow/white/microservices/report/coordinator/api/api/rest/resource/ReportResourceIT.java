@@ -8,6 +8,9 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.res
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_LIST_QUALITY_GATE_REPORTS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner.ApiTypeEnum.UNSPECIFIED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
@@ -58,12 +61,6 @@ import tools.jackson.databind.json.JsonMapper;
 @AutoConfigureMockMvc
 class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
-  private static final String ENTITY_API_URL = "/api/rest/v1/reports";
-  private static final String SINGLE_ENTITY_API_URL =
-    ENTITY_API_URL + "/{calculationId}";
-  private static final String JUNIT_REPORT_API_URL =
-    ENTITY_API_URL + "/{calculationId}/junit";
-
   @Autowired
   private JsonMapper jsonMapper;
 
@@ -106,7 +103,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     mockMvc
-      .perform(get(SINGLE_ENTITY_API_URL, calculationId))
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
       .andExpect(status().isAccepted())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(jsonPath("$.calculationId").value(calculationId.toString()))
@@ -187,7 +184,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     qualityGateReportRepository.save(qualityGateReport);
 
     var responseAsString = mockMvc
-      .perform(get(SINGLE_ENTITY_API_URL, calculationId))
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andReturn()
@@ -267,7 +264,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   void findReport_withoutRequiredCalculationId() throws Exception {
     mockMvc
-      .perform(get(SINGLE_ENTITY_API_URL, "not-a-uuid"))
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, "not-a-uuid"))
       .andExpect(status().isBadRequest());
   }
 
@@ -314,7 +311,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
     var jUnitReport = mockMvc
       .perform(
-        get(JUNIT_REPORT_API_URL, calculationId).accept(APPLICATION_XML_VALUE)
+        get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId).accept(
+          APPLICATION_XML_VALUE
+        )
       )
       .andExpect(status().isOk())
       .andExpect(
@@ -376,7 +375,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     createSimpleApiTestSet(qualityGateReport2);
 
     mockMvc
-      .perform(get(ENTITY_API_URL).queryParam("sort", "createdAt,desc"))
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("sort", "createdAt,desc")
+      )
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
