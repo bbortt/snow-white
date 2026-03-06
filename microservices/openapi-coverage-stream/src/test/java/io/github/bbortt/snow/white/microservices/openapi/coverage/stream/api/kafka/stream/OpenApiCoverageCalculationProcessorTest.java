@@ -6,59 +6,42 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
-import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilter.attributeFilters;
-import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.API_NAME;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.API_VERSION;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.LOOKBACK_WINDOW;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.SERVICE_NAME;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.qualityGateCalculationRequestEvent;
-import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
-import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
-import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
-import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Consumer;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
-import org.jspecify.annotations.NonNull;
+import org.apache.kafka.streams.test.TestRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -73,13 +56,7 @@ class OpenApiCoverageCalculationProcessorTest {
   private final Properties snowWhiteKafkaProperties = new Properties();
 
   @Mock
-  private OpenApiCoverageService openApiCoverageServiceMock;
-
-  @Mock
-  private OpenApiService openApiServiceMock;
-
-  @Mock
-  private OpenTelemetryService openTelemetryService;
+  private OpenApiCoverageCalculationService openApiCoverageCalculationServiceMock;
 
   private OpenApiCoverageCalculationProcessor fixture;
 
@@ -95,225 +72,100 @@ class OpenApiCoverageCalculationProcessorTest {
     );
 
     fixture = new OpenApiCoverageCalculationProcessor(
-      openApiCoverageServiceMock,
       openApiCoverageServiceProperties,
-      openApiServiceMock,
-      openTelemetryService
+      openApiCoverageCalculationServiceMock
     );
   }
 
   @Nested
   class OpenapiCoverageStream {
 
-    @Test
-    void shouldReturnCoverage_withUnmappedAttributeFilters()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var openAPIMock = getOpenAPIMock();
-      var openTelemetryData = getMockedOpenTelemetryData();
-      var openApiTestResults = getOpenApiTestResults(
-        Set.of(new OpenApiTestResult(PATH_COVERAGE, BigDecimal.ONE, null))
+    public static final byte[] TRACEPARENT_HEADER_BYTES =
+      "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01".getBytes(
+        StandardCharsets.UTF_8
       );
 
+    @Test
+    void shouldProcessCoverageRequest() {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
+      var requestEvent = qualityGateCalculationRequestEvent();
 
-      sendEventsAndAssert(
-        calculationId,
-        qualityGateCalculationRequestEvent(),
-        outputTopic ->
-          assertThat(outputTopic.readKeyValuesToList())
-            .hasSize(1)
-            .first()
-            .satisfies(
-              r -> assertThat(r.key).isEqualTo(calculationId),
-              r ->
-                assertThat(r.value)
-                  .isInstanceOf(OpenApiCoverageResponseEvent.class)
-                  .satisfies(
-                    responseEvent ->
-                      assertThat(responseEvent.getApiType()).isEqualTo(OPENAPI),
-                    responseEvent ->
-                      assertThat(responseEvent.apiInformation()).satisfies(
-                        openApiInformation ->
-                          assertThat(
-                            openApiInformation.getServiceName()
-                          ).isEqualTo(SERVICE_NAME),
-                        openApiInformation ->
-                          assertThat(openApiInformation.getApiName()).isEqualTo(
-                            API_NAME
-                          ),
-                        openApiInformation ->
-                          assertThat(
-                            openApiInformation.getApiVersion()
-                          ).isEqualTo(API_VERSION)
-                      ),
-                    responseEvent ->
-                      assertThat(responseEvent.openApiCriteria()).isEqualTo(
-                        openApiTestResults
-                      )
-                  )
-            )
+      var openApiTestContext = mock(OpenApiTestContext.class);
+      doReturn(mock(OpenAPI.class)).when(openApiTestContext).openAPI();
+
+      var enrichedContext = mock(OpenApiTestContext.class);
+      var calculatedContext = mock(OpenApiTestContext.class);
+      var responseEvent = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        ApiInformation.builder()
+          .serviceName(SERVICE_NAME)
+          .apiName(API_NAME)
+          .apiVersion(API_VERSION)
+          .build(),
+        null
       );
 
-      assertThatOpenApiHasBeenTestedWithTelemetryData(
-        openAPIMock,
-        openTelemetryData
+      doReturn(openApiTestContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(eq(calculationId), any());
+      doReturn(enrichedContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .enrichWithOpenTelemetryData(eq(openApiTestContext), anyLong());
+      doReturn(calculatedContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .calculateCoverage(enrichedContext);
+      doReturn(responseEvent)
+        .when(openApiCoverageCalculationServiceMock)
+        .buildResponseEvent(calculatedContext);
+
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readRecordsToList())
+          .hasSize(1)
+          .first()
+          .satisfies(
+            r ->
+              assertThat(r.getHeaders()).containsExactly(
+                new RecordHeader("traceparent", TRACEPARENT_HEADER_BYTES)
+              ),
+            r -> assertThat(r.getKey()).isEqualTo(calculationId),
+            r -> assertThat(r.value()).isEqualTo(responseEvent)
+          )
+      );
+
+      verify(openApiCoverageCalculationServiceMock).fetchOpenApiSpecification(
+        eq(calculationId),
+        any()
+      );
+      verify(openApiCoverageCalculationServiceMock).enrichWithOpenTelemetryData(
+        eq(openApiTestContext),
+        anyLong()
+      );
+      verify(openApiCoverageCalculationServiceMock).calculateCoverage(
+        enrichedContext
+      );
+      verify(openApiCoverageCalculationServiceMock).buildResponseEvent(
+        calculatedContext
       );
     }
 
     @Test
-    void shouldReturnCoverage_withMappedAttributeFilters()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+    void shouldFilterOutIfSpecificationNotFound() {
       var calculationId = "bc1eed1a-251f-4c3b-98b7-5f1c5a3ee45c";
-
-      var attributeFilter = new AttributeFilter("key", STRING_EQUALS, "value");
-      var attributeFilters = attributeFilters().with(attributeFilter).build();
-
-      var openAPIMock = getOpenAPIMock();
-      var openTelemetryData = getMockedOpenTelemetryData();
-      var openApiTestResults = getOpenApiTestResults(
-        Set.of(new OpenApiTestResult(PATH_COVERAGE, BigDecimal.ONE, null))
-      );
-
-      sendEventsAndAssert(
-        calculationId,
-        qualityGateCalculationRequestEvent().withAttributeFilters(
-          attributeFilters
-        ),
-        outputTopic ->
-          assertThat(outputTopic.readKeyValuesToList())
-            .hasSize(1)
-            .first()
-            .satisfies(
-              r -> assertThat(r.key).isEqualTo(calculationId),
-              r ->
-                assertThat(r.value)
-                  .isInstanceOf(OpenApiCoverageResponseEvent.class)
-                  .satisfies(
-                    responseEvent ->
-                      assertThat(responseEvent.getApiType()).isEqualTo(OPENAPI),
-                    responseEvent ->
-                      assertThat(responseEvent.apiInformation()).satisfies(
-                        openApiInformation ->
-                          assertThat(
-                            openApiInformation.getServiceName()
-                          ).isEqualTo(SERVICE_NAME),
-                        openApiInformation ->
-                          assertThat(openApiInformation.getApiName()).isEqualTo(
-                            API_NAME
-                          ),
-                        openApiInformation ->
-                          assertThat(
-                            openApiInformation.getApiVersion()
-                          ).isEqualTo(API_VERSION)
-                      ),
-                    responseEvent ->
-                      assertThat(responseEvent.openApiCriteria()).isEqualTo(
-                        openApiTestResults
-                      )
-                  )
-            )
-      );
-
-      var fluxAttributeFiltersArgumentCaptor =
-        assertThatOpenApiHasBeenTestedWithTelemetryData(
-          openAPIMock,
-          openTelemetryData
-        );
-
-      assertThat(fluxAttributeFiltersArgumentCaptor.getValue())
-        .hasSize(1)
-        .first()
-        .extracting("baseAttributeFilter")
-        .isEqualTo(attributeFilter);
-    }
-
-    @Test
-    void shouldReturnEmptyCoverage()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var openAPIMock = getOpenAPIMock();
-      Set<OpenTelemetryData> openTelemetryData = getMockedOpenTelemetryData();
-      getOpenApiTestResults(emptySet());
-
-      var calculationId = "31a196cd-b918-49a8-9ae0-dcf82a1f39fe";
-
-      sendEventsAndAssert(
-        calculationId,
-        qualityGateCalculationRequestEvent(),
-        outputTopic ->
-          assertThat(outputTopic.readKeyValuesToList())
-            .hasSize(1)
-            .first()
-            .satisfies(
-              r -> assertThat(r.key).isEqualTo(calculationId),
-              r ->
-                assertThat(r.value)
-                  .isInstanceOf(OpenApiCoverageResponseEvent.class)
-                  .satisfies(responseEvent ->
-                    assertThat(responseEvent.openApiCriteria()).isEmpty()
-                  )
-            )
-      );
-
-      assertThatOpenApiHasBeenTestedWithTelemetryData(
-        openAPIMock,
-        openTelemetryData
-      );
-    }
-
-    @Test
-    void shouldReturnEmptyStream_IfOpenapiIsNull()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor = captor();
+      var requestEvent = qualityGateCalculationRequestEvent();
 
       doReturn(null)
-        .when(openApiServiceMock)
-        .findAndParseOpenApi(apiInformationArgumentCaptor.capture());
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(eq(calculationId), any());
 
-      sendValidRequestAndExpectEmptyResponse(apiInformationArgumentCaptor);
-    }
-
-    @Test
-    void shouldReturnEmptyStream_IfOpenApiIsNotIndexed()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor = captor();
-
-      doThrow(OpenApiNotIndexedException.class)
-        .when(openApiServiceMock)
-        .findAndParseOpenApi(apiInformationArgumentCaptor.capture());
-
-      sendValidRequestAndExpectEmptyResponse(apiInformationArgumentCaptor);
-    }
-
-    @Test
-    void shouldReturnEmptyStream_IfOpenApiIsUnparseable()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor = captor();
-
-      doThrow(UnparseableOpenApiException.class)
-        .when(openApiServiceMock)
-        .findAndParseOpenApi(apiInformationArgumentCaptor.capture());
-
-      sendValidRequestAndExpectEmptyResponse(apiInformationArgumentCaptor);
-    }
-
-    private void sendValidRequestAndExpectEmptyResponse(
-      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor
-    ) {
-      sendEventsAndAssert(
-        "981900ba-bce2-4147-99c0-c52d12ec9575",
-        qualityGateCalculationRequestEvent(),
-        outputTopic -> assertThat(outputTopic.readKeyValuesToList()).isEmpty()
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readKeyValuesToList()).isEmpty()
       );
 
-      assertThat(apiInformationArgumentCaptor.getValue())
-        .isNotNull()
-        .satisfies(
-          i -> assertThat(i.getServiceName()).isEqualTo(SERVICE_NAME),
-          i -> assertThat(i.getApiName()).isEqualTo(API_NAME),
-          i -> assertThat(i.getApiVersion()).isEqualTo(API_VERSION)
-        );
-
-      verifyNoInteractions(openApiCoverageServiceMock);
+      verify(openApiCoverageCalculationServiceMock).fetchOpenApiSpecification(
+        eq(calculationId),
+        any()
+      );
+      verifyNoMoreInteractions(openApiCoverageCalculationServiceMock);
     }
 
     private void sendEventsAndAssert(
@@ -346,89 +198,16 @@ class OpenApiCoverageCalculationProcessorTest {
           QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent().deserializer()
         );
 
-        inputTopic.pipeInput(calculationId, qualityGateCalculationRequestEvent);
+        var testRecord = new TestRecord<>(
+          calculationId,
+          qualityGateCalculationRequestEvent
+        );
+        testRecord.getHeaders().add("traceparent", TRACEPARENT_HEADER_BYTES);
+
+        inputTopic.pipeInput(testRecord);
 
         eventAssert.accept(outputTopic);
       }
     }
-
-    private ArgumentCaptor<
-      Set<FluxAttributeFilter>
-    > assertThatOpenApiHasBeenTestedWithTelemetryData(
-      OpenAPI openAPIMock,
-      Set<OpenTelemetryData> openTelemetryData
-    ) {
-      ArgumentCaptor<OpenApiTestContext> openApiTestContextArgumentCaptor =
-        captor();
-
-      verify(openApiCoverageServiceMock).testOpenApi(
-        openApiTestContextArgumentCaptor.capture()
-      );
-
-      assertThat(openApiTestContextArgumentCaptor.getValue())
-        .isNotNull()
-        .satisfies(
-          r -> assertThat(r.openAPI()).isEqualTo(openAPIMock),
-          r -> assertThat(r.openTelemetryData()).isEqualTo(openTelemetryData)
-        );
-
-      ArgumentCaptor<ApiInformation> apiInformationArgumentCaptor = captor();
-      ArgumentCaptor<
-        Set<FluxAttributeFilter>
-      > fluxAttributeFiltersArgumentCaptor = captor();
-
-      verify(openTelemetryService).findOpenTelemetryTracingData(
-        apiInformationArgumentCaptor.capture(),
-        anyLong(),
-        eq(LOOKBACK_WINDOW),
-        fluxAttributeFiltersArgumentCaptor.capture()
-      );
-
-      assertThat(apiInformationArgumentCaptor.getValue())
-        .isNotNull()
-        .satisfies(
-          apiInformation ->
-            assertThat(apiInformation.getServiceName()).isEqualTo(SERVICE_NAME),
-          apiInformation ->
-            assertThat(apiInformation.getApiName()).isEqualTo(API_NAME),
-          apiInformation ->
-            assertThat(apiInformation.getApiVersion()).isEqualTo(API_VERSION)
-        );
-
-      return fluxAttributeFiltersArgumentCaptor;
-    }
-  }
-
-  private @NonNull Set<OpenApiTestResult> getOpenApiTestResults(
-    Set<OpenApiTestResult> openApiTestResults
-  ) {
-    doReturn(openApiTestResults)
-      .when(openApiCoverageServiceMock)
-      .testOpenApi(any(OpenApiTestContext.class));
-    return openApiTestResults;
-  }
-
-  private @NonNull OpenAPI getOpenAPIMock()
-    throws OpenApiNotIndexedException, UnparseableOpenApiException {
-    var openAPIMock = mock(OpenAPI.class);
-    doReturn(openAPIMock)
-      .when(openApiServiceMock)
-      .findAndParseOpenApi(any(ApiInformation.class));
-    return openAPIMock;
-  }
-
-  private @NonNull Set<OpenTelemetryData> getMockedOpenTelemetryData() {
-    Set<OpenTelemetryData> openTelemetryData = Set.of(
-      new OpenTelemetryData("spanId", "traceId", null)
-    );
-    doReturn(openTelemetryData)
-      .when(openTelemetryService)
-      .findOpenTelemetryTracingData(
-        any(ApiInformation.class),
-        anyLong(),
-        eq(LOOKBACK_WINDOW),
-        anySet()
-      );
-    return openTelemetryData;
   }
 }

@@ -12,6 +12,7 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.CachingService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -25,6 +26,7 @@ public class ApiIndexCachingService implements CachingService {
   private final ApiIndexApi apiIndexApi;
 
   @Override
+  @WithSpan
   public @NonNull String fetchApiSourceUrl(ApiInformation apiInformation)
     throws OpenApiNotIndexedException {
     var response = apiIndexApi.getApiDetailsWithHttpInfo(

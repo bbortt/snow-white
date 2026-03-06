@@ -306,6 +306,13 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
           ),
         consumerRecord ->
           assertThat(consumerRecord).satisfies(
+            r ->
+              assertThat(r.headers()).satisfiesExactly(h ->
+                assertThat(h).satisfies(
+                  tc -> assertThat(tc.key()).isEqualTo("traceparent"),
+                  tc -> assertThat(tc.value()).isNotEmpty()
+                )
+              ),
             r -> assertThat(r.key()).isEqualTo(calculationId),
             r ->
               assertThat(r.value()).satisfies(

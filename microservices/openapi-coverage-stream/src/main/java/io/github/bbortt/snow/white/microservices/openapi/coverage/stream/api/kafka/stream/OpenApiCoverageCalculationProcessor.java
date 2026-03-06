@@ -6,27 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
-import static java.util.Collections.singletonList;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream.processor.TracingProcessor.newTracingProcessor;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
-import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -34,32 +21,19 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.processor.api.ContextualFixedKeyProcessor;
-import org.apache.kafka.streams.processor.api.FixedKeyProcessorSupplier;
-import org.apache.kafka.streams.processor.api.FixedKeyRecord;
-import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+/**
+ * Kafka Streams processor for OpenAPI coverage calculation.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
 
-  private static @NonNull Set<FluxAttributeFilter> mapToFluxAttributeFilters(
-    Set<AttributeFilter> attributeFilters
-  ) {
-    return Optional.ofNullable(attributeFilters)
-      .orElseGet(Collections::emptySet)
-      .stream()
-      .map(FluxAttributeFilter::new)
-      .collect(toSet());
-  }
-
-  private final OpenApiCoverageService openApiCoverageService;
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
-  private final OpenApiService openApiService;
-  private final OpenTelemetryService openTelemetryService;
+  private final OpenApiCoverageCalculationService openApiCoverageCalculationService;
 
   @Bean
   public KStream<
@@ -69,54 +43,41 @@ public class OpenApiCoverageCalculationProcessor {
     var stream = createStream(streamsBuilder);
 
     stream
-      .peek((key, calculationRequestEvent) ->
-        logger.debug("Handling message id '{}'", key)
-      )
-      .mapValues(this::fetchOpenApiSpecification)
-      .filter(
-        (key, openApiTestContext) ->
-          nonNull(openApiTestContext) && nonNull(openApiTestContext.openAPI())
-      )
+      .peek((key, _) -> logger.debug("Handling message id '{}'", key))
       .processValues(
-        (FixedKeyProcessorSupplier<
-          String,
-          OpenApiTestContext,
-          OpenApiTestContext
-        >) () ->
-          new ContextualFixedKeyProcessor<>() {
-            @Override
-            public void process(
-              FixedKeyRecord<String, OpenApiTestContext> kafkaEventRecord
-            ) {
-              var openApiTestContext = kafkaEventRecord.value();
-              context().forward(
-                kafkaEventRecord.withValue(
-                  openApiTestContext.withOpenTelemetryData(
-                    openTelemetryService.findOpenTelemetryTracingData(
-                      openApiTestContext.apiInformation(),
-                      kafkaEventRecord.timestamp(),
-                      openApiTestContext.lookbackWindow(),
-                      openApiTestContext.fluxAttributeFilters()
-                    )
-                  )
-                )
+        newTracingProcessor(
+          (qualityGateCalculationRequestEventFixedKeyRecord, timestamp) -> {
+            var openApiTestContext =
+              openApiCoverageCalculationService.fetchOpenApiSpecification(
+                qualityGateCalculationRequestEventFixedKeyRecord.key(),
+                qualityGateCalculationRequestEventFixedKeyRecord.value()
               );
+
+            if (
+              isNull(openApiTestContext) || isNull(openApiTestContext.openAPI())
+            ) {
+              return null;
             }
+
+            openApiTestContext =
+              openApiCoverageCalculationService.enrichWithOpenTelemetryData(
+                openApiTestContext,
+                timestamp
+              );
+
+            openApiTestContext =
+              openApiCoverageCalculationService.calculateCoverage(
+                openApiTestContext
+              );
+
+            return openApiCoverageCalculationService.buildResponseEvent(
+              openApiTestContext
+            );
           }
-      )
-      .mapValues((key, openApiTestContext) ->
-        openApiTestContext.withOpenApiTestResults(
-          openApiCoverageService.testOpenApi(requireNonNull(openApiTestContext))
         )
       )
-      .flatMapValues((key, openApiTestContext) ->
-        singletonList(
-          new OpenApiCoverageResponseEvent(
-            OPENAPI,
-            openApiTestContext.apiInformation(),
-            openApiTestContext.openApiTestResults()
-          )
-        )
+      .filter((key, openApiCoverageResponse) ->
+        nonNull(openApiCoverageResponse)
       )
       .to(
         openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic(),
@@ -125,8 +86,6 @@ public class OpenApiCoverageCalculationProcessor {
           QualityGateCalculationEventSerdes.OpenApiCoverageResponseEvent()
         )
       );
-
-    // TODO: Error should not go unnoticed, but be sent to "dead letter queue"
 
     return stream;
   }
@@ -141,30 +100,5 @@ public class OpenApiCoverageCalculationProcessor {
         QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent()
       )
     );
-  }
-
-  private OpenApiTestContext fetchOpenApiSpecification(
-    String key,
-    QualityGateCalculationRequestEvent calculationRequestEvent
-  ) {
-    try {
-      return new OpenApiTestContext(
-        calculationRequestEvent.getApiInformation(),
-        openApiService.findAndParseOpenApi(
-          calculationRequestEvent.getApiInformation()
-        ),
-        calculationRequestEvent.getLookbackWindow(),
-        mapToFluxAttributeFilters(calculationRequestEvent.getAttributeFilters())
-      );
-    } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {
-      logger.error(
-        "Failed to process message with key {}: {}",
-        key,
-        e.getMessage(),
-        e
-      );
-
-      return null;
-    }
   }
 }
