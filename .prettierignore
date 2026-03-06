@@ -27,3 +27,4 @@ toolkit/cli/**/*.ts
 
 # Helm Templates with Go Templating Syntax
 helm/charts/snow-white/templates/*.yaml
+helm/coverage
