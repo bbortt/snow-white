@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -31,11 +30,15 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -61,6 +64,15 @@ class ReportServiceTest {
   > kafkaTemplateMock;
 
   @Mock
+  private OpenTelemetry openTelemetryMock;
+
+  @Mock
+  private ContextPropagators contextPropagatorsMock;
+
+  @Mock
+  private TextMapPropagator textMapPropagatorMock;
+
+  @Mock
   private QualityGateService qualityGateServiceMock;
 
   @Mock
@@ -81,6 +93,7 @@ class ReportServiceTest {
 
     fixture = new ReportService(
       kafkaTemplateMock,
+      openTelemetryMock,
       qualityGateServiceMock,
       apiTestRepositoryMock,
       qualityGateReportRepositoryMock,
@@ -110,6 +123,13 @@ class ReportServiceTest {
 
   @Nested
   class InitializeQualityGateCalculation {
+
+    private void mockPropagators() {
+      doReturn(contextPropagatorsMock).when(openTelemetryMock).getPropagators();
+      doReturn(textMapPropagatorMock)
+        .when(contextPropagatorsMock)
+        .getTextMapPropagator();
+    }
 
     @Test
     void shouldCreateAndReturnQualityGateReport_andPersistCorrectValues()
@@ -147,6 +167,8 @@ class ReportServiceTest {
       doAnswer(returnsFirstArg())
         .when(apiTestRepositoryMock)
         .save(any(ApiTest.class));
+
+      mockPropagators();
 
       QualityGateReport initializedQualityGateReport =
         fixture.initializeQualityGateCalculation(
@@ -266,6 +288,8 @@ class ReportServiceTest {
         .when(apiTestRepositoryMock)
         .save(any(ApiTest.class));
 
+      mockPropagators();
+
       var result = fixture.initializeQualityGateCalculation(
         qualityGateConfigName,
         apiTest,
@@ -275,18 +299,29 @@ class ReportServiceTest {
       assertThat(result).isNotNull();
 
       ArgumentCaptor<
-        QualityGateCalculationRequestEvent
-      > qualityGateCalculationRequestEventArgumentCaptor = captor();
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > producerRecordCaptor = captor();
 
-      verify(kafkaTemplateMock, times(2)).send(
-        eq(CALCULATION_REQUEST_TOPIC),
-        eq(initialQualityGateReport.getCalculationId().toString()),
-        qualityGateCalculationRequestEventArgumentCaptor.capture()
+      verify(kafkaTemplateMock, times(2)).send(producerRecordCaptor.capture());
+
+      var capturedEvents = producerRecordCaptor
+        .getAllValues()
+        .stream()
+        .map(ProducerRecord::value)
+        .toList();
+
+      assertThat(producerRecordCaptor.getAllValues()).allSatisfy(
+        qualityGateCalculationRequestEventProducerRecord -> {
+          assertThat(
+            qualityGateCalculationRequestEventProducerRecord.topic()
+          ).isEqualTo(CALCULATION_REQUEST_TOPIC);
+          assertThat(
+            qualityGateCalculationRequestEventProducerRecord.key()
+          ).isEqualTo(initialQualityGateReport.getCalculationId().toString());
+        }
       );
 
-      assertThat(
-        qualityGateCalculationRequestEventArgumentCaptor.getAllValues()
-      )
+      assertThat(capturedEvents)
         .hasSize(2)
         .satisfiesOnlyOnce(event ->
           assertThat(event)
@@ -330,7 +365,7 @@ class ReportServiceTest {
           )
         );
 
-      return qualityGateCalculationRequestEventArgumentCaptor.getAllValues();
+      return capturedEvents;
     }
 
     @Test

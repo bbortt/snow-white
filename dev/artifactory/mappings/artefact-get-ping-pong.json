@@ -1,12 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/snow-white-generic-local/ping-pong.yml",
-    "headers": {
-      "Authorization": {
-        "equalTo": "Bearer private-token"
-      }
-    }
+    "urlPath": "/artifactory/snow-white-generic-local/ping-pong.yml"
   },
   "response": {
     "status": 200,

@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
@@ -19,9 +20,14 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Headers;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +45,8 @@ public class ReportService {
     @NonNull QualityGateCalculationRequestEvent
   > kafkaTemplate;
 
+  private final OpenTelemetry openTelemetry;
+
   private final QualityGateService qualityGateService;
 
   private final ApiTestRepository apiTestRepository;
@@ -49,6 +57,7 @@ public class ReportService {
       @NonNull String,
       @NonNull QualityGateCalculationRequestEvent
     > kafkaTemplate,
+    OpenTelemetry openTelemetry,
     QualityGateService qualityGateService,
     ApiTestRepository apiTestRepository,
     QualityGateReportRepository qualityGateReportRepository,
@@ -58,6 +67,7 @@ public class ReportService {
       reportCoordinationServiceProperties.getCalculationRequestTopic();
 
     this.kafkaTemplate = kafkaTemplate;
+    this.openTelemetry = openTelemetry;
 
     this.qualityGateService = qualityGateService;
 
@@ -65,12 +75,14 @@ public class ReportService {
     this.qualityGateReportRepository = qualityGateReportRepository;
   }
 
+  @WithSpan
   public Optional<QualityGateReport> findReportByCalculationId(
     UUID calculationId
   ) {
     return qualityGateReportRepository.findById(calculationId);
   }
 
+  @WithSpan
   @Transactional
   public QualityGateReport initializeQualityGateCalculation(
     String qualityGateConfigName,
@@ -129,7 +141,10 @@ public class ReportService {
     ReportParameter reportParameter,
     ApiTest apiTest
   ) {
-    kafkaTemplate.send(
+    ProducerRecord<
+      String,
+      QualityGateCalculationRequestEvent
+    > qualityGateCalculationRequest = new ProducerRecord<>(
       calculationRequestTopic,
       calculationId.toString(),
       QualityGateCalculationRequestEvent.builder()
@@ -146,6 +161,17 @@ public class ReportService {
         )
         .build()
     );
+
+    openTelemetry
+      .getPropagators()
+      .getTextMapPropagator()
+      .inject(
+        Context.current(),
+        qualityGateCalculationRequest.headers(),
+        (headers, key, value) -> headers.add(key, value.getBytes(UTF_8))
+      );
+
+    kafkaTemplate.send(qualityGateCalculationRequest);
   }
 
   private static Set<AttributeFilter> parseReportParameterAttributeFiltersToDto(
@@ -165,10 +191,12 @@ public class ReportService {
       .collect(toSet());
   }
 
+  @WithSpan
   public QualityGateReport update(QualityGateReport qualityGateReport) {
     return qualityGateReportRepository.save(qualityGateReport);
   }
 
+  @WithSpan
   public Page<@NonNull QualityGateReport> findAllReports(Pageable pageable) {
     return qualityGateReportRepository.findAll(pageable);
   }

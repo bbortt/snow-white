@@ -132,7 +132,9 @@ class OpenApiCoverageServiceTest {
           pathToTelemetryMapCaptor.capture()
         );
 
-      Set<OpenApiTestResult> result = fixture.testOpenApi(openApiTestContext);
+      Set<OpenApiTestResult> result = fixture.calculateCoverage(
+        openApiTestContext
+      );
 
       assertThat(result).isEqualTo(openApiTestResults);
 
@@ -171,7 +173,9 @@ class OpenApiCoverageServiceTest {
         openTelemetryData
       );
 
-      Set<OpenApiTestResult> result = fixture.testOpenApi(openApiTestContext);
+      Set<OpenApiTestResult> result = fixture.calculateCoverage(
+        openApiTestContext
+      );
 
       assertThat(result).isEmpty();
 

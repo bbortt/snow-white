@@ -22,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ public class OpenTelemetryService {
 
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
 
+  @WithSpan
   public Set<OpenTelemetryData> findOpenTelemetryTracingData(
     ApiInformation apiInformation,
     long lookbackFromTimestamp,

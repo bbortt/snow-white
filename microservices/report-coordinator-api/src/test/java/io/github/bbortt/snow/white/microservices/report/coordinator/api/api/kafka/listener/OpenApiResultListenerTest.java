@@ -13,10 +13,14 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static java.lang.Boolean.FALSE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -37,20 +41,40 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.TestResultForUnknownApiException;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenApiResultListenerTest {
+
+  @Mock
+  private OpenTelemetry openTelemetryMock;
+
+  @Mock
+  private ContextPropagators contextPropagatorsMock;
+
+  @Mock
+  private TextMapPropagator textMapPropagatorMock;
 
   @Mock
   private ApiTestResultMapper apiTestResultMapperMock;
@@ -75,6 +99,7 @@ class OpenApiResultListenerTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OpenApiResultListener(
+      openTelemetryMock,
       apiTestResultMapperMock,
       qualityGateServiceMock,
       reportServiceMock,
@@ -90,6 +115,7 @@ class OpenApiResultListenerTest {
     @Test
     void shouldInitializeWithDefaultHelperClasses() {
       var listener = new OpenApiResultListener(
+        openTelemetryMock,
         apiTestResultMapperMock,
         qualityGateServiceMock,
         reportServiceMock
@@ -101,6 +127,7 @@ class OpenApiResultListenerTest {
     @Test
     void shouldInitializeWithCustomHelperClasses() {
       var listener = new OpenApiResultListener(
+        openTelemetryMock,
         apiTestResultMapperMock,
         qualityGateServiceMock,
         reportServiceMock,
@@ -121,9 +148,121 @@ class OpenApiResultListenerTest {
     );
     private static final String QUALITY_GATE_CONFIG_NAME = "test-config";
 
+    private static Headers emptyHeaders() {
+      return new RecordHeaders();
+    }
+
+    private void mockEmptyRootTracingContext() {
+      doReturn(Context.root())
+        .when(textMapPropagatorMock)
+        .extract(any(), any(Headers.class), any());
+    }
+
+    private @NonNull ConsumerRecord<
+      String,
+      OpenApiCoverageResponseEvent
+    > getOpenApiCoverageResponseEventConsumerRecord(
+      OpenApiCoverageResponseEvent event,
+      Headers headers
+    ) {
+      var openApiCoverageResponseEventConsumerRecord = new ConsumerRecord<>(
+        "snow-white-openapi-calculation-response", // topic
+        0, // partition
+        0L, // offset
+        CALCULATION_ID.toString(), // key
+        event // value
+      );
+      headers.forEach(
+        openApiCoverageResponseEventConsumerRecord.headers()::add
+      );
+      return openApiCoverageResponseEventConsumerRecord;
+    }
+
+    @BeforeEach
+    void beforeEachSetup() {
+      doReturn(contextPropagatorsMock).when(openTelemetryMock).getPropagators();
+      doReturn(textMapPropagatorMock)
+        .when(contextPropagatorsMock)
+        .getTextMapPropagator();
+    }
+
+    @Test
+    void shouldExtractTraceContextFromIncomingHeaders()
+      throws QualityGateNotFoundException {
+      var headers = new RecordHeaders();
+      headers.add(
+        "traceparent",
+        "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01".getBytes(
+          UTF_8
+        )
+      );
+
+      var extractedContext = Context.root();
+      doReturn(extractedContext)
+        .when(textMapPropagatorMock)
+        .extract(any(), eq(headers), any());
+
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportByCalculationId(CALCULATION_ID);
+
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        mock(ApiInformation.class),
+        emptySet()
+      );
+
+      fixture.persistOpenApiCoverageResponseIfReportIsPresent(
+        getOpenApiCoverageResponseEventConsumerRecord(event, headers)
+      );
+
+      ArgumentCaptor<Headers> headersCaptor = captor();
+      verify(textMapPropagatorMock).extract(
+        any(Context.class),
+        headersCaptor.capture(),
+        any()
+      );
+      assertThat(headersCaptor.getValue()).isEqualTo(headers);
+    }
+
+    @Test
+    void shouldExtractTraceContext_usingHeadersGetter()
+      throws QualityGateNotFoundException {
+      var traceparentValue = "00-abc123def456abc1-abc1def2abc3def4-01";
+      var headers = new RecordHeaders();
+      headers.add("traceparent", traceparentValue.getBytes(UTF_8));
+
+      var resolvedTraceparent = new AtomicReference<String>();
+      doAnswer(invocation -> {
+        TextMapGetter<Headers> getter = invocation.getArgument(2);
+        resolvedTraceparent.set(getter.get(headers, "traceparent"));
+        return Context.root();
+      })
+        .when(textMapPropagatorMock)
+        .extract(any(), any(Headers.class), any());
+
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportByCalculationId(CALCULATION_ID);
+
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        mock(ApiInformation.class),
+        emptySet()
+      );
+
+      fixture.persistOpenApiCoverageResponseIfReportIsPresent(
+        getOpenApiCoverageResponseEventConsumerRecord(event, headers)
+      );
+
+      assertThat(resolvedTraceparent.get()).isEqualTo(traceparentValue);
+    }
+
     @Test
     void shouldUpdateReport_whenReportAndQualityGateConfigExist()
       throws QualityGateNotFoundException {
+      mockEmptyRootTracingContext();
+
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -186,14 +325,12 @@ class OpenApiResultListenerTest {
       doReturn(mappedResults)
         .when(apiTestResultMapperMock)
         .fromDtos(openApiCriteria, apiTest);
-
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(originalReport);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-        CALCULATION_ID,
-        event
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
       );
 
       verify(
@@ -220,10 +357,11 @@ class OpenApiResultListenerTest {
     @Test
     void shouldLogWarningAndReturn_whenReportDoesNotExist()
       throws QualityGateNotFoundException {
-      var apiInformation = mock(ApiInformation.class);
+      mockEmptyRootTracingContext();
+
       var event = new OpenApiCoverageResponseEvent(
         OPENAPI,
-        apiInformation,
+        mock(ApiInformation.class),
         emptySet()
       );
 
@@ -232,8 +370,7 @@ class OpenApiResultListenerTest {
         .findReportByCalculationId(CALCULATION_ID);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-        CALCULATION_ID,
-        event
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
       );
 
       verifyNoInteractions(apiInformationFilterMock);
@@ -245,8 +382,10 @@ class OpenApiResultListenerTest {
     }
 
     @Test
-    void shouldPropagateQualityGateNotFoundException_whenQualityGateConfigDoesNotExist()
+    void shouldPropagateQualityGateNotFoundException_whenQualityGateConfigNotFound()
       throws QualityGateNotFoundException {
+      mockEmptyRootTracingContext();
+
       var report = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -255,7 +394,6 @@ class OpenApiResultListenerTest {
         .build();
 
       var apiInformation = mock(ApiInformation.class);
-      var apiTest = mock(ApiTest.class);
       var event = new OpenApiCoverageResponseEvent(
         OPENAPI,
         apiInformation,
@@ -266,7 +404,7 @@ class OpenApiResultListenerTest {
         .when(reportServiceMock)
         .findReportByCalculationId(CALCULATION_ID);
 
-      doReturn(apiTest)
+      doReturn(mock(ApiTest.class))
         .when(apiInformationFilterMock)
         .findApiTestMatchingApiInformationInQualityGateReport(
           report,
@@ -279,8 +417,7 @@ class OpenApiResultListenerTest {
 
       assertThatThrownBy(() ->
         fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-          CALCULATION_ID,
-          event
+          getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
         )
       ).isInstanceOf(QualityGateNotFoundException.class);
 
@@ -301,6 +438,8 @@ class OpenApiResultListenerTest {
 
     @Test
     void shouldPropagateTestResultForUnknownApiException_whenApiTestCannotBeFound() {
+      mockEmptyRootTracingContext();
+
       var report = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -326,10 +465,11 @@ class OpenApiResultListenerTest {
           apiInformation
         );
 
+      var openApiCoverageResponseEventConsumerRecord =
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders());
       assertThatThrownBy(() ->
         fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-          CALCULATION_ID,
-          event
+          openApiCoverageResponseEventConsumerRecord
         )
       ).isInstanceOf(TestResultForUnknownApiException.class);
 
@@ -349,6 +489,8 @@ class OpenApiResultListenerTest {
     @Test
     void shouldHandleEmptyOpenApiCriteria()
       throws QualityGateNotFoundException {
+      mockEmptyRootTracingContext();
+
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -393,14 +535,12 @@ class OpenApiResultListenerTest {
       doReturn(emptySet())
         .when(apiTestResultMapperMock)
         .fromDtos(emptySet(), apiTest);
-
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(originalReport);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-        CALCULATION_ID,
-        event
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
       );
 
       verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
@@ -414,6 +554,8 @@ class OpenApiResultListenerTest {
     @Test
     void shouldHandleMultipleCriteriaResults()
       throws QualityGateNotFoundException {
+      mockEmptyRootTracingContext();
+
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -489,14 +631,12 @@ class OpenApiResultListenerTest {
       doReturn(mappedResults)
         .when(apiTestResultMapperMock)
         .fromDtos(openApiCriteria, apiTest);
-
       doReturn(updatedReport)
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(originalReport);
 
       fixture.persistOpenApiCoverageResponseIfReportIsPresent(
-        CALCULATION_ID,
-        event
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
       );
 
       verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(

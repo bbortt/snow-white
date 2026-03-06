@@ -10,6 +10,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.clie
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.mapper.QualityGateConfigMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class QualityGateService {
   private final QualityGateApi qualityGateApi;
   private final QualityGateConfigMapper qualityGateConfigMapper;
 
+  @WithSpan
   public QualityGateConfig findQualityGateConfigByName(
     String qualityGateConfigName
   ) throws QualityGateNotFoundException {

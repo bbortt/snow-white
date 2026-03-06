@@ -12,6 +12,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
@@ -28,6 +29,7 @@ public class OpenApiService {
 
   private final CachingService cachingService;
 
+  @WithSpan
   public OpenAPI findAndParseOpenApi(ApiInformation apiInformation)
     throws OpenApiNotIndexedException, UnparseableOpenApiException {
     var sourceUrl = cachingService.fetchApiSourceUrl(apiInformation);
