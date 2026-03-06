@@ -8,3 +8,6 @@ management:
     metrics:
       export:
         url: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/metrics
+  tracing:
+    sampling:
+      probability: 1.0
