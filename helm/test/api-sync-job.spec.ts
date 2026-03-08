@@ -57,23 +57,6 @@ describe('API Sync Job', () => {
     expect(apiSyncJob).toBeUndefined();
   });
 
-  it('should require Artifactory token if enabled', async () => {
-    await expect(() =>
-      renderHelmChart({
-        chartPath: 'charts/snow-white',
-        values: {
-          snowWhite: {
-            apiSyncJob: {
-              enabled: true,
-            },
-          },
-        },
-      }),
-    ).rejects.toThrow(
-      "Required environment variable 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN' is missing in snowWhite.apiSyncJob.additionalEnvs",
-    );
-  });
-
   const renderAndGetCronJob = async (manifests?: any[]) => {
     if (!manifests) {
       manifests = await renderHelmChart({

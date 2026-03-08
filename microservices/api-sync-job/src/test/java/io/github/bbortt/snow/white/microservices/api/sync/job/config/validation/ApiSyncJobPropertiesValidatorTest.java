@@ -44,7 +44,6 @@ class ApiSyncJobPropertiesValidatorTest {
       @BeforeEach
       void beforeEachSetup() {
         fixture.getArtifactory().setBaseUrl("baseUrl");
-        fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository("repository");
       }
 
@@ -85,7 +84,6 @@ class ApiSyncJobPropertiesValidatorTest {
       @Test
       void shouldPass_whenAllPropertiesAreSet() {
         fixture.getArtifactory().setBaseUrl("baseUrl");
-        fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository("repository");
 
         assertThatNoException().isThrownBy(() ->
@@ -97,7 +95,6 @@ class ApiSyncJobPropertiesValidatorTest {
       @MethodSource("emptyAndNullString")
       void shouldThrowException_whenBaseUrlIsEmptyOrNull(String baseUrl) {
         fixture.getArtifactory().setBaseUrl(baseUrl);
-        fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository("repository");
 
         assertThatThrownBy(() ->
@@ -109,25 +106,8 @@ class ApiSyncJobPropertiesValidatorTest {
 
       @ParameterizedTest
       @MethodSource("emptyAndNullString")
-      void shouldThrowException_whenAccessTokenIsEmptyOrNull(
-        String accessToken
-      ) {
-        fixture.getArtifactory().setBaseUrl("baseUrl");
-        fixture.getArtifactory().setAccessToken(accessToken);
-        fixture.getArtifactory().setRepository("repository");
-
-        assertThatThrownBy(() ->
-          new ApiSyncJobPropertiesValidator(fixture)
-        ).hasMessage(
-          "All properties must be configured - missing: [snow.white.api.sync.job.artifactory.access-token]."
-        );
-      }
-
-      @ParameterizedTest
-      @MethodSource("emptyAndNullString")
       void shouldThrowException_whenRepositoryIsEmptyOrNull(String repository) {
         fixture.getArtifactory().setBaseUrl("baseUrl");
-        fixture.getArtifactory().setAccessToken("accessToken");
         fixture.getArtifactory().setRepository(repository);
 
         assertThatThrownBy(() ->

@@ -63,7 +63,8 @@ If you have requirements for additional API sources, feel free to [open an issue
 
 ### Artifactory Access Token
 
-When the sync job is enabled, Snow-White requires an access token to authenticate against Artifactory.
+When the sync job is enabled, you may optionally supply an access token to authenticate against Artifactory.
+Note that this can currently only be done for indexation (token used for API endpoint access), but Snow-White still expects the specifications itself to be freely accessible for later computations.
 It is strongly recommended to provide this token via a Kubernetes `Secret`.
 
 Helm supports injecting the token as an environment variable, for example:

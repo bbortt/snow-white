@@ -34,9 +34,13 @@ class ArtifactoryConfigTest {
   @Nested
   class ArtifactoryTest {
 
+    @BeforeEach
+    void beforeEachSetup() {
+      apiSyncJobProperties.getArtifactory().setBaseUrl(BASE_URL);
+    }
+
     @Test
     void shouldExtractConfigurationFromProperties() {
-      apiSyncJobProperties.getArtifactory().setBaseUrl(BASE_URL);
       apiSyncJobProperties.getArtifactory().setAccessToken(ACCESS_TOKEN);
 
       var artifactory = fixture.artifactory();
@@ -44,6 +48,17 @@ class ArtifactoryConfigTest {
       assertThat(artifactory)
         .hasFieldOrPropertyWithValue("url", BASE_URL)
         .hasFieldOrPropertyWithValue("accessToken", ACCESS_TOKEN);
+    }
+
+    @Test
+    void shouldIgnoreUnsetAccessToken() {
+      apiSyncJobProperties.getArtifactory().setAccessToken(null);
+
+      var artifactory = fixture.artifactory();
+
+      assertThat(artifactory)
+        .hasFieldOrPropertyWithValue("url", BASE_URL)
+        .hasFieldOrPropertyWithValue("accessToken", null);
     }
   }
 }
