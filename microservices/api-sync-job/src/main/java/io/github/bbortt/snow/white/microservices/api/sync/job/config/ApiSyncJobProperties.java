@@ -13,6 +13,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -54,7 +55,7 @@ public class ApiSyncJobProperties {
       PREFIX + ".repository";
 
     private String baseUrl;
-    private String accessToken;
+    private @Nullable String accessToken;
     private String repository;
 
     private String customApiNameJsonPath = "info.title";

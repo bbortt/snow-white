@@ -50,7 +50,6 @@ spec:
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
               {{- end }}
               {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
-              {{- include "snow-white.verifyArtifactoryCredentials" (dict "context" . "envVars" $additionalEnvs "selector" "apiSyncJob") | nindent 16 }}
               {{- range $additionalEnvs }}
                 - name: {{ .name }}
                   {{- if .value }}
