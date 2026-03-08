@@ -34,10 +34,6 @@ public class ApiSyncJobPropertiesValidator {
       artifactory.getBaseUrl()
     );
     properties.put(
-      ApiSyncJobProperties.ArtifactoryProperties.ACCESS_TOKEN_PROPERTY_NAME,
-      artifactory.getAccessToken()
-    );
-    properties.put(
       ApiSyncJobProperties.ArtifactoryProperties.REPOSITORY_PROPERTY_NAME,
       artifactory.getRepository()
     );

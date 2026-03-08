@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
+import static java.util.Objects.nonNull;
+
 import org.jfrog.artifactory.client.Artifactory;
 import org.jfrog.artifactory.client.ArtifactoryClientBuilder;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +24,14 @@ public class ArtifactoryConfig {
 
   @Bean
   public Artifactory artifactory() {
-    return ArtifactoryClientBuilder.create()
-      .setUrl(artifactoryProperties.getBaseUrl())
-      .setAccessToken(artifactoryProperties.getAccessToken())
-      .build();
+    var artifactory = ArtifactoryClientBuilder.create().setUrl(
+      artifactoryProperties.getBaseUrl()
+    );
+
+    if (nonNull(artifactoryProperties.getAccessToken())) {
+      artifactory.setAccessToken(artifactoryProperties.getAccessToken());
+    }
+
+    return artifactory.build();
   }
 }
