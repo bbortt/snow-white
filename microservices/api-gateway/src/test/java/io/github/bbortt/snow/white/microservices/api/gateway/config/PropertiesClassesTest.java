@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.config;
+package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static io.github.bbortt.snow.white.archunit.rules.PropertiesRules.configurationPropertiesClassesMustHaveConfigurationAnnotation;
 
@@ -12,12 +12,9 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import io.github.bbortt.snow.white.microservices.api.sync.job.Main;
+import io.github.bbortt.snow.white.microservices.api.gateway.Main;
 
-@AnalyzeClasses(
-  packagesOf = Main.class,
-  importOptions = ImportOption.DoNotIncludeTests.class
-)
+@AnalyzeClasses(packagesOf = Main.class, importOptions = ImportOption.DoNotIncludeTests.class)
 public class PropertiesClassesTest {
 
   @ArchTest
