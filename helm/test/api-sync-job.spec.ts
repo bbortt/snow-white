@@ -390,7 +390,7 @@ describe('API Sync Job', () => {
           expect(apiSyncJobBaseUrl).toBeDefined();
 
           expect(apiSyncJobBaseUrl.value).toBe(
-            'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:9092',
+            'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
           );
         });
 

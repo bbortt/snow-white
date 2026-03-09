@@ -32,7 +32,7 @@ spec:
               env:
               {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 16 }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL'
-                  value: '{{ printf "http://%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}'
+                  value: '{{ printf "http://%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}'
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_BASE-URL'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.baseUrl }}'
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY'
