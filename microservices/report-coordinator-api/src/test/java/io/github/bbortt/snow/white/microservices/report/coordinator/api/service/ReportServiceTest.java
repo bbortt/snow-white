@@ -7,7 +7,9 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,13 +19,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
@@ -81,6 +90,18 @@ class ReportServiceTest {
   @Mock
   private QualityGateReportRepository qualityGateReportRepositoryMock;
 
+  @Mock
+  private ApiTestResultMapper apiTestResultMapperMock;
+
+  @Mock
+  private ApiInformationFilter apiInformationFilterMock;
+
+  @Mock
+  private ApiTestResultLinker apiTestResultLinkerMock;
+
+  @Mock
+  private QualityGateStatusCalculator qualityGateStatusCalculatorMock;
+
   private ReportService fixture;
 
   @BeforeEach
@@ -97,7 +118,11 @@ class ReportServiceTest {
       qualityGateServiceMock,
       apiTestRepositoryMock,
       qualityGateReportRepositoryMock,
-      reportCoordinationServiceProperties
+      reportCoordinationServiceProperties,
+      apiTestResultMapperMock,
+      apiInformationFilterMock,
+      apiTestResultLinkerMock,
+      qualityGateStatusCalculatorMock
     );
   }
 
@@ -118,6 +143,115 @@ class ReportServiceTest {
       var result = fixture.findReportByCalculationId(reportCalculationId);
 
       assertThat(result).isPresent().get().isEqualTo(qualityGateReport);
+    }
+  }
+
+  @Nested
+  class UpdateReportWithOpenApiCoverageResults {
+
+    private static final UUID CALCULATION_ID = UUID.fromString(
+      "9f679723-a328-47c6-b24e-e16894c675f1"
+    );
+    private static final String QUALITY_GATE_CONFIG_NAME = "test-config";
+
+    @Test
+    void shouldUpdateReport_whenReportAndQualityGateConfigExist()
+      throws QualityGateNotFoundException {
+      var originalReport = QualityGateReport.builder()
+        .calculationId(CALCULATION_ID)
+        .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
+        .reportStatus(IN_PROGRESS)
+        .reportParameter(mock(ReportParameter.class))
+        .build();
+
+      var updatedReport = QualityGateReport.builder()
+        .calculationId(CALCULATION_ID)
+        .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
+        .reportStatus(PASSED)
+        .reportParameter(mock(ReportParameter.class))
+        .build();
+
+      doReturn(Optional.of(originalReport))
+        .when(qualityGateReportRepositoryMock)
+        .findById(CALCULATION_ID);
+
+      var qualityGateConfig = new QualityGateConfig(
+        QUALITY_GATE_CONFIG_NAME,
+        Set.of("PATH_COVERAGE")
+      );
+      doReturn(qualityGateConfig)
+        .when(qualityGateServiceMock)
+        .findQualityGateConfigByName(QUALITY_GATE_CONFIG_NAME);
+
+      var apiInformation = mock(ApiInformation.class);
+      var apiTest = mock(ApiTest.class);
+
+      doReturn(apiTest)
+        .when(apiInformationFilterMock)
+        .findApiTestMatchingApiInformationInQualityGateReport(
+          originalReport,
+          apiInformation
+        );
+
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        apiInformation,
+        emptySet()
+      );
+
+      Set<ApiTestResult> mappedResults = Set.of(mock(ApiTestResult.class));
+
+      doReturn(mappedResults)
+        .when(apiTestResultMapperMock)
+        .fromDtos(emptySet(), apiTest);
+      doReturn(updatedReport)
+        .when(qualityGateStatusCalculatorMock)
+        .withUpdatedReportStatus(originalReport);
+
+      fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      verify(
+        apiInformationFilterMock
+      ).findApiTestMatchingApiInformationInQualityGateReport(
+        originalReport,
+        apiInformation
+      );
+      verify(qualityGateServiceMock).findQualityGateConfigByName(
+        QUALITY_GATE_CONFIG_NAME
+      );
+      verify(apiTestResultMapperMock).fromDtos(emptySet(), apiTest);
+      verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
+        mappedResults,
+        apiTest,
+        qualityGateConfig.getOpenApiCriteria()
+      );
+      verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
+        originalReport
+      );
+      verify(qualityGateReportRepositoryMock).save(updatedReport);
+    }
+
+    @Test
+    void shouldLogWarningAndReturn_whenReportDoesNotExist()
+      throws QualityGateNotFoundException {
+      var event = new OpenApiCoverageResponseEvent(
+        OPENAPI,
+        mock(ApiInformation.class),
+        emptySet()
+      );
+
+      doReturn(Optional.empty())
+        .when(qualityGateReportRepositoryMock)
+        .findById(CALCULATION_ID);
+
+      fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      verifyNoInteractions(apiInformationFilterMock);
+      verifyNoInteractions(qualityGateServiceMock);
+      verifyNoInteractions(apiTestResultMapperMock);
+      verifyNoInteractions(apiTestResultLinkerMock);
+      verifyNoInteractions(qualityGateStatusCalculatorMock);
+      verify(qualityGateReportRepositoryMock, never()).save(any());
     }
   }
 
@@ -387,6 +521,20 @@ class ReportServiceTest {
         )
       ).isEqualTo(cause);
     }
+  }
+
+  @Test
+  void shouldReturnUpdatedQualityGateReport() {
+    var qualityGateReport = new QualityGateReport();
+
+    var updatedQualityGateReport = new QualityGateReport();
+    doReturn(updatedQualityGateReport)
+      .when(qualityGateReportRepositoryMock)
+      .save(qualityGateReport);
+
+    var result = fixture.update(qualityGateReport);
+
+    assertThat(result).isEqualTo(updatedQualityGateReport);
   }
 
   @Nested

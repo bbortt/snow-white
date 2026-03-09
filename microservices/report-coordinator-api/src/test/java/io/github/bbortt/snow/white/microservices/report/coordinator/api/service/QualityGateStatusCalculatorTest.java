@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;

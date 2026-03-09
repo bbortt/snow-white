@@ -10,9 +10,11 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOpera
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -26,6 +28,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
 import org.jspecify.annotations.NonNull;
@@ -35,6 +38,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class ReportService {
 
@@ -52,6 +56,11 @@ public class ReportService {
   private final ApiTestRepository apiTestRepository;
   private final QualityGateReportRepository qualityGateReportRepository;
 
+  private final ApiTestResultMapper apiTestResultMapper;
+  private final ApiInformationFilter apiInformationFilter;
+  private final ApiTestResultLinker apiTestResultLinker;
+  private final QualityGateStatusCalculator qualityGateStatusCalculator;
+
   public ReportService(
     KafkaTemplate<
       @NonNull String,
@@ -61,7 +70,11 @@ public class ReportService {
     QualityGateService qualityGateService,
     ApiTestRepository apiTestRepository,
     QualityGateReportRepository qualityGateReportRepository,
-    ReportCoordinationServiceProperties reportCoordinationServiceProperties
+    ReportCoordinationServiceProperties reportCoordinationServiceProperties,
+    ApiTestResultMapper apiTestResultMapper,
+    ApiInformationFilter apiInformationFilter,
+    ApiTestResultLinker apiTestResultLinker,
+    QualityGateStatusCalculator qualityGateStatusCalculator
   ) {
     this.calculationRequestTopic =
       reportCoordinationServiceProperties.getCalculationRequestTopic();
@@ -73,6 +86,11 @@ public class ReportService {
 
     this.apiTestRepository = apiTestRepository;
     this.qualityGateReportRepository = qualityGateReportRepository;
+
+    this.apiTestResultMapper = apiTestResultMapper;
+    this.apiInformationFilter = apiInformationFilter;
+    this.apiTestResultLinker = apiTestResultLinker;
+    this.qualityGateStatusCalculator = qualityGateStatusCalculator;
   }
 
   @WithSpan
@@ -80,6 +98,51 @@ public class ReportService {
     UUID calculationId
   ) {
     return qualityGateReportRepository.findById(calculationId);
+  }
+
+  @WithSpan
+  @Transactional
+  public void updateReportWithOpenApiCoverageResults(
+    UUID calculationId,
+    OpenApiCoverageResponseEvent openApiCoverageResponseEvent
+  ) throws QualityGateNotFoundException {
+    var reportByCalculationId = findReportByCalculationId(calculationId);
+
+    if (reportByCalculationId.isEmpty()) {
+      logger.warn(
+        "Received OpenAPI coverage response for unknown calculation ID: {}",
+        calculationId
+      );
+      return;
+    }
+
+    var qualityGateReport = reportByCalculationId.get();
+
+    var apiInformation = openApiCoverageResponseEvent.apiInformation();
+    var apiTest =
+      apiInformationFilter.findApiTestMatchingApiInformationInQualityGateReport(
+        qualityGateReport,
+        apiInformation
+      );
+
+    var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
+      qualityGateReport.getQualityGateConfigName()
+    );
+
+    apiTestResultLinker.addApiTestResultsToApiTest(
+      apiTestResultMapper.fromDtos(
+        openApiCoverageResponseEvent.openApiCriteria(),
+        apiTest
+      ),
+      apiTest,
+      qualityGateConfig.getOpenApiCriteria()
+    );
+
+    qualityGateReport = qualityGateStatusCalculator.withUpdatedReportStatus(
+      qualityGateReport
+    );
+
+    update(qualityGateReport);
   }
 
   @WithSpan
