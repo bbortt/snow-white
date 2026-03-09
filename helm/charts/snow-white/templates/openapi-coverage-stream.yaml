@@ -59,7 +59,7 @@ spec:
                   {{- end }}
                   key: admin-token
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL'
-              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+              value: {{ default (printf "%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC'
               value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'

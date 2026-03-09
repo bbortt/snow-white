@@ -44,7 +44,7 @@ spec:
           env:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL'
-              value: {{ printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}
+              value: {{ printf "%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INBOUND_TOPIC_NAME'
               value: '{{ .Values.otelCollector.kafka.inboundTopic }}'
             - name: 'SNOW_WHITE_OTEL_EVENT_FILTER_INIT-TOPICS'
