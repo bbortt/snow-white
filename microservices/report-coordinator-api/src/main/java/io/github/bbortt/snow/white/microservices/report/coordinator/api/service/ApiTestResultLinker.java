@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static java.util.Objects.nonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -13,8 +13,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 final class ApiTestResultLinker {
 
   void addApiTestResultsToApiTest(

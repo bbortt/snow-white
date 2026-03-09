@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static java.util.Objects.isNull;
 
@@ -12,7 +12,9 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.TestResultForUnknownApiException;
+import org.springframework.stereotype.Component;
 
+@Component
 final class ApiInformationFilter {
 
   ApiTest findApiTestMatchingApiInformationInQualityGateReport(
