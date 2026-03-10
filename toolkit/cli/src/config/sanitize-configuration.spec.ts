@@ -106,7 +106,7 @@ describe('sanitizeConfiguration', () => {
 
     expect(mockConsoleError).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining('❌ You cannot use options from multiple configuration groups together.'),
+      expect.stringContaining('❌  You cannot use options from multiple configuration groups together.'),
     );
     expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
     expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: configFile'));
@@ -125,7 +125,7 @@ describe('sanitizeConfiguration', () => {
 
     const expectRecursiveOrEmptyConfiguration = () => {
       expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Configuration file may not contain recursive references or be empty.'),
+        expect.stringContaining('❌  Configuration file may not contain recursive references or be empty.'),
       );
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
@@ -160,7 +160,7 @@ describe('sanitizeConfiguration', () => {
       expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Each API information must contain serviceName, apiName, and apiVersion.'),
+        expect.stringContaining('❌  Each API information must contain serviceName, apiName, and apiVersion.'),
       );
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
@@ -178,7 +178,7 @@ describe('sanitizeConfiguration', () => {
       expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'),
+        expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
       );
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
@@ -195,7 +195,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
@@ -226,7 +226,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(
         1,
-        expect.stringContaining('❌ Either define a config file or all of these calculation parameters:'),
+        expect.stringContaining('❌  Either define a config file or all of these calculation parameters:'),
       );
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- serviceName'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- apiName'));
@@ -249,7 +249,7 @@ describe('sanitizeConfiguration', () => {
       ).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'),
+        expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
       );
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
@@ -267,7 +267,7 @@ describe('sanitizeConfiguration', () => {
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
       expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
@@ -285,7 +285,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(mockConsoleError).not.toHaveBeenCalled();
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ OpenAPI specs are not yet implemented. Using provided options as is.'),
+        expect.stringContaining('⚠️  OpenAPI specs are not yet implemented. Using provided options as is.'),
       );
 
       expect(exit).toHaveBeenCalledWith(0);
