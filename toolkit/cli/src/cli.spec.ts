@@ -127,7 +127,7 @@ describe('CLI', () => {
     expectedExitCode: number,
   ) => {
     expect(cliResult.exitCode, cliResult.stderr).toBe(expectedExitCode);
-    expect(cliResult.stdout).toContain('🚀 Starting Quality-Gate calculation for 1 API(s)...');
+    expect(cliResult.stdout).toContain('🚀  Starting Quality-Gate calculation for 1 API(s)...');
     expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
   };
 
@@ -203,7 +203,7 @@ describe('CLI', () => {
           expect(cliResult.stdout).toContain(
             `Location: ${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
           );
-          expect(cliResult.stdout).toContain('💡 Use the returned URL to check the calculation report.');
+          expect(cliResult.stdout).toContain('💡  Use the returned URL to check the calculation report.');
 
           const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
           expect(requests.length).toBe(1);
@@ -242,7 +242,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain('Status: 400');
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
@@ -280,7 +280,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain('Status: 404');
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
@@ -314,7 +314,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain('Status: 500');
         expect(cliResult.stderr).toContain('Error: Server Error');
 

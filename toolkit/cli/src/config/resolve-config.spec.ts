@@ -64,7 +64,7 @@ describe('resolveConfig', () => {
 
     expect(createExplorerSpy).toHaveBeenCalledWith('test-module');
 
-    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
+    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️  Configuration file '${filepath}' does not exist`));
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
@@ -78,7 +78,7 @@ describe('resolveConfig', () => {
 
     expect(createExplorerSpy).toHaveBeenCalledWith('snow-white');
 
-    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
+    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️  Configuration file '${filepath}' does not exist`));
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
@@ -103,7 +103,7 @@ describe('resolveConfig', () => {
     expect(existsSync).toHaveBeenCalledWith(filepath);
 
     expect(mockConsoleError).not.toHaveBeenCalled();
-    expect(mockConsoleLog).toHaveBeenCalledWith(`⚙️ Loading configuration file: ${filepath}`);
+    expect(mockConsoleLog).toHaveBeenCalledWith(`⚙️  Loading configuration file: ${filepath}`);
     expect(loadSpy).toHaveBeenCalledWith(filepath);
   };
 
@@ -147,7 +147,7 @@ describe('resolveConfig', () => {
     expect(mockExplorer.search).toHaveBeenCalled();
 
     expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining(`⚙️ Failed to find configuration file - try with '--configFile <path-to-your-config-file>'`),
+      expect.stringContaining(`⚙️  Failed to find configuration file - try with '--configFile <path-to-your-config-file>'`),
     );
     expect(exit).toHaveBeenCalledWith(CONFIG_FILE_NOT_FOUND);
   });
@@ -160,7 +160,7 @@ describe('resolveConfig', () => {
     expect(() => resolveConfigInternal(filepath, mockResolver)).toThrowError('Process exited with code 2');
 
     expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining(`⚙️ Failed to load configuration file: Config file not found: ${filepath}`),
+      expect.stringContaining(`⚙️  Failed to load configuration file: Config file not found: ${filepath}`),
     );
     expect(exit).toHaveBeenCalledWith(FAILED_LOADING_CONFIG_FILE);
   });

@@ -22,7 +22,7 @@ const exitWithCodeInvalidConfig = (): void => {
 
 const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
   if (Object.keys(options).length === 0 || options.configFile) {
-    console.error(chalk.red('❌ Configuration file may not contain recursive references or be empty.'));
+    console.error(chalk.red('❌  Configuration file may not contain recursive references or be empty.'));
     console.error(chalk.red("\tHere's an example of a valid configuration file:"));
     console.error();
     console.error(
@@ -48,7 +48,7 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
   const activeGroups = distinctConfigGroups.map(group => group.some(opt => options[opt as keyof CliOptions])).filter(Boolean);
 
   if (activeGroups.length > 1) {
-    console.error(chalk.red('❌ You cannot use options from multiple configuration groups together.'));
+    console.error(chalk.red('❌  You cannot use options from multiple configuration groups together.'));
     distinctConfigGroups.forEach((group, idx) => {
       console.error(chalk.red(`\tGroup ${idx + 1}: ${group.join(', ')}`));
     });
@@ -64,12 +64,12 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
 
   if (options.openApiSpecs) {
     // TODO: Load OpenAPI specs and merge them into options
-    console.warn(chalk.yellow('⚠️ OpenAPI specs are not yet implemented. Using provided options as is.'));
+    console.warn(chalk.yellow('⚠️  OpenAPI specs are not yet implemented. Using provided options as is.'));
     exit(0);
   }
 
   if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
-    console.error(chalk.red('❌ Either define a config file or all of these calculation parameters:'));
+    console.error(chalk.red('❌  Either define a config file or all of these calculation parameters:'));
     exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- ${opt}`)));
     exitWithCodeInvalidConfig();
   }
@@ -80,18 +80,18 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
 
 export const validateConfiguration = (config: SanitizedOptions): SanitizedOptions => {
   if (!config.url) {
-    console.error(chalk.red('❌ Snow-White base URL must be defined in the configuration.'));
+    console.error(chalk.red('❌  Snow-White base URL must be defined in the configuration.'));
     exitWithCodeInvalidConfig();
   }
   if (!config.qualityGate) {
-    console.error(chalk.red('❌ Quality-Gate name must be defined in the configuration.'));
+    console.error(chalk.red('❌  Quality-Gate name must be defined in the configuration.'));
     exitWithCodeInvalidConfig();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   } else if (!config.apiInformation || config.apiInformation.length === 0) {
-    console.error(chalk.red('❌ At least one API information must be defined in the configuration.'));
+    console.error(chalk.red('❌  At least one API information must be defined in the configuration.'));
     exitWithCodeInvalidConfig();
   } else if (config.apiInformation.some(api => !api.serviceName || !api.apiName || !api.apiVersion)) {
-    console.error(chalk.red('❌ Each API information must contain serviceName, apiName, and apiVersion.'));
+    console.error(chalk.red('❌  Each API information must contain serviceName, apiName, and apiVersion.'));
     exitWithCodeInvalidConfig();
   }
 
