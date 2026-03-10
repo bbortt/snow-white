@@ -17,7 +17,7 @@ import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { toDtos } from '../entity/mapper/api-information.mapper';
 
 const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
-  console.log(chalk.blue(`🚀 Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
+  console.log(chalk.blue(`🚀  Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
   console.log(chalk.gray(`Base URL: ${options.url}`));
   console.log('');
 
@@ -34,7 +34,7 @@ const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: Sa
   if (response.headers.location) {
     console.log(`Location: ${response.headers.location}`);
     console.log('');
-    console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
+    console.log(chalk.yellow('💡  Use the returned URL to check the calculation report.'));
   }
 };
 
@@ -44,7 +44,7 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Sanitiz
   try {
     await calculateQualityGates(qualityGateApi, options);
   } catch (error: unknown) {
-    console.error(chalk.red('❌ Failed to trigger Quality-Gate calculation!'));
+    console.error(chalk.red('❌  Failed to trigger Quality-Gate calculation!'));
     console.log('');
 
     if (error instanceof AxiosError && error.response) {
