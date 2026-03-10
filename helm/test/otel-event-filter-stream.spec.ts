@@ -478,7 +478,7 @@ describe('OTEL Event Filter Stream', () => {
             expect(springDatasourceUrl).toBeDefined();
 
             expect(springDatasourceUrl.value).toBe(
-              'snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
+              'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
             );
           });
 
