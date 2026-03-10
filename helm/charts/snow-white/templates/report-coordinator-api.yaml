@@ -58,7 +58,7 @@ spec:
               value: 'http://{{ include "snow-white.publicHost" . }}'
               {{- end }}
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL'
-              value: '{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+              value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
           {{- if .Values.postgresql.enabled }}
