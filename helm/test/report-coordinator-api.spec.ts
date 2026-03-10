@@ -548,7 +548,7 @@ describe('Report Coordinator API', () => {
             expect(qualityGateApiUrl).toBeDefined();
 
             expect(qualityGateApiUrl.value).toBe(
-              'snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
+              'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
             );
           });
 
