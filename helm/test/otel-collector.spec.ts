@@ -16,7 +16,7 @@ import {
 import { join } from 'node:path';
 
 const defaultConfigmapChecksum =
-  'adf0c06e7770f7962a5589f237971533dd9370b77723b975de248c338b81a3bf';
+  'a9e9991b9a4d23e3a1d4923912436fc1a5f1f7d3004e47f29d1586ec21897de5';
 
 describe('OTEL Collector', () => {
   const renderAndGetDeployment = async (manifests?: any[]) => {
@@ -806,6 +806,19 @@ describe('OTEL Collector', () => {
       );
     });
 
+    it('should calculate InfluxDB endpoint', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters.influxdb.endpoint).toBe(
+        'http://test-release-influxdb2.default.svc.cluster.local.:80',
+      );
+    });
+
     it('should load InfluxDB token from environment variable', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 
@@ -915,21 +928,21 @@ describe('OTEL Collector', () => {
         expectedFile: 'pipeline-without-logs.yaml',
         connectToExternalOtelCollector: { exportLogs: false },
         checksumn:
-          '7895ad1e47c7bfa4102d390d9e661057fa5e8aa06462fbeb80960e5d156538fc',
+          '8bc92a47a5055b7bdbff604be69b06371782172d5e0477b88d9b83fe256d3bd2',
       },
       {
         type: 'metrics',
         expectedFile: 'pipeline-without-metrics.yaml',
         connectToExternalOtelCollector: { exportMetrics: false },
         checksumn:
-          '023e8cbf74f57b52541b203684ffcd523582029baa5dd9789a1dd609aabb60c4',
+          'efca59100bbbf7e54f5797f1ab86b743b9eb0e673d83868ed4d5a5c8aeab3711',
       },
       {
         type: 'traces',
         expectedFile: 'pipeline-without-traces.yaml',
         connectToExternalOtelCollector: { exportTraces: false },
         checksumn:
-          '6c40102331d50e1476650fe6f4996bcf9a28c22bd703ed5e927cae69796a8c54',
+          'd11fa08ef50adb68c1cb789a7ac03c888c140c3a0099cdf6083a09a022fba363',
       },
     ])(
       'should skip exporting: $type',
