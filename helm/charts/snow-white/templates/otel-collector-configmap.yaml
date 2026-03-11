@@ -131,8 +131,8 @@ data:
           topic: {{ .Values.otelCollector.kafka.inboundTopic }}
       influxdb:
         endpoint: {{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
-        org: {{ .Values.otelCollector.influxdb.org | quote }}
-        bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
+        org: {{ .Values.influxdb2.adminUser.organization | quote }}
+        bucket: {{ .Values.influxdb2.adminUser.bucket | quote }}
         token: '${INFLUXDB_TOKEN}'
       {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
       otlp_grpc/infra:
