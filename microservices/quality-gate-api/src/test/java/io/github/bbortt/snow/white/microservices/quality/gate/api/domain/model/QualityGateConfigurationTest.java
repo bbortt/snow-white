@@ -90,7 +90,7 @@ class QualityGateConfigurationTest {
       QualityGateConfiguration modified =
         fixture.withOpenApiCoverageConfiguration(coverageConfig);
 
-      assertSame(modified, fixture); // this will fail — only pass if with-method returns same object
+      assertSame(modified, fixture); // this will fail - only pass if with-method returns same object
     }
 
     @Test

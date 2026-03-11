@@ -109,11 +109,29 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            {{- if ne .Values.jssecacerts.secretName "" }}
+            - name: truststore
+              mountPath: /opt/java/lib/security
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir:
             medium: ""
             sizeLimit: 256Mi
+        {{- if ne .Values.jssecacerts.secretName "" }}
+        - name: truststore
+          secret:
+            defaultMode: 420
+            items:
+              {{- if (empty .Values.jssecacerts.key) }}
+              {{ fail "\n\n⚠ ERROR: You must set 'jssecacerts.key' to the secret key containing the jssecacerts value!" }}
+              {{- else }}
+              - key: {{ .Values.jssecacerts.key }}
+              {{- end }}
+                path: jssecacerts
+            secretName: {{ .Values.jssecacerts.secretName }}
+        {{- end }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

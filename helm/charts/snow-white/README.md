@@ -44,6 +44,16 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | ----------------- | ---- | ------- | ------------------------------------------------- |
 | influxdb2.enabled | bool | `true`  | Deploy InfluxDB StatefulSet alongside Snow-White. |
 
+### Advanced Configuration
+
+| Key                            | Type   | Default                                                                                                                                                          | Description                                                 |
+| ------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| jssecacerts.key                | string | `""`                                                                                                                                                             | Key inside the secret that contains the `jssecacerts` data. |
+| jssecacerts.secretName         | string | `""`                                                                                                                                                             | Name of secret containing the `jssecacerts`.                |
+| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger\"{2}%replace(%mdc{trace_id}){^(.+)$, traceId=\"$1\"} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.                            |
+| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                             | Annotations for Snow-White pods.                            |
+| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                              | Number of old ReplicaSets to retain.                        |
+
 ### Infrastructure (Kafka)
 
 | Key                            | Type   | Default                    | Description                                                        |
@@ -137,14 +147,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.kafka.calculationRequestTopic         | string | `"snow-white-calculation-request"`                                         | Calculation request topic.         |
 | snowWhite.kafka.initTopics                      | string | `"true"`                                                                   | Initialize Kafka topics.           |
 | snowWhite.kafka.openapiCalculationResponseTopic | string | `"snow-white-openapi-calculation-response"`                                | OpenAPI calculation response topic |
-
-### Advanced Configuration
-
-| Key                            | Type   | Default                                                                                                                                                          | Description                          |
-| ------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger\"{2}%replace(%mdc{trace_id}){^(.+)$, traceId=\"$1\"} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.     |
-| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                             | Annotations for Snow-White pods.     |
-| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                              | Number of old ReplicaSets to retain. |
 
 ### Availability
 
