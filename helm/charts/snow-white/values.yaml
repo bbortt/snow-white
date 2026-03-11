@@ -247,6 +247,13 @@ influxdb2:
   enabled: true
   pdb:
     create: false
+  adminUser:
+    # -- InfluxDB organization.
+    # @section -- OpenTelemetry Collector
+    organization: snow-white
+    # -- InfluxDB bucket.
+    # @section -- OpenTelemetry Collector
+    bucket: snow-white
 
 kafka:
   # -- Deploy Kafka StatefulSet alongside Snow-White.
@@ -320,12 +327,6 @@ otelCollector:
     # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
     # @section -- OpenTelemetry Collector
     endpoint: ''
-    # -- InfluxDB organization.
-    # @section -- OpenTelemetry Collector
-    org: snow-white
-    # -- InfluxDB bucket.
-    # @section -- OpenTelemetry Collector
-    bucket: raw-data
   kafka:
     # -- The "inbound" Kafka topic for unfiltered events.
     # @section -- OpenTelemetry Collector
