@@ -299,3 +299,18 @@ influxdb2:
   adminUser:
     existingSecret: custom-influxdb-credentials
 ```
+
+## Custom Truststores
+
+Custom truststores are only supported in Java Keystore (JKS) format.
+The keystore must be stored in a Kubernetes secret and mounted at runtime.
+
+The following values configure the truststore for the relevant pods:
+
+```yaml
+jssecacerts:
+  secretName: 'my-secret'
+  key: 'truststore.jks'
+```
+
+Once mounted, the JRE will automatically pick up the truststore from `$JAVA_HOME/lib/security/jssecacerts` - no additional JVM flags are required.

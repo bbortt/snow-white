@@ -48,6 +48,14 @@ image:
   # @section -- Image Parameters
   pullPolicy: 'Always'
 
+jssecacerts:
+  # -- Key inside the secret that contains the `jssecacerts` data.
+  # @section -- Advanced Configuration
+  key: ''
+  # -- Name of secret containing the `jssecacerts`.
+  # @section -- Advanced Configuration
+  secretName: ''
+
 snowWhite:
   # -- Deployment mode of Snow-White.
   # Allowed values: `minimal`, `high-available`, `autoscale`.

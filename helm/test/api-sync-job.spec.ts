@@ -147,8 +147,8 @@ describe('API Sync Job', () => {
         values: {
           snowWhite: {
             apiSyncJob: {
-              activeDeadlineSeconds,
               ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
+              activeDeadlineSeconds,
             },
           },
         },
@@ -233,12 +233,12 @@ describe('API Sync Job', () => {
           await renderHelmChart({
             chartPath: 'charts/snow-white',
             values: {
+              ...valuesWithEnabledApiSyncJob,
               global: {
                 imagePullSecrets: {
                   token,
                 },
               },
-              ...valuesWithEnabledApiSyncJob,
             },
           }),
         );
@@ -288,8 +288,8 @@ describe('API Sync Job', () => {
               chartPath: 'charts/snow-white',
               values: {
                 snowWhite: {
-                  image: { registry: customRegistry },
                   ...valuesWithEnabledApiSyncJob.snowWhite,
+                  image: { registry: customRegistry },
                 },
               },
             }),
@@ -337,8 +337,8 @@ describe('API Sync Job', () => {
             await renderHelmChart({
               chartPath: 'charts/snow-white',
               values: {
-                image: { pullPolicy: imagePullPolicy },
                 ...valuesWithEnabledApiSyncJob,
+                image: { pullPolicy: imagePullPolicy },
               },
             }),
           );
@@ -576,6 +576,101 @@ describe('API Sync Job', () => {
           expect(apiSyncJob.resources.requests.memory).toBe(request);
         });
       });
+
+      describe('volumeMounts', () => {
+        it('should mount temporary directory only by default', async () => {
+          const apiSyncJob = await renderAndGetApiSyncJobContainer();
+
+          expect(apiSyncJob.volumeMounts).toHaveLength(1);
+        });
+
+        it('should additionally mount jssecacerts if specified in values', async () => {
+          const apiSyncJob = await renderAndGetApiSyncJobContainer(
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              values: {
+                ...valuesWithEnabledApiSyncJob,
+                jssecacerts: {
+                  key: 'key',
+                  secretName: 'secretName',
+                },
+              },
+            }),
+          );
+
+          expect(apiSyncJob.volumeMounts).toHaveLength(2);
+
+          expect(apiSyncJob.volumeMounts[1].name).toBe('truststore');
+          expect(apiSyncJob.volumeMounts[1].mountPath).toBe(
+            '/opt/java/lib/security',
+          );
+          expect(apiSyncJob.volumeMounts[1].readOnly).toBe(true);
+        });
+      });
+    });
+  });
+
+  describe('volumes', () => {
+    const renderAndGetVolumes = async (manifests?: any[]): Promise<any[]> => {
+      const templateSpec = getTemplateSpec(
+        await renderAndGetCronJob(manifests),
+      );
+
+      const { volumes } = templateSpec;
+      expect(volumes).toBeDefined();
+
+      return volumes;
+    };
+
+    it('should include temporary directory only by default', async () => {
+      const volumes = await renderAndGetVolumes();
+
+      expect(volumes).toHaveLength(1);
+    });
+
+    it('should fail if secret name is defined in values, but key is not', async () => {
+      await expect(
+        async () =>
+          await renderAndGetVolumes(
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              values: {
+                ...valuesWithEnabledApiSyncJob,
+                jssecacerts: {
+                  secretName: 'secretName',
+                },
+              },
+            }),
+          ),
+      ).rejects.toThrow(
+        "⚠ ERROR: You must set 'jssecacerts.key' to the secret key containing the jssecacerts value!",
+      );
+    });
+
+    it('should additionally include jssecacerts if specified in values', async () => {
+      const secretName = 'any-secret-name';
+      const key = 'some-key';
+
+      const volumes = await renderAndGetVolumes(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            ...valuesWithEnabledApiSyncJob,
+            jssecacerts: {
+              key,
+              secretName,
+            },
+          },
+        }),
+      );
+
+      expect(volumes).toHaveLength(2);
+
+      expect(volumes[1].name).toBe('truststore');
+      expect(volumes[1].secret.items).toHaveLength(1);
+      expect(volumes[1].secret.items[0].key).toBe(key);
+      expect(volumes[1].secret.items[0].path).toBe('jssecacerts');
+      expect(volumes[1].secret.secretName).toBe(secretName);
     });
   });
 });

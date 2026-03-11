@@ -701,6 +701,102 @@ describe('OpenAPI Coverage Stream', () => {
             expect(fooEnv.value).toBe('bar');
           });
         });
+
+        describe('volumeMounts', () => {
+          it('should mount temporary directory only by default', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            expect(openapiCoverageStream.volumeMounts).toHaveLength(1);
+          });
+
+          it('should additionally mount jssecacerts if specified in values', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    jssecacerts: {
+                      key: 'key',
+                      secretName: 'secretName',
+                    },
+                  },
+                }),
+              );
+
+            expect(openapiCoverageStream.volumeMounts).toHaveLength(2);
+
+            expect(openapiCoverageStream.volumeMounts[1].name).toBe(
+              'truststore',
+            );
+            expect(openapiCoverageStream.volumeMounts[1].mountPath).toBe(
+              '/opt/java/lib/security',
+            );
+            expect(openapiCoverageStream.volumeMounts[1].readOnly).toBe(true);
+          });
+        });
+      });
+    });
+
+    describe('volumes', () => {
+      const renderAndGetVolumes = async (manifests?: any[]): Promise<any[]> => {
+        const templateSpec = getPodSpec(
+          await renderAndGetDeployment(manifests),
+        );
+
+        const { volumes } = templateSpec;
+        expect(volumes).toBeDefined();
+
+        return volumes;
+      };
+
+      it('should include temporary directory only by default', async () => {
+        const volumes = await renderAndGetVolumes();
+
+        expect(volumes).toHaveLength(1);
+      });
+
+      it('should fail if secret name is defined in values, but key is not', async () => {
+        await expect(
+          async () =>
+            await renderAndGetVolumes(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  jssecacerts: {
+                    secretName: 'secretName',
+                  },
+                },
+              }),
+            ),
+        ).rejects.toThrow(
+          "⚠ ERROR: You must set 'jssecacerts.key' to the secret key containing the jssecacerts value!",
+        );
+      });
+
+      it('should additionally include jssecacerts if specified in values', async () => {
+        const secretName = 'any-secret-name';
+        const key = 'some-key';
+
+        const volumes = await renderAndGetVolumes(
+          await renderHelmChart({
+            chartPath: 'charts/snow-white',
+            values: {
+              jssecacerts: {
+                key,
+                secretName,
+              },
+            },
+          }),
+        );
+
+        expect(volumes).toHaveLength(2);
+
+        expect(volumes[1].name).toBe('truststore');
+        expect(volumes[1].secret.items).toHaveLength(1);
+        expect(volumes[1].secret.items[0].key).toBe(key);
+        expect(volumes[1].secret.items[0].path).toBe('jssecacerts');
+        expect(volumes[1].secret.secretName).toBe(secretName);
       });
     });
   });
