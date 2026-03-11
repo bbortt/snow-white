@@ -38,6 +38,6 @@ These environment variables **must** be configured for the service to work prope
 
 ## Usage Notes
 
-- The service reacts to Kafka messages — it does not expose an API.
+- The service reacts to Kafka messages - it does not expose an API.
 - OpenAPI specifications must be loaded into `api-index-api` ahead of time.
 - The service must have access to consistent telemetry data for accurate calculations.
