@@ -482,7 +482,7 @@ describe('OpenAPI Coverage Stream', () => {
             expect(influxdbUrl).toBeDefined();
 
             expect(influxdbUrl.value).toBe(
-              'http://test-release-influxdb.default.svc.cluster.local.:8086',
+              'http://test-release-influxdb2.default.svc.cluster.local.:80',
             );
           });
 
