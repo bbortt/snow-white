@@ -130,7 +130,7 @@ data:
           encoding: otlp_json
           topic: {{ .Values.otelCollector.kafka.inboundTopic }}
       influxdb:
-        endpoint: {{ default (printf "%s-influxdb.%s.svc.cluster.local.:9092" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
+        endpoint: {{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.otelCollector.influxdb.org | quote }}
         bucket: {{ .Values.otelCollector.influxdb.bucket | quote }}
         token: '${INFLUXDB_TOKEN}'

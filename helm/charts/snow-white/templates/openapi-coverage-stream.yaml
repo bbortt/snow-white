@@ -44,7 +44,7 @@ spec:
           env:
           {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
             - name: 'INFLUXDB_URL'
-              value: '{{ default (printf "http://%s-influxdb.%s.svc.cluster.local.:8086" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
+              value: '{{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
             - name: 'INFLUXDB_ORG'
               value: '{{ .Values.snowWhite.openapiCoverageStream.influxdb.org }}'
             - name: 'INFLUXDB_BUCKET'
