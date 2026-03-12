@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 
@@ -44,29 +43,18 @@ public class OpenApiCoverageCalculationServiceImpl
 
   @Override
   @WithSpan
-  public @Nullable OpenApiTestContext fetchOpenApiSpecification(
+  public @NonNull OpenApiTestContext fetchOpenApiSpecification(
     String key,
     QualityGateCalculationRequestEvent calculationRequestEvent
-  ) {
-    try {
-      return new OpenApiTestContext(
-        calculationRequestEvent.getApiInformation(),
-        openApiService.findAndParseOpenApi(
-          calculationRequestEvent.getApiInformation()
-        ),
-        calculationRequestEvent.getLookbackWindow(),
-        mapToFluxAttributeFilters(calculationRequestEvent.getAttributeFilters())
-      );
-    } catch (OpenApiNotIndexedException | UnparseableOpenApiException e) {
-      logger.error(
-        "Failed to process message with key {}: {}",
-        key,
-        e.getMessage(),
-        e
-      );
-
-      return null;
-    }
+  ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
+    return new OpenApiTestContext(
+      calculationRequestEvent.getApiInformation(),
+      openApiService.findAndParseOpenApi(
+        calculationRequestEvent.getApiInformation()
+      ),
+      calculationRequestEvent.getLookbackWindow(),
+      mapToFluxAttributeFilters(calculationRequestEvent.getAttributeFilters())
+    );
   }
 
   @Override
@@ -99,7 +87,6 @@ public class OpenApiCoverageCalculationServiceImpl
     @NonNull OpenApiTestContext openApiTestContext
   ) {
     return new OpenApiCoverageResponseEvent(
-      OPENAPI,
       openApiTestContext.apiInformation(),
       requireNonNull(openApiTestContext.openApiTestResults())
     );

@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.SPAN_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.TRACE_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.VALUE_KEY;
@@ -71,10 +72,7 @@ class OpenTelemetryServiceTest {
   class FindOpenTelemetryTracingData {
 
     private static final ApiInformation API_INFORMATION =
-      ApiInformation.builder()
-        .serviceName("serviceName")
-        .apiName("apiName")
-        .build();
+      defaultApiInformation();
 
     private static final long LOOKBACK_FROM = 1234L;
     private static final String LOOKBACK_WINDOW = "1h";

@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
@@ -59,6 +60,7 @@ class ApiIndexCachingServiceTest {
           .serviceName(SERVICE_NAME)
           .apiName(API_NAME)
           .apiVersion(API_VERSION)
+          .apiType(OPENAPI)
           .build()
       );
 
@@ -87,6 +89,7 @@ class ApiIndexCachingServiceTest {
         .serviceName(SERVICE_NAME)
         .apiName(API_NAME)
         .apiVersion(API_VERSION)
+        .apiType(OPENAPI)
         .build();
 
       assertThatThrownBy(() ->

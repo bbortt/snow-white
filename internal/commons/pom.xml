@@ -21,6 +21,10 @@
   <artifactId>commons</artifactId>
   <packaging>jar</packaging>
 
+  <properties>
+    <mockito.version>5.23.0</mockito.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
@@ -103,7 +107,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.23.0</version>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

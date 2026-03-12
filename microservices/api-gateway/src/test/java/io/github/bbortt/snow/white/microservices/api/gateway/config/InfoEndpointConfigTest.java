@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.core.env.Environment;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class InfoEndpointConfigTest {
 
   @InjectMocks

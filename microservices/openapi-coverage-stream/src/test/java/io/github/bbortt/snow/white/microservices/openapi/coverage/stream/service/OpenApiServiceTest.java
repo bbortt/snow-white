@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,11 +43,7 @@ class OpenApiServiceTest {
 
     @BeforeEach
     void beforeEachSetup() {
-      apiInformation = ApiInformation.builder()
-        .serviceName("serviceName")
-        .apiName("apiName")
-        .apiVersion("apiVersion")
-        .build();
+      apiInformation = defaultApiInformation();
     }
 
     @Test

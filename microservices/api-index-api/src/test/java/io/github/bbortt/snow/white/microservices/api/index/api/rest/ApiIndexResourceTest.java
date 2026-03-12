@@ -48,7 +48,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class ApiIndexResourceTest {
 
   public static final String SERVICE_NAME = "svc";
