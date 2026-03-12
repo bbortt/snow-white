@@ -35,7 +35,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class SyncJobTest {
 
   @Mock

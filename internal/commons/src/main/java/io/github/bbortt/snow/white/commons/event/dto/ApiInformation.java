@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.commons.event.dto;
 
 import static lombok.AccessLevel.PROTECTED;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -32,4 +33,7 @@ public final class ApiInformation {
   private String apiName;
 
   private @Nullable String apiVersion;
+
+  @NonNull
+  private ApiType apiType;
 }

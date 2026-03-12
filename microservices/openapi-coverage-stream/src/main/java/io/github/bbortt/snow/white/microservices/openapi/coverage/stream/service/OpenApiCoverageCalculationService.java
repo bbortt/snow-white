@@ -9,8 +9,9 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Service for calculating OpenAPI coverage.
@@ -23,11 +24,11 @@ public interface OpenApiCoverageCalculationService {
    * @param calculationRequestEvent the calculation request event.
    * @return the test context, or {@code null} if the specification could not be found or parsed.
    */
-  @Nullable
+  @NonNull
   OpenApiTestContext fetchOpenApiSpecification(
     String key,
     QualityGateCalculationRequestEvent calculationRequestEvent
-  );
+  ) throws OpenApiNotIndexedException, UnparseableOpenApiException;
 
   /**
    * Enriches the test context with OpenTelemetry data.

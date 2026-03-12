@@ -7,14 +7,15 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -30,14 +31,17 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class OpenApiCoverageCalculationServiceImplTest {
 
   @Mock
@@ -66,11 +70,7 @@ class OpenApiCoverageCalculationServiceImplTest {
     @Test
     void shouldFetchSpecification()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      var apiInformation = ApiInformation.builder()
-        .serviceName("service")
-        .apiName("api")
-        .apiVersion("v1")
-        .build();
+      var apiInformation = defaultApiInformation();
       var requestEvent = QualityGateCalculationRequestEvent.builder()
         .apiInformation(apiInformation)
         .lookbackWindow("1h")
@@ -99,22 +99,31 @@ class OpenApiCoverageCalculationServiceImplTest {
       assertThat(result.fluxAttributeFilters()).hasSize(1);
     }
 
-    @Test
-    void shouldReturnNullOnException()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
-      doThrow(OpenApiNotIndexedException.class)
-        .when(openApiServiceMock)
-        .findAndParseOpenApi(any());
+    public static Stream<Exception> shouldPropagateExceptions() {
+      return Stream.of(
+        mock(OpenApiNotIndexedException.class),
+        mock(UnparseableOpenApiException.class)
+      );
+    }
 
-      var result = fixture.fetchOpenApiSpecification(
-        "key",
+    @MethodSource
+    @ParameterizedTest
+    void shouldPropagateExceptions(Exception cause)
+      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      doThrow(cause).when(openApiServiceMock).findAndParseOpenApi(any());
+
+      var qualityGateCalculationRequestEvent =
         QualityGateCalculationRequestEvent.builder()
           .apiInformation(mock(ApiInformation.class))
           .lookbackWindow("1h")
-          .build()
-      );
+          .build();
 
-      assertThat(result).isNull();
+      assertThatThrownBy(() ->
+        fixture.fetchOpenApiSpecification(
+          "key",
+          qualityGateCalculationRequestEvent
+        )
+      ).isEqualTo(cause);
     }
   }
 
@@ -123,11 +132,7 @@ class OpenApiCoverageCalculationServiceImplTest {
 
     @Test
     void shouldEnrichWithTelemetryData() {
-      var apiInformation = ApiInformation.builder()
-        .serviceName("service")
-        .apiName("api")
-        .apiVersion("v1")
-        .build();
+      var apiInformation = defaultApiInformation();
       var context = new OpenApiTestContext(
         apiInformation,
         mock(OpenAPI.class),
@@ -179,11 +184,7 @@ class OpenApiCoverageCalculationServiceImplTest {
 
     @Test
     void shouldBuildResponseEvent() {
-      var apiInformation = ApiInformation.builder()
-        .serviceName("service")
-        .apiName("api")
-        .apiVersion("v1")
-        .build();
+      var apiInformation = defaultApiInformation();
       var testResults = Set.of(mock(OpenApiTestResult.class));
       var context = new OpenApiTestContext(
         apiInformation,
@@ -198,7 +199,7 @@ class OpenApiCoverageCalculationServiceImplTest {
 
       assertThat(result.getApiType()).isEqualTo(OPENAPI);
       assertThat(result.apiInformation()).isEqualTo(apiInformation);
-      assertThat(result.openApiCriteria()).isEqualTo(testResults);
+      assertThat(result.openApiTestResults()).isEqualTo(testResults);
     }
   }
 }

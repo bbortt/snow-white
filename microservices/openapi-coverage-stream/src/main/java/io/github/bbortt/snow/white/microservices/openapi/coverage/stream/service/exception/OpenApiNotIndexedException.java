@@ -15,7 +15,7 @@ public class OpenApiNotIndexedException extends Exception {
   public OpenApiNotIndexedException(ApiInformation apiInformation) {
     super(
       format(
-        "OpenApi identifier not indexed: { \"serviceName\": \"%s\",\"apiName\": \"%s\",\"apiVersion\": \"%s\" }",
+        "OpenApi identifier not indexed: { \"serviceName\": \"%s\", \"apiName\": \"%s\", \"apiVersion\": \"%s\" }",
         apiInformation.getServiceName(),
         apiInformation.getApiName(),
         apiInformation.getApiVersion()

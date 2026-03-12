@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import org.junit.jupiter.api.Test;
 
 class OpenApiNotIndexedExceptionTest {
@@ -16,15 +16,9 @@ class OpenApiNotIndexedExceptionTest {
   @Test
   void shouldConstructMessage() {
     assertThat(
-      new OpenApiNotIndexedException(
-        ApiInformation.builder()
-          .serviceName("otelServiceName")
-          .apiName("apiName")
-          .apiVersion("apiVersion")
-          .build()
-      )
+      new OpenApiNotIndexedException(defaultApiInformation())
     ).hasMessage(
-      "OpenApi identifier not indexed: { \"serviceName\": \"otelServiceName\",\"apiName\": \"apiName\",\"apiVersion\": \"apiVersion\" }"
+      "OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }"
     );
   }
 }

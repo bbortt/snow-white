@@ -6,14 +6,17 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream.processor.TracingProcessor.newTracingProcessor;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -21,6 +24,8 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.processor.api.FixedKeyRecord;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -43,41 +48,16 @@ public class OpenApiCoverageCalculationProcessor {
     var stream = createStream(streamsBuilder);
 
     stream
+      .filter((_, qualityGateCalculationRequestEvent) ->
+        OPENAPI.equals(
+          qualityGateCalculationRequestEvent.getApiInformation().getApiType()
+        )
+      )
       .peek((key, _) -> logger.debug("Handling message id '{}'", key))
       .processValues(
         newTracingProcessor(
-          (qualityGateCalculationRequestEventFixedKeyRecord, timestamp) -> {
-            var openApiTestContext =
-              openApiCoverageCalculationService.fetchOpenApiSpecification(
-                qualityGateCalculationRequestEventFixedKeyRecord.key(),
-                qualityGateCalculationRequestEventFixedKeyRecord.value()
-              );
-
-            if (
-              isNull(openApiTestContext) || isNull(openApiTestContext.openAPI())
-            ) {
-              return null;
-            }
-
-            openApiTestContext =
-              openApiCoverageCalculationService.enrichWithOpenTelemetryData(
-                openApiTestContext,
-                timestamp
-              );
-
-            openApiTestContext =
-              openApiCoverageCalculationService.calculateCoverage(
-                openApiTestContext
-              );
-
-            return openApiCoverageCalculationService.buildResponseEvent(
-              openApiTestContext
-            );
-          }
+          this::processOpenApiCoverageRequestAndHandleExceptions
         )
-      )
-      .filter((key, openApiCoverageResponse) ->
-        nonNull(openApiCoverageResponse)
       )
       .to(
         openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic(),
@@ -88,6 +68,63 @@ public class OpenApiCoverageCalculationProcessor {
       );
 
     return stream;
+  }
+
+  private @NonNull OpenApiCoverageResponseEvent processOpenApiCoverageRequestAndHandleExceptions(
+    FixedKeyRecord<
+      String,
+      QualityGateCalculationRequestEvent
+    > qualityGateCalculationRequestEventFixedKeyRecord,
+    Long timestamp
+  ) {
+    try {
+      return processOpenApiCoverageRequest(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        timestamp
+      );
+    } catch (Exception exception) {
+      var rootCause = getRootCause(exception);
+      logger.error(
+        "Failed to process OpenAPI coverage for message: {}",
+        rootCause.getMessage(),
+        exception
+      );
+
+      return new OpenApiCoverageResponseEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord
+          .value()
+          .getApiInformation(),
+        rootCause
+      );
+    }
+  }
+
+  private @NonNull OpenApiCoverageResponseEvent processOpenApiCoverageRequest(
+    FixedKeyRecord<
+      String,
+      QualityGateCalculationRequestEvent
+    > qualityGateCalculationRequestEventFixedKeyRecord,
+    Long timestamp
+  ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
+    var openApiTestContext =
+      openApiCoverageCalculationService.fetchOpenApiSpecification(
+        qualityGateCalculationRequestEventFixedKeyRecord.key(),
+        qualityGateCalculationRequestEventFixedKeyRecord.value()
+      );
+
+    openApiTestContext =
+      openApiCoverageCalculationService.enrichWithOpenTelemetryData(
+        openApiTestContext,
+        timestamp
+      );
+
+    openApiTestContext = openApiCoverageCalculationService.calculateCoverage(
+      openApiTestContext
+    );
+
+    return openApiCoverageCalculationService.buildResponseEvent(
+      openApiTestContext
+    );
   }
 
   private KStream<String, QualityGateCalculationRequestEvent> createStream(

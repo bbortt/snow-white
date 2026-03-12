@@ -6,12 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.qualityGateCalculationRequestEvent;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -45,12 +44,7 @@ class QualityGateCalculationEventSerdesTest {
     void serializationAndDeserializationLoop() {
       var originalMessage =
         new io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent(
-          OPENAPI,
-          ApiInformation.builder()
-            .serviceName("serviceName")
-            .apiName("apiName")
-            .apiVersion("apiVersion")
-            .build(),
+          defaultApiInformation(),
           emptySet()
         );
 
