@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.GET;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.HEAD;
@@ -21,7 +22,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -73,10 +73,7 @@ class OpenApiCoverageServiceTest {
     @BeforeEach
     void beforeEachSetup() {
       openApiTestContext = new OpenApiTestContext(
-        ApiInformation.builder()
-          .serviceName("serviceName")
-          .apiName("apiName")
-          .build(),
+        defaultApiInformation(),
         openAPIMock,
         LOOKBACK_WINDOW,
         null

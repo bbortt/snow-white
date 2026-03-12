@@ -6,18 +6,36 @@
 
 package io.github.bbortt.snow.white.commons.event;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import java.util.Set;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public record OpenApiCoverageResponseEvent(
-  ApiType apiType,
   ApiInformation apiInformation,
-  Set<OpenApiTestResult> openApiCriteria
+  @Nullable Set<OpenApiTestResult> openApiTestResults,
+  @Nullable Throwable exception
 ) implements ApiCoverageResponseEvent {
+  public OpenApiCoverageResponseEvent(
+    ApiInformation apiInformation,
+    @NonNull Set<OpenApiTestResult> openApiTestResults
+  ) {
+    this(apiInformation, openApiTestResults, null);
+  }
+
+  public OpenApiCoverageResponseEvent(
+    ApiInformation apiInformation,
+    @NonNull Throwable exception
+  ) {
+    this(apiInformation, null, exception);
+  }
+
   @Override
   public ApiType getApiType() {
-    return apiType();
+    return OPENAPI;
   }
 }
