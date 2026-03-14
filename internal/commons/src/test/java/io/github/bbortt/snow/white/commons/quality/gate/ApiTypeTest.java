@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 class ApiTypeTest {
 
+  @EnumSource
   @ParameterizedTest
-  @EnumSource(ApiType.class)
   void fromString(ApiType apiType) {
     assertThat(ApiType.apiType(apiType.name())).isEqualTo(apiType);
 
@@ -30,8 +30,8 @@ class ApiTypeTest {
     assertThat(ApiType.apiType((String) null)).isEqualTo(UNSPECIFIED);
   }
 
+  @EnumSource
   @ParameterizedTest
-  @EnumSource(ApiType.class)
   void fromIntegerValue(ApiType apiType) {
     assertThat(ApiType.apiType(apiType.getVal())).isEqualTo(apiType);
   }

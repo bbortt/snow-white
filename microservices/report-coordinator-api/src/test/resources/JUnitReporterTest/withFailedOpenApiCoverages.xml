@@ -21,7 +21,7 @@
     />
   </properties>
   <testsuite
-    name="serviceName: testApi 1.0.0 [OPENAPI]"
+    name="serviceName: testApi apiVersion [OPENAPI]"
     tests="2"
     failures="2"
     errors="0"
@@ -31,12 +31,12 @@
   >
     <properties>
       <property name="apiName" value="testApi" />
-      <property name="apiVersion" value="1.0.0" />
+      <property name="apiVersion" value="apiVersion" />
       <property name="serviceName" value="serviceName" />
     </properties>
     <testcase
       name="HTTP Method Coverage"
-      classname="serviceName: testApi 1.0.0 [OPENAPI]"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
       time="131.21100"
     >
       <failure
@@ -52,7 +52,7 @@
     </testcase>
     <testcase
       name="Path Coverage"
-      classname="serviceName: testApi 1.0.0 [OPENAPI]"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
       time="54.32100"
     >
       <failure message="This failed because it can." type="AssertionError" />

@@ -27,10 +27,23 @@ public class ReportCoordinationServiceProperties {
 
   private String publicApiGatewayUrl;
 
-  private String qualityGateApiUrl;
+  private final ApiIndexProperties apiIndex = new ApiIndexProperties();
 
   private final OpenapiCalculationResponse openapiCalculationResponse =
     new OpenapiCalculationResponse();
+
+  private final QualityGateApiProperties qualityGateApi =
+    new QualityGateApiProperties();
+
+  @Getter
+  @Setter
+  public static class ApiIndexProperties {
+
+    public static final String BASE_URL_PROPERTY_NAME =
+      PREFIX + ".api-index.base-url";
+
+    private String baseUrl;
+  }
 
   @Getter
   @Setter
@@ -49,5 +62,15 @@ public class ReportCoordinationServiceProperties {
 
     private String consumerGroupId = DEFAULT_CONSUMER_GROUP_ID;
     private String topic;
+  }
+
+  @Getter
+  @Setter
+  public static class QualityGateApiProperties {
+
+    public static final String BASE_URL_PROPERTY_NAME =
+      PREFIX + ".quality-gate-api.base-url";
+
+    private String baseUrl;
   }
 }

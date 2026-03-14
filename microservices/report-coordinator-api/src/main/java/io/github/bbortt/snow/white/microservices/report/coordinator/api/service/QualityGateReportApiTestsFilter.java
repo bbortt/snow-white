@@ -15,7 +15,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import org.springframework.stereotype.Component;
 
 @Component
-final class ApiInformationFilter {
+final class QualityGateReportApiTestsFilter {
 
   ApiTest findApiTestMatchingApiInformationInQualityGateReport(
     QualityGateReport qualityGateReport,

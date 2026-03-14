@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static java.lang.Boolean.FALSE;
 import static java.math.BigDecimal.ONE;
@@ -72,7 +73,10 @@ class ApiTestResultLinkerTest {
     void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCriteria(
       Set<String> includedOpenApiCriteria
     ) {
-      var apiTest = ApiTest.builder().build();
+      var apiTest = ApiTest.builder()
+        .apiType(OPENAPI.getVal())
+        .apiType(OPENAPI.getVal())
+        .build();
 
       var apiTestResult = spy(
         ApiTestResult.builder()
@@ -100,7 +104,7 @@ class ApiTestResultLinkerTest {
 
     @Test
     void shouldReturnApiTestWithLinkedResults_includedInOpenApiCriteria() {
-      var apiTest = ApiTest.builder().build();
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
       Set<ApiTestResult> apiTestResults = Set.of(
         ApiTestResult.builder()

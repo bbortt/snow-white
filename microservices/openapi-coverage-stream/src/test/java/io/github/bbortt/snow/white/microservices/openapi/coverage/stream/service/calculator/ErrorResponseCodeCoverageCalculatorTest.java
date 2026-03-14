@@ -52,7 +52,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
       assertThat(result).isTrue();
     }
 
-    @EnumSource(OpenApiCriteria.class)
+    @EnumSource
     @ParameterizedTest
     void shouldReturnFalse_whenNotPathCoverage(
       OpenApiCriteria openApiCriteria

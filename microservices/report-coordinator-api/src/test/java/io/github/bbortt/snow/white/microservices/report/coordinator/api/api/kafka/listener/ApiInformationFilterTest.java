@@ -6,6 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiInformation;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -38,11 +41,7 @@ class ApiInformationFilterTest {
 
     @Test
     void shouldReturnApiTest_whenMatchingApiFound() {
-      var apiTest = ApiTest.builder()
-        .serviceName("TestService")
-        .apiName("TestApi")
-        .apiVersion("v1")
-        .build();
+      var apiTest = defaultApiTest();
 
       var qualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("0874a4d7-1baf-461e-bd20-c0b5a02d5b3b"))
@@ -50,11 +49,7 @@ class ApiInformationFilterTest {
         .reportParameter(mock(ReportParameter.class))
         .build();
 
-      var apiInformation = ApiInformation.builder()
-        .serviceName(apiTest.getServiceName())
-        .apiName(apiTest.getApiName())
-        .apiVersion(apiTest.getApiVersion())
-        .build();
+      var apiInformation = defaultApiInformation();
 
       ApiTest result =
         fixture.findApiTestMatchingApiInformationInQualityGateReport(
@@ -67,10 +62,7 @@ class ApiInformationFilterTest {
 
     @Test
     void shouldReturnApiTest_whenApiInformationDoesNotIncludeVersion() {
-      var apiTest = ApiTest.builder()
-        .serviceName("TestService")
-        .apiName("TestApi")
-        .build();
+      var apiTest = defaultApiTest().withApiVersion(null);
 
       var qualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("139718a3-e63f-40a8-a8f9-e0e62921c038"))
@@ -78,11 +70,7 @@ class ApiInformationFilterTest {
         .reportParameter(mock(ReportParameter.class))
         .build();
 
-      var apiInformation = ApiInformation.builder()
-        .serviceName(apiTest.getServiceName())
-        .apiName(apiTest.getApiName())
-        .apiVersion("v2") // Version is not included in ApiInformation
-        .build();
+      var apiInformation = defaultApiInformation().withApiVersion("v2"); // Version is not included in ApiInformation
 
       ApiTest result =
         fixture.findApiTestMatchingApiInformationInQualityGateReport(
@@ -101,15 +89,18 @@ class ApiInformationFilterTest {
           .serviceName("UnknownService")
           .apiName("TestApi")
           .apiVersion("v1")
+          .apiType(OPENAPI)
           .build(),
         ApiInformation.builder()
           .serviceName("TestService")
           .apiName("UnknownApi")
           .apiVersion("v1")
+          .apiType(OPENAPI)
           .build(),
         ApiInformation.builder()
           .serviceName("TestService")
           .apiName("TestApi")
+          .apiType(OPENAPI)
           .build()
       );
     }
@@ -121,15 +112,7 @@ class ApiInformationFilterTest {
     ) {
       var qualityGateReport = QualityGateReport.builder()
         .calculationId(UUID.fromString("df80260f-6f17-42cb-95ba-bf972016d868"))
-        .apiTests(
-          Set.of(
-            ApiTest.builder()
-              .serviceName("TestService")
-              .apiName("TestApi")
-              .apiVersion("v1")
-              .build()
-          )
-        )
+        .apiTests(Set.of(defaultApiTest()))
         .reportParameter(mock(ReportParameter.class))
         .build();
 
@@ -152,6 +135,7 @@ class ApiInformationFilterTest {
         .serviceName("UnknownService")
         .apiName("UnknownApi")
         .apiVersion("v2")
+        .apiType(OPENAPI)
         .build();
 
       assertThatThrownBy(() ->

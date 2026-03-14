@@ -16,6 +16,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -72,7 +73,7 @@ class ApiTestResultLinkerTest {
     void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCriteria(
       Set<String> includedOpenApiCriteria
     ) {
-      var apiTest = ApiTest.builder().build();
+      var apiTest = ApiTest.builder().apiType(ApiType.OPENAPI.getVal()).build();
 
       var apiTestResult = spy(
         ApiTestResult.builder()
@@ -100,7 +101,7 @@ class ApiTestResultLinkerTest {
 
     @Test
     void shouldReturnApiTestWithLinkedResults_includedInOpenApiCriteria() {
-      var apiTest = ApiTest.builder().build();
+      var apiTest = ApiTest.builder().apiType(ApiType.OPENAPI.getVal()).build();
 
       Set<ApiTestResult> apiTestResults = Set.of(
         ApiTestResult.builder()

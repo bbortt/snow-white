@@ -55,8 +55,8 @@ class PathCoverageCalculatorTest {
       assertThat(result).isTrue();
     }
 
+    @EnumSource
     @ParameterizedTest
-    @EnumSource(OpenApiCriteria.class)
     void shouldReturnFalse_whenNotPathCoverage(
       OpenApiCriteria openApiCriteria
     ) {

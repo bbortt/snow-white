@@ -10,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
@@ -22,6 +23,7 @@ import static java.lang.System.getProperty;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class QualityGateApiAppTest {
@@ -32,6 +34,11 @@ class QualityGateApiAppTest {
     RestAssured.port = parseInt(getProperty("api-gateway.port", "8080"));
 
     WireMock.configureFor(getProperty("wiremock.host", "localhost"), parseInt(getProperty("wiremock.port", "9000")));
+  }
+
+  @BeforeEach
+  void beforeEachSetup() {
+    reset();
   }
 
   /**

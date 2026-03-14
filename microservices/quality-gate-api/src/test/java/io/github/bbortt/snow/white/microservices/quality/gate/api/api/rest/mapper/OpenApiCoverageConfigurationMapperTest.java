@@ -33,8 +33,8 @@ class OpenApiCoverageConfigurationMapperTest {
   @Nested
   class ToDtos {
 
+    @EnumSource
     @ParameterizedTest
-    @EnumSource(OpenApiCriteria.class)
     void shouldMapAllProperties(OpenApiCriteria openApiCriteria) {
       var openApiCoverageConfiguration = OpenApiCoverageConfiguration.builder()
         .name(openApiCriteria.name())
