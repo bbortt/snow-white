@@ -81,7 +81,11 @@ public abstract class AbstractReportCoordinationServiceIT {
   @DynamicPropertySource
   static void wireMockProperties(DynamicPropertyRegistry registry) {
     registry.add(
-      "snow.white.report.coordinator.api.quality-gate-api-url",
+      "snow.white.report.coordinator.api.api-index.base-url",
+      WIRE_MOCK_CONTAINER::getBaseUrl
+    );
+    registry.add(
+      "snow.white.report.coordinator.api.quality-gate-api.base-url",
       WIRE_MOCK_CONTAINER::getBaseUrl
     );
   }

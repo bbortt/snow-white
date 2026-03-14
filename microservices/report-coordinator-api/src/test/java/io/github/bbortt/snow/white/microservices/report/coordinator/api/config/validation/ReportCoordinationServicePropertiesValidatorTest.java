@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class ReportCoordinationServicePropertiesTest {
+class ReportCoordinationServicePropertiesValidatorTest {
 
   private ReportCoordinationServiceProperties fixture;
 
@@ -28,12 +28,13 @@ class ReportCoordinationServicePropertiesTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {
+      fixture.getApiIndex().setBaseUrl("apiIndexApiUrl");
       fixture.setCalculationRequestTopic("calculationRequestTopic");
       fixture
         .getOpenapiCalculationResponse()
         .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
-      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.getQualityGateApi().setBaseUrl("qualityGateApiUrl");
 
       assertThatNoException().isThrownBy(() ->
         new ReportCoordinationServicePropertiesValidator(fixture)
@@ -41,12 +42,31 @@ class ReportCoordinationServicePropertiesTest {
     }
 
     @Test
-    void throwsExceptionWithMissingCalculationRequestTopic() {
+    void throwsExceptionWithMissingApiIndexApiBaseUrl() {
+      fixture.setCalculationRequestTopic("calculationRequestTopic");
       fixture
         .getOpenapiCalculationResponse()
         .setTopic("openapiCalculationResponseTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
-      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.getQualityGateApi().setBaseUrl("qualityGateApiUrl");
+
+      assertThatThrownBy(() ->
+        new ReportCoordinationServicePropertiesValidator(fixture)
+      )
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "All properties must be configured - missing: [snow.white.report.coordinator.api.api-index.base-url]."
+        );
+    }
+
+    @Test
+    void throwsExceptionWithMissingCalculationRequestTopic() {
+      fixture.getApiIndex().setBaseUrl("apiIndexApiUrl");
+      fixture
+        .getOpenapiCalculationResponse()
+        .setTopic("openapiCalculationResponseTopic");
+      fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
+      fixture.getQualityGateApi().setBaseUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() ->
         new ReportCoordinationServicePropertiesValidator(fixture)
@@ -59,9 +79,10 @@ class ReportCoordinationServicePropertiesTest {
 
     @Test
     void throwsExceptionWithMissingOpenapiCalculationResponseTopic() {
+      fixture.getApiIndex().setBaseUrl("apiIndexApiUrl");
       fixture.setCalculationRequestTopic("calculationRequestTopic");
       fixture.setPublicApiGatewayUrl("publicApiGatewayUrl");
-      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.getQualityGateApi().setBaseUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() ->
         new ReportCoordinationServicePropertiesValidator(fixture)
@@ -74,11 +95,12 @@ class ReportCoordinationServicePropertiesTest {
 
     @Test
     void throwsExceptionWithMissingPublicApiGatewayUrl() {
+      fixture.getApiIndex().setBaseUrl("apiIndexApiUrl");
       fixture.setCalculationRequestTopic("calculationRequestTopic");
       fixture
         .getOpenapiCalculationResponse()
         .setTopic("openapiCalculationResponseTopic");
-      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.getQualityGateApi().setBaseUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() ->
         new ReportCoordinationServicePropertiesValidator(fixture)
@@ -91,6 +113,7 @@ class ReportCoordinationServicePropertiesTest {
 
     @Test
     void throwsExceptionWithMissingQualityGateApiUrl() {
+      fixture.getApiIndex().setBaseUrl("apiIndexApiUrl");
       fixture.setCalculationRequestTopic("calculationRequestTopic");
       fixture
         .getOpenapiCalculationResponse()
@@ -102,7 +125,7 @@ class ReportCoordinationServicePropertiesTest {
       )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-          "All properties must be configured - missing: [snow.white.report.coordinator.api.quality-gate-api-url]."
+          "All properties must be configured - missing: [snow.white.report.coordinator.api.quality-gate-api.base-url]."
         );
     }
   }

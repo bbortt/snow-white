@@ -6,13 +6,17 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
@@ -22,6 +26,8 @@ import static org.hamcrest.Matchers.matchesRegex;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpHeaders.LOCATION;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.consumerProps;
@@ -49,6 +55,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
@@ -84,6 +91,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
         reportCoordinationServiceProperties.getCalculationRequestTopic()
       )
     );
+
+    reset();
   }
 
   private KafkaConsumer<
@@ -113,12 +122,18 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   void postRequest_withAllParameters_shouldTriggerABasicCoverageCalculation()
     throws Exception {
-    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
-
     var serviceName = "star-wars";
     var apiName = "yoda";
     var apiVersion = "1.2.3";
     var lookbackWindow = "1m";
+
+    var apiExistsEndpoint = createApiIndexApiWiremockStub(
+      serviceName,
+      apiName,
+      apiVersion,
+      OK
+    );
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
 
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .includeApis(
@@ -193,12 +208,19 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       qualityGateCalculationRequest.getLookbackWindow()
     );
 
+    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
   }
 
   @Test
   void postRequest_withRequiredParameters_shouldTriggerABasicCoverageCalculation()
     throws Exception {
+    var apiExistsEndpoint = createApiIndexApiWiremockStub(
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      OK
+    );
     var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
 
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
@@ -250,17 +272,60 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       "1h"
     );
 
+    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
     verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+  }
+
+  @Test
+  void postRequest_shouldReturnBadRequest_whenApiIsNotIndexed()
+    throws Exception {
+    var apiExistsEndpoint = createApiIndexApiWiremockStub(
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      NOT_FOUND
+    );
+
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
+      .includeApis(
+        singletonList(
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName("serviceName")
+            .apiName("apiName")
+            .apiVersion("apiVersion")
+            .build()
+        )
+      )
+      .lookbackWindow(null)
+      .attributeFilters(null)
+      .build();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
+      )
+      .andExpect(status().isBadRequest())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.get("message").asString()).startsWith(
+      "Unexpected error while requesting API information: 404 Not Found"
+    );
+
+    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
+    verify(0, getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*")));
   }
 
   @Test
   void postRequest_withMissingRequiredParameters_shouldBeReported()
     throws Exception {
-    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
-
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .includeApis(null)
-      .lookbackWindow(null)
       .attributeFilters(null)
       .build();
 
@@ -272,7 +337,41 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       )
       .andExpect(status().isBadRequest());
 
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+    verify(0, getRequestedFor(urlMatching("/api/rest/v1/apis/.*")));
+    verify(0, getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*")));
+  }
+
+  private @NonNull String createApiIndexApiWiremockStub(
+    String serviceName,
+    String apiName,
+    String apiVersion,
+    HttpStatus httpStatus
+  ) {
+    var apiIndexApiEndpoint = format(
+      "/api/rest/v1/apis/%s/%s/%s",
+      serviceName,
+      apiName,
+      apiVersion
+    );
+    stubFor(
+      get(apiIndexApiEndpoint).willReturn(
+        aResponse()
+          .withStatus(httpStatus.value())
+          .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+          .withBody(
+            // language=json
+            """
+            {
+              "serviceName": "%s",
+              "apiName": "%s",
+              "apiVersion": "%s",
+              "apiType": "OPENAPI"
+            }
+            """.formatted(serviceName, apiName, apiVersion)
+          )
+      )
+    );
+    return apiIndexApiEndpoint;
   }
 
   private @NonNull String createQualityGateApiWiremockStub() {

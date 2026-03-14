@@ -38,7 +38,7 @@ class TechnicalStructureTest {
 
     .whereLayer("Config").mayNotBeAccessedByAnyLayer()
     .whereLayer("Api").mayOnlyBeAccessedByLayers("Config", "Mapper")
-    .whereLayer("Mapper").mayOnlyBeAccessedByLayers("Api")
+    .whereLayer("Mapper").mayOnlyBeAccessedByLayers("Api","Service")
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Config", "Api")
     .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Config", "Api", "Service")
     .whereLayer("Domain").mayOnlyBeAccessedByLayers("Config", "Api", "Mapper", "JUnit", "Service", "Persistence")

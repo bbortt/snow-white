@@ -329,6 +329,26 @@
             </configuration>
           </execution>
           <execution>
+            <id>generate-v1-api-index-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.apiindexapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.apiindexapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.apiindexapi.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <generateClientAsBean>true</generateClientAsBean>
+                <library>restclient</library>
+                <useJakartaEe>true</useJakartaEe>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
             <id>generate-v1-quality-gate-api-client</id>
             <goals>
               <goal>generate</goal>

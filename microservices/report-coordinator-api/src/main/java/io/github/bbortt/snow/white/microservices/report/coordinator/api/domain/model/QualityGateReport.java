@@ -6,18 +6,16 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model;
 
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.reportStatus;
 import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -25,7 +23,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -34,6 +31,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table
@@ -43,11 +41,6 @@ import org.jspecify.annotations.NonNull;
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
 public class QualityGateReport {
-
-  private static final List<ReportStatus> STATUS_FOR_PROPAGATION = List.of(
-    FAILED,
-    PASSED
-  );
 
   @Id
   @NonNull
@@ -76,12 +69,27 @@ public class QualityGateReport {
 
   @NonNull
   @Builder.Default
-  @Enumerated(STRING)
-  @Column(nullable = false, length = 16)
-  private ReportStatus reportStatus = IN_PROGRESS;
+  @Column(nullable = false)
+  private Short reportStatus = IN_PROGRESS.getVal();
 
   @NonNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Instant createdAt = Instant.now();
+
+  @Lob
+  @Nullable
+  @Column(columnDefinition = "TEXT", updatable = false)
+  private String stackTrace;
+
+  public @NonNull ReportStatus getReportStatus() {
+    return reportStatus(reportStatus);
+  }
+
+  public QualityGateReport withReportStatus(
+    @NonNull ReportStatus reportStatus
+  ) {
+    this.reportStatus = reportStatus.getVal();
+    return this;
+  }
 }

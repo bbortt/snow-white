@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.mapstruct.ValueMapping;
 
 @Mapper(
   componentModel = SPRING,
@@ -74,27 +75,15 @@ public interface QualityGateReportMapper {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
   }
 
-  default CalculateQualityGate202Response.StatusEnum toStatusEnum(
+  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
+  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
+  CalculateQualityGate202Response.StatusEnum toStatusEnum(
     ReportStatus reportStatus
-  ) {
-    return switch (reportStatus) {
-      case
-        NOT_STARTED,
-        IN_PROGRESS -> CalculateQualityGate202Response.StatusEnum.IN_PROGRESS;
-      case FAILED -> CalculateQualityGate202Response.StatusEnum.FAILED;
-      case PASSED -> CalculateQualityGate202Response.StatusEnum.PASSED;
-    };
-  }
+  );
 
-  default ListQualityGateReports200ResponseInner.StatusEnum toListStatusEnum(
+  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
+  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
+  ListQualityGateReports200ResponseInner.StatusEnum toListStatusEnum(
     ReportStatus reportStatus
-  ) {
-    return switch (reportStatus) {
-      case
-        NOT_STARTED,
-        IN_PROGRESS -> ListQualityGateReports200ResponseInner.StatusEnum.IN_PROGRESS;
-      case FAILED -> ListQualityGateReports200ResponseInner.StatusEnum.FAILED;
-      case PASSED -> ListQualityGateReports200ResponseInner.StatusEnum.PASSED;
-    };
-  }
+  );
 }

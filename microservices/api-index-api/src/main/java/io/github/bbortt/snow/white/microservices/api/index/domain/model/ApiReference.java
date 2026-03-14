@@ -60,7 +60,7 @@ public class ApiReference {
   private String sourceUrl;
 
   @Enumerated(STRING)
-  @Column(nullable = false, length = 16)
+  @Column(nullable = false, updatable = false, length = 16)
   private GetAllApis200ResponseInner.@NonNull ApiTypeEnum apiType;
 
   @Data
