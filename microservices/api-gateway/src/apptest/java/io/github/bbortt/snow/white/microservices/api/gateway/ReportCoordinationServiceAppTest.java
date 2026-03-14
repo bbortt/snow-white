@@ -12,6 +12,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
@@ -25,6 +26,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.RestAssured;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ReportCoordinationServiceAppTest {
@@ -38,6 +40,11 @@ class ReportCoordinationServiceAppTest {
       Optional.ofNullable(getProperty("wiremock.host")).orElse("localhost"),
       parseInt(Optional.ofNullable(getProperty("wiremock.port")).orElse("9000"))
     );
+  }
+
+  @BeforeEach
+  void beforeEachSetup() {
+    reset();
   }
 
   /**

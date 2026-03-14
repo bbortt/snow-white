@@ -6,9 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -56,13 +56,9 @@ class JUnitReporterTest {
     String apiName,
     Set<ApiTestResult> apiTestResults
   ) {
-    return ApiTest.builder()
-      .serviceName("serviceName")
-      .apiName(apiName)
-      .apiVersion("1.0.0")
-      .apiType(OPENAPI.getVal())
-      .apiTestResults(apiTestResults)
-      .build();
+    return defaultApiTest()
+      .withApiName(apiName)
+      .withApiTestResults(apiTestResults);
   }
 
   private static ApiTestResult createOpenApiTestResult(

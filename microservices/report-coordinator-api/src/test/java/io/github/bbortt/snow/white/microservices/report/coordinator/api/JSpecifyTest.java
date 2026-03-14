@@ -22,6 +22,9 @@ import java.util.Set;
 class JSpecifyTest {
 
   private static final Set<String> GENERATED_PACKAGES = Set.of(
+    "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi",
+    "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api",
+    "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto",
     "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi",
     "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.api",
     "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto",

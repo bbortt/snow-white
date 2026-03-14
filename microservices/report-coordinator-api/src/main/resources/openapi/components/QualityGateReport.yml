@@ -17,11 +17,11 @@ properties:
     maxLength: 64
   status:
     type: string
-    enum: [IN_PROGRESS, FAILED, PASSED]
+    enum: [IN_PROGRESS, FAILED, PASSED, FINISHED_EXCEPTIONALLY, TIMED_OUT]
     default: 'IN_PROGRESS'
     description: 'Current status of the calculation'
     minLength: 1
-    maxLength: 16
+    maxLength: 32
   calculationRequest:
     $ref: './QualityGateCalculationRequest.yml'
   interfaces:

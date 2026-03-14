@@ -28,12 +28,17 @@ class QualityGateApiClientConfigTest {
   @Nested
   class Constructor {
 
+    @Mock
+    private ReportCoordinationServiceProperties.QualityGateApiProperties qualityGateApiPropertiesMock;
+
     @Test
     void shouldConfigureBasePath() {
-      var basePath = "basePath";
-      doReturn(basePath)
+      doReturn(qualityGateApiPropertiesMock)
         .when(reportCoordinationServicePropertiesMock)
-        .getQualityGateApiUrl();
+        .getQualityGateApi();
+
+      var basePath = "basePath";
+      doReturn(basePath).when(qualityGateApiPropertiesMock).getBaseUrl();
 
       new QualityGateApiClientConfig(
         apiClientMock,

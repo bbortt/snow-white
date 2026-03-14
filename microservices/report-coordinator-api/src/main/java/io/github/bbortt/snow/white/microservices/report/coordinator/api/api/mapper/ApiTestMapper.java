@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.map
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequestIncludeApisInner;
@@ -31,10 +33,24 @@ public interface ApiTestMapper {
   );
 
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "apiType", ignore = true)
+  @Mapping(
+    target = "apiType",
+    expression = "java(io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED.getVal())"
+  )
   @Mapping(target = "apiTestResults", ignore = true)
   @Mapping(target = "qualityGateReport", ignore = true)
   ApiTest toApiTest(CalculateQualityGateRequestIncludeApisInner includeApi);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(
+    target = "apiType",
+    expression = "java(toCommonApiType(apiDetails.getApiType()).getVal())"
+  )
+  @Mapping(target = "apiTestResults", ignore = true)
+  @Mapping(target = "qualityGateReport", ignore = true)
+  ApiTest toApiTest(GetAllApis200ResponseInner apiDetails);
+
+  ApiType toCommonApiType(GetAllApis200ResponseInner.ApiTypeEnum apiType);
 
   @Mapping(target = "testResults", source = "apiTestResults")
   CalculateQualityGate202ResponseInterfacesInner toInterfaces(ApiTest apiTest);

@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -24,13 +25,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ApiInformationFilterTest {
+class QualityGateReportApiTestsFilterTest {
 
-  private ApiInformationFilter fixture;
+  private QualityGateReportApiTestsFilter fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new ApiInformationFilter();
+    fixture = new QualityGateReportApiTestsFilter();
   }
 
   @Nested
@@ -42,6 +43,7 @@ class ApiInformationFilterTest {
         .serviceName("TestService")
         .apiName("TestApi")
         .apiVersion("v1")
+        .apiType(OPENAPI.getVal())
         .build();
 
       var qualityGateReport = QualityGateReport.builder()
@@ -54,6 +56,7 @@ class ApiInformationFilterTest {
         .serviceName(apiTest.getServiceName())
         .apiName(apiTest.getApiName())
         .apiVersion(apiTest.getApiVersion())
+        .apiType(OPENAPI)
         .build();
 
       ApiTest result =
@@ -70,6 +73,7 @@ class ApiInformationFilterTest {
       var apiTest = ApiTest.builder()
         .serviceName("TestService")
         .apiName("TestApi")
+        .apiType(OPENAPI.getVal())
         .build();
 
       var qualityGateReport = QualityGateReport.builder()
@@ -82,6 +86,7 @@ class ApiInformationFilterTest {
         .serviceName(apiTest.getServiceName())
         .apiName(apiTest.getApiName())
         .apiVersion("v2") // Version is not included in ApiInformation
+        .apiType(OPENAPI)
         .build();
 
       ApiTest result =
@@ -101,15 +106,18 @@ class ApiInformationFilterTest {
           .serviceName("UnknownService")
           .apiName("TestApi")
           .apiVersion("v1")
+          .apiType(OPENAPI)
           .build(),
         ApiInformation.builder()
           .serviceName("TestService")
           .apiName("UnknownApi")
           .apiVersion("v1")
+          .apiType(OPENAPI)
           .build(),
         ApiInformation.builder()
           .serviceName("TestService")
           .apiName("TestApi")
+          .apiType(OPENAPI)
           .build()
       );
     }
@@ -127,6 +135,7 @@ class ApiInformationFilterTest {
               .serviceName("TestService")
               .apiName("TestApi")
               .apiVersion("v1")
+              .apiType(OPENAPI.getVal())
               .build()
           )
         )
@@ -152,6 +161,7 @@ class ApiInformationFilterTest {
         .serviceName("UnknownService")
         .apiName("UnknownApi")
         .apiVersion("v2")
+        .apiType(OPENAPI)
         .build();
 
       assertThatThrownBy(() ->

@@ -17,7 +17,7 @@ public class QualityGateApiClientConfig {
     ReportCoordinationServiceProperties reportCoordinationServiceProperties
   ) {
     apiClient.setBasePath(
-      reportCoordinationServiceProperties.getQualityGateApiUrl()
+      reportCoordinationServiceProperties.getQualityGateApi().getBaseUrl()
     );
   }
 }

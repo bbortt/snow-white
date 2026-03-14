@@ -8,8 +8,8 @@ CREATE TABLE quality_gate_report
 (
     calculation_id           UUID        NOT NULL PRIMARY KEY,
     quality_gate_config_name VARCHAR(64) NOT NULL,
-    open_api_coverage_status VARCHAR(16) NOT NULL DEFAULT 'NOT_STARTED',
-    report_status            VARCHAR(16) NOT NULL DEFAULT 'IN_PROGRESS',
+    report_status            SMALLINT    NOT NULL,
+    stack_trace               TEXT,
     created_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -38,10 +38,10 @@ CREATE TABLE attribute_filters
 CREATE TABLE api_test
 (
     id             BIGSERIAL PRIMARY KEY NOT NULL,
-    service_name   VARCHAR(64)          NOT NULL,
-    api_name       VARCHAR(64)          NOT NULL,
+    service_name   VARCHAR(64)           NOT NULL,
+    api_name       VARCHAR(64)           NOT NULL,
     api_version    VARCHAR(16),
-    api_type       SMALLINT,
+    api_type       SMALLINT              NOT NULL,
     calculation_id UUID                  NOT NULL,
     CONSTRAINT fk_quality_gate_report_api_test
         FOREIGN KEY (calculation_id)

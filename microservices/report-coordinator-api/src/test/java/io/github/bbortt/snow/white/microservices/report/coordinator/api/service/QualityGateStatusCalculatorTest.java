@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
@@ -60,9 +61,13 @@ class QualityGateStatusCalculatorTest {
         .calculationId(UUID.fromString("87ddf55c-4f38-4a00-b067-c3dc7abbdfcb"))
         .apiTests(
           Set.of(
-            ApiTest.builder().apiTestResults(emptySet()).build(),
+            ApiTest.builder()
+              .apiTestResults(emptySet())
+              .apiType(OPENAPI.getVal())
+              .build(),
             ApiTest.builder()
               .apiTestResults(Set.of(new ApiTestResult()))
+              .apiType(OPENAPI.getVal())
               .build()
           )
         )
@@ -92,6 +97,7 @@ class QualityGateStatusCalculatorTest {
                     .build()
                 )
               )
+              .apiType(OPENAPI.getVal())
               .build(),
             ApiTest.builder()
               .apiTestResults(
@@ -105,6 +111,7 @@ class QualityGateStatusCalculatorTest {
                     .build()
                 )
               )
+              .apiType(OPENAPI.getVal())
               .build()
           )
         )
@@ -134,6 +141,7 @@ class QualityGateStatusCalculatorTest {
                     .build()
                 )
               )
+              .apiType(OPENAPI.getVal())
               .build()
           )
         )
@@ -163,6 +171,7 @@ class QualityGateStatusCalculatorTest {
                     .build()
                 )
               )
+              .apiType(OPENAPI.getVal())
               .build(),
             ApiTest.builder()
               .apiTestResults(
@@ -176,6 +185,7 @@ class QualityGateStatusCalculatorTest {
                     .build()
                 )
               )
+              .apiType(OPENAPI.getVal())
               .build()
           )
         )

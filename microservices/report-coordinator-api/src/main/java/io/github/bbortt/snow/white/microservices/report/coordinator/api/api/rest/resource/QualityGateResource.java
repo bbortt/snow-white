@@ -7,9 +7,13 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
 import static java.lang.String.format;
+import static java.lang.System.lineSeparator;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
@@ -22,8 +26,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class QualityGateResource implements QualityGateApi {
 
+  private final ApiIndexService apiIndexService;
   private final ReportService reportService;
 
   private final ApiTestMapper apiTestMapper;
@@ -55,15 +62,47 @@ public class QualityGateResource implements QualityGateApi {
       randomUUID()
     );
 
-    logger.info(
-      "Initialized quality-gate calculation: {}",
-      reportParameter.getCalculationId()
+    var validationResults = apiIndexService.fetchCompleteApiInformation(
+      apiTests
     );
+
+    if (
+      validationResults
+        .stream()
+        .anyMatch(ApiIndexService.ValidationResult::isFailure)
+    ) {
+      return ResponseEntity.status(BAD_REQUEST).body(
+        CalculateQualityGate400Response.builder()
+          .code(BAD_REQUEST.getReasonPhrase())
+          .message(
+            validationResults
+              .stream()
+              .map(validationResult ->
+                validationResult instanceof
+                  ApiIndexService.ValidationResult.Failure(String errorMessage)
+                  ? errorMessage
+                  : null
+              )
+              .filter(Objects::nonNull)
+              .collect(joining(lineSeparator()))
+          )
+          .build()
+      );
+    }
 
     try {
       return initializeQualityGateCalculation(
         qualityGateConfigName,
-        apiTests,
+        validationResults
+          .stream()
+          .map(validationResult ->
+            validationResult instanceof
+              ApiIndexService.ValidationResult.Success(ApiTest apiTest)
+              ? apiTest
+              : null
+          )
+          .filter(Objects::nonNull)
+          .collect(toSet()),
         reportParameter
       );
     } catch (QualityGateNotFoundException _) {
@@ -92,6 +131,11 @@ public class QualityGateResource implements QualityGateApi {
       qualityGateConfigName,
       apiTests,
       reportParameter
+    );
+
+    logger.info(
+      "Initialized quality-gate calculation: {}",
+      report.getCalculationId()
     );
 
     return ResponseEntity.status(ACCEPTED)

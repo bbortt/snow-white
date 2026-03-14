@@ -10,6 +10,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
 
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import jakarta.persistence.Column;
@@ -38,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 @With
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PRIVATE)
 public class ApiTest {
 
@@ -60,11 +61,13 @@ public class ApiTest {
   private String apiName;
 
   @Size(max = 16)
+  @Size(min = 1, max = 16)
   @Column(updatable = false, length = 16)
   private @Nullable String apiVersion;
 
-  @Column(updatable = false)
-  private @Nullable Short apiType;
+  @NonNull
+  @Column(nullable = false, updatable = false)
+  private Short apiType;
 
   @NonNull
   @Builder.Default
@@ -77,17 +80,5 @@ public class ApiTest {
 
   public ApiType getApiType() {
     return ApiType.apiType(apiType);
-  }
-
-  public ApiTest withApiType(ApiType apiType) {
-    return ApiTest.builder()
-      .id(getId())
-      .serviceName(getServiceName())
-      .apiName(getApiName())
-      .apiVersion(getApiVersion())
-      .apiType(apiType.getVal())
-      .apiTestResults(getApiTestResults())
-      .qualityGateReport(getQualityGateReport())
-      .build();
   }
 }

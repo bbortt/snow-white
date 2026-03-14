@@ -6,12 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_LIST_QUALITY_GATE_REPORTS;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner.ApiTypeEnum.UNSPECIFIED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
@@ -49,6 +49,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -73,7 +74,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @Autowired
   private MockMvc mockMvc;
 
-  private static String reportStatusAsString(ReportStatus reportStatus) {
+  private static String reportStatusAsString(
+    @NonNull ReportStatus reportStatus
+  ) {
     return NOT_STARTED.equals(reportStatus)
       ? "IN_PROGRESS"
       : reportStatus.toString();
@@ -280,7 +283,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .reportParameter(
           ReportParameter.builder().calculationId(calculationId).build()
         )
-        .reportStatus(PASSED)
+        .reportStatus(PASSED.getVal())
         .createdAt(Instant.parse("2025-04-28T08:00:00.00Z"))
         .build()
     );
@@ -338,8 +341,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
   }
 
+  @EnumSource
   @ParameterizedTest
-  @EnumSource(ReportStatus.class)
   void findAllReports(ReportStatus reportStatus) throws Exception {
     var calculationId1 = UUID.fromString(
       "b30bb84b-7bf6-4744-8bfc-ac05b8a85991"
@@ -351,7 +354,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .reportParameter(
           ReportParameter.builder().calculationId(calculationId1).build()
         )
-        .reportStatus(reportStatus)
+        .reportStatus(reportStatus.getVal())
         .createdAt(Instant.parse("2025-05-07T18:00:00.00Z"))
         .build()
     );
@@ -366,7 +369,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .reportParameter(
           ReportParameter.builder().calculationId(calculationId2).build()
         )
-        .reportStatus(reportStatus)
+        .reportStatus(reportStatus.getVal())
         .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
         .build()
     );
@@ -409,7 +412,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
           .lookbackWindow(lookbackWindow)
           .build()
       )
-      .reportStatus(reportStatus)
+      .reportStatus(reportStatus.getVal())
       .build();
 
     final var persistedQualityGateReport = qualityGateReportRepository.save(
@@ -422,6 +425,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .apiName(apiName)
         .apiVersion(apiVersion)
         .qualityGateReport(persistedQualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
         .build()
     );
 
@@ -434,6 +438,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
         .serviceName("serviceName")
         .apiName("apiName")
         .qualityGateReport(qualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
         .build()
     );
   }

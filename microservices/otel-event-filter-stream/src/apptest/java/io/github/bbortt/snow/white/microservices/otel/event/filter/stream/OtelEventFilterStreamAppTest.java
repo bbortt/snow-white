@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.OtelEventFilterStreamAppTest.KafkaMessageByKeySelector.MESSAGE_KEY_FILTER_KEY;
@@ -106,6 +107,8 @@ class OtelEventFilterStreamAppTest {
             )
         )
       );
+
+    reset();
   }
 
   /**

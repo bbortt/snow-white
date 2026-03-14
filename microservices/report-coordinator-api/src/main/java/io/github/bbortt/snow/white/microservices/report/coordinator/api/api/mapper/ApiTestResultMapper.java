@@ -40,12 +40,6 @@ public interface ApiTestResultMapper {
 
   @Mapping(target = "id", source = "apiTestCriteria")
   @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
-  Set<
-    CalculateQualityGate202ResponseInterfacesInnerTestResultsInner
-  > toTestResults(Set<ApiTestResult> apiTestResults);
-
-  @Mapping(target = "id", source = "apiTestCriteria")
-  @Mapping(target = "isIncludedInQualityGate", source = "includedInReport")
   CalculateQualityGate202ResponseInterfacesInnerTestResultsInner toTestResult(
     ApiTestResult apiTestResult
   );

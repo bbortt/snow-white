@@ -39,8 +39,12 @@ public class ReportCoordinationServicePropertiesValidator {
       reportCoordinationServiceProperties.getPublicApiGatewayUrl()
     );
     fields.put(
-      PREFIX + ".quality-gate-api-url",
-      reportCoordinationServiceProperties.getQualityGateApiUrl()
+      ReportCoordinationServiceProperties.ApiIndexProperties.BASE_URL_PROPERTY_NAME,
+      reportCoordinationServiceProperties.getApiIndex().getBaseUrl()
+    );
+    fields.put(
+      ReportCoordinationServiceProperties.QualityGateApiProperties.BASE_URL_PROPERTY_NAME,
+      reportCoordinationServiceProperties.getQualityGateApi().getBaseUrl()
     );
 
     assertRequiredProperties(fields);

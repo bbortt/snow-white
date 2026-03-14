@@ -15,6 +15,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -24,6 +25,7 @@ import static io.github.bbortt.snow.white.microservices.api.sync.job.api.client.
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +53,11 @@ class SyncJobIT {
 
   @Autowired
   private SyncJob fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    reset();
+  }
 
   @Test
   void shouldSyncNewApisInCatalog() {

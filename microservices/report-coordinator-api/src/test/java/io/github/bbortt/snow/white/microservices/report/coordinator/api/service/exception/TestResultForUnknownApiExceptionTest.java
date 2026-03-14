@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -28,6 +29,7 @@ class TestResultForUnknownApiExceptionTest {
       .serviceName("test")
       .apiName("test")
       .apiVersion("v1")
+      .apiType(OPENAPI)
       .build();
 
     assertThat(
