@@ -99,7 +99,9 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest }: ApiTestCard
             <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>:
           </Col>
           <Col md={2}>{renderStatusProgressBar(containsTestResults, apiTest.testResults!)}</Col>
-          <Col md={1}>{isOpen ? <FontAwesomeIcon icon="chevron-down" /> : <FontAwesomeIcon icon="chevron-up" />}</Col>
+          <Col md={1}>
+            <FontAwesomeIcon icon={isOpen ? 'chevron-up' : 'chevron-down'} />
+          </Col>
         </Row>
       </CardTitle>
       <CardBody>

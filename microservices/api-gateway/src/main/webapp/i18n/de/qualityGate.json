@@ -14,6 +14,7 @@
       "qualityGateConfigName": "Quality-Gate",
       "status": "Status",
       "createdAt": "Erstellt am",
+      "stackTrace": "Fehlermeldung",
       "testedAPIs": "Getestete Schnittstellen",
       "calculationRequest": "Anfrage-Details",
       "shapes": {

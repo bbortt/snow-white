@@ -59,7 +59,7 @@ module.exports = async options =>
       proxy: [
         {
           context: ['/api', '/management', '/swagger-ui', '/v3/api-docs'],
-          target: `http${options.tls ? 's' : ''}://localhost:9080`,
+          target: `http${options.tls ? 's' : ''}://localhost:${process.env.DOCKER_BACKEND ? '80' : '9080'}`,
           secure: false,
           changeOrigin: options.tls,
         },

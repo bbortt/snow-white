@@ -12,7 +12,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
+import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-block';
 import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
+import { StackTraceCard } from 'app/entities/quality-gate/stack-trace-card';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import React, { useEffect } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
@@ -79,25 +81,13 @@ export const QualityGateDetail = () => {
                       <TextFormat value={qualityGateEntity.createdAt} type="date" format={APP_DATE_FORMAT} />
                     ) : null}
                   </dd>
+                  {qualityGateEntity.stackTrace ? <StackTraceCard stackTrace={qualityGateEntity.stackTrace} /> : null}
                   <dt>
                     <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
                   </dt>
                   <dd>
                     {qualityGateEntity.calculationRequest ? (
-                      <pre
-                        className="mb-0 p-3"
-                        style={{
-                          backgroundColor: '#f8f9fa',
-                          border: 'none',
-                          fontSize: '0.875rem',
-                          maxHeight: '400px',
-                          overflow: 'auto',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                        }}
-                      >
-                        <code style={{ color: '#495057' }}>{JSON.stringify(qualityGateEntity.calculationRequest)}</code>
-                      </pre>
+                      <CodeHighlightBlock code={JSON.stringify(qualityGateEntity.calculationRequest)} language="json" />
                     ) : (
                       ''
                     )}
