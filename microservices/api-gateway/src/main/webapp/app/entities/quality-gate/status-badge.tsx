@@ -26,9 +26,15 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ qualityGate, fill }: S
         <span>{status}</span>
       </Badge>
     );
-  } else if (qualityGate.status === 'FAILED') {
+  } else if (qualityGate.status === 'FAILED' || qualityGate.status === 'FINISHED_EXCEPTIONALLY') {
     return (
       <Badge className={className} color="danger">
+        <span>{status}</span>
+      </Badge>
+    );
+  } else if (qualityGate.status === 'TIMED_OUT') {
+    return (
+      <Badge className={className} color="warning">
         <span>{status}</span>
       </Badge>
     );
