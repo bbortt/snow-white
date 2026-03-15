@@ -15,6 +15,9 @@ properties:
     description: 'The name of the Quality-Gate'
     minLength: 1
     maxLength: 64
+  stackTrace:
+    type: string
+    description: 'Error information, in case this report failed exceptionally.'
   status:
     type: string
     enum: [IN_PROGRESS, FAILED, PASSED, FINISHED_EXCEPTIONALLY, TIMED_OUT]

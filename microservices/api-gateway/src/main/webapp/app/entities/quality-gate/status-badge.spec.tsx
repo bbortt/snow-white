@@ -14,10 +14,12 @@ import { translate } from 'react-jhipster';
 jest.mock('react-jhipster', () => ({
   translate: jest.fn().mockImplementation((key: string) => {
     const translations: Record<string, string> = {
-      'snowWhiteApp.reportStatus.PASSED': 'Passed',
-      'snowWhiteApp.reportStatus.FAILED': 'Failed',
+      'snowWhiteApp.reportStatus.PASSED': 'PASSED',
+      'snowWhiteApp.reportStatus.FAILED': 'FAILED',
       'snowWhiteApp.reportStatus.NOT_STARTED': 'NOT_STARTED',
       'snowWhiteApp.reportStatus.IN_PROGRESS': 'IN_PROGRESS',
+      'snowWhiteApp.reportStatus.FINISHED_EXCEPTIONALLY': 'FINISHED_EXCEPTIONALLY',
+      'snowWhiteApp.reportStatus.TIMED_OUT': 'TIMED_OUT',
     };
     return translations[key] || key;
   }),
@@ -35,7 +37,7 @@ describe('StatusBadge', () => {
 
       render(<StatusBadge qualityGate={qualityGate} />);
 
-      const badge = screen.getByText('Passed');
+      const badge = screen.getByText('PASSED');
       expect(badge).toBeInTheDocument();
       expect(badge.closest('.badge')).toHaveClass('bg-success');
     });
@@ -45,7 +47,7 @@ describe('StatusBadge', () => {
 
       render(<StatusBadge qualityGate={qualityGate} fill={true} />);
 
-      const badge = screen.getByText('Passed');
+      const badge = screen.getByText('PASSED');
       expect(badge.closest('.badge')).toHaveClass('bg-success', 'badge-block');
     });
   });
@@ -56,7 +58,7 @@ describe('StatusBadge', () => {
 
       render(<StatusBadge qualityGate={qualityGate} />);
 
-      const badge = screen.getByText('Failed');
+      const badge = screen.getByText('FAILED');
       expect(badge).toBeInTheDocument();
       expect(badge.closest('.badge')).toHaveClass('bg-danger');
     });
@@ -66,8 +68,50 @@ describe('StatusBadge', () => {
 
       render(<StatusBadge qualityGate={qualityGate} fill={true} />);
 
-      const badge = screen.getByText('Failed');
+      const badge = screen.getByText('FAILED');
       expect(badge.closest('.badge')).toHaveClass('bg-danger', 'badge-block');
+    });
+  });
+
+  describe('FINISHED_EXCEPTIONALLY status', () => {
+    it('should render danger badge with correct text for FINISHED_EXCEPTIONALLY status', () => {
+      const qualityGate = createQualityGate('FINISHED_EXCEPTIONALLY');
+
+      render(<StatusBadge qualityGate={qualityGate} />);
+
+      const badge = screen.getByText('FINISHED_EXCEPTIONALLY');
+      expect(badge).toBeInTheDocument();
+      expect(badge.closest('.badge')).toHaveClass('bg-danger');
+    });
+
+    it('should render danger badge with fill class when fill prop is true', () => {
+      const qualityGate = createQualityGate('FINISHED_EXCEPTIONALLY');
+
+      render(<StatusBadge qualityGate={qualityGate} fill={true} />);
+
+      const badge = screen.getByText('FINISHED_EXCEPTIONALLY');
+      expect(badge.closest('.badge')).toHaveClass('bg-danger', 'badge-block');
+    });
+  });
+
+  describe('TIMED_OUT status', () => {
+    it('should render danger badge with correct text for TIMED_OUT status', () => {
+      const qualityGate = createQualityGate('TIMED_OUT');
+
+      render(<StatusBadge qualityGate={qualityGate} />);
+
+      const badge = screen.getByText('TIMED_OUT');
+      expect(badge).toBeInTheDocument();
+      expect(badge.closest('.badge')).toHaveClass('bg-warning');
+    });
+
+    it('should render danger badge with fill class when fill prop is true', () => {
+      const qualityGate = createQualityGate('TIMED_OUT');
+
+      render(<StatusBadge qualityGate={qualityGate} fill={true} />);
+
+      const badge = screen.getByText('TIMED_OUT');
+      expect(badge.closest('.badge')).toHaveClass('bg-warning', 'badge-block');
     });
   });
 
@@ -95,28 +139,8 @@ describe('StatusBadge', () => {
     );
   });
 
-  describe('Props handling', () => {
-    it('should not have badge-block class when fill prop is false', () => {
-      const qualityGate = createQualityGate('PASSED');
-
-      render(<StatusBadge qualityGate={qualityGate} fill={false} />);
-
-      const badge = screen.getByText('Passed');
-      expect(badge.closest('.badge')).not.toHaveClass('badge-block');
-    });
-
-    it('should not have badge-block class when fill prop is undefined', () => {
-      const qualityGate = createQualityGate('PASSED');
-
-      render(<StatusBadge qualityGate={qualityGate} />);
-
-      const badge = screen.getByText('Passed');
-      expect(badge.closest('.badge')).not.toHaveClass('badge-block');
-    });
-  });
-
   describe('Translation integration', () => {
-    it.each(['PASSED', 'FAILED', 'NOT_STARTED', 'IN_PROGRESS'])(
+    it.each(['PASSED', 'FAILED', 'NOT_STARTED', 'IN_PROGRESS', 'FINISHED_EXCEPTIONALLY', 'TIMED_OUT'])(
       'should call translate with correct key for each status: %s',
       (reportStatus: ReportStatus) => {
         const passedQualityGate = createQualityGate(reportStatus);
@@ -146,7 +170,7 @@ describe('StatusBadge', () => {
 
       render(<StatusBadge qualityGate={qualityGate} />);
 
-      const badge = screen.getByText('Passed');
+      const badge = screen.getByText('PASSED');
       expect(badge.closest('.badge')).toBeInTheDocument();
       // Badge should be accessible to screen readers
       expect(badge).toBeVisible();

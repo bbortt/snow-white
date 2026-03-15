@@ -5,7 +5,9 @@
       "NOT_STARTED": "Nicht Gestartet",
       "IN_PROGRESS": "In Bearbeitung",
       "FAILED": "Fehlgeschlagen",
-      "PASSED": "Erfolgreich"
+      "PASSED": "Erfolgreich",
+      "FINISHED_EXCEPTIONALLY": "Fehler",
+      "TIMED_OUT": "Zeitablauf"
     }
   }
 }
