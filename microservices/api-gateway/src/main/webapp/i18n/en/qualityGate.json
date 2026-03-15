@@ -13,7 +13,8 @@
       "calculationId": "Calculation Id",
       "qualityGateConfigName": "Quality-Gate",
       "status": "Status",
-      "createdAt": "Initiated A",
+      "createdAt": "Initiated At",
+      "stackTrace": "Stack Trace",
       "testedAPIs": "Tested APIs",
       "calculationRequest": "Calculation Request Parameters",
       "shapes": {

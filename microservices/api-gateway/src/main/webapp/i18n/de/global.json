@@ -25,7 +25,8 @@
       "id": "ID"
     },
     "ribbon": {
-      "dev": "Entwicklung"
+      "dev": "Entwicklung",
+      "undefined": "Entwicklung"
     },
     "backend": {
       "impacted": {
