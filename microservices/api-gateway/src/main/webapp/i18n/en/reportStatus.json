@@ -5,7 +5,9 @@
       "NOT_STARTED": "Not Started",
       "IN_PROGRESS": "In Progress",
       "FAILED": "Failed",
-      "PASSED": "Passed"
+      "PASSED": "Passed",
+      "FINISHED_EXCEPTIONALLY": "Error",
+      "TIMED_OUT": "Timeout"
     }
   }
 }
