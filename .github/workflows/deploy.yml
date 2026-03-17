@@ -63,7 +63,7 @@ jobs:
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
       - uses: actions/setup-node@v6
