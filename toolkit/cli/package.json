@@ -71,7 +71,7 @@
     "wiremock-captain": "4.1.3"
   },
   "optionalDependencies": {
-    "npm-check-updates": "19.6.3"
+    "npm-check-updates": "19.6.5"
   },
   "engines": {
     "node": ">=22.14.0"
