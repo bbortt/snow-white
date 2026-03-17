@@ -38,7 +38,7 @@
 
     <confluent.version>8.2.0</confluent.version>
     <google-protobuf.version>4.34.0</google-protobuf.version>
-    <grpc.version>1.79.0</grpc.version>
+    <grpc.version>1.80.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
     <protobuf-maven-plugin.version>5.0.2</protobuf-maven-plugin.version>
