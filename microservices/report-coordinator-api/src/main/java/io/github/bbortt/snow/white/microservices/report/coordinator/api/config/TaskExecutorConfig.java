@@ -4,10 +4,11 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.sync.job.config;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 
 import static java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor;
 
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -21,5 +22,10 @@ public class TaskExecutorConfig {
   @Bean
   public AsyncTaskExecutor applicationTaskExecutor() {
     return new TaskExecutorAdapter(newVirtualThreadPerTaskExecutor());
+  }
+
+  @Bean
+  public Clock clock() {
+    return Clock.systemUTC();
   }
 }
