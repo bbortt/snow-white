@@ -457,10 +457,10 @@ describe('Report Coordinator API', () => {
         });
 
         describe('env', () => {
-          it('should deploy 2+1+11 environment variables by default', async () => {
+          it('should deploy 2+1+12 environment variables by default', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
-            expect(reportCoordinatorApi.env).toHaveLength(14);
+            expect(reportCoordinatorApi.env).toHaveLength(15);
           });
 
           it('should include default log pattern', async () => {
@@ -484,6 +484,22 @@ describe('Report Coordinator API', () => {
             expect(endpoint).toBeDefined();
             expect(endpoint.value).toBe(
               'http://snow-white-otel-collector-test-release.default.svc.cluster.local.:4318',
+            );
+          });
+
+          it('should calculate api-index-api connection string', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            const apiIndexApiUrl = reportCoordinatorApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL',
+            );
+            expect(apiIndexApiUrl).toBeDefined();
+
+            expect(apiIndexApiUrl.value).toBe(
+              'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
             );
           });
 
@@ -543,7 +559,7 @@ describe('Report Coordinator API', () => {
             const qualityGateApiUrl = reportCoordinatorApi.env.find(
               (env) =>
                 env.name ===
-                'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL',
+                'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL',
             );
             expect(qualityGateApiUrl).toBeDefined();
 
@@ -640,8 +656,8 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            // 1 Logging + 1 OTEL + 1 JAVA_TOOL_OPTIONS + 11 default + 2 additional
-            expect(reportCoordinatorApi.env).toHaveLength(16);
+            // 1 Logging + 1 OTEL + 1 JAVA_TOOL_OPTIONS + 12 default + 2 additional
+            expect(reportCoordinatorApi.env).toHaveLength(17);
 
             const authorEnv = reportCoordinatorApi.env.find(
               (env) => env.name === 'author',

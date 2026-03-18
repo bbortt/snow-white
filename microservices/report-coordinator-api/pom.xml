@@ -229,6 +229,7 @@
           </annotationProcessorPaths>
           <compilerArgs>
             <compilerArg>-Amapstruct.unmappedTargetPolicy=ERROR</compilerArg>
+            <compilerArg>-parameters</compilerArg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -637,6 +638,9 @@
                   <alias>report-coordinator-api</alias>
                   <run>
                     <env>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL>
                       <SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC
                       >
                         snow-white-calculation-request
@@ -651,9 +655,10 @@
                       <SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC-API-GATEWAY-URL>
-                      <SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL>
+                      <SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL
+                      >
                         http://wiremock:8080
-                      </SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL>
+                      </SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL>
                       <SPRING_DATASOURCE_URL>
                         jdbc:postgresql://postgres:5432/report-coordinator-api
                       </SPRING_DATASOURCE_URL>
