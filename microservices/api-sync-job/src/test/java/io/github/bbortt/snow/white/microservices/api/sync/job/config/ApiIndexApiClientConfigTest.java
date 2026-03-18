@@ -26,7 +26,7 @@ class ApiIndexApiClientConfigTest {
   private ApiSyncJobProperties apiSyncJobPropertiesMock;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Mock
     private ApiSyncJobProperties.ApiIndexProperties apiIndexPropertiesMock;

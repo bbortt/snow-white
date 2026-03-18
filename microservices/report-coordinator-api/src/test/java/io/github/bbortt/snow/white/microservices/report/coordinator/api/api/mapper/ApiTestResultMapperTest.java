@@ -33,7 +33,7 @@ class ApiTestResultMapperTest {
   }
 
   @Nested
-  class FromDtos {
+  class FromDtosTest {
 
     @Mock
     private ApiTest apiTestMock;

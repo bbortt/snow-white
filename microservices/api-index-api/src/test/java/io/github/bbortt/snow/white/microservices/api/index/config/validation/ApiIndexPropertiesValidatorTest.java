@@ -27,7 +27,7 @@ class ApiIndexPropertiesValidatorTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {

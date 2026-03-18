@@ -84,7 +84,7 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
   }
 
   @Nested
-  class ProcessResourceSpans {
+  class ProcessResourceSpansTest {
 
     public static Stream<ResourceSpans> validResourceSpans() {
       return Stream.of(
@@ -182,7 +182,7 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
   }
 
   @Nested
-  class CreateStream {
+  class CreateStreamTest {
 
     @Mock
     private StreamsBuilder streamsBuilderMock;
@@ -204,7 +204,7 @@ class ExportTraceServiceRequestEventProtobufProcessorTest {
   }
 
   @Nested
-  class OutboundValueSerde {
+  class OutboundValueSerdeTest {
 
     @Test
     void isNotNull() {

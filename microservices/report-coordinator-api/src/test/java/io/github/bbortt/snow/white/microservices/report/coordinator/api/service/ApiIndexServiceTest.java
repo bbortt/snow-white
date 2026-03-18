@@ -51,7 +51,7 @@ class ApiIndexServiceTest {
   }
 
   @Nested
-  class FetchCompleteApiInformation {
+  class FetchCompleteApiInformationTest {
 
     @Test
     void returnsSuccessWhenApiIsFound() {

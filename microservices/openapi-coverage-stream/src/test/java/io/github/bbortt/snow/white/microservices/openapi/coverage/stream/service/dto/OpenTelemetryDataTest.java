@@ -21,7 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 class OpenTelemetryDataTest {
 
   @Nested
-  class ParseOpenTelemetryData {
+  class ParseOpenTelemetryDataTest {
 
     @Mock
     private FluxRecord mockRecord;

@@ -26,7 +26,7 @@ class ApiIndexApiClientConfigTest {
   private OpenApiCoverageStreamProperties openApiCoverageStreamPropertiesMock;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Mock
     private OpenApiCoverageStreamProperties.ApiIndexProperties apiIndexPropertiesMock;

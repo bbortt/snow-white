@@ -74,7 +74,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class Persist {
+  class PersistTest {
 
     @Test
     void shouldSaveNewConfiguration()
@@ -177,7 +177,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class DeleteByName {
+  class DeleteByNameTest {
 
     @Test
     void shouldRemoveExistingConfiguration()
@@ -228,7 +228,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class FindAllQualityGateConfigurations {
+  class FindAllQualityGateConfigurationsTest {
 
     @Mock
     private Pageable pageable;
@@ -248,7 +248,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class FindByName {
+  class FindByNameTest {
 
     @Test
     void shouldReturnExistingConfiguration()
@@ -280,7 +280,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class Update {
+  class UpdateTest {
 
     @Test
     void shouldUpdateExistingConfiguration()
@@ -342,7 +342,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class InitPredefinedQualityGates {
+  class InitPredefinedQualityGatesTest {
 
     @Test
     void shouldUpdatePersistedQualityGateConfigurations() {

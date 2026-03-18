@@ -35,7 +35,7 @@ class InformationExtractorTest {
   }
 
   @Nested
-  class ExtractFromOpenApi {
+  class ExtractFromOpenApiTest {
 
     @Test
     void returnsCompleteInformationWithAllFieldsPresent() {

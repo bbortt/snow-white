@@ -31,7 +31,7 @@ class InterceptorConfigTest {
   }
 
   @Nested
-  class AddInterceptors {
+  class AddInterceptorsTest {
 
     @Mock
     private InterceptorRegistry registryMock;

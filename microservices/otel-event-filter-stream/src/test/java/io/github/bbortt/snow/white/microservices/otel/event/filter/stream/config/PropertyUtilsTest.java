@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class PropertyUtilsTest {
 
   @Nested
-  class PropertiesToMap {
+  class PropertiesToMapTest {
 
     @Test
     void shouldConvertPropertiesToHashMap() {

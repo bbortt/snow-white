@@ -26,7 +26,7 @@ class ApiIndexApiClientConfigTest {
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Mock
     private ReportCoordinationServiceProperties.ApiIndexProperties apiIndexPropertiesMock;

@@ -37,7 +37,7 @@ class OpenApiServiceTest {
   }
 
   @Nested
-  class FindAndParseOpenApi {
+  class FindAndParseOpenApiTest {
 
     private ApiInformation apiInformation;
 

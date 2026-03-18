@@ -43,7 +43,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
   }
 
   @Nested
-  class Accepts {
+  class AcceptsTest {
 
     @Test
     void shouldReturnTrue_whenErrorResponseCodeCoverage() {
@@ -68,7 +68,7 @@ class ErrorResponseCodeCoverageCalculatorTest {
   }
 
   @Nested
-  class Calculates {
+  class CalculatesTest {
 
     @Test
     void shouldReturn100Percent_whenAllErrorCodesCovered() {

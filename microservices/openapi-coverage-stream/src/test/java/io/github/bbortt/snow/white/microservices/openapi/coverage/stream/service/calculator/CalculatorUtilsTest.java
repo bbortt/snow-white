@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class CalculatorUtilsTest {
 
   @Nested
-  class getStartedStopWatch {
+  class getStartedStopWatchTest {
 
     @Test
     void shouldReturnStartedStopWatch() {

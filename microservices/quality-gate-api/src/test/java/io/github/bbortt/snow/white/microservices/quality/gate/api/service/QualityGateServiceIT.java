@@ -24,7 +24,7 @@ class QualityGateServiceIT extends AbstractQualityGateApiIT {
   private QualityGateService fixture;
 
   @Nested
-  class initPredefinedQualityGates {
+  class initPredefinedQualityGatesTest {
 
     @Test
     void isIdempotent() {

@@ -43,7 +43,7 @@ class CriteriaResourceTest {
   }
 
   @Nested
-  class ListOpenApiCriteria {
+  class ListOpenApiCriteriaTest {
 
     @Test
     void returnsAllCriteria() {

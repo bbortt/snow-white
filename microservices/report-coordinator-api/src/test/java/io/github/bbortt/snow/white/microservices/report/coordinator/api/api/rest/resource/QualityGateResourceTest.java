@@ -43,7 +43,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class QualityGateResourceTest {
 
   @Mock
@@ -79,7 +79,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class CalculateQualityGate {
+  class CalculateQualityGateTest {
 
     private static final String QUALITY_GATE_CONFIG_NAME =
       "qualityGateConfigName";

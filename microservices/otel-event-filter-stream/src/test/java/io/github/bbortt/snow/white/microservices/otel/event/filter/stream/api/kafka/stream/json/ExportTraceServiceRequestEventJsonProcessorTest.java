@@ -83,7 +83,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
   }
 
   @Nested
-  class ResourceSpansStream {
+  class ResourceSpansStreamTest {
 
     public static Stream<ResourceSpans> validResourceSpans() {
       return Stream.of(
@@ -207,7 +207,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
   }
 
   @Nested
-  class CreateStream {
+  class CreateStreamTest {
 
     @Mock
     private StreamsBuilder streamsBuilderMock;
@@ -229,7 +229,7 @@ class ExportTraceServiceRequestEventJsonProcessorTest {
   }
 
   @Nested
-  class OutboundValueSerde {
+  class OutboundValueSerdeTest {
 
     @Test
     void isNotNull() {

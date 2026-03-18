@@ -26,7 +26,7 @@ class ApiIndexApiClientConfigTest {
   private OtelEventFilterStreamProperties otelEventFilterStreamProperties;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Mock
     private OtelEventFilterStreamProperties.ApiIndexProperties apiIndexPropertiesMock;

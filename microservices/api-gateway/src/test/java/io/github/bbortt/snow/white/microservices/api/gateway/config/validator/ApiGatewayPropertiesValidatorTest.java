@@ -40,7 +40,7 @@ class ApiGatewayPropertiesValidatorTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {
@@ -104,7 +104,7 @@ class ApiGatewayPropertiesValidatorTest {
   }
 
   @Nested
-  class SetEnvironment {
+  class SetEnvironmentTest {
 
     @Test
     void setsEnvironment() {

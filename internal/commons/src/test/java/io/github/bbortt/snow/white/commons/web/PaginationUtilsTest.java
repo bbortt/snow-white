@@ -21,7 +21,7 @@ import org.springframework.http.HttpHeaders;
 class PaginationUtilsTest {
 
   @Nested
-  class toPageable {
+  class toPageableTest {
 
     @Test
     void shouldReturnDefaultPageableForNullInputs() {
@@ -85,7 +85,7 @@ class PaginationUtilsTest {
   }
 
   @Nested
-  class GeneratePaginationHttpHeaders {
+  class GeneratePaginationHttpHeadersTest {
 
     @Test
     void shouldGenerateTotalCountHeader() {

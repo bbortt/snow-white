@@ -74,7 +74,7 @@ class ReportResourceTest {
   }
 
   @Nested
-  class GetReportByCalculationId {
+  class GetReportByCalculationIdTest {
 
     @Mock
     private QualityGateReport qualityGateReport;
@@ -186,7 +186,7 @@ class ReportResourceTest {
   }
 
   @Nested
-  class GetReportByCalculationIdAsJUnit {
+  class GetReportByCalculationIdAsJUnitTest {
 
     @Mock
     private QualityGateReport qualityGateReport;
@@ -256,7 +256,7 @@ class ReportResourceTest {
   }
 
   @Nested
-  class ListQualityGateReports {
+  class ListQualityGateReportsTest {
 
     @Test
     void shouldReturnListOfQualityGateReports() {

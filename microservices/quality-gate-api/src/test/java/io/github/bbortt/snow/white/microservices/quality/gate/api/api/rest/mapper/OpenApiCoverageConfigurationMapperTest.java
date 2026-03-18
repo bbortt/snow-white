@@ -31,7 +31,7 @@ class OpenApiCoverageConfigurationMapperTest {
   }
 
   @Nested
-  class ToDtos {
+  class ToDtosTest {
 
     @EnumSource
     @ParameterizedTest

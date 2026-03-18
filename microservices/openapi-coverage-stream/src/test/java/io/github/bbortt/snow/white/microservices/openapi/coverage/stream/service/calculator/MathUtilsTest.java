@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class MathUtilsTest {
 
   @Nested
-  class IntegerApi {
+  class IntegerApiTest {
 
     @Test
     void shouldReturn0Coverage_ifCoveredIsZero() {
@@ -38,7 +38,7 @@ class MathUtilsTest {
   }
 
   @Nested
-  class AtomicLongApi {
+  class AtomicLongApiTest {
 
     @Test
     void shouldReturn0Coverage_ifCoveredIsZero() {

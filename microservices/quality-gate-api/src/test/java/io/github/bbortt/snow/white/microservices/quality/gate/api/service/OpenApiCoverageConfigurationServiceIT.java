@@ -25,7 +25,7 @@ class OpenApiCoverageConfigurationServiceIT extends AbstractQualityGateApiIT {
   private OpenApiCoverageConfigurationService fixture;
 
   @Nested
-  class InitOpenApiCriteria {
+  class InitOpenApiCriteriaTest {
 
     @Test
     void isIdempotent() {

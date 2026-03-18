@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class OperationKeyCalculatorTest {
 
   @Nested
-  class ToOperationKey {
+  class ToOperationKeyTest {
 
     @Test
     void shouldConstructOperationKey() {
@@ -25,7 +25,7 @@ class OperationKeyCalculatorTest {
   }
 
   @Nested
-  class ToPath {
+  class ToPathTest {
 
     @Test
     void shouldConstructOperationKey() {
