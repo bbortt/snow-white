@@ -410,11 +410,12 @@ services:
       LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger"{2}%replace(%mdc{trace_id}){^(.+)$, traceId="$1"} msg="%msg"%n%ex'
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4318'
+      SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL: 'http://api-index-api:8080'
       SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC: 'snow-white-calculation-request'
       SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS: 'true'
       SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC: 'snow-white-openapi-calculation-response'
       SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL: 'http://localhost'
-      SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL: 'http://quality-gate-api:8080'
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/report-coordinator-api'
       SPRING_DATASOURCE_USERNAME: 'report_coord_app'
       SPRING_DATASOURCE_PASSWORD: 'strongpassword2'
