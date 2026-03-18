@@ -54,7 +54,7 @@ class QualityGateServiceTest {
   }
 
   @Nested
-  class findQualityGateConfigByName {
+  class findQualityGateConfigByNameTest {
 
     @Test
     void shouldReturnConfigWhenFound() throws QualityGateNotFoundException {

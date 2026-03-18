@@ -37,7 +37,7 @@ class OpenApiInformationTest {
   }
 
   @Nested
-  class IsIncomplete {
+  class IsIncompleteTest {
 
     @Test
     void withAllValidValuesReturnsFalse() {

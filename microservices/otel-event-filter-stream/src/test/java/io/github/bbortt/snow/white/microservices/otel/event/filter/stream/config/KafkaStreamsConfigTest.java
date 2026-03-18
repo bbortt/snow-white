@@ -33,7 +33,7 @@ class KafkaStreamsConfigTest {
   }
 
   @Nested
-  class SnowWhiteKafkaProperties {
+  class SnowWhiteKafkaPropertiesTest {
 
     @Test
     void configuresSchemaRegistryUrl() {

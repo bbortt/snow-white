@@ -25,7 +25,7 @@ class InfluxDBPropertiesValidatorTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
     public static Stream<String> emptyOrNullString() {
       return Stream.of(null, "", " ");

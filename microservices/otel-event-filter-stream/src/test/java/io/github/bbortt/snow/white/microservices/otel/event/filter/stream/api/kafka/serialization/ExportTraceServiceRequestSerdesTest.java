@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class ExportTraceServiceRequestSerdesTest {
 
   @Nested
-  class JsonSerde {
+  class JsonSerdeTest {
 
     private final TestData testData = TestData.builder().build();
 

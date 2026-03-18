@@ -47,7 +47,7 @@ class ProtobufProcessorConfigTest {
   }
 
   @Nested
-  class JsonProcessor {
+  class JsonProcessorTest {
 
     @Test
     void shouldBePresent_whenConsumerModeIsJson() {
@@ -95,7 +95,7 @@ class ProtobufProcessorConfigTest {
   }
 
   @Nested
-  class ProtobufProcessor {
+  class ProtobufProcessorTest {
 
     @Mock
     private Serde<ExportTraceServiceRequest> protobufSerdeMock;

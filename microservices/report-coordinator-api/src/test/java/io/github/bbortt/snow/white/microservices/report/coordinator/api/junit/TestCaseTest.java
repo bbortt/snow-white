@@ -25,7 +25,7 @@ class TestCaseTest {
   private DurationFormatter durationFormatterMock;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Test
     void shouldCreateTestCase() {
@@ -47,7 +47,7 @@ class TestCaseTest {
   }
 
   @Nested
-  class WithDuration {
+  class WithDurationTest {
 
     @Test
     void shouldSetTimeToFormattedDuration() {
@@ -69,7 +69,7 @@ class TestCaseTest {
   }
 
   @Nested
-  class Builder {
+  class BuilderTest {
 
     @Test
     void shouldUseDefaultValues_whenNotSpecified() {

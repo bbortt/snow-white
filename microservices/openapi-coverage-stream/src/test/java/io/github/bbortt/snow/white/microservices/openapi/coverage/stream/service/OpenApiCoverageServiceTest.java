@@ -61,7 +61,7 @@ class OpenApiCoverageServiceTest {
   }
 
   @Nested
-  class TestOpenApi {
+  class TestOpenApiTest {
 
     private static final String LOOKBACK_WINDOW = "lookbackWindow";
 

@@ -24,7 +24,7 @@ class ReportCoordinationServicePropertiesValidatorTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {

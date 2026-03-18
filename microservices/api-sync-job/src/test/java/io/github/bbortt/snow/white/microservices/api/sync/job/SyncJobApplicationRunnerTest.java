@@ -62,7 +62,7 @@ class SyncJobApplicationRunnerTest {
   }
 
   @Nested
-  class Run {
+  class RunTest {
 
     @Test
     void shouldInvokeSyncCatalog() throws InterruptedException {
