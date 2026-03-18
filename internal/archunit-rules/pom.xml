@@ -24,6 +24,7 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
 
+    <sonar.coverage.exclusions>**/*.java</sonar.coverage.exclusions>
     <sonar.tests />
     <sonar.test.inclusions />
   </properties>
