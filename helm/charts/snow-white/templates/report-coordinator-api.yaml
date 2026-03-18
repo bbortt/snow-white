@@ -45,6 +45,8 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL'
+              value: 'http://{{ include "snow-white.name" (dict "name" "api-index-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC'
               value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS'
@@ -57,7 +59,7 @@ spec:
               {{- else }}
               value: 'http://{{ include "snow-white.publicHost" . }}'
               {{- end }}
-            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API-URL'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
               value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
