@@ -32,7 +32,7 @@ class TechnicalStructureTest {
     .layer("Client").definedBy("..api.client..")
     .layer("Mapper").definedBy("..api.mapper..")
     .layer("JUnit").definedBy("..junit..")
-    .layer("Service").definedBy("..service..")
+    .layer("Service").definedBy("..housekeeping..","..service..")
     .layer("Persistence").definedBy("..domain.repository..")
     .layer("Domain").definedBy("..domain.model..")
 

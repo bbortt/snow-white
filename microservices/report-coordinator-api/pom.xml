@@ -283,6 +283,29 @@
         </dependencies>
         <executions>
           <execution>
+            <id>generate-v1-housekeeping-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${project.basedir}/src/main/resources/openapi/v1-housekeeping-api.yml
+              </inputSpec>
+              <generatorName>snow-white-spring-server</generatorName>
+              <modelPackage>${baseRestApiPackage}.dto</modelPackage>
+              <apiPackage>${baseRestApiPackage}</apiPackage>
+              <configOptions>
+                <apiNameAttributeKey>info.x-api-name</apiNameAttributeKey>
+                <delegatePattern>true</delegatePattern>
+                <generateBuilders>true</generateBuilders>
+                <interfaceOnly>true</interfaceOnly>
+                <userOptional>true</userOptional>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
             <id>generate-v1-quality-gate-api</id>
             <goals>
               <goal>generate</goal>

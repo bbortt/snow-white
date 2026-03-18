@@ -82,7 +82,7 @@ public class ApiSyncProcessor {
                 )
                 .incrementAndGet();
             }
-          } catch (InterruptedException e) {
+          } catch (InterruptedException _) {
             currentThread().interrupt();
           }
         });
