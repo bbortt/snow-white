@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.archunit.rules;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static io.github.bbortt.snow.white.archunit.rules.PackageUtils.packageIsInIgnoreList;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.stream.Collectors.toSet;
@@ -131,7 +132,7 @@ public final class JSpecifyRules {
 
     @Override
     public void check(JavaClass javaClass, ConditionEvents events) {
-      if (packageIsInIgnoreList(javaClass.getPackageName())) {
+      if (packageIsInIgnoreList(javaClass.getPackageName(), ignoringPackages)) {
         return;
       }
 
@@ -202,10 +203,6 @@ public final class JSpecifyRules {
               )
             )
         );
-    }
-
-    private boolean packageIsInIgnoreList(String packageName) {
-      return ignoringPackages.stream().anyMatch(packageName::equals);
     }
 
     private void checkAnnotations(

@@ -1,0 +1,20 @@
+openapi: 3.1.0
+info:
+  title: Housekeeping API
+  version: 1.0.0
+  description: Housekeeping API for Reports.
+  x-api-name: housekeeping
+  x-service-name: report-coordinator-api
+paths:
+  /api/v1/housekeeping:
+    post:
+      operationId: housekeeping
+      summary: 'Trigger housekeeping jobs'
+      description: 'Runs internal housekeeping jobs, e.g. for status updates on long-running Quality-Gate Report calculations.'
+      tags:
+        - housekeeping
+      responses:
+        202:
+          description: Accepted
+        400:
+          description: Bad Request

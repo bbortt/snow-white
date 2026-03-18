@@ -28,10 +28,10 @@ public class ReportCoordinationServiceProperties {
   private String publicApiGatewayUrl;
 
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
-
+  private final HousekeepingProperties housekeepingProperties =
+    new HousekeepingProperties();
   private final OpenapiCalculationResponse openapiCalculationResponse =
     new OpenapiCalculationResponse();
-
   private final QualityGateApiProperties qualityGateApi =
     new QualityGateApiProperties();
 
@@ -43,6 +43,13 @@ public class ReportCoordinationServiceProperties {
       PREFIX + ".api-index.base-url";
 
     private String baseUrl;
+  }
+
+  @Getter
+  @Setter
+  public static class HousekeepingProperties {
+
+    private Long cutoffSeconds = 300L;
   }
 
   @Getter
