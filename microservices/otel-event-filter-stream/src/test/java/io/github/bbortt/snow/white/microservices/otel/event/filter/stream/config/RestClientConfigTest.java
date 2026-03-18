@@ -23,7 +23,7 @@ class RestClientConfigTest {
   }
 
   @Nested
-  class RestClientBuilder {
+  class RestClientBuilderTest {
 
     @Test
     void createsRestClientBuilder() {

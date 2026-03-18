@@ -65,7 +65,7 @@ class OpenApiCoverageCalculationServiceImplTest {
   }
 
   @Nested
-  class FetchOpenApiSpecification {
+  class FetchOpenApiSpecificationTest {
 
     @Test
     void shouldFetchSpecification()
@@ -128,7 +128,7 @@ class OpenApiCoverageCalculationServiceImplTest {
   }
 
   @Nested
-  class EnrichWithOpenTelemetryData {
+  class EnrichWithOpenTelemetryDataTest {
 
     @Test
     void shouldEnrichWithTelemetryData() {
@@ -157,7 +157,7 @@ class OpenApiCoverageCalculationServiceImplTest {
   }
 
   @Nested
-  class CalculateCoverage {
+  class CalculateCoverageTest {
 
     @Test
     void shouldCalculateCoverage() {
@@ -180,7 +180,7 @@ class OpenApiCoverageCalculationServiceImplTest {
   }
 
   @Nested
-  class BuildResponseEvent {
+  class BuildResponseEventTest {
 
     @Test
     void shouldBuildResponseEvent() {

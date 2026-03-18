@@ -22,7 +22,7 @@ class XmlMapperConfigurationTest {
   }
 
   @Nested
-  class XmlMapper {
+  class XmlMapperTest {
 
     @Test
     void shouldReturnJacksonXmlMapper() {

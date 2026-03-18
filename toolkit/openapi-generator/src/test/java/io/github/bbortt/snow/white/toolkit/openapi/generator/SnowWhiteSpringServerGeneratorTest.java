@@ -95,7 +95,7 @@ class SnowWhiteSpringServerGeneratorTest {
   }
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Test
     void initializesDefaultProperties() {
@@ -152,7 +152,7 @@ class SnowWhiteSpringServerGeneratorTest {
   }
 
   @Nested
-  class ProcessOpts {
+  class ProcessOptsTest {
 
     @Test
     void withoutAdditionalArgumentsRetainsDefaults() {
@@ -212,7 +212,7 @@ class SnowWhiteSpringServerGeneratorTest {
   }
 
   @Nested
-  class PostProcessOperationsWithModels {
+  class PostProcessOperationsWithModelsTest {
 
     private static OperationsMap createOperationsMapWithSingleOperation(
       String operationId

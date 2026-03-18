@@ -117,7 +117,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class CreateQualityGate {
+  class CreateQualityGateTest {
 
     private QualityGateConfig qualityGateConfig;
 
@@ -213,7 +213,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class DeleteQualityGate {
+  class DeleteQualityGateTest {
 
     @Test
     void shouldDeleteConfiguration()
@@ -258,7 +258,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class GetAllQualityGates {
+  class GetAllQualityGatesTest {
 
     @Test
     void shouldReturnListOfQualityGates() {
@@ -368,7 +368,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class GetQualityGateByName {
+  class GetQualityGateByNameTest {
 
     @Test
     void shouldReturnConfiguration() throws ConfigurationDoesNotExistException {
@@ -409,7 +409,7 @@ class QualityGateResourceTest {
   }
 
   @Nested
-  class UpdateQualityGate {
+  class UpdateQualityGateTest {
 
     private static final String NAME = "TestQualityGate";
 

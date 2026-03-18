@@ -51,7 +51,7 @@ class QualityGateConfigurationMapperTest {
   }
 
   @Nested
-  class MapOpenApiCriteriaToStringList {
+  class MapOpenApiCriteriaToStringListTest {
 
     @Test
     void shouldReturnStringList() {
@@ -86,7 +86,7 @@ class QualityGateConfigurationMapperTest {
   }
 
   @Nested
-  class MapOpenApiCriteriaToMappings {
+  class MapOpenApiCriteriaToMappingsTest {
 
     @Test
     void shouldCreateMappingsFromStrings() {

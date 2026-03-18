@@ -36,7 +36,7 @@ class OpenApiCoverageCalculationCoordinatorTest {
   private OpenApiCoverageCalculator openApiCoverageCalculatorMock;
 
   @Nested
-  class Calculate {
+  class CalculateTest {
 
     private final Map<String, Operation> pathToOpenAPIOperationMap =
       new HashMap<>();

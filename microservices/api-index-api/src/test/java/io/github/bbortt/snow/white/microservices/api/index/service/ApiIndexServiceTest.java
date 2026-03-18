@@ -41,7 +41,7 @@ class ApiIndexServiceTest {
   }
 
   @Nested
-  class Persist {
+  class PersistTest {
 
     private ApiReference apiReference;
 
@@ -94,7 +94,7 @@ class ApiIndexServiceTest {
   }
 
   @Nested
-  class HasApiByInformationBeenIndexed {
+  class HasApiByInformationBeenIndexedTest {
 
     public static Stream<Boolean> shouldCheckIfApiExists() {
       return Stream.of(true, false);

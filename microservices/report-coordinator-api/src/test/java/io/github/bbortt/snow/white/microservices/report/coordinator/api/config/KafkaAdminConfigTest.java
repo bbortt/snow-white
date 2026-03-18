@@ -35,7 +35,7 @@ class KafkaAdminConfigTest {
   }
 
   @Nested
-  class Admin {
+  class AdminTest {
 
     @Test
     void shouldBeInitializedWithBootstrapServers() {

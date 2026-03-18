@@ -37,7 +37,7 @@ class OpenApiConfigTest {
   }
 
   @Nested
-  class OpenApi {
+  class OpenApiTest {
 
     @Test
     void shouldAppendPublicServerUrl() {

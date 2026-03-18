@@ -24,7 +24,7 @@ class DurationFormatterTest {
   }
 
   @Nested
-  class ToSecondsWithPrecision {
+  class ToSecondsWithPrecisionTest {
 
     @Test
     void shouldReturnZeroForZeroDuration() {

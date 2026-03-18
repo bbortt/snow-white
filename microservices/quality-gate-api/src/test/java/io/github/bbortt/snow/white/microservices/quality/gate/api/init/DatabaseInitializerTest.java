@@ -37,7 +37,7 @@ class DatabaseInitializerTest {
   }
 
   @Nested
-  class Run {
+  class RunTest {
 
     @Test
     void shouldInitiateDatabaseInitialization() {

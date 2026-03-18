@@ -40,7 +40,7 @@ class QualityGateStatusCalculatorTest {
   }
 
   @Nested
-  class WithUpdatedReportStatus {
+  class WithUpdatedReportStatusTest {
 
     @Test
     void shouldReturnNotStarted_whenNoApiTestsArePresent() {

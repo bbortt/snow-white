@@ -28,7 +28,7 @@ class FluxAttributeFilterTest {
   }
 
   @Nested
-  class GetKey {
+  class GetKeyTest {
 
     @Test
     void shouldReturnKeyOfBaseAttributeFilter() {
@@ -37,7 +37,7 @@ class FluxAttributeFilterTest {
   }
 
   @Nested
-  class GetNormalizedKey {
+  class GetNormalizedKeyTest {
 
     @Test
     void shouldReturnNormalizedKey() {
@@ -46,7 +46,7 @@ class FluxAttributeFilterTest {
   }
 
   @Nested
-  class ToFluxString {
+  class ToFluxStringTest {
 
     @Test
     void shouldGenerateCorrectFluxStringFormat_whenUsingStringEquals() {

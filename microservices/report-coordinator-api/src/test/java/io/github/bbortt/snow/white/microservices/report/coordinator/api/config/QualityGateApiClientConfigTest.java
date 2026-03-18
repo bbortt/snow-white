@@ -26,7 +26,7 @@ class QualityGateApiClientConfigTest {
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Mock
     private ReportCoordinationServiceProperties.QualityGateApiProperties qualityGateApiPropertiesMock;

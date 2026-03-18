@@ -63,7 +63,7 @@ class OpenApiResultListenerTest {
   }
 
   @Nested
-  class OnOpenApiCoverageResponse {
+  class OnOpenApiCoverageResponseTest {
 
     private static final UUID CALCULATION_ID = UUID.fromString(
       "9f679723-a328-47c6-b24e-e16894c675f1"

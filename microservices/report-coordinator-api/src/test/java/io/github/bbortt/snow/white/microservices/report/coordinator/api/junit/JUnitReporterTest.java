@@ -87,7 +87,7 @@ class JUnitReporterTest {
   }
 
   @Nested
-  class TransformToJUnitTestSuites {
+  class TransformToJUnitTestSuitesTest {
 
     @Test
     void shouldTransformReport_withoutOpenApiCoverage()

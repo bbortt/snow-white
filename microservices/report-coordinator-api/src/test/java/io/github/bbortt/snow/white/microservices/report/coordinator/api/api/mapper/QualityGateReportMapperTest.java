@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class QualityGateReportMapperTest {
 
   @Nested
-  class ToStatusEnum {
+  class ToStatusEnumTest {
 
     public static Stream<ReportStatus> shouldReturnMappedEnumValue() {
       return Stream.of(FAILED, PASSED);
@@ -53,7 +53,7 @@ class QualityGateReportMapperTest {
   }
 
   @Nested
-  class ToListStatusEnum {
+  class ToListStatusEnumTest {
 
     public static Stream<ReportStatus> shouldReturnMappedEnumValue() {
       return Stream.of(FAILED, PASSED);

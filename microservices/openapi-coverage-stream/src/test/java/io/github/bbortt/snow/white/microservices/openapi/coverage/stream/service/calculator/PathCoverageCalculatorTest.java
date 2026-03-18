@@ -46,7 +46,7 @@ class PathCoverageCalculatorTest {
   }
 
   @Nested
-  class Accepts {
+  class AcceptsTest {
 
     @Test
     void shouldReturnTrue_whenPathCoverage() {
@@ -71,7 +71,7 @@ class PathCoverageCalculatorTest {
   }
 
   @Nested
-  class Calculates {
+  class CalculatesTest {
 
     @Test
     void shouldReturn100Percent_whenPathIngoringMethodsCovered() {

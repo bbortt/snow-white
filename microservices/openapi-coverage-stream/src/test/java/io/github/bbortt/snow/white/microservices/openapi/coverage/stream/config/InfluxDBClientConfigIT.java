@@ -26,7 +26,7 @@ class InfluxDBClientConfigIT extends AbstractOpenApiCoverageServiceIT {
   }
 
   @Nested
-  class InfluxDBClient {
+  class InfluxDBClientTest {
 
     @Autowired
     private InfluxDBProperties influxDBProperties;

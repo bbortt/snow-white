@@ -37,7 +37,7 @@ class ApiInformationFilterTest {
   }
 
   @Nested
-  class FindApiTestMatchingApiInformationInQualityGateReport {
+  class FindApiTestMatchingApiInformationInQualityGateReportTest {
 
     @Test
     void shouldReturnApiTest_whenMatchingApiFound() {

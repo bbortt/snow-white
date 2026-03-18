@@ -22,7 +22,7 @@ class AttributeFilterTest {
   }
 
   @Nested
-  class AttributeFilters {
+  class AttributeFiltersTest {
 
     @Test
     void shouldReturnBuilder() {
@@ -35,7 +35,7 @@ class AttributeFilterTest {
   }
 
   @Nested
-  class Builder {
+  class BuilderTest {
 
     @Test
     void shouldReturnEmptyList_whenNoFiltersAdded() {
@@ -45,7 +45,7 @@ class AttributeFilterTest {
     }
 
     @Nested
-    class With {
+    class WithTest {
 
       @Test
       void shouldAddAttributeFilterToList() {

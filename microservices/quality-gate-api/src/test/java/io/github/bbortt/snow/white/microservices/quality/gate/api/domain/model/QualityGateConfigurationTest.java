@@ -29,7 +29,7 @@ class QualityGateConfigurationTest {
   }
 
   @Nested
-  class WithId {
+  class WithIdTest {
 
     @Mock
     private QualityGateOpenApiCoverageMapping qualityGateOpenApiCoverageMappingMock;
@@ -55,7 +55,7 @@ class QualityGateConfigurationTest {
   }
 
   @Nested
-  class WithOpenApiCoverageConfiguration {
+  class WithOpenApiCoverageConfigurationTest {
 
     private OpenApiCoverageConfiguration coverageConfig;
 

@@ -29,7 +29,7 @@ class OpenApiConfigurationTest {
   }
 
   @Nested
-  class OpenApi {
+  class OpenApiTest {
 
     @Test
     void shouldConfigureOpenAPI() {

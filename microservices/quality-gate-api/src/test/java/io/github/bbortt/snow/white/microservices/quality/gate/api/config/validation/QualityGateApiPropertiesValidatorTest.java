@@ -24,7 +24,7 @@ class QualityGateApiPropertiesValidatorTest {
   }
 
   @Nested
-  class AfterPropertiesSet {
+  class AfterPropertiesSetTest {
 
     @Test
     void doesNotThrowAnythingIfPropertiesSet() {

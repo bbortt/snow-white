@@ -89,7 +89,7 @@ class KafkaTopicManagerTest {
   }
 
   @Nested
-  class CalculationRequestTopic {
+  class CalculationRequestTopicTest {
 
     @Test
     void shouldReturnBean() {
@@ -118,7 +118,7 @@ class KafkaTopicManagerTest {
   }
 
   @Nested
-  class OpenapiCalculationResponseTopic {
+  class OpenapiCalculationResponseTopicTest {
 
     @Test
     void shouldReturnBean() {

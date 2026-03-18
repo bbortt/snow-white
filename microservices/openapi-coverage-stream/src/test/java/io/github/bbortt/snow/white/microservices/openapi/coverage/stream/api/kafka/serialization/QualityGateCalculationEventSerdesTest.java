@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class QualityGateCalculationEventSerdesTest {
 
   @Nested
-  class QualityGateCalculationRequestEvent {
+  class QualityGateCalculationRequestEventTest {
 
     @Test
     void serializationAndDeserializationLoop() {
@@ -38,7 +38,7 @@ class QualityGateCalculationEventSerdesTest {
   }
 
   @Nested
-  class OpenApiCoverageResponseEvent {
+  class OpenApiCoverageResponseEventTest {
 
     @Test
     void serializationAndDeserializationLoop() {

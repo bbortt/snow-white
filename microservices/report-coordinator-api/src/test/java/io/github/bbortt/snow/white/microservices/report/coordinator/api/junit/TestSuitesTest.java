@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class TestSuitesTest {
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Test
     void shouldCreateTestSuites() {
@@ -39,7 +39,7 @@ class TestSuitesTest {
   }
 
   @Nested
-  class AddAllTestSuites {
+  class AddAllTestSuitesTest {
 
     @Test
     void shouldAddTestSuite() {
@@ -56,7 +56,7 @@ class TestSuitesTest {
   }
 
   @Nested
-  class Builder {
+  class BuilderTest {
 
     @Test
     void shouldUseDefaultValues_whenNotSpecified() {

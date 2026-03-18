@@ -73,7 +73,7 @@ class KafkaTopicManagerTest {
   }
 
   @Nested
-  class InboundTopic {
+  class InboundTopicTest {
 
     @Test
     void shouldReturnBean() {
@@ -102,7 +102,7 @@ class KafkaTopicManagerTest {
   }
 
   @Nested
-  class OutboundTopic {
+  class OutboundTopicTest {
 
     @Test
     void shouldReturnBean() {

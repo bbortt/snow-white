@@ -20,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PropertyUtilsTest {
 
   @Nested
-  class AssertRequiredProperties {
+  class AssertRequiredPropertiesTest {
 
     @Test
     void shouldNotThrowException_whenAllPropertiesArePresent() {

@@ -69,7 +69,7 @@ class OpenTelemetryServiceTest {
   }
 
   @Nested
-  class FindOpenTelemetryTracingData {
+  class FindOpenTelemetryTracingDataTest {
 
     private static final ApiInformation API_INFORMATION =
       defaultApiInformation();

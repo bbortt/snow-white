@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class ClassPathScanningUtilsTest {
 
   @Nested
-  class ScanPackageForClassesRecursively {
+  class ScanPackageForClassesRecursivelyTest {
 
     @Test
     void shouldScanAllClasses() {
@@ -64,14 +64,9 @@ class ClassPathScanningUtilsTest {
         );
 
       assertThat(configClasses).containsExactlyInAnyOrder(
-        io.github.bbortt.snow.white.commons.testing
-          .ClassPathScanningException.class,
-        io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtilsTest
-          .ScanPackageForClassesRecursively.class,
-        io.github.bbortt.snow.white.commons.testing
-          .ClassPathScanningUtils.class,
-        io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils
-          .FilterConfiguration.class
+        ClassPathScanningException.class,
+        ClassPathScanningUtils.class,
+        ClassPathScanningUtils.FilterConfiguration.class
       );
     }
   }

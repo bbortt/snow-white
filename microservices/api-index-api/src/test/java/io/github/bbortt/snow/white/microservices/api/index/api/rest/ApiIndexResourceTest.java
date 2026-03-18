@@ -69,7 +69,7 @@ class ApiIndexResourceTest {
   }
 
   @Nested
-  class IngestApi {
+  class IngestApiTest {
 
     private GetAllApis200ResponseInner dto;
 
@@ -113,7 +113,7 @@ class ApiIndexResourceTest {
   }
 
   @Nested
-  class CheckApiExists {
+  class CheckApiExistsTest {
 
     public static Stream<Arguments> shouldIndicateApiExistenceWithHttpStatus() {
       return Stream.of(arguments(true, OK), arguments(false, NOT_FOUND));
@@ -143,7 +143,7 @@ class ApiIndexResourceTest {
   }
 
   @Nested
-  class GetAllApis {
+  class GetAllApisTest {
 
     @Test
     void shouldFetchAllEntities() {
@@ -240,7 +240,7 @@ class ApiIndexResourceTest {
   }
 
   @Nested
-  class GetApiDetails {
+  class GetApiDetailsTest {
 
     @Test
     void shouldFetchApiDetails() {

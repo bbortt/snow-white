@@ -73,7 +73,7 @@ class OtelInformationFilteringServiceTest {
   }
 
   @Nested
-  class Constructor {
+  class ConstructorTest {
 
     @Test
     void extractsProperties() {
@@ -82,7 +82,7 @@ class OtelInformationFilteringServiceTest {
   }
 
   @Nested
-  class FilterUnknownSpecifications {
+  class FilterUnknownSpecificationsTest {
 
     private void filterUnknownSpecificationsAndAssert(
       ExportTraceServiceRequest exportTraceServiceRequest,

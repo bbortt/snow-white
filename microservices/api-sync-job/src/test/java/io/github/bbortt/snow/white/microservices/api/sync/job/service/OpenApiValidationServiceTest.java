@@ -37,7 +37,7 @@ class OpenApiValidationServiceTest {
   }
 
   @Nested
-  class ValidateApiInformationInformationFromIndex {
+  class ValidateApiInformationInformationFromIndexTest {
 
     public static Stream<ApiInformation> apiInformationWithoutMandatoryField() {
       return Stream.of(

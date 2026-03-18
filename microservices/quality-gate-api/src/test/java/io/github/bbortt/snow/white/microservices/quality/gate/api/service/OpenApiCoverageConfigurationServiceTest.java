@@ -45,7 +45,7 @@ class OpenApiCoverageConfigurationServiceTest {
   }
 
   @Nested
-  class GetAllOpenapiCoverageConfigurations {
+  class GetAllOpenapiCoverageConfigurationsTest {
 
     @Test
     void shouldReturnOpenApiCoverageConfigurations() {
@@ -62,7 +62,7 @@ class OpenApiCoverageConfigurationServiceTest {
   }
 
   @Nested
-  class InitOpenApiCriteria {
+  class InitOpenApiCriteriaTest {
 
     @Test
     void shouldAddEachMissingOpenApiCriteriaToDatabase() {

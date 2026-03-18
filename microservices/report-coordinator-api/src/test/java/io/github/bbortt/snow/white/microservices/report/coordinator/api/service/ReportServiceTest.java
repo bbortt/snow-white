@@ -49,7 +49,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({ MockitoExtension.class })
 class ReportServiceTest {
 
   @Mock
@@ -93,7 +93,7 @@ class ReportServiceTest {
   }
 
   @Nested
-  class FindReportByCalculationId {
+  class FindReportByCalculationIdTest {
 
     @Test
     void shouldReturnQualityGateReportById() {
@@ -113,7 +113,7 @@ class ReportServiceTest {
   }
 
   @Nested
-  class UpdateReportWithOpenApiCoverageResults {
+  class UpdateReportWithOpenApiCoverageResultsTest {
 
     private static final UUID CALCULATION_ID = UUID.fromString(
       "9f679723-a328-47c6-b24e-e16894c675f1"
@@ -280,7 +280,7 @@ class ReportServiceTest {
   }
 
   @Nested
-  class InitializeQualityGateCalculation {
+  class InitializeQualityGateCalculationTest {
 
     @Test
     void shouldPersistReportAndApiTests_andDelegateDispatch()
@@ -372,7 +372,7 @@ class ReportServiceTest {
   }
 
   @Nested
-  class Update {
+  class UpdateTest {
 
     @Test
     void shouldDelegateToRepositoryAndReturnSavedReport() {
@@ -386,7 +386,7 @@ class ReportServiceTest {
   }
 
   @Nested
-  class FindAllReports {
+  class FindAllReportsTest {
 
     @Test
     void shouldDelegateToRepository() {
