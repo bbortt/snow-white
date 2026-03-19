@@ -50,6 +50,7 @@ import org.springframework.core.io.ClassPathResource;
 @ImportRuntimeHints(
   {
     NativeRuntimeHintsConfiguration.ConfigResourcesRuntimeHints.class,
+    NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
     NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints.class,
     NativeRuntimeHintsConfiguration.RestApiDtoHints.class,
   }
@@ -72,6 +73,28 @@ public class NativeRuntimeHintsConfiguration {
         .registerResource(
           new ClassPathResource("config/application-prod.yaml")
         );
+    }
+  }
+
+  @NullMarked
+  static class ApiIndexApiDtoRuntimeHints implements RuntimeHintsRegistrar {
+
+    @Override
+    public void registerHints(
+      RuntimeHints hints,
+      @Nullable ClassLoader classLoader
+    ) {
+      scanPackageForClassesRecursively(
+        "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto"
+      ).forEach(clazz ->
+        hints
+          .reflection()
+          .registerType(
+            clazz,
+            INVOKE_PUBLIC_CONSTRUCTORS,
+            INVOKE_PUBLIC_METHODS
+          )
+      );
     }
   }
 
