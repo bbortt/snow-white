@@ -30,21 +30,21 @@ class TaskExecutorConfigTest {
 
     @Test
     void returnsNonNullBean() {
-      AsyncTaskExecutor executor = fixture.applicationTaskExecutor();
+      AsyncTaskExecutor executor = fixture.virtualThreadExecutor();
 
       assertThat(executor).isNotNull();
     }
 
     @Test
     void returnsTaskExecutorAdapter() {
-      AsyncTaskExecutor executor = fixture.applicationTaskExecutor();
+      AsyncTaskExecutor executor = fixture.virtualThreadExecutor();
 
       assertThat(executor).isInstanceOf(TaskExecutorAdapter.class);
     }
 
     @Test
     void canSubmitAndRunTask() throws InterruptedException {
-      AsyncTaskExecutor executor = fixture.applicationTaskExecutor();
+      AsyncTaskExecutor executor = fixture.virtualThreadExecutor();
       var wasRun = new CountDownLatch(1);
 
       executor.submit(wasRun::countDown);
