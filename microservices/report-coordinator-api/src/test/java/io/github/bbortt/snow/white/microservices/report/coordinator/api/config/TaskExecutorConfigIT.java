@@ -17,14 +17,14 @@ import org.springframework.core.task.AsyncTaskExecutor;
 class TaskExecutorConfigIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
-  private AsyncTaskExecutor applicationTaskExecutor;
+  private AsyncTaskExecutor virtualThreadExecutor;
 
   @Autowired
   private Clock clock;
 
   @Test
   void applicationContext_containsAsyncTaskExecutorBean() {
-    assertThat(applicationTaskExecutor).isNotNull();
+    assertThat(virtualThreadExecutor).isNotNull();
   }
 
   @Test
