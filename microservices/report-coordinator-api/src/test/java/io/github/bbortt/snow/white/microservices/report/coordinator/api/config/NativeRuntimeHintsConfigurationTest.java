@@ -48,11 +48,14 @@ class NativeRuntimeHintsConfigurationTest {
   @Mock
   private ClassLoader classLoaderMock;
 
+  private NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints apiIndexApiDtoRuntimeHints;
   private NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints qualityGateApiDtoRuntimeHints;
   private NativeRuntimeHintsConfiguration.RestApiDtoHints restApiDtoHints;
 
   @BeforeEach
   void beforeEachSetup() {
+    apiIndexApiDtoRuntimeHints =
+      new NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints();
     qualityGateApiDtoRuntimeHints =
       new NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints();
     restApiDtoHints = new NativeRuntimeHintsConfiguration.RestApiDtoHints();
@@ -83,6 +86,32 @@ class NativeRuntimeHintsConfigurationTest {
       .hasOnlyOneElementSatisfying(annotation ->
         assertThat(annotation.value()).containsAll(junitClasses)
       );
+  }
+
+  @Test
+  void shouldRegisterApiIndexApiDtoRuntimeHints() {
+    doReturn(reflectionHintsMock).when(runtimeHintsMock).reflection();
+    doReturn(reflectionHintsMock)
+      .when(reflectionHintsMock)
+      .registerType(
+        any(Class.class),
+        eq(INVOKE_PUBLIC_CONSTRUCTORS),
+        eq(INVOKE_PUBLIC_METHODS)
+      );
+
+    apiIndexApiDtoRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
+
+    scanPackageForClassesRecursively(
+      "io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto"
+    ).forEach(clazz ->
+      verify(reflectionHintsMock).registerType(
+        clazz,
+        INVOKE_PUBLIC_CONSTRUCTORS,
+        INVOKE_PUBLIC_METHODS
+      )
+    );
+
+    verifyNoInteractions(classLoaderMock);
   }
 
   @Test
