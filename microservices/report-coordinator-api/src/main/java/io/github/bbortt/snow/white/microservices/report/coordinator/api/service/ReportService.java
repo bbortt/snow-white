@@ -20,8 +20,6 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -75,8 +73,8 @@ public class ReportService {
       return;
     }
 
-    if (nonNull(event.exception())) {
-      handleExceptionalResponse(report, event.exception());
+    if (nonNull(event.errorMessage())) {
+      handleExceptionalResponse(report, event.errorMessage());
       return;
     }
 
@@ -85,10 +83,10 @@ public class ReportService {
 
   private void handleExceptionalResponse(
     QualityGateReport report,
-    Throwable exception
+    String errorMessage
   ) {
     var updated = report
-      .withStackTrace(renderStackTrace(exception))
+      .withStackTrace(errorMessage)
       .withReportStatus(FINISHED_EXCEPTIONALLY);
     update(updated);
   }
@@ -133,12 +131,6 @@ public class ReportService {
     }
 
     update(updatedReport);
-  }
-
-  private static String renderStackTrace(Throwable exception) {
-    var stringWriter = new StringWriter();
-    exception.printStackTrace(new PrintWriter(stringWriter));
-    return stringWriter.toString();
   }
 
   @WithSpan

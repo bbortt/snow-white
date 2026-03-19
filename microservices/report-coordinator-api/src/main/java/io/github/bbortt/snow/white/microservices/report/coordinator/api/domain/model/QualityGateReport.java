@@ -79,7 +79,7 @@ public class QualityGateReport {
 
   @Lob
   @Nullable
-  @Column(columnDefinition = "TEXT", updatable = false)
+  @Column(columnDefinition = "TEXT")
   private String stackTrace;
 
   public @NonNull ReportStatus getReportStatus() {

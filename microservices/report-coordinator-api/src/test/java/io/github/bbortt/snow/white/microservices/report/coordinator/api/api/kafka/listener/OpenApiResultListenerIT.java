@@ -159,7 +159,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
       calculationId.toString(),
       new OpenApiCoverageResponseEvent(
         defaultApiInformation(),
-        new IllegalArgumentException("Exception that should be persisted")
+        "Exception that should be persisted"
       )
     );
 

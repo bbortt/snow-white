@@ -226,10 +226,9 @@ class ReportServiceTest {
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
 
-      var exception = new RuntimeException("upstream failure");
       var event = new OpenApiCoverageResponseEvent(
         mock(ApiInformation.class),
-        exception
+        "upstream failure"
       );
 
       fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
