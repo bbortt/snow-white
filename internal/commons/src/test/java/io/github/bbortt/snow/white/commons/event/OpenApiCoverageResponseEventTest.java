@@ -47,14 +47,14 @@ class OpenApiCoverageResponseEventTest {
 
     @Test
     void shouldConstructResponseEventWithResults() {
-      assertThat(fixture).hasNoNullFieldsOrPropertiesExcept("exception");
+      assertThat(fixture).hasNoNullFieldsOrPropertiesExcept("errorMessage");
     }
 
     @Test
     void shouldConstructResponseEventWithException() {
       var customOpenApiCoverageResponseEvent = new OpenApiCoverageResponseEvent(
         apiInformationMock,
-        mock(Throwable.class)
+        "exception"
       );
 
       assertThat(

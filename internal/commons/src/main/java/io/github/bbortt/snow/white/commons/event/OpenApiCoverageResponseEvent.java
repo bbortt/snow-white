@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 public record OpenApiCoverageResponseEvent(
   ApiInformation apiInformation,
   @Nullable Set<OpenApiTestResult> openApiTestResults,
-  @Nullable Throwable exception
+  @Nullable String errorMessage
 ) implements ApiCoverageResponseEvent {
   public OpenApiCoverageResponseEvent(
     ApiInformation apiInformation,
@@ -29,9 +29,9 @@ public record OpenApiCoverageResponseEvent(
 
   public OpenApiCoverageResponseEvent(
     ApiInformation apiInformation,
-    @NonNull Throwable exception
+    @NonNull String errorMessage
   ) {
-    this(apiInformation, null, exception);
+    this(apiInformation, null, errorMessage);
   }
 
   @Override

@@ -17,6 +17,9 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -70,6 +73,18 @@ public class OpenApiCoverageCalculationProcessor {
     return stream;
   }
 
+  private KStream<String, QualityGateCalculationRequestEvent> createStream(
+    StreamsBuilder streamsBuilder
+  ) {
+    return streamsBuilder.stream(
+      openApiCoverageStreamProperties.getCalculationRequestTopic(),
+      Consumed.with(
+        Serdes.String(),
+        QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent()
+      )
+    );
+  }
+
   private @NonNull OpenApiCoverageResponseEvent processOpenApiCoverageRequestAndHandleExceptions(
     FixedKeyRecord<
       String,
@@ -94,7 +109,7 @@ public class OpenApiCoverageCalculationProcessor {
         qualityGateCalculationRequestEventFixedKeyRecord
           .value()
           .getApiInformation(),
-        rootCause
+        extractStackTraceOrErrorMessage(rootCause)
       );
     }
   }
@@ -127,15 +142,17 @@ public class OpenApiCoverageCalculationProcessor {
     );
   }
 
-  private KStream<String, QualityGateCalculationRequestEvent> createStream(
-    StreamsBuilder streamsBuilder
-  ) {
-    return streamsBuilder.stream(
-      openApiCoverageStreamProperties.getCalculationRequestTopic(),
-      Consumed.with(
-        Serdes.String(),
-        QualityGateCalculationEventSerdes.QualityGateCalculationRequestEvent()
-      )
-    );
+  private @NonNull String extractStackTraceOrErrorMessage(Throwable rootCause) {
+    try (
+      var stringWriter = new StringWriter();
+      var printWriter = new PrintWriter(stringWriter)
+    ) {
+      rootCause.printStackTrace(printWriter);
+      return stringWriter.toString();
+    } catch (IOException e) {
+      logger.warn("Failed to print stacktrace of exception!", e);
+    }
+
+    return rootCause.getMessage();
   }
 }

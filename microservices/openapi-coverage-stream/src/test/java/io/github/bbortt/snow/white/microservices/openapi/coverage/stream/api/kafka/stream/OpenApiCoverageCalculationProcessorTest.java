@@ -173,7 +173,10 @@ class OpenApiCoverageCalculationProcessorTest {
     void shouldRespondWithOpenApiNotIndexedException()
       throws OpenApiNotIndexedException, UnparseableOpenApiException {
       var cause = new OpenApiNotIndexedException(defaultApiInformation());
-      assertThatEventIsBeingRespondedWithException(() -> cause, cause);
+      assertThatEventIsBeingRespondedWithException(
+        () -> cause,
+        "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException: OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }"
+      );
     }
 
     @Test
@@ -182,7 +185,10 @@ class OpenApiCoverageCalculationProcessorTest {
       var cause = new UnparseableOpenApiException(
         singletonList("Error message")
       );
-      assertThatEventIsBeingRespondedWithException(() -> cause, cause);
+      assertThatEventIsBeingRespondedWithException(
+        () -> cause,
+        "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException: Unparsable OpenAPI: Error message"
+      );
     }
 
     @Test
@@ -192,13 +198,13 @@ class OpenApiCoverageCalculationProcessorTest {
 
       assertThatEventIsBeingRespondedWithException(
         () -> new IllegalArgumentException(cause),
-        cause
+        "java.lang.IllegalArgumentException: Something nasty happened"
       );
     }
 
     private void assertThatEventIsBeingRespondedWithException(
       Supplier<Exception> exceptionSupplier,
-      Exception cause
+      String expectedStacktrace
     ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
       var calculationId = "e872b8e9-bca6-406f-9a7e-728017171138";
       var requestEvent = qualityGateCalculationRequestEvent();
@@ -219,9 +225,8 @@ class OpenApiCoverageCalculationProcessorTest {
             r -> assertThat(r.getKey()).isEqualTo(calculationId),
             r -> assertThat(r.value()).isNotNull(),
             r ->
-              assertThat(r.value().exception()).satisfies(
-                e -> assertThat(e).isNotNull(),
-                e -> assertThat(e).message().isEqualTo(cause.getMessage())
+              assertThat(r.value().errorMessage()).startsWith(
+                expectedStacktrace
               )
           )
       );
