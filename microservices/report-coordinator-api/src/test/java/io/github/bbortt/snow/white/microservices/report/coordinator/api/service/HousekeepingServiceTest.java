@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.PREFIX;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
@@ -18,13 +19,18 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.housekeeping.HousekeepingJob;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @ExtendWith({ MockitoExtension.class })
 class HousekeepingServiceTest {
@@ -46,24 +52,37 @@ class HousekeepingServiceTest {
   }
 
   @Nested
-  class HousekeepingTest {
+  class RunHousekeepingTest {
 
-    @Test
-    void runsAllJobsAsynchronously() {
+    static Stream<Consumer<HousekeepingService>> housekeepingMethods() {
+      return Stream.of(
+        HousekeepingService::runHousekeeping,
+        HousekeepingService::runScheduledHousekeeping
+      );
+    }
+
+    @ParameterizedTest
+    @MethodSource("housekeepingMethods")
+    void runsAllJobsAsynchronously(
+      Consumer<HousekeepingService> housekeepingMethod
+    ) {
       fixture = new HousekeepingService(
         List.of(firstHousekeepingJobMock, secondHousekeepingJobMock),
         new SimpleAsyncTaskExecutor()
       );
 
-      fixture.runHousekeeping();
+      housekeepingMethod.accept(fixture);
 
       // Jobs run on virtual threads — use a generous but bounded timeout
       verify(firstHousekeepingJobMock, timeout(1_000)).run();
       verify(secondHousekeepingJobMock, timeout(1_000)).run();
     }
 
-    @Test
-    void returnsImmediatelyWithoutWaitingForJobs() {
+    @ParameterizedTest
+    @MethodSource("housekeepingMethods")
+    void returnsImmediatelyWithoutWaitingForJobs(
+      Consumer<HousekeepingService> housekeepingMethod
+    ) {
       HousekeepingJob slowJob = () -> {
         try {
           sleep(5_000);
@@ -78,24 +97,30 @@ class HousekeepingServiceTest {
       );
 
       long start = currentTimeMillis();
-      fixture.runHousekeeping();
+      housekeepingMethod.accept(fixture);
 
       long elapsed = currentTimeMillis() - start;
       assertThat(elapsed).isLessThan(1_000);
     }
 
-    @Test
-    void withNoJobs_returns() {
+    @ParameterizedTest
+    @MethodSource("housekeepingMethods")
+    void withNoJobs_returns(Consumer<HousekeepingService> housekeepingMethod) {
       fixture = new HousekeepingService(
         emptyList(),
         new SimpleAsyncTaskExecutor()
       );
 
-      assertThatCode(fixture::runHousekeeping).doesNotThrowAnyException();
+      assertThatCode(() ->
+        housekeepingMethod.accept(fixture)
+      ).doesNotThrowAnyException();
     }
 
-    @Test
-    void continuesRunningRemainingJobsWhenOneThrows() {
+    @ParameterizedTest
+    @MethodSource("housekeepingMethods")
+    void continuesRunningRemainingJobsWhenOneThrows(
+      Consumer<HousekeepingService> housekeepingMethod
+    ) {
       HousekeepingJob failingJob = () -> {
         throw new RuntimeException("boom");
       };
@@ -104,9 +129,23 @@ class HousekeepingServiceTest {
         new SimpleAsyncTaskExecutor()
       );
 
-      fixture.runHousekeeping();
+      housekeepingMethod.accept(fixture);
 
       verify(secondHousekeepingJobMock, timeout(1_000)).run();
+    }
+  }
+
+  @Nested
+  class RunScheduledHousekeepingTest {
+
+    @Test
+    void scheduledAnnotationShouldStartWithPrefix()
+      throws NoSuchMethodException {
+      assertThat(
+        HousekeepingService.class.getDeclaredMethod("runScheduledHousekeeping")
+          .getDeclaredAnnotation(Scheduled.class)
+          .cron()
+      ).startsWith("${" + PREFIX + ".housekeeping");
     }
   }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -24,5 +25,11 @@ public class HousekeepingService {
   public void runHousekeeping() {
     logger.info("Invoking housekeeping jobs");
     housekeepingJobs.forEach(virtualThreadExecutor::execute);
+  }
+
+  @Scheduled(cron = "${snow.white.report.coordinator.api.housekeeping.cron:-}")
+  public void runScheduledHousekeeping() {
+    logger.info("Invoking scheduled housekeeping jobs");
+    runHousekeeping();
   }
 }
