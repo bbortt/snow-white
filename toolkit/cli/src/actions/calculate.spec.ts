@@ -11,6 +11,7 @@ import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'b
 import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
+import type { SanitizedOptions } from '../config/sanitized-options';
 
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { calculate } from './calculate';
@@ -37,7 +38,7 @@ describe('calculate action', () => {
     calculateQualityGate: mock(),
   };
 
-  const defaultOptions = {
+  const defaultOptions: SanitizedOptions = {
     apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
     qualityGate: 'test-gate',
     url: 'http://localhost:8080',
@@ -79,7 +80,9 @@ describe('calculate action', () => {
       await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
+        attributeFilters: undefined,
         includeApis: [...defaultOptions.apiInformation],
+        lookbackWindow: undefined,
       });
 
       expect(mockConsoleLog).toHaveBeenNthCalledWith(1, expect.stringContaining('🚀  Starting Quality-Gate calculation for 1 API(s)...'));
@@ -90,6 +93,88 @@ describe('calculate action', () => {
         8,
         expect.stringContaining('💡  Use the returned URL to check the calculation report.'),
       );
+    });
+
+    it('should include lookbackWindow in request when provided', async () => {
+      const mockResponse: AxiosResponse = {
+        config: {} as any,
+        data: { id: '123-456-789', status: 'INITIATED' },
+        headers: {},
+        status: 202,
+        statusText: 'Accepted',
+      };
+
+      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+
+      const optionsWithLookback: SanitizedOptions = {
+        ...defaultOptions,
+        lookbackWindow: '24h',
+      };
+
+      await calculate(getQualityGateApi(qualityGateApiMock), optionsWithLookback);
+
+      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
+        attributeFilters: undefined,
+        includeApis: [...defaultOptions.apiInformation],
+        lookbackWindow: '24h',
+      });
+
+      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Lookback window: 24h'));
+    });
+
+    it('should include attributeFilters in request when provided', async () => {
+      const mockResponse: AxiosResponse = {
+        config: {} as any,
+        data: { id: '123-456-789', status: 'INITIATED' },
+        headers: {},
+        status: 202,
+        statusText: 'Accepted',
+      };
+
+      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+
+      const optionsWithFilters: SanitizedOptions = {
+        ...defaultOptions,
+        attributeFilters: { environment: 'production', region: 'us-west-1' },
+      };
+
+      await calculate(getQualityGateApi(qualityGateApiMock), optionsWithFilters);
+
+      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
+        attributeFilters: { environment: 'production', region: 'us-west-1' },
+        includeApis: [...defaultOptions.apiInformation],
+        lookbackWindow: undefined,
+      });
+
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining('Attribute filters: {"environment":"production","region":"us-west-1"}'),
+      );
+    });
+
+    it('should include both lookbackWindow and attributeFilters when provided', async () => {
+      const mockResponse: AxiosResponse = {
+        config: {} as any,
+        data: { id: '123-456-789', status: 'INITIATED' },
+        headers: {},
+        status: 202,
+        statusText: 'Accepted',
+      };
+
+      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+
+      const fullOptions: SanitizedOptions = {
+        ...defaultOptions,
+        attributeFilters: { environment: 'staging' },
+        lookbackWindow: '7d',
+      };
+
+      await calculate(getQualityGateApi(qualityGateApiMock), fullOptions);
+
+      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
+        attributeFilters: { environment: 'staging' },
+        includeApis: [...defaultOptions.apiInformation],
+        lookbackWindow: '7d',
+      });
     });
 
     it('should handle response without location header', async () => {

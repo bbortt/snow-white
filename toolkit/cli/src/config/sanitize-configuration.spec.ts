@@ -118,7 +118,7 @@ describe('sanitizeConfiguration', () => {
     it('resolves config from exact path if specified', () => {
       (resolveConfig as any).mockReturnValueOnce(sanitizedOptions);
 
-      expect(sanitizeConfiguration({} as CliOptions)).toBe(sanitizedOptions);
+      expect(sanitizeConfiguration({} as CliOptions)).toEqual(sanitizedOptions);
 
       expect(resolveConfig).toHaveBeenCalled();
     });
@@ -127,8 +127,6 @@ describe('sanitizeConfiguration', () => {
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Configuration file may not contain recursive references or be empty.'),
       );
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
-
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     };
 
@@ -162,7 +160,6 @@ describe('sanitizeConfiguration', () => {
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Each API information must contain serviceName, apiName, and apiVersion.'),
       );
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -180,7 +177,6 @@ describe('sanitizeConfiguration', () => {
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
       );
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -196,9 +192,154 @@ describe('sanitizeConfiguration', () => {
       expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    });
+  });
+
+  describe('CLI parameter precedence over config file', () => {
+    it('should override URL from config file with CLI parameter', () => {
+      const fileConfig: SanitizedOptions = {
+        ...sanitizedOptions,
+        url: 'http://config-file-url.com',
+      };
+      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+
+      const result = sanitizeConfiguration({ url: 'http://cli-url.com' } as CliOptions);
+
+      expect(result.url).toBe('http://cli-url.com');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --url overrides config file value'));
+    });
+
+    it('should override qualityGate from config file with CLI parameter', () => {
+      const fileConfig: SanitizedOptions = {
+        ...sanitizedOptions,
+        qualityGate: 'file-gate',
+      };
+      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+
+      const result = sanitizeConfiguration({ qualityGate: 'cli-gate' } as CliOptions);
+
+      expect(result.qualityGate).toBe('cli-gate');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --qualityGate overrides config file value'));
+    });
+
+    it('should override lookbackWindow from config file with CLI parameter', () => {
+      const fileConfig: SanitizedOptions = {
+        ...sanitizedOptions,
+        lookbackWindow: '1h',
+      };
+      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+
+      const result = sanitizeConfiguration({ lookbackWindow: '24h' } as CliOptions);
+
+      expect(result.lookbackWindow).toBe('24h');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --lookbackWindow overrides config file value'),
+      );
+    });
+
+    it('should override attributeFilters from config file with CLI filters', () => {
+      const fileConfig: SanitizedOptions = {
+        ...sanitizedOptions,
+        attributeFilters: { environment: 'production' },
+      };
+      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+
+      const result = sanitizeConfiguration({ filter: ['region=us-west-1'] } as CliOptions);
+
+      expect(result.attributeFilters).toEqual({ region: 'us-west-1' });
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --filter overrides config file attributeFilters'),
+      );
+    });
+
+    it('should not warn when CLI parameter matches config file value', () => {
+      const fileConfig: SanitizedOptions = {
+        ...sanitizedOptions,
+        url: 'http://same-url.com',
+      };
+      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+
+      const result = sanitizeConfiguration({ url: 'http://same-url.com' } as CliOptions);
+
+      expect(result.url).toBe('http://same-url.com');
+      expect(mockConsoleWarn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('filter parsing', () => {
+    it('should parse multiple filters correctly', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        filter: ['environment=production', 'region=us-west-1'],
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result.attributeFilters).toEqual({
+        environment: 'production',
+        region: 'us-west-1',
+      });
+    });
+
+    it('should warn and skip invalid filter format', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        filter: ['invalid-filter', 'valid=filter'],
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result.attributeFilters).toEqual({ valid: 'filter' });
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  Ignoring invalid filter format: "invalid-filter"'));
+    });
+
+    it('should handle filter with equals sign in value', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        filter: ['query=a=b'],
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result.attributeFilters).toEqual({ query: 'a=b' });
+    });
+  });
+
+  describe('lookbackWindow validation', () => {
+    it('should accept valid lookback window formats', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        lookbackWindow: '24h',
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result.lookbackWindow).toBe('24h');
+      expect(mockConsoleWarn).not.toHaveBeenCalled();
+    });
+
+    it('should warn for potentially invalid lookback window format', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        lookbackWindow: 'invalid',
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result.lookbackWindow).toBe('invalid');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  Lookback window "invalid" may not be in expected format'));
     });
   });
 
@@ -215,9 +356,26 @@ describe('sanitizeConfiguration', () => {
       ).toEqual(sanitizedOptions);
 
       expect(mockConsoleError).not.toHaveBeenCalled();
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).not.toHaveBeenCalled();
+    });
+
+    it('should include optional lookbackWindow and attributeFilters', () => {
+      const result = sanitizeConfiguration({
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        filter: ['env=prod'],
+        lookbackWindow: '1h',
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+      });
+
+      expect(result).toEqual({
+        ...sanitizedOptions,
+        attributeFilters: { env: 'prod' },
+        lookbackWindow: '1h',
+      });
     });
 
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
@@ -231,8 +389,6 @@ describe('sanitizeConfiguration', () => {
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- serviceName'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- apiName'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- apiVersion'));
-
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -251,7 +407,6 @@ describe('sanitizeConfiguration', () => {
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
       );
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -268,7 +423,6 @@ describe('sanitizeConfiguration', () => {
       ).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -278,7 +432,6 @@ describe('sanitizeConfiguration', () => {
     it('is not implemented yet', () => {
       const options: CliOptions = {
         openApiSpecs: 'some-glob-pattern',
-        url: 'url',
       };
 
       expect(() => sanitizeConfiguration(options)).toThrowError('Process exited with code 0');

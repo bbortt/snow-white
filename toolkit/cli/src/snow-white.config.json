@@ -7,5 +7,9 @@
     }
   ],
   "qualityGate": "sonarqube",
-  "url": "http://localhost:8080"
+  "url": "http://localhost:8080",
+  "lookbackWindow": "1h",
+  "attributeFilters": {
+    "environment": "production"
+  }
 }

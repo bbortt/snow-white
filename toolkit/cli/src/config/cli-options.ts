@@ -21,5 +21,14 @@ export interface CliOptions {
   /**
    * Base URL for Snow-White API.
    */
-  url: string;
+  url?: string;
+  /**
+   * The time window to consider for calculation (e.g., '1h', '24h', '7d').
+   */
+  lookbackWindow?: string;
+  /**
+   * Key-value pairs for filtering telemetry data (format: key=value).
+   * Can be specified multiple times.
+   */
+  filter?: string[];
 }

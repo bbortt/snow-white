@@ -19,9 +19,22 @@ import { toDtos } from '../entity/mapper/api-information.mapper';
 const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
   console.log(chalk.blue(`🚀  Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
   console.log(chalk.gray(`Base URL: ${options.url}`));
+
+  if (options.lookbackWindow) {
+    console.log(chalk.gray(`Lookback window: ${options.lookbackWindow}`));
+  }
+
+  if (options.attributeFilters && Object.keys(options.attributeFilters).length > 0) {
+    console.log(chalk.gray(`Attribute filters: ${JSON.stringify(options.attributeFilters)}`));
+  }
+
   console.log('');
 
-  const calculationRequest: CalculateQualityGateRequest = { includeApis: toDtos(options.apiInformation) };
+  const calculationRequest: CalculateQualityGateRequest = {
+    attributeFilters: options.attributeFilters,
+    includeApis: toDtos(options.apiInformation),
+    lookbackWindow: options.lookbackWindow,
+  };
 
   const response: AxiosResponse<CalculateQualityGate202Response> = await qualityGateApi.calculateQualityGate(
     options.qualityGate,
