@@ -25,7 +25,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Calculator for the following criteria: Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested.
+ * Calculator for the following criteria:
+ * Each HTTP method ({@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, etc.) for each path has been tested.
  *
  * @see OpenApiCriteria#ERROR_RESPONSE_CODE_COVERAGE
  */
@@ -41,7 +42,7 @@ public class MethodCoverageCalculator
   }
 
   @Override
-  public CoverageCalculationResult calculateCoverage(
+  public @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
