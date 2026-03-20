@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,10 +23,11 @@ public interface QualityGateReportRepository
 {
   @Modifying
   @Query(
-    "UPDATE QualityGateReport r SET r.reportStatus = :status WHERE r.createdAt < :cutoff"
+    "UPDATE QualityGateReport r SET r.reportStatus = :status WHERE r.createdAt < :cutoff AND r.reportStatus IN (:initialStatus)"
   )
   int updateStatusToTimedOutByCreatedAtBefore(
     @Param("cutoff") Instant cutoff,
-    @Param("status") int status
+    @Param("status") int status,
+    @Param("initialStatus") Set<Short> initialStatus
   );
 }
