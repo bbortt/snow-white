@@ -20,5 +20,5 @@ export const CodeHighlightBlock = ({ code, language }: ICodeHighlightBlockProps)
     return <pre className="mt-2 code-highlight-block" dangerouslySetInnerHTML={{ __html: hljs.highlight(code, { language }).value }} />;
   }
 
-  return <code className="mt-2 code-highlight-block">{code}</code>;
+  return <pre className="mt-2 code-highlight-block">{code}</pre>;
 };

@@ -25,27 +25,27 @@ describe('CodeHighlightBlock', () => {
   });
 
   describe('without a language prop', () => {
-    it('renders a <code> element', () => {
+    it('renders a <pre> element', () => {
       const { container } = render(<CodeHighlightBlock code="hello world" />);
 
-      expect(container.querySelector('code')).toBeInTheDocument();
+      expect(container.querySelector('pre')).toBeInTheDocument();
     });
 
     it('renders the code as plain text', () => {
       const code = 'const x = 1;';
       const { container } = render(<CodeHighlightBlock code={code} />);
 
-      const codeElement = container.querySelector('code');
-      expect(codeElement).toBeInTheDocument();
-      expect(codeElement).toHaveTextContent(code);
+      const pre = container.querySelector('pre');
+      expect(pre).toBeInTheDocument();
+      expect(pre).toHaveTextContent(code);
     });
 
-    it('applies the css classes to the <code> element', () => {
+    it('applies the css classes to the <pre> element', () => {
       const { container } = render(<CodeHighlightBlock code="x" />);
 
-      const code = container.querySelector('code');
-      expect(code).toHaveClass('code-highlight-block');
-      expect(code).toHaveClass('mt-2');
+      const pre = container.querySelector('pre');
+      expect(pre).toHaveClass('code-highlight-block');
+      expect(pre).toHaveClass('mt-2');
     });
 
     it('does not call hljs.highlight', () => {
