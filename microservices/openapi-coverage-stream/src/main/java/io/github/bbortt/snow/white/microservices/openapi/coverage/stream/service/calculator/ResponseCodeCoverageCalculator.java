@@ -34,7 +34,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Calculator for the following criteria: Each documented response code for each endpoint is tested.
+ * Calculator for the following criteria:
+ * Each documented response code for each endpoint is tested.
  *
  * @see OpenApiCriteria#RESPONSE_CODE_COVERAGE
  */
@@ -52,7 +53,7 @@ public class ResponseCodeCoverageCalculator
   }
 
   @Override
-  public CoverageCalculationResult calculateCoverage(
+  public @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {

@@ -1,0 +1,350 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
+import static java.math.RoundingMode.HALF_UP;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
+
+import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.json.JsonMapper;
+
+@ExtendWith({ MockitoExtension.class })
+class NoUndocumentedPositiveResponseCodesCalculatorTest {
+
+  private NoUndocumentedPositiveResponseCodesCalculator fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new NoUndocumentedPositiveResponseCodesCalculator();
+  }
+
+  @Nested
+  class AcceptsTest {
+
+    @Test
+    void shouldReturnTrue_whenNoUndocumentedPositiveResponseCodes() {
+      boolean result = fixture.accepts(NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES);
+
+      assertThat(result).isTrue();
+    }
+
+    @EnumSource
+    @ParameterizedTest
+    void shouldReturnFalse_whenNotNoUndocumentedPositiveResponseCodes(
+      OpenApiCriteria openApiCriteria
+    ) {
+      if (NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES.equals(openApiCriteria)) {
+        return;
+      }
+
+      boolean result = fixture.accepts(openApiCriteria);
+
+      assertThat(result).isFalse();
+    }
+  }
+
+  @Nested
+  class CalculatesTest {
+
+    @Test
+    void shouldReturn100Percent_whenAllObservedPositiveCodesAreDocumented() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "201", "204"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "204"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r ->
+          assertThat(r.openApiCriteria()).isEqualTo(
+            NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES
+          ),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r ->
+          assertThat(r.duration())
+            .isNotNull()
+            .extracting(Duration::getNano)
+            .asInstanceOf(INTEGER)
+            .isPositive(),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldIgnoreErrorResponseCodes() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "400", "500"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldReturn0Percent_whenUndocumentedPositiveCodeObserved() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("201"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following observed non-erroneous response codes are not documented in the OpenAPI specification: `GET_/api/v1/users [201]`"
+          )
+      );
+    }
+
+    @Test
+    void shouldReturn100Percent_whenOnlyErrorCodesObserved() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("400", "404", "500"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldMatchWildcardPatterns_forPositiveCodes() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("2XX", "3XX"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "201", "204", "301", "304"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldIncludeRedirectCodes() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "301", "302"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.33)),
+        r ->
+          assertThat(r.additionalInformation()).contains("301").contains("302")
+      );
+    }
+
+    @Test
+    void shouldHandleMultipleOperations() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of("200"),
+          "POST_/api/v1/users",
+          List.of("201")
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of("200"),
+          "POST_/api/v1/users",
+          List.of("200")
+        )
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
+        r ->
+          assertThat(r.additionalInformation()).contains(
+            "POST_/api/v1/users [200]"
+          )
+      );
+    }
+
+    @Test
+    void shouldReturn100Percent_whenNoTelemetryData() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "201"))
+      );
+
+      var pathToTelemetryMap = new HashMap<String, List<OpenTelemetryData>>();
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldHandleDefaultCatchAll() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "default"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "201", "204", "301"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    private Map<String, Operation> createOperationsWithResponseCodes(
+      Map<String, List<String>> pathToResponseCodes
+    ) {
+      Map<String, Operation> result = new HashMap<>();
+
+      for (Map.Entry<
+        String,
+        List<String>
+      > entry : pathToResponseCodes.entrySet()) {
+        Operation operation = new Operation();
+        ApiResponses responses = new ApiResponses();
+
+        for (String code : entry.getValue()) {
+          responses.addApiResponse(code, new ApiResponse().description("Test"));
+        }
+
+        operation.setResponses(responses);
+        result.put(entry.getKey(), operation);
+      }
+
+      return result;
+    }
+
+    private Map<String, List<OpenTelemetryData>> createTelemetryWithStatusCodes(
+      Map<String, List<String>> pathToStatusCodes
+    ) {
+      Map<String, List<OpenTelemetryData>> result = new HashMap<>();
+
+      for (Map.Entry<
+        String,
+        List<String>
+      > entry : pathToStatusCodes.entrySet()) {
+        List<OpenTelemetryData> telemetryList = entry
+          .getValue()
+          .stream()
+          .map(statusCode ->
+            createTelemetryDataWithAttribute(
+              "http.response.status_code",
+              statusCode
+            )
+          )
+          .toList();
+
+        result.put(entry.getKey(), telemetryList);
+      }
+
+      return result;
+    }
+
+    private OpenTelemetryData createTelemetryDataWithAttribute(
+      String attributeName,
+      String value
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put(attributeName, value);
+
+      return new OpenTelemetryData("span-123", "trace-456", attributes);
+    }
+
+    private static @NonNull BigDecimal getBigDecimal(double value) {
+      return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+}

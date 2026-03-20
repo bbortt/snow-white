@@ -24,8 +24,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Calculator for the following criteria: Each documented error response code for each endpoint is tested.
- * This is a subset of `RESPONSE_CODE_COVERAGE`.
+ * Calculator for the following criteria:
+ * Each documented error response code for each endpoint is tested.
+ * This is a subset of {@link OpenApiCriteria#RESPONSE_CODE_COVERAGE}.
  *
  * @see OpenApiCriteria#ERROR_RESPONSE_CODE_COVERAGE
  */
