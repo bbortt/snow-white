@@ -6,12 +6,15 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.housekeeping;
 
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.TIMED_OUT;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -39,7 +42,8 @@ public class QualityGateReportHousekeeper implements HousekeepingJob {
     int updated =
       qualityGateReportRepository.updateStatusToTimedOutByCreatedAtBefore(
         cutoff,
-        TIMED_OUT.getVal()
+        TIMED_OUT.getVal(),
+        Set.of(NOT_STARTED.getVal(), IN_PROGRESS.getVal())
       );
 
     logger.info("Timed out {} stale QualityGate report(s)", updated);

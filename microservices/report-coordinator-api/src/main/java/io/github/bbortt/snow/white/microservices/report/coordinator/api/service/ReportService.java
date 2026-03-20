@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FINISHED_EXCEPTIONALLY;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
@@ -69,7 +70,7 @@ public class ReportService {
       return null;
     });
 
-    if (report == null) {
+    if (isNull(report)) {
       return;
     }
 
