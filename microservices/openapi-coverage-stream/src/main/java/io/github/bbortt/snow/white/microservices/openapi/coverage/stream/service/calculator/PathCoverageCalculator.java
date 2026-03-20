@@ -25,8 +25,9 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
- * Calculator for the following criteria: Every path defined in the OpenAPI specification has been called.
- * This is a subset of `HTTP_METHOD_COVERAGE`.
+ * Calculator for the following criteria:
+ * Every path defined in the OpenAPI specification has been called.
+ * This is a subset of `.{@link OpenApiCriteria#HTTP_METHOD_COVERAGE}.
  *
  * @see OpenApiCriteria#PATH_COVERAGE
  */
@@ -40,7 +41,7 @@ public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
   }
 
   @Override
-  public CoverageCalculationResult calculateCoverage(
+  public @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
