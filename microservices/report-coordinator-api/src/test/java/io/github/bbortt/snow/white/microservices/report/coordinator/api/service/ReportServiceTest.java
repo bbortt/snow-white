@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.minimalQualityGateReport;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FINISHED_EXCEPTIONALLY;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
@@ -302,10 +303,9 @@ class ReportServiceTest {
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 
-      var savedReport = QualityGateReport.builder()
-        .calculationId(UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af"))
-        .reportParameter(reportParameter)
-        .build();
+      var savedReport = minimalQualityGateReport(
+        UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af")
+      );
       doReturn(savedReport)
         .when(qualityGateReportRepositoryMock)
         .save(any(QualityGateReport.class));
@@ -367,6 +367,38 @@ class ReportServiceTest {
           reportParameter
         )
       ).isEqualTo(cause);
+    }
+  }
+
+  @Nested
+  class HandleExceptionalResponseTest {
+
+    @Test
+    void shouldDelegateToRepositoryWithUpdatedStatus() {
+      var report = minimalQualityGateReport(
+        UUID.fromString("ed8d03da-5ee2-4852-b7cf-4e19c612bd62")
+      );
+      var errorMessage = "some error message";
+
+      fixture.handleExceptionalResponse(report, errorMessage);
+
+      ArgumentCaptor<QualityGateReport> qualityGateReportCaptor = captor();
+      verify(qualityGateReportRepositoryMock).save(
+        qualityGateReportCaptor.capture()
+      );
+
+      assertThat(qualityGateReportCaptor.getValue())
+        .isNotNull()
+        .satisfies(
+          qualityGateReport ->
+            assertThat(qualityGateReport.getReportStatus()).isEqualTo(
+              FINISHED_EXCEPTIONALLY
+            ),
+          qualityGateReport ->
+            assertThat(qualityGateReport.getStackTrace()).isEqualTo(
+              errorMessage
+            )
+        );
     }
   }
 

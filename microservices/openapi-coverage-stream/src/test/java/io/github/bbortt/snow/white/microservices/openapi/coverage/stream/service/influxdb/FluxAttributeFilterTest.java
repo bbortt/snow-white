@@ -6,10 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb;
 
-import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,14 +17,29 @@ import org.junit.jupiter.api.Test;
 class FluxAttributeFilterTest {
 
   private static final String KEY = "http.target";
+  private static final AttributeFilter BASE_ATTRIBUTE_FILTER =
+    new AttributeFilter(
+      KEY,
+      AttributeFilterOperator.STRING_EQUALS,
+      "/api/v1/users"
+    );
 
   private FluxAttributeFilter fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new FluxAttributeFilter(
-      new AttributeFilter(KEY, STRING_EQUALS, "/api/v1/users")
-    );
+    fixture = new FluxAttributeFilter(BASE_ATTRIBUTE_FILTER);
+  }
+
+  @Nested
+  class GetBaseAttributeFilterTest {
+
+    @Test
+    void shouldReturnBaseAttributeFilter() {
+      assertThat(fixture.getBaseAttributeFilter()).isEqualTo(
+        BASE_ATTRIBUTE_FILTER
+      );
+    }
   }
 
   @Nested

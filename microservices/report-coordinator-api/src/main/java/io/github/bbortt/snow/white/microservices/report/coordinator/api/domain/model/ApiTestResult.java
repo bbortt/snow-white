@@ -41,7 +41,7 @@ public class ApiTestResult {
   @Id
   @NonNull
   @With(PRIVATE)
-  @Size(min = 1, max = 32)
+  @Size(min = 1, max = 64)
   private String apiTestCriteria;
 
   @NonNull

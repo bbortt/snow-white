@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.API_NAME;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.API_VERSION;
@@ -16,26 +17,32 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -53,6 +60,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenApiCoverageCalculationProcessorTest {
@@ -89,10 +98,18 @@ class OpenApiCoverageCalculationProcessorTest {
   @Nested
   class OpenapiCoverageStreamTest {
 
-    public static final byte[] TRACEPARENT_HEADER_BYTES =
-      "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01".getBytes(
-        StandardCharsets.UTF_8
-      );
+    private static final String TRACEPARENT_HEADER =
+      "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+    private static final byte[] TRACEPARENT_HEADER_BYTES =
+      TRACEPARENT_HEADER.getBytes(StandardCharsets.UTF_8);
+
+    private static final ApiInformation API_INFORMATION =
+      ApiInformation.builder()
+        .serviceName(SERVICE_NAME)
+        .apiName(API_NAME)
+        .apiVersion(API_VERSION)
+        .apiType(OPENAPI)
+        .build();
 
     @Test
     void shouldProcessCoverageRequest()
@@ -101,14 +118,22 @@ class OpenApiCoverageCalculationProcessorTest {
       var requestEvent = qualityGateCalculationRequestEvent();
 
       var enrichedContext = mock(OpenApiTestContext.class);
+      doReturn(
+        Set.of(
+          new OpenTelemetryData(
+            "spanId",
+            "traceId",
+            new ObjectNode(mock(JsonNodeFactory.class))
+          )
+        )
+      )
+        .when(enrichedContext)
+        .openTelemetryData();
+
       var calculatedContext = mock(OpenApiTestContext.class);
+
       var responseEvent = new OpenApiCoverageResponseEvent(
-        ApiInformation.builder()
-          .serviceName(SERVICE_NAME)
-          .apiName(API_NAME)
-          .apiVersion(API_VERSION)
-          .apiType(OPENAPI)
-          .build(),
+        API_INFORMATION,
         emptySet()
       );
 
@@ -153,6 +178,76 @@ class OpenApiCoverageCalculationProcessorTest {
       );
       verify(openApiCoverageCalculationServiceMock).buildResponseEvent(
         calculatedContext
+      );
+    }
+
+    @Test
+    void shouldReportBackCoverageRequestsWithInvalidFilterCriteria()
+      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      var calculationId = "f57a401d-c3b4-48eb-8592-08aa91d14bcf";
+      var requestEvent = qualityGateCalculationRequestEvent();
+
+      var enrichedContext = mock(OpenApiTestContext.class);
+      doReturn(API_INFORMATION).when(enrichedContext).apiInformation();
+      doReturn(
+        Set.of(
+          new FluxAttributeFilter(
+            new AttributeFilter(
+              "traceparent",
+              STRING_EQUALS,
+              TRACEPARENT_HEADER
+            )
+          ),
+          new FluxAttributeFilter(
+            new AttributeFilter("foo", STRING_EQUALS, "bar")
+          )
+        )
+      )
+        .when(enrichedContext)
+        .fluxAttributeFilters();
+
+      var responseEvent = new OpenApiCoverageResponseEvent(
+        API_INFORMATION,
+        "Did not find any telemetry data with configured criteria: [{\"key\":\"foo\",\"operator\":\"STRING_EQUALS\",\"value\":\"bar\"},{\"key\":\"traceparent\",\"operator\":\"STRING_EQUALS\",\"value\":\"" +
+          TRACEPARENT_HEADER +
+          "\"}]"
+      );
+
+      var openApiTestContext = mock(OpenApiTestContext.class);
+      doReturn(openApiTestContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(calculationId, requestEvent);
+      doReturn(enrichedContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .enrichWithOpenTelemetryData(eq(openApiTestContext), anyLong());
+
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readRecordsToList())
+          .hasSize(1)
+          .first()
+          .satisfies(
+            r ->
+              assertThat(r.getHeaders()).containsExactly(
+                new RecordHeader("traceparent", TRACEPARENT_HEADER_BYTES)
+              ),
+            r -> assertThat(r.getKey()).isEqualTo(calculationId),
+            r -> assertThat(r.value()).isEqualTo(responseEvent)
+          )
+      );
+
+      verify(openApiCoverageCalculationServiceMock).fetchOpenApiSpecification(
+        calculationId,
+        requestEvent
+      );
+      verify(openApiCoverageCalculationServiceMock).enrichWithOpenTelemetryData(
+        eq(openApiTestContext),
+        anyLong()
+      );
+      verify(openApiCoverageCalculationServiceMock, never()).calculateCoverage(
+        any(OpenApiTestContext.class)
+      );
+      verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
+        any(OpenApiTestContext.class)
       );
     }
 
