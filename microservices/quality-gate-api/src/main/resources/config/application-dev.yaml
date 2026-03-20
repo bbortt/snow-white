@@ -9,7 +9,7 @@ spring:
     livereload:
       enabled: true
   datasource:
-    jdbc-url: jdbc:h2:mem:quality-gate;MODE=PostgreSQL
+    url: jdbc:h2:mem:quality-gate;MODE=PostgreSQL
     username: sa
     password: password
   flyway:
