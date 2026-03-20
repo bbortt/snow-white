@@ -27,6 +27,7 @@ const initialState: EntityState<IQualityGate> = {
 const fromDto = ({
   calculationId,
   qualityGateConfigName,
+  stackTrace,
   status,
   calculationRequest,
   interfaces,
@@ -46,6 +47,7 @@ const fromDto = ({
       isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,
     })),
   })),
+  stackTrace,
   status,
   createdAt: initiatedAt,
   calculationRequest: {
