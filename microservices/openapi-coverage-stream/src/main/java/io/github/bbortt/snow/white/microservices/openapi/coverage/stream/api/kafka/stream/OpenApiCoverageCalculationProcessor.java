@@ -6,9 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
+import static io.github.bbortt.snow.white.commons.logging.ExceptionConverter.extractStackTraceOrErrorMessage;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream.processor.TracingProcessor.newTracingProcessor;
+import static java.lang.String.format;
+import static java.util.Comparator.comparing;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
@@ -17,9 +21,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -31,6 +33,7 @@ import org.apache.kafka.streams.processor.api.FixedKeyRecord;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Kafka Streams processor for OpenAPI coverage calculation.
@@ -99,6 +102,7 @@ public class OpenApiCoverageCalculationProcessor {
       );
     } catch (Exception exception) {
       var rootCause = getRootCause(exception);
+
       logger.error(
         "Failed to process OpenAPI coverage for message: {}",
         rootCause.getMessage(),
@@ -133,6 +137,23 @@ public class OpenApiCoverageCalculationProcessor {
         timestamp
       );
 
+    if (isEmpty(openApiTestContext.openTelemetryData())) {
+      return new OpenApiCoverageResponseEvent(
+        openApiTestContext.apiInformation(),
+        format(
+          "Did not find any telemetry data with configured criteria: %s",
+          JsonMapper.shared().writeValueAsString(
+            openApiTestContext
+              .fluxAttributeFilters()
+              .stream()
+              .sorted(comparing(FluxAttributeFilter::getKey))
+              .map(FluxAttributeFilter::getBaseAttributeFilter)
+              .toList()
+          )
+        )
+      );
+    }
+
     openApiTestContext = openApiCoverageCalculationService.calculateCoverage(
       openApiTestContext
     );
@@ -140,19 +161,5 @@ public class OpenApiCoverageCalculationProcessor {
     return openApiCoverageCalculationService.buildResponseEvent(
       openApiTestContext
     );
-  }
-
-  private @NonNull String extractStackTraceOrErrorMessage(Throwable rootCause) {
-    try (
-      var stringWriter = new StringWriter();
-      var printWriter = new PrintWriter(stringWriter)
-    ) {
-      rootCause.printStackTrace(printWriter);
-      return stringWriter.toString();
-    } catch (IOException e) {
-      logger.warn("Failed to print stacktrace of exception!", e);
-    }
-
-    return rootCause.getMessage();
   }
 }

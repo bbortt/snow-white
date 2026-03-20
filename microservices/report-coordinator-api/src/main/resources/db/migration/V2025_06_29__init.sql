@@ -53,7 +53,7 @@ CREATE TABLE api_test
 
 CREATE TABLE api_test_result
 (
-    api_test_criteria      VARCHAR(32)   NOT NULL,
+    api_test_criteria      VARCHAR(64)   NOT NULL,
     coverage               DECIMAL(3, 2) NOT NULL,
     included_in_report     BOOLEAN       NOT NULL,
     duration               BIGINT        NOT NULL, -- Duration stored as nanoseconds

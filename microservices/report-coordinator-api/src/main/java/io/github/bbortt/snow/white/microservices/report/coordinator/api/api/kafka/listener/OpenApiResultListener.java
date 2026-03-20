@@ -7,13 +7,14 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
 
 import static io.github.bbortt.snow.white.commons.kafka.OtelPropagators.KAFKA_HEADERS_GETTER;
+import static io.github.bbortt.snow.white.commons.logging.ExceptionConverter.extractStackTraceOrErrorMessage;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.CONSUMER_GROUP_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.DEFAULT_CONSUMER_GROUP_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.OPENAPI_CALCULATION_RESPONSE_TOPIC;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import java.util.UUID;
@@ -49,11 +50,25 @@ public class OpenApiResultListener {
       openApiCoverageResponseEventConsumerRecord.headers()
     );
 
+    var calculationId = UUID.fromString(
+      openApiCoverageResponseEventConsumerRecord.key()
+    );
     try (var _ = extractedContext.makeCurrent()) {
       reportService.updateReportWithOpenApiCoverageResults(
-        UUID.fromString(openApiCoverageResponseEventConsumerRecord.key()),
+        calculationId,
         openApiCoverageResponseEventConsumerRecord.value()
       );
+    } catch (Exception e) {
+      var rootCause = getRootCause(e);
+      logger.error("Failed to update OpenAPI result '{}'!", calculationId, e);
+      reportService
+        .findReportByCalculationId(calculationId)
+        .ifPresent(qualityGateReport ->
+          reportService.handleExceptionalResponse(
+            qualityGateReport,
+            extractStackTraceOrErrorMessage(rootCause)
+          )
+        );
     }
   }
 

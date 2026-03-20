@@ -82,7 +82,7 @@ public class ReportService {
     handleSuccessfulResponse(report, event);
   }
 
-  private void handleExceptionalResponse(
+  public void handleExceptionalResponse(
     QualityGateReport report,
     String errorMessage
   ) {

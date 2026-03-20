@@ -9,10 +9,13 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilter.STRING_OPERANDS;
 
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
+import lombok.Getter;
 
 public class FluxAttributeFilter {
 
+  @Getter
   private final AttributeFilter baseAttributeFilter;
+
   private final String normalizedKey;
 
   public FluxAttributeFilter(AttributeFilter baseAttributeFilter) {
