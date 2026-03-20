@@ -20,6 +20,87 @@ const exitWithCodeInvalidConfig = (): void => {
   exit(INVALID_CONFIG_FORMAT);
 };
 
+/**
+ * Parses filter strings in format "key=value" into a record.
+ */
+const parseFilters = (filters?: string[]): Record<string, string> | undefined => {
+  if (!filters || filters.length === 0) {
+    return undefined;
+  }
+
+  const result: Record<string, string> = {};
+  for (const filter of filters) {
+    const separatorIndex = filter.indexOf('=');
+    if (separatorIndex === -1) {
+      console.warn(chalk.yellow(`⚠️  Ignoring invalid filter format: "${filter}". Expected format: key=value`));
+      continue;
+    }
+
+    const key = filter.slice(0, separatorIndex).trim();
+    const value = filter.slice(separatorIndex + 1).trim();
+
+    if (!key || !value) {
+      console.warn(chalk.yellow(`⚠️  Ignoring invalid filter: "${filter}". Both key and value must be non-empty.`));
+      continue;
+    }
+
+    result[key] = value;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+};
+
+/**
+ * Merges CLI options over file config, with CLI taking precedence.
+ * Logs warnings when CLI options override file config values.
+ */
+const mergeWithCliOverrides = (fileConfig: Partial<SanitizedOptions>, cliOptions: CliOptions): Partial<SanitizedOptions> => {
+  const result = { ...fileConfig };
+
+  // URL override
+  if (cliOptions.url !== undefined) {
+    if (fileConfig.url !== undefined && fileConfig.url !== cliOptions.url) {
+      console.warn(chalk.yellow(`⚠️  CLI parameter --url overrides config file value: "${fileConfig.url}" → "${cliOptions.url}"`));
+    }
+    result.url = cliOptions.url;
+  }
+
+  // Quality gate override
+  if (cliOptions.qualityGate !== undefined) {
+    if (fileConfig.qualityGate !== undefined && fileConfig.qualityGate !== cliOptions.qualityGate) {
+      console.warn(
+        chalk.yellow(
+          `⚠️  CLI parameter --qualityGate overrides config file value: "${fileConfig.qualityGate}" → "${cliOptions.qualityGate}"`,
+        ),
+      );
+    }
+    result.qualityGate = cliOptions.qualityGate;
+  }
+
+  // Lookback window override
+  if (cliOptions.lookbackWindow !== undefined) {
+    if (fileConfig.lookbackWindow !== undefined && fileConfig.lookbackWindow !== cliOptions.lookbackWindow) {
+      console.warn(
+        chalk.yellow(
+          `⚠️  CLI parameter --lookbackWindow overrides config file value: "${fileConfig.lookbackWindow}" → "${cliOptions.lookbackWindow}"`,
+        ),
+      );
+    }
+    result.lookbackWindow = cliOptions.lookbackWindow;
+  }
+
+  // Filter override
+  const cliFilters = parseFilters(cliOptions.filter);
+  if (cliFilters !== undefined) {
+    if (fileConfig.attributeFilters !== undefined && Object.keys(fileConfig.attributeFilters).length > 0) {
+      console.warn(chalk.yellow(`⚠️  CLI parameter --filter overrides config file attributeFilters`));
+    }
+    result.attributeFilters = cliFilters;
+  }
+
+  return result;
+};
+
 const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
   if (Object.keys(options).length === 0 || options.configFile) {
     console.error(chalk.red('❌  Configuration file may not contain recursive references or be empty.'));
@@ -30,6 +111,10 @@ const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
         JSON.stringify(
           {
             apiInformation: [{ apiName: 'ping-pong', apiVersion: '1.0.0', serviceName: 'example-application' }],
+            attributeFilters: {
+              environment: 'production',
+            },
+            lookbackWindow: '1h',
             qualityGate: 'basic-coverage',
             url: 'http://localhost:9000',
           },
@@ -56,10 +141,12 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
   }
 
   if (activeGroups.length === 0) {
-    return validateConfigurationFromFile(resolveConfig());
+    const fileConfig = validateConfigurationFromFile(resolveConfig()) as Partial<SanitizedOptions>;
+    return mergeWithCliOverrides(fileConfig, options);
   }
   if (options.configFile) {
-    return validateConfigurationFromFile(resolveConfig(options.configFile));
+    const fileConfig = validateConfigurationFromFile(resolveConfig(options.configFile)) as Partial<SanitizedOptions>;
+    return mergeWithCliOverrides(fileConfig, options);
   }
 
   if (options.openApiSpecs) {
@@ -74,8 +161,16 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     exitWithCodeInvalidConfig();
   }
 
-  const { apiName, apiVersion, qualityGate, serviceName, url } = options;
-  return { apiInformation: [{ apiName, apiVersion, serviceName }], qualityGate, url };
+  const { apiName, apiVersion, lookbackWindow, qualityGate, serviceName, url } = options;
+  const attributeFilters = parseFilters(options.filter);
+
+  return {
+    apiInformation: [{ apiName, apiVersion, serviceName }],
+    attributeFilters,
+    lookbackWindow,
+    qualityGate,
+    url,
+  };
 };
 
 export const validateConfiguration = (config: SanitizedOptions): SanitizedOptions => {
@@ -95,10 +190,22 @@ export const validateConfiguration = (config: SanitizedOptions): SanitizedOption
     exitWithCodeInvalidConfig();
   }
 
+  // Validate lookbackWindow format if provided
+  if (config.lookbackWindow !== undefined) {
+    const lookbackPattern = /^\d+[hdwm]$/i;
+    if (!lookbackPattern.test(config.lookbackWindow)) {
+      console.warn(
+        chalk.yellow(
+          `⚠️  Lookback window "${config.lookbackWindow}" may not be in expected format (e.g., '1h', '24h', '7d'). Proceeding anyway.`,
+        ),
+      );
+    }
+  }
+
   return config;
 };
 
 export const sanitizeConfiguration = (options: CliOptions): SanitizedOptions => {
   const config = loadConfigBasedOnType(options);
-  return validateConfiguration(config);
+  return validateConfiguration(config as SanitizedOptions);
 };
