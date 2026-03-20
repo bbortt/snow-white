@@ -6,26 +6,31 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
 
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.minimalQualityGateReport;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -102,8 +107,7 @@ class OpenApiResultListenerTest {
     }
 
     @Test
-    void shouldExtractTraceContextFromIncomingHeaders()
-      throws QualityGateNotFoundException {
+    void shouldExtractTraceContextFromIncomingHeaders() {
       var headers = new RecordHeaders();
       headers.add(
         "traceparent",
@@ -117,10 +121,7 @@ class OpenApiResultListenerTest {
         .when(textMapPropagatorMock)
         .extract(any(), eq(headers), any());
 
-      var event = new OpenApiCoverageResponseEvent(
-        mock(ApiInformation.class),
-        emptySet()
-      );
+      var event = getEmptyOpenApiCoverageResponseEvent();
 
       fixture.onOpenApiCoverageResponse(
         getOpenApiCoverageResponseEventConsumerRecord(event, headers)
@@ -136,8 +137,7 @@ class OpenApiResultListenerTest {
     }
 
     @Test
-    void shouldExtractTraceContext_usingHeadersGetter()
-      throws QualityGateNotFoundException {
+    void shouldExtractTraceContext_usingHeadersGetter() {
       var traceparentValue = "00-abc123def456abc1-abc1def2abc3def4-01";
       var headers = new RecordHeaders();
       headers.add("traceparent", traceparentValue.getBytes(UTF_8));
@@ -151,10 +151,7 @@ class OpenApiResultListenerTest {
         .when(textMapPropagatorMock)
         .extract(any(), any(Headers.class), any());
 
-      var event = new OpenApiCoverageResponseEvent(
-        mock(ApiInformation.class),
-        emptySet()
-      );
+      var event = getEmptyOpenApiCoverageResponseEvent();
 
       fixture.onOpenApiCoverageResponse(
         getOpenApiCoverageResponseEventConsumerRecord(event, headers)
@@ -164,15 +161,10 @@ class OpenApiResultListenerTest {
     }
 
     @Test
-    void shouldDelegateToReportService() throws QualityGateNotFoundException {
-      doReturn(Context.root())
-        .when(textMapPropagatorMock)
-        .extract(any(), any(Headers.class), any());
+    void shouldDelegateToReportService() {
+      withValidOpenTelemetryContext();
 
-      var event = new OpenApiCoverageResponseEvent(
-        mock(ApiInformation.class),
-        emptySet()
-      );
+      var event = getEmptyOpenApiCoverageResponseEvent();
 
       fixture.onOpenApiCoverageResponse(
         getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
@@ -181,6 +173,68 @@ class OpenApiResultListenerTest {
       verify(reportServiceMock).updateReportWithOpenApiCoverageResults(
         CALCULATION_ID,
         event
+      );
+    }
+
+    @Test
+    void shouldCatchAnyExceptionsAndTryUpdatingQualityGateReport() {
+      withValidOpenTelemetryContext();
+
+      var event = getEmptyOpenApiCoverageResponseEvent();
+
+      doThrow(new IllegalArgumentException("thrown on purpose"))
+        .when(reportServiceMock)
+        .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      var qualityGateReport = minimalQualityGateReport(CALCULATION_ID);
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(CALCULATION_ID);
+
+      fixture.onOpenApiCoverageResponse(
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
+      );
+
+      verify(reportServiceMock).handleExceptionalResponse(
+        eq(qualityGateReport),
+        anyString()
+      );
+    }
+
+    @Test
+    void shouldCatchAnyExceptionsAndIgnoreItWhenQualityGateReportDoesNotExist() {
+      withValidOpenTelemetryContext();
+
+      var event = getEmptyOpenApiCoverageResponseEvent();
+
+      doThrow(new IllegalArgumentException("thrown on purpose"))
+        .when(reportServiceMock)
+        .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportByCalculationId(CALCULATION_ID);
+
+      fixture.onOpenApiCoverageResponse(
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
+      );
+
+      verify(reportServiceMock, never()).handleExceptionalResponse(
+        any(QualityGateReport.class),
+        anyString()
+      );
+    }
+
+    private void withValidOpenTelemetryContext() {
+      doReturn(Context.root())
+        .when(textMapPropagatorMock)
+        .extract(any(), any(Headers.class), any());
+    }
+
+    private static @NonNull OpenApiCoverageResponseEvent getEmptyOpenApiCoverageResponseEvent() {
+      return new OpenApiCoverageResponseEvent(
+        mock(ApiInformation.class),
+        emptySet()
       );
     }
   }
