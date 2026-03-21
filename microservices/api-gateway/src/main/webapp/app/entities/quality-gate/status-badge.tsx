@@ -4,38 +4,38 @@
  * See LICENSE file for full details.
  */
 
-import { IQualityGate } from 'app/shared/model/quality-gate.model';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useMemo } from 'react';
 import { translate } from 'react-jhipster';
-import { Badge } from 'reactstrap';
 
 import './status-badge.scss';
+import { Badge } from 'reactstrap';
 
 type StatusBadgeProps = {
   fill?: boolean;
-  qualityGate: IQualityGate;
+  status: ReportStatus;
 };
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ qualityGate, fill }: StatusBadgeProps) => {
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ fill, status }: StatusBadgeProps) => {
   const className = useMemo(() => (fill ? 'badge-block' : ''), [fill]);
-  const status: string | null = useMemo(() => translate(`snowWhiteApp.reportStatus.${qualityGate.status}`), [qualityGate.status]);
+  const statusText: string | null = useMemo(() => translate(`snowWhiteApp.reportStatus.${status}`), [status]);
 
-  if (qualityGate.status === 'PASSED') {
+  if (status === ReportStatus.PASSED) {
     return (
       <Badge className={className} color="success">
-        <span>{status}</span>
+        <span>{statusText}</span>
       </Badge>
     );
-  } else if (qualityGate.status === 'FAILED' || qualityGate.status === 'FINISHED_EXCEPTIONALLY') {
+  } else if (status === ReportStatus.FAILED || status === ReportStatus.FINISHED_EXCEPTIONALLY) {
     return (
       <Badge className={className} color="danger">
-        <span>{status}</span>
+        <span>{statusText}</span>
       </Badge>
     );
-  } else if (qualityGate.status === 'TIMED_OUT') {
+  } else if (status === ReportStatus.TIMED_OUT) {
     return (
       <Badge className={className} color="warning">
-        <span>{status}</span>
+        <span>{statusText}</span>
       </Badge>
     );
   } else {

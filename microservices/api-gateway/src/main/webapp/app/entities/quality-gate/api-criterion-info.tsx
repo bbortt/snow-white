@@ -4,23 +4,24 @@
  * See LICENSE file for full details.
  */
 
-import './open-api-criterion-badge.scss';
+import './api-criterion-info.scss';
 
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { useEffect, useMemo, useState } from 'react';
 import { translate } from 'react-jhipster';
-import { Badge, Tooltip } from 'reactstrap';
+import { Button, Tooltip } from 'reactstrap';
 
 import { getEntity } from '../open-api-criterion/open-api-criterion.reducer';
 
 export interface OpenApiCriterionBadgeProps {
-  openApiCriterion: IOpenApiCriterion;
+  apiCriterion: IOpenApiCriterion;
 }
 
-export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ openApiCriterion }) => {
+export const ApiCriterionInfo: React.FC<OpenApiCriterionBadgeProps> = ({ apiCriterion }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
   const dispatch = useAppDispatch();
@@ -30,22 +31,14 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
   };
 
   useEffect(() => {
-    if (openApiCriterion.name) {
-      dispatch(getEntity(openApiCriterion.name));
+    if (apiCriterion.name) {
+      dispatch(getEntity(apiCriterion.name));
     }
-  }, [openApiCriterion.name, dispatch]);
+  }, [apiCriterion.name, dispatch]);
 
   const openApiCriterionEntity: IOpenApiCriterion = useAppSelector(
-    state => state.snowwhite.openApiCriterion.entities?.[openApiCriterion.name!] || openApiCriterion,
+    state => state.snowwhite.openApiCriterion.entities?.[apiCriterion.name!] || apiCriterion,
   );
-
-  const name = useMemo(() => {
-    const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterionEntity.name}.name`);
-    if (translation?.startsWith('translation-not-found')) {
-      return openApiCriterionEntity.name;
-    }
-    return translation;
-  }, [openApiCriterionEntity.name]);
 
   const description = useMemo(() => {
     const translation = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterionEntity.name}.description`);
@@ -61,12 +54,14 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
 
   return (
     <>
-      <Badge id={`badge-${openApiCriterionEntity.name}`}>{name}</Badge>
-      <Tooltip target={`badge-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
+      <Button className="noHover" id={`info-${openApiCriterionEntity.name}`}>
+        <FontAwesomeIcon icon="info-circle" />
+      </Button>
+      <Tooltip target={`info-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
         <TextWithCode text={description} />
       </Tooltip>
     </>
   );
 };
 
-export default OpenApiCriterionBadge;
+export default ApiCriterionInfo;
