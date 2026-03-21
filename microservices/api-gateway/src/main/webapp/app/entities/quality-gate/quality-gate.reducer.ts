@@ -11,6 +11,7 @@ import type { AxiosResponse } from 'axios';
 
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { reportApi } from 'app/entities/quality-gate/report-api';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 
@@ -48,7 +49,7 @@ const fromDto = ({
     })),
   })),
   stackTrace,
-  status,
+  status: ReportStatus[status],
   createdAt: initiatedAt,
   calculationRequest: {
     lookbackWindow: calculationRequest.lookbackWindow,

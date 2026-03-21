@@ -6,9 +6,13 @@
 
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 
+import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { getEntities } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
+import ApiCriterionInfo from 'app/entities/quality-gate/api-criterion-info';
+import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { TextWithCode } from 'app/shared/TextWithCode';
-import React from 'react';
-import { Translate } from 'react-jhipster';
+import React, { useEffect, useMemo } from 'react';
+import { translate, Translate } from 'react-jhipster';
 import { Table } from 'reactstrap';
 
 interface ApiTestResultTableProps {
@@ -16,6 +20,57 @@ interface ApiTestResultTableProps {
 }
 
 export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestResults }: ApiTestResultTableProps) => {
+  const dispatch = useAppDispatch();
+
+  const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+
+  const getAllEntities = () => {
+    dispatch(getEntities());
+  };
+
+  const handleSyncList = () => {
+    getAllEntities();
+  };
+
+  useEffect(() => {
+    handleSyncList();
+  }, []);
+
+  const tableBody = useMemo(() => {
+    if (!openApiCriterionList || openApiCriterionList.length === 0) {
+      return <></>;
+    }
+
+    return apiTestResults
+      .slice()
+      .sort((a, b) => a.id!.localeCompare(b.id!))
+      .map((apiTestResult: IApiTestResult) => {
+        const apiCriterion: IOpenApiCriterion | undefined = openApiCriterionList.find(
+          (criterion: IOpenApiCriterion) => criterion.name === apiTestResult.id,
+        );
+
+        if (!apiCriterion) {
+          return <></>;
+        }
+
+        const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
+
+        return (
+          <tr key={`entity-${apiTestResult.id}`} data-cy="apiTestResultTable">
+            <td>{nameText}</td>
+            <td>
+              <ApiCriterionInfo apiCriterion={apiCriterion} />
+            </td>
+            <td>{apiTestResult.coverage}</td>
+            <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
+            <td>
+              <TextWithCode text={apiTestResult.additionalInformation} />
+            </td>
+          </tr>
+        );
+      });
+  }, [openApiCriterionList]);
+
   return (
     <div>
       <div className="table-responsive">
@@ -25,6 +80,7 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
               <th>
                 <Translate contentKey="snowWhiteApp.apiTestResult.id">API Criterion</Translate>
               </th>
+              <th />
               <th>
                 <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>
               </th>
@@ -36,21 +92,7 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
               </th>
             </tr>
           </thead>
-          <tbody>
-            {apiTestResults
-              .slice()
-              .sort((a, b) => a.id!.localeCompare(b.id!))
-              .map((apiTestResult: IApiTestResult) => (
-                <tr key={`entity-${apiTestResult.id}`} data-cy="apiTestResultTable">
-                  <td>{apiTestResult.id}</td>
-                  <td>{apiTestResult.coverage}</td>
-                  <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
-                  <td>
-                    <TextWithCode text={apiTestResult.additionalInformation} />
-                  </td>
-                </tr>
-              ))}
-          </tbody>
+          <tbody>{tableBody}</tbody>
         </Table>
       </div>
     </div>

@@ -10,35 +10,30 @@ import type { IApiTest } from 'app/shared/model/api-test.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ApiTestResultTable from 'app/entities/quality-gate/api-test-result-table';
+import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { IApiTestResult } from 'app/shared/model/api-test-result.model';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
-import { Badge, Card, CardBody, CardTitle, Col, Collapse, Progress, Row } from 'reactstrap';
+import { Card, CardBody, CardTitle, Col, Collapse, Progress, Row } from 'reactstrap';
 
 interface ApiTestCardProps {
   apiTest: IApiTest;
+  qualityGateStatus: ReportStatus;
 }
+
+const isQualityGateStatusOverride = (qualityGateStatus: ReportStatus): boolean => {
+  return [ReportStatus.FINISHED_EXCEPTIONALLY, ReportStatus.TIMED_OUT].includes(qualityGateStatus);
+};
 
 const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: boolean): ReactElement => {
   if (!containsTestResults) {
-    return (
-      <Badge color="info">
-        <Translate contentKey="snowWhiteApp.reportStatus.IN_PROGRESS">In Progress</Translate>
-      </Badge>
-    );
+    return <StatusBadge status={ReportStatus.IN_PROGRESS} />;
   } else if (testResultsPassed) {
-    return (
-      <Badge color="success">
-        <Translate contentKey="snowWhiteApp.reportStatus.PASSED">Passed</Translate>
-      </Badge>
-    );
+    return <StatusBadge status={ReportStatus.PASSED} />;
   }
 
-  return (
-    <Badge color="danger">
-      <Translate contentKey="snowWhiteApp.reportStatus.FAILED">Failed</Translate>
-    </Badge>
-  );
+  return <StatusBadge status={ReportStatus.FAILED} />;
 };
 
 const renderStatusProgressBar = (containsTestResults: boolean, apiTestResults: IApiTestResult[]): ReactElement => {
@@ -69,7 +64,7 @@ const renderStatusProgressBar = (containsTestResults: boolean, apiTestResults: I
   );
 };
 
-export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest }: ApiTestCardProps) => {
+export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus }: ApiTestCardProps) => {
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
   const apiTestResultStatus = useMemo(
     () => !apiTest.testResults?.some(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1) || false,
@@ -93,7 +88,13 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest }: ApiTestCard
             </h4>
           </Col>
           <Col md={2}>
-            <h4>{renderStatusBadge(containsTestResults, apiTestResultStatus)}</h4>
+            <h4>
+              {isQualityGateStatusOverride(qualityGateStatus) ? (
+                <StatusBadge status={qualityGateStatus} />
+              ) : (
+                renderStatusBadge(containsTestResults, apiTestResultStatus)
+              )}
+            </h4>
           </Col>
           <Col md={1}>
             <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>:

@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import dayjs from 'dayjs';
@@ -148,7 +149,7 @@ export const QualityGate = () => {
                     </Button>
                   </td>
                   <td>
-                    <StatusBadge fill={true} qualityGate={qualityGate} />
+                    <StatusBadge fill={true} status={qualityGate.status || ReportStatus.NOT_STARTED} />
                   </td>
                   <td>
                     <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
