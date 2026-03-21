@@ -155,11 +155,11 @@ class SpaWebFilterIT {
    */
   @Test
   void getUnmappedSecondLevelFile() {
-    webTestClient.get().uri("/foo/bar.js").exchange().expectStatus().isUnauthorized();
+    webTestClient.get().uri("/foo/bar.js").exchange().expectStatus().isNotFound();
   }
 
   @Test
   void getUnmappedThirdLevelFile() {
-    webTestClient.get().uri("/foo/another/bar.js").exchange().expectStatus().isUnauthorized();
+    webTestClient.get().uri("/foo/another/bar.js").exchange().expectStatus().isNotFound();
   }
 }
