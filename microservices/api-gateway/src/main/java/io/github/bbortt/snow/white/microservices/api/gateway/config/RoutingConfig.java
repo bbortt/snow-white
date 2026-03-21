@@ -26,6 +26,19 @@ public class RoutingConfig {
   private final ApiGatewayProperties apiGatewayProperties;
 
   @Bean
+  public RouteLocator apiIndexApi(RouteLocatorBuilder builder) {
+    return builder
+      .routes()
+      .route("api-index-api", r ->
+        r.path("/api/rest/v1/apis/**").uri(apiGatewayProperties.getApiIndexApiUrl())
+      )
+      .route("api-index-api-swagger", r ->
+        r.path("/v3/api-docs/api-index-api").filters(apiDocsRewriteTarget()).uri(apiGatewayProperties.getApiIndexApiUrl())
+      )
+      .build();
+  }
+
+  @Bean
   public RouteLocator reportCoordinatorApi(RouteLocatorBuilder builder) {
     return builder
       .routes()
