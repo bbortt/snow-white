@@ -444,9 +444,9 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+1+3 environment variables by default', async () => {
+          it('should deploy 3+1+4 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(7);
+            expect(apiGateway.env).toHaveLength(8);
           });
 
           it('should include default log pattern', async () => {
@@ -511,6 +511,14 @@ describe('API Gateway', () => {
           it('should calculate service connections based on release name', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
 
+            const apiIndexUrl = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL',
+            );
+            expect(apiIndexUrl).toBeDefined();
+            expect(apiIndexUrl.value).toBe(
+              'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
+            );
+
             const qualityGateUrl = apiGateway.env.find(
               (env) =>
                 env.name === 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL',
@@ -548,8 +556,8 @@ describe('API Gateway', () => {
               }),
             );
 
-            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 3 default + 2 additional
-            expect(apiGateway.env).toHaveLength(9);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 2 additional
+            expect(apiGateway.env).toHaveLength(10);
 
             const authorEnv = apiGateway.env.find(
               (env) => env.name === 'author',
