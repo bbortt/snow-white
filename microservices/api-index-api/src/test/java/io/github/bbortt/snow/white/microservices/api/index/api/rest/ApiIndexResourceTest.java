@@ -214,7 +214,11 @@ class ApiIndexResourceTest {
       ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(referencedApis)
         .when(apiIndexServiceMock)
-        .findAllIngestedApis(pageableArgumentCaptor.capture());
+        .findAllIngestedApis(
+          org.mockito.ArgumentMatchers.isNull(),
+          org.mockito.ArgumentMatchers.isNull(),
+          pageableArgumentCaptor.capture()
+        );
 
       var dto1 = mock(GetAllApis200ResponseInner.class);
       doReturn(dto1).when(apiReferenceMapperMock).toDto(domain1);
@@ -223,7 +227,7 @@ class ApiIndexResourceTest {
       doReturn(dto2).when(apiReferenceMapperMock).toDto(domain2);
 
       ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> response =
-        fixture.getAllApis(page, size, sort);
+        fixture.getAllApis(page, size, sort, null, null);
 
       assertThat(response)
         .isNotNull()
@@ -260,10 +264,14 @@ class ApiIndexResourceTest {
       ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(referencedApis)
         .when(apiIndexServiceMock)
-        .findAllIngestedApis(pageableArgumentCaptor.capture());
+        .findAllIngestedApis(
+          org.mockito.ArgumentMatchers.isNull(),
+          org.mockito.ArgumentMatchers.isNull(),
+          pageableArgumentCaptor.capture()
+        );
 
       ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> response =
-        fixture.getAllApis(page, size, sort);
+        fixture.getAllApis(page, size, sort, null, null);
 
       verifyNoInteractions(apiReferenceMapperMock);
 

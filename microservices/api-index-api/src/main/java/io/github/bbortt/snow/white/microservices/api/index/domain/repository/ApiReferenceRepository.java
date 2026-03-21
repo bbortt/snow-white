@@ -10,13 +10,15 @@ import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiRefer
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ApiReferenceRepository
   extends
-    JpaRepository<@NonNull ApiReference, ApiReference.@NonNull ApiReferenceId>
+    JpaRepository<@NonNull ApiReference, ApiReference.@NonNull ApiReferenceId>,
+    JpaSpecificationExecutor<@NonNull ApiReference>
 {
   boolean existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
     @Param("otelServiceName") String otelServiceName,
