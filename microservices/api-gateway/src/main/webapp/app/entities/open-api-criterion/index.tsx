@@ -8,12 +8,12 @@ import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router-dom';
 
-import OpenApiCriterion from './open-api-criterion';
+import OpenApiCriteria from './open-api-criteria';
 import OpenApiCriterionDetail from './open-api-criterion-detail';
 
 const OpenApiCriterionRoutes = () => (
   <ErrorBoundaryRoutes>
-    <Route index element={<OpenApiCriterion />} />
+    <Route index element={<OpenApiCriteria />} />
     <Route path=":id">
       <Route index element={<OpenApiCriterionDetail />} />
     </Route>

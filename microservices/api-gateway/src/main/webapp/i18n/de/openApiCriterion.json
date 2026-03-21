@@ -10,6 +10,7 @@
         "title": "OpenAPI Kriterium"
       },
       "name": "Abdeckungs-Typ",
+      "descriptionHeader": "Beschreibung",
       "description": {
         "header": "Beschreibung",
         "PATH_COVERAGE": {

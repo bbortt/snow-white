@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React from 'react';
 import { translate } from 'react-jhipster';
 
-import { OpenApiCriterionBadge } from './open-api-criterion-badge';
+import { ApiCriterionInfo } from './api-criterion-info';
 
 jest.mock('app/config/store', () => ({
   useAppDispatch: jest.fn(),
@@ -66,24 +66,21 @@ describe('OpenApiCriterionBadge', () => {
   });
 
   describe('Basic rendering', () => {
-    it('should render badge with correct name and tooltip', () => {
+    it('should render info with correct name and tooltip', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
       returnEntityFromAppSelector({ TEST_CRITERION: criterion });
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      // Check if badge is rendered with correct text
-      expect(screen.getByText('Test Criterion Name')).toBeInTheDocument();
-
-      // Check if badge has correct id
-      const badge = screen.getByText('Test Criterion Name').closest('.badge');
-      expect(badge).toHaveAttribute('id', 'badge-TEST_CRITERION');
+      const info = screen.getByRole('button');
+      expect(info).toBeInTheDocument();
+      expect(info).toHaveAttribute('id', 'info-TEST_CRITERION');
     });
 
     it.each(['', undefined])('should render nothing when criterion name is: %s', (name: string | undefined) => {
       const criterion = createOpenApiCriterion(name as string);
 
-      const { container } = render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      const { container } = render(<ApiCriterionInfo apiCriterion={criterion} />);
 
       expect(container.firstChild).toBeNull();
     });
@@ -93,7 +90,7 @@ describe('OpenApiCriterionBadge', () => {
     it('should dispatch getEntity with criterion name on mount', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
       expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'GET_ENTITY' }));
     });
@@ -101,7 +98,7 @@ describe('OpenApiCriterionBadge', () => {
     it('should not dispatch getEntity when criterion name is missing', () => {
       const criterion = createOpenApiCriterion('');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
       expect(dispatch).not.toHaveBeenCalled();
     });
@@ -116,9 +113,9 @@ describe('OpenApiCriterionBadge', () => {
 
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      expect(screen.getByText('Test Criterion Name')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
     });
 
     it('should fallback to prop when entity not in store', () => {
@@ -134,9 +131,9 @@ describe('OpenApiCriterionBadge', () => {
 
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      expect(screen.getByText('Test Criterion Name')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
     });
   });
 
@@ -144,7 +141,7 @@ describe('OpenApiCriterionBadge', () => {
     it('should render tooltip with correct target and description', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
       // Check if tooltip exists (it might not be visible initially)
       const tooltipElement =
@@ -155,9 +152,9 @@ describe('OpenApiCriterionBadge', () => {
       expect(tooltipElement).toBeDefined();
 
       // Since tooltip might be controlled by reactstrap's internal logic,
-      // we at least verify the tooltip target matches the badge id
-      const badge = screen.getByText('Test Criterion Name').closest('.badge');
-      expect(badge).toHaveAttribute('id', 'badge-TEST_CRITERION');
+      // we at least verify the tooltip target matches the info id
+      const info = screen.getByRole('button');
+      expect(info).toHaveAttribute('id', 'info-TEST_CRITERION');
     });
   });
 
@@ -165,60 +162,59 @@ describe('OpenApiCriterionBadge', () => {
     it('should call translate with correct keys for name and description', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      expect(translate).toHaveBeenCalledWith('snowWhiteApp.openApiCriterion.description.TEST_CRITERION.name');
       expect(translate).toHaveBeenCalledWith('snowWhiteApp.openApiCriterion.description.TEST_CRITERION.description');
     });
 
     it('should handle missing translations gracefully', () => {
       const criterion = createOpenApiCriterion('UNDEFINED_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
       // Should render the name property when translation is missing
-      expect(screen.getByText('UNDEFINED_CRITERION')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
     });
   });
 
   describe('Memoization behavior', () => {
-    it('should memoize name and description based on entity name', () => {
+    it('should memoize description based on entity name', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      const { rerender } = render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      const { rerender } = render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      expect(translate).toHaveBeenCalledTimes(2);
+      expect(translate).toHaveBeenCalledTimes(1);
 
       (useAppDispatch as jest.MockedFn<() => any>).mockReturnValueOnce(dispatch);
-      rerender(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      rerender(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      expect(translate).toHaveBeenCalledTimes(2);
+      expect(translate).toHaveBeenCalledTimes(1);
     });
 
     it('should update memoized values when criterion name changes', () => {
       const criterion1 = createOpenApiCriterion('TEST_CRITERION');
       const criterion2 = createOpenApiCriterion('ANOTHER_CRITERION');
 
-      const { rerender } = render(<OpenApiCriterionBadge openApiCriterion={criterion1} />);
+      const { rerender } = render(<ApiCriterionInfo apiCriterion={criterion1} />);
 
-      expect(screen.getByText('Test Criterion Name')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
 
       (useAppDispatch as jest.MockedFn<() => any>).mockReturnValueOnce(dispatch);
-      rerender(<OpenApiCriterionBadge openApiCriterion={criterion2} />);
+      rerender(<ApiCriterionInfo apiCriterion={criterion2} />);
 
-      expect(screen.getByText('Another Criterion Name')).toBeInTheDocument();
-      expect(translate).toHaveBeenCalledWith('snowWhiteApp.openApiCriterion.description.ANOTHER_CRITERION.name');
+      expect(screen.getByRole('button')).toBeInTheDocument();
+      expect(translate).toHaveBeenCalledWith('snowWhiteApp.openApiCriterion.description.ANOTHER_CRITERION.description');
     });
   });
 
   describe('Component structure', () => {
-    it('should have correct badge id format', () => {
+    it('should have correct info id format', () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
-      render(<OpenApiCriterionBadge openApiCriterion={criterion} />);
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
 
-      const badge = screen.getByText('Test Criterion Name').closest('.badge');
-      expect(badge).toHaveAttribute('id', 'badge-TEST_CRITERION');
+      const info = screen.getByRole('button');
+      expect(info).toHaveAttribute('id', 'info-TEST_CRITERION');
     });
   });
 });

@@ -14,10 +14,10 @@ import { Button, Table } from 'reactstrap';
 
 import { getEntities } from './open-api-criterion.reducer';
 
-export const OpenApiCriterion = () => {
+export const OpenApiCriteria = () => {
   const dispatch = useAppDispatch();
 
-  const openApiCriterionList: IOpenApiCriterion[] = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+  const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
   const loading = useAppSelector(state => state.snowwhite.openApiCriterion.loading);
 
   const getAllEntities = () => {
@@ -51,7 +51,9 @@ export const OpenApiCriterion = () => {
                 <th>
                   <Translate contentKey="snowWhiteApp.openApiCriterion.name">Coverage Type</Translate>
                 </th>
-                <th></th>
+                <th>
+                  <Translate contentKey="snowWhiteApp.openApiCriterion.descriptionHeader">Description</Translate>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -82,4 +84,4 @@ export const OpenApiCriterion = () => {
   );
 };
 
-export default OpenApiCriterion;
+export default OpenApiCriteria;

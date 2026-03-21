@@ -4,8 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import './open-api-criterion-badge.scss';
-
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
@@ -61,7 +59,9 @@ export const OpenApiCriterionBadge: React.FC<OpenApiCriterionBadgeProps> = ({ op
 
   return (
     <>
-      <Badge id={`badge-${openApiCriterionEntity.name}`}>{name}</Badge>
+      <Badge className="mr-1" id={`badge-${openApiCriterionEntity.name}`}>
+        {name}
+      </Badge>
       <Tooltip target={`badge-${openApiCriterionEntity.name}`} isOpen={tooltipOpen} toggle={toggle}>
         <TextWithCode text={description} />
       </Tooltip>

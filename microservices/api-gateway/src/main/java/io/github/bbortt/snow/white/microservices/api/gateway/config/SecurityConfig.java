@@ -61,6 +61,7 @@ public class SecurityConfig {
                                 .pathMatchers("/management/health/**").permitAll()
                                 .pathMatchers("/management/info").permitAll()
                                 .pathMatchers("/management/**").denyAll()
+                                .anyExchange().permitAll()
       )
       .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
     return http.build();

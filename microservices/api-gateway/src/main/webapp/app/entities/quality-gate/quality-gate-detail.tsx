@@ -16,6 +16,7 @@ import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-blo
 import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
 import { StackTraceCard } from 'app/entities/quality-gate/stack-trace-card';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -69,7 +70,7 @@ export const QualityGateDetail = () => {
                     </span>
                   </dt>
                   <dd>
-                    <StatusBadge qualityGate={qualityGateEntity} />
+                    <StatusBadge status={qualityGateEntity.status || ReportStatus.NOT_STARTED} />
                   </dd>
                   <dt>
                     <span id="createdAt">
@@ -124,7 +125,11 @@ export const QualityGateDetail = () => {
             {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0 ? (
               <>
                 {qualityGateEntity.apiTests.map((apiTest: IApiTest) => (
-                  <ApiTestCard apiTest={apiTest} key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`} />
+                  <ApiTestCard
+                    apiTest={apiTest}
+                    qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
+                    key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
+                  />
                 ))}
               </>
             ) : (
