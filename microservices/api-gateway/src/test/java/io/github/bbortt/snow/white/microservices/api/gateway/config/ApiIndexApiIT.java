@@ -35,13 +35,13 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "snow.white.api.gateway.api-index-api-url=http://localhost:8085",
-    "snow.white.api.gateway.quality-gate-api-url=${wiremock.server.baseUrl}",
+    "snow.white.api.gateway.api-index-api-url=${wiremock.server.baseUrl}",
+    "snow.white.api.gateway.quality-gate-api-url=http://localhost:8081",
     "snow.white.api.gateway.report-coordinator-api-url=http://localhost:8084",
   },
   webEnvironment = RANDOM_PORT
 )
-class QualityGateApiIT {
+class ApiIndexApiIT {
 
   @Value("${local.server.port}")
   String localServerPort;
@@ -54,43 +54,38 @@ class QualityGateApiIT {
   }
 
   @Test
-  void openApiCriteriaResourceShouldBeForwarded() {
-    stubFor(get("/api/rest/v1/criteria/openapi").willReturn(ok()));
+  void apisResourceRequestShouldBeForwarded() {
+    stubFor(get("/api/rest/v1/apis").willReturn(ok()));
 
-    when().get("/api/rest/v1/criteria/openapi").then().statusCode(200);
+    when().get("/api/rest/v1/apis").then().statusCode(200);
 
-    verify(getRequestedFor(urlEqualTo("/api/rest/v1/criteria/openapi")));
+    verify(getRequestedFor(urlEqualTo("/api/rest/v1/apis")));
   }
 
   @Test
-  void qualityGatesResourceRequestShouldBeForwarded() {
-    stubFor(get("/api/rest/v1/quality-gates").willReturn(ok()));
-
-    when().get("/api/rest/v1/quality-gates").then().statusCode(200);
-
-    verify(getRequestedFor(urlEqualTo("/api/rest/v1/quality-gates")));
-  }
-
-  @Test
-  void qualityGateByIdResourceRequestShouldBeForwarded() {
-    var qualityGateConfigName = "report-id";
+  void apiByPathResourceRequestShouldBeForwarded() {
+    var service = "my-service";
+    var api = "my-api";
+    var version = "1.0.0";
 
     stubFor(
-      get(urlPathTemplate("/api/rest/v1/quality-gates/{qualityGateConfigName}"))
-        .withPathParam("qualityGateConfigName", equalTo(qualityGateConfigName))
+      get(urlPathTemplate("/api/rest/v1/apis/{service}/{api}/{version}"))
+        .withPathParam("service", equalTo(service))
+        .withPathParam("api", equalTo(api))
+        .withPathParam("version", equalTo(version))
         .willReturn(ok())
     );
 
-    when().get("/api/rest/v1/quality-gates/{reportId}", qualityGateConfigName).then().statusCode(200);
+    when().get("/api/rest/v1/apis/{service}/{api}/{version}", service, api, version).then().statusCode(200);
 
-    verify(getRequestedFor(urlEqualTo("/api/rest/v1/quality-gates/" + qualityGateConfigName)));
+    verify(getRequestedFor(urlEqualTo("/api/rest/v1/apis/" + service + "/" + api + "/" + version)));
   }
 
   @Test
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 
-    when().get("/v3/api-docs/quality-gate-api").then().statusCode(200);
+    when().get("/v3/api-docs/api-index-api").then().statusCode(200);
 
     verify(getRequestedFor(urlEqualTo("/v3/api-docs")));
   }

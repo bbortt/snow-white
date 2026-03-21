@@ -195,6 +195,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
+      SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL: 'http://api-index-api:8080'
       SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
       SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL: 'http://report-coordinator-api:8080'
     ports:
