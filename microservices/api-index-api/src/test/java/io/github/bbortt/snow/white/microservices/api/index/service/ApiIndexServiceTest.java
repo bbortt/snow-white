@@ -17,7 +17,9 @@ import static org.mockito.Mockito.verify;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
+import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexServiceTest {
@@ -90,6 +96,46 @@ class ApiIndexServiceTest {
       );
 
       verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
+    }
+  }
+
+  @Nested
+  class FindAllIngestedApisTest {
+
+    @Test
+    void shouldPassSpecificationToRepository() {
+      var pageable = Pageable.unpaged();
+      Page<@NonNull ApiReference> page = new PageImpl<>(List.of());
+
+      doReturn(page)
+        .when(apiReferenceRepositoryMock)
+        .findAll(any(Specification.class), any(Pageable.class));
+
+      var result = fixture.findAllIngestedApis(
+        "my-service",
+        "my-api",
+        pageable
+      );
+
+      assertThat(result).isSameAs(page);
+      verify(apiReferenceRepositoryMock).findAll(
+        any(Specification.class),
+        any(Pageable.class)
+      );
+    }
+
+    @Test
+    void shouldAcceptNullFilters() {
+      var pageable = Pageable.unpaged();
+      Page<@NonNull ApiReference> page = new PageImpl<>(List.of());
+
+      doReturn(page)
+        .when(apiReferenceRepositoryMock)
+        .findAll(any(Specification.class), any(Pageable.class));
+
+      var result = fixture.findAllIngestedApis(null, null, pageable);
+
+      assertThat(result).isSameAs(page);
     }
   }
 

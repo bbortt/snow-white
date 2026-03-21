@@ -242,4 +242,89 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
       )
       .andExpect(status().isNotFound());
   }
+
+  @Test
+  void getRequest_withServiceNameFilter_shouldReturnMatchingApis()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-1")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/1")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-2")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/2")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(
+        get(ENTITY_API_URL)
+          .param("serviceName", "service-a")
+          .accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(1);
+    assertThat(responseJson.get(0).get("serviceName").asString()).isEqualTo(
+      "service-a"
+    );
+  }
+
+  @Test
+  void getRequest_withServiceNameAndApiNameFilter_shouldReturnMatchingApis()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-c")
+        .apiName("api-x")
+        .apiVersion("1.0")
+        .sourceUrl("http://c/x")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-c")
+        .apiName("api-y")
+        .apiVersion("1.0")
+        .sourceUrl("http://c/y")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(
+        get(ENTITY_API_URL)
+          .param("serviceName", "service-c")
+          .param("apiName", "api-x")
+          .accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(1);
+    assertThat(responseJson.get(0).get("apiName").asString()).isEqualTo(
+      "api-x"
+    );
+  }
 }

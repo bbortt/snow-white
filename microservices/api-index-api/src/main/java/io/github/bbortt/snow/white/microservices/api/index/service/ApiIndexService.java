@@ -8,10 +8,12 @@ package io.github.bbortt.snow.white.microservices.api.index.service;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
+import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceSpecification;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -51,8 +53,15 @@ public class ApiIndexService {
     );
   }
 
-  public Page<@NonNull ApiReference> findAllIngestedApis(Pageable pageable) {
-    return apiReferenceRepository.findAll(pageable);
+  public Page<@NonNull ApiReference> findAllIngestedApis(
+    @Nullable String serviceName,
+    @Nullable String apiName,
+    Pageable pageable
+  ) {
+    return apiReferenceRepository.findAll(
+      ApiReferenceSpecification.from(serviceName, apiName),
+      pageable
+    );
   }
 
   public Optional<ApiReference> findIngestedApi(

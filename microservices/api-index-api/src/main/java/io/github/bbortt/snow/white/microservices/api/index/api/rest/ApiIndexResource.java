@@ -67,9 +67,13 @@ public class ApiIndexResource implements ApiIndexApi {
   public ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> getAllApis(
     Integer page,
     Integer size,
-    String sort
+    String sort,
+    String serviceName,
+    String apiName
   ) {
     var ingestedApis = apiIndexService.findAllIngestedApis(
+      serviceName,
+      apiName,
       toPageable(page, size, sort)
     );
 
