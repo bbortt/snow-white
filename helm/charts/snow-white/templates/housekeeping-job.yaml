@@ -1,0 +1,51 @@
+{{- if eq .Values.snowWhite.housekeeping.enabled true }}
+{{- $labels := include "snow-white.labels" (dict "name" "housekeeping-job" "context" .) | nindent 0 }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "housekeeping-job" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  schedule: '{{ .Values.snowWhite.housekeeping.schedule }}'
+  failedJobsHistoryLimit: {{ .Values.snowWhite.housekeeping.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.snowWhite.housekeeping.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.snowWhite.housekeeping.activeDeadlineSeconds }}
+      template:
+        metadata:
+          annotations:
+            {{- if .Values.snowWhite.podAnnotations }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 12 }}
+            {{- end }}
+          labels:
+            {{ $labels | nindent 12 }}
+        spec:
+          {{ include "snow-white.imagePullSecrets" . | nindent 10 }}
+          securityContext:
+            fsGroup: 101
+          containers:
+            - name: report-coordinator-api
+              image: '{{ .Values.snowWhite.housekeeping.image.registry }}/{{ .Values.snowWhite.housekeeping.image.name }}:{{ .Values.snowWhite.housekeeping.image.tag }}'
+              imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+              command: ['/bin/sh', '-c']
+              args:
+                - curl -X 'POST' 'http://{{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80/api/v1/housekeeping'
+              resources:
+                limits:
+                  memory: '64Mi'
+                  ephemeral-storage: '1Gi'
+                requests:
+                  cpu: '0.1'
+                  memory: '64Mi'
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 10000
+                runAsGroup: 12345
+                seccompProfile:
+                  type: RuntimeDefault
+          restartPolicy: OnFailure
+{{- end }}

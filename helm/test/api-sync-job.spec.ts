@@ -53,7 +53,11 @@ describe('API Sync Job', () => {
       chartPath: 'charts/snow-white',
     });
 
-    const apiSyncJob = manifests.find((m) => m.kind === 'CronJob');
+    const apiSyncJob = manifests.find(
+      (m) =>
+        m.kind === 'CronJob' &&
+        m.metadata.name.startsWith('test-release-api-sync-job-job'),
+    );
     expect(apiSyncJob).toBeUndefined();
   });
 

@@ -99,6 +99,33 @@ snowWhite:
     # @section -- Snow-White Ingress
     tls: true
 
+  housekeeping:
+    # -- Enable housekeeping jobs of Snow-White.
+    # @section -- Housekeeping
+    enabled: true
+    # -- Cron schedule for housekeeping jobs.
+    # @section -- Housekeeping
+    schedule: '* * * * *'
+    # -- The number of failed finished jobs to keep.
+    # @section -- Housekeeping
+    failedJobsHistoryLimit: 3
+    # -- The number of successful finished jobs to keep.
+    # @section -- Housekeeping
+    successfulJobsHistoryLimit: 1
+    # -- The duration in seconds relative to the startTime that the job may be active.
+    # @section -- Housekeeping
+    activeDeadlineSeconds: 1800
+    image:
+      # -- Image registry.
+      # @section -- Housekeeping
+      registry: docker.io
+      # -- Image name.
+      # @section -- Housekeeping
+      name: curlimages/curl
+      # -- Image tag.
+      # @section -- Housekeeping
+      tag: 8.18.0
+
   kafka:
     # -- Kafka bootstrap server list.
     # @default -- The chart will connect to the provisioned Kafka StatefulSet automatically.
@@ -155,10 +182,10 @@ snowWhite:
       tag: ''
     # -- The number of failed finished jobs to keep.
     # @section -- Snow-White API Sync Job
-    failedJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 3
     # -- The number of successful finished jobs to keep.
     # @section -- Snow-White API Sync Job
-    successfulJobsHistoryLimit: 3
+    successfulJobsHistoryLimit: 1
     # -- The duration in seconds relative to the startTime that the job may be active.
     # @section -- Snow-White API Sync Job
     activeDeadlineSeconds: 1800
