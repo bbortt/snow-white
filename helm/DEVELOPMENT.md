@@ -6,7 +6,8 @@ In order to fetch third-party Helm charts, repositories must be setup:
 
 ```shell
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add influxdata https://helm.influxdata.com/
+helm repo add influxdata https://helm.influxdata.com
+helm repo add kafbat-ui https://kafbat.github.io/helm-charts
 ```
 
 ## Generate Documentation
