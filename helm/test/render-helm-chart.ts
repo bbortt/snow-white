@@ -45,14 +45,14 @@ const transformStdoutToJson = async (
   return json;
 };
 
-export async function renderHelmChart(options: {
+export const renderHelmChart = async (options: {
   chartPath: string;
   debug?: boolean;
   namespace?: string;
   releaseName?: string;
   values?: object;
   withDefaultValues?: boolean;
-}): Promise<any[]> {
+}): Promise<any[]> => {
   const {
     chartPath,
     debug = process.env.DEBUG?.toLowerCase() === 'true',
@@ -85,4 +85,4 @@ export async function renderHelmChart(options: {
   return await executeHelmCommand(helmArgs).then((stdout) =>
     transformStdoutToJson(stdout, debug),
   );
-}
+};

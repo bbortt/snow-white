@@ -751,7 +751,7 @@ describe('OTEL Collector', () => {
       );
     });
 
-    function extractConfigMapData(data) {
+    const extractConfigMapData = (data): any => {
       const snowWhiteConfigDataName = 'snow-white.config.yml';
       expect(data).toHaveProperty(snowWhiteConfigDataName);
 
@@ -760,7 +760,7 @@ describe('OTEL Collector', () => {
       expect(json).toHaveLength(1);
 
       return json[0];
-    }
+    };
 
     it("should connect to 'kafka-connect' service by default", async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
