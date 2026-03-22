@@ -124,12 +124,25 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name` | Custom JSON path to the service name inside an OpenAPI specification.         |
 | snowWhite.apiSyncJob.artifactory.repository                | string | `""`                             | Artifactory repository holding API index.                                     |
 | snowWhite.apiSyncJob.enabled                               | bool   | `false`                          | Deploy CronJob for API ingestion alongside Snow-White.                        |
-| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `1`                              | The number of failed finished jobs to keep.                                   |
+| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `3`                              | The number of failed finished jobs to keep.                                   |
 | snowWhite.apiSyncJob.image.tag                             | string | `""`                             | Image tag.                                                                    |
 | snowWhite.apiSyncJob.resources.memory.limit                | string | `"1Gi"`                          | Memory resource limit.                                                        |
 | snowWhite.apiSyncJob.resources.memory.request              | string | `"1Gi"`                          | Memory resource request.                                                      |
 | snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                        |
-| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `3`                              | The number of successful finished jobs to keep.                               |
+| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `1`                              | The number of successful finished jobs to keep.                               |
+
+### Housekeeping
+
+| Key                                               | Type   | Default             | Description                                                                   |
+| ------------------------------------------------- | ------ | ------------------- | ----------------------------------------------------------------------------- |
+| snowWhite.housekeeping.activeDeadlineSeconds      | int    | `1800`              | The duration in seconds relative to the startTime that the job may be active. |
+| snowWhite.housekeeping.enabled                    | bool   | `true`              | Enable housekeeping jobs of Snow-White.                                       |
+| snowWhite.housekeeping.failedJobsHistoryLimit     | int    | `3`                 | The number of failed finished jobs to keep.                                   |
+| snowWhite.housekeeping.image.name                 | string | `"curlimages/curl"` | Image name.                                                                   |
+| snowWhite.housekeeping.image.registry             | string | `"docker.io"`       | Image registry.                                                               |
+| snowWhite.housekeeping.image.tag                  | string | `"8.18.0"`          | Image tag.                                                                    |
+| snowWhite.housekeeping.schedule                   | string | `"* * * * *"`       | Cron schedule for housekeeping jobs.                                          |
+| snowWhite.housekeeping.successfulJobsHistoryLimit | int    | `1`                 | The number of successful finished jobs to keep.                               |
 
 ### Snow-White Ingress
 
