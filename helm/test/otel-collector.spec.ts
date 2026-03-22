@@ -819,6 +819,28 @@ describe('OTEL Collector', () => {
       );
     });
 
+    it('should include influxdb org from values', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters.influxdb.org).toBe('snow-white');
+    });
+
+    it('should include influxdb bucket from values', async () => {
+      const configMap = await renderAndGetOtelCollectorConfig();
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters.influxdb.bucket).toBe('snow-white');
+    });
+
     it('should load InfluxDB token from environment variable', async () => {
       const configMap = await renderAndGetOtelCollectorConfig();
 

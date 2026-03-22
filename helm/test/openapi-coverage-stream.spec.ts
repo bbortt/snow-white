@@ -512,6 +512,30 @@ describe('OpenAPI Coverage Stream', () => {
             expect(influxdbUrl.value).toBe(endpoint);
           });
 
+          it('should include influxdb org from values', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            const influxdbOrg = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_ORG',
+            );
+            expect(influxdbOrg).toBeDefined();
+
+            expect(influxdbOrg.value).toBe('snow-white');
+          });
+
+          it('should include influxdb bucket from values', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            const influxdbBucket = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_BUCKET',
+            );
+            expect(influxdbBucket).toBeDefined();
+
+            expect(influxdbBucket.value).toBe('snow-white');
+          });
+
           it('should load influxdb token from chart secret by default', async () => {
             const openapiCoverageStream =
               await renderAndGetOpenapiCoverageStreamContainer();
