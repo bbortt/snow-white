@@ -208,12 +208,6 @@ snowWhite:
       # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
       # @section -- Snow-White OpenAPI Coverage Stream
       endpoint: ''
-      # -- InfluxDB organization.
-      # @section -- Snow-White OpenAPI Coverage Stream
-      org: snow-white
-      # -- InfluxDB bucket.
-      # @section -- Snow-White OpenAPI Coverage Stream
-      bucket: raw-data
       # -- InfluxDB token.
       # @default -- The chart will connect to the provisioned InfluxDB StatefulSet automatically.
       # @section -- Snow-White OpenAPI Coverage Stream
@@ -280,6 +274,11 @@ kafka:
     # -- Size of the storage for Kafka.
     # @section -- Infrastructure (Kafka)
     size: 10Gi
+
+kafkaui:
+  # -- Install kafbat/kafka-ui alongside Snow-White for debugging.
+  # @section -- Infrastructure (Kafka)
+  enabled: false
 
 otelCollector:
   image:
