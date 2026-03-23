@@ -23,7 +23,8 @@ public class ApiGatewayProperties {
 
   public static final String PREFIX = "snow.white.api.gateway";
 
-  private @Nullable Environment environment;
+  @Nullable
+  private Environment environment;
 
   private String contentSecurityPolicy =
     "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:";
