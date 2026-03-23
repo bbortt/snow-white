@@ -32,7 +32,8 @@ public final class ApiInformation {
   @NonNull
   private String apiName;
 
-  private @Nullable String apiVersion;
+  @Nullable
+  private String apiVersion;
 
   @NonNull
   private ApiType apiType;

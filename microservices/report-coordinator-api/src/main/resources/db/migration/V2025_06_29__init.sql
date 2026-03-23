@@ -9,7 +9,7 @@ CREATE TABLE quality_gate_report
     calculation_id           UUID        NOT NULL PRIMARY KEY,
     quality_gate_config_name VARCHAR(64) NOT NULL,
     report_status            SMALLINT    NOT NULL,
-    stack_trace               TEXT,
+    stack_trace              TEXT,
     created_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -57,7 +57,7 @@ CREATE TABLE api_test_result
     coverage               DECIMAL(3, 2) NOT NULL,
     included_in_report     BOOLEAN       NOT NULL,
     duration               BIGINT        NOT NULL, -- Duration stored as nanoseconds
-    additional_information VARCHAR(256),
+    additional_information TEXT,
     api_test               BIGINT        NOT NULL,
     PRIMARY KEY (api_test_criteria, api_test),
     CONSTRAINT fk_api_test_api_test_result
