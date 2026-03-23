@@ -300,4 +300,66 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
       )
       .andExpect(status().isNotFound());
   }
+
+  @Test
+  void getRequest_toCheckIfApiExists_excludesPrereleasesByDefault()
+    throws Exception {
+    var prereleaseReference = ApiReference.builder()
+      .otelServiceName("otelServiceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .prereleaseContent("spec: content")
+      .build();
+
+    apiReferenceRepository.save(prereleaseReference);
+
+    mockMvc
+      .perform(
+        get(
+          format(
+            "%s/%s/%s/%s/exists",
+            ENTITY_API_URL,
+            prereleaseReference.getOtelServiceName(),
+            prereleaseReference.getApiName(),
+            prereleaseReference.getApiVersion()
+          )
+        ).accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getRequest_toCheckIfApiExists_includesPrereleases_whenRequested()
+    throws Exception {
+    var prereleaseReference = ApiReference.builder()
+      .otelServiceName("otelServiceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .prereleaseContent("spec: content")
+      .build();
+
+    apiReferenceRepository.save(prereleaseReference);
+
+    mockMvc
+      .perform(
+        get(
+          format(
+            "%s/%s/%s/%s/exists",
+            ENTITY_API_URL,
+            prereleaseReference.getOtelServiceName(),
+            prereleaseReference.getApiName(),
+            prereleaseReference.getApiVersion()
+          )
+        )
+          .param("includePrereleases", "true")
+          .accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isOk());
+  }
 }

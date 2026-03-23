@@ -24,6 +24,12 @@ public interface ApiReferenceRepository
     @Param("apiVersion") String apiVersion
   );
 
+  boolean existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEqualsAndPrereleaseIsFalse(
+    @Param("otelServiceName") String otelServiceName,
+    @Param("apiName") String apiName,
+    @Param("apiVersion") String apiVersion
+  );
+
   Optional<
     ApiReference
   > findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(

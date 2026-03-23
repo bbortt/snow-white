@@ -127,12 +127,40 @@ class ApiIndexResourceTest {
     ) {
       doReturn(apiExists)
         .when(apiIndexServiceMock)
-        .hasApiByInformationBeenIndexed("svc", "api", "v1");
+        .hasApiByInformationBeenIndexed("svc", "api", "v1", false);
 
       ResponseEntity<@NonNull Void> response = fixture.checkApiExists(
         "svc",
         "api",
-        "v1"
+        "v1",
+        null
+      );
+
+      assertThat(response).satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(responseStatus),
+        r -> assertThat(r.getBody()).isNull()
+      );
+    }
+
+    public static Stream<Arguments> shouldIncludePrereleases_whenRequested() {
+      return Stream.of(arguments(true, OK), arguments(false, NOT_FOUND));
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldIncludePrereleases_whenRequested(
+      Boolean apiExists,
+      HttpStatus responseStatus
+    ) {
+      doReturn(apiExists)
+        .when(apiIndexServiceMock)
+        .hasApiByInformationBeenIndexed("svc", "api", "v1", true);
+
+      ResponseEntity<@NonNull Void> response = fixture.checkApiExists(
+        "svc",
+        "api",
+        "v1",
+        true
       );
 
       assertThat(response).satisfies(

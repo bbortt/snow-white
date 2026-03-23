@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
+import static java.lang.Boolean.FALSE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.doReturn;
@@ -65,7 +66,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnTrue_whenApiHasBeenIndexedBefore() {
       doReturn(ResponseEntity.ok().build())
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          FALSE
+        );
 
       assertThat(fixture.apiInformationIndexed(defaultApiInformation)).isTrue();
 
@@ -76,7 +82,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnFalse_whenApiHasNotBeenIndexedBefore() {
       doReturn(ResponseEntity.notFound().build())
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          FALSE
+        );
 
       assertThat(
         fixture.apiInformationIndexed(defaultApiInformation)
@@ -89,7 +100,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnFalse_whenApiExistenceCheckFails() {
       doThrow(new IllegalArgumentException("API Exception"))
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          FALSE
+        );
 
       assertThat(
         fixture.apiInformationIndexed(defaultApiInformation)

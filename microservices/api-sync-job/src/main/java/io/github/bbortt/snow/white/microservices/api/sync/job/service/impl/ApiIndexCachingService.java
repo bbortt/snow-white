@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
+import static java.lang.Boolean.FALSE;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -32,7 +33,8 @@ public class ApiIndexCachingService implements CachingService {
         .checkApiExistsWithHttpInfo(
           apiInformation.getServiceName(),
           apiInformation.getName(),
-          apiInformation.getVersion()
+          apiInformation.getVersion(),
+          FALSE
         )
         .getStatusCode()
         .equals(OK);
