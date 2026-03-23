@@ -246,13 +246,13 @@ class SyncJobIT {
 
     stubFor(
       get(
-        "/api/rest/v1/apis/example-application/Petstore%20API/1.0.0/exists"
+        "/api/rest/v1/apis/example-application/Petstore%20API/1.0.0/exists?includePrereleases=false"
       ).willReturn(ok())
     );
 
     stubFor(
       get(
-        "/api/rest/v1/apis/example-application/Users%20API/2.0.0/exists"
+        "/api/rest/v1/apis/example-application/Users%20API/2.0.0/exists?includePrereleases=false"
       ).willReturn(ok())
     );
 

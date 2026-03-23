@@ -139,6 +139,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: includePrereleases
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: The API specification exists.
