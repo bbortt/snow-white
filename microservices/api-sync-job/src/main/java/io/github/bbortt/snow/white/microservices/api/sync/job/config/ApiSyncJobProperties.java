@@ -55,7 +55,10 @@ public class ApiSyncJobProperties {
       PREFIX + ".repository";
 
     private String baseUrl;
-    private @Nullable String accessToken;
+
+    @Nullable
+    private String accessToken;
+
     private String repository;
 
     private String customApiNameJsonPath = "info.title";

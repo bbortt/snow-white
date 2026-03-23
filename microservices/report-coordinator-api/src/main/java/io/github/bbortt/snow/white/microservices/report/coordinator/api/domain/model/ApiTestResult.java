@@ -13,6 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
@@ -56,9 +57,10 @@ public class ApiTestResult {
   @Column(nullable = false, updatable = false)
   private Duration duration;
 
-  @Size(max = 256)
-  @Column(updatable = false, length = 256)
-  private @Nullable String additionalInformation;
+  @Lob
+  @Nullable
+  @Column(columnDefinition = "TEXT")
+  private String additionalInformation;
 
   @Id
   @NonNull

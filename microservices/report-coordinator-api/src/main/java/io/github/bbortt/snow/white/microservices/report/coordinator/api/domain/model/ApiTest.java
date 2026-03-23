@@ -60,10 +60,11 @@ public class ApiTest {
   @Column(nullable = false, updatable = false, length = 64)
   private String apiName;
 
+  @Nullable
   @Size(max = 16)
   @Size(min = 1, max = 16)
   @Column(updatable = false, length = 16)
-  private @Nullable String apiVersion;
+  private String apiVersion;
 
   @NonNull
   @Column(nullable = false, updatable = false)
