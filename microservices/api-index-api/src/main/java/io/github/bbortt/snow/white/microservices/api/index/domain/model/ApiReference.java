@@ -63,6 +63,12 @@ public class ApiReference {
   @Column(nullable = false, updatable = false, length = 16)
   private GetAllApis200ResponseInner.@NonNull ApiTypeEnum apiType;
 
+  @Column(nullable = false, updatable = false)
+  private boolean prerelease;
+
+  @Column(columnDefinition = "text", updatable = false)
+  private String prereleaseContent;
+
   @Data
   @Builder
   @AllArgsConstructor

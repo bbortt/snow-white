@@ -17,8 +17,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = SPRING)
 public interface ApiReferenceMapper {
   @Mapping(target = "otelServiceName", source = "serviceName")
+  @Mapping(target = "prereleaseContent", source = "content")
   ApiReference fromDto(GetAllApis200ResponseInner apiEndpoint);
 
   @Mapping(target = "serviceName", source = "otelServiceName")
+  @Mapping(target = "content", source = "prereleaseContent")
   GetAllApis200ResponseInner toDto(@NonNull ApiReference apiReference);
 }

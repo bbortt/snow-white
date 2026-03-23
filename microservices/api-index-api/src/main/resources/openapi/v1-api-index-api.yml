@@ -12,7 +12,8 @@ paths:
       summary: Ingest an API specification
       description: |
         Uploads and indexes an API specification for Snow-White.
-        If an API with the same service name, API name, and version already exists, the request is rejected with HTTP 409 and the existing specification remains unchanged.
+        If a stable API with the same service name, API name, and version already exists, the request is rejected with HTTP 409 and the existing specification remains unchanged.
+        Prerelease specifications may be re-uploaded to override an existing prerelease entry with the same identity.
       tags:
         - api-index
       requestBody:
