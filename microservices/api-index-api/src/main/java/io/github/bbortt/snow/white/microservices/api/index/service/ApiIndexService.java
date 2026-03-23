@@ -24,16 +24,18 @@ public class ApiIndexService {
 
   public void persist(ApiReference apiReference)
     throws ApiAlreadyIndexedException {
-    if (
-      apiReferenceRepository.existsById(
-        ApiReference.ApiReferenceId.builder()
-          .otelServiceName(apiReference.getOtelServiceName())
-          .apiName(apiReference.getApiName())
-          .apiVersion(apiReference.getApiVersion())
-          .build()
-      )
-    ) {
-      throw new ApiAlreadyIndexedException(apiReference);
+    var id = ApiReference.ApiReferenceId.builder()
+      .otelServiceName(apiReference.getOtelServiceName())
+      .apiName(apiReference.getApiName())
+      .apiVersion(apiReference.getApiVersion())
+      .build();
+
+    if (apiReferenceRepository.existsById(id)) {
+      if (apiReference.isPrerelease()) {
+        apiReferenceRepository.deleteById(id);
+      } else {
+        throw new ApiAlreadyIndexedException(apiReference);
+      }
     }
 
     apiReferenceRepository.save(apiReference);

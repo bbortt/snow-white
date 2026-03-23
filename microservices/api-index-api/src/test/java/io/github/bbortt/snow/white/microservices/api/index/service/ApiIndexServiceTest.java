@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -90,6 +91,34 @@ class ApiIndexServiceTest {
       );
 
       verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
+    }
+
+    @Test
+    void shouldReplaceExistingPrerelease_whenPrereleaseIsReUploaded()
+      throws ApiAlreadyIndexedException {
+      var prereleaseReference = ApiReference.builder()
+        .otelServiceName("otelServiceName")
+        .apiName("apiName")
+        .apiVersion("apiVersion")
+        .sourceUrl("sourceUrl")
+        .apiType(UNSPECIFIED)
+        .prerelease(true)
+        .prereleaseContent("spec: content")
+        .build();
+
+      var id = ApiReference.ApiReferenceId.builder()
+        .otelServiceName(prereleaseReference.getOtelServiceName())
+        .apiName(prereleaseReference.getApiName())
+        .apiVersion(prereleaseReference.getApiVersion())
+        .build();
+
+      doReturn(true).when(apiReferenceRepositoryMock).existsById(id);
+
+      fixture.persist(prereleaseReference);
+
+      var order = inOrder(apiReferenceRepositoryMock);
+      order.verify(apiReferenceRepositoryMock).deleteById(id);
+      order.verify(apiReferenceRepositoryMock).save(prereleaseReference);
     }
   }
 

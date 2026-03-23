@@ -23,6 +23,7 @@ import io.github.bbortt.snow.white.microservices.api.index.AbstractApiIndexApiIT
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -43,6 +44,11 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Autowired
   private MockMvc mockMvc;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    apiReferenceRepository.deleteAll();
+  }
 
   @Test
   void postRequest_withAllParameters_shouldBePersisted() throws Exception {
@@ -71,6 +77,58 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
           .build()
       )
     ).isTrue();
+  }
+
+  @Test
+  void postRequest_forPrerelease_shouldOverrideExistingEntry()
+    throws Exception {
+    var prereleaseReference = GetAllApis200ResponseInner.builder()
+      .serviceName("serviceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .content("spec: original")
+      .build();
+
+    mockMvc
+      .perform(
+        post(ENTITY_API_URL)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(prereleaseReference))
+      )
+      .andExpect(status().isCreated());
+
+    var updatedContent = GetAllApis200ResponseInner.builder()
+      .serviceName("serviceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .content("spec: updated")
+      .build();
+
+    mockMvc
+      .perform(
+        post(ENTITY_API_URL)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(updatedContent))
+      )
+      .andExpect(status().isCreated());
+
+    assertThat(
+      apiReferenceRepository.findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
+        "serviceName",
+        "apiName",
+        "apiVersion"
+      )
+    )
+      .isPresent()
+      .hasValueSatisfying(r ->
+        assertThat(r.getPrereleaseContent()).isEqualTo("spec: updated")
+      );
   }
 
   @Test
