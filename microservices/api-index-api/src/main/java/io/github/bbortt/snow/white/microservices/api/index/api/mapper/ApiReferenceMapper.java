@@ -18,6 +18,7 @@ import org.mapstruct.Mapping;
 public interface ApiReferenceMapper {
   @Mapping(target = "otelServiceName", source = "serviceName")
   @Mapping(target = "prereleaseContent", source = "content")
+  @Mapping(target = "indexedAt", ignore = true)
   ApiReference fromDto(GetAllApis200ResponseInner apiEndpoint);
 
   @Mapping(target = "serviceName", source = "otelServiceName")

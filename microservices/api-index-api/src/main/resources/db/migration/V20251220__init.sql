@@ -13,7 +13,11 @@ CREATE TABLE api_reference
     api_type           VARCHAR(16)  NOT NULL,
     prerelease         BOOLEAN      NOT NULL DEFAULT FALSE,
     prerelease_content TEXT,
+    indexed_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (otel_service_name, api_name, api_version),
     CONSTRAINT chk_prerelease_content
         CHECK (prerelease = TRUE OR prerelease_content IS NULL)
 );
+
+CREATE INDEX idx_api_reference_indexed_at
+    ON api_reference (indexed_at);

@@ -18,6 +18,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -68,6 +69,11 @@ public class ApiReference {
 
   @Column(columnDefinition = "text", updatable = false)
   private String prereleaseContent;
+
+  @NonNull
+  @Builder.Default
+  @Column(nullable = false, updatable = false)
+  private Instant indexedAt = Instant.now();
 
   @Data
   @Builder
