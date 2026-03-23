@@ -16,5 +16,7 @@ import org.mapstruct.Mapping;
 public interface ApiInformationMapper {
   @Mapping(target = "apiName", source = "name")
   @Mapping(target = "apiVersion", source = "version")
+  @Mapping(target = "prerelease", ignore = true)
+  @Mapping(target = "content", ignore = true)
   GetAllApis200ResponseInner toDto(ApiInformation apiInformation);
 }

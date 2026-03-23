@@ -36,3 +36,10 @@ properties:
       - ASYNCAPI
       - OPENAPI
       - GRAPHQL
+  prerelease:
+    type: boolean
+    description: 'Whether this API specification is a prerelease. Prereleases may be re-uploaded to override the existing entry.'
+    default: false
+  content:
+    type: string
+    description: 'Raw specification content (YAML). Must only be provided for prereleases; stable specifications are referenced via Artifactory through sourceUrl.'
