@@ -1,6 +1,8 @@
 snowWhite:
   ingress:
     host: bbortt.github.io/snow-white
+  apiSyncJob:
+    enabled: true
   apiIndexApi:
     additionalEnvs:
       - name: 'SPRING_DATASOURCE_URL'
@@ -29,6 +31,8 @@ snowWhite:
 influxdb2:
   enabled: false
 kafka:
+  enabled: false
+kafkaui:
   enabled: false
 postgresql:
   enabled: false

@@ -8,6 +8,7 @@ metadata:
     {{- $labels | nindent 4 }}
 spec:
   schedule: '{{ .Values.snowWhite.apiSyncJob.schedule }}'
+  startingDeadlineSeconds: 60
   failedJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.successfulJobsHistoryLimit }}
   jobTemplate:
