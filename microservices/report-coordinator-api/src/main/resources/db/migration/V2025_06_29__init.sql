@@ -66,7 +66,7 @@ CREATE TABLE api_test_result
             ON DELETE CASCADE
 );
 
-CREATE INDEX idx_quality_gate_report_status
+CREATE INDEX idx_quality_gate_created_at
     ON quality_gate_report (created_at);
 
 CREATE INDEX idx_quality_gate_report_config_name
