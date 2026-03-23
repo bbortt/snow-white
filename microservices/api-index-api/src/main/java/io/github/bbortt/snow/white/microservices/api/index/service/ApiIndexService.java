@@ -44,9 +44,18 @@ public class ApiIndexService {
   public boolean hasApiByInformationBeenIndexed(
     String otelServiceName,
     String apiName,
-    String apiVersion
+    String apiVersion,
+    boolean includePrereleases
   ) {
-    return apiReferenceRepository.existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
+    if (includePrereleases) {
+      return apiReferenceRepository.existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
+        otelServiceName,
+        apiName,
+        apiVersion
+      );
+    }
+
+    return apiReferenceRepository.existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEqualsAndPrereleaseIsFalse(
       otelServiceName,
       apiName,
       apiVersion

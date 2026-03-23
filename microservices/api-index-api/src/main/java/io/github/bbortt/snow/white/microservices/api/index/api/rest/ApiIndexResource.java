@@ -48,13 +48,15 @@ public class ApiIndexResource implements ApiIndexApi {
   public ResponseEntity<@NonNull Void> checkApiExists(
     String otelServiceName,
     String apiName,
-    String apiVersion
+    String apiVersion,
+    Boolean includePrereleases
   ) {
     if (
       apiIndexService.hasApiByInformationBeenIndexed(
         otelServiceName,
         apiName,
-        apiVersion
+        apiVersion,
+        Boolean.TRUE.equals(includePrereleases)
       )
     ) {
       return ResponseEntity.ok().build();

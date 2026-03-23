@@ -29,7 +29,7 @@ public class ApiIndexCachingService implements CachingService {
   ) {
     try {
       return apiIndexApi
-        .checkApiExistsWithHttpInfo(otelServiceName, apiName, apiVersion)
+        .checkApiExistsWithHttpInfo(otelServiceName, apiName, apiVersion, true)
         .getStatusCode()
         .equals(OK);
     } catch (Exception e) {

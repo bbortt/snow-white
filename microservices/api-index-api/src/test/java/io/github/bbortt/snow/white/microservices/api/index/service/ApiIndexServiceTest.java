@@ -125,17 +125,42 @@ class ApiIndexServiceTest {
   @Nested
   class HasApiByInformationBeenIndexedTest {
 
-    public static Stream<Boolean> shouldCheckIfApiExists() {
+    private final String otelServiceName = "otelServiceName";
+    private final String apiName = "apiName";
+    private final String apiVersion = "apiVersion";
+
+    public static Stream<Boolean> shouldCheckIfStableApiExists() {
       return Stream.of(true, false);
     }
 
     @MethodSource
     @ParameterizedTest
-    void shouldCheckIfApiExists(Boolean apiExists) {
-      String otelServiceName = "otelServiceName";
-      String apiName = "apiName";
-      String apiVersion = "apiVersion";
+    void shouldCheckIfStableApiExists(Boolean apiExists) {
+      doReturn(apiExists)
+        .when(apiReferenceRepositoryMock)
+        .existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEqualsAndPrereleaseIsFalse(
+          otelServiceName,
+          apiName,
+          apiVersion
+        );
 
+      boolean apiIndexed = fixture.hasApiByInformationBeenIndexed(
+        otelServiceName,
+        apiName,
+        apiVersion,
+        false
+      );
+
+      assertThat(apiIndexed).isEqualTo(apiExists);
+    }
+
+    public static Stream<Boolean> shouldCheckIfApiExistsIncludingPrereleases() {
+      return Stream.of(true, false);
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldCheckIfApiExistsIncludingPrereleases(Boolean apiExists) {
       doReturn(apiExists)
         .when(apiReferenceRepositoryMock)
         .existsByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
@@ -147,7 +172,8 @@ class ApiIndexServiceTest {
       boolean apiIndexed = fixture.hasApiByInformationBeenIndexed(
         otelServiceName,
         apiName,
-        apiVersion
+        apiVersion,
+        true
       );
 
       assertThat(apiIndexed).isEqualTo(apiExists);

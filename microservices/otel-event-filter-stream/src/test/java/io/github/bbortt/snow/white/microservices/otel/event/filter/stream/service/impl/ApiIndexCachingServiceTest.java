@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.impl;
 
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -43,7 +44,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnTrue_whenApiHasBeenIndexedBefore() {
       doReturn(ResponseEntity.ok().build())
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          TRUE
+        );
 
       assertThat(
         fixture.apiExists(OTEL_SERVICE_NAME, API_NAME, API_VERSION)
@@ -54,7 +60,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnFalse_whenApiHasNotBeenIndexedBefore() {
       doReturn(ResponseEntity.notFound().build())
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          TRUE
+        );
 
       assertThat(
         fixture.apiExists(OTEL_SERVICE_NAME, API_NAME, API_VERSION)
@@ -65,7 +76,12 @@ class ApiIndexCachingServiceTest {
     void shouldReturnFalse_whenApiExistenceCheckFails() {
       doThrow(new IllegalArgumentException("API Exception"))
         .when(apiIndexApiMock)
-        .checkApiExistsWithHttpInfo(OTEL_SERVICE_NAME, API_NAME, API_VERSION);
+        .checkApiExistsWithHttpInfo(
+          OTEL_SERVICE_NAME,
+          API_NAME,
+          API_VERSION,
+          TRUE
+        );
 
       assertThat(
         fixture.apiExists(OTEL_SERVICE_NAME, API_NAME, API_VERSION)
