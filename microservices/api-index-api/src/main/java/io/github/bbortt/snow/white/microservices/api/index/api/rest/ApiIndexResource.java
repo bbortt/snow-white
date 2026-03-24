@@ -12,6 +12,8 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_YAML;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
@@ -108,5 +110,35 @@ public class ApiIndexResource implements ApiIndexApi {
     return ResponseEntity.ok(
       apiReferenceMapper.toDto(optionalIngestedApi.get())
     );
+  }
+
+  @Override
+  public ResponseEntity getRawApiContent(
+    String otelServiceName,
+    String apiName,
+    String apiVersion
+  ) {
+    var optionalApi = apiIndexService.findIngestedApi(
+      otelServiceName,
+      apiName,
+      apiVersion
+    );
+
+    if (optionalApi.isEmpty() || !optionalApi.get().isPrerelease()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    var prereleaseContent = optionalApi.get().getPrereleaseContent();
+    if (prereleaseContent == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    if (prereleaseContent.startsWith("openapi:")) {
+      return ResponseEntity.ok()
+        .contentType(APPLICATION_YAML)
+        .body(prereleaseContent);
+    }
+
+    return ResponseEntity.ok().contentType(TEXT_PLAIN).body(prereleaseContent);
   }
 }

@@ -116,6 +116,47 @@ paths:
             application/json:
               schema:
                 $ref: './components/Error.yml'
+  /api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}/raw:
+    get:
+      operationId: getRawApiContent
+      summary: Get raw prerelease API specification
+      description: Returns the raw specification content for a prerelease API. Returns 404 if not found or not a prerelease.
+      tags:
+        - api-index
+      parameters:
+        - name: otelServiceName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apiVersion
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The raw prerelease API specification content.
+          content:
+            application/yaml:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: The API specification does not exist or is not a prerelease.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
   /api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}/exists:
     get:
       operationId: checkApiExists

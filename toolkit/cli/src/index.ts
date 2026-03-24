@@ -12,7 +12,8 @@ import { Command } from 'commander';
 import type { CliOptions } from './config/cli-options';
 
 import { calculate } from './actions/calculate';
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, uploadPrereleases } from './actions/upload-prereleases';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, resolveUrl, uploadPrereleases } from './actions/upload-prereleases';
+import { getApiIndexApi } from './api/api-index-api';
 import { getQualityGateApi } from './api/quality-gate-api';
 import { sanitizeConfiguration } from './config/sanitize-configuration';
 
@@ -83,13 +84,14 @@ program
       apiVersionPath: string;
       serviceNamePath: string;
     }) => {
-      await uploadPrereleases({
+      const url = resolveUrl(options.url, options.configFile);
+      const apiIndexApi = getApiIndexApi(url);
+      await uploadPrereleases(apiIndexApi, {
         apiNamePath: options.apiNamePath,
         apiVersionPath: options.apiVersionPath,
-        configFile: options.configFile,
         globPattern: options.prereleaseSpecs,
         serviceNamePath: options.serviceNamePath,
-        url: options.url,
+        url,
       });
     },
   );
