@@ -20,6 +20,8 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_YAML;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
@@ -316,6 +318,113 @@ class ApiIndexResourceTest {
                 )
             )
       );
+    }
+  }
+
+  @Nested
+  class GetRawApiContentTest {
+
+    @Test
+    void shouldReturnNotFound_whenApiDoesNotExist() {
+      doReturn(Optional.empty())
+        .when(apiIndexServiceMock)
+        .findIngestedApi(SERVICE_NAME, API_NAME, API_VERSION);
+
+      ResponseEntity<?> response = fixture.getRawApiContent(
+        SERVICE_NAME,
+        API_NAME,
+        API_VERSION
+      );
+
+      assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+      assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldReturnNotFound_whenApiIsNotPrerelease() {
+      var domain = mock(ApiReference.class);
+      doReturn(false).when(domain).isPrerelease();
+      doReturn(Optional.of(domain))
+        .when(apiIndexServiceMock)
+        .findIngestedApi(SERVICE_NAME, API_NAME, API_VERSION);
+
+      ResponseEntity<?> response = fixture.getRawApiContent(
+        SERVICE_NAME,
+        API_NAME,
+        API_VERSION
+      );
+
+      assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+      assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldReturnNotFound_whenPrereleaseContentIsNull() {
+      var domain = mock(ApiReference.class);
+      doReturn(true).when(domain).isPrerelease();
+      doReturn(null).when(domain).getPrereleaseContent();
+      doReturn(Optional.of(domain))
+        .when(apiIndexServiceMock)
+        .findIngestedApi(SERVICE_NAME, API_NAME, API_VERSION);
+
+      ResponseEntity<?> response = fixture.getRawApiContent(
+        SERVICE_NAME,
+        API_NAME,
+        API_VERSION
+      );
+
+      assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+      assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldReturnYamlContent_whenPrereleaseContentIsOpenApiSpec() {
+      var openApiContent = """
+        openapi: 3.0.0
+        info:
+          title: Test API
+        """;
+
+      var domain = mock(ApiReference.class);
+      doReturn(true).when(domain).isPrerelease();
+      doReturn(openApiContent).when(domain).getPrereleaseContent();
+      doReturn(Optional.of(domain))
+        .when(apiIndexServiceMock)
+        .findIngestedApi(SERVICE_NAME, API_NAME, API_VERSION);
+
+      ResponseEntity<?> response = fixture.getRawApiContent(
+        SERVICE_NAME,
+        API_NAME,
+        API_VERSION
+      );
+
+      assertThat(response.getStatusCode()).isEqualTo(OK);
+      assertThat(response.getHeaders().getContentType()).isEqualTo(
+        APPLICATION_YAML
+      );
+      assertThat(response.getBody()).isEqualTo(openApiContent);
+    }
+
+    @Test
+    void shouldReturnPlainTextContent_whenPrereleaseContentIsNotOpenApiSpec() {
+      var plainContent = "some raw content that is not an openapi spec";
+
+      var domain = mock(ApiReference.class);
+      doReturn(true).when(domain).isPrerelease();
+      doReturn(plainContent).when(domain).getPrereleaseContent();
+      doReturn(Optional.of(domain))
+        .when(apiIndexServiceMock)
+        .findIngestedApi(SERVICE_NAME, API_NAME, API_VERSION);
+
+      ResponseEntity<?> response = fixture.getRawApiContent(
+        SERVICE_NAME,
+        API_NAME,
+        API_VERSION
+      );
+
+      assertThat(response.getStatusCode()).isEqualTo(OK);
+      assertThat(response.getHeaders().getContentType()).isEqualTo(TEXT_PLAIN);
+      assertThat(response.getBody()).isEqualTo(plainContent);
     }
   }
 }

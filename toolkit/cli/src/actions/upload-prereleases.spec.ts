@@ -4,15 +4,22 @@
  * See LICENSE file for full details.
  */
 
-import axios, { AxiosError } from 'axios';
 import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
+import type { ApiIndexApi } from '../clients/api-index-api';
+
 import { INVALID_CONFIG_FORMAT, PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
 import { resolveConfig } from '../config/resolve-config';
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, uploadPrereleases } from './upload-prereleases';
+import {
+  DEFAULT_API_NAME_PATH,
+  DEFAULT_API_VERSION_PATH,
+  DEFAULT_SERVICE_NAME_PATH,
+  resolveUrl,
+  uploadPrereleases,
+} from './upload-prereleases';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
@@ -39,7 +46,6 @@ mock.module('node:fs', () => ({
 const mockConsoleLog = spyOn(console, 'log');
 const mockConsoleWarn = spyOn(console, 'warn');
 const mockConsoleError = spyOn(console, 'error');
-const mockAxiosPost = spyOn(axios, 'post');
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -51,12 +57,75 @@ info:
   x-service-name: my-service
 `.trim();
 
+const makeResponseError = (status: number, statusText: string, jsonBody: unknown) =>
+  Object.assign(new Error('Response returned an error code'), {
+    name: 'ResponseError',
+    response: {
+      json: () => Promise.resolve(jsonBody),
+      status,
+      statusText,
+    },
+  });
+
+const makeFetchError = (message: string) => Object.assign(new Error(message), { name: 'FetchError' });
+
+const makeApiIndexApi = (ingestApi = mock()): ApiIndexApi => ({ ingestApi }) as unknown as ApiIndexApi;
+
+describe('resolveUrl', () => {
+  beforeEach(() => {
+    // @ts-expect-error TS2339: Property mockClear does not exist on type
+    exit.mockClear();
+    (resolveConfig as any).mockReset();
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('uses --url directly without consulting the config file', () => {
+    const result = resolveUrl(BASE_URL);
+
+    expect(resolveConfig).not.toHaveBeenCalled();
+    expect(result).toBe(BASE_URL);
+  });
+
+  it('reads URL from config file when --url is not provided', () => {
+    (resolveConfig as any).mockReturnValue({ url: BASE_URL });
+
+    const result = resolveUrl(undefined);
+
+    expect(resolveConfig).toHaveBeenCalledWith(undefined);
+    expect(result).toBe(BASE_URL);
+  });
+
+  it('passes --config-file path to resolveConfig', () => {
+    (resolveConfig as any).mockReturnValue({ url: BASE_URL });
+
+    resolveUrl(undefined, '/path/to/config.json');
+
+    expect(resolveConfig).toHaveBeenCalledWith('/path/to/config.json');
+  });
+
+  it('exits when URL is absent from the config file', () => {
+    (resolveConfig as any).mockReturnValue({});
+
+    expect(() => resolveUrl(undefined)).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
+
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      expect.stringContaining('❌  Snow-White base URL must be defined via --url or in the configuration file.'),
+    );
+    expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+  });
+});
+
 describe('upload-prereleases action', () => {
+  let mockIngestApi: ReturnType<typeof mock>;
+
   beforeEach(() => {
     mockConsoleLog.mockReset();
     mockConsoleWarn.mockReset();
     mockConsoleError.mockReset();
-    mockAxiosPost.mockReset();
+    mockIngestApi = mock();
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
@@ -69,63 +138,22 @@ describe('upload-prereleases action', () => {
     jest.restoreAllMocks();
   });
 
-  describe('URL resolution', () => {
-    it('uses --url directly without consulting the config file', async () => {
-      (scanGlob as any).mockReturnValue([]);
-
-      await uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL });
-
-      expect(resolveConfig).not.toHaveBeenCalled();
-      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining(`Base URL: ${BASE_URL}`));
-    });
-
-    it('reads URL from config file when --url is not provided', async () => {
-      (resolveConfig as any).mockReturnValue({ url: BASE_URL });
-      (scanGlob as any).mockReturnValue([]);
-
-      await uploadPrereleases({ globPattern: '*.yaml' });
-
-      expect(resolveConfig).toHaveBeenCalledWith(undefined);
-      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining(`Base URL: ${BASE_URL}`));
-    });
-
-    it('passes --config-file path to resolveConfig', async () => {
-      (resolveConfig as any).mockReturnValue({ url: BASE_URL });
-      (scanGlob as any).mockReturnValue([]);
-
-      await uploadPrereleases({ configFile: '/path/to/config.json', globPattern: '*.yaml' });
-
-      expect(resolveConfig).toHaveBeenCalledWith('/path/to/config.json');
-    });
-
-    it('exits when URL is absent from the config file', () => {
-      (resolveConfig as any).mockReturnValue({});
-
-      expect(() => uploadPrereleases({ globPattern: '*.yaml' })).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Snow-White base URL must be defined via --url or in the configuration file.'),
-      );
-      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
-    });
-  });
-
   describe('file scanning', () => {
     it('warns and returns early when no files match the pattern', async () => {
       (scanGlob as any).mockReturnValue([]);
 
-      await uploadPrereleases({ globPattern: 'services/**/openapi.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: 'services/**/openapi.yaml', url: BASE_URL });
 
       expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  No files matched the pattern: services/**/openapi.yaml'));
-      expect(mockAxiosPost).not.toHaveBeenCalled();
+      expect(mockIngestApi).not.toHaveBeenCalled();
     });
 
     it('logs the number of matched files', async () => {
       (scanGlob as any).mockReturnValue(['svc-a/openapi.yaml', 'svc-b/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost.mockResolvedValue({ status: 201 });
+      mockIngestApi.mockResolvedValue(undefined);
 
-      await uploadPrereleases({ globPattern: 'svc-*/openapi.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: 'svc-*/openapi.yaml', url: BASE_URL });
 
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Found 2 file(s) to upload.'));
     });
@@ -133,7 +161,7 @@ describe('upload-prereleases action', () => {
     it('always logs the temporary nature warning', async () => {
       (scanGlob as any).mockReturnValue([]);
 
-      await uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
         expect.stringContaining('⚠️  Prerelease uploads are temporary and will be cleaned up asynchronously after the pipeline completes.'),
@@ -146,21 +174,21 @@ describe('upload-prereleases action', () => {
       const file = 'services/my-api/openapi.yaml';
       (scanGlob as any).mockReturnValue([file]);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost.mockResolvedValue({ status: 201 });
+      mockIngestApi.mockResolvedValue(undefined);
 
-      await uploadPrereleases({ globPattern: 'services/**/openapi.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: 'services/**/openapi.yaml', url: BASE_URL });
 
-      expect(mockAxiosPost).toHaveBeenCalledWith(
-        `${BASE_URL}/api/rest/v1/apis`,
+      expect(mockIngestApi).toHaveBeenCalledWith(
         expect.objectContaining({
-          apiName: 'My Test API',
-          apiType: 'OPENAPI',
-          apiVersion: '1.2.3',
-          content: VALID_YAML,
-          prerelease: true,
-          serviceName: 'my-service',
+          apiInformation: expect.objectContaining({
+            apiName: 'My Test API',
+            apiType: 'OPENAPI',
+            apiVersion: '1.2.3',
+            content: VALID_YAML,
+            prerelease: true,
+            serviceName: 'my-service',
+          }),
         }),
-        expect.objectContaining({ headers: { 'Content-Type': 'application/json' } }),
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
         expect.stringContaining('✅  services/my-api/openapi.yaml: Uploaded my-service/My Test API@1.2.3'),
@@ -176,9 +204,9 @@ metadata:
 `.trim();
       (scanGlob as any).mockReturnValue(['custom.yaml']);
       (readFileSync as any).mockReturnValue(customYaml);
-      mockAxiosPost.mockResolvedValue({ status: 201 });
+      mockIngestApi.mockResolvedValue(undefined);
 
-      await uploadPrereleases({
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), {
         apiNamePath: 'metadata.name',
         apiVersionPath: 'metadata.release',
         globPattern: '*.yaml',
@@ -186,10 +214,10 @@ metadata:
         url: BASE_URL,
       });
 
-      expect(mockAxiosPost).toHaveBeenCalledWith(
-        `${BASE_URL}/api/rest/v1/apis`,
-        expect.objectContaining({ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }),
-        expect.anything(),
+      expect(mockIngestApi).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiInformation: expect.objectContaining({ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }),
+        }),
       );
     });
 
@@ -203,13 +231,13 @@ info:
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
       (readFileSync as any).mockReturnValue(yamlMissingTitle);
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  openapi.yaml: Missing required metadata fields.'));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`'${DEFAULT_API_NAME_PATH}' not found or empty.`));
-      expect(mockAxiosPost).not.toHaveBeenCalled();
+      expect(mockIngestApi).not.toHaveBeenCalled();
     });
 
     it('reports missing api version and counts the file as failed', () => {
@@ -222,7 +250,7 @@ info:
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
       (readFileSync as any).mockReturnValue(yamlMissingVersion);
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -239,7 +267,7 @@ info:
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
       (readFileSync as any).mockReturnValue(yamlMissingServiceName);
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -250,7 +278,7 @@ info:
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
       (readFileSync as any).mockReturnValue('openapi: 3.1.0');
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -258,20 +286,22 @@ info:
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`'${DEFAULT_API_NAME_PATH}' not found or empty.`));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`'${DEFAULT_API_VERSION_PATH}' not found or empty.`));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`'${DEFAULT_SERVICE_NAME_PATH}' not found or empty.`));
-      expect(mockAxiosPost).not.toHaveBeenCalled();
+      expect(mockIngestApi).not.toHaveBeenCalled();
     });
 
-    it('uses file:// scheme in sourceUrl', async () => {
+    it('uses the server /raw endpoint as sourceUrl', async () => {
       (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost.mockResolvedValue({ status: 201 });
+      mockIngestApi.mockResolvedValue(undefined);
 
-      await uploadPrereleases({ globPattern: 'services/**/openapi.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: 'services/**/openapi.yaml', url: BASE_URL });
 
-      expect(mockAxiosPost).toHaveBeenCalledWith(
-        `${BASE_URL}/api/rest/v1/apis`,
-        expect.objectContaining({ sourceUrl: expect.stringContaining('file://') }),
-        expect.anything(),
+      expect(mockIngestApi).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiInformation: expect.objectContaining({
+            sourceUrl: `${BASE_URL}/api/rest/v1/apis/my-service/My Test API/1.2.3/raw`,
+          }),
+        }),
       );
     });
 
@@ -281,13 +311,13 @@ info:
         throw new Error('EACCES: permission denied');
       });
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  unreadable.yaml: Upload failed.'));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('\t  Error: EACCES: permission denied'));
-      expect(mockAxiosPost).not.toHaveBeenCalled();
+      expect(mockIngestApi).not.toHaveBeenCalled();
     });
   });
 
@@ -298,14 +328,9 @@ info:
     });
 
     it('logs status and message body on HTTP error with message', () => {
-      const axiosError = new AxiosError('Conflict', 'ERR_BAD_REQUEST', {} as any, {}, {
-        data: { message: 'API already exists as stable' },
-        status: 409,
-        statusText: 'Conflict',
-      } as any);
-      mockAxiosPost.mockRejectedValue(axiosError);
+      mockIngestApi.mockRejectedValue(makeResponseError(409, 'Conflict', { message: 'API already exists as stable' }));
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -315,14 +340,9 @@ info:
     });
 
     it('logs status and statusText on HTTP error without message body', () => {
-      const axiosError = new AxiosError('Internal Server Error', 'ERR_BAD_RESPONSE', {} as any, {}, {
-        data: null,
-        status: 500,
-        statusText: 'Internal Server Error',
-      } as any);
-      mockAxiosPost.mockRejectedValue(axiosError);
+      mockIngestApi.mockRejectedValue(makeResponseError(500, 'Internal Server Error', null));
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -331,10 +351,9 @@ info:
     });
 
     it('logs network error when no response received', () => {
-      const axiosError = new AxiosError('Network Error', 'ERR_NETWORK', {} as any, { timeout: 5000 });
-      mockAxiosPost.mockRejectedValue(axiosError);
+      mockIngestApi.mockRejectedValue(makeFetchError('Network Error'));
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -343,9 +362,9 @@ info:
     });
 
     it('logs message for generic Error instances', () => {
-      mockAxiosPost.mockRejectedValue(new Error('Unexpected failure'));
+      mockIngestApi.mockRejectedValue(new Error('Unexpected failure'));
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -353,9 +372,9 @@ info:
     });
 
     it('serialises non-Error thrown values', () => {
-      mockAxiosPost.mockRejectedValue({ custom: 'error object' });
+      mockIngestApi.mockRejectedValue({ custom: 'error object' });
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -367,9 +386,9 @@ info:
     it('exits with PRERELEASE_UPLOAD_FAILED when at least one upload fails', () => {
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost.mockRejectedValue(new Error('upload error'));
+      mockIngestApi.mockRejectedValue(new Error('upload error'));
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
@@ -379,9 +398,9 @@ info:
     it('does not exit when all uploads succeed', async () => {
       (scanGlob as any).mockReturnValue(['a.yaml', 'b.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost.mockResolvedValue({ status: 201 });
+      mockIngestApi.mockResolvedValue(undefined);
 
-      await uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL });
+      await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
 
       expect(exit).not.toHaveBeenCalled();
     });
@@ -389,16 +408,13 @@ info:
     it('processes all files before exiting on partial failure', () => {
       (scanGlob as any).mockReturnValue(['good.yaml', 'bad.yaml', 'also-good.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
-      mockAxiosPost
-        .mockResolvedValueOnce({ status: 201 })
-        .mockRejectedValueOnce(new Error('upload error'))
-        .mockResolvedValueOnce({ status: 201 });
+      mockIngestApi.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('upload error')).mockResolvedValueOnce(undefined);
 
-      expect(uploadPrereleases({ globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
+      expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow(
         `Process exited with code ${PRERELEASE_UPLOAD_FAILED}`,
       );
 
-      expect(mockAxiosPost).toHaveBeenCalledTimes(3);
+      expect(mockIngestApi).toHaveBeenCalledTimes(3);
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Upload complete: 2 succeeded, 1 failed.'));
     });
   });

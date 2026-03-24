@@ -99,7 +99,20 @@
         <version>${openapi-generator.version}</version>
         <executions>
           <execution>
-            <id>generate-v1-quality-gate-api</id>
+            <id>generate-v1-api-index-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${maven.multiModuleProjectDirectory}/microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml
+              </inputSpec>
+              <generatorName>typescript-fetch</generatorName>
+              <output>${project.build.directory}/generated-sources/openapi/api-index-api</output>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-v1-quality-gate-api-client</id>
             <goals>
               <goal>generate</goal>
             </goals>
@@ -107,7 +120,7 @@
               <inputSpec>
                 ${maven.multiModuleProjectDirectory}/microservices/report-coordinator-api/src/main/resources/openapi/v1-quality-gate-api.yml
               </inputSpec>
-              <generatorName>typescript-axios</generatorName>
+              <generatorName>typescript-fetch</generatorName>
               <output>${project.build.directory}/generated-sources/openapi/quality-gate-api</output>
             </configuration>
           </execution>
