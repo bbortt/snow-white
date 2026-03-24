@@ -4,6 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import { QualityGateApi } from '../clients/quality-gate-api';
+import { Configuration, QualityGateApi } from '../clients/quality-gate-api';
 
-export const getQualityGateApi = (baseUrl: string): QualityGateApi => new QualityGateApi(undefined, baseUrl);
+export const getQualityGateApi = (baseUrl: string): QualityGateApi => new QualityGateApi(new Configuration({ basePath: baseUrl }));

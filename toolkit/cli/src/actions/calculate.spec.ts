@@ -4,26 +4,19 @@
  * See LICENSE file for full details.
  */
 
-import type { AxiosResponse } from 'axios';
-
-import { AxiosError } from 'axios';
 import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
 import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
 import type { SanitizedOptions } from '../config/sanitized-options';
 
+import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { calculate } from './calculate';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
   exit: mock(),
-}));
-
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('../common/config', () => ({
-  resolveSnowWhiteConfig: mock(),
 }));
 
 const mockConsoleLog = spyOn(console, 'log');
@@ -35,7 +28,7 @@ const getQualityGateApi = (qualityGateApiMock: unknown): QualityGateApi => {
 
 describe('calculate action', () => {
   const qualityGateApiMock = {
-    calculateQualityGate: mock(),
+    calculateQualityGateRaw: mock(),
   };
 
   const defaultOptions: SanitizedOptions = {
@@ -48,7 +41,7 @@ describe('calculate action', () => {
     mockConsoleLog.mockReset();
     mockConsoleError.mockReset();
 
-    qualityGateApiMock.calculateQualityGate.mockReset();
+    qualityGateApiMock.calculateQualityGateRaw.mockReset();
   });
 
   afterAll(() => {
@@ -57,38 +50,40 @@ describe('calculate action', () => {
 
   describe('successful calculation', () => {
     it('should successfully initiate quality gate calculation', async () => {
-      const mockResponse: AxiosResponse = {
-        config: {} as any,
-        data: {
-          apiName: 'test-api',
-          apiVersion: '1.0.0',
-          createdAt: '2025-06-21T10:30:00Z',
-          id: '123-456-789',
+      const mockLocation = 'http://localhost:8080/api/rest/v1/quality-gates/reports/123-456-789';
+      const mockApiResponse = {
+        raw: {
+          headers: {
+            get: (name: string) => (name.toLowerCase() === 'location' ? mockLocation : null),
+          },
+        },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        value: async () => ({
+          calculationId: '123-456-789',
+          calculationRequest: {},
+          initiatedAt: new Date(),
           qualityGateConfigName: 'test-gate',
-          serviceName: 'test-service',
-          status: 'INITIATED',
-        },
-        headers: {
-          location: 'http://localhost:8080/api/rest/v1/quality-gates/reports/123-456-789',
-        },
-        status: 202,
-        statusText: 'Accepted',
+          status: 'IN_PROGRESS',
+        }),
       };
 
-      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
       await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
-      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
-        attributeFilters: undefined,
-        includeApis: [...defaultOptions.apiInformation],
-        lookbackWindow: undefined,
+      expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
+        calculateQualityGateRequest: {
+          attributeFilters: undefined,
+          includeApis: [...defaultOptions.apiInformation],
+          lookbackWindow: undefined,
+        },
+        qualityGateConfigName: defaultOptions.qualityGate,
       });
 
       expect(mockConsoleLog).toHaveBeenNthCalledWith(1, expect.stringContaining('🚀  Starting Quality-Gate calculation for 1 API(s)...'));
       expect(mockConsoleLog).toHaveBeenNthCalledWith(2, expect.stringContaining(`Base URL: ${defaultOptions.url}`));
       expect(mockConsoleLog).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(6, expect.stringContaining(`Location: ${mockResponse.headers.location}`));
+      expect(mockConsoleLog).toHaveBeenNthCalledWith(6, expect.stringContaining(`Location: ${mockLocation}`));
       expect(mockConsoleLog).toHaveBeenNthCalledWith(
         8,
         expect.stringContaining('💡  Use the returned URL to check the calculation report.'),
@@ -96,15 +91,13 @@ describe('calculate action', () => {
     });
 
     it('should include lookbackWindow in request when provided', async () => {
-      const mockResponse: AxiosResponse = {
-        config: {} as any,
-        data: { id: '123-456-789', status: 'INITIATED' },
-        headers: {},
-        status: 202,
-        statusText: 'Accepted',
+      const mockApiResponse = {
+        raw: { headers: { get: () => null } },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        value: async () => ({ calculationId: '123-456-789', status: 'IN_PROGRESS' }),
       };
 
-      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
       const optionsWithLookback: SanitizedOptions = {
         ...defaultOptions,
@@ -113,25 +106,26 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), optionsWithLookback);
 
-      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
-        attributeFilters: undefined,
-        includeApis: [...defaultOptions.apiInformation],
-        lookbackWindow: '24h',
+      expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
+        calculateQualityGateRequest: {
+          attributeFilters: undefined,
+          includeApis: [...defaultOptions.apiInformation],
+          lookbackWindow: '24h',
+        },
+        qualityGateConfigName: defaultOptions.qualityGate,
       });
 
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Lookback window: 24h'));
     });
 
     it('should include attributeFilters in request when provided', async () => {
-      const mockResponse: AxiosResponse = {
-        config: {} as any,
-        data: { id: '123-456-789', status: 'INITIATED' },
-        headers: {},
-        status: 202,
-        statusText: 'Accepted',
+      const mockApiResponse = {
+        raw: { headers: { get: () => null } },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        value: async () => ({ calculationId: '123-456-789', status: 'IN_PROGRESS' }),
       };
 
-      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
       const optionsWithFilters: SanitizedOptions = {
         ...defaultOptions,
@@ -140,10 +134,13 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), optionsWithFilters);
 
-      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
-        attributeFilters: { environment: 'production', region: 'us-west-1' },
-        includeApis: [...defaultOptions.apiInformation],
-        lookbackWindow: undefined,
+      expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
+        calculateQualityGateRequest: {
+          attributeFilters: { environment: 'production', region: 'us-west-1' },
+          includeApis: [...defaultOptions.apiInformation],
+          lookbackWindow: undefined,
+        },
+        qualityGateConfigName: defaultOptions.qualityGate,
       });
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
@@ -152,15 +149,13 @@ describe('calculate action', () => {
     });
 
     it('should include both lookbackWindow and attributeFilters when provided', async () => {
-      const mockResponse: AxiosResponse = {
-        config: {} as any,
-        data: { id: '123-456-789', status: 'INITIATED' },
-        headers: {},
-        status: 202,
-        statusText: 'Accepted',
+      const mockApiResponse = {
+        raw: { headers: { get: () => null } },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        value: async () => ({ calculationId: '123-456-789', status: 'IN_PROGRESS' }),
       };
 
-      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
       const fullOptions: SanitizedOptions = {
         ...defaultOptions,
@@ -170,26 +165,24 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), fullOptions);
 
-      expect(qualityGateApiMock.calculateQualityGate).toHaveBeenCalledWith(defaultOptions.qualityGate, {
-        attributeFilters: { environment: 'staging' },
-        includeApis: [...defaultOptions.apiInformation],
-        lookbackWindow: '7d',
+      expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
+        calculateQualityGateRequest: {
+          attributeFilters: { environment: 'staging' },
+          includeApis: [...defaultOptions.apiInformation],
+          lookbackWindow: '7d',
+        },
+        qualityGateConfigName: defaultOptions.qualityGate,
       });
     });
 
     it('should handle response without location header', async () => {
-      const mockResponse: AxiosResponse = {
-        config: {} as any,
-        data: {
-          id: '123-456-789',
-          status: 'INITIATED',
-        },
-        headers: {}, // No location header
-        status: 202,
-        statusText: 'Accepted',
+      const mockApiResponse = {
+        raw: { headers: { get: () => null } },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        value: async () => ({ calculationId: '123-456-789', status: 'IN_PROGRESS' }),
       };
 
-      qualityGateApiMock.calculateQualityGate.mockResolvedValue(mockResponse);
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
       await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
@@ -200,60 +193,58 @@ describe('calculate action', () => {
   });
 
   describe('error handling', () => {
-    it('should handle AxiosError with response', () => {
+    it('should handle ResponseError with response', async () => {
+      const message = 'Quality-Gate configuration not found';
       const mockErrorResponse = {
-        data: {
-          message: 'Quality-Gate configuration not found',
-        },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        json: async () => ({ message }),
         status: 404,
         statusText: 'Not Found',
       };
 
-      const axiosError = new AxiosError('Request failed with status code 404', 'ERR_BAD_REQUEST', {} as any, {}, mockErrorResponse as any);
+      const responseError = new ResponseError(mockErrorResponse as any, 'Response returned an error code');
 
-      qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
+      qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(responseError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Details: ${mockErrorResponse.data.message}`));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 404'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Details: ${message}`));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
-    it('should handle AxiosError with response but no data', () => {
+    it('should handle ResponseError with response but no data', async () => {
       const mockErrorResponse = {
-        data: null,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        json: async () => null,
         status: 501,
         statusText: 'Internal Server Error',
       };
 
-      const axiosError = new AxiosError(
-        'Request failed with status code 500',
-        'ERR_INTERNAL_SERVER_ERROR',
-        {} as any,
-        {},
-        mockErrorResponse as any,
-      );
+      const responseError = new ResponseError(mockErrorResponse as any, 'Response returned an error code');
 
-      qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
+      qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(responseError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Status: ${mockErrorResponse.status}`));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Error: ${mockErrorResponse.statusText}`));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 501'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('Error: Internal Server Error'));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
-    it('should handle AxiosError with no response (network error)', () => {
-      const axiosError = new AxiosError('Network Error', 'ERR_NETWORK', {} as any, { timeout: 5000 });
+    it('should handle FetchError (network error)', async () => {
+      const fetchError = new FetchError(
+        new Error('Network Error'),
+        'The request failed and the interceptors did not return an alternative response',
+      );
 
-      qualityGateApiMock.calculateQualityGate.mockRejectedValue(axiosError);
+      qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(fetchError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
@@ -262,11 +253,11 @@ describe('calculate action', () => {
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
-    it('should handle generic Error', () => {
+    it('should handle generic Error', async () => {
       const genericError = new Error('Something went wrong');
-      qualityGateApiMock.calculateQualityGate.mockRejectedValue(genericError);
+      qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(genericError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
@@ -274,11 +265,11 @@ describe('calculate action', () => {
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
-    it('should handle non-Error objects', () => {
+    it('should handle non-Error objects', async () => {
       const unknownError = { custom: 'error object' };
-      qualityGateApiMock.calculateQualityGate.mockRejectedValue(unknownError);
+      qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(unknownError);
 
-      expect(calculate(getQualityGateApi(qualityGateApiMock), defaultOptions)).resolves.toBeUndefined();
+      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));

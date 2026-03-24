@@ -4,15 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import type { AxiosResponse } from 'axios';
-
-import { AxiosError } from 'axios';
 import chalk from 'chalk';
 import { exit } from 'node:process';
 
-import type { CalculateQualityGate202Response, CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
+import type { CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
 import type { SanitizedOptions } from '../config/sanitized-options';
 
+import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { toDtos } from '../entity/mapper/api-information.mapper';
 
@@ -36,16 +34,17 @@ const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: Sa
     lookbackWindow: options.lookbackWindow,
   };
 
-  const response: AxiosResponse<CalculateQualityGate202Response> = await qualityGateApi.calculateQualityGate(
-    options.qualityGate,
-    calculationRequest,
-  );
+  const apiResponse = await qualityGateApi.calculateQualityGateRaw({
+    calculateQualityGateRequest: calculationRequest,
+    qualityGateConfigName: options.qualityGate,
+  });
 
   console.log(chalk.green('✅ Quality-Gate calculation initiated successfully!'));
   console.log('');
 
-  if (response.headers.location) {
-    console.log(`Location: ${response.headers.location}`);
+  const location = apiResponse.raw.headers.get('location');
+  if (location) {
+    console.log(`Location: ${location}`);
     console.log('');
     console.log(chalk.yellow('💡  Use the returned URL to check the calculation report.'));
   }
@@ -60,15 +59,16 @@ export const calculate = async (qualityGateApi: QualityGateApi, options: Sanitiz
     console.error(chalk.red('❌  Failed to trigger Quality-Gate calculation!'));
     console.log('');
 
-    if (error instanceof AxiosError && error.response) {
+    if (error instanceof ResponseError) {
       console.error(chalk.red(`Status: ${error.response.status}`));
 
-      if (error.response.data && Object.hasOwn(error.response.data as object, 'message')) {
-        console.error(chalk.red(`Details: ${(error.response.data as { message: string }).message}`));
+      const body = (await error.response.json().catch(() => null)) as { message?: string } | null;
+      if (body && Object.hasOwn(body, 'message')) {
+        console.error(chalk.red(`Details: ${body.message}`));
       } else {
         console.error(chalk.red(`Error: ${error.response.statusText}`));
       }
-    } else if (error instanceof AxiosError && error.request) {
+    } else if (error instanceof FetchError) {
       console.error(chalk.red('No response received from server'));
       console.error(chalk.gray('Check if the service is running and accessible'));
     } else {

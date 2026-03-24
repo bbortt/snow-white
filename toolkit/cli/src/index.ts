@@ -12,6 +12,7 @@ import { Command } from 'commander';
 import type { CliOptions } from './config/cli-options';
 
 import { calculate } from './actions/calculate';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, uploadPrereleases } from './actions/upload-prereleases';
 import { getQualityGateApi } from './api/quality-gate-api';
 import { sanitizeConfiguration } from './config/sanitize-configuration';
 
@@ -55,5 +56,42 @@ program
     const qualityGateApi = getQualityGateApi(sanitizedOptions.url);
     await calculate(qualityGateApi, sanitizedOptions);
   });
+
+program
+  .command('upload-prereleases')
+  .description(
+    'Upload one or more API specifications from the local file system as prereleases.\n' +
+      'Intended to be called at the start of a pipeline before QA runs.\n' +
+      'Uploaded prereleases are temporary and will be cleaned up asynchronously by the pipeline after it completes.',
+  )
+  .requiredOption('--prerelease-specs <pattern>', 'Glob pattern selecting which specification files to upload (e.g. "services/**/openapi.yaml")')
+  .option('--url <baseUrl>', 'Base URL for Snow-White (overrides config file)')
+  .option('--config-file <path>', 'Path to config file (used to resolve --url if not provided directly)')
+  .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification', DEFAULT_API_NAME_PATH)
+  .option('--api-version-path <jsonPath>', 'JSON path to the API version field in the specification', DEFAULT_API_VERSION_PATH)
+  .option(
+    '--service-name-path <jsonPath>',
+    'JSON path to the service name field in the specification (maps to the x-service-name extension in raw YAML)',
+    DEFAULT_SERVICE_NAME_PATH,
+  )
+  .action(
+    async (options: {
+      prereleaseSpecs: string;
+      url?: string;
+      configFile?: string;
+      apiNamePath: string;
+      apiVersionPath: string;
+      serviceNamePath: string;
+    }) => {
+      await uploadPrereleases({
+        apiNamePath: options.apiNamePath,
+        apiVersionPath: options.apiVersionPath,
+        configFile: options.configFile,
+        globPattern: options.prereleaseSpecs,
+        serviceNamePath: options.serviceNamePath,
+        url: options.url,
+      });
+    },
+  );
 
 program.parse();
