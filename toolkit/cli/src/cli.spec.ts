@@ -10,7 +10,7 @@ import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { MatchingAttributes, WireMock } from 'wiremock-captain';
@@ -324,6 +324,98 @@ describe('CLI', () => {
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
         expect(unmatchedRequests.length).toBe(0);
       });
+    });
+  });
+
+  describe('command: upload-prereleases', () => {
+    const VALID_OPENAPI_YAML = `
+openapi: 3.1.0
+info:
+  title: Integration Test API
+  version: 2.0.0
+  x-service-name: integration-test-service
+`.trim();
+
+    it('should successfully upload a prerelease spec', async () => {
+      const tmpSpecFilename = `temp-spec-${randomBytes(8).toString('hex')}.yaml`;
+      writeFileSync(tmpSpecFilename, VALID_OPENAPI_YAML);
+
+      try {
+        const mockResponse: IWireMockResponse = { status: 201 };
+        await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
+
+        const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
+
+        console.debug(`Output: ${cliResult.stdout}`);
+
+        expect(cliResult.exitCode, cliResult.stderr).toBe(0);
+        expect(cliResult.stdout).toContain('🚀  Uploading prerelease API specifications matching:');
+        expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
+        expect(cliResult.stdout).toContain('⚠️  Prerelease uploads are temporary');
+        expect(cliResult.stdout).toContain('✅');
+        expect(cliResult.stdout).toContain('integration-test-service/Integration Test API@2.0.0');
+        expect(cliResult.stdout).toContain('Upload complete: 1 succeeded, 0 failed.');
+
+        const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/apis');
+        expect(requests.length).toBe(1);
+      } finally {
+        unlinkSync(tmpSpecFilename);
+      }
+    });
+
+    it('should exit with non-zero code when the server rejects a spec', async () => {
+      const tmpSpecFilename = `temp-spec-${randomBytes(8).toString('hex')}.yaml`;
+      writeFileSync(tmpSpecFilename, VALID_OPENAPI_YAML);
+
+      try {
+        const mockResponse: IWireMockResponse = {
+          body: { message: 'API already exists as a stable release' },
+          headers: { 'Content-Type': 'application/json' },
+          status: 409,
+        };
+        await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
+
+        const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
+
+        console.debug(`Output: ${cliResult.stderr}`);
+
+        expect(cliResult.exitCode).not.toBe(0);
+        expect(cliResult.stderr).toContain('❌');
+        expect(cliResult.stderr).toContain('Status: 409');
+        expect(cliResult.stderr).toContain('Details: API already exists as a stable release');
+        expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
+      } finally {
+        unlinkSync(tmpSpecFilename);
+      }
+    });
+
+    it('should read the base URL from a config file', async () => {
+      const tmpSpecFilename = `temp-spec-${randomBytes(8).toString('hex')}.yaml`;
+      const tmpConfigPath = join(tmpdir(), `temp-${randomBytes(16).toString('hex')}.json`);
+
+      writeFileSync(tmpSpecFilename, VALID_OPENAPI_YAML);
+      writeFileSync(tmpConfigPath, JSON.stringify({ url: WIREMOCK_URL }));
+
+      try {
+        const mockResponse: IWireMockResponse = { status: 201 };
+        await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
+
+        const cliResult = await executeCLICommand([
+          'upload-prereleases',
+          '--prerelease-specs',
+          tmpSpecFilename,
+          '--config-file',
+          tmpConfigPath,
+        ]);
+
+        console.debug(`Output: ${cliResult.stdout}`);
+
+        expect(cliResult.exitCode, cliResult.stderr).toBe(0);
+        expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
+        expect(cliResult.stdout).toContain('Upload complete: 1 succeeded, 0 failed.');
+      } finally {
+        unlinkSync(tmpSpecFilename);
+      }
     });
   });
 });
