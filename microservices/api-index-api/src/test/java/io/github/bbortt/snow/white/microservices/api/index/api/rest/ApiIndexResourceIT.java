@@ -14,6 +14,8 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_YAML_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -361,5 +363,92 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
           .accept(APPLICATION_JSON)
       )
       .andExpect(status().isOk());
+  }
+
+  @Test
+  void getRequest_forRawApiContent_shouldReturnNotFound_whenApiDoesNotExist()
+    throws Exception {
+    mockMvc
+      .perform(
+        get(format("%s/%s/%s/%s/raw", ENTITY_API_URL, "foo", "bar", "baz"))
+      )
+      .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getRequest_forRawApiContent_shouldReturnYaml_whenContentIsOpenApiSpec()
+    throws Exception {
+    var openApiContent =
+      "openapi: 3.0.0\ninfo:\n  title: Test API\n  version: v1";
+
+    var prereleaseReference = ApiReference.builder()
+      .otelServiceName("otelServiceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .prereleaseContent(openApiContent)
+      .build();
+
+    apiReferenceRepository.save(prereleaseReference);
+
+    var responseContent = mockMvc
+      .perform(
+        get(
+          format(
+            "%s/%s/%s/%s/raw",
+            ENTITY_API_URL,
+            prereleaseReference.getOtelServiceName(),
+            prereleaseReference.getApiName(),
+            prereleaseReference.getApiVersion()
+          )
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_YAML_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    assertThat(responseContent).isEqualTo(openApiContent);
+  }
+
+  @Test
+  void getRequest_forRawApiContent_shouldReturnPlainText_whenContentIsNotOpenApiSpec()
+    throws Exception {
+    var rawContent = "some raw spec content that is not openapi";
+
+    var prereleaseReference = ApiReference.builder()
+      .otelServiceName("otelServiceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("sourceUrl")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .prereleaseContent(rawContent)
+      .build();
+
+    apiReferenceRepository.save(prereleaseReference);
+
+    var responseContent = mockMvc
+      .perform(
+        get(
+          format(
+            "%s/%s/%s/%s/raw",
+            ENTITY_API_URL,
+            prereleaseReference.getOtelServiceName(),
+            prereleaseReference.getApiName(),
+            prereleaseReference.getApiVersion()
+          )
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, TEXT_PLAIN_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    assertThat(responseContent).isEqualTo(rawContent);
   }
 }
