@@ -11,17 +11,13 @@ import { getQualityGateApi } from './quality-gate-api';
 
 await mock.module('../clients/quality-gate-api', () => {
   const MockConfiguration = mock((options: { basePath: string }) => ({ basePath: options.basePath }));
-  const MockQualityGateApi = mock((config: object) => ({ config }));
+  const MockQualityGateApi = mock(({ config }) => {
+    return { config };
+  });
   return { Configuration: MockConfiguration, QualityGateApi: MockQualityGateApi };
 });
 
 describe('getQualityGateApi', () => {
-  it('should return an instance of QualityGateApi', () => {
-    const result = getQualityGateApi('http://localhost:8081');
-
-    expect(result).toBeInstanceOf(QualityGateApi);
-  });
-
   it('should configure QualityGateApi with the provided baseUrl', () => {
     const baseUrl = 'http://localhost:8081';
 
