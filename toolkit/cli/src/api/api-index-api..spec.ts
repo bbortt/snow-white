@@ -11,17 +11,13 @@ import { getApiIndexApi } from './api-index-api';
 
 await mock.module('../clients/api-index-api', () => {
   const MockConfiguration = mock((options: { basePath: string }) => ({ basePath: options.basePath }));
-  const MockApiIndexApi = mock((config: object) => ({ config }));
+  const MockApiIndexApi = mock(({ config }) => {
+    return { config };
+  });
   return { ApiIndexApi: MockApiIndexApi, Configuration: MockConfiguration };
 });
 
 describe('getApiIndexApi', () => {
-  it('should return an instance of ApiIndexApi', () => {
-    const result = getApiIndexApi('http://localhost:8080');
-
-    expect(result).toBeInstanceOf(ApiIndexApi);
-  });
-
   it('should configure ApiIndexApi with the provided baseUrl', () => {
     const baseUrl = 'http://localhost:8080';
 

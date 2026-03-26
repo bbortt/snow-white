@@ -9,13 +9,9 @@ import { load } from 'js-yaml';
 import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
-import type {
-  ApiIndexApi,
-  GetAllApis200ResponseInner,
-  GetAllApis500Response,
-  GetAllApis200ResponseInnerApiTypeEnum,
-} from '../clients/api-index-api';
+import type { ApiIndexApi, GetAllApis200ResponseInner, GetAllApis500Response } from '../clients/api-index-api';
 
+import { GetAllApis200ResponseInnerApiTypeEnum } from '../clients/api-index-api';
 import { INVALID_CONFIG_FORMAT, PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
 import { resolveConfig } from '../config/resolve-config';
