@@ -44,7 +44,7 @@ services:
       - internal
 
   jaeger:
-    image: jaegertracing/jaeger:2.16.0
+    image: jaegertracing/jaeger:2.17.0
     ports:
       - '16686:16686'
     networks:
