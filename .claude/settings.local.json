@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(./mvnw test:*)", "Bash(bun test:*)", "Bash(bun run:*)"]
+  }
+}
