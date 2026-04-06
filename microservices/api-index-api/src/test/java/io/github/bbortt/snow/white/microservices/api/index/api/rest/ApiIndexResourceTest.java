@@ -16,6 +16,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -29,6 +30,7 @@ import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllAp
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
+import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -86,7 +88,7 @@ class ApiIndexResourceTest {
 
     @Test
     void shouldPersistApi_whenItDoesNotExistYet()
-      throws ApiAlreadyIndexedException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var domain = mock(ApiReference.class);
       doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
 
@@ -99,7 +101,7 @@ class ApiIndexResourceTest {
 
     @Test
     void shouldNotPersistApi_whenItHasAlreadyBeenIngested()
-      throws ApiAlreadyIndexedException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var domain = mock(ApiReference.class);
       doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
 
@@ -111,6 +113,27 @@ class ApiIndexResourceTest {
 
       assertThat(response.getStatusCode()).isEqualTo(CONFLICT);
       assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldNotPersistApi_whenTheReceivedApiInformationIsInvalid()
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      var domain = mock(ApiReference.class);
+      doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
+
+      var exception = new InvalidReleaseWithContentException();
+      doThrow(exception).when(apiIndexServiceMock).persist(domain);
+
+      ResponseEntity<@NonNull GetAllApis500Response> response =
+        fixture.ingestApi(dto);
+
+      assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+      assertThat(response.getBody()).isEqualTo(
+        GetAllApis500Response.builder()
+          .code(BAD_REQUEST.getReasonPhrase())
+          .message(exception.getMessage())
+          .build()
+      );
     }
   }
 

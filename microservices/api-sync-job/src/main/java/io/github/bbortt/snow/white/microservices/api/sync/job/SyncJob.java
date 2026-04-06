@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
@@ -64,7 +65,13 @@ public class SyncJob {
       LOADED.equals(apiInformation.getLoadStatus()) &&
       !cachingService.apiInformationIndexed(apiInformation)
     ) {
-      cachingService.publishApiInformation(apiInformation);
+      try {
+        cachingService.publishApiInformation(apiInformation);
+      } catch (Exception e) {
+        logger.warn("Failed to publish API information!", e);
+        return false;
+      }
+
       return true;
     }
 

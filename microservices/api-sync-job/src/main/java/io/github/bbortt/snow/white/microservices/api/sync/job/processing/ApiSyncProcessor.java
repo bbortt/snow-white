@@ -43,7 +43,7 @@ public class ApiSyncProcessor {
 
   public Map<ApiLoadStatus, Long> process(
     Collection<Supplier<@Nullable ApiInformation>> suppliers,
-    Predicate<ApiInformation> consumer
+    Predicate<ApiInformation> apiInformationPublisher
   ) throws InterruptedException {
     BlockingQueue<Supplier<ApiInformation>> queue = new ArrayBlockingQueue<>(
       queueCapacity
@@ -72,7 +72,7 @@ public class ApiSyncProcessor {
                   .withLoadStatus(UNLOADED);
               }
 
-              if (consumer.test(apiInformation)) {
+              if (apiInformationPublisher.test(apiInformation)) {
                 apiInformation = apiInformation.withLoadStatus(PUBLISHED);
               }
 

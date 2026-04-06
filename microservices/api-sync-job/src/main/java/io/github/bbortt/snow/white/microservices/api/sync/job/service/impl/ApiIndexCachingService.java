@@ -17,6 +17,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingSer
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
@@ -46,16 +47,20 @@ public class ApiIndexCachingService implements CachingService {
 
   @Override
   public void publishApiInformation(ApiInformation apiInformation) {
-    if (
-      apiIndexApi
-        .ingestApiWithHttpInfo(apiInformationMapper.toDto(apiInformation))
-        .getStatusCode()
-        .equals(CONFLICT)
-    ) {
-      logger.warn(
-        "API information '{}' already indexed - this should have been checked beforehand!",
-        apiInformation
-      );
+    try {
+      if (
+        apiIndexApi
+          .ingestApiWithHttpInfo(apiInformationMapper.toDto(apiInformation))
+          .getStatusCode()
+          .equals(CONFLICT)
+      ) {
+        logger.warn(
+          "API information '{}' already indexed - this should have been checked beforehand!",
+          apiInformation
+        );
+      }
+    } catch (RestClientResponseException e) {
+      logger.error("Failed to publish API information!", e);
     }
   }
 }

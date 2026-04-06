@@ -12,12 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
+import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -58,10 +61,11 @@ class ApiIndexServiceTest {
     }
 
     @Test
-    void shouldSaveReferencedApi() throws ApiAlreadyIndexedException {
-      doReturn(false)
+    void shouldSaveReferencedApi()
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      doReturn(Optional.empty())
         .when(apiReferenceRepositoryMock)
-        .existsById(
+        .findById(
           ApiReference.ApiReferenceId.builder()
             .otelServiceName(apiReference.getOtelServiceName())
             .apiName(apiReference.getApiName())
@@ -76,9 +80,9 @@ class ApiIndexServiceTest {
 
     @Test
     void shouldThrowException_whenApiReferenceAlreadyExists() {
-      doReturn(true)
+      doReturn(Optional.of(mock(ApiReference.class)))
         .when(apiReferenceRepositoryMock)
-        .existsById(
+        .findById(
           ApiReference.ApiReferenceId.builder()
             .otelServiceName(apiReference.getOtelServiceName())
             .apiName(apiReference.getApiName())
@@ -95,16 +99,10 @@ class ApiIndexServiceTest {
 
     @Test
     void shouldReplaceExistingPrerelease_whenPrereleaseIsReUploaded()
-      throws ApiAlreadyIndexedException {
-      var prereleaseReference = ApiReference.builder()
-        .otelServiceName("otelServiceName")
-        .apiName("apiName")
-        .apiVersion("apiVersion")
-        .sourceUrl("sourceUrl")
-        .apiType(UNSPECIFIED)
-        .prerelease(true)
-        .prereleaseContent("spec: content")
-        .build();
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      var prereleaseReference = apiReference
+        .withPrerelease(true)
+        .withPrereleaseContent("spec: content");
 
       var id = ApiReference.ApiReferenceId.builder()
         .otelServiceName(prereleaseReference.getOtelServiceName())
@@ -112,13 +110,58 @@ class ApiIndexServiceTest {
         .apiVersion(prereleaseReference.getApiVersion())
         .build();
 
-      doReturn(true).when(apiReferenceRepositoryMock).existsById(id);
+      doReturn(Optional.of(prereleaseReference))
+        .when(apiReferenceRepositoryMock)
+        .findById(id);
 
       fixture.persist(prereleaseReference);
 
       var order = inOrder(apiReferenceRepositoryMock);
       order.verify(apiReferenceRepositoryMock).deleteById(id);
       order.verify(apiReferenceRepositoryMock).save(prereleaseReference);
+    }
+
+    @Test
+    void shouldReplaceExistingPrerelease_whenReleaseIsReUploaded()
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      var prereleaseReference = apiReference
+        .withPrerelease(true)
+        .withPrereleaseContent("spec: content");
+
+      var id = ApiReference.ApiReferenceId.builder()
+        .otelServiceName(prereleaseReference.getOtelServiceName())
+        .apiName(prereleaseReference.getApiName())
+        .apiVersion(prereleaseReference.getApiVersion())
+        .build();
+
+      doReturn(Optional.of(prereleaseReference))
+        .when(apiReferenceRepositoryMock)
+        .findById(id);
+
+      fixture.persist(apiReference);
+
+      var order = inOrder(apiReferenceRepositoryMock);
+      order.verify(apiReferenceRepositoryMock).deleteById(id);
+      order.verify(apiReferenceRepositoryMock).save(apiReference);
+    }
+
+    @Test
+    void shouldThrowException_whenReleaseContainsContent() {
+      var prereleaseReference = apiReference
+        .withPrerelease(false)
+        .withPrereleaseContent("spec: content");
+
+      var id = ApiReference.ApiReferenceId.builder()
+        .otelServiceName(prereleaseReference.getOtelServiceName())
+        .apiName(prereleaseReference.getApiName())
+        .apiVersion(prereleaseReference.getApiVersion())
+        .build();
+
+      doReturn(Optional.empty()).when(apiReferenceRepositoryMock).findById(id);
+
+      assertThatThrownBy(() ->
+        fixture.persist(prereleaseReference)
+      ).isInstanceOf(InvalidReleaseWithContentException.class);
     }
   }
 

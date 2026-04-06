@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.index.api.rest;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -20,6 +21,7 @@ import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllAp
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
 import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
+import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -34,13 +36,18 @@ public class ApiIndexResource implements ApiIndexApi {
   private final ApiReferenceMapper apiReferenceMapper;
 
   @Override
-  public ResponseEntity<@NonNull Void> ingestApi(
-    GetAllApis200ResponseInner apiInformation
-  ) {
+  public ResponseEntity ingestApi(GetAllApis200ResponseInner apiInformation) {
     try {
       apiIndexService.persist(apiReferenceMapper.fromDto(apiInformation));
     } catch (ApiAlreadyIndexedException _) {
       return ResponseEntity.status(CONFLICT).build();
+    } catch (InvalidReleaseWithContentException e) {
+      return ResponseEntity.status(BAD_REQUEST).body(
+        GetAllApis500Response.builder()
+          .code(BAD_REQUEST.getReasonPhrase())
+          .message(e.getMessage())
+          .build()
+      );
     }
 
     return ResponseEntity.status(CREATED).build();

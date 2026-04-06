@@ -11,6 +11,7 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,6 +35,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith({ MockitoExtension.class })
 class SyncJobTest {
@@ -232,6 +235,41 @@ class SyncJobTest {
       fixture.syncCatalog();
 
       verify(apiSyncProcessor).process(eq(emptyList()), any());
+    }
+
+    @Test
+    void shouldCatchExceptionsOccurringDuringPublishing()
+      throws InterruptedException {
+      ApiInformation api = new ApiInformation().withLoadStatus(LOADED);
+
+      when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(
+        List.of(() -> api)
+      );
+
+      when(apiCatalogService2.getApiSpecificationLoaders()).thenReturn(
+        emptyList()
+      );
+
+      when(cachingService.apiInformationIndexed(api)).thenReturn(false);
+      doThrow(mock(RestClientResponseException.class))
+        .when(cachingService)
+        .publishApiInformation(api);
+
+      fixture.syncCatalog();
+
+      verify(apiSyncProcessor).process(
+        suppliersCaptor.capture(),
+        predicateCaptor.capture()
+      );
+
+      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+
+      boolean result = callback.test(api);
+
+      assertThat(result).isFalse();
+
+      verify(cachingService).apiInformationIndexed(api);
+      verify(cachingService).publishApiInformation(api);
     }
   }
 }
