@@ -106,13 +106,13 @@ describe('CLI', () => {
   const invokeCalculateCommandWithExplicitConfiguration = (serviceName: string, apiName: string, apiVersion: string) =>
     executeCLICommand([
       'calculate',
-      '--qualityGate',
+      '--quality-gate',
       qualityGateConfigName,
-      '--serviceName',
+      '--service-name',
       serviceName,
-      '--apiName',
+      '--api-name',
       apiName,
-      '--apiVersion',
+      '--api-version',
       apiVersion,
       '--url',
       WIREMOCK_URL,
@@ -160,7 +160,7 @@ describe('CLI', () => {
           }),
         );
 
-        return executeCLICommand(['calculate', '--configFile', tmpPath, '--url', WIREMOCK_URL]);
+        return executeCLICommand(['calculate', '--config-file', tmpPath, '--url', WIREMOCK_URL]);
       },
       title: 'with configuration from file',
     },

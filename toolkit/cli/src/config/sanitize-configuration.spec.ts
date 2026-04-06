@@ -221,7 +221,7 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeConfiguration({ qualityGate: 'cli-gate' } as CliOptions);
 
       expect(result.qualityGate).toBe('cli-gate');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --qualityGate overrides config file value'));
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --quality-gate overrides config file value'));
     });
 
     it('should override lookbackWindow from config file with CLI parameter', () => {
@@ -235,7 +235,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(result.lookbackWindow).toBe('24h');
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --lookbackWindow overrides config file value'),
+        expect.stringContaining('⚠️  CLI parameter --lookback-window overrides config file value'),
       );
     });
 
@@ -386,9 +386,9 @@ describe('sanitizeConfiguration', () => {
         1,
         expect.stringContaining('❌  Either define a config file or all of these calculation parameters:'),
       );
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- serviceName'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- apiName'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- apiVersion'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- --service-name'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- --api-name'));
+      expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- --api-version'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
