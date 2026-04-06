@@ -70,7 +70,7 @@ const mergeWithCliOverrides = (fileConfig: Partial<SanitizedOptions>, cliOptions
     if (fileConfig.qualityGate !== undefined && fileConfig.qualityGate !== cliOptions.qualityGate) {
       console.warn(
         chalk.yellow(
-          `⚠️  CLI parameter --qualityGate overrides config file value: "${fileConfig.qualityGate}" → "${cliOptions.qualityGate}"`,
+          `⚠️  CLI parameter --quality-gate overrides config file value: "${fileConfig.qualityGate}" → "${cliOptions.qualityGate}"`,
         ),
       );
     }
@@ -82,7 +82,7 @@ const mergeWithCliOverrides = (fileConfig: Partial<SanitizedOptions>, cliOptions
     if (fileConfig.lookbackWindow !== undefined && fileConfig.lookbackWindow !== cliOptions.lookbackWindow) {
       console.warn(
         chalk.yellow(
-          `⚠️  CLI parameter --lookbackWindow overrides config file value: "${fileConfig.lookbackWindow}" → "${cliOptions.lookbackWindow}"`,
+          `⚠️  CLI parameter --lookback-window overrides config file value: "${fileConfig.lookbackWindow}" → "${cliOptions.lookbackWindow}"`,
         ),
       );
     }
@@ -157,7 +157,7 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
 
   if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
     console.error(chalk.red('❌  Either define a config file or all of these calculation parameters:'));
-    exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- ${opt}`)));
+    exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- --${opt.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`)));
     exitWithCodeInvalidConfig();
   }
 

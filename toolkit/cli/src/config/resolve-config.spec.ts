@@ -147,7 +147,7 @@ describe('resolveConfig', () => {
     expect(mockExplorer.search).toHaveBeenCalled();
 
     expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining(`⚙️  Failed to find configuration file - try with '--configFile <path-to-your-config-file>'`),
+      expect.stringContaining(`⚙️  Failed to find configuration file - try with '--config-file <path-to-your-config-file>'`),
     );
     expect(exit).toHaveBeenCalledWith(CONFIG_FILE_NOT_FOUND);
   });
