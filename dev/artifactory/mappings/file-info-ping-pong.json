@@ -14,7 +14,7 @@
       "Content-Type": "application/json"
     },
     "jsonBody": {
-      "downloadUri": "http://artifactory:8080/artifactory/snow-white-generic-local/ping-pong.yml"
+      "downloadUri": "http://artifactory:8080/snow-white-generic-local/ping-pong.yml"
     }
   }
 }

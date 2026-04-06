@@ -1,12 +1,12 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/artifactory/snow-white-generic-local/ping-pong.yml"
+    "urlPath": "/snow-white-generic-local/ping-pong.yml"
   },
   "response": {
     "status": 200,
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/yaml"
     },
     "bodyFileName": "ping-pong.yml"
   }
