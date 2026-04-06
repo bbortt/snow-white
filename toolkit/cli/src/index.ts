@@ -38,17 +38,17 @@ program
   .command('calculate')
   .description('Trigger a Quality-Gate calculation')
   // Configuration from file, can contain all other configuration methods
-  .option('--configFile <path>', 'Path to config file')
+  .option('--config-file <path>', 'Path to a YAML or JSON config file')
   // Read all OpenAPI specs matching the glob pattern
-  .option('--openApiSpecs <pattern>', 'Glob pattern for OpenAPI specs')
+  .option('--open-api-specs <pattern>', 'Glob pattern selecting which OpenAPI spec files to use')
   // Explicit configuration for the Quality-Gate calculation
-  .option('--qualityGate <gateName>', 'Quality-Gate configuration name')
-  .option('--serviceName <serviceName>', 'Service name')
-  .option('--apiName <apiName>', 'API name')
-  .option('--apiVersion <version>', 'API version')
+  .option('--quality-gate <name>', 'Quality-Gate configuration name')
+  .option('--service-name <name>', 'Name of the service')
+  .option('--api-name <name>', 'Name of the API')
+  .option('--api-version <version>', 'API version')
   .option('--url <baseUrl>', 'Base URL for Snow-White (overrides config file)')
   // Filter and lookback options
-  .option('--lookbackWindow <window>', "Time window for calculation (e.g., '1h', '24h', '7d')")
+  .option('--lookback-window <window>', "Time window for calculation (e.g., '1h', '24h', '7d')")
   .option('--filter <key=value>', 'Attribute filter for telemetry data (can be repeated)', (value:string, previous: string[]|undefined) => {
     return previous ? [...previous, value] : [value];
   }, [])
