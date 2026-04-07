@@ -162,7 +162,9 @@ jobs:
             -pl :${{ matrix.service }}
   native-tests:
     name: 'Native Application Tests'
-    if: contains(github.event.pull_request.labels.*.name, 'include:apptests')
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+      contains(github.event.pull_request.title, 'native-maven-plugin')
     runs-on: ubuntu-latest
     needs: ci
     strategy:
