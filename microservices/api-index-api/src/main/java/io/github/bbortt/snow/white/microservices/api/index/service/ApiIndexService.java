@@ -6,9 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.index.service;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.Validate.notBlank;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
