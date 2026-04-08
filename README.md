@@ -5,22 +5,19 @@
 </p>
 
 <p align="center">
-    <i>An awesome pairing with - well, do you know Snow White and the Jaeger (Jaeger = hunter, and Jaeger also means Jaeger tracing 😉)?</i>
+    <i>OpenAPI coverage and quality insights powered by OpenTelemetry.</i>
 </p>
 
-Snow-White connects API specifications with runtime telemetry data to provide insights into your API tests - such as coverage, performance, and usage behavior.
+Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts of your API are actually being tested?**
 
-Snow-White makes such analysis effortless by leveraging API specifications and [OpenTelemetry (OTEL)](https://opentelemetry.io) data.
-OTEL is a standardized protocol that allows flexible data sourcing.
+It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints declared in your API specifications - then validates coverage against configurable quality gates.
 
-Most commonly, Snow-White listens to **black-box tests of your application**, such as system or integration tests.
-However, it can also gather insights from a **live production environment**.
+Snow-White works with **black-box test suites** (system tests, integration tests) as well as **live production traffic**.
 
-Snow-White provides valuable insights on:
+It currently provides insights into:
 
-- Coverage
-- API Performance
-- And more.
+- **Coverage** - which endpoints were exercised and which were not
+- **API Performance** - response time analysis across operations
 
 ## Installation (for providers)
 
@@ -32,7 +29,7 @@ The Docker compose file `dev/docker-compose.yaml` may be used as a starting poin
 
 ## Onboarding (for users)
 
-// TODO!
+See [`ONBOARDING.md`](./ONBOARDING.md) for a step-by-step guide to integrating your service with Snow-White.
 
 ## General Concept
 
@@ -120,19 +117,30 @@ To get started:
 
 ### Local Setup (Quick Start)
 
+**Prerequisites:** Java 25, Node.js 22, Docker or Podman (with Compose).
+
 ```shell
 git clone https://github.com/bbortt/snow-white.git
 cd snow-white
 
-# Download dependencies and pack application
+# Build all modules (including the CLI and generated sources)
 ./mvnw -Pnode package
+
+# Start the development environment
+docker compose -f dev/docker-compose.yaml up -d
 ```
+
+> A manual InfluxDB token setup step is required before traces can flow.
+> See [`DEVELOPMENT.md`](./DEVELOPMENT.md) for the full walkthrough.
 
 ### Contributing Guidelines
 
-<!-- TODO: Add these -->
+- Keep commits small and focused. Follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, etc.).
+- All new features should include tests.
+- Run the full build before opening a PR: `./mvnw -Pnode verify`
+- Open an issue first for larger changes so we can align on direction before you invest time coding.
 
-Please review our contributing guide and code of conduct before submitting a PR.
+Please be respectful and constructive in all interactions.
 
 ## License
 
