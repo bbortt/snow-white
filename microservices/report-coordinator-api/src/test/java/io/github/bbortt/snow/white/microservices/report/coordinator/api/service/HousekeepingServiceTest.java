@@ -73,7 +73,7 @@ class HousekeepingServiceTest {
 
       housekeepingMethod.accept(fixture);
 
-      // Jobs run on virtual threads — use a generous but bounded timeout
+      // Jobs run on virtual threads - use a generous but bounded timeout
       verify(firstHousekeepingJobMock, timeout(1_000)).run();
       verify(secondHousekeepingJobMock, timeout(1_000)).run();
     }
