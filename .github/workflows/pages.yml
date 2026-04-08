@@ -1,0 +1,73 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - gh-pages
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: docs
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        working-directory: docs
+        env:
+          JEKYLL_ENV: production
+
+      - name: Include Helm chart index
+        run: |
+          if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
+            git fetch origin gh-pages --depth=1
+            if git show origin/gh-pages:index.yaml > /dev/null 2>&1; then
+              git show origin/gh-pages:index.yaml > docs/_site/index.yaml
+              echo "Helm chart index.yaml merged into site output."
+            else
+              echo "No index.yaml found on gh-pages branch - skipping."
+            fi
+          else
+            echo "No gh-pages branch found - skipping Helm index merge."
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
