@@ -234,7 +234,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -256,7 +256,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -276,7 +276,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -290,7 +290,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -326,7 +326,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -348,7 +348,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -363,7 +363,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -377,7 +377,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -391,7 +391,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -404,7 +404,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -421,7 +421,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
@@ -445,7 +445,7 @@ info:
       try {
         await uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL });
       } catch {
-        /* exit() mock throws — expected */
+        /* exit() mock throws - expected */
       }
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);

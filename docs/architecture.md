@@ -1,3 +1,9 @@
+---
+title: Architecture
+nav_order: 4
+description: "Event-driven microservices architecture overview of Snow-White"
+---
+
 # Architecture Overview
 
 **Snow-White** follows an event-driven architecture.

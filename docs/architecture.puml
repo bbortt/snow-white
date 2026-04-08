@@ -13,7 +13,7 @@ package "Snow-White" {
   component "Webapplication (UI)" as ui #Orange
 }
 
-component "API Index API" as index #Teal
+component "API Index API" as index #Darkorange
 component "API Sync Job" as sync #Darkorange
 component "OTEL Event Filter Stream" as filter #Darkorange
 component "OpenAPI Coverage Stream" as coverage #Darkorange
@@ -49,6 +49,7 @@ cli --> gate: HTTP/S
 
 gate <--> qgate
 gate <--> coordinator
+gate <--> index
 
 ' API Sync Job
 
