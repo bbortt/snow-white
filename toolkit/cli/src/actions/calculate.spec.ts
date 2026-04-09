@@ -8,6 +8,7 @@ import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'b
 import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
+import type { ReportApi } from '../clients/report-api';
 import type { SanitizedOptions } from '../config/sanitized-options';
 
 import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
@@ -26,13 +27,22 @@ const getQualityGateApi = (qualityGateApiMock: unknown): QualityGateApi => {
   return qualityGateApiMock as QualityGateApi;
 };
 
+const getReportApi = (reportApiMock: unknown): ReportApi => {
+  return reportApiMock as ReportApi;
+};
+
 describe('calculate action', () => {
   const qualityGateApiMock = {
     calculateQualityGateRaw: mock(),
   };
 
+  const reportApiMock = {
+    getReportByCalculationId: mock(),
+  };
+
   const defaultOptions: SanitizedOptions = {
     apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
+    async: true,
     qualityGate: 'test-gate',
     url: 'http://localhost:8080',
   };
@@ -42,13 +52,14 @@ describe('calculate action', () => {
     mockConsoleError.mockReset();
 
     qualityGateApiMock.calculateQualityGateRaw.mockReset();
+    reportApiMock.getReportByCalculationId.mockReset();
   });
 
   afterAll(() => {
     jest.restoreAllMocks();
   });
 
-  describe('successful calculation', () => {
+  describe('successful calculation (async: true)', () => {
     it('should successfully initiate quality gate calculation', async () => {
       const mockLocation = 'http://localhost:8080/api/rest/v1/quality-gates/reports/123-456-789';
       const mockApiResponse = {
@@ -69,7 +80,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
         calculateQualityGateRequest: {
@@ -104,7 +115,7 @@ describe('calculate action', () => {
         lookbackWindow: '24h',
       };
 
-      await calculate(getQualityGateApi(qualityGateApiMock), optionsWithLookback);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), optionsWithLookback);
 
       expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
         calculateQualityGateRequest: {
@@ -132,7 +143,7 @@ describe('calculate action', () => {
         attributeFilters: { environment: 'production', region: 'us-west-1' },
       };
 
-      await calculate(getQualityGateApi(qualityGateApiMock), optionsWithFilters);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), optionsWithFilters);
 
       expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
         calculateQualityGateRequest: {
@@ -163,7 +174,7 @@ describe('calculate action', () => {
         lookbackWindow: '7d',
       };
 
-      await calculate(getQualityGateApi(qualityGateApiMock), fullOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), fullOptions);
 
       expect(qualityGateApiMock.calculateQualityGateRaw).toHaveBeenCalledWith({
         calculateQualityGateRequest: {
@@ -184,11 +195,100 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleLog).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
       expect(mockConsoleLog).not.toHaveBeenCalledWith(expect.stringContaining('Location:'));
       expect(mockConsoleLog).not.toHaveBeenCalledWith(expect.stringContaining('💡  Use the returned URL to check the calculation report.'));
+    });
+  });
+
+  describe('synchronous polling (async: false)', () => {
+    const syncOptions: SanitizedOptions = {
+      ...defaultOptions,
+      async: false,
+    };
+
+    const makeMockApiResponse = (calculationId = '123-456-789') => ({
+      raw: {
+        headers: {
+          get: (name: string) =>
+            name.toLowerCase() === 'location' ? `http://localhost:8080/api/rest/v1/quality-gates/reports/${calculationId}` : null,
+        },
+      },
+      // eslint-disable-next-line @typescript-eslint/require-await
+      value: async () => ({
+        calculationId,
+        calculationRequest: {},
+        initiatedAt: new Date(),
+        qualityGateConfigName: 'test-gate',
+        status: 'IN_PROGRESS',
+      }),
+    });
+
+    it('should poll until PASSED and exit successfully', async () => {
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+
+      reportApiMock.getReportByCalculationId
+        .mockResolvedValueOnce({ calculationId: '123-456-789', status: 'IN_PROGRESS' })
+        .mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+      expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledTimes(2);
+      expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledWith({ calculationId: '123-456-789' });
+      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('⏳  Polling for calculation result...'));
+      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('✅ Quality-Gate passed!'));
+      expect(exit).not.toHaveBeenCalled();
+    });
+
+    it('should poll until FAILED and exit with non-zero code', async () => {
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+
+      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'FAILED' });
+
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation FAILED!'));
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
+    });
+
+    it('should poll until FINISHED_EXCEPTIONALLY and exit with non-zero code', async () => {
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+
+      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({
+        calculationId: '123-456-789',
+        stackTrace: 'java.lang.NullPointerException at ...',
+        status: 'FINISHED_EXCEPTIONALLY',
+      });
+
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation FINISHED_EXCEPTIONALLY!'));
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('java.lang.NullPointerException'));
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
+    });
+
+    it('should poll until TIMED_OUT and exit with non-zero code', async () => {
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+
+      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'TIMED_OUT' });
+
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation TIMED_OUT!'));
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
+    });
+
+    it('should use calculationId from the response body', async () => {
+      const specificId = 'abc-def-123';
+      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse(specificId));
+
+      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: specificId, status: 'PASSED' });
+
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+      expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledWith({ calculationId: specificId });
     });
   });
 
@@ -206,7 +306,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(responseError);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 404'));
@@ -227,7 +327,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(responseError);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 501'));
@@ -244,7 +344,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(fetchError);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
@@ -257,7 +357,7 @@ describe('calculate action', () => {
       const genericError = new Error('Something went wrong');
       qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(genericError);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
@@ -269,7 +369,7 @@ describe('calculate action', () => {
       const unknownError = { custom: 'error object' };
       qualityGateApiMock.calculateQualityGateRaw.mockRejectedValue(unknownError);
 
-      await calculate(getQualityGateApi(qualityGateApiMock), defaultOptions);
+      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
       expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));

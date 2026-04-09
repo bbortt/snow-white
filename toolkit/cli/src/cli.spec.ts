@@ -81,7 +81,8 @@ const executeCLICommand = async (
       });
     });
 
-    child.on('error', _ => {
+    child.on('error', e => {
+      console.log('error:', e.message);
       resolve({
         exitCode: 1,
         stderr,
@@ -116,6 +117,7 @@ describe('CLI', () => {
       apiVersion,
       '--url',
       WIREMOCK_URL,
+      '--async',
     ]);
 
   const assertThatBasicInformationIsBeingPrinted = (
@@ -135,7 +137,7 @@ describe('CLI', () => {
     WIREMOCK_URL = `http://localhost:${WIREMOCK_PORT}`;
     wiremock = new WireMock(WIREMOCK_URL);
 
-    console.log(`WireMock started on port ${WIREMOCK_PORT}`);
+    console.log(`Connecting to WireMock on port ${WIREMOCK_PORT}`);
   });
 
   afterEach(() => {
@@ -160,12 +162,12 @@ describe('CLI', () => {
           }),
         );
 
-        return executeCLICommand(['calculate', '--config-file', tmpPath, '--url', WIREMOCK_URL]);
+        return executeCLICommand(['calculate', '--config-file', tmpPath, '--url', WIREMOCK_URL, '--async']);
       },
       title: 'with configuration from file',
     },
   ].forEach(testConfiguration => {
-    describe('command: calculate', () => {
+    describe('command: calculate (fire-and-forget)', () => {
       describe(testConfiguration.title, () => {
         it('should successfully trigger quality gate calculation', async () => {
           const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
@@ -195,8 +197,6 @@ describe('CLI', () => {
 
           const cliResult = await testConfiguration.cliInvocationCommand(serviceName, apiName, apiVersion);
 
-          console.debug(`Output: ${cliResult.stdout}`);
-
           assertThatBasicInformationIsBeingPrinted(cliResult, 0);
 
           expect(cliResult.stdout).toContain('✅ Quality-Gate calculation initiated successfully!');
@@ -215,7 +215,7 @@ describe('CLI', () => {
     });
 
     describe('error handling', () => {
-      it('should exit when server responds with 404 bad request response', async () => {
+      it('should exit when server responds with 400 bad request response', async () => {
         const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
 
         const message = 'This is a forced error message!';
@@ -237,8 +237,6 @@ describe('CLI', () => {
         });
 
         const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
-
-        console.debug(`Output: ${cliResult.stdout}`);
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
@@ -276,8 +274,6 @@ describe('CLI', () => {
 
         const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
 
-        console.debug(`Output: ${cliResult.stdout}`);
-
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
         expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
@@ -310,8 +306,6 @@ describe('CLI', () => {
 
         const cliResult = await invokeCalculateCommandWithExplicitConfiguration(serviceName, apiName, apiVersion);
 
-        console.debug(`Output: ${cliResult.stdout}`);
-
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
         expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
@@ -324,6 +318,102 @@ describe('CLI', () => {
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
         expect(unmatchedRequests.length).toBe(0);
       });
+    });
+  });
+
+  describe('command: calculate (synchronous polling)', () => {
+    const calculationId = '550e8400-e29b-41d4-a716-446655440000';
+
+    const calculateWireMockRequest: IWireMockRequest & { body: CalculateQualityGateRequest } = {
+      body: { includeApis: [{ apiName: 'user-api', apiVersion: '1.0.0', serviceName: 'user-service' }] },
+      endpoint: `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`,
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+    };
+
+    const makeCalculateMockResponse = (): IWireMockResponse => ({
+      body: {
+        calculationId,
+        calculationRequest: {
+          includeApis: [{ apiName: 'user-api', apiVersion: '1.0.0', serviceName: 'user-service' }],
+        },
+        initiatedAt: '2026-01-01T00:00:00Z',
+        qualityGateConfigName,
+        status: 'IN_PROGRESS',
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        Location: `${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/${calculationId}`,
+      },
+      status: 202,
+    });
+
+    it('should poll until PASSED and exit with code 0', async () => {
+      await wiremock.register(calculateWireMockRequest, makeCalculateMockResponse(), {
+        requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo },
+      });
+
+      await wiremock.register(
+        { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
+        {
+          body: { calculationId, qualityGateConfigName, status: 'PASSED' },
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      );
+
+      const cliResult = await executeCLICommand([
+        'calculate',
+        '--quality-gate',
+        qualityGateConfigName,
+        '--service-name',
+        'user-service',
+        '--api-name',
+        'user-api',
+        '--api-version',
+        '1.0.0',
+        '--url',
+        WIREMOCK_URL,
+      ]);
+
+      console.debug(`Output: ${JSON.stringify(cliResult)}`);
+
+      expect(cliResult.exitCode, cliResult.stderr).toBe(0);
+      expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
+      expect(cliResult.stdout).toContain('✅ Quality-Gate passed!');
+    });
+
+    it('should poll until FAILED and exit with non-zero code', async () => {
+      await wiremock.register(calculateWireMockRequest, makeCalculateMockResponse(), {
+        requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo },
+      });
+
+      await wiremock.register(
+        { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
+        {
+          body: { calculationId, qualityGateConfigName, status: 'FAILED' },
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      );
+
+      const cliResult = await executeCLICommand([
+        'calculate',
+        '--quality-gate',
+        qualityGateConfigName,
+        '--service-name',
+        'user-service',
+        '--api-name',
+        'user-api',
+        '--api-version',
+        '1.0.0',
+        '--url',
+        WIREMOCK_URL,
+      ]);
+
+      expect(cliResult.exitCode).toBe(QUALITY_GATE_CALCULATION_FAILED);
+      expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
+      expect(cliResult.stderr).toContain('❌  Quality-Gate calculation FAILED!');
     });
   });
 
@@ -345,8 +435,6 @@ info:
         await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
 
         const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
-
-        console.debug(`Output: ${cliResult.stdout}`);
 
         expect(cliResult.exitCode, cliResult.stderr).toBe(0);
         expect(cliResult.stdout).toContain('🚀  Uploading prerelease API specifications matching:');
@@ -381,6 +469,7 @@ info:
 
         expect(cliResult.exitCode).not.toBe(0);
         expect(cliResult.stderr).toContain('❌');
+        expect(cliResult.stderr).toContain('Upload failed.');
         expect(cliResult.stderr).toContain('Status: 409');
         expect(cliResult.stderr).toContain('Details: API already exists as a stable release');
         expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
@@ -407,8 +496,6 @@ info:
           '--config-file',
           tmpConfigPath,
         ]);
-
-        console.debug(`Output: ${cliResult.stdout}`);
 
         expect(cliResult.exitCode, cliResult.stderr).toBe(0);
         expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);

@@ -52,6 +52,7 @@ const sanitizedOptions: SanitizedOptions = {
       serviceName: 'test-service',
     },
   ],
+  async: false,
   qualityGate: 'quality-gate',
   url: 'url',
 };
@@ -442,6 +443,26 @@ describe('sanitizeConfiguration', () => {
       );
 
       expect(exit).toHaveBeenCalledWith(0);
+    });
+  });
+
+  describe('async flag', () => {
+    it('should respect custom async flag value', () => {
+      const async = true;
+
+      expect(
+        sanitizeConfiguration({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          async,
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toEqual({
+        ...sanitizedOptions,
+        async,
+      });
     });
   });
 });

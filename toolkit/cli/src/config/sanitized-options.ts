@@ -22,4 +22,9 @@ export interface SanitizedOptions {
    * Key-value map of attributes to filter telemetry data.
    */
   attributeFilters?: Record<string, string>;
+  /**
+   * Fire-and-forget mode: skip polling for the calculation result.
+   * When false (default), the CLI polls until the calculation completes.
+   */
+  async?: boolean;
 }
