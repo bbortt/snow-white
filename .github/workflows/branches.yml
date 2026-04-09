@@ -45,6 +45,13 @@ jobs:
       - name: Build with Maven
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: ./mvnw -B -Pprod verify
+      - name: Upload CLI Artifacts
+        uses: actions/upload-artifact@v6
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        with:
+          name: cli
+          path: toolkit/cli/target/snow-white-*
+          if-no-files-found: error
       - name: Fetch References
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: git fetch --unshallow origin
