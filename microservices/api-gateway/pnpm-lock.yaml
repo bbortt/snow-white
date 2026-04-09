@@ -24,8 +24,8 @@ importers:
         specifier: 2.11.2
         version: 2.11.2(react-redux@9.2.0(@types/react@19.2.14)(react@19.2.4)(redux@5.0.1))(react@19.2.4)
       axios:
-        specifier: 1.14.0
-        version: 1.14.0
+        specifier: 1.15.0
+        version: 1.15.0
       bootstrap:
         specifier: 5.3.8
         version: 5.3.8(@popperjs/core@2.11.8)
@@ -49,7 +49,7 @@ importers:
         version: 7.72.1(react@19.2.4)
       react-jhipster:
         specifier: 0.25.3
-        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.14.0)(dayjs@1.11.20)(react-dom@19.2.4(react@19.2.4))(react-hook-form@7.72.1(react@19.2.4))(react@19.2.4)(reactstrap@9.2.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+        version: 0.25.3(@popperjs/core@2.11.8)(axios@1.15.0)(dayjs@1.11.20)(react-dom@19.2.4(react@19.2.4))(react-hook-form@7.72.1(react@19.2.4))(react@19.2.4)(reactstrap@9.2.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       react-loadable:
         specifier: 5.5.0
         version: 5.5.0(react@19.2.4)
@@ -2184,8 +2184,8 @@ packages:
   axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
 
-  axios@1.14.0:
-    resolution: {integrity: sha512-3Y8yrqLSwjuzpXuZ0oIYZ/XGgLwUIBU3uLvbcpb0pidD9ctpShJd43KSlEEkVQg6DS0G9NKyzOvBfUtDKEyHvQ==}
+  axios@1.15.0:
+    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
 
   babel-jest@30.3.0:
     resolution: {integrity: sha512-gRpauEU2KRrCox5Z296aeVHR4jQ98BCnu0IO332D/xpHNOsIH/bgSRk9k6GbKIbBw8vFeN6ctuu6tV8WOyVfYQ==}
@@ -8762,7 +8762,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.14.0:
+  axios@1.15.0:
     dependencies:
       follow-redirects: 1.15.11(debug@4.3.2)
       form-data: 4.0.5
@@ -12209,9 +12209,9 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.14.0)(dayjs@1.11.20)(react-dom@19.2.4(react@19.2.4))(react-hook-form@7.72.1(react@19.2.4))(react@19.2.4)(reactstrap@9.2.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
+  react-jhipster@0.25.3(@popperjs/core@2.11.8)(axios@1.15.0)(dayjs@1.11.20)(react-dom@19.2.4(react@19.2.4))(react-hook-form@7.72.1(react@19.2.4))(react@19.2.4)(reactstrap@9.2.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
     dependencies:
-      axios: 1.14.0
+      axios: 1.15.0
       dayjs: 1.11.20
       lodash: 4.18.1
       numeral: 2.0.6
@@ -13368,7 +13368,7 @@ snapshots:
 
   wait-on@9.0.4:
     dependencies:
-      axios: 1.14.0
+      axios: 1.15.0
       joi: 18.0.2
       lodash: 4.18.1
       minimist: 1.2.8
