@@ -15,6 +15,7 @@ import { calculate } from './actions/calculate';
 import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, resolveUrl, uploadPrereleases } from './actions/upload-prereleases';
 import { getApiIndexApi } from './api/api-index-api';
 import { getQualityGateApi } from './api/quality-gate-api';
+import { getReportApi } from './api/report-api';
 import { sanitizeConfiguration } from './config/sanitize-configuration';
 
 const program = new Command();
@@ -52,10 +53,12 @@ program
   .option('--filter <key=value>', 'Attribute filter for telemetry data (can be repeated)', (value:string, previous: string[]|undefined) => {
     return previous ? [...previous, value] : [value];
   }, [])
+  .option('--async', 'Fire-and-forget: do not poll for the calculation result (default: false)')
   .action(async (options: CliOptions) => {
     const sanitizedOptions = sanitizeConfiguration(options);
     const qualityGateApi = getQualityGateApi(sanitizedOptions.url);
-    await calculate(qualityGateApi, sanitizedOptions);
+    const reportApi = getReportApi(sanitizedOptions.url);
+    await calculate(qualityGateApi, reportApi, sanitizedOptions);
   });
 
 program
