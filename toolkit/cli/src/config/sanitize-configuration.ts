@@ -98,6 +98,11 @@ const mergeWithCliOverrides = (fileConfig: Partial<SanitizedOptions>, cliOptions
     result.attributeFilters = cliFilters;
   }
 
+  // Async flag: CLI-only, not read from config file
+  if (cliOptions.async !== undefined) {
+    result.async = cliOptions.async;
+  }
+
   return result;
 };
 
@@ -161,11 +166,12 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     exitWithCodeInvalidConfig();
   }
 
-  const { apiName, apiVersion, lookbackWindow, qualityGate, serviceName, url } = options;
+  const { apiName, apiVersion, async, lookbackWindow, qualityGate, serviceName, url } = options;
   const attributeFilters = parseFilters(options.filter);
 
   return {
     apiInformation: [{ apiName, apiVersion, serviceName }],
+    async: async ?? false,
     attributeFilters,
     lookbackWindow,
     qualityGate,

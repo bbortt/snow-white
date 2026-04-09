@@ -124,6 +124,19 @@
               <output>${project.build.directory}/generated-sources/openapi/quality-gate-api</output>
             </configuration>
           </execution>
+          <execution>
+            <id>generate-v1-report-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${maven.multiModuleProjectDirectory}/microservices/report-coordinator-api/src/main/resources/openapi/v1-report-api.yml
+              </inputSpec>
+              <generatorName>typescript-fetch</generatorName>
+              <output>${project.build.directory}/generated-sources/openapi/report-api</output>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 

@@ -8,13 +8,18 @@ import chalk from 'chalk';
 import { exit } from 'node:process';
 
 import type { CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
+import type { ReportApi } from '../clients/report-api';
+import type { ListQualityGateReports200ResponseInner } from '../clients/report-api/models/ListQualityGateReports200ResponseInner';
 import type { SanitizedOptions } from '../config/sanitized-options';
 
 import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
+import { ListQualityGateReports200ResponseInnerStatusEnum } from '../clients/report-api/models/ListQualityGateReports200ResponseInner';
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
 import { toDtos } from '../entity/mapper/api-information.mapper';
 
-const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
+const POLL_INTERVAL_MS = 2000;
+
+const calculateQualityGates = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: SanitizedOptions): Promise<void> => {
   console.log(chalk.blue(`🚀  Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
   console.log(chalk.gray(`Base URL: ${options.url}`));
 
@@ -48,13 +53,43 @@ const calculateQualityGates = async (qualityGateApi: QualityGateApi, options: Sa
     console.log('');
     console.log(chalk.yellow('💡  Use the returned URL to check the calculation report.'));
   }
+
+  if (!options.async) {
+    const calculationResponse = await apiResponse.value();
+    const calculationId = calculationResponse.calculationId;
+
+    console.log('');
+    await pollCalculationResult(reportApi, calculationId);
+  }
 };
 
-// TODO: https://sonarcloud.io/project/issues?id=bbortt_snow-white&pullRequest=570&issueStatuses=OPEN,CONFIRMED&sinceLeakPeriod=true
+const pollCalculationResult = async (reportApi: ReportApi, calculationId: string): Promise<void> => {
+  console.log(chalk.blue('⏳  Polling for calculation result...'));
+  console.log('');
 
-export const calculate = async (qualityGateApi: QualityGateApi, options: SanitizedOptions): Promise<void> => {
+  let report: ListQualityGateReports200ResponseInner;
+  do {
+    await new Promise<void>(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+    report = await reportApi.getReportByCalculationId({ calculationId });
+    console.log(chalk.gray(`Status: ${report.status}`));
+  } while (report.status === ListQualityGateReports200ResponseInnerStatusEnum.InProgress);
+
+  console.log('');
+
+  if (report.status === ListQualityGateReports200ResponseInnerStatusEnum.Passed) {
+    console.log(chalk.green('✅ Quality-Gate passed!'));
+  } else {
+    console.error(chalk.red(`❌  Quality-Gate calculation ${report.status}!`));
+    if (report.stackTrace) {
+      console.error(chalk.gray(report.stackTrace));
+    }
+    exit(QUALITY_GATE_CALCULATION_FAILED);
+  }
+};
+
+export const calculate = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: SanitizedOptions): Promise<void> => {
   try {
-    await calculateQualityGates(qualityGateApi, options);
+    await calculateQualityGates(qualityGateApi, reportApi, options);
   } catch (error: unknown) {
     console.error(chalk.red('❌  Failed to trigger Quality-Gate calculation!'));
     console.log('');
