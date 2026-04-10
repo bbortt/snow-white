@@ -12,7 +12,7 @@ import type { SanitizedOptions } from './sanitized-options';
 
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { resolveConfig } from './resolve-config';
-import { sanitizeConfiguration } from './sanitize-configuration';
+import { sanitizeCalculateOptions } from './sanitize-configuration';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
@@ -103,7 +103,7 @@ describe('sanitizeConfiguration', () => {
     },
   ])('should exit with code 3 when combination of parameters is invalid: %s', (options: Partial<CliOptions>) => {
     // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
-    expect(() => sanitizeConfiguration(options)).toThrowError('Process exited with code 3');
+    expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
     expect(mockConsoleError).toHaveBeenNthCalledWith(
       1,
@@ -119,7 +119,7 @@ describe('sanitizeConfiguration', () => {
     it('resolves config from exact path if specified', () => {
       (resolveConfig as any).mockReturnValueOnce(sanitizedOptions);
 
-      expect(sanitizeConfiguration({} as CliOptions)).toEqual(sanitizedOptions);
+      expect(sanitizeCalculateOptions({} as CliOptions)).toEqual(sanitizedOptions);
 
       expect(resolveConfig).toHaveBeenCalled();
     });
@@ -134,7 +134,7 @@ describe('sanitizeConfiguration', () => {
     it('should exit with code 3 if file is empty', () => {
       (resolveConfig as any).mockReturnValueOnce({});
 
-      expect(() => sanitizeConfiguration({} as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({} as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(resolveConfig).toHaveBeenCalled();
 
@@ -146,7 +146,7 @@ describe('sanitizeConfiguration', () => {
 
       (resolveConfig as any).mockReturnValueOnce({ configFile });
 
-      expect(() => sanitizeConfiguration({ configFile } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(resolveConfig).toHaveBeenCalledWith(configFile);
 
@@ -156,7 +156,7 @@ describe('sanitizeConfiguration', () => {
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
       (resolveConfig as any).mockReturnValueOnce({ apiInformation: [options], qualityGate: 'quality-gate', url: 'url' });
 
-      expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Each API information must contain serviceName, apiName, and apiVersion.'),
@@ -173,7 +173,7 @@ describe('sanitizeConfiguration', () => {
         serviceName: 'test-service',
       });
 
-      expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
@@ -190,7 +190,7 @@ describe('sanitizeConfiguration', () => {
         url: 'url',
       });
 
-      expect(() => sanitizeConfiguration({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
 
@@ -206,7 +206,7 @@ describe('sanitizeConfiguration', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeConfiguration({ url: 'http://cli-url.com' } as CliOptions);
+      const result = sanitizeCalculateOptions({ url: 'http://cli-url.com' } as CliOptions);
 
       expect(result.url).toBe('http://cli-url.com');
       expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --url overrides config file value'));
@@ -219,7 +219,7 @@ describe('sanitizeConfiguration', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeConfiguration({ qualityGate: 'cli-gate' } as CliOptions);
+      const result = sanitizeCalculateOptions({ qualityGate: 'cli-gate' } as CliOptions);
 
       expect(result.qualityGate).toBe('cli-gate');
       expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --quality-gate overrides config file value'));
@@ -232,7 +232,7 @@ describe('sanitizeConfiguration', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeConfiguration({ lookbackWindow: '24h' } as CliOptions);
+      const result = sanitizeCalculateOptions({ lookbackWindow: '24h' } as CliOptions);
 
       expect(result.lookbackWindow).toBe('24h');
       expect(mockConsoleWarn).toHaveBeenCalledWith(
@@ -247,7 +247,7 @@ describe('sanitizeConfiguration', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeConfiguration({ filter: ['region=us-west-1'] } as CliOptions);
+      const result = sanitizeCalculateOptions({ filter: ['region=us-west-1'] } as CliOptions);
 
       expect(result.attributeFilters).toEqual({ region: 'us-west-1' });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
@@ -262,7 +262,7 @@ describe('sanitizeConfiguration', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeConfiguration({ url: 'http://same-url.com' } as CliOptions);
+      const result = sanitizeCalculateOptions({ url: 'http://same-url.com' } as CliOptions);
 
       expect(result.url).toBe('http://same-url.com');
       expect(mockConsoleWarn).not.toHaveBeenCalled();
@@ -271,7 +271,7 @@ describe('sanitizeConfiguration', () => {
 
   describe('filter parsing', () => {
     it('should parse multiple filters correctly', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         filter: ['environment=production', 'region=us-west-1'],
@@ -287,7 +287,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should warn and skip invalid filter format', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         filter: ['invalid-filter', 'valid=filter'],
@@ -301,7 +301,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should handle filter with equals sign in value', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         filter: ['query=a=b'],
@@ -316,7 +316,7 @@ describe('sanitizeConfiguration', () => {
 
   describe('lookbackWindow validation', () => {
     it('should accept valid lookback window formats', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         lookbackWindow: '24h',
@@ -330,7 +330,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should warn for potentially invalid lookback window format', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         lookbackWindow: 'invalid',
@@ -347,7 +347,7 @@ describe('sanitizeConfiguration', () => {
   describe('explicit configuration', () => {
     it('should return sanitized options when all required properties are provided', () => {
       expect(
-        sanitizeConfiguration({
+        sanitizeCalculateOptions({
           apiName: 'test-api',
           apiVersion: 'api-version',
           qualityGate: 'quality-gate',
@@ -362,7 +362,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should include optional lookbackWindow and attributeFilters', () => {
-      const result = sanitizeConfiguration({
+      const result = sanitizeCalculateOptions({
         apiName: 'test-api',
         apiVersion: 'api-version',
         filter: ['env=prod'],
@@ -381,7 +381,7 @@ describe('sanitizeConfiguration', () => {
 
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
       // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
-      expect(() => sanitizeConfiguration(options)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
       expect(mockConsoleError).toHaveBeenNthCalledWith(
         1,
@@ -397,7 +397,7 @@ describe('sanitizeConfiguration', () => {
     it('should exit with code 3 if no URL is provided', () => {
       // test is being done with explicit configuration, but validation applies to any configuration
       expect(() =>
-        sanitizeConfiguration({
+        sanitizeCalculateOptions({
           apiName: 'test-api',
           apiVersion: 'test-version',
           qualityGate: 'quality-gate',
@@ -415,7 +415,7 @@ describe('sanitizeConfiguration', () => {
     it('should exit with code 3 if no Quality-Gate is provided', () => {
       // test is being done with explicit configuration, but validation applies to any configuration
       expect(() =>
-        sanitizeConfiguration({
+        sanitizeCalculateOptions({
           apiName: 'test-api',
           apiVersion: 'test-version',
           serviceName: 'test-service',
@@ -435,7 +435,7 @@ describe('sanitizeConfiguration', () => {
         openApiSpecs: 'some-glob-pattern',
       };
 
-      expect(() => sanitizeConfiguration(options)).toThrowError('Process exited with code 0');
+      expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 0');
 
       expect(mockConsoleError).not.toHaveBeenCalled();
       expect(mockConsoleWarn).toHaveBeenCalledWith(
@@ -451,7 +451,7 @@ describe('sanitizeConfiguration', () => {
       const async = true;
 
       expect(
-        sanitizeConfiguration({
+        sanitizeCalculateOptions({
           apiName: 'test-api',
           apiVersion: 'api-version',
           async,

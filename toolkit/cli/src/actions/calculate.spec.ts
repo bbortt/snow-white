@@ -242,18 +242,18 @@ describe('calculate action', () => {
       expect(exit).not.toHaveBeenCalled();
     });
 
-    it('should poll until FAILED and exit with non-zero code', async () => {
+    it.each(['FAILED', 'TIMED_OUT'])('should poll until %s and exit with non-zero code', async (status: string) => {
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
 
-      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'FAILED' });
+      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status });
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation FAILED!'));
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`❌  Quality-Gate calculation ${status}!`));
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 
-    it('should poll until FINISHED_EXCEPTIONALLY and exit with non-zero code', async () => {
+    it('should poll until  and exit with non-zero code', async () => {
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
 
       reportApiMock.getReportByCalculationId.mockResolvedValueOnce({
@@ -266,17 +266,6 @@ describe('calculate action', () => {
 
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation FINISHED_EXCEPTIONALLY!'));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('java.lang.NullPointerException'));
-      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
-    });
-
-    it('should poll until TIMED_OUT and exit with non-zero code', async () => {
-      qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
-
-      reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'TIMED_OUT' });
-
-      await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
-
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation TIMED_OUT!'));
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
 

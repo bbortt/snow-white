@@ -376,8 +376,6 @@ describe('CLI', () => {
         WIREMOCK_URL,
       ]);
 
-      console.debug(`Output: ${JSON.stringify(cliResult)}`);
-
       expect(cliResult.exitCode, cliResult.stderr).toBe(0);
       expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
       expect(cliResult.stdout).toContain('✅ Quality-Gate passed!');
@@ -465,13 +463,43 @@ info:
 
         const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
 
-        console.debug(`Output: ${cliResult.stderr}`);
-
         expect(cliResult.exitCode).not.toBe(0);
         expect(cliResult.stderr).toContain('❌');
         expect(cliResult.stderr).toContain('Upload failed.');
         expect(cliResult.stderr).toContain('Status: 409');
         expect(cliResult.stderr).toContain('Details: API already exists as a stable release');
+        expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
+      } finally {
+        unlinkSync(tmpSpecFilename);
+      }
+    });
+
+    it('should ignore previously indexed api specifications when flag is set', async () => {
+      const tmpSpecFilename = `temp-spec-${randomBytes(8).toString('hex')}.yaml`;
+      writeFileSync(tmpSpecFilename, VALID_OPENAPI_YAML);
+
+      try {
+        const mockResponse: IWireMockResponse = {
+          body: { message: 'API already exists as a stable release' },
+          headers: { 'Content-Type': 'application/json' },
+          status: 409,
+        };
+        await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
+
+        const cliResult = await executeCLICommand([
+          'upload-prereleases',
+          '--prerelease-specs',
+          tmpSpecFilename,
+          '--url',
+          WIREMOCK_URL,
+          '--ignore-existing',
+        ]);
+
+        expect(cliResult.exitCode).toBe(0);
+        expect(cliResult.stderr).toContain('❌');
+        expect(cliResult.stderr).toContain('Upload failed.');
+        expect(cliResult.stderr).toContain('Status: 409');
+        expect(cliResult.stderr).toContain('Ignoring already existing integration-test-service/Integration Test API@2.0.0');
         expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
       } finally {
         unlinkSync(tmpSpecFilename);
