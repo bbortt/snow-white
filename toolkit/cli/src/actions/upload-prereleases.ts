@@ -31,6 +31,7 @@ export interface UploadPrereleasesOptions {
   apiNamePath?: string;
   apiVersionPath?: string;
   serviceNamePath?: string;
+  ignoreExisting?: boolean;
 }
 
 export const resolveUrl = (cliUrl?: string, configFile?: string): string => {
@@ -65,7 +66,7 @@ const isResponseError = (error: unknown): error is Error & { response: Response 
 const isFetchError = (error: unknown): boolean => error instanceof TypeError || (error instanceof Error && error.name === 'FetchError');
 
 export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: UploadPrereleasesOptions): Promise<void> => {
-  const { globPattern, url } = options;
+  const { globPattern, ignoreExisting, url } = options;
   const apiNamePath = options.apiNamePath ?? DEFAULT_API_NAME_PATH;
   const apiVersionPath = options.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
   const serviceNamePath = options.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
@@ -87,15 +88,20 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
 
   let successCount = 0;
   let failCount = 0;
+  let ignoredCount = 0;
 
   for (const file of files) {
+    let apiName: string | undefined;
+    let apiVersion: string | undefined;
+    let serviceName: string | undefined;
+
     try {
       const content = readFileSync(file, 'utf8');
       const parsed = load(content);
 
-      const apiName = getNestedValue(parsed, apiNamePath);
-      const apiVersion = getNestedValue(parsed, apiVersionPath);
-      const serviceName = getNestedValue(parsed, serviceNamePath);
+      apiName = getNestedValue(parsed, apiNamePath);
+      apiVersion = getNestedValue(parsed, apiVersionPath);
+      serviceName = getNestedValue(parsed, serviceNamePath);
 
       if (!apiName || !apiVersion || !serviceName) {
         console.error(chalk.red(`❌  ${file}: Missing required metadata fields.`));
@@ -131,11 +137,19 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
 
       if (isResponseError(error)) {
         console.error(chalk.red(`\t  Status: ${error.response.status}`));
-        const body = (await error.response.json().catch(() => null)) as GetAllApis500Response | undefined;
-        if (body) {
-          console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
+
+        if (error.response.status === 409 && ignoreExisting) {
+          console.warn(chalk.yellow(`⚠️  ${file}: Ignoring already existing ${serviceName}/${apiName}@${apiVersion}`));
+          ignoredCount++;
+          // Subtract from failed count, because we later increase it anyway
+          failCount--;
         } else {
-          console.error(chalk.red(`\t  Error: ${error.response.statusText}`));
+          const body = (await error.response.json().catch(() => null)) as GetAllApis500Response | undefined;
+          if (body) {
+            console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
+          } else {
+            console.error(chalk.red(`\t  Error: ${error.response.statusText}`));
+          }
         }
       } else if (isFetchError(error)) {
         console.error(chalk.red('\t  No response received from server.'));
@@ -149,7 +163,7 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
   }
 
   console.log('');
-  console.log(chalk.blue(`Upload complete: ${successCount} succeeded, ${failCount} failed.`));
+  console.log(chalk.blue(`Upload complete: ${successCount} succeeded, ${failCount + ignoredCount} failed.`));
 
   if (failCount > 0) {
     exit(PRERELEASE_UPLOAD_FAILED);

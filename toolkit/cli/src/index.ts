@@ -16,7 +16,7 @@ import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_P
 import { getApiIndexApi } from './api/api-index-api';
 import { getQualityGateApi } from './api/quality-gate-api';
 import { getReportApi } from './api/report-api';
-import { sanitizeConfiguration } from './config/sanitize-configuration';
+import { sanitizeCalculateOptions } from './config/sanitize-configuration';
 
 const program = new Command();
 
@@ -53,9 +53,9 @@ program
   .option('--filter <key=value>', 'Attribute filter for telemetry data (can be repeated)', (value:string, previous: string[]|undefined) => {
     return previous ? [...previous, value] : [value];
   }, [])
-  .option('--async', 'Fire-and-forget: do not poll for the calculation result (default: false)')
+  .option('--async', 'Fire-and-forget: do not poll for the calculation result', false)
   .action(async (options: CliOptions) => {
-    const sanitizedOptions = sanitizeConfiguration(options);
+    const sanitizedOptions = sanitizeCalculateOptions(options);
     const qualityGateApi = getQualityGateApi(sanitizedOptions.url);
     const reportApi = getReportApi(sanitizedOptions.url);
     await calculate(qualityGateApi, reportApi, sanitizedOptions);
@@ -66,7 +66,7 @@ program
   .description(
     'Upload one or more API specifications from the local file system as prereleases.\n' +
       'Intended to be called at the start of a pipeline before QA runs.\n' +
-      'Uploaded prereleases are temporary and will be cleaned up asynchronously by the pipeline after it completes.',
+      'Uploaded prereleases are temporary and will be cleaned up asynchronously.',
   )
   .requiredOption('--prerelease-specs <pattern>', 'Glob pattern selecting which specification files to upload (e.g. "services/**/openapi.yaml")')
   .option('--url <baseUrl>', 'Base URL for Snow-White (overrides config file)')
@@ -78,6 +78,7 @@ program
     'JSON path to the service name field in the specification (maps to the x-service-name extension in raw YAML)',
     DEFAULT_SERVICE_NAME_PATH,
   )
+  .option('--ignore-existing', 'Ignore previously indexed API specifications', false)
   .action(
     async (options: {
       prereleaseSpecs: string;
@@ -86,6 +87,7 @@ program
       apiNamePath: string;
       apiVersionPath: string;
       serviceNamePath: string;
+      ignoreExisting:boolean
     }) => {
       const url = resolveUrl(options.url, options.configFile);
       const apiIndexApi = getApiIndexApi(url);
@@ -93,6 +95,7 @@ program
         apiNamePath: options.apiNamePath,
         apiVersionPath: options.apiVersionPath,
         globPattern: options.prereleaseSpecs,
+        ignoreExisting: options.ignoreExisting,
         serviceNamePath: options.serviceNamePath,
         url,
       });
