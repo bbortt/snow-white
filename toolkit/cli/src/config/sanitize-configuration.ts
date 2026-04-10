@@ -211,7 +211,7 @@ export const validateConfiguration = (config: SanitizedOptions): SanitizedOption
   return config;
 };
 
-export const sanitizeConfiguration = (options: CliOptions): SanitizedOptions => {
+export const sanitizeCalculateOptions = (options: CliOptions): SanitizedOptions => {
   const config = loadConfigBasedOnType(options);
   return validateConfiguration(config as SanitizedOptions);
 };
