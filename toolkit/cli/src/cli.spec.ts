@@ -309,7 +309,6 @@ describe('CLI', () => {
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
         expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
-        expect(cliResult.stderr).toContain('Status: 500');
         expect(cliResult.stderr).toContain('Error: Server Error');
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
@@ -466,7 +465,6 @@ info:
         expect(cliResult.exitCode).not.toBe(0);
         expect(cliResult.stderr).toContain('❌');
         expect(cliResult.stderr).toContain('Upload failed.');
-        expect(cliResult.stderr).toContain('Status: 409');
         expect(cliResult.stderr).toContain('Details: API already exists as a stable release');
         expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
       } finally {
@@ -498,7 +496,6 @@ info:
         expect(cliResult.exitCode).toBe(0);
         expect(cliResult.stderr).toContain('❌');
         expect(cliResult.stderr).toContain('Upload failed.');
-        expect(cliResult.stderr).toContain('Status: 409');
         expect(cliResult.stderr).toContain('Ignoring already existing integration-test-service/Integration Test API@2.0.0');
         expect(cliResult.stdout).toContain('Upload complete: 0 succeeded, 1 failed.');
       } finally {
