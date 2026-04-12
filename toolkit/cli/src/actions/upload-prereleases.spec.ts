@@ -10,14 +10,12 @@ import { exit } from 'node:process';
 
 import type { ApiIndexApi } from '../clients/api-index-api';
 
-import { INVALID_CONFIG_FORMAT, PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
+import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-import { resolveConfig } from '../config/resolve-config';
 import {
   DEFAULT_API_NAME_PATH,
   DEFAULT_API_VERSION_PATH,
   DEFAULT_SERVICE_NAME_PATH,
-  resolveUrl,
   uploadPrereleases,
 } from './upload-prereleases';
 
@@ -26,11 +24,6 @@ mock.module('node:process', () => ({
   exit: mock().mockImplementation((code: number) => {
     throw new Error(`Process exited with code ${code}`);
   }),
-}));
-
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('../config/resolve-config', () => ({
-  resolveConfig: mock(),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -48,6 +41,7 @@ const mockConsoleWarn = spyOn(console, 'warn');
 const mockConsoleError = spyOn(console, 'error');
 
 const BASE_URL = 'http://localhost:8080';
+
 
 const VALID_YAML = `
 openapi: 3.1.0
@@ -71,49 +65,6 @@ const makeFetchError = (message: string) => Object.assign(new Error(message), { 
 
 const makeApiIndexApi = (ingestApi = mock()): ApiIndexApi => ({ ingestApi }) as unknown as ApiIndexApi;
 
-describe('resolveUrl', () => {
-  beforeEach(() => {
-    // @ts-expect-error TS2339: Property mockClear does not exist on type
-    exit.mockClear();
-    (resolveConfig as any).mockReset();
-  });
-
-  it('uses --url directly without consulting the config file', () => {
-    const result = resolveUrl(BASE_URL);
-
-    expect(resolveConfig).not.toHaveBeenCalled();
-    expect(result).toBe(BASE_URL);
-  });
-
-  it('reads URL from config file when --url is not provided', () => {
-    (resolveConfig as any).mockReturnValue({ url: BASE_URL });
-
-    const result = resolveUrl(undefined);
-
-    expect(resolveConfig).toHaveBeenCalledWith(undefined);
-    expect(result).toBe(BASE_URL);
-  });
-
-  it('passes --config-file path to resolveConfig', () => {
-    (resolveConfig as any).mockReturnValue({ url: BASE_URL });
-
-    resolveUrl(undefined, '/path/to/config.json');
-
-    expect(resolveConfig).toHaveBeenCalledWith('/path/to/config.json');
-  });
-
-  it('exits when URL is absent from the config file', () => {
-    (resolveConfig as any).mockReturnValue({});
-
-    expect(() => resolveUrl(undefined)).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
-
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining('❌  Snow-White base URL must be defined via --url or in the configuration file.'),
-    );
-    expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
-  });
-});
-
 describe('upload-prereleases action', () => {
   let mockIngestApi: ReturnType<typeof mock>;
 
@@ -125,7 +76,6 @@ describe('upload-prereleases action', () => {
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
-    (resolveConfig as any).mockReset();
     (scanGlob as any).mockReset();
     (readFileSync as any).mockReset();
   });

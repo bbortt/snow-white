@@ -10,13 +10,18 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 
 import type { CliOptions } from './config/cli-options';
+import type {UploadCliOptions} from './config/sanitize-configuration';
 
 import { calculate } from './actions/calculate';
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, resolveUrl, uploadPrereleases } from './actions/upload-prereleases';
+import { uploadPrereleases } from './actions/upload-prereleases';
 import { getApiIndexApi } from './api/api-index-api';
 import { getQualityGateApi } from './api/quality-gate-api';
 import { getReportApi } from './api/report-api';
-import { sanitizeCalculateOptions } from './config/sanitize-configuration';
+import {
+  sanitizeCalculateOptions,
+  sanitizeUploadPrereleasesOptions
+  
+} from './config/sanitize-configuration';
 
 const program = new Command();
 
@@ -71,35 +76,17 @@ program
   .requiredOption('--prerelease-specs <pattern>', 'Glob pattern selecting which specification files to upload (e.g. "services/**/openapi.yaml")')
   .option('--url <baseUrl>', 'Base URL for Snow-White (overrides config file)')
   .option('--config-file <path>', 'Path to config file (used to resolve --url if not provided directly)')
-  .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification', DEFAULT_API_NAME_PATH)
-  .option('--api-version-path <jsonPath>', 'JSON path to the API version field in the specification', DEFAULT_API_VERSION_PATH)
+  .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification')
+  .option('--api-version-path <jsonPath>', 'JSON path to the API version field in the specification')
   .option(
     '--service-name-path <jsonPath>',
     'JSON path to the service name field in the specification (maps to the x-service-name extension in raw YAML)',
-    DEFAULT_SERVICE_NAME_PATH,
   )
   .option('--ignore-existing', 'Ignore previously indexed API specifications', false)
-  .action(
-    async (options: {
-      prereleaseSpecs: string;
-      url?: string;
-      configFile?: string;
-      apiNamePath: string;
-      apiVersionPath: string;
-      serviceNamePath: string;
-      ignoreExisting:boolean
-    }) => {
-      const url = resolveUrl(options.url, options.configFile);
-      const apiIndexApi = getApiIndexApi(url);
-      await uploadPrereleases(apiIndexApi, {
-        apiNamePath: options.apiNamePath,
-        apiVersionPath: options.apiVersionPath,
-        globPattern: options.prereleaseSpecs,
-        ignoreExisting: options.ignoreExisting,
-        serviceNamePath: options.serviceNamePath,
-        url,
-      });
-    },
-  );
+  .action(async (options: UploadCliOptions) => {
+    const sanitizedOptions = sanitizeUploadPrereleasesOptions(options);
+    const apiIndexApi = getApiIndexApi(sanitizedOptions.url);
+    await uploadPrereleases(apiIndexApi, sanitizedOptions);
+  });
 
 program.parse();

@@ -7,9 +7,11 @@
 import chalk from 'chalk';
 import { exit } from 'node:process';
 
+import type { UploadPrereleasesOptions } from '../actions/upload-prereleases';
 import type { CliOptions } from './cli-options';
 import type { SanitizedOptions } from './sanitized-options';
 
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { resolveConfig } from './resolve-config';
 
@@ -214,4 +216,70 @@ export const validateConfiguration = (config: SanitizedOptions): SanitizedOption
 export const sanitizeCalculateOptions = (options: CliOptions): SanitizedOptions => {
   const config = loadConfigBasedOnType(options);
   return validateConfiguration(config as SanitizedOptions);
+};
+
+export interface UploadCliOptions {
+  prereleaseSpecs: string;
+  url?: string;
+  configFile?: string;
+  apiNamePath?: string;
+  apiVersionPath?: string;
+  serviceNamePath?: string;
+  ignoreExisting?: boolean;
+}
+
+export const sanitizeUploadPrereleasesOptions = (options: UploadCliOptions): UploadPrereleasesOptions => {
+  let fileConfig: Partial<CliOptions> = {};
+
+  // Load config file when explicitly requested or when URL is not provided via CLI
+  if (options.configFile || !options.url) {
+    fileConfig = resolveConfig(options.configFile) as Partial<CliOptions>;
+  }
+
+  // URL: CLI takes precedence over config file
+  let url: string | undefined = options.url;
+  if (!url) {
+    url = fileConfig.url;
+  } else if (fileConfig.url && fileConfig.url !== url) {
+    console.warn(chalk.yellow(`⚠️  CLI parameter --url overrides config file value: "${fileConfig.url}" → "${url}"`));
+  }
+
+  if (!url) {
+    console.error(chalk.red('❌  Snow-White base URL must be defined via --url or in the configuration file.'));
+    exit(INVALID_CONFIG_FORMAT);
+  }
+
+  // Path params: CLI > config file > hardcoded defaults
+  const apiNamePath = options.apiNamePath ?? fileConfig.apiNamePath ?? DEFAULT_API_NAME_PATH;
+  const apiVersionPath = options.apiVersionPath ?? fileConfig.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
+  const serviceNamePath = options.serviceNamePath ?? fileConfig.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
+
+  if (options.apiNamePath && fileConfig.apiNamePath && fileConfig.apiNamePath !== options.apiNamePath) {
+    console.warn(
+      chalk.yellow(`⚠️  CLI parameter --api-name-path overrides config file value: "${fileConfig.apiNamePath}" → "${options.apiNamePath}"`),
+    );
+  }
+  if (options.apiVersionPath && fileConfig.apiVersionPath && fileConfig.apiVersionPath !== options.apiVersionPath) {
+    console.warn(
+      chalk.yellow(
+        `⚠️  CLI parameter --api-version-path overrides config file value: "${fileConfig.apiVersionPath}" → "${options.apiVersionPath}"`,
+      ),
+    );
+  }
+  if (options.serviceNamePath && fileConfig.serviceNamePath && fileConfig.serviceNamePath !== options.serviceNamePath) {
+    console.warn(
+      chalk.yellow(
+        `⚠️  CLI parameter --service-name-path overrides config file value: "${fileConfig.serviceNamePath}" → "${options.serviceNamePath}"`,
+      ),
+    );
+  }
+
+  return {
+    apiNamePath,
+    apiVersionPath,
+    globPattern: options.prereleaseSpecs,
+    ignoreExisting: options.ignoreExisting ?? false,
+    serviceNamePath,
+    url,
+  };
 };
