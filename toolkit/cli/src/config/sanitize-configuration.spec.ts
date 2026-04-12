@@ -10,9 +10,10 @@ import { exit } from 'node:process';
 import type { CliOptions } from './cli-options';
 import type { SanitizedOptions } from './sanitized-options';
 
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { resolveConfig } from './resolve-config';
-import { sanitizeCalculateOptions } from './sanitize-configuration';
+import { sanitizeCalculateOptions, sanitizeUploadPrereleasesOptions } from './sanitize-configuration';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
@@ -64,10 +65,6 @@ describe('sanitizeConfiguration', () => {
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
   });
 
   it.each([
@@ -463,6 +460,182 @@ describe('sanitizeConfiguration', () => {
         ...sanitizedOptions,
         async,
       });
+    });
+  });
+});
+
+describe('sanitizeUploadPrereleasesOptions', () => {
+  const BASE_URL = 'http://localhost:8080';
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    mockConsoleError.mockReset();
+    mockConsoleWarn.mockReset();
+
+    // @ts-expect-error TS2339: Property mockClear does not exist on type
+    exit.mockClear();
+    // @ts-expect-error TS2339: Property mockReset does not exist on type
+    (resolveConfig as any).mockReset();
+  });
+
+  describe('URL resolution', () => {
+    it('should use CLI url directly without consulting the config file', () => {
+      const result = sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml', url: BASE_URL });
+
+      expect(resolveConfig).not.toHaveBeenCalled();
+      expect(result.url).toBe(BASE_URL);
+    });
+
+    it('should read URL from config file when --url is not provided', () => {
+      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+
+      const result = sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml' });
+
+      expect(resolveConfig).toHaveBeenCalledWith(undefined);
+      expect(result.url).toBe(BASE_URL);
+    });
+
+    it('should pass --config-file path to resolveConfig', () => {
+      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+
+      sanitizeUploadPrereleasesOptions({ configFile: '/path/to/config.json', prereleaseSpecs: '*.yaml' });
+
+      expect(resolveConfig).toHaveBeenCalledWith('/path/to/config.json');
+    });
+
+    it('should exit with code 3 when URL is absent from both CLI and config file', () => {
+      (resolveConfig as any).mockReturnValueOnce({});
+
+      expect(() => sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml' })).toThrowError('Process exited with code 3');
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        expect.stringContaining('❌  Snow-White base URL must be defined via --url or in the configuration file.'),
+      );
+      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    });
+
+    it('should warn when CLI url overrides config file url', () => {
+      (resolveConfig as any).mockReturnValueOnce({ url: 'http://config-url.com' });
+
+      const result = sanitizeUploadPrereleasesOptions({
+        configFile: 'config.json',
+        prereleaseSpecs: '*.yaml',
+        url: 'http://cli-url.com',
+      });
+
+      expect(result.url).toBe('http://cli-url.com');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --url overrides config file value: "http://config-url.com" → "http://cli-url.com"'),
+      );
+    });
+
+    it('should not warn when CLI url matches config file url', () => {
+      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+
+      const result = sanitizeUploadPrereleasesOptions({ configFile: 'config.json', prereleaseSpecs: '*.yaml', url: BASE_URL });
+
+      expect(result.url).toBe(BASE_URL);
+      expect(mockConsoleWarn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('path parameter resolution', () => {
+    it('should use hardcoded defaults when no CLI or config file values are provided', () => {
+      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+
+      const result = sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml' });
+
+      expect(result.apiNamePath).toBe(DEFAULT_API_NAME_PATH);
+      expect(result.apiVersionPath).toBe(DEFAULT_API_VERSION_PATH);
+      expect(result.serviceNamePath).toBe(DEFAULT_SERVICE_NAME_PATH);
+    });
+
+    it('should read path params from config file as fallback', () => {
+      (resolveConfig as any).mockReturnValueOnce({
+        apiNamePath: 'custom.name',
+        apiVersionPath: 'custom.version',
+        serviceNamePath: 'custom.service',
+        url: BASE_URL,
+      });
+
+      const result = sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml' });
+
+      expect(result.apiNamePath).toBe('custom.name');
+      expect(result.apiVersionPath).toBe('custom.version');
+      expect(result.serviceNamePath).toBe('custom.service');
+    });
+
+    it('should use CLI path params over config file values', () => {
+      (resolveConfig as any).mockReturnValueOnce({
+        apiNamePath: 'config.name',
+        apiVersionPath: 'config.version',
+        serviceNamePath: 'config.service',
+        url: BASE_URL,
+      });
+
+      const result = sanitizeUploadPrereleasesOptions({
+        apiNamePath: 'cli.name',
+        apiVersionPath: 'cli.version',
+        configFile: 'config.json',
+        prereleaseSpecs: '*.yaml',
+        serviceNamePath: 'cli.service',
+      });
+
+      expect(result.apiNamePath).toBe('cli.name');
+      expect(result.apiVersionPath).toBe('cli.version');
+      expect(result.serviceNamePath).toBe('cli.service');
+    });
+
+    it('should warn when CLI api-name-path overrides config file value', () => {
+      (resolveConfig as any).mockReturnValueOnce({ apiNamePath: 'config.name', url: BASE_URL });
+
+      sanitizeUploadPrereleasesOptions({ apiNamePath: 'cli.name', configFile: 'config.json', prereleaseSpecs: '*.yaml' });
+
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --api-name-path overrides config file value: "config.name" → "cli.name"'),
+      );
+    });
+
+    it('should warn when CLI api-version-path overrides config file value', () => {
+      (resolveConfig as any).mockReturnValueOnce({ apiVersionPath: 'config.version', url: BASE_URL });
+
+      sanitizeUploadPrereleasesOptions({ apiVersionPath: 'cli.version', configFile: 'config.json', prereleaseSpecs: '*.yaml' });
+
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --api-version-path overrides config file value: "config.version" → "cli.version"'),
+      );
+    });
+
+    it('should warn when CLI service-name-path overrides config file value', () => {
+      (resolveConfig as any).mockReturnValueOnce({ serviceNamePath: 'config.service', url: BASE_URL });
+
+      sanitizeUploadPrereleasesOptions({ configFile: 'config.json', prereleaseSpecs: '*.yaml', serviceNamePath: 'cli.service' });
+
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️  CLI parameter --service-name-path overrides config file value: "config.service" → "cli.service"'),
+      );
+    });
+  });
+
+  describe('option passthrough', () => {
+    it('should pass through globPattern and ignoreExisting', () => {
+      const result = sanitizeUploadPrereleasesOptions({
+        ignoreExisting: true,
+        prereleaseSpecs: 'services/**/openapi.yaml',
+        url: BASE_URL,
+      });
+
+      expect(result.globPattern).toBe('services/**/openapi.yaml');
+      expect(result.ignoreExisting).toBe(true);
+    });
+
+    it('should default ignoreExisting to false when not provided', () => {
+      const result = sanitizeUploadPrereleasesOptions({ prereleaseSpecs: '*.yaml', url: BASE_URL });
+
+      expect(result.ignoreExisting).toBe(false);
     });
   });
 });

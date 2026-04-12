@@ -12,9 +12,8 @@ import { exit } from 'node:process';
 import type { ApiIndexApi, GetAllApis200ResponseInner, GetAllApis500Response } from '../clients/api-index-api';
 
 import { GetAllApis200ResponseInnerApiTypeEnum } from '../clients/api-index-api';
-import { INVALID_CONFIG_FORMAT, PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
+import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-import { resolveConfig } from '../config/resolve-config';
 
 // Default JSON paths mirror the api-sync-job's ArtifactoryProperties defaults.
 // The api-sync-job uses a parsed OpenAPI object model where extension fields are
@@ -33,19 +32,6 @@ export interface UploadPrereleasesOptions {
   serviceNamePath?: string;
   ignoreExisting?: boolean;
 }
-
-export const resolveUrl = (cliUrl?: string, configFile?: string): string => {
-  if (cliUrl) {
-    return cliUrl;
-  }
-
-  const { url } = resolveConfig(configFile);
-  if (!url) {
-    console.error(chalk.red('❌  Snow-White base URL must be defined via --url or in the configuration file.'));
-    exit(INVALID_CONFIG_FORMAT);
-  }
-  return url;
-};
 
 const getNestedValue = (obj: unknown, path: string): string | undefined => {
   const parts = path.split('.');
