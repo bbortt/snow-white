@@ -122,17 +122,18 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
       console.error(chalk.red(`❌  ${file}: Upload failed.`));
 
       if (isResponseError(error)) {
-        console.error(chalk.red(`\t  Status: ${error.response.status}`));
-
         if (error.response.status === 409 && ignoreExisting) {
-          console.warn(chalk.yellow(`⚠️  ${file}: Ignoring already existing ${serviceName}/${apiName}@${apiVersion}`));
+          console.warn(chalk.yellow(`\t  ⚠️ Ignoring already existing ${serviceName}/${apiName}@${apiVersion}`));
           ignoredCount++;
           // Subtract from failed count, because we later increase it anyway
           failCount--;
         } else {
+          console.debug(chalk.red(`\t  Status: ${error.response.status}`));
           const body = (await error.response.json().catch(() => null)) as GetAllApis500Response | undefined;
           if (body) {
             console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
+          } else if (error.response.status === 409) {
+            console.error(chalk.red(`\t  Error: This API specification has already been indexed!`));
           } else {
             console.error(chalk.red(`\t  Error: ${error.response.statusText}`));
           }
