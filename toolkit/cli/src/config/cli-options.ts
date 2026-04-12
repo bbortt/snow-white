@@ -23,6 +23,12 @@ export interface CliOptions {
    */
   url?: string;
   /**
+   * JSON path configuration for upload-prereleases command.
+   */
+  apiNamePath?: string;
+  apiVersionPath?: string;
+  serviceNamePath?: string;
+  /**
    * The time window to consider for calculation (e.g., '1h', '24h', '7d').
    */
   lookbackWindow?: string;
