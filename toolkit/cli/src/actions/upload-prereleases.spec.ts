@@ -12,12 +12,7 @@ import type { ApiIndexApi } from '../clients/api-index-api';
 
 import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-import {
-  DEFAULT_API_NAME_PATH,
-  DEFAULT_API_VERSION_PATH,
-  DEFAULT_SERVICE_NAME_PATH,
-  uploadPrereleases,
-} from './upload-prereleases';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, uploadPrereleases } from './upload-prereleases';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({
@@ -36,12 +31,12 @@ mock.module('node:fs', () => ({
   readFileSync: mock(),
 }));
 
+const mockConsoleDebug = spyOn(console, 'debug');
 const mockConsoleLog = spyOn(console, 'log');
 const mockConsoleWarn = spyOn(console, 'warn');
 const mockConsoleError = spyOn(console, 'error');
 
 const BASE_URL = 'http://localhost:8080';
-
 
 const VALID_YAML = `
 openapi: 3.1.0
@@ -69,9 +64,11 @@ describe('upload-prereleases action', () => {
   let mockIngestApi: ReturnType<typeof mock>;
 
   beforeEach(() => {
+    mockConsoleDebug.mockReset();
     mockConsoleLog.mockReset();
     mockConsoleWarn.mockReset();
     mockConsoleError.mockReset();
+
     mockIngestApi = mock();
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
@@ -279,7 +276,7 @@ info:
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  openapi.yaml: Upload failed.'));
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('\t  Status: 409'));
+      expect(mockConsoleDebug).toHaveBeenCalledWith(expect.stringContaining('\t  Status: 409'));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('\t  Details: API already exists as stable'));
     });
 
@@ -290,7 +287,7 @@ info:
 
       expect(exit).not.toHaveBeenCalled();
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('openapi.yaml: Ignoring already existing my-service/My Test API@1.2.3'),
+        expect.stringContaining('\t  ⚠️ Ignoring already existing my-service/My Test API@1.2.3'),
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Upload complete: 0 succeeded, 1 failed.'));
     });
@@ -301,7 +298,7 @@ info:
       expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow();
 
       expect(exit).toHaveBeenCalledWith(PRERELEASE_UPLOAD_FAILED);
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('\t  Status: 500'));
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  openapi.yaml: Upload failed.'));
       expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('\t  Error: Internal Server Error'));
     });
 
