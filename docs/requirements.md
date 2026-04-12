@@ -1,3 +1,9 @@
+---
+title: Requirements
+nav_order: 5
+description: "High-level functional and non-functional requirements for Snow-White"
+---
+
 # Snow-White – High-Level Requirements
 
 > Scope: These requirements describe **observable behavior and outcomes** of Snow-White as a system.

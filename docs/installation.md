@@ -1,0 +1,331 @@
+---
+title: Installation
+nav_order: 2
+description: 'Deploy Snow-White to Kubernetes using Helm'
+---
+
+# Installation
+
+{: .no_toc }
+
+Snow-White is distributed as a [Helm](https://helm.sh) chart and can be deployed to any Kubernetes cluster.
+
+## Table of contents
+
+{: .no_toc .text-delta }
+
+1. TOC
+   {:toc}
+
+---
+
+## Adding the Helm Repository
+
+[Helm](https://helm.sh) must be installed to use the Snow-White chart.
+Please refer to Helm's [documentation](https://helm.sh/docs) to get started.
+
+Once Helm has been set up correctly, add the repo as follows:
+
+```shell
+helm repo add snow-white https://bbortt.github.io/snow-white
+```
+
+If you had already added this repo earlier, run `helm repo update` to retrieve the latest versions of the packages.
+You can then run `helm search repo snow-white` to see the charts.
+
+To install the snow-white chart:
+
+```shell
+helm install my-snow-white snow-white/snow-white --set snowWhite.ingress.host=[PUBLIC_HOST]
+```
+
+> ℹ️ Replace `[PUBLIC_HOST]` with the domain Snow-White will be reachable on.
+
+To uninstall the chart:
+
+```shell
+helm uninstall my-snow-white
+```
+
+⚠️ Note that persistent volume claims are not automatically cleaned up:
+
+```shell
+kubectl delete pvc --all
+```
+
+---
+
+## API Indexation
+
+By default, Snow-White does not deploy an API synchronization job.
+
+For simple installations - or if you just want to explore Snow-White - API specifications can be indexed manually using `curl`.
+The [`api-index-api` OpenAPI specification](https://github.com/bbortt/snow-white/blob/main/microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml) describes in detail how to register a specification.
+
+For production environments, it is recommended to index API specifications automatically and on a regular basis.
+This can be achieved by enabling the bundled `CronJob`:
+
+```yaml
+snowWhite.apiSyncJob.enabled=true
+```
+
+Currently, JFrog Artifactory is the only supported API source.
+Snow-White expects a [generic Artifactory repository](https://jfrog.com/help/r/jfrog-artifactory-documentation/generic-repositories) containing API specifications as plain text files.
+The synchronization job scans all files in the repository, attempts to interpret them as API specifications, and forwards valid ones to Snow-White's internal API index.
+
+Tell Snow-White where your API specifications are located with the following values:
+
+```yaml
+snowWhite.apiSyncJob.artifactory.baseUrl: 'http://localhost:8082/artifactory'
+snowWhite.apiSyncJob.artifactory.repository: 'snow-white-generica-local'
+```
+
+If you have requirements for additional API sources, feel free to [open an issue](https://github.com/bbortt/snow-white/issues/new) - we're happy to discuss integrations.
+
+### Artifactory Access Token
+
+When the sync job is enabled, you may optionally supply an access token to authenticate against Artifactory.
+Note that this can currently only be done for indexation (token used for API endpoint access), but Snow-White still expects the specifications themselves to be freely accessible for later computations.
+It is strongly recommended to provide this token via a Kubernetes `Secret`.
+
+Helm supports injecting the token as an environment variable, for example:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    additionalEnvs:
+      - name: SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: artifactory-secret
+            key: artifactory-token
+```
+
+> ⚠️ **Important:** Snow-White stores only references to API specifications, not the specifications themselves.
+> Artifactory must therefore remain available at all times.
+> Snow-White is neither a mirror nor a complete standalone API index.
+
+### Memory Management
+
+By default, the API sync job is deployed with the following resource configuration:
+
+- **Memory:** 1024Mi (request and limit)
+- **CPU:** 500m (request)
+
+In addition, the job processes up to 3 API specifications in parallel.
+
+Parsing large OpenAPI specifications can be memory-intensive.
+If your repository contains many large specifications, you may encounter increased memory usage or even out-of-memory (OOM) terminations.
+
+You can fine-tune the sync job in two ways:
+
+**1. Increase Memory Allocation**
+
+If you experience memory pressure, increase the memory request and limit:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    enabled: true
+    resources:
+      memory:
+        request: 2048Mi
+        limit: 2048Mi
+```
+
+> 💡 It is recommended to keep request and limit aligned unless you have specific scheduling requirements.
+
+**2. Reduce Parallel Processing**
+
+Another effective way to reduce memory consumption is to lower the number of parallel synchronization tasks:
+
+```yaml
+snowWhite:
+  apiSyncJob:
+    enabled: true
+    additionalEnvs:
+      - name: SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS
+        value: 1
+```
+
+Reducing parallelism decreases peak memory usage but increases total synchronization time.
+
+---
+
+## Exporting Snow-White Telemetry Data
+
+It is highly recommended that you monitor your Snow-White installation.
+Since Snow-White heavily relies on OTel data, using OTel connections for telemetry export is the natural choice.
+
+### Connecting to an External OTel Collector
+
+You can enable automatic export of logs, traces, and metrics by configuring an external OTel collector endpoint:
+
+```yaml
+otelCollector:
+  connectToExternalOtelCollector:
+    endpoint: 'my-endpoint:4317'
+```
+
+By default, this exports all telemetry types.
+You can selectively disable individual signal types:
+
+```yaml
+otelCollector:
+  connectToExternalOtelCollector:
+    endpoint: 'my-endpoint:4317'
+    exportLogs: true # default: true
+    exportMetrics: true # default: true
+    exportTraces: true # default: true
+```
+
+### Monitoring the OTel Collector Itself
+
+The Snow-White OTel Collector exposes its own metrics on port `8888` at the `/metrics` endpoint, but these cannot be exported via the OTel pipeline.
+Instead, you must configure a Prometheus scraper to collect them.
+
+Add the following annotations to enable Prometheus scraping:
+
+```yaml
+otelCollector:
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8888'
+    prometheus.io/path: '/metrics'
+    prometheus.io/scheme: 'http'
+```
+
+> ℹ️ The exact annotations may vary depending on your Prometheus setup.
+> Consult your Prometheus Operator or scraper configuration for the correct annotation format.
+
+---
+
+## Replacing Bundled Infrastructure
+
+You may already operate parts of the required infrastructure (PostgreSQL, Kafka, or other shared services) outside of the Snow-White Helm chart.
+Snow-White allows you to disable bundled infrastructure components and connect to your own installations instead.
+
+### Disable PostgreSQL
+
+If you already have a PostgreSQL instance available, disable the bundled deployment by setting `postgresql.enabled=false`.
+
+When PostgreSQL is disabled, the following microservices must be configured explicitly to connect to your external database:
+
+- `api-index-api`
+- `quality-gate-api`
+- `report-coordinator-api`
+
+Each of these services requires the standard Spring datasource environment variables.
+If any required variable is missing, the Helm installation will fail.
+
+Example `values.yaml` with PostgreSQL disabled (credentials stored in a Kubernetes secret named `my-postgresql-credentials`):
+
+```yaml
+postgresql:
+  enabled: false
+
+snowWhite:
+  apiIndexApi:
+    additionalEnvs:
+      - name: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://my.database:5432/api-index-api
+      - name: SPRING_DATASOURCE_USERNAME
+        value: api-index-api
+      - name: SPRING_DATASOURCE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: my-postgresql-credentials
+            key: api-index-password
+
+  qualityGateApi:
+    additionalEnvs:
+      - name: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://my.database:5432/quality-gate-api
+      - name: SPRING_DATASOURCE_USERNAME
+        value: quality-gate-api
+      - name: SPRING_DATASOURCE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: my-postgresql-credentials
+            key: quality-gate-api-password
+
+  reportCoordinatorApi:
+    additionalEnvs:
+      - name: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://my.database:5432/report-coordinator-api
+      - name: SPRING_DATASOURCE_USERNAME
+        value: report-coordinator-api
+      - name: SPRING_DATASOURCE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: my-postgresql-credentials
+            key: report-coordinator-api-password
+```
+
+#### Database Permissions and Flyway
+
+For security, it is recommended to:
+
+- Use database users with Data Manipulation Language (DML) permissions only at runtime.
+- Use separate users with Data Definition Language (DDL) permissions for Flyway schema migrations.
+
+Additionally configure the following environment variables for each service:
+
+- `SPRING_FLYWAY_USER`
+- `SPRING_FLYWAY_PASSWORD`
+
+This allows Snow-White to apply schema migrations using a privileged user while keeping runtime database access restricted.
+
+### Disable InfluxDB
+
+Disabling InfluxDB is currently **not safely supported**.
+There are no safeguards or validations for missing configuration values, which may lead to runtime errors.
+Until this is properly implemented, disabling InfluxDB is **not recommended**.
+
+#### Using Static Passwords and Tokens
+
+When installing Snow-White using a GitOps operator such as Argo CD, special care must be taken when handling InfluxDB credentials.
+
+Typically, a Git repository containing deployment manifests has no knowledge of the target runtime namespace.
+As a result, InfluxDB passwords and tokens may be re-generated on each deployment, breaking connectivity for dependent components.
+
+To avoid this, provide **static credentials** via a Kubernetes `Secret`.
+
+**Creating the Secret:**
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: custom-influxdb-credentials
+data:
+  admin-password: YWRtaW4tcGFzc3dvcmQ= # Base64-encoded value
+  admin-token: YWRtaW4tdG9rZW4= # Base64-encoded value
+```
+
+**Referencing the Secret in your values:**
+
+```yaml
+influxdb2:
+  adminUser:
+    existingSecret: custom-influxdb-credentials
+```
+
+Both InfluxDB and all connected microservices will use the credentials defined in this secret.
+
+---
+
+## Custom Truststores
+
+Custom truststores are only supported in Java Keystore (JKS) format.
+The keystore must be stored in a Kubernetes secret and mounted at runtime.
+
+Configure the truststore for the relevant pods:
+
+```yaml
+jssecacerts:
+  secretName: 'my-secret'
+  key: 'truststore.jks'
+```
+
+Once mounted, the JRE will automatically pick up the truststore from `$JAVA_HOME/lib/security/jssecacerts` - no additional JVM flags are required.

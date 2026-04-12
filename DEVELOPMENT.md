@@ -60,6 +60,20 @@ Use the following query to run the coverage calculation against the generated da
 node toolkit/cli/target/cli/index.js calculate --configFile dev/snow-white.json
 ```
 
+## Previewing the Docs Site
+
+The documentation site lives in `docs/` and is built with [Jekyll](https://jekyllrb.com) using the [just-the-docs](https://just-the-docs.com) theme.
+
+**Prerequisites:** Ruby (with Devkit) and Bundler - on Windows use [RubyInstaller](https://rubyinstaller.org/) (`Ruby+Devkit` variant), then run `gem install bundler`.
+
+```shell
+cd docs
+bundle install
+bundle exec jekyll serve --livereload
+```
+
+The site is served at <http://localhost:4000/snow-white/> and reloads automatically on file changes.
+
 ## Running Tests and Code Quality
 
 Run all unit/integration tests and aggregate coverage:
