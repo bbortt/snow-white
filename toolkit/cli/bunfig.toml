@@ -4,6 +4,9 @@ coverageDir = "target/coverage"
 coverageReporter = ["text", "lcov"]
 
 # https://bun.sh/docs/test/coverage#exclude-test-files-from-coverage
+coveragePathIgnorePatterns = [
+    'src/clients/**/*.ts'
+]
 coverageSkipTestFiles = true
 
 # https://bun.sh/docs/test/reporters#junit-xml-reporter
