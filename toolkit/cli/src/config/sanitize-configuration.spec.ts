@@ -11,9 +11,9 @@ import { exit } from 'node:process';
 import type { CliOptions } from './cli-options';
 import type { CalculateOptions } from './sanitized-options';
 
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../common/openapi';
 import { resolveConfig } from './resolve-config';
 import { sanitizeCalculateOptions, sanitizeUploadPrereleasesOptions } from './sanitize-configuration';
 

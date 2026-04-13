@@ -12,7 +12,8 @@ import type { ApiIndexApi } from '../clients/api-index-api';
 
 import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, uploadPrereleases } from './upload-prereleases';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../common/openapi';
+import { uploadPrereleases } from './upload-prereleases';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('node:process', () => ({

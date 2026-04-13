@@ -12,9 +12,9 @@ import { exit } from 'node:process';
 import type { CliOptions } from './cli-options';
 import type { ApiInformation, CalculateOptions, UploadPrereleasesOptions } from './sanitized-options';
 
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, getNestedValue } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, extractApiSpecMetadata } from '../common/openapi';
 import { resolveConfig } from './resolve-config';
 
 const exactConfigurationGroup = Object.freeze(['serviceName', 'apiName', 'apiVersion']);
@@ -159,26 +159,16 @@ const loadApiInformationFromGlob = (globPattern: string, options: CliOptions, fi
     try {
       const content = readFileSync(file, 'utf8');
       const parsed = load(content);
+      const result = extractApiSpecMetadata(parsed, { apiNamePath, apiVersionPath, serviceNamePath });
 
-      const apiName = getNestedValue(parsed, apiNamePath);
-      const apiVersion = getNestedValue(parsed, apiVersionPath);
-      const serviceName = getNestedValue(parsed, serviceNamePath);
-
-      if (!apiName || !apiVersion || !serviceName) {
+      if (!result.ok) {
         console.error(chalk.red(`❌  ${file}: Missing required metadata fields.`));
-        if (!apiName) {
-          console.error(chalk.red(`\t  '${apiNamePath}' not found or empty.`));
-        }
-        if (!apiVersion) {
-          console.error(chalk.red(`\t  '${apiVersionPath}' not found or empty.`));
-        }
-        if (!serviceName) {
-          console.error(chalk.red(`\t  '${serviceNamePath}' not found or empty.`));
-        }
+        result.missing.forEach(path => console.error(chalk.red(`\t  '${path}' not found or empty.`)));
         hasErrors = true;
         continue;
       }
 
+      const { apiName, apiVersion, serviceName } = result.metadata;
       apiInformation.push({ apiName, apiVersion, serviceName });
       console.log(chalk.gray(`  ✓ ${file}: ${serviceName}/${apiName}@${apiVersion}`));
     } catch (error) {

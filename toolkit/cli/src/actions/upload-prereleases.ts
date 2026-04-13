@@ -15,31 +15,52 @@ import type { UploadPrereleasesOptions } from '../config/sanitized-options.ts';
 import { GetAllApis200ResponseInnerApiTypeEnum } from '../clients/api-index-api';
 import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-
-// Default JSON paths mirror the api-sync-job's ArtifactoryProperties defaults.
-// The api-sync-job uses a parsed OpenAPI object model where extension fields are normalized into an 'extensions' map (e.g. info.extensions.x-service-name).
-// The CLI reads raw YAML, so extensions sit directly on their parent object (e.g. info.x-service-name).
-export const DEFAULT_API_NAME_PATH = 'info.title';
-export const DEFAULT_API_VERSION_PATH = 'info.version';
-export const DEFAULT_SERVICE_NAME_PATH = 'info.x-service-name';
-
-export const getNestedValue = (obj: unknown, path: string): string | undefined => {
-  const parts = path.split('.');
-  let current: unknown = obj;
-  for (const part of parts) {
-    if (current && typeof current === 'object') {
-      current = (current as Record<string, unknown>)[part];
-    } else {
-      return undefined;
-    }
-  }
-  return typeof current === 'string' ? current : undefined;
-};
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, extractApiSpecMetadata } from '../common/openapi';
 
 const isResponseError = (error: unknown): error is Error & { response: Response } =>
   error instanceof Error && error.name === 'ResponseError' && 'response' in error;
 
 const isFetchError = (error: unknown): boolean => error instanceof TypeError || (error instanceof Error && error.name === 'FetchError');
+
+const logResponseError = async (error: Error & { response: Response }): Promise<void> => {
+  console.debug(chalk.red(`\t  Status: ${error.response.status}`));
+  const body = (await error.response.json().catch(() => null)) as GetAllApis500Response | undefined;
+  if (body) {
+    console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
+  } else if (error.response.status === 409) {
+    console.error(chalk.red(`\t  Error: This API specification has already been indexed!`));
+  } else {
+    console.error(chalk.red(`\t  Error: ${error.response.statusText}`));
+  }
+};
+
+interface UploadErrorResult {
+  ignored: boolean;
+}
+
+const handleUploadError = async (
+  error: unknown,
+  file: string,
+  metadata: { apiName?: string; apiVersion?: string; serviceName?: string },
+  ignoreExisting: boolean,
+): Promise<UploadErrorResult> => {
+  console.error(chalk.red(`❌  ${file}: Upload failed.`));
+
+  if (isResponseError(error)) {
+    if (error.response.status === 409 && ignoreExisting) {
+      console.warn(chalk.yellow(`\t  ⚠️ Ignoring already existing ${metadata.serviceName}/${metadata.apiName}@${metadata.apiVersion}`));
+      return { ignored: true };
+    }
+    await logResponseError(error);
+  } else if (isFetchError(error)) {
+    console.error(chalk.red('\t  No response received from server.'));
+    console.error(chalk.gray('\t  Check if the service is running and accessible.'));
+  } else {
+    console.error(chalk.red(`\t  Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
+  }
+
+  return { ignored: false };
+};
 
 export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: UploadPrereleasesOptions): Promise<void> => {
   const { globPattern, ignoreExisting, url } = options;
@@ -67,32 +88,22 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
   let ignoredCount = 0;
 
   for (const file of files) {
-    let apiName: string | undefined;
-    let apiVersion: string | undefined;
-    let serviceName: string | undefined;
+    let uploadedMetadata: { apiName?: string; apiVersion?: string; serviceName?: string } = {};
 
     try {
       const content = readFileSync(file, 'utf8');
       const parsed = load(content);
+      const result = extractApiSpecMetadata(parsed, { apiNamePath, apiVersionPath, serviceNamePath });
 
-      apiName = getNestedValue(parsed, apiNamePath);
-      apiVersion = getNestedValue(parsed, apiVersionPath);
-      serviceName = getNestedValue(parsed, serviceNamePath);
-
-      if (!apiName || !apiVersion || !serviceName) {
+      if (!result.ok) {
         console.error(chalk.red(`❌  ${file}: Missing required metadata fields.`));
-        if (!apiName) {
-          console.error(chalk.red(`\t  '${apiNamePath}' not found or empty.`));
-        }
-        if (!apiVersion) {
-          console.error(chalk.red(`\t  '${apiVersionPath}' not found or empty.`));
-        }
-        if (!serviceName) {
-          console.error(chalk.red(`\t  '${serviceNamePath}' not found or empty.`));
-        }
+        result.missing.forEach(path => console.error(chalk.red(`\t  '${path}' not found or empty.`)));
         failCount++;
         continue;
       }
+
+      const { apiName, apiVersion, serviceName } = result.metadata;
+      uploadedMetadata = { apiName, apiVersion, serviceName };
 
       const getAllApis200ResponseInner: GetAllApis200ResponseInner = {
         apiName,
@@ -109,33 +120,12 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
       console.log(chalk.green(`✅  ${file}: Uploaded ${serviceName}/${apiName}@${apiVersion}`));
       successCount++;
     } catch (error: unknown) {
-      console.error(chalk.red(`❌  ${file}: Upload failed.`));
-
-      if (isResponseError(error)) {
-        if (error.response.status === 409 && ignoreExisting) {
-          console.warn(chalk.yellow(`\t  ⚠️ Ignoring already existing ${serviceName}/${apiName}@${apiVersion}`));
-          ignoredCount++;
-          // Subtract from failed count, because we later increase it anyway
-          failCount--;
-        } else {
-          console.debug(chalk.red(`\t  Status: ${error.response.status}`));
-          const body = (await error.response.json().catch(() => null)) as GetAllApis500Response | undefined;
-          if (body) {
-            console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
-          } else if (error.response.status === 409) {
-            console.error(chalk.red(`\t  Error: This API specification has already been indexed!`));
-          } else {
-            console.error(chalk.red(`\t  Error: ${error.response.statusText}`));
-          }
-        }
-      } else if (isFetchError(error)) {
-        console.error(chalk.red('\t  No response received from server.'));
-        console.error(chalk.gray('\t  Check if the service is running and accessible.'));
+      const { ignored } = await handleUploadError(error, file, uploadedMetadata, ignoreExisting ?? false);
+      if (ignored) {
+        ignoredCount++;
       } else {
-        console.error(chalk.red(`\t  Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
+        failCount++;
       }
-
-      failCount++;
     }
   }
 
