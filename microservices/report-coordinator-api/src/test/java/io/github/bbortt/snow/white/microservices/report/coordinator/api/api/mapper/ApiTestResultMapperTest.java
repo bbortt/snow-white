@@ -49,6 +49,7 @@ class ApiTestResultMapperTest {
 
       assertThat(apiTestResults)
         .isNotNull()
+        .isNotEmpty()
         .allSatisfy(apiTestResult ->
           assertThat(apiTestResult.getApiTest()).isEqualTo(apiTestMock)
         );

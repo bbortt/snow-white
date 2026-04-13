@@ -7,9 +7,11 @@
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
 import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
+import static lombok.AccessLevel.PROTECTED;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -20,6 +22,7 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 
 @Slf4j
 @Configuration
+@NoArgsConstructor(access = PROTECTED)
 @ImportRuntimeHints(
   {
     NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,

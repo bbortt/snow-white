@@ -6,8 +6,12 @@
 
 package io.github.bbortt.snow.white.commons.logging;
 
-import java.util.Set;
+import static lombok.AccessLevel.PRIVATE;
 
+import java.util.Set;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = PRIVATE)
 public final class SensitiveKeys {
 
   public static final Set<String> KEYS = Set.of(

@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 
 import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
+import static lombok.AccessLevel.PROTECTED;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
@@ -19,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Sk
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestCase;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuite;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.TestSuites;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,6 +33,7 @@ import org.springframework.core.io.ClassPathResource;
 
 @Slf4j
 @Configuration
+@NoArgsConstructor(access = PROTECTED)
 @RegisterReflectionForBinding(
   {
     // For Coverage Requests

@@ -46,6 +46,6 @@ class DurationToLongConverterTest {
 
   @Test
   void convertToEntityAttribute_shouldHandleNull() {
-    assertThat(fixture.convertToEntityAttribute(null));
+    assertThat(fixture.convertToEntityAttribute(null)).isNull();
   }
 }

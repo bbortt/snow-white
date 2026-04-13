@@ -23,7 +23,7 @@ public class LoggingJsonMapper {
   public static String toMaskedJsonRepresentation(Object value) {
     try {
       return MASKING_JSON_MAPPER.writeValueAsString(value);
-    } catch (Exception e) {
+    } catch (Exception _) {
       return "<serialization failed>";
     }
   }
