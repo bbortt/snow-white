@@ -45,7 +45,7 @@ program
   // Configuration from file, can contain all other configuration methods
   .option('--config-file <path>', 'Path to a YAML or JSON config file')
   // Read all OpenAPI specs matching the glob pattern
-  .option('--open-api-specs <pattern>', 'Glob pattern selecting which OpenAPI spec files to use')
+  .option('--api-specs <pattern>', 'Glob pattern selecting which OpenAPI spec files to use')
   .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification (default: info.title)')
   .option('--api-version-path <jsonPath>', 'JSON path to the API version field in the specification (default: info.version)')
   .option('--service-name-path <jsonPath>', 'JSON path to the service name field in the specification (default: info.x-service-name)')
@@ -75,7 +75,7 @@ program
       'Intended to be called at the start of a pipeline before QA runs.\n' +
       'Uploaded prereleases are temporary and will be cleaned up asynchronously.',
   )
-  .requiredOption('--prerelease-specs <pattern>', 'Glob pattern selecting which specification files to upload (e.g. "services/**/openapi.yaml")')
+  .option('--api-specs <pattern>', 'Glob pattern selecting which specification files to upload (e.g. "services/**/openapi.yaml")')
   .option('--url <baseUrl>', 'Base URL for Snow-White (overrides config file)')
   .option('--config-file <path>', 'Path to config file (used to resolve --url if not provided directly)')
   .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification')

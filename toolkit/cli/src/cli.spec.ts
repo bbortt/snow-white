@@ -431,7 +431,7 @@ info:
         const mockResponse: IWireMockResponse = { status: 201 };
         await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
 
-        const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
+        const cliResult = await executeCLICommand(['upload-prereleases', '--api-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
 
         expect(cliResult.exitCode, cliResult.stderr).toBe(0);
         expect(cliResult.stdout).toContain('🚀  Uploading prerelease API specifications matching:');
@@ -460,7 +460,7 @@ info:
         };
         await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
 
-        const cliResult = await executeCLICommand(['upload-prereleases', '--prerelease-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
+        const cliResult = await executeCLICommand(['upload-prereleases', '--api-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
 
         expect(cliResult.exitCode).not.toBe(0);
         expect(cliResult.stderr).toContain('❌');
@@ -486,7 +486,7 @@ info:
 
         const cliResult = await executeCLICommand([
           'upload-prereleases',
-          '--prerelease-specs',
+          '--api-specs',
           tmpSpecFilename,
           '--url',
           WIREMOCK_URL,
@@ -514,13 +514,7 @@ info:
         const mockResponse: IWireMockResponse = { status: 201 };
         await wiremock.register({ endpoint: '/api/rest/v1/apis', method: 'POST' }, mockResponse);
 
-        const cliResult = await executeCLICommand([
-          'upload-prereleases',
-          '--prerelease-specs',
-          tmpSpecFilename,
-          '--config-file',
-          tmpConfigPath,
-        ]);
+        const cliResult = await executeCLICommand(['upload-prereleases', '--api-specs', tmpSpecFilename, '--config-file', tmpConfigPath]);
 
         expect(cliResult.exitCode, cliResult.stderr).toBe(0);
         expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);

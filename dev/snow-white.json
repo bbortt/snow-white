@@ -1,12 +1,6 @@
 {
-  "apiInformation": [
-    {
-      "serviceName": "example-application",
-      "apiName": "ping-pong",
-      "apiVersion": "1.0.0"
-    }
-  ],
   "apiNamePath": "info.x-api-name",
+  "apiSpecs": "example-application/specs/*.yml",
   "qualityGate": "basic-coverage",
   "url": "http://localhost:9000"
 }
