@@ -9,7 +9,7 @@ export interface CliOptions {
 
   url?: string;
 
-  openApiSpecs?: string;
+  apiSpecs?: string;
 
   qualityGate?: string;
   serviceName?: string;
@@ -24,8 +24,6 @@ export interface CliOptions {
   apiNamePath?: string;
   apiVersionPath?: string;
   serviceNamePath?: string;
-
-  prereleaseSpecs: string;
 
   ignoreExisting?: boolean;
 }
