@@ -138,12 +138,10 @@ const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
   return options;
 };
 
-const loadApiInformationFromGlob = (options: CliOptions): ApiInformation[] => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const globPattern = options.openApiSpecs!;
-  const apiNamePath = options.apiNamePath ?? DEFAULT_API_NAME_PATH;
-  const apiVersionPath = options.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
-  const serviceNamePath = options.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
+const loadApiInformationFromGlob = (globPattern: string, options: CliOptions, fileConfig: CliOptions): ApiInformation[] => {
+  const apiNamePath = options.apiNamePath ?? fileConfig.apiNamePath ?? DEFAULT_API_NAME_PATH;
+  const apiVersionPath = options.apiVersionPath ?? fileConfig.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
+  const serviceNamePath = options.serviceNamePath ?? fileConfig.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
 
   const files = scanGlob(globPattern, process.cwd());
 
@@ -198,11 +196,11 @@ const loadApiInformationFromGlob = (options: CliOptions): ApiInformation[] => {
 };
 
 const loadConfigBasedOnType = (options: CliOptions): object => {
-  // openApiSpecs cannot be combined with exact config parameters
-  if (options.openApiSpecs && exactConfigurationGroup.some(opt => options[opt as keyof CliOptions])) {
+  // apiSpecs cannot be combined with exact config parameters
+  if (options.apiSpecs && exactConfigurationGroup.some(opt => options[opt as keyof CliOptions])) {
     console.error(chalk.red('❌  You cannot use options from multiple configuration groups together.'));
     console.error(chalk.red(`\tGroup 1: ${exactConfigurationGroup.join(', ')}`));
-    console.error(chalk.red('\tGroup 2: openApiSpecs'));
+    console.error(chalk.red('\tGroup 2: apiSpecs'));
     exitWithCodeInvalidConfig();
   }
 
@@ -216,19 +214,20 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     exitWithCodeInvalidConfig();
   }
 
+  let loadedFileOptions: Partial<CliOptions> | undefined;
   let baseConfig: Partial<CalculateOptions>;
 
   if (activeGroups.length === 0) {
-    if (options.openApiSpecs) {
-      // Only openApiSpecs on CLI, no config file group — build base config from CLI options
+    if (options.apiSpecs) {
+      // Only apiSpecs on CLI, no config file group — build base config from CLI options
       baseConfig = mergeWithCliOverrides({}, options);
     } else {
-      const fileConfig = validateConfigurationFromFile(resolveConfig()) as Partial<CalculateOptions>;
-      baseConfig = mergeWithCliOverrides(fileConfig, options);
+      loadedFileOptions = validateConfigurationFromFile(resolveConfig()) as unknown as Partial<CliOptions>;
+      baseConfig = mergeWithCliOverrides(loadedFileOptions as Partial<CalculateOptions>, options);
     }
   } else if (options.configFile) {
-    const fileConfig = validateConfigurationFromFile(resolveConfig(options.configFile)) as Partial<CalculateOptions>;
-    baseConfig = mergeWithCliOverrides(fileConfig, options);
+    loadedFileOptions = validateConfigurationFromFile(resolveConfig(options.configFile)) as unknown as Partial<CliOptions>;
+    baseConfig = mergeWithCliOverrides(loadedFileOptions as Partial<CalculateOptions>, options);
   } else {
     if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
       console.error(chalk.red('❌  Either define a config file or all of these calculation parameters:'));
@@ -249,12 +248,20 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     };
   }
 
-  // Apply openApiSpecs overlay: if apiInformation is already present it takes precedence
-  if (options.openApiSpecs) {
+  // Resolve effective apiSpecs: CLI takes precedence over config file
+  const fileApiSpecs = loadedFileOptions?.apiSpecs;
+  const effectiveApiSpecs = options.apiSpecs ?? fileApiSpecs;
+
+  if (options.apiSpecs && fileApiSpecs && fileApiSpecs !== options.apiSpecs) {
+    console.warn(chalk.yellow(`⚠️  CLI parameter --api-specs overrides config file value: "${fileApiSpecs}" → "${options.apiSpecs}"`));
+  }
+
+  // Apply apiSpecs overlay: if apiInformation is already present it takes precedence
+  if (effectiveApiSpecs) {
     if (baseConfig.apiInformation && baseConfig.apiInformation.length > 0) {
-      console.warn(chalk.yellow('⚠️  --open-api-specs is ignored because apiInformation is already defined in the configuration.'));
+      console.warn(chalk.yellow('⚠️  --api-specs is ignored because apiInformation is already defined in the configuration.'));
     } else {
-      baseConfig.apiInformation = loadApiInformationFromGlob(options);
+      baseConfig.apiInformation = loadApiInformationFromGlob(effectiveApiSpecs, options, baseConfig);
     }
   }
 
@@ -301,8 +308,8 @@ export const sanitizeCalculateOptions = (options: CliOptions): CalculateOptions 
 export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPrereleasesOptions => {
   let fileConfig: Partial<CliOptions> = {};
 
-  // Load config file when explicitly requested or when URL is not provided via CLI
-  if (options.configFile || !options.url) {
+  // Load config file when explicitly requested, when URL is missing from CLI, or when apiSpecs is missing from CLI
+  if (options.configFile || !options.url || !options.apiSpecs) {
     fileConfig = resolveConfig(options.configFile) as Partial<CliOptions>;
   }
 
@@ -316,6 +323,19 @@ export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPre
 
   if (!url) {
     console.error(chalk.red('❌  Snow-White base URL must be defined via --url or in the configuration file.'));
+    exit(INVALID_CONFIG_FORMAT);
+  }
+
+  // apiSpecs: CLI takes precedence over config file
+  const fileApiSpecs = fileConfig.apiSpecs;
+  const apiSpecs = options.apiSpecs ?? fileApiSpecs;
+
+  if (options.apiSpecs && fileApiSpecs && fileApiSpecs !== options.apiSpecs) {
+    console.warn(chalk.yellow(`⚠️  CLI parameter --api-specs overrides config file value: "${fileApiSpecs}" → "${options.apiSpecs}"`));
+  }
+
+  if (!apiSpecs) {
+    console.error(chalk.red('❌  API specs glob pattern must be defined via --api-specs or in the configuration file.'));
     exit(INVALID_CONFIG_FORMAT);
   }
 
@@ -347,7 +367,7 @@ export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPre
   return {
     apiNamePath,
     apiVersionPath,
-    globPattern: options.prereleaseSpecs,
+    globPattern: apiSpecs,
     ignoreExisting: options.ignoreExisting ?? false,
     serviceNamePath,
     url,
