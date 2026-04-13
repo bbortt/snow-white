@@ -4,6 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import { Configuration, QualityGateApi } from '../clients/quality-gate-api';
+import type { FetchAPI } from '../clients/quality-gate-api';
 
-export const getQualityGateApi = (baseUrl: string): QualityGateApi => new QualityGateApi(new Configuration({ basePath: baseUrl }));
+import { Configuration, QualityGateApi } from '../clients/quality-gate-api';
+import { createFetchWithRetry } from './fetch-with-retry.ts';
+
+export const getQualityGateApi = (baseUrl: string): QualityGateApi =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  new QualityGateApi(new Configuration({ basePath: baseUrl, fetchApi: createFetchWithRetry() as FetchAPI }));
