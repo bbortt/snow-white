@@ -10,21 +10,21 @@ export interface ApiInformation {
   apiVersion: string;
 }
 
-export interface SanitizedOptions {
+export interface CalculateOptions {
   apiInformation: ApiInformation[];
+  async?: boolean;
+  attributeFilters?: Record<string, string>;
+  lookbackWindow?: string;
+  globPattern: string;
   qualityGate: string;
   url: string;
-  /**
-   * The time window to consider for calculation (e.g., '1h', '24h', '7d').
-   */
-  lookbackWindow?: string;
-  /**
-   * Key-value map of attributes to filter telemetry data.
-   */
-  attributeFilters?: Record<string, string>;
-  /**
-   * Fire-and-forget mode: skip polling for the calculation result.
-   * When false (default), the CLI polls until the calculation completes.
-   */
-  async?: boolean;
+}
+
+export interface UploadPrereleasesOptions {
+  globPattern: string;
+  url: string;
+  apiNamePath?: string;
+  apiVersionPath?: string;
+  serviceNamePath?: string;
+  ignoreExisting?: boolean;
 }
