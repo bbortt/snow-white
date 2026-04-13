@@ -155,7 +155,7 @@ public class ParameterCoverageCalculator
     String paramIn,
     String operationKey
   ) {
-    if (isNull(data.attributes())) {
+    if (isNull(data.attributes()) || isNull(paramIn)) {
       return false;
     }
 
