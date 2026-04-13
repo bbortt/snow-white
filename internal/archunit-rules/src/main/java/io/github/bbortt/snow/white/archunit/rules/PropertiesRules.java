@@ -8,11 +8,14 @@ package io.github.bbortt.snow.white.archunit.rules;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static lombok.AccessLevel.PRIVATE;
 
 import com.tngtech.archunit.lang.ArchRule;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+@NoArgsConstructor(access = PRIVATE)
 public final class PropertiesRules {
 
   public static ArchRule configurationPropertiesClassesMustHaveConfigurationAnnotation() {

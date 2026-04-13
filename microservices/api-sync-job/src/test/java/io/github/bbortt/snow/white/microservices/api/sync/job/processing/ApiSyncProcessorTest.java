@@ -6,7 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.processing;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.*;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.MANDATORY_INFORMATION_MISSING;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.NO_SOURCE;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISHED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -85,7 +90,7 @@ class ApiSyncProcessorTest {
 
       Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api -> true);
 
-      assertThat(result.get(PUBLISHED)).isEqualTo(2);
+      assertThat(result).containsEntry(PUBLISHED, 2L);
     }
 
     @Test
@@ -115,7 +120,7 @@ class ApiSyncProcessorTest {
         false
       );
 
-      assertThat(result.get(UNLOADED)).isEqualTo(1);
+      assertThat(result).containsEntry(UNLOADED, 1L);
     }
 
     @Test
