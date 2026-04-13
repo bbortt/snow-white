@@ -30,7 +30,7 @@ describe('Kafka UI', () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
       values: {
-        kafkaui: {
+        ['kafka-ui']: {
           enabled: true,
         },
       },
@@ -60,7 +60,7 @@ describe('Kafka UI', () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
       values: {
-        kafkaui: {
+        ['kafka-ui']: {
           enabled: true,
         },
       },
@@ -75,12 +75,86 @@ describe('Kafka UI', () => {
     expect(configMap).toBeDefined();
   });
 
+  const renderAndGetKafkaUiContainer = async (
+    manifests?: any[],
+  ): Promise<any> => {
+    if (!manifests) {
+      manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          ['kafka-ui']: {
+            enabled: true,
+          },
+        },
+      });
+    }
+
+    const deployment = manifests.find(
+      (m) =>
+        m.kind === 'Deployment' &&
+        m.metadata.name.startsWith('test-release-kafka-ui'),
+    );
+
+    const { spec } = deployment;
+    expect(spec).toBeDefined();
+
+    const { template } = spec;
+    expect(template).toBeDefined();
+
+    const templateSpec = template.spec;
+    expect(templateSpec).toBeDefined();
+
+    const { containers, volumes } = templateSpec;
+    expect(containers).toBeDefined();
+    expect(containers).toHaveLength(1);
+
+    const kafkaUiContainer = containers[0];
+    return { kafkaUiContainer, volumes };
+  };
+
+  it('should mount configmap to container when enabled', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+      values: {
+        ['kafka-ui']: {
+          enabled: true,
+        },
+      },
+    });
+
+    const { kafkaUiContainer, volumes } =
+      await renderAndGetKafkaUiContainer(manifests);
+
+    expect(kafkaUiContainer.volumeMounts).toHaveLength(1);
+    expect(kafkaUiContainer.volumeMounts[0].mountPath).toBe('/kafka-ui/');
+
+    expect(volumes).toHaveLength(1);
+    expect(volumes[0].name).toBe(kafkaUiContainer.volumeMounts[0].name);
+
+    const configMap = manifests.find(
+      (m) =>
+        m.kind === 'ConfigMap' && m.metadata.name === volumes[0].configMap.name,
+    );
+
+    expect(configMap).toBeDefined();
+  });
+
+  it('should configure spring properties with configmap location when enabled', async () => {
+    const { kafkaUiContainer } = await renderAndGetKafkaUiContainer();
+
+    const additionalConfigLocation = kafkaUiContainer.env.find(
+      (env) => env.name === 'SPRING_CONFIG_ADDITIONAL-LOCATION',
+    );
+
+    expect(additionalConfigLocation.value).toBe('/kafka-ui/config.yml');
+  });
+
   describe('ConfigMap', () => {
     const renderAndGetConfigMap = async (): any => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
-          kafkaui: {
+          ['kafka-ui']: {
             enabled: true,
           },
         },
