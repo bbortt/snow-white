@@ -10,7 +10,6 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 
 import type { CliOptions } from './config/cli-options';
-import type {UploadCliOptions} from './config/sanitize-configuration';
 
 import { calculate } from './actions/calculate';
 import { uploadPrereleases } from './actions/upload-prereleases';
@@ -47,6 +46,9 @@ program
   .option('--config-file <path>', 'Path to a YAML or JSON config file')
   // Read all OpenAPI specs matching the glob pattern
   .option('--open-api-specs <pattern>', 'Glob pattern selecting which OpenAPI spec files to use')
+  .option('--api-name-path <jsonPath>', 'JSON path to the API name field in the specification (default: info.title)')
+  .option('--api-version-path <jsonPath>', 'JSON path to the API version field in the specification (default: info.version)')
+  .option('--service-name-path <jsonPath>', 'JSON path to the service name field in the specification (default: info.x-service-name)')
   // Explicit configuration for the Quality-Gate calculation
   .option('--quality-gate <name>', 'Quality-Gate configuration name')
   .option('--service-name <name>', 'Name of the service')
@@ -83,7 +85,7 @@ program
     'JSON path to the service name field in the specification (maps to the x-service-name extension in raw YAML)',
   )
   .option('--ignore-existing', 'Ignore previously indexed API specifications', false)
-  .action(async (options: UploadCliOptions) => {
+  .action(async (options: CliOptions) => {
     const sanitizedOptions = sanitizeUploadPrereleasesOptions(options);
     const apiIndexApi = getApiIndexApi(sanitizedOptions.url);
     await uploadPrereleases(apiIndexApi, sanitizedOptions);

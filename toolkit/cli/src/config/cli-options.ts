@@ -5,41 +5,27 @@
  */
 
 export interface CliOptions {
-  /**
-   * Configuration from file
-   */
   configFile?: string;
-  /**
-   * Resolving API specifications
-   */
+
+  url?: string;
+
   openApiSpecs?: string;
-  // Explicit configuration
+
   qualityGate?: string;
   serviceName?: string;
   apiName?: string;
   apiVersion?: string;
-  /**
-   * Base URL for Snow-White API.
-   */
-  url?: string;
-  /**
-   * JSON path configuration for upload-prereleases command.
-   */
+
+  lookbackWindow?: string;
+  filter?: string[];
+
+  async?: boolean;
+
   apiNamePath?: string;
   apiVersionPath?: string;
   serviceNamePath?: string;
-  /**
-   * The time window to consider for calculation (e.g., '1h', '24h', '7d').
-   */
-  lookbackWindow?: string;
-  /**
-   * Key-value pairs for filtering telemetry data (format: key=value).
-   * Can be specified multiple times.
-   */
-  filter?: string[];
-  /**
-   * Fire-and-forget mode: skip polling for the calculation result.
-   * When false (default), the CLI polls until the calculation completes.
-   */
-  async?: boolean;
+
+  prereleaseSpecs: string;
+
+  ignoreExisting?: boolean;
 }

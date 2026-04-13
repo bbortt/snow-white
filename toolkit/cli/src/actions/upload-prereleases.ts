@@ -10,30 +10,20 @@ import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
 import type { ApiIndexApi, GetAllApis200ResponseInner, GetAllApis500Response } from '../clients/api-index-api';
+import type { UploadPrereleasesOptions } from '../config/sanitized-options.ts';
 
 import { GetAllApis200ResponseInnerApiTypeEnum } from '../clients/api-index-api';
 import { PRERELEASE_UPLOAD_FAILED } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
 
 // Default JSON paths mirror the api-sync-job's ArtifactoryProperties defaults.
-// The api-sync-job uses a parsed OpenAPI object model where extension fields are
-// normalised into an 'extensions' map (e.g. info.extensions.x-service-name).
-// The CLI reads raw YAML, so extensions sit directly on their parent object
-// (e.g. info.x-service-name).
+// The api-sync-job uses a parsed OpenAPI object model where extension fields are normalized into an 'extensions' map (e.g. info.extensions.x-service-name).
+// The CLI reads raw YAML, so extensions sit directly on their parent object (e.g. info.x-service-name).
 export const DEFAULT_API_NAME_PATH = 'info.title';
 export const DEFAULT_API_VERSION_PATH = 'info.version';
 export const DEFAULT_SERVICE_NAME_PATH = 'info.x-service-name';
 
-export interface UploadPrereleasesOptions {
-  globPattern: string;
-  url: string;
-  apiNamePath?: string;
-  apiVersionPath?: string;
-  serviceNamePath?: string;
-  ignoreExisting?: boolean;
-}
-
-const getNestedValue = (obj: unknown, path: string): string | undefined => {
+export const getNestedValue = (obj: unknown, path: string): string | undefined => {
   const parts = path.split('.');
   let current: unknown = obj;
   for (const part of parts) {

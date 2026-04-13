@@ -5,18 +5,20 @@
  */
 
 import chalk from 'chalk';
+import { load } from 'js-yaml';
+import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
-import type { UploadPrereleasesOptions } from '../actions/upload-prereleases';
 import type { CliOptions } from './cli-options';
-import type { SanitizedOptions } from './sanitized-options';
+import type { ApiInformation, CalculateOptions, UploadPrereleasesOptions } from './sanitized-options';
 
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../actions/upload-prereleases';
+import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, getNestedValue } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
+import { scanGlob } from '../common/glob';
 import { resolveConfig } from './resolve-config';
 
 const exactConfigurationGroup = Object.freeze(['serviceName', 'apiName', 'apiVersion']);
-const distinctConfigGroups = Object.freeze([exactConfigurationGroup, ['configFile'], ['openApiSpecs']]);
+const distinctConfigGroups = Object.freeze([exactConfigurationGroup, ['configFile']]);
 
 const exitWithCodeInvalidConfig = (): void => {
   exit(INVALID_CONFIG_FORMAT);
@@ -56,7 +58,7 @@ const parseFilters = (filters?: string[]): Record<string, string> | undefined =>
  * Merges CLI options over file config, with CLI taking precedence.
  * Logs warnings when CLI options override file config values.
  */
-const mergeWithCliOverrides = (fileConfig: Partial<SanitizedOptions>, cliOptions: CliOptions): Partial<SanitizedOptions> => {
+const mergeWithCliOverrides = (fileConfig: Partial<CalculateOptions>, cliOptions: CliOptions): Partial<CalculateOptions> => {
   const result = { ...fileConfig };
 
   // URL override
@@ -136,7 +138,74 @@ const validateConfigurationFromFile = (options: CliOptions): CliOptions => {
   return options;
 };
 
+const loadApiInformationFromGlob = (options: CliOptions): ApiInformation[] => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const globPattern = options.openApiSpecs!;
+  const apiNamePath = options.apiNamePath ?? DEFAULT_API_NAME_PATH;
+  const apiVersionPath = options.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
+  const serviceNamePath = options.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
+
+  const files = scanGlob(globPattern, process.cwd());
+
+  if (files.length === 0) {
+    console.warn(chalk.yellow(`⚠️  No files matched the pattern: ${globPattern}`));
+    return [];
+  }
+
+  console.log(chalk.gray(`Found ${files.length} file(s) matching pattern: ${globPattern}`));
+
+  const apiInformation: ApiInformation[] = [];
+  let hasErrors = false;
+
+  for (const file of files) {
+    try {
+      const content = readFileSync(file, 'utf8');
+      const parsed = load(content);
+
+      const apiName = getNestedValue(parsed, apiNamePath);
+      const apiVersion = getNestedValue(parsed, apiVersionPath);
+      const serviceName = getNestedValue(parsed, serviceNamePath);
+
+      if (!apiName || !apiVersion || !serviceName) {
+        console.error(chalk.red(`❌  ${file}: Missing required metadata fields.`));
+        if (!apiName) {
+          console.error(chalk.red(`\t  '${apiNamePath}' not found or empty.`));
+        }
+        if (!apiVersion) {
+          console.error(chalk.red(`\t  '${apiVersionPath}' not found or empty.`));
+        }
+        if (!serviceName) {
+          console.error(chalk.red(`\t  '${serviceNamePath}' not found or empty.`));
+        }
+        hasErrors = true;
+        continue;
+      }
+
+      apiInformation.push({ apiName, apiVersion, serviceName });
+      console.log(chalk.gray(`  ✓ ${file}: ${serviceName}/${apiName}@${apiVersion}`));
+    } catch (error) {
+      console.error(chalk.red(`❌  ${file}: Failed to parse file.`));
+      console.error(chalk.red(`\t  Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
+      hasErrors = true;
+    }
+  }
+
+  if (hasErrors) {
+    exitWithCodeInvalidConfig();
+  }
+
+  return apiInformation;
+};
+
 const loadConfigBasedOnType = (options: CliOptions): object => {
+  // openApiSpecs cannot be combined with exact config parameters
+  if (options.openApiSpecs && exactConfigurationGroup.some(opt => options[opt as keyof CliOptions])) {
+    console.error(chalk.red('❌  You cannot use options from multiple configuration groups together.'));
+    console.error(chalk.red(`\tGroup 1: ${exactConfigurationGroup.join(', ')}`));
+    console.error(chalk.red('\tGroup 2: openApiSpecs'));
+    exitWithCodeInvalidConfig();
+  }
+
   const activeGroups = distinctConfigGroups.map(group => group.some(opt => options[opt as keyof CliOptions])).filter(Boolean);
 
   if (activeGroups.length > 1) {
@@ -147,41 +216,52 @@ const loadConfigBasedOnType = (options: CliOptions): object => {
     exitWithCodeInvalidConfig();
   }
 
+  let baseConfig: Partial<CalculateOptions>;
+
   if (activeGroups.length === 0) {
-    const fileConfig = validateConfigurationFromFile(resolveConfig()) as Partial<SanitizedOptions>;
-    return mergeWithCliOverrides(fileConfig, options);
-  }
-  if (options.configFile) {
-    const fileConfig = validateConfigurationFromFile(resolveConfig(options.configFile)) as Partial<SanitizedOptions>;
-    return mergeWithCliOverrides(fileConfig, options);
+    if (options.openApiSpecs) {
+      // Only openApiSpecs on CLI, no config file group — build base config from CLI options
+      baseConfig = mergeWithCliOverrides({}, options);
+    } else {
+      const fileConfig = validateConfigurationFromFile(resolveConfig()) as Partial<CalculateOptions>;
+      baseConfig = mergeWithCliOverrides(fileConfig, options);
+    }
+  } else if (options.configFile) {
+    const fileConfig = validateConfigurationFromFile(resolveConfig(options.configFile)) as Partial<CalculateOptions>;
+    baseConfig = mergeWithCliOverrides(fileConfig, options);
+  } else {
+    if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
+      console.error(chalk.red('❌  Either define a config file or all of these calculation parameters:'));
+      exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- --${opt.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`)));
+      exitWithCodeInvalidConfig();
+    }
+
+    const { apiName, apiVersion, async, lookbackWindow, qualityGate, serviceName, url } = options;
+    const attributeFilters = parseFilters(options.filter);
+
+    baseConfig = {
+      apiInformation: [{ apiName, apiVersion, serviceName }],
+      async: async ?? false,
+      attributeFilters,
+      lookbackWindow,
+      qualityGate,
+      url,
+    };
   }
 
+  // Apply openApiSpecs overlay: if apiInformation is already present it takes precedence
   if (options.openApiSpecs) {
-    // TODO: Load OpenAPI specs and merge them into options
-    console.warn(chalk.yellow('⚠️  OpenAPI specs are not yet implemented. Using provided options as is.'));
-    exit(0);
+    if (baseConfig.apiInformation && baseConfig.apiInformation.length > 0) {
+      console.warn(chalk.yellow('⚠️  --open-api-specs is ignored because apiInformation is already defined in the configuration.'));
+    } else {
+      baseConfig.apiInformation = loadApiInformationFromGlob(options);
+    }
   }
 
-  if (exactConfigurationGroup.some(opt => !Object.hasOwn(options, opt))) {
-    console.error(chalk.red('❌  Either define a config file or all of these calculation parameters:'));
-    exactConfigurationGroup.forEach(opt => console.error(chalk.red(`\t- --${opt.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`)));
-    exitWithCodeInvalidConfig();
-  }
-
-  const { apiName, apiVersion, async, lookbackWindow, qualityGate, serviceName, url } = options;
-  const attributeFilters = parseFilters(options.filter);
-
-  return {
-    apiInformation: [{ apiName, apiVersion, serviceName }],
-    async: async ?? false,
-    attributeFilters,
-    lookbackWindow,
-    qualityGate,
-    url,
-  };
+  return baseConfig;
 };
 
-export const validateConfiguration = (config: SanitizedOptions): SanitizedOptions => {
+export const validateConfiguration = (config: CalculateOptions): CalculateOptions => {
   if (!config.url) {
     console.error(chalk.red('❌  Snow-White base URL must be defined in the configuration.'));
     exitWithCodeInvalidConfig();
@@ -213,22 +293,12 @@ export const validateConfiguration = (config: SanitizedOptions): SanitizedOption
   return config;
 };
 
-export const sanitizeCalculateOptions = (options: CliOptions): SanitizedOptions => {
+export const sanitizeCalculateOptions = (options: CliOptions): CalculateOptions => {
   const config = loadConfigBasedOnType(options);
-  return validateConfiguration(config as SanitizedOptions);
+  return validateConfiguration(config as CalculateOptions);
 };
 
-export interface UploadCliOptions {
-  prereleaseSpecs: string;
-  url?: string;
-  configFile?: string;
-  apiNamePath?: string;
-  apiVersionPath?: string;
-  serviceNamePath?: string;
-  ignoreExisting?: boolean;
-}
-
-export const sanitizeUploadPrereleasesOptions = (options: UploadCliOptions): UploadPrereleasesOptions => {
+export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPrereleasesOptions => {
   let fileConfig: Partial<CliOptions> = {};
 
   // Load config file when explicitly requested or when URL is not provided via CLI

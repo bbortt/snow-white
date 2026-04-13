@@ -10,7 +10,7 @@ import { exit } from 'node:process';
 import type { CalculateQualityGateRequest, QualityGateApi } from '../clients/quality-gate-api';
 import type { ReportApi } from '../clients/report-api';
 import type { ListQualityGateReports200ResponseInner } from '../clients/report-api/models/ListQualityGateReports200ResponseInner';
-import type { SanitizedOptions } from '../config/sanitized-options';
+import type { CalculateOptions } from '../config/sanitized-options';
 
 import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
 import { ListQualityGateReports200ResponseInnerStatusEnum } from '../clients/report-api/models/ListQualityGateReports200ResponseInner';
@@ -19,7 +19,7 @@ import { toDtos } from '../entity/mapper/api-information.mapper';
 
 const POLL_INTERVAL_MS = 2000;
 
-const calculateQualityGates = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: SanitizedOptions): Promise<void> => {
+const calculateQualityGates = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: CalculateOptions): Promise<void> => {
   console.log(chalk.blue(`🚀  Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
   console.log(chalk.gray(`Base URL: ${options.url}`));
 
@@ -87,7 +87,7 @@ const pollCalculationResult = async (reportApi: ReportApi, calculationId: string
   }
 };
 
-export const calculate = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: SanitizedOptions): Promise<void> => {
+export const calculate = async (qualityGateApi: QualityGateApi, reportApi: ReportApi, options: CalculateOptions): Promise<void> => {
   try {
     await calculateQualityGates(qualityGateApi, reportApi, options);
   } catch (error: unknown) {
