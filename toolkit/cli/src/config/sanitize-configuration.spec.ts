@@ -5,13 +5,15 @@
  */
 
 import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
 import type { CliOptions } from './cli-options';
-import type { SanitizedOptions } from './sanitized-options';
+import type { CalculateOptions } from './sanitized-options';
 
 import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../actions/upload-prereleases';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
+import { scanGlob } from '../common/glob';
 import { resolveConfig } from './resolve-config';
 import { sanitizeCalculateOptions, sanitizeUploadPrereleasesOptions } from './sanitize-configuration';
 
@@ -25,6 +27,16 @@ mock.module('node:process', () => ({
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 mock.module('./resolve-config', () => ({
   resolveConfig: mock(),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+mock.module('../common/glob', () => ({
+  scanGlob: mock(),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+mock.module('node:fs', () => ({
+  readFileSync: mock(),
 }));
 
 const mockConsoleError = spyOn(console, 'error');
@@ -45,7 +57,7 @@ const incompleteApiInformation = [
   },
 ];
 
-const sanitizedOptions: SanitizedOptions = {
+const sanitizedOptions: CalculateOptions = {
   apiInformation: [
     {
       apiName: 'test-api',
@@ -65,14 +77,14 @@ describe('sanitizeConfiguration', () => {
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
+    // @ts-expect-error TS2339: Property mockReset does not exist on type
+    (resolveConfig as any).mockReset();
+    (scanGlob as any).mockReset();
+    (readFileSync as any).mockReset();
   });
 
   it.each([
-    // property configFile with any other property
-    {
-      configFile: 'config',
-      openApiSpecs: 'some-glob-pattern',
-    },
+    // configFile combined with any exact config parameter
     {
       configFile: 'config',
       serviceName: 'test-service',
@@ -85,20 +97,7 @@ describe('sanitizeConfiguration', () => {
       apiVersion: 'test-version',
       configFile: 'config',
     },
-    // property openApiSpecs with any other property
-    {
-      openApiSpecs: 'some-glob-pattern',
-      serviceName: 'test-service',
-    },
-    {
-      apiName: 'test-api',
-      openApiSpecs: 'some-glob-pattern',
-    },
-    {
-      apiVersion: 'test-version',
-      openApiSpecs: 'some-glob-pattern',
-    },
-  ])('should exit with code 3 when combination of parameters is invalid: %s', (options: Partial<CliOptions>) => {
+  ])('should exit with code 3 when configFile is combined with exact config params: %s', (options: Partial<CliOptions>) => {
     // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
     expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
@@ -108,6 +107,34 @@ describe('sanitizeConfiguration', () => {
     );
     expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
     expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: configFile'));
+
+    expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+  });
+
+  it.each([
+    // openApiSpecs combined with any exact config parameter
+    {
+      openApiSpecs: 'some-glob-pattern',
+      serviceName: 'test-service',
+    },
+    {
+      apiName: 'test-api',
+      openApiSpecs: 'some-glob-pattern',
+    },
+    {
+      apiVersion: 'test-version',
+      openApiSpecs: 'some-glob-pattern',
+    },
+  ])('should exit with code 3 when openApiSpecs is combined with exact config params: %s', (options: Partial<CliOptions>) => {
+    // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
+    expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
+
+    expect(mockConsoleError).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('❌  You cannot use options from multiple configuration groups together.'),
+    );
+    expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
+    expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: openApiSpecs'));
 
     expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
   });
@@ -197,7 +224,7 @@ describe('sanitizeConfiguration', () => {
 
   describe('CLI parameter precedence over config file', () => {
     it('should override URL from config file with CLI parameter', () => {
-      const fileConfig: SanitizedOptions = {
+      const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         url: 'http://config-file-url.com',
       };
@@ -210,7 +237,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should override qualityGate from config file with CLI parameter', () => {
-      const fileConfig: SanitizedOptions = {
+      const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         qualityGate: 'file-gate',
       };
@@ -223,7 +250,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should override lookbackWindow from config file with CLI parameter', () => {
-      const fileConfig: SanitizedOptions = {
+      const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         lookbackWindow: '1h',
       };
@@ -238,7 +265,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should override attributeFilters from config file with CLI filters', () => {
-      const fileConfig: SanitizedOptions = {
+      const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         attributeFilters: { environment: 'production' },
       };
@@ -253,7 +280,7 @@ describe('sanitizeConfiguration', () => {
     });
 
     it('should not warn when CLI parameter matches config file value', () => {
-      const fileConfig: SanitizedOptions = {
+      const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         url: 'http://same-url.com',
       };
@@ -427,19 +454,132 @@ describe('sanitizeConfiguration', () => {
   });
 
   describe('OpenAPI glob pattern configuration', () => {
-    it('is not implemented yet', () => {
-      const options: CliOptions = {
-        openApiSpecs: 'some-glob-pattern',
-      };
+    const VALID_YAML = `
+openapi: 3.1.0
+info:
+  title: My Test API
+  version: 1.2.3
+  x-service-name: my-service
+`.trim();
 
-      expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 0');
+    it('scans files and builds apiInformation when only --open-api-specs is provided', () => {
+      (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
+      (readFileSync as any).mockReturnValue(VALID_YAML);
 
-      expect(mockConsoleError).not.toHaveBeenCalled();
+      const result = sanitizeCalculateOptions({
+        openApiSpecs: 'services/**/openapi.yaml',
+        qualityGate: 'basic-coverage',
+        url: 'http://localhost:9000',
+      } as CliOptions);
+
+      expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
+    });
+
+    it('uses custom JSON paths when provided', () => {
+      const customYaml = `
+metadata:
+  name: Custom API
+  release: 2.0.0
+  owner: custom-service
+`.trim();
+      (scanGlob as any).mockReturnValue(['custom.yaml']);
+      (readFileSync as any).mockReturnValue(customYaml);
+
+      const result = sanitizeCalculateOptions({
+        apiNamePath: 'metadata.name',
+        apiVersionPath: 'metadata.release',
+        openApiSpecs: '*.yaml',
+        qualityGate: 'basic-coverage',
+        serviceNamePath: 'metadata.owner',
+        url: 'http://localhost:9000',
+      } as CliOptions);
+
+      expect(result.apiInformation).toEqual([{ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }]);
+    });
+
+    it('builds apiInformation from multiple matched files', () => {
+      const yaml2 = `
+openapi: 3.1.0
+info:
+  title: Second API
+  version: 2.0.0
+  x-service-name: second-service
+`.trim();
+      (scanGlob as any).mockReturnValue(['svc-a/openapi.yaml', 'svc-b/openapi.yaml']);
+      (readFileSync as any).mockReturnValueOnce(VALID_YAML).mockReturnValueOnce(yaml2);
+
+      const result = sanitizeCalculateOptions({
+        openApiSpecs: 'svc-*/openapi.yaml',
+        qualityGate: 'basic-coverage',
+        url: 'http://localhost:9000',
+      } as CliOptions);
+
+      expect(result.apiInformation).toHaveLength(2);
+      expect(result.apiInformation).toContainEqual({ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' });
+      expect(result.apiInformation).toContainEqual({ apiName: 'Second API', apiVersion: '2.0.0', serviceName: 'second-service' });
+    });
+
+    it('warns and returns empty array when no files match the pattern', () => {
+      (scanGlob as any).mockReturnValue([]);
+
+      expect(() =>
+        sanitizeCalculateOptions({
+          openApiSpecs: 'services/**/openapi.yaml',
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        } as CliOptions),
+      ).toThrowError('Process exited with code 3');
+
+      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  No files matched the pattern: services/**/openapi.yaml'));
+    });
+
+    it('exits with code 3 when a file is missing required metadata fields', () => {
+      (scanGlob as any).mockReturnValue(['openapi.yaml']);
+      (readFileSync as any).mockReturnValue('openapi: 3.1.0');
+
+      expect(() =>
+        sanitizeCalculateOptions({
+          openApiSpecs: '*.yaml',
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        } as CliOptions),
+      ).toThrowError('Process exited with code 3');
+
+      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  openapi.yaml: Missing required metadata fields.'));
+      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    });
+
+    it('ignores --open-api-specs and warns when config file already has apiInformation', () => {
+      (resolveConfig as any).mockReturnValueOnce({
+        apiInformation: [{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }],
+        qualityGate: 'basic-coverage',
+        url: 'http://localhost:9000',
+      });
+
+      const result = sanitizeCalculateOptions({
+        configFile: 'snow-white.json',
+        openApiSpecs: 'services/**/openapi.yaml',
+      } as CliOptions);
+
+      expect(scanGlob).not.toHaveBeenCalled();
+      expect(result.apiInformation).toEqual([{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }]);
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  OpenAPI specs are not yet implemented. Using provided options as is.'),
+        expect.stringContaining('⚠️  --open-api-specs is ignored because apiInformation is already defined in the configuration.'),
       );
+    });
 
-      expect(exit).toHaveBeenCalledWith(0);
+    it('uses glob when config file is present but has no apiInformation', () => {
+      (resolveConfig as any).mockReturnValueOnce({ qualityGate: 'basic-coverage', url: 'http://localhost:9000' });
+      (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
+      (readFileSync as any).mockReturnValue(VALID_YAML);
+
+      const result = sanitizeCalculateOptions({
+        configFile: 'snow-white.json',
+        openApiSpecs: 'services/**/openapi.yaml',
+      } as CliOptions);
+
+      expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
+      expect(mockConsoleWarn).not.toHaveBeenCalledWith(expect.stringContaining('--open-api-specs is ignored'));
     });
   });
 

@@ -9,7 +9,7 @@ import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
 import type { ReportApi } from '../clients/report-api';
-import type { SanitizedOptions } from '../config/sanitized-options';
+import type { CalculateOptions } from '../config/sanitized-options';
 
 import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
 import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
@@ -40,7 +40,7 @@ describe('calculate action', () => {
     getReportByCalculationId: mock(),
   };
 
-  const defaultOptions: SanitizedOptions = {
+  const defaultOptions: CalculateOptions = {
     apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
     async: true,
     qualityGate: 'test-gate',
@@ -110,7 +110,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
-      const optionsWithLookback: SanitizedOptions = {
+      const optionsWithLookback: CalculateOptions = {
         ...defaultOptions,
         lookbackWindow: '24h',
       };
@@ -138,7 +138,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
-      const optionsWithFilters: SanitizedOptions = {
+      const optionsWithFilters: CalculateOptions = {
         ...defaultOptions,
         attributeFilters: { environment: 'production', region: 'us-west-1' },
       };
@@ -168,7 +168,7 @@ describe('calculate action', () => {
 
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(mockApiResponse);
 
-      const fullOptions: SanitizedOptions = {
+      const fullOptions: CalculateOptions = {
         ...defaultOptions,
         attributeFilters: { environment: 'staging' },
         lookbackWindow: '7d',
@@ -204,7 +204,7 @@ describe('calculate action', () => {
   });
 
   describe('synchronous polling (async: false)', () => {
-    const syncOptions: SanitizedOptions = {
+    const syncOptions: CalculateOptions = {
       ...defaultOptions,
       async: false,
     };
