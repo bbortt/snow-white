@@ -13,6 +13,7 @@ import static java.lang.String.join;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toSet;
+import static lombok.AccessLevel.PRIVATE;
 
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -24,7 +25,9 @@ import jakarta.annotation.Nullable;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = PRIVATE)
 public final class RepositoryRules {
 
   public static RepositoryRules.OnlyUseSpringTransactional.OnlyUseSpringTransactionalBuilder onlyUseSpringTransactional() {

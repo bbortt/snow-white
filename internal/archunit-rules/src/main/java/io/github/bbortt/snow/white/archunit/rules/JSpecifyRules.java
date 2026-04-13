@@ -11,6 +11,7 @@ import static io.github.bbortt.snow.white.archunit.rules.PackageUtils.packageIsI
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.stream.Collectors.toSet;
+import static lombok.AccessLevel.PRIVATE;
 
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -20,7 +21,9 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = PRIVATE)
 public final class JSpecifyRules {
 
   public static OnlyUseJSpecifyNullable.OnlyUseJSpecifyNullableBuilder onlyUseJSpecifyNullable() {
