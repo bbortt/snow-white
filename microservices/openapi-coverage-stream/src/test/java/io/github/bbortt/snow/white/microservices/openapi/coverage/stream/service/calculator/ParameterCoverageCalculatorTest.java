@@ -277,6 +277,33 @@ class ParameterCoverageCalculatorTest {
     }
 
     @Test
+    void shouldNotThrow_whenParameterHasNullIn() {
+      var parameter = new Parameter();
+      parameter.setName("someParam");
+      // in is intentionally left null to reproduce the NPE scenario
+
+      var operation = new Operation();
+      operation.setParameters(List.of(parameter));
+
+      var pathToOpenAPIOperationMap = Map.of("GET_/api/v1/users", operation);
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "someParam=value")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.openApiCriteria()).isEqualTo(PARAMETER_COVERAGE),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r -> assertThat(r.additionalInformation()).isNotNull()
+      );
+    }
+
+    @Test
     void shouldHandleOperationWithNullParameters() {
       var operation = new Operation();
       operation.setParameters(null);
