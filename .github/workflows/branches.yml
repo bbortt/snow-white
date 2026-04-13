@@ -18,17 +18,17 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           submodules: true
       - name: Check if PR exists
-        uses: 8BitJonny/gh-get-current-pr@4.0.0
+        uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9 # ratchet:8BitJonny/gh-get-current-pr@4.0.0
         id: check
         with:
           filterOutClosed: true
           filterOutDraft: true
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         with:
           cache: maven
@@ -46,7 +46,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: ./mvnw -B -Pprod verify
       - name: Upload CLI Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # ratchet:actions/upload-artifact@v6
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         with:
           name: cli
@@ -56,7 +56,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         run: git fetch --unshallow origin
       - name: Cache SonarQube Packages
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # ratchet:actions/cache@v5
         if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
         with:
           path: ~/.sonar/cache
@@ -78,16 +78,16 @@ jobs:
     environment: release
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # ratchet:pnpm/action-setup@v5
         name: Install pnpm
         with:
           run_install: false
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # ratchet:actions/setup-node@v6
         with:
           cache: 'pnpm'
           node-version: 24

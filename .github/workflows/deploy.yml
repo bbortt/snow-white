@@ -14,9 +14,9 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
@@ -33,12 +33,12 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
@@ -56,7 +56,7 @@ jobs:
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-x64
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-windows-x64.exe
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # ratchet:docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -76,16 +76,16 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # ratchet:pnpm/action-setup@v5
         with:
           run_install: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # ratchet:actions/setup-node@v6
         with:
           cache: 'pnpm'
           node-version: '24'
@@ -105,7 +105,7 @@ jobs:
           git config user.name "Timon Borter"
           git config user.email "timon.borter@gmx.ch"
       - name: Release Helm Chart
-        uses: helm/chart-releaser-action@v1.7.0
+        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # ratchet:helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
@@ -118,7 +118,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           lfs: true
           submodules: true
@@ -126,7 +126,7 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
@@ -140,7 +140,7 @@ jobs:
             -Dfrontend.test.skip=true \
             -pl :api-gateway,:api-sync-job,:openapi-coverage-stream -am
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # ratchet:docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -165,14 +165,14 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           submodules: true
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
         with:
           cache: maven
           distribution: 'temurin'
@@ -180,7 +180,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am clean install
       - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # ratchet:docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
