@@ -4,6 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import { Configuration, ReportApi } from '../clients/report-api';
+import type { FetchAPI } from '../clients/report-api';
 
-export const getReportApi = (baseUrl: string): ReportApi => new ReportApi(new Configuration({ basePath: baseUrl }));
+import { Configuration, ReportApi } from '../clients/report-api';
+import { createFetchWithRetry } from './fetch-with-retry.ts';
+
+export const getReportApi = (baseUrl: string): ReportApi =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  new ReportApi(new Configuration({ basePath: baseUrl, fetchApi: createFetchWithRetry() as FetchAPI }));

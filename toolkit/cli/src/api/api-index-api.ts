@@ -4,6 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import { ApiIndexApi, Configuration } from '../clients/api-index-api';
+import type { FetchAPI } from '../clients/api-index-api';
 
-export const getApiIndexApi = (baseUrl: string): ApiIndexApi => new ApiIndexApi(new Configuration({ basePath: baseUrl }));
+import { ApiIndexApi, Configuration } from '../clients/api-index-api';
+import { createFetchWithRetry } from './fetch-with-retry.ts';
+
+export const getApiIndexApi = (baseUrl: string): ApiIndexApi =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  new ApiIndexApi(new Configuration({ basePath: baseUrl, fetchApi: createFetchWithRetry() as FetchAPI }));
