@@ -6,38 +6,38 @@
 
 import { describe, expect, it, mock } from 'bun:test';
 
-import { Configuration, QualityGateApi } from '../clients/quality-gate-api';
-import { getQualityGateApi } from './quality-gate-api';
+import { Configuration, ReportApi } from '../clients/report-api';
+import { getReportApi } from './report-api.ts';
 
-await mock.module('../clients/quality-gate-api', () => {
+await mock.module('../clients/report-api', () => {
   const MockConfiguration = mock((options: { basePath: string }) => ({ basePath: options.basePath }));
-  const MockQualityGateApi = mock(({ config }) => {
+  const MockReportApi = mock(({ config }) => {
     return { config };
   });
-  return { Configuration: MockConfiguration, QualityGateApi: MockQualityGateApi };
+  return { Configuration: MockConfiguration, ReportApi: MockReportApi };
 });
 
-describe('getQualityGateApi', () => {
-  it('should configure QualityGateApi with the provided baseUrl', () => {
+describe('getReportApi', () => {
+  it('should configure ReportApi with the provided baseUrl', () => {
     const baseUrl = 'http://localhost:8081';
 
-    getQualityGateApi(baseUrl);
+    getReportApi(baseUrl);
 
-    expect(Configuration).toHaveBeenCalledWith({ basePath: baseUrl });
+    expect(Configuration).toHaveBeenCalledWith({ basePath: baseUrl, fetchApi: expect.anything() });
   });
 
-  it('should pass the Configuration instance to QualityGateApi', () => {
+  it('should pass the Configuration instance to ReportApi', () => {
     const baseUrl = 'http://localhost:8081';
 
-    getQualityGateApi(baseUrl);
+    getReportApi(baseUrl);
 
     const configInstance = (Configuration as ReturnType<typeof mock>).mock.results[0].value;
-    expect(QualityGateApi).toHaveBeenCalledWith(configInstance);
+    expect(ReportApi).toHaveBeenCalledWith(configInstance);
   });
 
   it('should return a distinct instance per call', () => {
-    const first = getQualityGateApi('http://localhost:8081');
-    const second = getQualityGateApi('http://localhost:8081');
+    const first = getReportApi('http://localhost:8081');
+    const second = getReportApi('http://localhost:8081');
 
     expect(first).not.toBe(second);
   });
@@ -46,11 +46,11 @@ describe('getQualityGateApi', () => {
     const urlA = 'http://host-a:8081';
     const urlB = 'http://host-b:9091';
 
-    getQualityGateApi(urlA);
-    getQualityGateApi(urlB);
+    getReportApi(urlA);
+    getReportApi(urlB);
 
     const calls = (Configuration as ReturnType<typeof mock>).mock.calls;
-    expect(calls.at(-2)).toEqual([{ basePath: urlA }]);
-    expect(calls.at(-1)).toEqual([{ basePath: urlB }]);
+    expect(calls.at(-2)).toEqual([{ basePath: urlA, fetchApi: expect.anything() }]);
+    expect(calls.at(-1)).toEqual([{ basePath: urlB, fetchApi: expect.anything() }]);
   });
 });

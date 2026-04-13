@@ -23,7 +23,7 @@ describe('getApiIndexApi', () => {
 
     getApiIndexApi(baseUrl);
 
-    expect(Configuration).toHaveBeenCalledWith({ basePath: baseUrl });
+    expect(Configuration).toHaveBeenCalledWith({ basePath: baseUrl, fetchApi: expect.anything() });
   });
 
   it('should pass the Configuration instance to ApiIndexApi', () => {
@@ -50,7 +50,7 @@ describe('getApiIndexApi', () => {
     getApiIndexApi(urlB);
 
     const calls = (Configuration as ReturnType<typeof mock>).mock.calls;
-    expect(calls.at(-2)).toEqual([{ basePath: urlA }]);
-    expect(calls.at(-1)).toEqual([{ basePath: urlB }]);
+    expect(calls.at(-2)).toEqual([{ basePath: urlA, fetchApi: expect.anything() }]);
+    expect(calls.at(-1)).toEqual([{ basePath: urlB, fetchApi: expect.anything() }]);
   });
 });
