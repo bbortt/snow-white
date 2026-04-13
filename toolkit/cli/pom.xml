@@ -31,13 +31,13 @@
     <node.version>v22.20.0</node.version>
 
     <!-- SonarQube properties -->
-    <sonar.inclusions>src/**/*.ts,</sonar.inclusions>
-    <sonar.exclusions>
-      node_modules/**,
-      src/clients/**,
-    </sonar.exclusions>
+    <sonar.sources>src</sonar.sources>
+    <sonar.tests>src</sonar.tests>
 
-    <sonar.test.inclusions>src/**/*.spec.ts,</sonar.test.inclusions>
+    <sonar.inclusions>src/**/*.ts</sonar.inclusions>
+    <sonar.exclusions>node_modules/**,src/clients/**</sonar.exclusions>
+
+    <sonar.test.inclusions>src/**/*.spec.ts</sonar.test.inclusions>
 
     <sonar.javascript.lcov.reportPaths>target/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
     <sonar.testExecutionReportPaths>target/test-results/bun/junit.xml</sonar.testExecutionReportPaths>
