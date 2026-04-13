@@ -80,6 +80,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 | Key                            | Type   | Default                    | Description                                                        |
 | ------------------------------ | ------ | -------------------------- | ------------------------------------------------------------------ |
+| kafka-ui.enabled               | bool   | `false`                    | Install kafbat/kafka-ui alongside Snow-White for debugging.        |
 | kafka.clusterId                | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
 | kafka.enabled                  | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
 | kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
@@ -87,7 +88,6 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | kafka.image.tag                | string | `"8.2.0"`                  | Image tag.                                                         |
 | kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
 | kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
-| kafkaui.enabled                | bool   | `false`                    | Install kafbat/kafka-ui alongside Snow-White for debugging.        |
 
 ### Infrastructure (PostgreSQL)
 
@@ -206,6 +206,7 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | Key                                                            | Type   | Default                                    | Description |
 | -------------------------------------------------------------- | ------ | ------------------------------------------ | ----------- |
 | influxdb2.pdb.create                                           | bool   | `false`                                    |             |
+| kafka-ui.yamlApplicationConfigConfigMap.name                   | string | `"kafbat-ui-configmap"`                    |             |
 | postgresql.architecture                                        | string | `"standalone"`                             |             |
 | postgresql.primary.extraEnvVars[0].name                        | string | `"API_INDEX_DATASOURCE_PASSWORD"`          |             |
 | postgresql.primary.extraEnvVars[0].valueFrom.secretKeyRef.key  | string | `"api-index-password"`                     |             |

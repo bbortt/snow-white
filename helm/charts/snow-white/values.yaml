@@ -302,10 +302,12 @@ kafka:
     # @section -- Infrastructure (Kafka)
     size: 10Gi
 
-kafkaui:
+kafka-ui:
   # -- Install kafbat/kafka-ui alongside Snow-White for debugging.
   # @section -- Infrastructure (Kafka)
   enabled: false
+  yamlApplicationConfigConfigMap:
+    name: kafbat-ui-configmap
 
 otelCollector:
   image:
