@@ -72,7 +72,6 @@ describe('sanitizeCalculateOptions', () => {
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
-    // @ts-expect-error TS2339: Property mockReset does not exist on type
     (resolveConfig as any).mockReset();
     (scanGlob as any).mockReset();
     (readFileSync as any).mockReset();
@@ -98,7 +97,6 @@ describe('sanitizeCalculateOptions', () => {
       configFile: 'config',
     },
   ])('should exit with code 3 when configFile is combined with exact config params: %s', (options: Partial<CliOptions>) => {
-    // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
     expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
     expect(consoleErrorSpy).toHaveBeenNthCalledWith(
@@ -126,7 +124,6 @@ describe('sanitizeCalculateOptions', () => {
       apiVersion: 'test-version',
     },
   ])('should exit with code 3 when apiSpecs is combined with exact config params: %s', (options: Partial<CliOptions>) => {
-    // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
     expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
     expect(consoleErrorSpy).toHaveBeenNthCalledWith(
@@ -402,7 +399,6 @@ describe('sanitizeCalculateOptions', () => {
     });
 
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
-      // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
       expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenNthCalledWith(
@@ -489,6 +485,30 @@ metadata:
         serviceNamePath: 'metadata.owner',
         url: 'http://localhost:9000',
       } as CliOptions);
+
+      expect(result.apiInformation).toEqual([{ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }]);
+    });
+
+    it('uses custom JSON paths from file when provided', () => {
+      const customYaml = `
+metadata:
+  name: Custom API
+  release: 2.0.0
+  owner: custom-service
+`.trim();
+      (scanGlob as any).mockReturnValue(['custom.yaml']);
+      (readFileSync as any).mockReturnValue(customYaml);
+
+      (resolveConfig as any).mockReturnValueOnce({
+        apiNamePath: 'metadata.name',
+        apiSpecs: '*.yaml',
+        apiVersionPath: 'metadata.release',
+        qualityGate: 'basic-coverage',
+        serviceNamePath: 'metadata.owner',
+        url: 'http://localhost:9000',
+      });
+
+      const result = sanitizeCalculateOptions({} as CliOptions);
 
       expect(result.apiInformation).toEqual([{ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }]);
     });
