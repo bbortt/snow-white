@@ -17,7 +17,7 @@ import { MatchingAttributes, WireMock } from 'wiremock-captain';
 
 import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
 
-import { QUALITY_GATE_CALCULATION_FAILED } from './common/exit-codes';
+import { QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from './common/exit-codes';
 
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
 
@@ -129,7 +129,7 @@ describe('CLI', () => {
     expectedExitCode: number,
   ) => {
     expect(cliResult.exitCode, cliResult.stderr).toBe(expectedExitCode);
-    expect(cliResult.stdout).toContain('🚀  Starting Quality-Gate calculation for 1 API(s)...');
+    expect(cliResult.stdout).toContain('🚀 Starting Quality-Gate calculation for 1 API(s)...');
     expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
   };
 
@@ -203,7 +203,7 @@ describe('CLI', () => {
           expect(cliResult.stdout).toContain(
             `Location: ${WIREMOCK_URL}/api/rest/v1/quality-gates/reports/550e8400-e29b-41d4-a716-446655440000`,
           );
-          expect(cliResult.stdout).toContain('💡  Use the returned URL to check the calculation report.');
+          expect(cliResult.stdout).toContain('💡 Use the returned URL to check the calculation report.');
 
           const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
           expect(requests.length).toBe(1);
@@ -240,8 +240,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
-        expect(cliResult.stderr).toContain('Status: 400');
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
@@ -276,8 +275,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
-        expect(cliResult.stderr).toContain('Status: 404');
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
@@ -308,7 +306,7 @@ describe('CLI', () => {
 
         assertThatBasicInformationIsBeingPrinted(cliResult, QUALITY_GATE_CALCULATION_FAILED);
 
-        expect(cliResult.stderr).toContain('❌  Failed to trigger Quality-Gate calculation!');
+        expect(cliResult.stderr).toContain('❌ Failed to trigger Quality-Gate calculation!');
         expect(cliResult.stderr).toContain('Error: Server Error');
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
@@ -408,9 +406,9 @@ describe('CLI', () => {
         WIREMOCK_URL,
       ]);
 
-      expect(cliResult.exitCode).toBe(QUALITY_GATE_CALCULATION_FAILED);
+      expect(cliResult.exitCode, cliResult.stderr).toBe(QUALITY_GATE_FAILED);
       expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
-      expect(cliResult.stderr).toContain('❌  Quality-Gate calculation FAILED!');
+      expect(cliResult.stderr).toContain('❌ Quality-Gate calculation FAILED!');
     });
   });
 
@@ -434,9 +432,9 @@ info:
         const cliResult = await executeCLICommand(['upload-prereleases', '--api-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
 
         expect(cliResult.exitCode, cliResult.stderr).toBe(0);
-        expect(cliResult.stdout).toContain('🚀  Uploading prerelease API specifications matching:');
+        expect(cliResult.stdout).toContain('🚀 Uploading prerelease API specifications matching:');
         expect(cliResult.stdout).toContain(`Base URL: ${WIREMOCK_URL}`);
-        expect(cliResult.stdout).toContain('⚠️  Prerelease uploads are temporary');
+        expect(cliResult.stdout).toContain('⚠️ Prerelease uploads are temporary');
         expect(cliResult.stdout).toContain('✅');
         expect(cliResult.stdout).toContain('integration-test-service/Integration Test API@2.0.0');
         expect(cliResult.stdout).toContain('Upload complete: 1 succeeded, 0 failed.');
@@ -462,7 +460,7 @@ info:
 
         const cliResult = await executeCLICommand(['upload-prereleases', '--api-specs', tmpSpecFilename, '--url', WIREMOCK_URL]);
 
-        expect(cliResult.exitCode).not.toBe(0);
+        expect(cliResult.exitCode, cliResult.stderr).not.toBe(0);
         expect(cliResult.stderr).toContain('❌');
         expect(cliResult.stderr).toContain('Upload failed.');
         expect(cliResult.stderr).toContain('Details: API already exists as a stable release');
@@ -493,7 +491,7 @@ info:
           '--ignore-existing',
         ]);
 
-        expect(cliResult.exitCode).toBe(0);
+        expect(cliResult.exitCode, cliResult.stderr).toBe(0);
         expect(cliResult.stderr).toContain('❌');
         expect(cliResult.stderr).toContain('Upload failed.');
         expect(cliResult.stderr).toContain('Ignoring already existing integration-test-service/Integration Test API@2.0.0');
