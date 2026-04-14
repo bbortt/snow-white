@@ -18,7 +18,7 @@
       "testedAPIs": "Getestete Schnittstellen",
       "calculationRequest": "Anfrage-Details",
       "shapes": {
-        "qualityGateResults": "Status inkludierter Kriterien",
+        "qualityGateResults": "Status der inkludierten Kriterien",
         "allResults": "Status aller Kriterien"
       },
       "action": {

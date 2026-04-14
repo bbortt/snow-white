@@ -10,12 +10,12 @@ import type { IApiTest } from 'app/shared/model/api-test.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ApiTestResultTable from 'app/entities/quality-gate/api-test-result-table';
+import { CoverageProgressBar } from 'app/entities/quality-gate/coverage-progress-bar';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
-import { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
-import { Card, CardBody, CardTitle, Col, Collapse, Progress, Row } from 'reactstrap';
+import { Card, CardBody, CardTitle, Col, Collapse, Row } from 'reactstrap';
 
 interface ApiTestCardProps {
   apiTest: IApiTest;
@@ -34,34 +34,6 @@ const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: bool
   }
 
   return <StatusBadge status={ReportStatus.FAILED} />;
-};
-
-const renderStatusProgressBar = (containsTestResults: boolean, apiTestResults: IApiTestResult[]): ReactElement => {
-  if (!containsTestResults) {
-    return <></>;
-  }
-
-  const total = apiTestResults.length;
-  const passed =
-    apiTestResults
-      .filter(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1)
-      .map(apiTestResult => apiTestResult.coverage)
-      .reduce((partialSum, a) => (partialSum ?? 0) + (a ?? 0), 0) ?? 0;
-  const failed = total - passed;
-
-  const passedPercentage = Math.round((passed / total) * 100);
-  const failedPercentage = Math.round((failed / total) * 100);
-
-  return (
-    <Progress multi>
-      <Progress bar color="success" value={passedPercentage}>
-        {passedPercentage} %
-      </Progress>
-      <Progress bar color="danger" value={failedPercentage}>
-        {failedPercentage} %
-      </Progress>
-    </Progress>
-  );
 };
 
 export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus }: ApiTestCardProps) => {
@@ -87,7 +59,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
               </small>
             </h4>
           </Col>
-          <Col md={2}>
+          <Col md={1}>
             <h4>
               {isQualityGateStatusOverride(qualityGateStatus) ? (
                 <StatusBadge status={qualityGateStatus} />
@@ -96,8 +68,14 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
               )}
             </h4>
           </Col>
-          <Col md={1}>{containsTestResults ? <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate> : <></>}</Col>
-          <Col md={2}>{renderStatusProgressBar(containsTestResults, apiTest.testResults!)}</Col>
+          <Col md={2}>{containsTestResults ? <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate> : <></>}</Col>
+          <Col md={2}>
+            {containsTestResults ? (
+              <CoverageProgressBar apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)} />
+            ) : (
+              <></>
+            )}
+          </Col>
           <Col md={1}>
             <FontAwesomeIcon icon={isOpen ? 'chevron-up' : 'chevron-down'} />
           </Col>
