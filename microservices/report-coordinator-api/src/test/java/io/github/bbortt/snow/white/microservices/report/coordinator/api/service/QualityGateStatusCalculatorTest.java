@@ -11,24 +11,32 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.service.QualityGateStatusCalculator.TERMINAL_STATUS;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class QualityGateStatusCalculatorTest {
 
@@ -195,6 +203,28 @@ class QualityGateStatusCalculatorTest {
       QualityGateReport result = fixture.withUpdatedReportStatus(report);
 
       assertThat(result.getReportStatus()).isEqualTo(PASSED);
+    }
+
+    public static Stream<
+      ReportStatus
+    > shouldReturnImmediately_whenReportStatusIsAlreadyTerminal() {
+      return TERMINAL_STATUS.stream();
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldReturnImmediately_whenReportStatusIsAlreadyTerminal(
+      ReportStatus terminalStatus
+    ) {
+      var qualityGateReport = mock(QualityGateReport.class);
+      doReturn(terminalStatus).when(qualityGateReport).getReportStatus();
+
+      assertThat(fixture.withUpdatedReportStatus(qualityGateReport)).isEqualTo(
+        qualityGateReport
+      );
+
+      verify(qualityGateReport).getReportStatus();
+      verifyNoMoreInteractions(qualityGateReport);
     }
   }
 }

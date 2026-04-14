@@ -89,7 +89,8 @@ public class ReportService {
     var updated = report
       .withStackTrace(errorMessage)
       .withReportStatus(FINISHED_EXCEPTIONALLY);
-    update(updated);
+
+    updateWithStatusUpdate(updated);
   }
 
   private void handleSuccessfulResponse(
@@ -98,7 +99,6 @@ public class ReportService {
   ) {
     var qualityGateConfigName = report.getQualityGateConfigName();
 
-    final QualityGateReport updatedReport;
     try {
       var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
         qualityGateConfigName
@@ -118,10 +118,6 @@ public class ReportService {
         apiTest,
         qualityGateConfig.getOpenApiCriteria()
       );
-
-      updatedReport = qualityGateStatusCalculator.withUpdatedReportStatus(
-        report
-      );
     } catch (QualityGateNotFoundException e) {
       logger.warn(
         "Cannot find quality-gate config: {}",
@@ -131,7 +127,7 @@ public class ReportService {
       return;
     }
 
-    update(updatedReport);
+    updateWithStatusUpdate(report);
   }
 
   @WithSpan
@@ -180,6 +176,13 @@ public class ReportService {
       .collect(toSet());
 
     return persistedReport.withApiTests(persistedApiTests);
+  }
+
+  private void updateWithStatusUpdate(QualityGateReport qualityGateReport) {
+    var qualityGateReportWithUpdatedStatus =
+      qualityGateStatusCalculator.withUpdatedReportStatus(qualityGateReport);
+
+    qualityGateReportRepository.save(qualityGateReportWithUpdatedStatus);
   }
 
   @WithSpan

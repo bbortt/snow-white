@@ -227,6 +227,10 @@ class ReportServiceTest {
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
 
+      doAnswer(returnsFirstArg())
+        .when(qualityGateStatusCalculatorMock)
+        .withUpdatedReportStatus(any(QualityGateReport.class));
+
       var event = new OpenApiCoverageResponseEvent(
         mock(ApiInformation.class),
         "upstream failure"
@@ -238,14 +242,23 @@ class ReportServiceTest {
       verifyNoInteractions(qualityGateReportApiTestsFilterMock);
       verifyNoInteractions(apiTestResultMapperMock);
       verifyNoInteractions(apiTestResultLinkerMock);
-      verifyNoInteractions(qualityGateStatusCalculatorMock);
 
       ArgumentCaptor<QualityGateReport> reportCaptor = captor();
-      verify(qualityGateReportRepositoryMock).save(reportCaptor.capture());
+      verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
+        reportCaptor.capture()
+      );
 
-      var saved = reportCaptor.getValue();
-      assertThat(saved.getReportStatus()).isEqualTo(FINISHED_EXCEPTIONALLY);
-      assertThat(saved.getStackTrace()).contains("upstream failure");
+      var qualityGateReportWithStackTrace = reportCaptor.getValue();
+      assertThat(qualityGateReportWithStackTrace.getReportStatus()).isEqualTo(
+        FINISHED_EXCEPTIONALLY
+      );
+      assertThat(qualityGateReportWithStackTrace.getStackTrace()).contains(
+        "upstream failure"
+      );
+
+      verify(qualityGateReportRepositoryMock).save(
+        qualityGateReportWithStackTrace
+      );
     }
 
     @Test
@@ -367,38 +380,6 @@ class ReportServiceTest {
           reportParameter
         )
       ).isEqualTo(cause);
-    }
-  }
-
-  @Nested
-  class HandleExceptionalResponseTest {
-
-    @Test
-    void shouldDelegateToRepositoryWithUpdatedStatus() {
-      var report = minimalQualityGateReport(
-        UUID.fromString("ed8d03da-5ee2-4852-b7cf-4e19c612bd62")
-      );
-      var errorMessage = "some error message";
-
-      fixture.handleExceptionalResponse(report, errorMessage);
-
-      ArgumentCaptor<QualityGateReport> qualityGateReportCaptor = captor();
-      verify(qualityGateReportRepositoryMock).save(
-        qualityGateReportCaptor.capture()
-      );
-
-      assertThat(qualityGateReportCaptor.getValue())
-        .isNotNull()
-        .satisfies(
-          qualityGateReport ->
-            assertThat(qualityGateReport.getReportStatus()).isEqualTo(
-              FINISHED_EXCEPTIONALLY
-            ),
-          qualityGateReport ->
-            assertThat(qualityGateReport.getStackTrace()).isEqualTo(
-              errorMessage
-            )
-        );
     }
   }
 
