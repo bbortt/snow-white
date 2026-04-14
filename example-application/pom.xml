@@ -185,6 +185,7 @@
                 <interfaceOnly>true</interfaceOnly>
                 <userOptional>true</userOptional>
                 <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
               </configOptions>
             </configuration>
           </execution>
