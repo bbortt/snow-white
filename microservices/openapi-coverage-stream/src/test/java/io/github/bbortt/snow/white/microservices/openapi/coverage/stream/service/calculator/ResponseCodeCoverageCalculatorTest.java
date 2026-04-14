@@ -366,6 +366,27 @@ class ResponseCodeCoverageCalculatorTest {
     }
 
     @Test
+    void shouldReturn100Percent_whenTelemetryUsesConcretePathForTemplate() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/pung/{message}", List.of("200", "400", "500"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/pung/hello", List.of("200", "400", "500"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
     void shouldHandleNullResponses() {
       var operationWithNullResponses = new Operation();
       operationWithNullResponses.setResponses(null);

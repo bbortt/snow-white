@@ -199,6 +199,30 @@ class ParameterCoverageCalculatorTest {
     }
 
     @Test
+    void shouldReturn100Percent_whenTelemetryUsesConcretePathForTemplate() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/pung/{message}",
+          List.of(createParameter("message", "path", true))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/pung/hello", "")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
     void shouldHandleHeaderParameters() {
       var pathToOpenAPIOperationMap = createOperationsWithParameters(
         Map.of(

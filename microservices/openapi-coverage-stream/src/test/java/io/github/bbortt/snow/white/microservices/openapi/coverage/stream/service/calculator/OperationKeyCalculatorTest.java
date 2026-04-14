@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +49,49 @@ class OperationKeyCalculatorTest {
       );
 
       assertThat(result).isEqualTo("path_with_underlines");
+    }
+  }
+
+  @Nested
+  class ToOperationKeyPatternTest {
+
+    @Test
+    void shouldMatchConcretePathForTemplate() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/pung/{message}"
+      );
+
+      assertThat(pattern.matcher("GET_/pung/hello").matches()).isTrue();
+    }
+
+    @Test
+    void shouldMatchConcretePathWithMultipleParams() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/api/v1/users/{userId}/orders/{orderId}"
+      );
+
+      assertThat(
+        pattern.matcher("GET_/api/v1/users/42/orders/99").matches()
+      ).isTrue();
+    }
+
+    @Test
+    void shouldNotMatchWhenSegmentCountDiffers() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/pung/{message}"
+      );
+
+      assertThat(pattern.matcher("GET_/pung/hello/extra").matches()).isFalse();
+    }
+
+    @Test
+    void shouldMatchExactPathWithNoParams() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/ping"
+      );
+
+      assertThat(pattern.matcher("GET_/ping").matches()).isTrue();
+      assertThat(pattern.matcher("GET_/pong").matches()).isFalse();
     }
   }
 }

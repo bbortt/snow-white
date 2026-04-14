@@ -6,10 +6,8 @@ info:
   x-api-name: ping-pong
   x-service-name: example-application
 tags:
-  - name: ping
-    description: Ping operations
-  - name: pong
-    description: Pong operations
+  - name: ping-pong
+    description: Ping-pong operations
 paths:
   /ping:
     get:
@@ -17,7 +15,7 @@ paths:
       description: Returns a pong response
       operationId: getPing
       tags:
-        - ping
+        - ping-pong
       parameters:
         - name: message
           in: query
@@ -51,7 +49,7 @@ paths:
       description: Send a pong directly (usually in response to a ping)
       operationId: postPong
       tags:
-        - pong
+        - ping-pong
       requestBody:
         required: true
         content:
@@ -61,6 +59,41 @@ paths:
       responses:
         '201':
           description: Pong successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /pung/{message}:
+    get:
+      summary: Send a pung request
+      description: Send a pung directly (usually in response to a ping)
+      operationId: getPung
+      tags:
+        - ping-pong
+      parameters:
+        - name: message
+          in: path
+          description: Message to include with the ping
+          required: true
+          schema:
+            type: string
+            example: 'Hello server!'
+      responses:
+        '200':
+          description: Pung successfully sent
           content:
             application/json:
               schema:

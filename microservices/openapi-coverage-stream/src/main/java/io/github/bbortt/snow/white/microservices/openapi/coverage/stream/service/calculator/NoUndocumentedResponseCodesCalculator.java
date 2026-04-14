@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationForConcreteKey;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.ResponseCodeCoverageCalculator.SINGLE_DIGIT_PATTERN;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
@@ -67,7 +68,10 @@ public class NoUndocumentedResponseCodesCalculator
         continue;
       }
 
-      Operation operation = pathToOpenAPIOperationMap.get(operationKey);
+      Operation operation = findOperationForConcreteKey(
+        pathToOpenAPIOperationMap,
+        operationKey
+      );
       Set<String> specifiedResponseCodes = extractSpecifiedResponseCodes(
         operation
       );
