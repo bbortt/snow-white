@@ -65,8 +65,10 @@ ENV JAVA_HOME="/opt/java" \
     JAVA_OPTS="-XX:+UseContainerSupport \
         -XX:InitialRAMPercentage=75 \
         -XX:MaxRAMPercentage=75 \
-        -XX:+UseStringDeduplication \
-        -XX:+UseCompressedOops"
+        -XX:+ExplicitGCInvokesConcurrent \
+        -XX:+UseCompressedOops \
+        -XX:+UseG1GC \
+        -XX:+UseStringDeduplication"
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
 # Build AOT cache in "dev" profile to avoid configuration errors
