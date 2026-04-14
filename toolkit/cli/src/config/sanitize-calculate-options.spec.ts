@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
@@ -13,34 +13,26 @@ import type { CalculateOptions } from './sanitized-options';
 
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
-import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH } from '../common/openapi';
 import { resolveConfig } from './resolve-config';
-import { sanitizeCalculateOptions, sanitizeUploadPrereleasesOptions } from './sanitize-configuration';
+import { sanitizeCalculateOptions } from './sanitize-calculate-options';
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('node:process', () => ({
+await mock.module('node:process', () => ({
   exit: mock().mockImplementation((code: number) => {
     throw new Error(`Process exited with code ${code}`);
   }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('./resolve-config', () => ({
+await mock.module('./resolve-config', () => ({
   resolveConfig: mock(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('../common/glob', () => ({
+await mock.module('../common/glob', () => ({
   scanGlob: mock(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('node:fs', () => ({
+await mock.module('node:fs', () => ({
   readFileSync: mock(),
 }));
-
-const mockConsoleError = spyOn(console, 'error');
-const mockConsoleWarn = spyOn(console, 'warn');
 
 const incompleteApiInformation = [
   {
@@ -70,10 +62,13 @@ const sanitizedOptions: CalculateOptions = {
   url: 'url',
 };
 
-describe('sanitizeConfiguration', () => {
+describe('sanitizeCalculateOptions', () => {
+  let consoleWarnSpy: ReturnType<typeof spyOn>;
+  let consoleErrorSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
-    mockConsoleError.mockReset();
-    mockConsoleWarn.mockReset();
+    consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {});
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
     exit.mockClear();
@@ -81,6 +76,11 @@ describe('sanitizeConfiguration', () => {
     (resolveConfig as any).mockReset();
     (scanGlob as any).mockReset();
     (readFileSync as any).mockReset();
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it.each([
@@ -101,12 +101,12 @@ describe('sanitizeConfiguration', () => {
     // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
     expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
-    expect(mockConsoleError).toHaveBeenNthCalledWith(
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining('❌  You cannot use options from multiple configuration groups together.'),
+      expect.stringContaining('❌ You cannot use options from multiple configuration groups together.'),
     );
-    expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
-    expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: configFile'));
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: configFile'));
 
     expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
   });
@@ -129,12 +129,12 @@ describe('sanitizeConfiguration', () => {
     // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
     expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
-    expect(mockConsoleError).toHaveBeenNthCalledWith(
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining('❌  You cannot use options from multiple configuration groups together.'),
+      expect.stringContaining('❌ You cannot use options from multiple configuration groups together.'),
     );
-    expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
-    expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: apiSpecs'));
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('\tGroup 1: serviceName, apiName, apiVersion'));
+    expect(consoleErrorSpy).toHaveBeenNthCalledWith(3, expect.stringContaining('\tGroup 2: apiSpecs'));
 
     expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
   });
@@ -149,8 +149,8 @@ describe('sanitizeConfiguration', () => {
     });
 
     const expectRecursiveOrEmptyConfiguration = () => {
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Configuration file may not contain recursive references or be empty.'),
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('❌ Configuration file may not contain recursive references or be empty.'),
       );
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     };
@@ -182,8 +182,8 @@ describe('sanitizeConfiguration', () => {
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Each API information must contain serviceName, apiName, and apiVersion.'),
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('❌ Each API information must contain serviceName, apiName, and apiVersion.'),
       );
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
@@ -199,9 +199,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -216,7 +214,7 @@ describe('sanitizeConfiguration', () => {
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -233,7 +231,7 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeCalculateOptions({ url: 'http://cli-url.com' } as CliOptions);
 
       expect(result.url).toBe('http://cli-url.com');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --url overrides config file value'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --url overrides config file value'));
     });
 
     it('should override qualityGate from config file with CLI parameter', () => {
@@ -246,7 +244,7 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeCalculateOptions({ qualityGate: 'cli-gate' } as CliOptions);
 
       expect(result.qualityGate).toBe('cli-gate');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  CLI parameter --quality-gate overrides config file value'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --quality-gate overrides config file value'));
     });
 
     it('should override lookbackWindow from config file with CLI parameter', () => {
@@ -259,8 +257,8 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeCalculateOptions({ lookbackWindow: '24h' } as CliOptions);
 
       expect(result.lookbackWindow).toBe('24h');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --lookback-window overrides config file value'),
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️ CLI parameter --lookback-window overrides config file value'),
       );
     });
 
@@ -274,8 +272,8 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeCalculateOptions({ filter: ['region=us-west-1'] } as CliOptions);
 
       expect(result.attributeFilters).toEqual({ region: 'us-west-1' });
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --filter overrides config file attributeFilters'),
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️ CLI parameter --filter overrides config file attributeFilters'),
       );
     });
 
@@ -289,7 +287,7 @@ describe('sanitizeConfiguration', () => {
       const result = sanitizeCalculateOptions({ url: 'http://same-url.com' } as CliOptions);
 
       expect(result.url).toBe('http://same-url.com');
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -321,7 +319,7 @@ describe('sanitizeConfiguration', () => {
       });
 
       expect(result.attributeFilters).toEqual({ valid: 'filter' });
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  Ignoring invalid filter format: "invalid-filter"'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ Ignoring invalid filter format: "invalid-filter"'));
     });
 
     it('should handle filter with equals sign in value', () => {
@@ -350,7 +348,7 @@ describe('sanitizeConfiguration', () => {
       });
 
       expect(result.lookbackWindow).toBe('24h');
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
     });
 
     it('should warn for potentially invalid lookback window format', () => {
@@ -364,7 +362,7 @@ describe('sanitizeConfiguration', () => {
       });
 
       expect(result.lookbackWindow).toBe('invalid');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  Lookback window "invalid" may not be in expected format'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ Lookback window "invalid" may not be in expected format'));
     });
   });
 
@@ -380,7 +378,7 @@ describe('sanitizeConfiguration', () => {
         }),
       ).toEqual(sanitizedOptions);
 
-      expect(mockConsoleError).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
 
       expect(exit).not.toHaveBeenCalled();
     });
@@ -407,13 +405,13 @@ describe('sanitizeConfiguration', () => {
       // @ts-expect-error TS2345: Argument of type Partial<CliOptions> is not assignable to parameter of type CliOptions
       expect(() => sanitizeCalculateOptions(options)).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(
         1,
-        expect.stringContaining('❌  Either define a config file or all of these calculation parameters:'),
+        expect.stringContaining('❌ Either define a config file or all of these calculation parameters:'),
       );
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- --service-name'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- --api-name'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- --api-version'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('\t- --service-name'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(3, expect.stringContaining('\t- --api-name'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(4, expect.stringContaining('\t- --api-version'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -429,9 +427,7 @@ describe('sanitizeConfiguration', () => {
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Snow-White base URL must be defined in the configuration.'),
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -447,7 +443,7 @@ describe('sanitizeConfiguration', () => {
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate name must be defined in the configuration.'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
 
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
@@ -530,7 +526,7 @@ info:
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleWarn).toHaveBeenCalledWith(expect.stringContaining('⚠️  No files matched the pattern: services/**/openapi.yaml'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ No files matched the pattern: services/**/openapi.yaml'));
     });
 
     it('exits with code 3 when a file is missing required metadata fields', () => {
@@ -545,7 +541,7 @@ info:
         } as CliOptions),
       ).toThrowError('Process exited with code 3');
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  openapi.yaml: Missing required metadata fields.'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ openapi.yaml: Missing required metadata fields.'));
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     });
 
@@ -563,8 +559,8 @@ info:
 
       expect(scanGlob).not.toHaveBeenCalled();
       expect(result.apiInformation).toEqual([{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }]);
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  --api-specs is ignored because apiInformation is already defined in the configuration.'),
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('⚠️ --api-specs is ignored because apiInformation is already defined in the configuration.'),
       );
     });
 
@@ -579,7 +575,7 @@ info:
       } as CliOptions);
 
       expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
-      expect(mockConsoleWarn).not.toHaveBeenCalledWith(expect.stringContaining('--api-specs is ignored'));
+      expect(consoleWarnSpy).not.toHaveBeenCalledWith(expect.stringContaining('--api-specs is ignored'));
     });
 
     it('reads apiSpecs from config file when not provided via CLI', () => {
@@ -610,9 +606,9 @@ info:
         configFile: 'snow-white.json',
       } as CliOptions);
 
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          '⚠️  CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "services/**/openapi.yaml"',
+          '⚠️ CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "services/**/openapi.yaml"',
         ),
       );
     });
@@ -635,221 +631,6 @@ info:
         ...sanitizedOptions,
         async,
       });
-    });
-  });
-});
-
-describe('sanitizeUploadPrereleasesOptions', () => {
-  const BASE_URL = 'http://localhost:8080';
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  beforeEach(() => {
-    mockConsoleError.mockReset();
-    mockConsoleWarn.mockReset();
-
-    // @ts-expect-error TS2339: Property mockClear does not exist on type
-    exit.mockClear();
-    // @ts-expect-error TS2339: Property mockReset does not exist on type
-    (resolveConfig as any).mockReset();
-  });
-
-  describe('URL resolution', () => {
-    it('should use CLI url directly without consulting the config file', () => {
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', url: BASE_URL });
-
-      expect(resolveConfig).not.toHaveBeenCalled();
-      expect(result.url).toBe(BASE_URL);
-    });
-
-    it('should read URL from config file when --url is not provided', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
-
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
-
-      expect(resolveConfig).toHaveBeenCalledWith(undefined);
-      expect(result.url).toBe(BASE_URL);
-    });
-
-    it('should pass --config-file path to resolveConfig', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
-
-      sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: '/path/to/config.json' });
-
-      expect(resolveConfig).toHaveBeenCalledWith('/path/to/config.json');
-    });
-
-    it('should exit with code 3 when URL is absent from both CLI and config file', () => {
-      (resolveConfig as any).mockReturnValueOnce({});
-
-      expect(() => sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' })).toThrowError('Process exited with code 3');
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  Snow-White base URL must be defined via --url or in the configuration file.'),
-      );
-      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
-    });
-
-    it('should warn when CLI url overrides config file url', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: 'http://config-url.com' });
-
-      const result = sanitizeUploadPrereleasesOptions({
-        apiSpecs: '*.yaml',
-        configFile: 'config.json',
-        url: 'http://cli-url.com',
-      });
-
-      expect(result.url).toBe('http://cli-url.com');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --url overrides config file value: "http://config-url.com" → "http://cli-url.com"'),
-      );
-    });
-
-    it('should not warn when CLI url matches config file url', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
-
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: 'config.json', url: BASE_URL });
-
-      expect(result.url).toBe(BASE_URL);
-      expect(mockConsoleWarn).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('path parameter resolution', () => {
-    it('should use hardcoded defaults when no CLI or config file values are provided', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
-
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
-
-      expect(result.apiNamePath).toBe(DEFAULT_API_NAME_PATH);
-      expect(result.apiVersionPath).toBe(DEFAULT_API_VERSION_PATH);
-      expect(result.serviceNamePath).toBe(DEFAULT_SERVICE_NAME_PATH);
-    });
-
-    it('should read path params from config file as fallback', () => {
-      (resolveConfig as any).mockReturnValueOnce({
-        apiNamePath: 'custom.name',
-        apiVersionPath: 'custom.version',
-        serviceNamePath: 'custom.service',
-        url: BASE_URL,
-      });
-
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
-
-      expect(result.apiNamePath).toBe('custom.name');
-      expect(result.apiVersionPath).toBe('custom.version');
-      expect(result.serviceNamePath).toBe('custom.service');
-    });
-
-    it('should use CLI path params over config file values', () => {
-      (resolveConfig as any).mockReturnValueOnce({
-        apiNamePath: 'config.name',
-        apiVersionPath: 'config.version',
-        serviceNamePath: 'config.service',
-        url: BASE_URL,
-      });
-
-      const result = sanitizeUploadPrereleasesOptions({
-        apiNamePath: 'cli.name',
-        apiSpecs: '*.yaml',
-        apiVersionPath: 'cli.version',
-        configFile: 'config.json',
-        serviceNamePath: 'cli.service',
-      });
-
-      expect(result.apiNamePath).toBe('cli.name');
-      expect(result.apiVersionPath).toBe('cli.version');
-      expect(result.serviceNamePath).toBe('cli.service');
-    });
-
-    it('should warn when CLI api-name-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiNamePath: 'config.name', url: BASE_URL });
-
-      sanitizeUploadPrereleasesOptions({ apiNamePath: 'cli.name', apiSpecs: '*.yaml', configFile: 'config.json' });
-
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --api-name-path overrides config file value: "config.name" → "cli.name"'),
-      );
-    });
-
-    it('should warn when CLI api-version-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiVersionPath: 'config.version', url: BASE_URL });
-
-      sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', apiVersionPath: 'cli.version', configFile: 'config.json' });
-
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --api-version-path overrides config file value: "config.version" → "cli.version"'),
-      );
-    });
-
-    it('should warn when CLI service-name-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ serviceNamePath: 'config.service', url: BASE_URL });
-
-      sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: 'config.json', serviceNamePath: 'cli.service' });
-
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --service-name-path overrides config file value: "config.service" → "cli.service"'),
-      );
-    });
-  });
-
-  describe('apiSpecs resolution', () => {
-    it('should use CLI --api-specs directly when provided', () => {
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: 'services/**/openapi.yaml', url: BASE_URL });
-
-      expect(result.globPattern).toBe('services/**/openapi.yaml');
-      expect(resolveConfig).not.toHaveBeenCalled();
-    });
-
-    it('should read apiSpecs from config file when not provided via CLI', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiSpecs: 'services/**/openapi.yaml', url: BASE_URL });
-
-      const result = sanitizeUploadPrereleasesOptions({});
-
-      expect(result.globPattern).toBe('services/**/openapi.yaml');
-    });
-
-    it('should warn when CLI --api-specs overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiSpecs: 'old/**/openapi.yaml', url: BASE_URL });
-
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: 'new/**/openapi.yaml', configFile: 'config.json' });
-
-      expect(result.globPattern).toBe('new/**/openapi.yaml');
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "new/**/openapi.yaml"'),
-      );
-    });
-
-    it('should exit with code 3 when apiSpecs is absent from both CLI and config file', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
-
-      expect(() => sanitizeUploadPrereleasesOptions({})).toThrowError('Process exited with code 3');
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        expect.stringContaining('❌  API specs glob pattern must be defined via --api-specs or in the configuration file.'),
-      );
-      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
-    });
-  });
-
-  describe('option passthrough', () => {
-    it('should pass through globPattern and ignoreExisting', () => {
-      const result = sanitizeUploadPrereleasesOptions({
-        apiSpecs: 'services/**/openapi.yaml',
-        ignoreExisting: true,
-        url: BASE_URL,
-      });
-
-      expect(result.globPattern).toBe('services/**/openapi.yaml');
-      expect(result.ignoreExisting).toBe(true);
-    });
-
-    it('should default ignoreExisting to false when not provided', () => {
-      const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', url: BASE_URL });
-
-      expect(result.ignoreExisting).toBe(false);
     });
   });
 });

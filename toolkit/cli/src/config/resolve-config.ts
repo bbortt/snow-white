@@ -32,19 +32,19 @@ export class CosmiconfigResolver implements ConfigResolver {
 }
 
 const resolveConfigFromFile = (filepath: string, explorer: ConfigExplorer): CosmiconfigResult => {
-  console.log(`⚙️  Loading configuration file: ${filepath}`);
+  console.log(`⚙️ Loading configuration file: ${filepath}`);
   const config = explorer.load(filepath);
 
   if (config) {
     return config;
   }
 
-  console.error(chalk.red(`⚙️  Configuration file not found at '${filepath}'`));
+  console.error(chalk.red(`⚙️ Configuration file not found at '${filepath}'`));
   exit(CONFIG_FILE_NOT_FOUND);
 };
 
 /**
- * !!Visible for testing!!
+ * !! Visible for testing !!
  */
 export const resolveConfigInternal = (
   filepath?: string,
@@ -58,10 +58,10 @@ export const resolveConfigInternal = (
   }
 
   if (!filepath) {
-    console.error(chalk.red(`⚙️  Failed to find configuration file - try with '--config-file <path-to-your-config-file>'`));
+    console.error(chalk.red(`⚙️ Failed to find configuration file - try with '--config-file <path-to-your-config-file>'`));
     exit(CONFIG_FILE_NOT_FOUND);
   } else if (filepath && !existsSync(filepath)) {
-    console.error(chalk.red(`⚙️  Configuration file '${filepath}' does not exist`));
+    console.error(chalk.red(`⚙️ Configuration file '${filepath}' does not exist`));
     exit(CONFIG_FILE_NOT_FOUND);
   }
 
@@ -74,7 +74,7 @@ export const resolveConfigInternal = (
     console.error(chalk.red(`Configuration file '${filepath}' could not be loaded`));
     exit(FAILED_LOADING_CONFIG_FILE);
   } catch (error) {
-    console.error(chalk.red(`⚙️  Failed to load configuration file: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
+    console.error(chalk.red(`⚙️ Failed to load configuration file: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
     exit(FAILED_LOADING_CONFIG_FILE);
   }
 };

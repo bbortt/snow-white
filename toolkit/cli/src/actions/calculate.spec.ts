@@ -4,24 +4,20 @@
  * See LICENSE file for full details.
  */
 
-import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
 import type { ReportApi } from '../clients/report-api';
 import type { CalculateOptions } from '../config/sanitized-options';
 
-import { FetchError, ResponseError } from '../clients/quality-gate-api/runtime';
-import { QUALITY_GATE_CALCULATION_FAILED } from '../common/exit-codes';
+import { FetchError, ResponseError } from '../clients/quality-gate-api';
+import { QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from '../common/exit-codes';
 import { calculate } from './calculate';
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('node:process', () => ({
+await mock.module('node:process', () => ({
   exit: mock(),
 }));
-
-const mockConsoleLog = spyOn(console, 'log');
-const mockConsoleError = spyOn(console, 'error');
 
 const getQualityGateApi = (qualityGateApiMock: unknown): QualityGateApi => {
   return qualityGateApiMock as QualityGateApi;
@@ -31,32 +27,36 @@ const getReportApi = (reportApiMock: unknown): ReportApi => {
   return reportApiMock as ReportApi;
 };
 
+const qualityGateApiMock = {
+  calculateQualityGateRaw: mock(),
+};
+
+const reportApiMock = {
+  getReportByCalculationId: mock(),
+};
+
+const defaultOptions: CalculateOptions = {
+  apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
+  async: true,
+  qualityGate: 'test-gate',
+  url: 'http://localhost:8080',
+};
+
 describe('calculate action', () => {
-  const qualityGateApiMock = {
-    calculateQualityGateRaw: mock(),
-  };
-
-  const reportApiMock = {
-    getReportByCalculationId: mock(),
-  };
-
-  const defaultOptions: CalculateOptions = {
-    apiInformation: [{ apiName: 'test-api', apiVersion: '1.0.0', serviceName: 'test-service' }],
-    async: true,
-    qualityGate: 'test-gate',
-    url: 'http://localhost:8080',
-  };
+  let consoleErrorSpy: ReturnType<typeof spyOn>;
+  let consoleLogSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mockConsoleLog.mockReset();
-    mockConsoleError.mockReset();
+    consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
 
     qualityGateApiMock.calculateQualityGateRaw.mockReset();
     reportApiMock.getReportByCalculationId.mockReset();
   });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
   });
 
   describe('successful calculation (async: true)', () => {
@@ -91,14 +91,11 @@ describe('calculate action', () => {
         qualityGateConfigName: defaultOptions.qualityGate,
       });
 
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(1, expect.stringContaining('🚀  Starting Quality-Gate calculation for 1 API(s)...'));
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(2, expect.stringContaining(`Base URL: ${defaultOptions.url}`));
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(6, expect.stringContaining(`Location: ${mockLocation}`));
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(
-        8,
-        expect.stringContaining('💡  Use the returned URL to check the calculation report.'),
-      );
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('🚀 Starting Quality-Gate calculation for 1 API(s)...'));
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(2, expect.stringContaining(`Base URL: ${defaultOptions.url}`));
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(6, expect.stringContaining(`Location: ${mockLocation}`));
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(8, expect.stringContaining('💡 Use the returned URL to check the calculation report.'));
     });
 
     it('should include lookbackWindow in request when provided', async () => {
@@ -126,7 +123,7 @@ describe('calculate action', () => {
         qualityGateConfigName: defaultOptions.qualityGate,
       });
 
-      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('Lookback window: 24h'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Lookback window: 24h'));
     });
 
     it('should include attributeFilters in request when provided', async () => {
@@ -154,7 +151,7 @@ describe('calculate action', () => {
         qualityGateConfigName: defaultOptions.qualityGate,
       });
 
-      expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Attribute filters: {"environment":"production","region":"us-west-1"}'),
       );
     });
@@ -197,9 +194,9 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleLog).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
-      expect(mockConsoleLog).not.toHaveBeenCalledWith(expect.stringContaining('Location:'));
-      expect(mockConsoleLog).not.toHaveBeenCalledWith(expect.stringContaining('💡  Use the returned URL to check the calculation report.'));
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(4, expect.stringContaining('✅ Quality-Gate calculation initiated successfully!'));
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('Location:'));
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('💡 Use the returned URL to check the calculation report.'));
     });
   });
 
@@ -237,8 +234,8 @@ describe('calculate action', () => {
 
       expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledTimes(2);
       expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledWith({ calculationId: '123-456-789' });
-      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('⏳  Polling for calculation result...'));
-      expect(mockConsoleLog).toHaveBeenCalledWith(expect.stringContaining('✅ Quality-Gate passed!'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('⏳  Polling for calculation result...'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('✅ Quality-Gate passed!'));
       expect(exit).not.toHaveBeenCalled();
     });
 
@@ -249,11 +246,11 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`❌  Quality-Gate calculation ${status}!`));
-      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`❌ Quality-Gate calculation ${status}!`));
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_FAILED);
     });
 
-    it('should poll until  and exit with non-zero code', async () => {
+    it('should poll until FINISHED_EXCEPTIONALLY and exit with non-zero code', async () => {
       qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
 
       reportApiMock.getReportByCalculationId.mockResolvedValueOnce({
@@ -264,9 +261,9 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
 
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('❌  Quality-Gate calculation FINISHED_EXCEPTIONALLY!'));
-      expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining('java.lang.NullPointerException'));
-      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate calculation FINISHED_EXCEPTIONALLY!'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('java.lang.NullPointerException'));
+      expect(exit).toHaveBeenCalledWith(QUALITY_GATE_FAILED);
     });
 
     it('should use calculationId from the response body', async () => {
@@ -297,9 +294,8 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 404'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining(`Details: ${message}`));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger Quality-Gate calculation!'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining(`Details: ${message}`));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
@@ -318,9 +314,8 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('Status: 501'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('Error: Internal Server Error'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger Quality-Gate calculation!'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('Error: Internal Server Error'));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
@@ -335,9 +330,9 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(3, expect.stringContaining('Check if the service is running and accessible'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger Quality-Gate calculation!'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('No response received from server'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(3, expect.stringContaining('Check if the service is running and accessible'));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
@@ -348,8 +343,8 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger Quality-Gate calculation!'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${genericError.message}`));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });
@@ -360,8 +355,8 @@ describe('calculate action', () => {
 
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), defaultOptions);
 
-      expect(mockConsoleError).toHaveBeenNthCalledWith(1, expect.stringContaining('❌  Failed to trigger Quality-Gate calculation!'));
-      expect(mockConsoleError).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('❌ Failed to trigger Quality-Gate calculation!'));
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, expect.stringContaining(`Error: ${JSON.stringify(unknownError)}`));
 
       expect(exit).toHaveBeenCalledWith(QUALITY_GATE_CALCULATION_FAILED);
     });

@@ -16,11 +16,8 @@ import { uploadPrereleases } from './actions/upload-prereleases';
 import { getApiIndexApi } from './api/api-index-api';
 import { getQualityGateApi } from './api/quality-gate-api';
 import { getReportApi } from './api/report-api';
-import {
-  sanitizeCalculateOptions,
-  sanitizeUploadPrereleasesOptions
-  
-} from './config/sanitize-configuration';
+import { sanitizeCalculateOptions } from './config/sanitize-calculate-options.ts';
+import { sanitizeUploadPrereleasesOptions } from './config/sanitize-upload-prereleases-options.ts';
 
 const program = new Command();
 
