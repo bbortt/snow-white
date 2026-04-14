@@ -67,7 +67,12 @@ public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
         continue;
       }
 
-      if (endpointList.contains(endpoint)) {
+      var pattern = OperationKeyCalculator.toOperationKeyPattern(endpoint);
+      if (
+        endpointList
+          .stream()
+          .anyMatch(concrete -> pattern.matcher(concrete).matches())
+      ) {
         logger.trace("Resource covered: {}", endpoint);
         coveredResources.add(endpoint);
       } else {

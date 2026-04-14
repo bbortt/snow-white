@@ -203,6 +203,28 @@ class MethodCoverageCalculatorTest {
     }
 
     @Test
+    void shouldReturn100Percent_whenTelemetryUsesConcretePathForTemplate() {
+      Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+      pathToOpenAPIOperationMap.put("GET_/pung/{message}", operationMock);
+
+      Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();
+      pathToTelemetryMap.put(
+        "GET_/pung/hello",
+        singletonList(mock(OpenTelemetryData.class))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
     void shouldHandleEmptyOperationsMap() {
       Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
       Map<String, List<OpenTelemetryData>> pathToTelemetryMap = new HashMap<>();

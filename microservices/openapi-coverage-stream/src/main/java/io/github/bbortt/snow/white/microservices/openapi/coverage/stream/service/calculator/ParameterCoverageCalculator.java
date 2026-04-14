@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.lang.String.format;
@@ -75,10 +76,11 @@ public class ParameterCoverageCalculator
 
       totalParameters.addAndGet(parameters.size());
 
-      if (
-        !pathToTelemetryMap.containsKey(operationKey) ||
-        pathToTelemetryMap.get(operationKey).isEmpty()
-      ) {
+      var telemetryDataList = getTelemetryForTemplate(
+        pathToTelemetryMap,
+        operationKey
+      );
+      if (telemetryDataList.isEmpty()) {
         logger.trace("No telemetry data for operation: {}", operationKey);
         for (Parameter param : parameters) {
           uncoveredParameters.add(
@@ -87,8 +89,6 @@ public class ParameterCoverageCalculator
         }
         continue;
       }
-
-      var telemetryDataList = pathToTelemetryMap.get(operationKey);
 
       for (Parameter param : parameters) {
         if (isParameterCovered(telemetryDataList, param, operationKey)) {

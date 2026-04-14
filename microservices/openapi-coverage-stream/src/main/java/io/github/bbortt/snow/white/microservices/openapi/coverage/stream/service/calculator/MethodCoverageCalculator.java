@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -50,7 +51,9 @@ public class MethodCoverageCalculator
     var uncoveredPaths = new ArrayList<String>();
 
     for (String operationKey : pathToOpenAPIOperationMap.keySet()) {
-      if (pathToTelemetryMap.containsKey(operationKey)) {
+      if (
+        !getTelemetryForTemplate(pathToTelemetryMap, operationKey).isEmpty()
+      ) {
         logger.trace("Path covered: {}", operationKey);
         coveredPaths.incrementAndGet();
       } else {

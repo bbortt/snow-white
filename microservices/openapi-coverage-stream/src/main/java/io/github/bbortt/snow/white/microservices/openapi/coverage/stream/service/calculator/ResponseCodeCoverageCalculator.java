@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static java.lang.String.format;
@@ -71,7 +72,7 @@ public class ResponseCodeCoverageCalculator
 
       var responseCodes = extractResponseCodes(operation);
       Set<String> observedErrorCodes = extractObservedErrorCodes(
-        pathToTelemetryMap.get(path)
+        getTelemetryForTemplate(pathToTelemetryMap, path)
       );
 
       for (ResponseCode responseCode : responseCodes) {
