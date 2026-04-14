@@ -91,10 +91,10 @@ const assertFileConfigIsValid = (options: CliOptions): void => {
   }
 };
 
-const loadFileConfig = (configFile?: string): Partial<CalculateOptions> => {
+const loadFileConfig = (configFile?: string): CliOptions => {
   const loaded = resolveConfig(configFile);
   assertFileConfigIsValid(loaded);
-  return loaded as unknown as Partial<CalculateOptions>;
+  return loaded;
 };
 
 interface PathOptions {
@@ -103,10 +103,10 @@ interface PathOptions {
   serviceNamePath?: string;
 }
 
-const loadApiInformationFromGlob = (globPattern: string, pathOptions: PathOptions): ApiInformation[] => {
-  const apiNamePath = pathOptions.apiNamePath ?? DEFAULT_API_NAME_PATH;
-  const apiVersionPath = pathOptions.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
-  const serviceNamePath = pathOptions.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
+const loadApiInformationFromGlob = (globPattern: string, fileOptions: CliOptions, cliOptions: PathOptions): ApiInformation[] => {
+  const apiNamePath = cliOptions.apiNamePath ?? fileOptions.apiNamePath ?? DEFAULT_API_NAME_PATH;
+  const apiVersionPath = cliOptions.apiVersionPath ?? fileOptions.apiVersionPath ?? DEFAULT_API_VERSION_PATH;
+  const serviceNamePath = cliOptions.serviceNamePath ?? fileOptions.serviceNamePath ?? DEFAULT_SERVICE_NAME_PATH;
 
   const files = scanGlob(globPattern, process.cwd());
 
@@ -184,11 +184,11 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
   };
 };
 
-const resolveBaseConfig = (options: CliOptions): { base: Partial<CalculateOptions>; fileApiSpecs?: string } => {
+const resolveBaseConfig = (options: CliOptions): { base: CliOptions; fileApiSpecs?: string } => {
   // config file explicitly provided
   if (options.configFile) {
     const fileConfig = loadFileConfig(options.configFile);
-    return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: (fileConfig as CliOptions).apiSpecs };
+    return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: fileConfig.apiSpecs };
   }
 
   // exact parameters provided inline
@@ -203,10 +203,14 @@ const resolveBaseConfig = (options: CliOptions): { base: Partial<CalculateOption
 
   // fall back to default config file discovery
   const fileConfig = loadFileConfig();
-  return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: (fileConfig as CliOptions).apiSpecs };
+  return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: fileConfig.apiSpecs };
 };
 
-const applyApiSpecsOverlay = (base: Partial<CalculateOptions>, options: CliOptions, fileApiSpecs?: string): Partial<CalculateOptions> => {
+const applyApiSpecsOverlay = (
+  base: CliOptions & Partial<CalculateOptions>,
+  options: CliOptions,
+  fileApiSpecs?: string,
+): Partial<CalculateOptions> => {
   const effectiveApiSpecs = options.apiSpecs ?? fileApiSpecs;
 
   if (options.apiSpecs && fileApiSpecs && fileApiSpecs !== options.apiSpecs) {
@@ -224,7 +228,7 @@ const applyApiSpecsOverlay = (base: Partial<CalculateOptions>, options: CliOptio
 
   return {
     ...base,
-    apiInformation: loadApiInformationFromGlob(effectiveApiSpecs, options),
+    apiInformation: loadApiInformationFromGlob(effectiveApiSpecs, base, options),
   };
 };
 
