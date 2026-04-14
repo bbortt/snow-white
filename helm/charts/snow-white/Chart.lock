@@ -4,12 +4,12 @@ dependencies:
   version: 2.1.2
 - name: kafka-ui
   repository: https://kafbat.github.io/helm-charts
-  version: 1.6.2
+  version: 1.6.3
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 18.5.17
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 2.38.0
-digest: sha256:34b75f88a959a09dfb36fc4eeaff5ff2cb41b5dfa9321d7a888fb8816f502c5c
-generated: "2026-04-13T21:50:10.7474791+02:00"
+digest: sha256:0302207e2b31974a317ef188c9e22aab6d75694ecbe6073e2774f65b04219fdc
+generated: "2026-04-14T16:46:25.267562629Z"
