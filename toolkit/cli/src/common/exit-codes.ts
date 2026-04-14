@@ -9,5 +9,6 @@ export const FAILED_LOADING_CONFIG_FILE = 2;
 export const INVALID_CONFIG_FORMAT = 3;
 
 export const QUALITY_GATE_CALCULATION_FAILED = 10;
+export const QUALITY_GATE_FAILED = 11;
 
 export const PRERELEASE_UPLOAD_FAILED = 20;

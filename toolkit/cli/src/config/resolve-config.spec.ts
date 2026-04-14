@@ -4,9 +4,10 @@
  * See LICENSE file for full details.
  */
 
+import type { jest } from 'bun:test';
 import type { CosmiconfigResult } from 'cosmiconfig';
 
-import { afterAll, beforeEach, describe, expect, it, jest, mock, spyOn } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { exit } from 'node:process';
 
@@ -15,13 +16,11 @@ import type { ConfigExplorer, ConfigResolver } from './resolve-config';
 import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
 import { resolveConfigInternal } from './resolve-config';
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('node:fs', () => ({
+await mock.module('node:fs', () => ({
   existsSync: mock(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('node:process', () => ({
+await mock.module('node:process', () => ({
   exit: mock().mockImplementation((code: number) => {
     throw new Error(`Process exited with code ${code}`);
   }),
@@ -41,17 +40,18 @@ const createMockResolver = (explorer: ConfigExplorer): ConfigResolver => ({
   createExplorer: () => explorer,
 });
 
-const mockConsoleLog = spyOn(console, 'log').mockImplementation(() => {});
-const mockConsoleError = spyOn(console, 'error').mockImplementation(() => {});
-
 describe('resolveConfig', () => {
+  let consoleErrorSpy: ReturnType<typeof spyOn>;
+  let consoleLogSpy: ReturnType<typeof spyOn>;
+
   beforeEach(() => {
-    mockConsoleLog.mockReset();
-    mockConsoleError.mockReset();
+    consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
   });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
   });
 
   it('should create explorer with correct module name', () => {
@@ -64,8 +64,8 @@ describe('resolveConfig', () => {
 
     expect(createExplorerSpy).toHaveBeenCalledWith('test-module');
 
-    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️  Configuration file '${filepath}' does not exist`));
-    expect(mockConsoleLog).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
+    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   it('should use default module name when not provided', () => {
@@ -78,8 +78,8 @@ describe('resolveConfig', () => {
 
     expect(createExplorerSpy).toHaveBeenCalledWith('snow-white');
 
-    expect(mockConsoleError).toHaveBeenCalledWith(expect.stringContaining(`⚙️  Configuration file '${filepath}' does not exist`));
-    expect(mockConsoleLog).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
+    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   const expectConfigLoadedSuccessfully = (
@@ -102,8 +102,8 @@ describe('resolveConfig', () => {
 
     expect(existsSync).toHaveBeenCalledWith(filepath);
 
-    expect(mockConsoleError).not.toHaveBeenCalled();
-    expect(mockConsoleLog).toHaveBeenCalledWith(`⚙️  Loading configuration file: ${filepath}`);
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith(`⚙️ Loading configuration file: ${filepath}`);
     expect(loadSpy).toHaveBeenCalledWith(filepath);
   };
 
@@ -146,8 +146,8 @@ describe('resolveConfig', () => {
 
     expect(mockExplorer.search).toHaveBeenCalled();
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining(`⚙️  Failed to find configuration file - try with '--config-file <path-to-your-config-file>'`),
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`⚙️ Failed to find configuration file - try with '--config-file <path-to-your-config-file>'`),
     );
     expect(exit).toHaveBeenCalledWith(CONFIG_FILE_NOT_FOUND);
   });
@@ -159,8 +159,8 @@ describe('resolveConfig', () => {
     const filepath = '/nonexistent/.snow-whiterc';
     expect(() => resolveConfigInternal(filepath, mockResolver)).toThrowError('Process exited with code 2');
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      expect.stringContaining(`⚙️  Failed to load configuration file: Config file not found: ${filepath}`),
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`⚙️ Failed to load configuration file: Config file not found: ${filepath}`),
     );
     expect(exit).toHaveBeenCalledWith(FAILED_LOADING_CONFIG_FILE);
   });

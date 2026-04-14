@@ -8,8 +8,7 @@ import { Agent, fetch as undiciFetch, RetryAgent } from 'undici';
 
 import { createFetchWithRetry } from './fetch-with-retry';
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-mock.module('undici', () => {
+await mock.module('undici', () => {
   const mockFetch = mock();
   const MockAgent = mock().mockImplementation(() => ({ type: 'Agent' }));
   const MockRetryAgent = mock().mockImplementation(agent => ({ type: 'RetryAgent', wraps: agent }));
