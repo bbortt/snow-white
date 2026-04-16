@@ -15,7 +15,8 @@ import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
-import { Card, CardBody, CardTitle, Col, Collapse, Row } from 'reactstrap';
+import { Card, CardBody, CardTitle, Col, Collapse, Row, Tooltip } from 'reactstrap';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ApiTestCardProps {
   apiTest: IApiTest;
@@ -37,30 +38,33 @@ const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: bool
 };
 
 export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus }: ApiTestCardProps) => {
-  const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
   const apiTestResultStatus = useMemo(
     () => !apiTest.testResults?.some(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1) || false,
     [apiTest.testResults],
   );
+  const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
+  const tooltipId = useMemo(() => `Tooltip-${uuidv4()}`, []);
 
   const [isOpen, setIsOpen] = useState(false);
+  const toggleCard = () => setIsOpen(!isOpen);
 
-  const toggle = () => setIsOpen(!isOpen);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
 
   return (
     <Card>
-      <CardTitle onClick={toggle}>
+      <CardTitle onClick={toggleCard}>
         <Row className="align-items-center mouse-hover-pointer">
           <Col md={6}>
-            <h4>
+            <h4 className="mb-0">
               {apiTest.serviceName}: <i>{apiTest.apiName}</i>{' '}
               <small className="fs-6">
                 <Translate contentKey="snowWhiteApp.apiTest.apiVersion">Version</Translate>: {apiTest.apiVersion}
               </small>
             </h4>
           </Col>
-          <Col md={1}>
-            <h4>
+          <Col md={2}>
+            <h4 className="mb-0">
               {isQualityGateStatusOverride(qualityGateStatus) ? (
                 <StatusBadge status={qualityGateStatus} />
               ) : (
@@ -68,15 +72,23 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
               )}
             </h4>
           </Col>
-          <Col md={2}>{containsTestResults ? <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate> : <></>}</Col>
-          <Col md={2}>
+          <Col md={3}>
             {containsTestResults ? (
-              <CoverageProgressBar apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)} />
+              <>
+                <div id={tooltipId}>
+                  <CoverageProgressBar
+                    apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)}
+                  />
+                </div>
+                <Tooltip isOpen={tooltipOpen} target={tooltipId} toggle={toggleTooltip}>
+                  <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage of included Criteria</Translate>
+                </Tooltip>
+              </>
             ) : (
               <></>
             )}
           </Col>
-          <Col md={1}>
+          <Col md={1} className="d-flex justify-content-end">
             <FontAwesomeIcon icon={isOpen ? 'chevron-up' : 'chevron-down'} />
           </Col>
         </Row>
