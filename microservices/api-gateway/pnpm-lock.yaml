@@ -296,8 +296,8 @@ importers:
         version: 7.4.0(@types/babel__core@7.20.5)(webpack@5.106.2)
     optionalDependencies:
       npm-check-updates:
-        specifier: 21.0.0
-        version: 21.0.0
+        specifier: 21.0.1
+        version: 21.0.1
 
 packages:
 
@@ -4505,8 +4505,8 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
-  npm-check-updates@21.0.0:
-    resolution: {integrity: sha512-iGFLoW1QWsEDLR6Cnklyk+iHTf20hS84o79idR6AKhjSwk0whMdCd5FS0bTgEe6gMrRnJ0fGr2P6BEZ2zOelYg==}
+  npm-check-updates@21.0.1:
+    resolution: {integrity: sha512-BwYXOxntt5uQsLHcKw/z1awNAW1USfzQwMiBoKyCMlFi7hIVQKiMv3TJvJaHppZxmYkjvhnuogroN374Jsupvw==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: '>=10.0.0'}
     hasBin: true
 
@@ -11311,7 +11311,7 @@ snapshots:
 
   normalize-path@3.0.0: {}
 
-  npm-check-updates@21.0.0:
+  npm-check-updates@21.0.1:
     optional: true
 
   npm-normalize-package-bin@4.0.0: {}
