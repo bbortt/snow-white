@@ -17,12 +17,16 @@ import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
 import { StackTraceCard } from 'app/entities/quality-gate/stack-trace-card';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
+
+const compareNullable = (a?: string, b?: string): number => {
+  return (a ?? '').localeCompare(b ?? '');
+};
 
 export const QualityGateDetail = () => {
   const dispatch = useAppDispatch();
@@ -36,6 +40,17 @@ export const QualityGateDetail = () => {
 
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const qualityGateEntity: IQualityGate = useAppSelector(state => state.snowwhite.qualityGate.entity);
+
+  const sortedApiTests: IApiTest[] = useMemo(
+    () =>
+      [...(qualityGateEntity.apiTests ?? [])].sort(
+        (a, b) =>
+          (a.serviceName ?? '').localeCompare(b.serviceName ?? '') ||
+          (a.apiName ?? '').localeCompare(b.apiName ?? '') ||
+          (a.apiVersion ?? '').localeCompare(b.apiVersion ?? ''),
+      ),
+    [qualityGateEntity],
+  );
 
   return (
     <Row>
@@ -124,7 +139,7 @@ export const QualityGateDetail = () => {
           <dd>
             {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0 ? (
               <>
-                {qualityGateEntity.apiTests.map((apiTest: IApiTest) => (
+                {sortedApiTests.map((apiTest: IApiTest) => (
                   <ApiTestCard
                     apiTest={apiTest}
                     qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
