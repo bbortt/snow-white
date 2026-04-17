@@ -21,9 +21,17 @@
           "name": "HTTP Methode",
           "description": "Jede HTTP-Methode (`GET`, `POST`, `PUT`, `DELETE`, etc.) für jeden Pfad wurde getestet."
         },
+        "OPERATION_SUCCESS_COVERAGE": {
+          "name": "Erfolgreiche Operation",
+          "description": "Jede Operation (eindeutige Pfad- und HTTP-Methoden-Kombination) hat mindestens eine erfolgreiche (2xx) Antwort erzeugt. Ergänzt `HTTP_METHOD_COVERAGE`, das nur prüft, ob eine Operation überhaupt aufgerufen wurde."
+        },
         "ERROR_RESPONSE_CODE_COVERAGE": {
           "name": "Fehler Antwort-Code",
           "description": "Jeder dokumentierte Fehlerantwortcode für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`."
+        },
+        "POSITIVE_RESPONSE_CODE_COVERAGE": {
+          "name": "Positiver Antwort-Code",
+          "description": "Jeder dokumentierte positive (nicht-fehlerhafte) Antwortcode (1xx, 2xx, 3xx) für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`."
         },
         "RESPONSE_CODE_COVERAGE": {
           "name": "Antwort-Code",
@@ -33,9 +41,17 @@
           "name": "Erforderlicher Parameter",
           "description": "Jeder erforderliche Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`."
         },
+        "OPTIONAL_PARAMETER_COVERAGE": {
+          "name": "Optionaler Parameter",
+          "description": "Jeder optionale (nicht erforderliche) Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`."
+        },
         "PARAMETER_COVERAGE": {
           "name": "Parameter",
           "description": "Jeder Parameter (in path, query) wurde mit gültigen Werten getestet."
+        },
+        "CONTENT_TYPE_COVERAGE": {
+          "name": "Content-Type",
+          "description": "Jeder dokumentierte Content-Type des Request-Body (z.B. `application/json`, `multipart/form-data`) für jeden Endpunkt wurde verwendet."
         },
         "REQUIRED_ERROR_FIELDS_COVERAGE": {
           "name": "Erfoderliche Fehler-Felder",
