@@ -62,8 +62,6 @@ export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: Uploa
       uploadedMetadata = apiSpecMetadata.metadata;
       await uploadApiSpec(apiSpecMetadata.metadata, content, url, apiIndexApi, file);
 
-      console.log('uploadedMetadata after:', uploadedMetadata);
-
       successCount++;
     } catch (error: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
