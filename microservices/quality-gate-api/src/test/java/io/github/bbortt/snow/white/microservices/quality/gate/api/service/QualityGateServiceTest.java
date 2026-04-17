@@ -29,11 +29,11 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mappe
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
-import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.UnmodifiableConfigurationException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,7 +57,7 @@ class QualityGateServiceTest {
   private QualityGateConfigurationMapper qualityGateConfigurationMapperMock;
 
   @Mock
-  private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepositoryMock;
+  private DefaultOpenApiQualityGates defaultOpenApiQualityGatesMock;
 
   @Mock
   private QualityGateConfigurationRepository qualityGateConfigurationRepositoryMock;
@@ -68,7 +68,7 @@ class QualityGateServiceTest {
   void beforeEachSetup() {
     fixture = new QualityGateService(
       qualityGateConfigurationMapperMock,
-      openApiCoverageConfigurationRepositoryMock,
+      defaultOpenApiQualityGatesMock,
       qualityGateConfigurationRepositoryMock
     );
   }
@@ -346,7 +346,9 @@ class QualityGateServiceTest {
 
     @Test
     void shouldUpdatePersistedQualityGateConfigurations() {
-      doReturnOpenApiCoverageConfigurationByNameUponMockInvocation();
+      doReturn(buildDefaultConfigurations())
+        .when(defaultOpenApiQualityGatesMock)
+        .getDefaultOpenApiCoverageConfigurations();
 
       doAnswer(invocationOnMock ->
         Optional.of(
@@ -379,15 +381,13 @@ class QualityGateServiceTest {
       verify(qualityGateConfigurationRepositoryMock, times(4)).findByName(
         anyString()
       );
-
-      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
-        anyString()
-      );
     }
 
     @Test
     void shouldPersistQualityGateConfigurationsIfNoneExistYet() {
-      doReturnOpenApiCoverageConfigurationByNameUponMockInvocation();
+      doReturn(buildDefaultConfigurations())
+        .when(defaultOpenApiQualityGatesMock)
+        .getDefaultOpenApiCoverageConfigurations();
 
       doReturn(Optional.empty())
         .when(qualityGateConfigurationRepositoryMock)
@@ -411,22 +411,39 @@ class QualityGateServiceTest {
       verify(qualityGateConfigurationRepositoryMock, times(4)).findByName(
         anyString()
       );
-
-      verify(openApiCoverageConfigurationRepositoryMock, times(16)).findByName(
-        anyString()
-      );
     }
 
-    private void doReturnOpenApiCoverageConfigurationByNameUponMockInvocation() {
-      doAnswer(invocationOnMock ->
-        Optional.of(
-          OpenApiCoverageConfiguration.builder()
-            .name(invocationOnMock.getArgument(0))
-            .build()
-        )
-      )
-        .when(openApiCoverageConfigurationRepositoryMock)
-        .findByName(anyString());
+    private Set<QualityGateConfiguration> buildDefaultConfigurations() {
+      var gates = new LinkedHashSet<QualityGateConfiguration>();
+      gates.add(gateWithCriteria("basic-coverage", 6));
+      gates.add(gateWithCriteria("full-feature", 14));
+      gates.add(gateWithCriteria("minimal", 1));
+      gates.add(gateWithNoCriteria("dry-run"));
+      return gates;
+    }
+
+    private QualityGateConfiguration gateWithCriteria(
+      String name,
+      int criteriaCount
+    ) {
+      var config = QualityGateConfiguration.builder().name(name).build();
+      for (int i = 0; i < criteriaCount; i++) {
+        config
+          .getOpenApiCoverageConfigurations()
+          .add(
+            QualityGateOpenApiCoverageMapping.builder()
+              .qualityGateConfiguration(config)
+              .openApiCoverageConfiguration(
+                OpenApiCoverageConfiguration.builder().build()
+              )
+              .build()
+          );
+      }
+      return config;
+    }
+
+    private QualityGateConfiguration gateWithNoCriteria(String name) {
+      return QualityGateConfiguration.builder().name(name).build();
     }
 
     private void assertThatAllStandardQualityGateConfigurationsWerePersisted(
@@ -438,12 +455,12 @@ class QualityGateServiceTest {
           qualityGateConfiguration ->
             assertThat(qualityGateConfiguration).satisfies(
               c -> assertThat(c.getName()).isEqualTo("basic-coverage"),
-              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(5)
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(6)
             ),
           qualityGateConfiguration ->
             assertThat(qualityGateConfiguration).satisfies(
               c -> assertThat(c.getName()).isEqualTo("full-feature"),
-              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(10)
+              c -> assertThat(c.getOpenApiCoverageConfigurations()).hasSize(14)
             ),
           qualityGateConfiguration ->
             assertThat(qualityGateConfiguration).satisfies(
