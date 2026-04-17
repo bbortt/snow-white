@@ -42,6 +42,10 @@ public enum OpenApiCriteria {
     "Parameter Coverage",
     "Each parameter (in path, query) has been tested with valid values."
   ),
+  CONTENT_TYPE_COVERAGE(
+    "Content Type Coverage",
+    "Each documented request body content type (e.g. `application/json`, `multipart/form-data`) for each endpoint has been exercised."
+  ),
   REQUIRED_ERROR_FIELDS_COVERAGE(
     "Required Error Fields Coverage",
     "Error responses include all required fields."
