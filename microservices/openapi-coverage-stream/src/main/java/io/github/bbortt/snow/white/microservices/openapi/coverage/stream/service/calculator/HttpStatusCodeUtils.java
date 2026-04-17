@@ -27,4 +27,18 @@ final class HttpStatusCodeUtils {
       );
     }
   }
+
+  static boolean isPositiveHttpStatusCode(String statusCode) {
+    try {
+      int code = parseInt(statusCode);
+      return code >= 100 && code <= 399;
+    } catch (NumberFormatException _) {
+      // Handle patterns like "1XX", "2XX", "3XX"
+      return (
+        statusCode.startsWith("1") ||
+        statusCode.startsWith("2") ||
+        statusCode.startsWith("3")
+      );
+    }
+  }
 }

@@ -22,6 +22,10 @@ public enum OpenApiCriteria {
     "Error Response Code Coverage",
     "Each documented error response code for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
   ),
+  POSITIVE_RESPONSE_CODE_COVERAGE(
+    "Positive Response Code Coverage",
+    "Each documented positive (non-error) response code (1xx, 2xx, 3xx) for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
+  ),
   RESPONSE_CODE_COVERAGE(
     "Response Code Coverage",
     "Each documented response code for each endpoint is tested."

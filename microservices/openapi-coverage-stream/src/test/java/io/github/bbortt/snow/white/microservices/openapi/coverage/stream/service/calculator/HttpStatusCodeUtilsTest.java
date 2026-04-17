@@ -61,4 +61,38 @@ class HttpStatusCodeUtilsTest {
       assertThat(HttpStatusCodeUtils.isErrorHttpStatusCode(value)).isFalse();
     }
   }
+
+  @Nested
+  class IsPositiveHttpStatusCodeTest {
+
+    @ParameterizedTest(name = "{0} → true")
+    @ValueSource(
+      strings = { "100", "101", "200", "201", "204", "301", "302", "304" }
+    )
+    void returnsTrueForPositiveCodes(String code) {
+      assertThat(HttpStatusCodeUtils.isPositiveHttpStatusCode(code)).isTrue();
+    }
+
+    @ParameterizedTest(name = "{0} → false")
+    @ValueSource(strings = { "400", "401", "403", "404", "422", "500", "503" })
+    void returnsFalseForErrorCodes(String code) {
+      assertThat(HttpStatusCodeUtils.isPositiveHttpStatusCode(code)).isFalse();
+    }
+
+    @ParameterizedTest(name = "{0} → true")
+    @ValueSource(strings = { "1XX", "2XX", "3XX", "1xx", "2xx", "3xx" })
+    void returnsTrueForPositiveWildcards(String pattern) {
+      assertThat(
+        HttpStatusCodeUtils.isPositiveHttpStatusCode(pattern)
+      ).isTrue();
+    }
+
+    @ParameterizedTest(name = "{0} → false")
+    @ValueSource(strings = { "4XX", "4xx", "5XX", "5xx", "default", "DEFAULT" })
+    void returnsFalseForErrorWildcardsAndDefault(String pattern) {
+      assertThat(
+        HttpStatusCodeUtils.isPositiveHttpStatusCode(pattern)
+      ).isFalse();
+    }
+  }
 }
