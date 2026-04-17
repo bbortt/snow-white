@@ -18,6 +18,10 @@ public enum OpenApiCriteria {
     "HTTP Method Coverage",
     "Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested."
   ),
+  OPERATION_SUCCESS_COVERAGE(
+    "Operation Success Coverage",
+    "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response. Complements `HTTP_METHOD_COVERAGE`, which only checks that an operation was called at all."
+  ),
   ERROR_RESPONSE_CODE_COVERAGE(
     "Error Response Code Coverage",
     "Each documented error response code for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
