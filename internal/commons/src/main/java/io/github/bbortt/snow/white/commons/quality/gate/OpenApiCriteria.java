@@ -34,6 +34,10 @@ public enum OpenApiCriteria {
     "Required Parameter Coverage",
     "Each required parameter (in path, query) has been tested with valid values. This is a subset of `PARAMETER_COVERAGE`."
   ),
+  OPTIONAL_PARAMETER_COVERAGE(
+    "Optional Parameter Coverage",
+    "Each optional (non-required) parameter (in path, query) has been tested with valid values. This is a subset of `PARAMETER_COVERAGE`."
+  ),
   PARAMETER_COVERAGE(
     "Parameter Coverage",
     "Each parameter (in path, query) has been tested with valid values."
