@@ -39,7 +39,10 @@ const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: bool
 
 export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus }: ApiTestCardProps) => {
   const apiTestResultStatus = useMemo(
-    () => !apiTest.testResults?.some(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1) || false,
+    () =>
+      !apiTest.testResults
+        ?.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)
+        .some(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1) || false,
     [apiTest.testResults],
   );
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
