@@ -11,8 +11,9 @@ import { getEntities } from 'app/entities/open-api-criterion/open-api-criterion.
 import ApiCriterionInfo from 'app/entities/quality-gate/api-criterion-info';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { TextWithCode } from 'app/shared/TextWithCode';
-import React, { useEffect, useMemo } from 'react';
+import React, { createRef, useEffect, useMemo, useRef } from 'react';
 import { translate, Translate } from 'react-jhipster';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Table } from 'reactstrap';
 
 interface ApiTestResultTableProps {
@@ -24,52 +25,54 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
 
   const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
 
-  const getAllEntities = () => {
-    dispatch(getEntities());
-  };
-
-  const handleSyncList = () => {
-    getAllEntities();
-  };
+  const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
 
   useEffect(() => {
-    handleSyncList();
+    dispatch(getEntities());
   }, []);
 
   const tableBody = useMemo(() => {
     if (!openApiCriterionList || openApiCriterionList.length === 0) {
-      return <></>;
+      return null;
     }
 
     return apiTestResults
       .slice()
       .sort((a, b) => a.id!.localeCompare(b.id!))
-      .map((apiTestResult: IApiTestResult) => {
+      .flatMap((apiTestResult: IApiTestResult) => {
         const apiCriterion: IOpenApiCriterion | undefined = openApiCriterionList.find(
           (criterion: IOpenApiCriterion) => criterion.name === apiTestResult.id,
         );
 
         if (!apiCriterion) {
-          return <></>;
+          return [];
         }
+
+        const key = `entity-${apiTestResult.id}`;
+        if (!nodeRefs.current.has(key)) {
+          nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+        }
+        const nodeRef = nodeRefs.current.get(key)!;
 
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
-        return (
-          <tr key={`entity-${apiTestResult.id}`} data-cy="apiTestResultTable">
-            <td>{nameText}</td>
-            <td>
-              <ApiCriterionInfo apiCriterion={apiCriterion} />
-            </td>
-            <td>{apiTestResult.coverage}</td>
-            <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
-            <td>
-              <TextWithCode text={apiTestResult.additionalInformation} />
-            </td>
-          </tr>
-        );
+        return [
+          <CSSTransition key={key} timeout={200} classNames="row-fade" nodeRef={nodeRef}>
+            <tr ref={nodeRef} data-cy="apiTestResultTable">
+              <td>{nameText}</td>
+              <td>
+                <ApiCriterionInfo apiCriterion={apiCriterion} />
+              </td>
+              <td>{apiTestResult.coverage}</td>
+              <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
+              <td>
+                <TextWithCode text={apiTestResult.additionalInformation} />
+              </td>
+            </tr>
+          </CSSTransition>,
+        ];
       });
-  }, [openApiCriterionList]);
+  }, [openApiCriterionList, apiTestResults]);
 
   return (
     <div>
@@ -92,7 +95,7 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
               </th>
             </tr>
           </thead>
-          <tbody>{tableBody}</tbody>
+          <TransitionGroup component="tbody">{tableBody}</TransitionGroup>
         </Table>
       </div>
     </div>
