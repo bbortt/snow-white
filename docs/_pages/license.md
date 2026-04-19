@@ -1,10 +1,7 @@
 ---
-title: License
-nav_order: 6
-description: 'Snow-White licensing terms and commercial options'
+title: 'License'
+permalink: /license/
 ---
-
-# License
 
 Snow-White is licensed under the **[PolyForm Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0)**.
 
@@ -48,7 +45,7 @@ If your organization exceeds the thresholds above, or if you intend to redistrib
 
 Please reach out to discuss options:
 
-📧 [timon.borter@gmx.ch](mailto:timon.borter@gmx.ch)
+[timon.borter@gmx.ch](mailto:timon.borter@gmx.ch){: .btn .btn--primary}
 
 ---
 

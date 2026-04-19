@@ -1,39 +1,69 @@
-title: Snow-White
+remote_theme: 'mmistakes/minimal-mistakes'
+minimal_mistakes_skin: 'snow-white'
+
+locale: 'en-US'
+title: 'Snow-White'
+title_separator: ' | '
+subtitle: 'API Coverage & Observability'
+name: 'Timon Borter'
 description: >
-  API Coverage Analysis & Observability - Connect OpenAPI specs with OpenTelemetry traces
-  to unlock endpoint coverage insights, quality gates, and performance analysis.
+  Connect OpenAPI specifications with OpenTelemetry traces to unlock
+  endpoint coverage insights, quality gates, and performance analysis.
+url: 'https://bbortt.github.io'
+baseurl: '/snow-white'
+repository: 'bbortt/snow-white'
+logo: '/assets/images/logo.png'
 
-theme: just-the-docs
+search: true
+search_full_content: true
 
-url: https://bbortt.github.io
-baseurl: /snow-white
+author:
+  name: 'Timon Borter'
+  email: 'timon.borter@gmx.ch'
+  links:
+    - label: 'GitHub'
+      icon: 'fab fa-fw fa-github'
+      url: 'https://github.com/bbortt'
 
-logo: 'https://raw.githubusercontent.com/bbortt/snow-white/main/.github/logo.png'
+footer:
+  links:
+    - label: 'GitHub'
+      icon: 'fab fa-fw fa-github'
+      url: 'https://github.com/bbortt/snow-white'
 
-search_enabled: true
-search.heading_level: 2
+include:
+  - _pages
 
-aux_links:
-  'GitHub ↗':
-    - https://github.com/bbortt/snow-white
-aux_links_new_tab: true
-
-footer_content: >
-  Copyright &copy; 2024–2025 Timon Borter.
-  Licensed under the <a href="license">PolyForm Small Business License 1.0.0</a>.
-
-back_to_top: true
-back_to_top_text: 'Back to top'
+exclude:
+  - '*.puml'
+  - Gemfile
+  - Gemfile.lock
 
 plugins:
-  - jekyll-seo-tag
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jekyll-include-cache
+
+whitelist:
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-gist
+  - jekyll-feed
+  - jekyll-include-cache
+
+defaults:
+  - scope:
+      path: '_pages'
+      type: pages
+    values:
+      layout: single
+      author_profile: false
+      sidebar:
+        nav: 'docs'
 
 kramdown:
   syntax_highlighter_opts:
     block:
       line_numbers: false
-
-exclude:
-  - architecture.puml
-  - Gemfile
-  - Gemfile.lock

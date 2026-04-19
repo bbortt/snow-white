@@ -22,14 +22,14 @@ It currently provides insights into:
 ## Installation (for providers)
 
 Snow-White can be installed easily using Helm.
-Detailed instructions and available options are described in [`INSTALLATION.md`](./INSTALLATION.md).
+Detailed instructions and available options are described in ["Deployment"](https://bbortt.github.io/snow-white/deployment).
 
 Individual images could also be used for a custom installation.
 The Docker compose file `dev/docker-compose.yaml` may be used as a starting point.
 
 ## Onboarding (for users)
 
-See [`ONBOARDING.md`](./ONBOARDING.md) for a step-by-step guide to integrating your service with Snow-White.
+See ["Onboarding"](https://bbortt.github.io/snow-white/onboarding) for a step-by-step guide to integrating your service with Snow-White.
 
 ## General Concept
 
@@ -135,7 +135,8 @@ docker compose -f dev/docker-compose.yaml up -d
 
 ### Contributing Guidelines
 
-- Keep commits small and focused. Follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, etc.).
+- Keep commits small and focused.
+  Follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, etc.).
 - All new features should include tests.
 - Run the full build before opening a PR: `./mvnw -Pnode verify`
 - Open an issue first for larger changes so we can align on direction before you invest time coding.
