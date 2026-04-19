@@ -6,6 +6,7 @@
 
 import './api-test-card.scss';
 
+import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import type { IApiTest } from 'app/shared/model/api-test.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface ApiTestCardProps {
   apiTest: IApiTest;
   qualityGateStatus: ReportStatus;
+  showOnlyIncluded: boolean;
 }
 
 const isQualityGateStatusOverride = (qualityGateStatus: ReportStatus): boolean => {
@@ -37,7 +39,7 @@ const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: bool
   return <StatusBadge status={ReportStatus.FAILED} />;
 };
 
-export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus }: ApiTestCardProps) => {
+export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus, showOnlyIncluded }: ApiTestCardProps) => {
   const apiTestResultStatus = useMemo(
     () =>
       !apiTest.testResults
@@ -53,6 +55,11 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
 
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const toggleTooltip = () => setTooltipOpen(!tooltipOpen);
+
+  const visibleTestResults: IApiTestResult[] = useMemo(
+    () => (showOnlyIncluded ? (apiTest.testResults ?? []).filter(r => r.isIncludedInQualityGate) : (apiTest.testResults ?? [])),
+    [apiTest.testResults, showOnlyIncluded],
+  );
 
   return (
     <Card>
@@ -99,7 +106,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
       <CardBody>
         <Collapse isOpen={isOpen}>
           {containsTestResults ? (
-            <ApiTestResultTable apiTestResults={apiTest.testResults!} />
+            <ApiTestResultTable apiTestResults={visibleTestResults} />
           ) : (
             <div className="alert alert-warning">
               <Translate contentKey="snowWhiteApp.apiTestResult.home.notFound">No API Test Results found</Translate>
