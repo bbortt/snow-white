@@ -1,0 +1,92 @@
+---
+# front matter required by Jekyll
+---
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/snow-white";
+@import "minimal-mistakes";
+
+// ── Site logo ─────────────────────────────────────────────────────────────────
+.site-logo img {
+  background-color: #f2f2f2;
+  border-radius: 100%;
+}
+
+// ── Masthead ──────────────────────────────────────────────────────────────────
+.masthead {
+  background-color: #0d0d0d;
+  border-bottom: 3px solid #d91828;
+}
+
+.greedy-nav {
+  background: #0d0d0d;
+
+  .visible-links a {
+    &:before { background: #d91828; }
+  }
+
+  .hidden-links {
+    background: #0d0d0d;
+    border-color: #d91828;
+  }
+}
+
+// ── Sidebar nav active ────────────────────────────────────────────────────────
+.nav__list .nav__items a.active,
+.nav__list .nav__items a:hover {
+  color: #d91828;
+}
+
+// ── Splash hero ───────────────────────────────────────────────────────────────
+.page__hero--overlay {
+  background-color: #400101;
+  border-bottom: 4px solid #d91828;
+}
+
+// ── Feature rows ─────────────────────────────────────────────────────────────
+.feature__item {
+  .archive__item-teaser {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid mix(#fff, #0d0d0d, 80%);
+  }
+
+  .btn--primary {
+    background-color: #d91828;
+    border-color: #d91828;
+
+    &:hover {
+      background-color: #a91320;
+      border-color: #a91320;
+    }
+  }
+}
+
+// ── Code blocks ───────────────────────────────────────────────────────────────
+div.highlighter-rouge,
+figure.highlight {
+  border-left: 3px solid #d91828;
+  background: #1a1a1a;
+  color: #f2f2f2;
+}
+
+// ── Notice blocks ─────────────────────────────────────────────────────────────
+.notice--info    { border-left-color: #1a4566 !important; }
+.notice--warning { border-left-color: #d9861a !important; }
+.notice--success { border-left-color: #245c45 !important; }
+.notice--danger  { border-left-color: #d91828 !important; }
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.page__footer {
+  a {
+    color: #f2f2f2;
+    &:hover { color: #d91828; }
+  }
+}
+
+// ── Tables ────────────────────────────────────────────────────────────────────
+.page__content table {
+  thead { background-color: #400101; color: #f2f2f2; }
+  tbody tr:nth-child(odd) { background-color: rgba(#d91828, 0.04); }
+}
