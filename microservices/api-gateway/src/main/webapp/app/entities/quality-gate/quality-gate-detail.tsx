@@ -4,21 +4,16 @@
  * See LICENSE file for full details.
  */
 
-import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import type { IApiTest } from 'app/shared/model/api-test.model';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { APP_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
-import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-block';
-import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
-import { StackTraceCard } from 'app/entities/quality-gate/stack-trace-card';
-import { StatusBadge } from 'app/entities/quality-gate/status-badge';
+import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect, useMemo } from 'react';
-import { TextFormat, Translate } from 'react-jhipster';
+import { Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, Col, Row } from 'reactstrap';
 
@@ -45,9 +40,9 @@ export const QualityGateDetail = () => {
     () =>
       [...(qualityGateEntity.apiTests ?? [])].sort(
         (a, b) =>
-          (a.serviceName ?? '').localeCompare(b.serviceName ?? '') ||
-          (a.apiName ?? '').localeCompare(b.apiName ?? '') ||
-          (a.apiVersion ?? '').localeCompare(b.apiVersion ?? ''),
+          compareNullable(a.serviceName, b.serviceName) ||
+          compareNullable(a.apiName, b.apiName) ||
+          compareNullable(a.apiVersion, b.apiVersion),
       ),
     [qualityGateEntity],
   );
@@ -56,106 +51,26 @@ export const QualityGateDetail = () => {
     <Row>
       <Col>
         <h2 data-cy="qualityGateDetailsHeading">
-          <Translate contentKey="snowWhiteApp.qualityGate.detail.title">QualityGate</Translate>
+          <Translate contentKey="snowWhiteApp.qualityGate.detail.title">Quality-Gate Result</Translate>
         </h2>
-        <dl className="jh-entity-details">
-          <dd>
-            <Row>
-              <Col md={6}>
-                <dl className="jh-entity-details">
-                  <dt>
-                    <span id="calculationId">
-                      <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>
-                    </span>
-                  </dt>
-                  <dd>{qualityGateEntity.calculationId}</dd>
-                  <dt>
-                    <span id="qualityGateConfigName">
-                      <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>
-                    </span>
-                  </dt>
-                  <dd>
-                    <Button tag={Link} to={`/quality-gate-config/${qualityGateEntity.qualityGateConfig?.name}`} color="link" size="sm">
-                      {qualityGateEntity.qualityGateConfig?.name}
-                    </Button>
-                  </dd>
-                  <dt>
-                    <span id="status">
-                      <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>
-                    </span>
-                  </dt>
-                  <dd>
-                    <StatusBadge status={qualityGateEntity.status || ReportStatus.NOT_STARTED} />
-                  </dd>
-                  <dt>
-                    <span id="createdAt">
-                      <Translate contentKey="snowWhiteApp.qualityGate.createdAt">Created At</Translate>
-                    </span>
-                  </dt>
-                  <dd>
-                    {qualityGateEntity.createdAt ? (
-                      <TextFormat value={qualityGateEntity.createdAt} type="date" format={APP_DATE_FORMAT} />
-                    ) : null}
-                  </dd>
-                  {qualityGateEntity.stackTrace ? <StackTraceCard stackTrace={qualityGateEntity.stackTrace} /> : null}
-                  <dt>
-                    <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
-                  </dt>
-                  <dd>
-                    {qualityGateEntity.calculationRequest ? (
-                      <CodeHighlightBlock code={JSON.stringify(qualityGateEntity.calculationRequest)} language="json" />
-                    ) : (
-                      ''
-                    )}
-                  </dd>
-                </dl>
-              </Col>
-              <Col md={3}>
-                <h3 className="text-center" data-cy="qualityGateResultsHeading">
-                  <Translate contentKey="snowWhiteApp.qualityGate.shapes.qualityGateResults">Included Criteria Status</Translate>
-                </h3>
-                <ShapePieChart
-                  apiTestResults={(qualityGateEntity.apiTests?.flatMap((apiTest: IApiTest) => apiTest.testResults ?? []) ?? [])
-                    .slice()
-                    .filter((apiTestResult: IApiTestResult) => apiTestResult.isIncludedInQualityGate)}
-                />
-              </Col>
-              <Col md={3}>
-                <h3 className="text-center" data-cy="allResultsHeading">
-                  <Translate contentKey="snowWhiteApp.qualityGate.shapes.allResults">All Criteria Status</Translate>
-                </h3>
-                <ShapePieChart
-                  apiTestResults={qualityGateEntity.apiTests?.flatMap((apiTest: IApiTest) => apiTest.testResults ?? []) ?? []}
-                />
-              </Col>
-            </Row>
-          </dd>
-          <hr className="mt-5" />
-          <dt>
-            <h3 className="mb-2">
-              <Translate contentKey="snowWhiteApp.apiTestResult.home.title">API Test Results</Translate>
-            </h3>
-          </dt>
-          <dd>
-            {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0 ? (
-              <>
-                {sortedApiTests.map((apiTest: IApiTest) => (
-                  <ApiTestCard
-                    apiTest={apiTest}
-                    qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
-                    key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
-                  />
-                ))}
-              </>
-            ) : (
-              !loading && (
-                <div className="alert alert-warning">
-                  <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
-                </div>
-              )
+        <QualityGateSummary qualityGate={qualityGateEntity} />
+        <hr className="mt-5" />
+        <h3 className="mb-2">
+          <Translate contentKey="snowWhiteApp.apiTestResult.home.title">API Test Results</Translate>
+        </h3>
+        {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0
+          ? sortedApiTests.map((apiTest: IApiTest) => (
+              <ApiTestCard
+                apiTest={apiTest}
+                qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
+                key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
+              />
+            ))
+          : !loading && (
+              <div className="alert alert-warning">
+                <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
+              </div>
             )}
-          </dd>
-        </dl>
         <Button tag={Link} onClick={() => navigate(-1)} replace color="info" data-cy="entityDetailsBackButton">
           <FontAwesomeIcon icon="arrow-left" />{' '}
           <span className="d-none d-md-inline">

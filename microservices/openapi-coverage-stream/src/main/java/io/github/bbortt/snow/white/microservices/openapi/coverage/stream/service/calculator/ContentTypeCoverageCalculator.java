@@ -142,9 +142,9 @@ public class ContentTypeCoverageCalculator
 
       // OTel may represent header values as a JSON array or a plain string
       if (headerNode.isArray()) {
-        headerNode.forEach(element -> observed.add(element.asText()));
+        headerNode.forEach(element -> observed.add(element.asString()));
       } else {
-        observed.add(headerNode.asText());
+        observed.add(headerNode.asString());
       }
     }
 

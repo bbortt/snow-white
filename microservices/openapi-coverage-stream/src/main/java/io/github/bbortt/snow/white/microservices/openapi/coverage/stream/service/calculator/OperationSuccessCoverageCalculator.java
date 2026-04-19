@@ -92,18 +92,17 @@ public class OperationSuccessCoverageCalculator
 
   private boolean hasSuccessfulResponse(List<OpenTelemetryData> telemetryList) {
     for (OpenTelemetryData data : telemetryList) {
-      if (isNull(data.attributes())) {
-        continue;
-      }
-
-      if (!data.attributes().has(HTTP_RESPONSE_STATUS_CODE.getKey())) {
+      if (
+        isNull(data.attributes()) ||
+        !data.attributes().has(HTTP_RESPONSE_STATUS_CODE.getKey())
+      ) {
         continue;
       }
 
       String statusCode = data
         .attributes()
         .get(HTTP_RESPONSE_STATUS_CODE.getKey())
-        .asText();
+        .asString();
 
       try {
         if (HttpStatusCode.valueOf(parseInt(statusCode)).is2xxSuccessful()) {
