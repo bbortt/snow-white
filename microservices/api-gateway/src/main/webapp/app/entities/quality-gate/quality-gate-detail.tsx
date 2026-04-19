@@ -12,10 +12,10 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Col, Row } from 'reactstrap';
+import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
 
@@ -36,6 +36,8 @@ export const QualityGateDetail = () => {
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const qualityGateEntity: IQualityGate = useAppSelector(state => state.snowwhite.qualityGate.entity);
 
+  const [showOnlyIncluded, setShowOnlyIncluded] = useState(true);
+
   const sortedApiTests: IApiTest[] = useMemo(
     () =>
       [...(qualityGateEntity.apiTests ?? [])].sort(
@@ -55,14 +57,29 @@ export const QualityGateDetail = () => {
         </h2>
         <QualityGateSummary qualityGate={qualityGateEntity} />
         <hr className="mt-5" />
-        <h3 className="mb-2">
-          <Translate contentKey="snowWhiteApp.apiTestResult.home.title">API Test Results</Translate>
-        </h3>
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <h3 className="mb-0">
+            <Translate contentKey="snowWhiteApp.apiTestResult.home.title">API Test Results</Translate>
+          </h3>
+          <FormGroup switch className="mb-0">
+            <Input
+              type="switch"
+              role="switch"
+              id="filter-included-switch"
+              checked={showOnlyIncluded}
+              onChange={() => setShowOnlyIncluded(prev => !prev)}
+            />
+            <Label check htmlFor="filter-included-switch">
+              <Translate contentKey="snowWhiteApp.apiTestResult.showOnlyIncluded">Show only included</Translate>
+            </Label>
+          </FormGroup>
+        </div>
         {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0
           ? sortedApiTests.map((apiTest: IApiTest) => (
               <ApiTestCard
                 apiTest={apiTest}
                 qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
+                showOnlyIncluded={showOnlyIncluded}
                 key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
               />
             ))

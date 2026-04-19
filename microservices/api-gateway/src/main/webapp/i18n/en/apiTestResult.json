@@ -12,6 +12,7 @@
       "id": "API Criterion",
       "coverage": "Coverage of included Criteria",
       "isIncludedInQualityGate": "Included in Quality-Gate?",
+      "showOnlyIncluded": "Show only included",
       "additionalInformation": "Details",
       "qualityGate": "Quality-Gate"
     }

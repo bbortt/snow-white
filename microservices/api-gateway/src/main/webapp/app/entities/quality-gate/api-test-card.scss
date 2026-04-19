@@ -7,3 +7,29 @@
 .mouse-hover-pointer {
   cursor: pointer;
 }
+
+.row-fade-enter {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.row-fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.row-fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.row-fade-exit-active {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
