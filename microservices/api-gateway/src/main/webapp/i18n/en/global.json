@@ -17,6 +17,7 @@
       },
       "resources": {
         "main": "Resources",
+        "documentation": "Documentation",
         "swagger": "Swagger UI"
       },
       "language": "Language"
