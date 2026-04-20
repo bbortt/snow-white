@@ -8,6 +8,10 @@
     <i>OpenAPI coverage and quality insights powered by OpenTelemetry.</i>
 </p>
 
+<p align="center">
+    <a href="https://bbortt.github.io/snow-white">» Documentation</a>
+</p>
+
 Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts of your API are actually being tested?**
 
 It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints declared in your API specifications - then validates coverage against configurable quality gates.
@@ -18,6 +22,20 @@ It currently provides insights into:
 
 - **Coverage** - which endpoints were exercised and which were not
 - **API Performance** - response time analysis across operations
+
+## Documentation
+
+Full documentation is available at **[bbortt.github.io/snow-white](https://bbortt.github.io/snow-white)**.
+
+| Section                                                           | Description                                                 |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Deployment](https://bbortt.github.io/snow-white/deployment/)     | Install Snow-White with Helm and configure your environment |
+| [Onboarding](https://bbortt.github.io/snow-white/onboarding/)     | Step-by-step guide to integrating your service              |
+| [Architecture](https://bbortt.github.io/snow-white/architecture/) | Component overview and event-driven design                  |
+| [Workflows](https://bbortt.github.io/snow-white/workflows/)       | CI/CD pipeline patterns and quality gate workflows          |
+| [CLI Reference](https://bbortt.github.io/snow-white/cli/)         | Full CLI command reference                                  |
+| [Requirements](https://bbortt.github.io/snow-white/requirements/) | System and dependency requirements                          |
+| [License](https://bbortt.github.io/snow-white/license/)           | Licensing details and commercial use                        |
 
 ## Installation (for providers)
 
@@ -34,7 +52,7 @@ See ["Onboarding"](https://bbortt.github.io/snow-white/onboarding) for a step-by
 ## General Concept
 
 Here's a high-level overview of Snow-White.
-Detailed [architecture is depicted in `DEVELOPMENT.md`](./DEVELOPMENT.md#architecture-overview).
+For a detailed component and data-flow breakdown, see the [Architecture](https://bbortt.github.io/snow-white/architecture/) docs.
 
 1. **Synchronize API Specs** - Snow-White imports OpenAPI specifications from your central interface repository.
 2. **Ingest Telemetry** - It listens to OpenTelemetry tracing data emitted by your applications.
