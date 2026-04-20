@@ -13,7 +13,7 @@ dependencies:
     repository: 'https://helm.influxdata.com/'
     condition: influxdb2.enabled
   - name: kafka-ui
-    version: 1.6.3
+    version: 1.6.4
     repository: 'https://kafbat.github.io/helm-charts'
     condition: kafka-ui.enabled
   - name: postgresql
