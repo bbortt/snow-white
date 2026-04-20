@@ -23,24 +23,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        with:
+          lfs: true
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
           bundler-cache: true
           working-directory: docs
-
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
-
       - name: Build with Jekyll
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         working-directory: docs
         env:
           JEKYLL_ENV: production
-
       - name: Include Helm chart index
         run: |
           if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
@@ -54,12 +52,10 @@ jobs:
           else
             echo "No gh-pages branch found - skipping Helm index merge."
           fi
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_site
-
   deploy:
     name: Deploy to GitHub Pages
     environment:
