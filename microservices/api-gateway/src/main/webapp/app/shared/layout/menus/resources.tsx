@@ -5,7 +5,8 @@
  */
 
 import './resources.scss';
-
+import { faReadme } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Translate, translate } from 'react-jhipster';
 import { DropdownItem } from 'reactstrap';
@@ -20,9 +21,18 @@ export const ResourcesMenu = () => (
     style={{ maxHeight: '80vh', overflow: 'auto' }}
     data-testid="resources-menu"
   >
+    <DropdownItem key="documentation">
+      <a href="https://bbortt.github.io/snow-white" rel="noreferrer" target="_blank" className="dropdown-item link-no-style">
+        <FontAwesomeIcon icon={faReadme} />
+        &nbsp;
+        <Translate contentKey="global.menu.resources.documentation" />
+      </a>
+    </DropdownItem>
     <DropdownItem key="swagger-ui">
       <a href="/swagger-ui/index.html" target="_blank" className="dropdown-item link-no-style">
-        <div className="img-svg img-svg-openapi svg-inline--fa"></div> <Translate contentKey="global.menu.resources.swagger" />
+        <div className="img-svg img-svg-openapi svg-inline--fa"></div>
+        &nbsp;
+        <Translate contentKey="global.menu.resources.swagger" />
       </a>
     </DropdownItem>
   </NavDropdown>
