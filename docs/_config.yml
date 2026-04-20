@@ -38,6 +38,7 @@ exclude:
   - '*.puml'
   - Gemfile
   - Gemfile.lock
+  - vendor
 
 plugins:
   - jekyll-paginate
