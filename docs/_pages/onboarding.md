@@ -178,6 +178,10 @@ curl http://localhost:8080/your-endpoint
 
 ## Step 5 — Calculate Coverage
 
+**Install the CLI** — pre-built binaries are available on [GitHub Releases](https://github.com/bbortt/snow-white/releases); there is no need to build from source.
+See [CLI Reference — Installation](/cli/#installation) for download instructions and the OCI image option.
+{: .notice--info}
+
 Create a CLI config file:
 
 ```json
@@ -197,11 +201,11 @@ Create a CLI config file:
 Run the CLI:
 
 ```shell
-node toolkit/cli/target/cli/index.js calculate --configFile snow-white.json
+snow-white calculate --config-file snow-white.json
 ```
 
 The CLI exits `0` on pass, non-zero on failure — suitable for CI pipelines.
-See [`toolkit/cli/README.md`](https://github.com/bbortt/snow-white/blob/main/toolkit/cli/README.md) for all exit codes.
+See [CLI Reference](/cli/) for all commands and options.
 
 ---
 
