@@ -17,7 +17,7 @@ dependencies:
     repository: 'https://kafbat.github.io/helm-charts'
     condition: kafka-ui.enabled
   - name: postgresql
-    version: 18.5.24
+    version: 18.6.0
     repository: 'https://charts.bitnami.com/bitnami'
     condition: postgresql.enabled
   - name: common
