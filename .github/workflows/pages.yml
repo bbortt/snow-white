@@ -53,7 +53,7 @@ jobs:
             echo "No gh-pages branch found - skipping Helm index merge."
           fi
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/_site
   deploy:
