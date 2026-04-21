@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - gh-pages
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
