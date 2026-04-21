@@ -21,7 +21,7 @@ spec:
     - host: {{ include "snow-white.publicHost" . }}
       http:
          paths:
-          {{- if .Values.otelCollector.exposeThroughIngress }}
+          {{- if .Values.otelCollector.exposeThroughApiGateway }}
           - path: /v1/traces
             pathType: Prefix
             backend:

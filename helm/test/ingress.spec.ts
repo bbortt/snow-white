@@ -225,7 +225,7 @@ describe('Ingress', () => {
           chartPath: 'charts/snow-white',
           values: {
             otelCollector: {
-              exposeThroughIngress: false,
+              exposeThroughApiGateway: false,
             },
           },
         }),

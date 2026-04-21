@@ -56,7 +56,7 @@ For production environments, enable the bundled `CronJob`:
 snowWhite.apiSyncJob.enabled=true
 ```
 
-Currently JFrog Artifactory is the only supported API source.
+Currently, [JFrog Artifactory](https://jfrog.com/artifactory) is the only supported API source.
 Snow-White expects a [generic Artifactory repository](https://jfrog.com/help/r/jfrog-artifactory-documentation/generic-repositories) containing specs as plain text files.
 
 ```yaml
@@ -109,6 +109,61 @@ snowWhite:
 
 ---
 
+## Ingesting OTeL Data
+
+Snow-White deploys its own [OTel Collector](https://opentelemetry.io/docs/collector) by default.
+That collector is used both for ingesting tracing data, as well as [exposing Snow-White's own metrics](#exporting-telemetry).
+
+> Ingesting tracing data is a core concept of Snow-White (see ["How It Works"](/#how-it-works)).
+> Snow-White cannot function without OTeL data.
+>
+> At the same time, **Snow-White is a telemetry sink, not a monitoring backend.**
+> It only persists trace data — all other signal types (logs, metrics) are dropped.
+> You only need to connect to the `/v1/traces` endpoint; sending other signals has no effect.
+>
+> The bundled OTel Collector and its storage are dedicated to Snow-White's own use.
+> Because Snow-White also drops attributes and telemetry it does not need, the data it holds
+> is unsuitable for general service monitoring.
+>
+> The recommended approach is to deploy your own OTel Collector in front of Snow-White
+> and use it to fan out data: route a copy to your monitoring backend and a copy to Snow-White.
+>
+> On the other hand, if your infrastructure already includes an InfluxDB cluster,
+> you might as well use that instead (see ["Disable InfluxDB"](#disable-influxdb))
+
+### In-Cluster
+
+To connect services running inside the same Kubernetes cluster, target the OTel Collector service directly via its FQDN:
+
+```text
+http://<release-name>-snow-white-otel-collector.<namespace>.svc.cluster.local:4317
+```
+
+For example, with the Helm release name `my-snow-white` deployed to the `observability` namespace:
+
+```text
+http://snow-white-otel-collector-my-snow-white.observability.svc.cluster.local:4317
+```
+
+### Outside the Cluster
+
+The OTel Collector is also reachable through the public ingress by default, via the `/v1/traces` path.
+For example, if Snow-White is available at `https://my.snow.white`, send traces to:
+
+```text
+https://my.snow.white/v1/traces
+```
+
+This is controlled by the `otelCollector.exposeThroughApiGateway` Helm value, which defaults to `true`.
+Set it to `false` to restrict OTel ingestion to in-cluster access only:
+
+```yaml
+otelCollector:
+  exposeThroughApiGateway: false
+```
+
+---
+
 ## Exporting Telemetry
 
 Snow-White exposes its own OTEL telemetry.
@@ -141,6 +196,8 @@ otelCollector:
 ## Replacing Bundled Infrastructure
 
 ### Disable PostgreSQL
+
+Add this to your `values.yaml`:
 
 ```yaml
 postgresql:
@@ -190,7 +247,22 @@ snowWhite:
             key: report-coordinator-api-password
 ```
 
+Snow-White won't accept a deployment that is missing any of the above environment variables.
+
 For security, use DML-only credentials at runtime and separate DDL credentials for Flyway via `SPRING_FLYWAY_USER` / `SPRING_FLYWAY_PASSWORD`.
+
+### Disable InfluxDB
+
+Add this to your `values.yaml`:
+
+```yaml
+influxdb2:
+  enabled: false
+```
+
+This disables the bundled InfluxDB StatefulSet, but the Snow-White microservices will still attempt to connect to an InfluxDB instance.
+Unlike PostgreSQL, the Helm chart does not expose dedicated values for configuring an external InfluxDB connection.
+You would need to supply the relevant environment variables manually via `additionalEnvs` — which requires reverse-engineering the expected configuration from the microservice sources.
 
 ### InfluxDB Static Credentials (GitOps)
 
@@ -212,8 +284,6 @@ influxdb2:
   adminUser:
     existingSecret: custom-influxdb-credentials
 ```
-
-> Disabling InfluxDB entirely is **not safely supported** in the current release.
 
 ---
 
