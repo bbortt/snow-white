@@ -484,9 +484,7 @@ describe('Quality-Gate API', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    ingress: {
-                      host: 'custom-host',
-                    },
+                    host: 'custom-host',
                   },
                 },
               }),
@@ -507,10 +505,9 @@ describe('Quality-Gate API', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    ingress: {
-                      host: 'custom-host',
-                      tls: false,
-                    },
+                    host: 'custom-host',
+                    httproute: { enabled: false },
+                    ingress: { enabled: true, tls: false },
                   },
                 },
               }),
@@ -523,6 +520,31 @@ describe('Quality-Gate API', () => {
             );
             expect(publicApiGatewayUrl).toBeDefined();
             expect(publicApiGatewayUrl.value).toBe('http://custom-host');
+          });
+
+          it('should include public host configuration with tls disabled but HTTPRoute enabled', async () => {
+            const qualityGateApi = await renderAndGetQualityGateApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    host: 'custom-host',
+                    httproute: {
+                      enabled: true,
+                    },
+                    ingress: { tls: false },
+                  },
+                },
+              }),
+            );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('https://custom-host');
           });
 
           it('should calculate jdbc connection string', async () => {

@@ -57,6 +57,11 @@ jssecacerts:
   secretName: ''
 
 snowWhite:
+  # -- Public domain where Snow-White is reachable under.
+  # Must be specified when either `ingress.enabled=true` or `httproute.enabled=true`.
+  # @section -- Global Settings
+  host: ''
+
   # -- Deployment mode of Snow-White.
   # Allowed values: `minimal`, `high-available`, `autoscale`.
   # @section -- Availability
@@ -84,17 +89,27 @@ snowWhite:
     # @section -- Availability
     maxSurge: '25%'
 
+  httproute:
+    # -- Enable HTTPRoute.
+    # @section -- Snow-White HTTPRoute
+    enabled: false
+    # -- Additional annotations for the HTTPRoute.
+    # @section -- Snow-White HTTPRoute
+    annotations: {}
+    # -- Parent reference of the HTTPRoute.
+    # @section -- Snow-White HTTPRoute
+    parentRefs: []
+
   ingress:
     # -- Enable ingress.
     # @section -- Snow-White Ingress
-    enabled: true
+    enabled: false
+    # -- Additional annotations for the Ingress.
+    # @section -- Snow-White Ingress
+    annotations: {}
     # -- Ingress class name.
     # @section -- Snow-White Ingress
     className: nginx
-    # -- .Ingress hostname.
-    # Must be specified when `ingress.enabled=true`.
-    # @section -- Snow-White Ingress
-    host: ''
     # -- Enable TLS.
     # @section -- Snow-White Ingress
     tls: true
