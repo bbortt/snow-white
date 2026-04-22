@@ -46,7 +46,7 @@ spec:
           env:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
-              {{- if .Values.snowWhite.ingress.tls }}
+              {{- if or .Values.snowWhite.httproute.enabled .Values.snowWhite.ingress.tls }}
               value: 'https://{{ include "snow-white.publicHost" . }}'
               {{- else }}
               value: 'http://{{ include "snow-white.publicHost" . }}'

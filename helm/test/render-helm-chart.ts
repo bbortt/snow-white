@@ -16,8 +16,9 @@ const mergeWithDefaultValues = (values: object): object => {
     ...merge(
       {
         snowWhite: {
-          ingress: {
-            host: 'localhost',
+          host: 'localhost',
+          httproute: {
+            enabled: true,
           },
         },
       },

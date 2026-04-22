@@ -55,10 +55,12 @@ imagePullSecrets:
 Helper function making sure that the public domain (exposed through ingress) is defined
 */}}
 {{- define "snow-white.publicHost" -}}
-{{ if (empty .Values.snowWhite.ingress.host) }}
-{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.ingress.host' to the public URL!" }}
+{{ if and (not .Values.snowWhite.httproute.enabled) (not .Values.snowWhite.ingress.enabled) }}
+{{ fail "\n\n⚠ ERROR: You must set one of 'snowWhite.httproute.enabled' or 'snowWhite.ingress.enabled'!" }}
+{{- else if (empty .Values.snowWhite.host) -}}
+{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.host' to the public URL!" }}
 {{- else -}}
-{{ .Values.snowWhite.ingress.host }}
+{{ .Values.snowWhite.host }}
 {{- end -}}
 {{- end -}}
 

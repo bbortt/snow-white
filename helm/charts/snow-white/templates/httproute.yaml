@@ -1,0 +1,37 @@
+{{- if .Values.snowWhite.httproute.enabled }}
+{{- $labels := include "snow-white.labels" (dict "name" "httproute" "context" .) | nindent 0 -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-%s" .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- $labels | nindent 4 }}
+  {{- with .Values.snowWhite.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.snowWhite.httproute.parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  hostnames:
+    - '{{ include "snow-white.publicHost" . }}'
+  rules:
+    {{- if .Values.otelCollector.exposeThroughApiGateway }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/traces
+      backendRefs:
+        - name: {{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}
+          port: 80
+    {{- end }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "snow-white.name" (dict "name" "api-gateway" "context" .) }}
+          port: 80
+{{- end -}}
