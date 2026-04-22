@@ -510,9 +510,7 @@ describe('Report Coordinator API', () => {
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
-                      ingress: {
-                        host: 'custom-host',
-                      },
+                      host: 'custom-host',
                     },
                   },
                 }),
@@ -534,8 +532,10 @@ describe('Report Coordinator API', () => {
                   chartPath: 'charts/snow-white',
                   values: {
                     snowWhite: {
+                      host: 'custom-host',
+                      httproute: { enabled: false },
                       ingress: {
-                        host: 'custom-host',
+                        enabled: true,
                         tls: false,
                       },
                     },
@@ -550,6 +550,34 @@ describe('Report Coordinator API', () => {
             );
             expect(publicApiGatewayUrl).toBeDefined();
             expect(publicApiGatewayUrl.value).toBe('http://custom-host');
+          });
+
+          it('should include public host configuration with tls disabled but HTTPRoute enabled', async () => {
+            const qualityGateApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      host: 'custom-host',
+                      httproute: {
+                        enabled: true,
+                      },
+                      ingress: {
+                        tls: false,
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe('https://custom-host');
           });
 
           it('should calculate quality-gate-api connection string', async () => {

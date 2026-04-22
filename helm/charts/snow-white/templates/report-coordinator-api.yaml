@@ -54,7 +54,7 @@ spec:
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC'
               value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL'
-              {{- if .Values.snowWhite.ingress.tls }}
+              {{- if or .Values.snowWhite.httproute.enabled .Values.snowWhite.ingress.tls }}
               value: 'https://{{ include "snow-white.publicHost" . }}'
               {{- else }}
               value: 'http://{{ include "snow-white.publicHost" . }}'

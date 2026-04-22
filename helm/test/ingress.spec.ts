@@ -7,11 +7,20 @@
 import { renderHelmChart } from './render-helm-chart';
 import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
 
+const valuesWithIngress = {
+  snowWhite: {
+    ingress: {
+      enabled: true,
+    },
+  },
+};
+
 describe('Ingress', () => {
   const renderAndGetIngress = async (manifests?: any[]) => {
     if (!manifests) {
       manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
+        values: valuesWithIngress,
       });
     }
 
@@ -44,6 +53,7 @@ describe('Ingress', () => {
   it('should be the only exposed ingress', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
+      values: valuesWithIngress,
     });
 
     const ingress = manifests.filter((m) => m.kind === 'Ingress');
@@ -57,6 +67,7 @@ describe('Ingress', () => {
       chartPath: 'charts/snow-white',
       // 53 chars is the max length for Helm release names
       releaseName: 'very-long-test-release-name-that-exceeds-the-limit-12',
+      values: valuesWithIngress,
     });
 
     const ingress = manifests.find(
@@ -69,23 +80,33 @@ describe('Ingress', () => {
     expect(ingress).toBeDefined();
   });
 
-  it('can be disabled with values', async () => {
-    const manifests = await renderHelmChart({
-      chartPath: 'charts/snow-white',
-      values: {
-        snowWhite: {
-          ingress: {
-            enabled: false,
+  it('is disabled by default', async () => {
+    await expect(() =>
+      renderHelmChart({
+        chartPath: 'charts/snow-white',
+        withDefaultValues: false,
+      }),
+    ).rejects.toThrow(
+      "ERROR: You must set one of 'snowWhite.httproute.enabled' or 'snowWhite.ingress.enabled'!",
+    );
+  });
+
+  it('should throw error when Ingress is enabled but no public domain is set', async () => {
+    await expect(() =>
+      renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          snowWhite: {
+            ingress: {
+              enabled: true,
+            },
           },
         },
-      },
-    });
-
-    const ingress = manifests.find(
-      (m) =>
-        m.kind === 'Ingress' && m.metadata.name === 'snow-white-test-release',
+        withDefaultValues: false,
+      }),
+    ).rejects.toThrow(
+      "ERROR: You must set 'snowWhite.host' to the public URL!",
     );
-    expect(ingress).toBeUndefined();
   });
 
   describe('annotations', () => {
@@ -145,6 +166,7 @@ describe('Ingress', () => {
             snowWhite: {
               ingress: {
                 className: ingressClassName,
+                enabled: true,
               },
             },
           },
@@ -175,6 +197,7 @@ describe('Ingress', () => {
           values: {
             snowWhite: {
               ingress: {
+                enabled: true,
                 tls: false,
               },
             },
@@ -224,6 +247,7 @@ describe('Ingress', () => {
         await renderHelmChart({
           chartPath: 'charts/snow-white',
           values: {
+            ...valuesWithIngress,
             otelCollector: {
               exposeThroughApiGateway: false,
             },
@@ -266,8 +290,9 @@ describe('Ingress', () => {
           chartPath: 'charts/snow-white',
           values: {
             snowWhite: {
+              host: hostname,
               ingress: {
-                host: hostname,
+                enabled: true,
               },
             },
           },
@@ -282,17 +307,6 @@ describe('Ingress', () => {
       expect(ingress.spec.rules).toHaveLength(1);
       const rule = ingress.spec.rules[0];
       expect(rule.host).toBe(hostname);
-    });
-
-    it('is required to specify a public host', async () => {
-      await expect(() =>
-        renderHelmChart({
-          chartPath: 'charts/snow-white',
-          withDefaultValues: false,
-        }),
-      ).rejects.toThrow(
-        "⚠ ERROR: You must set 'snowWhite.ingress.host' to the public URL!",
-      );
     });
   });
 });
