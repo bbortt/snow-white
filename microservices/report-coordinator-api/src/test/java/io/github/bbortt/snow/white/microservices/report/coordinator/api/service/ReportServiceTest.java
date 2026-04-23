@@ -10,7 +10,6 @@ import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.minimalQualityGateReport;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FINISHED_EXCEPTIONALLY;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -131,13 +130,6 @@ class ReportServiceTest {
         .reportParameter(mock(ReportParameter.class))
         .build();
 
-      var updatedReport = QualityGateReport.builder()
-        .calculationId(CALCULATION_ID)
-        .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
-        .reportStatus(PASSED.getVal())
-        .reportParameter(mock(ReportParameter.class))
-        .build();
-
       doReturn(Optional.of(originalReport))
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
@@ -166,7 +158,9 @@ class ReportServiceTest {
       doReturn(mappedResults)
         .when(apiTestResultMapperMock)
         .fromDtos(emptySet(), apiTest);
-      doReturn(updatedReport)
+
+      var qualityGateReportWithUpdatedStatus = mock(QualityGateReport.class);
+      doReturn(qualityGateReportWithUpdatedStatus)
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(originalReport);
 
@@ -190,7 +184,9 @@ class ReportServiceTest {
       verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
         originalReport
       );
-      verify(qualityGateReportRepositoryMock).save(updatedReport);
+      verify(qualityGateReportRepositoryMock).save(
+        qualityGateReportWithUpdatedStatus
+      );
     }
 
     @Test
@@ -227,37 +223,46 @@ class ReportServiceTest {
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
 
-      doAnswer(returnsFirstArg())
+      var apiInformation = mock(ApiInformation.class);
+      var apiTest = mock(ApiTest.class);
+
+      doReturn(apiTest)
+        .when(qualityGateReportApiTestsFilterMock)
+        .findApiTestMatchingApiInformationInQualityGateReport(
+          originalReport,
+          apiInformation
+        );
+
+      var errorMessage = "upstream failure";
+      doReturn(apiTest).when(apiTest).withStackTrace(errorMessage);
+      doReturn(apiTest).when(apiTest).withReportStatus(FINISHED_EXCEPTIONALLY);
+
+      QualityGateReport qualityGateReportWithUpdatedStatus = mock(
+        QualityGateReport.class
+      );
+      doReturn(qualityGateReportWithUpdatedStatus)
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(any(QualityGateReport.class));
 
       var event = new OpenApiCoverageResponseEvent(
-        mock(ApiInformation.class),
-        "upstream failure"
+        apiInformation,
+        errorMessage
       );
 
       fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
 
       verifyNoInteractions(qualityGateServiceMock);
-      verifyNoInteractions(qualityGateReportApiTestsFilterMock);
       verifyNoInteractions(apiTestResultMapperMock);
       verifyNoInteractions(apiTestResultLinkerMock);
 
-      ArgumentCaptor<QualityGateReport> reportCaptor = captor();
-      verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
-        reportCaptor.capture()
-      );
+      verify(apiTestRepositoryMock).save(apiTest);
 
-      var qualityGateReportWithStackTrace = reportCaptor.getValue();
-      assertThat(qualityGateReportWithStackTrace.getReportStatus()).isEqualTo(
-        FINISHED_EXCEPTIONALLY
-      );
-      assertThat(qualityGateReportWithStackTrace.getStackTrace()).contains(
-        "upstream failure"
+      verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
+        originalReport
       );
 
       verify(qualityGateReportRepositoryMock).save(
-        qualityGateReportWithStackTrace
+        qualityGateReportWithUpdatedStatus
       );
     }
 

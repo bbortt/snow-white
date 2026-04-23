@@ -9,7 +9,6 @@ CREATE TABLE quality_gate_report
     calculation_id           UUID        NOT NULL PRIMARY KEY,
     quality_gate_config_name VARCHAR(64) NOT NULL,
     report_status            SMALLINT    NOT NULL,
-    stack_trace              TEXT,
     created_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,6 +41,8 @@ CREATE TABLE api_test
     api_name       VARCHAR(64)           NOT NULL,
     api_version    VARCHAR(16),
     api_type       SMALLINT              NOT NULL,
+    report_status  SMALLINT              NOT NULL,
+    stack_trace    TEXT,
     calculation_id UUID                  NOT NULL,
     CONSTRAINT fk_quality_gate_report_api_test
         FOREIGN KEY (calculation_id)

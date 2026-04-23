@@ -20,7 +20,10 @@ import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = SPRING, uses = { ApiTestResultMapper.class })
+@Mapper(
+  componentModel = SPRING,
+  uses = { ApiTestResultMapper.class, ReportStatusMapper.class }
+)
 public interface ApiTestMapper {
   default Set<ApiTest> getApiTests(
     CalculateQualityGateRequest qualityGateCalculationRequest
@@ -39,6 +42,11 @@ public interface ApiTestMapper {
   )
   @Mapping(target = "apiTestResults", ignore = true)
   @Mapping(target = "qualityGateReport", ignore = true)
+  @Mapping(
+    target = "reportStatus",
+    expression = "java(io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED.getVal())"
+  )
+  @Mapping(target = "stackTrace", ignore = true)
   ApiTest toApiTest(CalculateQualityGateRequestIncludeApisInner includeApi);
 
   @Mapping(target = "id", ignore = true)
@@ -48,14 +56,21 @@ public interface ApiTestMapper {
   )
   @Mapping(target = "apiTestResults", ignore = true)
   @Mapping(target = "qualityGateReport", ignore = true)
+  @Mapping(
+    target = "reportStatus",
+    expression = "java(io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED.getVal())"
+  )
+  @Mapping(target = "stackTrace", ignore = true)
   ApiTest toApiTest(GetAllApis200ResponseInner apiDetails);
 
   ApiType toCommonApiType(GetAllApis200ResponseInner.ApiTypeEnum apiType);
 
   @Mapping(target = "testResults", source = "apiTestResults")
+  @Mapping(target = "status", source = "reportStatus")
   CalculateQualityGate202ResponseInterfacesInner toInterfaces(ApiTest apiTest);
 
   @Mapping(target = "testResults", source = "apiTestResults")
+  @Mapping(target = "status", source = "reportStatus")
   ListQualityGateReports200ResponseInnerInterfacesInner toListInterfaces(
     ApiTest apiTest
   );

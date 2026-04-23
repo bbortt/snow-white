@@ -14,6 +14,7 @@ target/
 
 # Dev Tools
 dev/postgresql/
+docs/_site/
 
 # Must have no newline at end of file
 tooling/openapi-generator-spring/src/main/resources/META-INF/services/org.openapitools.codegen.CodegenConfig

@@ -75,7 +75,7 @@ public class ReportService {
     }
 
     if (nonNull(event.errorMessage())) {
-      handleExceptionalResponse(report, event.errorMessage());
+      handleExceptionalResponse(report, event);
       return;
     }
 
@@ -84,13 +84,21 @@ public class ReportService {
 
   public void handleExceptionalResponse(
     QualityGateReport report,
-    String errorMessage
+    OpenApiCoverageResponseEvent event
   ) {
-    var updated = report
-      .withStackTrace(errorMessage)
+    var apiTest =
+      qualityGateReportApiTestsFilter.findApiTestMatchingApiInformationInQualityGateReport(
+        report,
+        event.apiInformation()
+      );
+
+    apiTest = apiTest
+      .withStackTrace(event.errorMessage())
       .withReportStatus(FINISHED_EXCEPTIONALLY);
 
-    updateWithStatusUpdate(updated);
+    apiTestRepository.save(apiTest);
+
+    updateWithStatusUpdate(report);
   }
 
   private void handleSuccessfulResponse(

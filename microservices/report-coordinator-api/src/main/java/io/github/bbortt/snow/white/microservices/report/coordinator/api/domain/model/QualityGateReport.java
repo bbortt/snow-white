@@ -15,7 +15,6 @@ import static lombok.AccessLevel.PRIVATE;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -31,7 +30,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table
@@ -76,11 +74,6 @@ public class QualityGateReport {
   @Builder.Default
   @Column(nullable = false, updatable = false)
   private Instant createdAt = Instant.now();
-
-  @Lob
-  @Nullable
-  @Column(columnDefinition = "TEXT")
-  private String stackTrace;
 
   public @NonNull ReportStatus getReportStatus() {
     return reportStatus(reportStatus);
