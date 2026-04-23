@@ -29,6 +29,16 @@ properties:
       - ASYNCAPI
       - OPENAPI
       - GRAPHQL
+  status:
+    type: string
+    enum: [IN_PROGRESS, FAILED, PASSED, FINISHED_EXCEPTIONALLY, TIMED_OUT]
+    default: 'IN_PROGRESS'
+    description: 'Current status of the tested API'
+    minLength: 1
+    maxLength: 32
+  stackTrace:
+    type: string
+    description: 'Error information, in case this report failed exceptionally.'
   testResults:
     type: array
     description: 'List of test results for the API'

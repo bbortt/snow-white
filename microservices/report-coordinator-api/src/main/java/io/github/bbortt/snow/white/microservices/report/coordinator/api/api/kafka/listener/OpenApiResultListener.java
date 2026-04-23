@@ -15,6 +15,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.TestResultForUnknownApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import java.util.UUID;
@@ -53,11 +54,16 @@ public class OpenApiResultListener {
     var calculationId = UUID.fromString(
       openApiCoverageResponseEventConsumerRecord.key()
     );
+
+    var openApiCoverageResponseEvent =
+      openApiCoverageResponseEventConsumerRecord.value();
     try (var _ = extractedContext.makeCurrent()) {
       reportService.updateReportWithOpenApiCoverageResults(
         calculationId,
-        openApiCoverageResponseEventConsumerRecord.value()
+        openApiCoverageResponseEvent
       );
+    } catch (TestResultForUnknownApiException e) {
+      logger.error("Failed to update OpenAPI result '{}'!", calculationId, e);
     } catch (Exception e) {
       var rootCause = getRootCause(e);
       logger.error("Failed to update OpenAPI result '{}'!", calculationId, e);
@@ -66,7 +72,9 @@ public class OpenApiResultListener {
         .ifPresent(qualityGateReport ->
           reportService.handleExceptionalResponse(
             qualityGateReport,
-            extractStackTraceOrErrorMessage(rootCause)
+            openApiCoverageResponseEvent.withErrorMessage(
+              rootCause.getMessage()
+            )
           )
         );
     }
