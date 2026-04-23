@@ -12,11 +12,9 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.TIMED_OUT;
-import static java.math.BigDecimal.ONE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import java.util.List;
@@ -39,28 +37,28 @@ final class QualityGateStatusCalculator {
       return qualityGateReport;
     } else if (isEmpty(qualityGateReport.getApiTests())) {
       return qualityGateReport.withReportStatus(NOT_STARTED);
-    } else if (
-      qualityGateReport
-        .getApiTests()
-        .parallelStream()
-        .anyMatch(apiTest -> isEmpty(apiTest.getApiTestResults()))
-    ) {
+    } else if (anyApiTestInReportStatus(qualityGateReport, IN_PROGRESS)) {
       return qualityGateReport.withReportStatus(IN_PROGRESS);
-    } else if (
-      qualityGateReport
-        .getApiTests()
-        .parallelStream()
-        .anyMatch(apiTest ->
-          apiTest
-            .getApiTestResults()
-            .parallelStream()
-            .filter(ApiTestResult::getIncludedInReport)
-            .anyMatch(apiTestResult -> !ONE.equals(apiTestResult.getCoverage()))
-        )
-    ) {
+    } else if (anyApiTestInReportStatus(qualityGateReport, FAILED)) {
       return qualityGateReport.withReportStatus(FAILED);
+    } else if (
+      anyApiTestInReportStatus(qualityGateReport, FINISHED_EXCEPTIONALLY)
+    ) {
+      return qualityGateReport.withReportStatus(FINISHED_EXCEPTIONALLY);
     } else {
       return qualityGateReport.withReportStatus(PASSED);
     }
+  }
+
+  private static boolean anyApiTestInReportStatus(
+    QualityGateReport qualityGateReport,
+    ReportStatus finishedExceptionally
+  ) {
+    return qualityGateReport
+      .getApiTests()
+      .parallelStream()
+      .anyMatch(apiTest ->
+        finishedExceptionally.equals(apiTest.getReportStatus())
+      );
   }
 }

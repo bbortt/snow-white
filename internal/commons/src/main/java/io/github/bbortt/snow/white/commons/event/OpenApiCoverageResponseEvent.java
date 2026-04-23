@@ -12,13 +12,14 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import java.util.Set;
+import lombok.With;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public record OpenApiCoverageResponseEvent(
   ApiInformation apiInformation,
   @Nullable Set<OpenApiTestResult> openApiTestResults,
-  @Nullable String errorMessage
+  @With @Nullable String errorMessage
 ) implements ApiCoverageResponseEvent {
   public OpenApiCoverageResponseEvent(
     ApiInformation apiInformation,

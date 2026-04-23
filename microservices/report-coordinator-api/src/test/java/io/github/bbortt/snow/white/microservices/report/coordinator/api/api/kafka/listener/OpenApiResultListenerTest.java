@@ -12,7 +12,6 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -20,11 +19,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.TestResultForUnknownApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -177,12 +178,39 @@ class OpenApiResultListenerTest {
     }
 
     @Test
+    void shouldCatchButNotRetryTestResultForUnknownApiException() {
+      withValidOpenTelemetryContext();
+
+      var event = getEmptyOpenApiCoverageResponseEvent();
+
+      doThrow(
+        new TestResultForUnknownApiException(
+          mock(QualityGateReport.class),
+          mock(ApiInformation.class)
+        )
+      )
+        .when(reportServiceMock)
+        .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      fixture.onOpenApiCoverageResponse(
+        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
+      );
+
+      verify(reportServiceMock).updateReportWithOpenApiCoverageResults(
+        CALCULATION_ID,
+        event
+      );
+      verifyNoMoreInteractions(reportServiceMock);
+    }
+
+    @Test
     void shouldCatchAnyExceptionsAndTryUpdatingQualityGateReport() {
       withValidOpenTelemetryContext();
 
       var event = getEmptyOpenApiCoverageResponseEvent();
 
-      doThrow(new IllegalArgumentException("thrown on purpose"))
+      var rootCause = "thrown on purpose";
+      doThrow(new IllegalArgumentException(rootCause))
         .when(reportServiceMock)
         .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
 
@@ -195,10 +223,18 @@ class OpenApiResultListenerTest {
         getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
       );
 
+      ArgumentCaptor<
+        OpenApiCoverageResponseEvent
+      > openApiCoverageResponseEventArgumentCaptor = captor();
       verify(reportServiceMock).handleExceptionalResponse(
         eq(qualityGateReport),
-        anyString()
+        openApiCoverageResponseEventArgumentCaptor.capture()
       );
+
+      assertThat(openApiCoverageResponseEventArgumentCaptor.getValue())
+        .isNotNull()
+        .extracting(OpenApiCoverageResponseEvent::errorMessage)
+        .isEqualTo(rootCause);
     }
 
     @Test
@@ -221,7 +257,7 @@ class OpenApiResultListenerTest {
 
       verify(reportServiceMock, never()).handleExceptionalResponse(
         any(QualityGateReport.class),
-        anyString()
+        any(OpenApiCoverageResponseEvent.class)
       );
     }
 

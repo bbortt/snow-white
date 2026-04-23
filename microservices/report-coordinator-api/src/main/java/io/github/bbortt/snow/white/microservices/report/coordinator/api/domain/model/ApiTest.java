@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model;
 
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.reportStatus;
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
@@ -18,6 +20,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
@@ -72,6 +75,16 @@ public class ApiTest {
 
   @NonNull
   @Builder.Default
+  @Column(nullable = false)
+  private Short reportStatus = IN_PROGRESS.getVal();
+
+  @Lob
+  @Nullable
+  @Column(columnDefinition = "TEXT")
+  private String stackTrace;
+
+  @NonNull
+  @Builder.Default
   @OneToMany(mappedBy = "apiTest", cascade = { ALL }, fetch = EAGER)
   private Set<ApiTestResult> apiTestResults = new HashSet<>();
 
@@ -81,5 +94,14 @@ public class ApiTest {
 
   public ApiType getApiType() {
     return ApiType.apiType(apiType);
+  }
+
+  public @NonNull ReportStatus getReportStatus() {
+    return reportStatus(reportStatus);
+  }
+
+  public @NonNull ApiTest withReportStatus(@NonNull ReportStatus reportStatus) {
+    this.reportStatus = reportStatus.getVal();
+    return this;
   }
 }

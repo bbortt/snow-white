@@ -13,18 +13,18 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerCalculationRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.ValueMapping;
 
 @Mapper(
   componentModel = SPRING,
-  uses = { ApiTestMapper.class, ReportParameterMapper.class }
+  uses = {
+    ApiTestMapper.class, ReportParameterMapper.class, ReportStatusMapper.class,
+  }
 )
 public interface QualityGateReportMapper {
   @Mapping(
@@ -74,16 +74,4 @@ public interface QualityGateReportMapper {
   default OffsetDateTime map(Instant instant) {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
   }
-
-  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
-  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
-  CalculateQualityGate202Response.StatusEnum toStatusEnum(
-    ReportStatus reportStatus
-  );
-
-  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
-  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
-  ListQualityGateReports200ResponseInner.StatusEnum toListStatusEnum(
-    ReportStatus reportStatus
-  );
 }
