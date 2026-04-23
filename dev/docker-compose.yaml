@@ -36,7 +36,7 @@ services:
       - internal
 
   grafana:
-    image: grafana/otel-lgtm:0.24.1
+    image: grafana/otel-lgtm:0.25.0
     ports:
       - '15000:3000'
     networks:
