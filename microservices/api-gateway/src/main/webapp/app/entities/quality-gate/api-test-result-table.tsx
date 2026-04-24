@@ -6,6 +6,7 @@
 
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 
+import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
 import ApiCriterionInfo from 'app/entities/quality-gate/api-criterion-info';
@@ -57,7 +58,7 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
         return [
-          <CSSTransition key={key} timeout={200} classNames="row-fade" nodeRef={nodeRef}>
+          <CSSTransition key={key} timeout={CSS_TRANSITION_TIMEOUT} classNames="row-fade" nodeRef={nodeRef}>
             <tr ref={nodeRef} data-cy="apiTestResultTable">
               <td>{nameText}</td>
               <td>

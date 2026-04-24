@@ -1,0 +1,33 @@
+/*!
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+.table-row-appear,
+.table-row-enter {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.table-row-appear-active,
+.table-row-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.table-row-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.table-row-exit-active {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
