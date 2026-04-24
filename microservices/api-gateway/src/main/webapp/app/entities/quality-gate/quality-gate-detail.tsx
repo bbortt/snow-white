@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
-import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -78,7 +77,6 @@ export const QualityGateDetail = () => {
           ? sortedApiTests.map((apiTest: IApiTest) => (
               <ApiTestCard
                 apiTest={apiTest}
-                qualityGateStatus={qualityGateEntity.status || ReportStatus.NOT_STARTED}
                 showOnlyIncluded={showOnlyIncluded}
                 key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
               />

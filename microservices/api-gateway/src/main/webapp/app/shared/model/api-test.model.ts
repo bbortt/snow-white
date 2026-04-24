@@ -5,6 +5,7 @@
  */
 
 import { IApiTestResult } from 'app/shared/model/api-test-result.model';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 
 export interface IApiTest {
   serviceName?: string;
@@ -12,4 +13,6 @@ export interface IApiTest {
   apiVersion?: string;
   apiType?: string;
   testResults?: IApiTestResult[];
+  status?: ReportStatus;
+  stackTrace?: string;
 }
