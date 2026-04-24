@@ -13,7 +13,8 @@
       "apiName": "API Name",
       "apiVersion": "API Version",
       "apiType": "API Type",
-      "testResults": "Test Results"
+      "testResults": "Test Results",
+      "stackTrace": "Stack Trace"
     }
   }
 }

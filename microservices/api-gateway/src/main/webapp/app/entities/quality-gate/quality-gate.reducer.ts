@@ -28,7 +28,6 @@ const initialState: EntityState<IQualityGate> = {
 const fromDto = ({
   calculationId,
   qualityGateConfigName,
-  stackTrace,
   status,
   calculationRequest,
   interfaces,
@@ -47,8 +46,9 @@ const fromDto = ({
       additionalInformation: testResult.additionalInformation,
       isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,
     })),
+    status: apiTest.status ? ReportStatus[apiTest.status] : ReportStatus.IN_PROGRESS,
+    stackTrace: apiTest.stackTrace,
   })),
-  stackTrace,
   status: ReportStatus[status],
   createdAt: initiatedAt,
   calculationRequest: {
