@@ -8,13 +8,17 @@ import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.mo
 
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { useAnimatedList } from 'app/shared/use-animated-list';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
-import React, { useState, useEffect } from 'react';
+import React, { createRef, useEffect, useRef, useState } from 'react';
 import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Table } from 'reactstrap';
+import 'app/shared/table-row-animation.scss';
 
 import { getEntities } from './quality-gate-config.reducer';
 
@@ -29,6 +33,10 @@ export const QualityGateConfig = () => {
   );
 
   const qualityGateConfigList: IQualityGateConfig[] = useAppSelector(state => state.snowwhite.qualityGateConfig.entities);
+
+  const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
+
+  const { displayedList, isExiting } = useAnimatedList(qualityGateConfigList, q => q.name!);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGateConfig.totalItems);
 
@@ -119,7 +127,7 @@ export const QualityGateConfig = () => {
         </div>
       </h2>
       <div className="table-responsive">
-        {qualityGateConfigList && qualityGateConfigList.length > 0 ? (
+        {displayedList && displayedList.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
@@ -137,63 +145,83 @@ export const QualityGateConfig = () => {
                 <th />
               </tr>
             </thead>
-            <tbody>
-              {qualityGateConfigList.map((qualityGateConfig: IQualityGateConfig, i) => (
-                <tr key={`entity-${qualityGateConfig.name}`} data-testid="qualityGateConfigTable">
-                  <td>
-                    <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
-                      {qualityGateConfig.name}
-                    </Button>
-                  </td>
-                  <td>{qualityGateConfig.description}</td>
-                  <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
-                  <td className="text-end">
-                    <div className="btn-group flex-btn-group-container">
-                      <Button
-                        tag={Link}
-                        to={`/quality-gate-config/${qualityGateConfig.name}`}
-                        color="info"
-                        size="sm"
-                        data-testid="entityDetailsButton"
-                      >
-                        <FontAwesomeIcon icon="eye" />{' '}
-                        <span className="d-none d-md-inline">
-                          <Translate contentKey="entity.action.view">View</Translate>
-                        </span>
-                      </Button>
-                      {!qualityGateConfig.isPredefined && (
-                        <>
+            <TransitionGroup component="tbody" appear>
+              {displayedList.map((qualityGateConfig: IQualityGateConfig, i) => {
+                const key = `entity-${qualityGateConfig.name}`;
+                if (!nodeRefs.current.has(key)) {
+                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+                }
+                const nodeRef = nodeRefs.current.get(key)!;
+                return (
+                  <CSSTransition
+                    key={key}
+                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                    classNames="table-row"
+                    nodeRef={nodeRef}
+                    appear
+                  >
+                    <tr
+                      ref={nodeRef}
+                      data-testid="qualityGateConfigTable"
+                      className={isExiting ? 'table-row-exit-active' : undefined}
+                      style={{ transitionDelay: `${i * 30}ms` }}
+                    >
+                      <td>
+                        <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
+                          {qualityGateConfig.name}
+                        </Button>
+                      </td>
+                      <td>{qualityGateConfig.description}</td>
+                      <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
+                      <td className="text-end">
+                        <div className="btn-group flex-btn-group-container">
                           <Button
                             tag={Link}
-                            to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
-                            color="primary"
+                            to={`/quality-gate-config/${qualityGateConfig.name}`}
+                            color="info"
                             size="sm"
-                            data-testid="entityEditButton"
+                            data-testid="entityDetailsButton"
                           >
-                            <FontAwesomeIcon icon="pencil-alt" />{' '}
+                            <FontAwesomeIcon icon="eye" />{' '}
                             <span className="d-none d-md-inline">
-                              <Translate contentKey="entity.action.edit">Edit</Translate>
+                              <Translate contentKey="entity.action.view">View</Translate>
                             </span>
                           </Button>
-                          <Button
-                            tag={Link}
-                            to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
-                            color="danger"
-                            size="sm"
-                            data-testid="entityDeleteButton"
-                          >
-                            <FontAwesomeIcon icon="trash" />{' '}
-                            <span className="d-none d-md-inline">
-                              <Translate contentKey="entity.action.delete">Delete</Translate>
-                            </span>
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                          {!qualityGateConfig.isPredefined && (
+                            <>
+                              <Button
+                                tag={Link}
+                                to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                                color="primary"
+                                size="sm"
+                                data-testid="entityEditButton"
+                              >
+                                <FontAwesomeIcon icon="pencil-alt" />{' '}
+                                <span className="d-none d-md-inline">
+                                  <Translate contentKey="entity.action.edit">Edit</Translate>
+                                </span>
+                              </Button>
+                              <Button
+                                tag={Link}
+                                to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                                color="danger"
+                                size="sm"
+                                data-testid="entityDeleteButton"
+                              >
+                                <FontAwesomeIcon icon="trash" />{' '}
+                                <span className="d-none d-md-inline">
+                                  <Translate contentKey="entity.action.delete">Delete</Translate>
+                                </span>
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  </CSSTransition>
+                );
+              })}
+            </TransitionGroup>
           </Table>
         ) : (
           !loading && (

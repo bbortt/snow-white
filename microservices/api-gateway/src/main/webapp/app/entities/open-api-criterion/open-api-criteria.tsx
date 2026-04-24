@@ -5,12 +5,16 @@
  */
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { TextWithCode } from 'app/shared/TextWithCode';
-import React, { useEffect } from 'react';
+import { useAnimatedList } from 'app/shared/use-animated-list';
+import React, { createRef, useEffect, useRef } from 'react';
 import { Translate, translate } from 'react-jhipster';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Table } from 'reactstrap';
+import 'app/shared/table-row-animation.scss';
 
 import { getEntities } from './open-api-criterion.reducer';
 
@@ -18,6 +22,10 @@ export const OpenApiCriteria = () => {
   const dispatch = useAppDispatch();
 
   const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+
+  const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
+
+  const { displayedList, isExiting } = useAnimatedList(openApiCriterionList ?? [], q => q.name!);
   const loading = useAppSelector(state => state.snowwhite.openApiCriterion.loading);
 
   const getAllEntities = () => {
@@ -44,7 +52,7 @@ export const OpenApiCriteria = () => {
         </div>
       </h2>
       <div className="table-responsive">
-        {openApiCriterionList && openApiCriterionList.length > 0 ? (
+        {displayedList && displayedList.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
@@ -56,21 +64,44 @@ export const OpenApiCriteria = () => {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {openApiCriterionList.map((openApiCriterion, i) => {
+            <TransitionGroup component="tbody" appear>
+              {displayedList.map((openApiCriterion, i) => {
                 const name = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.name`);
                 const description = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.description`);
 
+                const key = `entity-${openApiCriterion.name}`;
+                if (!nodeRefs.current.has(key)) {
+                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+                }
+                const nodeRef = nodeRefs.current.get(key)!;
+
                 return (
-                  <tr key={`entity-${openApiCriterion.name}`} data-testid="openApiCriteriaTable">
-                    <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
-                    <td>
-                      {description.startsWith('translation-not-found') ? openApiCriterion.description : <TextWithCode text={description} />}
-                    </td>
-                  </tr>
+                  <CSSTransition
+                    key={key}
+                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                    classNames="table-row"
+                    nodeRef={nodeRef}
+                    appear
+                  >
+                    <tr
+                      ref={nodeRef}
+                      data-testid="openApiCriteriaTable"
+                      className={isExiting ? 'table-row-exit-active' : undefined}
+                      style={{ transitionDelay: `${i * 30}ms` }}
+                    >
+                      <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
+                      <td>
+                        {description.startsWith('translation-not-found') ? (
+                          openApiCriterion.description
+                        ) : (
+                          <TextWithCode text={description} />
+                        )}
+                      </td>
+                    </tr>
+                  </CSSTransition>
                 );
               })}
-            </tbody>
+            </TransitionGroup>
           </Table>
         ) : (
           !loading && (
