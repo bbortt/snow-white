@@ -8,19 +8,22 @@ import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 
 import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { APP_DATE_FORMAT } from 'app/config/constants';
+import { APP_DATE_FORMAT, CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
+import { useAnimatedList } from 'app/shared/use-animated-list';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import React, { createRef, useEffect, useRef, useState } from 'react';
 import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Table } from 'reactstrap';
 
 import { getEntities } from './quality-gate.reducer';
+import 'app/shared/table-row-animation.scss';
 
 export const QualityGate = () => {
   const dispatch = useAppDispatch();
@@ -36,6 +39,10 @@ export const QualityGate = () => {
   const totalItems = useAppSelector(state => state.snowwhite.qualityGate.totalItems);
 
   const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
+
+  const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
+
+  const { displayedList, isExiting } = useAnimatedList(qualityGateList, q => String(q.calculationId));
 
   const getAllEntities = () => {
     dispatch(
@@ -114,7 +121,7 @@ export const QualityGate = () => {
         </div>
       </h2>
       <div className="table-responsive">
-        {qualityGateList && qualityGateList.length > 0 ? (
+        {displayedList && displayedList.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
@@ -140,47 +147,67 @@ export const QualityGate = () => {
                 <th />
               </tr>
             </thead>
-            <tbody>
-              {qualityGateList.map((qualityGate, i) => (
-                <tr key={`entity-${qualityGate.calculationId}`} data-cy="qualityGateTable">
-                  <td>
-                    <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
-                      {qualityGate.calculationId}
-                    </Button>
-                  </td>
-                  <td>
-                    <StatusBadge fill={true} status={qualityGate.status || ReportStatus.NOT_STARTED} />
-                  </td>
-                  <td>
-                    <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
-                      {qualityGate.qualityGateConfig?.name}
-                    </Button>
-                  </td>
-                  <td>
-                    {qualityGate.createdAt ? (
-                      <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
-                    ) : null}
-                  </td>
-                  <td>{qualityGate.apiTests?.length}</td>
-                  <td className="text-end">
-                    <div className="btn-group flex-btn-group-container">
-                      <Button
-                        tag={Link}
-                        to={`/quality-gate/${qualityGate.calculationId}`}
-                        color="info"
-                        size="sm"
-                        data-cy="entityDetailsButton"
-                      >
-                        <FontAwesomeIcon icon="eye" />{' '}
-                        <span className="d-none d-md-inline">
-                          <Translate contentKey="entity.action.view">View</Translate>
-                        </span>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <TransitionGroup component="tbody" appear>
+              {displayedList.map((qualityGate, i) => {
+                const key = `entity-${qualityGate.calculationId}`;
+                if (!nodeRefs.current.has(key)) {
+                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+                }
+                const nodeRef = nodeRefs.current.get(key)!;
+                return (
+                  <CSSTransition
+                    key={key}
+                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                    classNames="table-row"
+                    nodeRef={nodeRef}
+                    appear
+                  >
+                    <tr
+                      ref={nodeRef}
+                      data-cy="qualityGateTable"
+                      className={isExiting ? 'table-row-exit-active' : undefined}
+                      style={{ transitionDelay: `${i * 30}ms` }}
+                    >
+                      <td>
+                        <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
+                          {qualityGate.calculationId}
+                        </Button>
+                      </td>
+                      <td>
+                        <StatusBadge fill={true} status={qualityGate.status || ReportStatus.NOT_STARTED} />
+                      </td>
+                      <td>
+                        <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
+                          {qualityGate.qualityGateConfig?.name}
+                        </Button>
+                      </td>
+                      <td>
+                        {qualityGate.createdAt ? (
+                          <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
+                        ) : null}
+                      </td>
+                      <td>{qualityGate.apiTests?.length}</td>
+                      <td className="text-end">
+                        <div className="btn-group flex-btn-group-container">
+                          <Button
+                            tag={Link}
+                            to={`/quality-gate/${qualityGate.calculationId}`}
+                            color="info"
+                            size="sm"
+                            data-cy="entityDetailsButton"
+                          >
+                            <FontAwesomeIcon icon="eye" />{' '}
+                            <span className="d-none d-md-inline">
+                              <Translate contentKey="entity.action.view">View</Translate>
+                            </span>
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  </CSSTransition>
+                );
+              })}
+            </TransitionGroup>
           </Table>
         ) : (
           !loading && (
