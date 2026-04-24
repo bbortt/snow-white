@@ -14,7 +14,6 @@ export interface IQualityGate {
   calculationId?: string;
   qualityGateConfig?: IQualityGateConfig;
   apiTests?: IApiTest[];
-  stackTrace?: string;
   status?: ReportStatus;
   createdAt?: string;
   calculationRequest?: ICalculationRequestParameters;

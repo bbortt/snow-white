@@ -11,42 +11,39 @@ import type { IApiTest } from 'app/shared/model/api-test.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ApiTestResultTable from 'app/entities/quality-gate/api-test-result-table';
+import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-block';
 import { CoverageProgressBar } from 'app/entities/quality-gate/coverage-progress-bar';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import React, { ReactElement, useMemo, useState } from 'react';
+import React, { MouseEventHandler, ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
 import { Card, CardBody, CardTitle, Col, Collapse, Row, Tooltip } from 'reactstrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ApiTestCardProps {
   apiTest: IApiTest;
-  qualityGateStatus: ReportStatus;
   showOnlyIncluded: boolean;
 }
 
-const isQualityGateStatusOverride = (qualityGateStatus: ReportStatus): boolean => {
-  return [ReportStatus.FINISHED_EXCEPTIONALLY, ReportStatus.TIMED_OUT].includes(qualityGateStatus);
-};
-
-const renderStatusBadge = (containsTestResults: boolean, testResultsPassed: boolean): ReactElement => {
-  if (!containsTestResults) {
-    return <StatusBadge status={ReportStatus.IN_PROGRESS} />;
-  } else if (testResultsPassed) {
-    return <StatusBadge status={ReportStatus.PASSED} />;
+const renderCardContentConditionally = (
+  apiTest: IApiTest,
+  containsTestResults: boolean,
+  visibleTestResults: IApiTestResult[],
+): ReactElement => {
+  if (apiTest.stackTrace) {
+    return <CodeHighlightBlock code={apiTest.stackTrace} />;
+  } else if (containsTestResults) {
+    return <ApiTestResultTable apiTestResults={visibleTestResults} />;
+  } else {
+    return (
+      <div className="alert alert-warning">
+        <Translate contentKey="snowWhiteApp.apiTestResult.home.notFound">No API Test Results found</Translate>
+      </div>
+    );
   }
-
-  return <StatusBadge status={ReportStatus.FAILED} />;
 };
 
-export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateStatus, showOnlyIncluded }: ApiTestCardProps) => {
-  const apiTestResultStatus = useMemo(
-    () =>
-      !apiTest.testResults
-        ?.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)
-        .some(apiTestResult => !apiTestResult.coverage || apiTestResult.coverage < 1) || false,
-    [apiTest.testResults],
-  );
+export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyIncluded }: ApiTestCardProps) => {
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
   const tooltipId = useMemo(() => `Tooltip-${uuidv4()}`, []);
 
@@ -75,11 +72,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
           </Col>
           <Col md={2}>
             <h4 className="mb-0">
-              {isQualityGateStatusOverride(qualityGateStatus) ? (
-                <StatusBadge status={qualityGateStatus} />
-              ) : (
-                renderStatusBadge(containsTestResults, apiTestResultStatus)
-              )}
+              <StatusBadge status={apiTest.status || ReportStatus.NOT_STARTED} />
             </h4>
           </Col>
           <Col md={3}>
@@ -104,15 +97,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, qualityGateSt
         </Row>
       </CardTitle>
       <CardBody>
-        <Collapse isOpen={isOpen}>
-          {containsTestResults ? (
-            <ApiTestResultTable apiTestResults={visibleTestResults} />
-          ) : (
-            <div className="alert alert-warning">
-              <Translate contentKey="snowWhiteApp.apiTestResult.home.notFound">No API Test Results found</Translate>
-            </div>
-          )}
-        </Collapse>
+        <Collapse isOpen={isOpen}>{renderCardContentConditionally(apiTest, containsTestResults, visibleTestResults)}</Collapse>
       </CardBody>
     </Card>
   );

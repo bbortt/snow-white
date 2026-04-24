@@ -11,7 +11,6 @@ import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import { APP_DATE_FORMAT } from 'app/config/constants';
 import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-block';
 import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
-import { StackTraceCard } from 'app/entities/quality-gate/stack-trace-card';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React from 'react';
@@ -60,7 +59,6 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
             </span>
           </dt>
           <dd>{qualityGate.createdAt ? <TextFormat value={qualityGate.createdAt} type="date" format={APP_DATE_FORMAT} /> : null}</dd>
-          {qualityGate.stackTrace ? <StackTraceCard stackTrace={qualityGate.stackTrace} /> : null}
           <dt>
             <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
           </dt>
