@@ -35,7 +35,7 @@ const requireOption = (value: string | undefined, message: string): string => {
 
 export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPrereleasesOptions => {
   const needsConfig = !!options.configFile || !options.url || !options.apiSpecs;
-  const fileConfig: Partial<CliOptions> = needsConfig ? (resolveConfig(options.configFile) as Partial<CliOptions>) : {};
+  const fileConfig: Partial<CliOptions> = needsConfig ? resolveConfig(options.configFile) : {};
 
   const url = requireOption(
     resolveOption('--url', options.url, fileConfig.url),
