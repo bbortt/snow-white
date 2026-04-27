@@ -131,6 +131,12 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                        |
 | snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `1`                              | The number of successful finished jobs to keep.                               |
 
+### Global Settings
+
+| Key            | Type   | Default | Description                                                                                                                          |
+| -------------- | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| snowWhite.host | string | `""`    | Public domain where Snow-White is reachable under. Must be specified when either `ingress.enabled=true` or `httproute.enabled=true`. |
+
 ### Housekeeping
 
 | Key                                               | Type   | Default             | Description                                                                   |
@@ -144,14 +150,22 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.housekeeping.schedule                   | string | `"* * * * *"`       | Cron schedule for housekeeping jobs.                                          |
 | snowWhite.housekeeping.successfulJobsHistoryLimit | int    | `1`                 | The number of successful finished jobs to keep.                               |
 
+### Snow-White HTTPRoute
+
+| Key                             | Type   | Default | Description                               |
+| ------------------------------- | ------ | ------- | ----------------------------------------- |
+| snowWhite.httproute.annotations | object | `{}`    | Additional annotations for the HTTPRoute. |
+| snowWhite.httproute.enabled     | bool   | `false` | Enable HTTPRoute.                         |
+| snowWhite.httproute.parentRefs  | list   | `[]`    | Parent reference of the HTTPRoute.        |
+
 ### Snow-White Ingress
 
-| Key                         | Type   | Default   | Description                                                       |
-| --------------------------- | ------ | --------- | ----------------------------------------------------------------- |
-| snowWhite.ingress.className | string | `"nginx"` | Ingress class name.                                               |
-| snowWhite.ingress.enabled   | bool   | `true`    | Enable ingress.                                                   |
-| snowWhite.ingress.host      | string | `""`      | .Ingress hostname. Must be specified when `ingress.enabled=true`. |
-| snowWhite.ingress.tls       | bool   | `true`    | Enable TLS.                                                       |
+| Key                           | Type   | Default   | Description                             |
+| ----------------------------- | ------ | --------- | --------------------------------------- |
+| snowWhite.ingress.annotations | object | `{}`      | Additional annotations for the Ingress. |
+| snowWhite.ingress.className   | string | `"nginx"` | Ingress class name.                     |
+| snowWhite.ingress.enabled     | bool   | `false`   | Enable ingress.                         |
+| snowWhite.ingress.tls         | bool   | `true`    | Enable TLS.                             |
 
 ### Snow-White Kafka
 

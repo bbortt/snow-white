@@ -33,7 +33,7 @@ helm upgrade --install \
   --set kafka.persistence.size=5Gi \
   --set image.pullPolicy=IfNotPresent \
   --set snowWhite.mode=minimal \
-  --set snowWhite.ingress.host=localhost \
+  --set snowWhite.host=localhost \
   --set snowWhite.ingress.tls=false \
   --set snowWhite.apiIndexApi.image.tag=latest \
   --set snowWhite.apiGateway.image.tag=latest \

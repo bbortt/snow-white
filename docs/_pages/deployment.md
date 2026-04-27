@@ -7,12 +7,12 @@ toc_sticky: true
 
 Snow-White is distributed as a [Helm](https://helm.sh) chart and can be deployed to any Kubernetes cluster.
 
-## Adding the Helm Repository
+## Installation
 
-[Helm](https://helm.sh) must be installed to use the Snow-White chart.
-Please refer to Helm's [documentation](https://helm.sh/docs) to get started.
+Snow-White is distributed as a [Helm](https://helm.sh) chart.
+If you haven't used Helm before, refer to the [official documentation](https://helm.sh/docs) to get started.
 
-Once Helm has been set up correctly, add the repo:
+Once Helm has been set up correctly, add the repository:
 
 ```shell
 helm repo add snow-white https://bbortt.github.io/snow-white
@@ -20,16 +20,23 @@ helm repo update
 helm search repo snow-white
 ```
 
-**Install:**
+Then, continue by installing the Chart:
 
 ```shell
 helm install my-snow-white snow-white/snow-white \
-  --set snowWhite.ingress.host=[PUBLIC_HOST]
+  --set snowWhite.host=[PUBLIC_HOST]
 ```
 
 > Replace `[PUBLIC_HOST]` with the domain Snow-White will be reachable on.
 
-**Uninstall:**
+You must also enable one of the following ingress options:
+
+| Option                                                                                                    | Value                              | Notes                                                                                                      |
+| --------------------------------------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [Kubernetes Gateway API](https://kubernetes.io/docs/concepts/services-networking/gateway) _(recommended)_ | `snowWhite.httproute.enabled=true` |                                                                                                            |
+| [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress)                     | `snowWhite.ingress.enabled=true`   | NGINX Ingress Controller is [retired](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement) |
+
+### Uninstall
 
 ```shell
 helm uninstall my-snow-white
