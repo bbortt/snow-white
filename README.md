@@ -27,15 +27,15 @@ It currently provides insights into:
 
 Full documentation is available at **[bbortt.github.io/snow-white](https://bbortt.github.io/snow-white)**.
 
-| Section                                                           | Description                                                 |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- |
-| [Deployment](https://bbortt.github.io/snow-white/deployment/)     | Install Snow-White with Helm and configure your environment |
-| [Onboarding](https://bbortt.github.io/snow-white/onboarding/)     | Step-by-step guide to integrating your service              |
-| [Architecture](https://bbortt.github.io/snow-white/architecture/) | Component overview and event-driven design                  |
-| [Workflows](https://bbortt.github.io/snow-white/workflows/)       | CI/CD pipeline patterns and quality gate workflows          |
-| [CLI Reference](https://bbortt.github.io/snow-white/cli/)         | Full CLI command reference                                  |
-| [Requirements](https://bbortt.github.io/snow-white/requirements/) | System and dependency requirements                          |
-| [License](https://bbortt.github.io/snow-white/license/)           | Licensing details and commercial use                        |
+| Section                                                          | Description                                                 |
+| ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Deployment](https://bbortt.github.io/snow-white/deployment)     | Install Snow-White with Helm and configure your environment |
+| [Onboarding](https://bbortt.github.io/snow-white/onboarding)     | Step-by-step guide to integrating your service              |
+| [Architecture](https://bbortt.github.io/snow-white/architecture) | Component overview and event-driven design                  |
+| [Workflows](https://bbortt.github.io/snow-white/workflows)       | CI/CD pipeline patterns and quality gate workflows          |
+| [CLI Reference](https://bbortt.github.io/snow-white/cli)         | Full CLI command reference                                  |
+| [Requirements](https://bbortt.github.io/snow-white/requirements) | System and dependency requirements                          |
+| [License](https://bbortt.github.io/snow-white/license)           | Licensing details and commercial use                        |
 
 ## Installation (for providers)
 
@@ -52,7 +52,7 @@ See ["Onboarding"](https://bbortt.github.io/snow-white/onboarding) for a step-by
 ## General Concept
 
 Here's a high-level overview of Snow-White.
-For a detailed component and data-flow breakdown, see the [Architecture](https://bbortt.github.io/snow-white/architecture/) docs.
+For a detailed component and data-flow breakdown, see the [Architecture](https://bbortt.github.io/snow-white/architecture) docs.
 
 1. **Synchronize API Specs** - Snow-White imports OpenAPI specifications from your central interface repository.
 2. **Ingest Telemetry** - It listens to OpenTelemetry tracing data emitted by your applications.
@@ -154,7 +154,7 @@ docker compose -f dev/docker-compose.yaml up -d
 ### Contributing Guidelines
 
 - Keep commits small and focused.
-  Follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, etc.).
+  Follow [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `chore:`, etc.).
 - All new features should include tests.
 - Run the full build before opening a PR: `./mvnw -Pnode verify`
 - Open an issue first for larger changes so we can align on direction before you invest time coding.

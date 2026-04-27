@@ -64,7 +64,7 @@ node toolkit/cli/target/cli/index.js calculate --configFile dev/snow-white.json
 
 The documentation site lives in `docs/` and is built with [Jekyll](https://jekyllrb.com) using the [just-the-docs](https://just-the-docs.com) theme.
 
-**Prerequisites:** Ruby (with Devkit) and Bundler - on Windows use [RubyInstaller](https://rubyinstaller.org/) (`Ruby+Devkit` variant), then run `gem install bundler`.
+**Prerequisites:** Ruby (with Devkit) and Bundler - on Windows use [RubyInstaller](https://rubyinstaller.org) (`Ruby+Devkit` variant), then run `gem install bundler`.
 
 ```shell
 cd docs

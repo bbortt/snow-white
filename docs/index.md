@@ -135,7 +135,7 @@ helm repo add snow-white https://bbortt.github.io/snow-white
 helm repo update
 
 helm install my-snow-white snow-white/snow-white \
-  --set snowWhite.ingress.host=snow-white.example.com
+  --set snowWhite.host=snow-white.example.com
 ```
 
 For full configuration options see the [Deployment Guide](/deployment/).
