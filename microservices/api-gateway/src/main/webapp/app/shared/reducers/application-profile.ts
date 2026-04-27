@@ -26,7 +26,7 @@ export const getProfile = createAsyncThunk('applicationProfile/get_profile', asy
 
 export const ApplicationProfileSlice = createSlice({
   name: 'applicationProfile',
-  initialState: initialState as ApplicationProfileState,
+  initialState,
   reducers: {},
   extraReducers(builder) {
     builder.addCase(setPerformanceImpacted, (state, action) => {

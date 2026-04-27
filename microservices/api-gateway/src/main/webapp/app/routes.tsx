@@ -19,7 +19,7 @@ import { Route } from 'react-router';
 const AppRoutes = () => {
   const store = getStore();
   if (!store.getState().snowwhite) {
-    store.injectReducer('snowwhite', combineReducers({ qualityGate } as ReducersMapObject));
+    store.injectReducer('snowwhite', combineReducers({ qualityGate }));
   }
 
   return (

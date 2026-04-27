@@ -40,7 +40,7 @@ const fromDto = ({ name, description, isPredefined, openApiCriteria }: QualityGa
     name,
     description,
     isPredefined,
-    openApiCriteria: openApiCriteria?.map(openApiCriterion => ({ name: openApiCriterion }) as IOpenApiCriterion),
+    openApiCriteria: openApiCriteria?.map(openApiCriterion => ({ name: openApiCriterion })),
   };
 };
 
