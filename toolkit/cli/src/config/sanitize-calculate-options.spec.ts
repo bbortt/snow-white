@@ -140,7 +140,7 @@ describe('sanitizeCalculateOptions', () => {
     it('resolves config from exact path if specified', () => {
       (resolveConfig as any).mockReturnValueOnce(sanitizedOptions);
 
-      expect(sanitizeCalculateOptions({} as CliOptions)).toEqual(sanitizedOptions);
+      expect(sanitizeCalculateOptions({})).toEqual(sanitizedOptions);
 
       expect(resolveConfig).toHaveBeenCalled();
     });
@@ -155,7 +155,7 @@ describe('sanitizeCalculateOptions', () => {
     it('should exit with code 3 if file is empty', () => {
       (resolveConfig as any).mockReturnValueOnce({});
 
-      expect(() => sanitizeCalculateOptions({} as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({})).toThrowError('Process exited with code 3');
 
       expect(resolveConfig).toHaveBeenCalled();
 
@@ -167,7 +167,7 @@ describe('sanitizeCalculateOptions', () => {
 
       (resolveConfig as any).mockReturnValueOnce({ configFile });
 
-      expect(() => sanitizeCalculateOptions({ configFile } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile })).toThrowError('Process exited with code 3');
 
       expect(resolveConfig).toHaveBeenCalledWith(configFile);
 
@@ -177,7 +177,7 @@ describe('sanitizeCalculateOptions', () => {
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
       (resolveConfig as any).mockReturnValueOnce({ apiInformation: [options], qualityGate: 'quality-gate', url: 'url' });
 
-      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining('❌ Each API information must contain serviceName, apiName, and apiVersion.'),
@@ -194,7 +194,7 @@ describe('sanitizeCalculateOptions', () => {
         serviceName: 'test-service',
       });
 
-      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'));
 
@@ -209,7 +209,7 @@ describe('sanitizeCalculateOptions', () => {
         url: 'url',
       });
 
-      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' } as CliOptions)).toThrowError('Process exited with code 3');
+      expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
 
@@ -225,7 +225,7 @@ describe('sanitizeCalculateOptions', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeCalculateOptions({ url: 'http://cli-url.com' } as CliOptions);
+      const result = sanitizeCalculateOptions({ url: 'http://cli-url.com' });
 
       expect(result.url).toBe('http://cli-url.com');
       expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --url overrides config file value'));
@@ -238,7 +238,7 @@ describe('sanitizeCalculateOptions', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeCalculateOptions({ qualityGate: 'cli-gate' } as CliOptions);
+      const result = sanitizeCalculateOptions({ qualityGate: 'cli-gate' });
 
       expect(result.qualityGate).toBe('cli-gate');
       expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --quality-gate overrides config file value'));
@@ -251,7 +251,7 @@ describe('sanitizeCalculateOptions', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeCalculateOptions({ lookbackWindow: '24h' } as CliOptions);
+      const result = sanitizeCalculateOptions({ lookbackWindow: '24h' });
 
       expect(result.lookbackWindow).toBe('24h');
       expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -266,7 +266,7 @@ describe('sanitizeCalculateOptions', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeCalculateOptions({ filter: ['region=us-west-1'] } as CliOptions);
+      const result = sanitizeCalculateOptions({ filter: ['region=us-west-1'] });
 
       expect(result.attributeFilters).toEqual({ region: 'us-west-1' });
       expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -281,7 +281,7 @@ describe('sanitizeCalculateOptions', () => {
       };
       (resolveConfig as any).mockReturnValueOnce(fileConfig);
 
-      const result = sanitizeCalculateOptions({ url: 'http://same-url.com' } as CliOptions);
+      const result = sanitizeCalculateOptions({ url: 'http://same-url.com' });
 
       expect(result.url).toBe('http://same-url.com');
       expect(consoleWarnSpy).not.toHaveBeenCalled();
@@ -420,7 +420,7 @@ describe('sanitizeCalculateOptions', () => {
           apiVersion: 'test-version',
           qualityGate: 'quality-gate',
           serviceName: 'test-service',
-        } as CliOptions),
+        }),
       ).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Snow-White base URL must be defined in the configuration.'));
@@ -436,7 +436,7 @@ describe('sanitizeCalculateOptions', () => {
           apiVersion: 'test-version',
           serviceName: 'test-service',
           url: 'url',
-        } as CliOptions),
+        }),
       ).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Quality-Gate name must be defined in the configuration.'));
@@ -462,7 +462,7 @@ info:
         apiSpecs: 'services/**/openapi.yaml',
         qualityGate: 'basic-coverage',
         url: 'http://localhost:9000',
-      } as CliOptions);
+      });
 
       expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
     });
@@ -484,7 +484,7 @@ metadata:
         qualityGate: 'basic-coverage',
         serviceNamePath: 'metadata.owner',
         url: 'http://localhost:9000',
-      } as CliOptions);
+      });
 
       expect(result.apiInformation).toEqual([{ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }]);
     });
@@ -508,7 +508,7 @@ metadata:
         url: 'http://localhost:9000',
       });
 
-      const result = sanitizeCalculateOptions({} as CliOptions);
+      const result = sanitizeCalculateOptions({});
 
       expect(result.apiInformation).toEqual([{ apiName: 'Custom API', apiVersion: '2.0.0', serviceName: 'custom-service' }]);
     });
@@ -528,7 +528,7 @@ info:
         apiSpecs: 'svc-*/openapi.yaml',
         qualityGate: 'basic-coverage',
         url: 'http://localhost:9000',
-      } as CliOptions);
+      });
 
       expect(result.apiInformation).toHaveLength(2);
       expect(result.apiInformation).toContainEqual({ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' });
@@ -543,7 +543,7 @@ info:
           apiSpecs: 'services/**/openapi.yaml',
           qualityGate: 'basic-coverage',
           url: 'http://localhost:9000',
-        } as CliOptions),
+        }),
       ).toThrowError('Process exited with code 3');
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ No files matched the pattern: services/**/openapi.yaml'));
@@ -558,7 +558,7 @@ info:
           apiSpecs: '*.yaml',
           qualityGate: 'basic-coverage',
           url: 'http://localhost:9000',
-        } as CliOptions),
+        }),
       ).toThrowError('Process exited with code 3');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ openapi.yaml: Missing required metadata fields.'));
@@ -575,7 +575,7 @@ info:
       const result = sanitizeCalculateOptions({
         apiSpecs: 'services/**/openapi.yaml',
         configFile: 'snow-white.json',
-      } as CliOptions);
+      });
 
       expect(scanGlob).not.toHaveBeenCalled();
       expect(result.apiInformation).toEqual([{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }]);
@@ -592,7 +592,7 @@ info:
       const result = sanitizeCalculateOptions({
         apiSpecs: 'services/**/openapi.yaml',
         configFile: 'snow-white.json',
-      } as CliOptions);
+      });
 
       expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
       expect(consoleWarnSpy).not.toHaveBeenCalledWith(expect.stringContaining('--api-specs is ignored'));
@@ -607,7 +607,7 @@ info:
       (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
 
-      const result = sanitizeCalculateOptions({ configFile: 'snow-white.json' } as CliOptions);
+      const result = sanitizeCalculateOptions({ configFile: 'snow-white.json' });
 
       expect(result.apiInformation).toEqual([{ apiName: 'My Test API', apiVersion: '1.2.3', serviceName: 'my-service' }]);
     });
@@ -624,7 +624,7 @@ info:
       sanitizeCalculateOptions({
         apiSpecs: 'services/**/openapi.yaml',
         configFile: 'snow-white.json',
-      } as CliOptions);
+      });
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
