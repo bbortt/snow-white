@@ -79,4 +79,4 @@ export const resolveConfigInternal = (
   }
 };
 
-export const resolveConfig = (filepath?: string): CliOptions => resolveConfigInternal(filepath) as unknown as CliOptions;
+export const resolveConfig = (filepath?: string): CliOptions => resolveConfigInternal(filepath) as CliOptions;
