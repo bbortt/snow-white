@@ -33,7 +33,7 @@ export const getEntities = createAsyncThunk(
       ...response,
       data: response.data.map(openApiCriterion => {
         const { id, name, description } = openApiCriterion;
-        return { name: id, label: name, description } as IOpenApiCriterion;
+        return { name: id, label: name, description };
       }),
     }));
   },

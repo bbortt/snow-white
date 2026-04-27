@@ -60,7 +60,7 @@ export const addTranslationSourcePrefix = createAsyncThunk(
 
 export const LocaleSlice = createSlice({
   name: 'locale',
-  initialState: initialState as LocaleState,
+  initialState,
   reducers: {
     updateLocale(state, action) {
       const currentLocale = action.payload;
