@@ -26,6 +26,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -71,7 +72,8 @@ class ApiTestResultLinkerTest {
       fixture.addApiTestResultsToApiTest(
         apiTestResults,
         apiTestMock,
-        emptySet()
+        emptySet(),
+        100
       );
 
       verifyNoInteractions(apiTestMock);
@@ -98,7 +100,8 @@ class ApiTestResultLinkerTest {
       fixture.addApiTestResultsToApiTest(
         Set.of(apiTestResult),
         apiTest,
-        includedOpenApiCriteria
+        includedOpenApiCriteria,
+        100
       );
 
       assertThat(apiTest.getApiTestResults())
@@ -123,12 +126,11 @@ class ApiTestResultLinkerTest {
           .build()
       );
 
-      Set<String> includedOpenApiCriteria = Set.of(PATH_COVERAGE.name());
-
       fixture.addApiTestResultsToApiTest(
         apiTestResults,
         apiTest,
-        includedOpenApiCriteria
+        Set.of(PATH_COVERAGE.name()),
+        100
       );
 
       assertThat(apiTest.getApiTestResults())
@@ -154,16 +156,102 @@ class ApiTestResultLinkerTest {
           .build()
       );
 
-      Set<String> includedOpenApiCriteria = Set.of(PATH_COVERAGE.name());
-
       fixture.addApiTestResultsToApiTest(
         apiTestResults,
         apiTest,
-        includedOpenApiCriteria
+        Set.of(PATH_COVERAGE.name()),
+        100
       );
 
       assertThat(apiTest.getReportStatus()).isEqualTo(FAILED);
       verify(apiTestRepositoryMock).save(apiTest);
+    }
+
+    @Test
+    void shouldSetApiTestStatusToPassed_whenPassRateMeetsMinCoveragePercentage() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      // 4 results: 3 with full coverage (1.0), 1 with zero coverage = 75% pass rate
+      // But minCoveragePercentage = 80, so this should FAIL
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria("CRITERIA_1")
+          .coverage(ONE)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria("CRITERIA_2")
+          .coverage(ONE)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria("CRITERIA_3")
+          .coverage(ONE)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria("CRITERIA_4")
+          .coverage(ZERO)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      Set<String> allCriteria = Set.of(
+        "CRITERIA_1",
+        "CRITERIA_2",
+        "CRITERIA_3",
+        "CRITERIA_4"
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        allCriteria,
+        80
+      );
+      assertThat(apiTest.getReportStatus()).isEqualTo(FAILED);
+
+      var apiTest2 = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest2,
+        allCriteria,
+        75
+      );
+      assertThat(apiTest2.getReportStatus()).isEqualTo(PASSED);
+    }
+
+    @Test
+    void shouldSetApiTestStatusToPassed_whenCoverageThresholdMeetsMinCoveragePercentage() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      // Result with 0.85 coverage, threshold is 80% -> should PASS
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(new BigDecimal("0.85"))
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        Set.of(PATH_COVERAGE.name()),
+        80
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
     }
   }
 }

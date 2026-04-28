@@ -136,7 +136,8 @@ class ReportServiceTest {
 
       var qualityGateConfig = new QualityGateConfig(
         QUALITY_GATE_CONFIG_NAME,
-        Set.of("PATH_COVERAGE")
+        Set.of("PATH_COVERAGE"),
+        100
       );
       doReturn(qualityGateConfig)
         .when(qualityGateServiceMock)
@@ -179,7 +180,8 @@ class ReportServiceTest {
       verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
         mappedResults,
         apiTest,
-        qualityGateConfig.getOpenApiCriteria()
+        qualityGateConfig.getOpenApiCriteria(),
+        qualityGateConfig.getMinCoveragePercentage()
       );
       verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
         originalReport
@@ -317,7 +319,7 @@ class ReportServiceTest {
         .lookbackWindow("1d")
         .build();
 
-      doReturn(new QualityGateConfig(qualityGateConfigName, emptySet()))
+      doReturn(new QualityGateConfig(qualityGateConfigName, emptySet(), 100))
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 

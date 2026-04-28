@@ -233,6 +233,7 @@ components:
       required:
         - name
         - isPredefined
+        - minCoveragePercentage
         - openApiCriteria
       properties:
         name:
@@ -250,6 +251,13 @@ components:
           type: boolean
           description: Whether the Quality-Gate Configuration is predefined or not
           default: false
+        minCoveragePercentage:
+          type: integer
+          description: Minimum coverage percentage required for the quality gate to be treated as passed
+          minimum: 80
+          maximum: 100
+          default: 100
+          example: 100
         openApiCriteria:
           type: array
           description: List of OpenAPI criteria IDs used in this configuration
