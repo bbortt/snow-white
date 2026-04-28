@@ -34,8 +34,7 @@ queue "Response Topic" as response
 component "Otel Collector" as otel #Teal
 }
 
-component "Backstage" as backstage #Teal
-component "Service Interface Repository" as sir #Teal
+component "JFrog Artifactory" as sir #Teal
 
 ' User connections (aka UI)
 
@@ -53,7 +52,6 @@ gate <--> index
 
 ' API Sync Job
 
-sync ---> backstage : Fetch API Index
 sync ---> sir : Fetch API Index
 sync --> index : Store API Meta Information
 

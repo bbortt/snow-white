@@ -8,8 +8,6 @@ toc_sticky: true
 > **Scope:** These requirements describe **observable behavior and outcomes** of Snow-White as a system.
 > They are intentionally **black-box testable** and avoid internal implementation details.
 
----
-
 ## RQ-0 System Intent
 
 **RQ-0.1** Snow-White SHALL correlate API specifications with runtime telemetry data to produce actionable insights about API usage and quality.
@@ -17,8 +15,6 @@ toc_sticky: true
 **RQ-0.2** Snow-White SHALL be usable with black-box system or integration tests as its primary telemetry source.
 
 **RQ-0.3** Snow-White SHALL support usage in live production environments without requiring application code changes beyond standard OpenTelemetry instrumentation.
-
----
 
 ## RQ-1 API Specification Ingestion
 
@@ -34,8 +30,6 @@ toc_sticky: true
 
 _Linked NFRs:_ [NFR-1](#nfr-1-observability) · [NFR-3](#nfr-3-scalability)
 
----
-
 ## RQ-2 Runtime Telemetry Ingestion
 
 **RQ-2** Snow-White SHALL ingest only the minimum runtime telemetry data required for API analysis.
@@ -49,8 +43,6 @@ _Linked NFRs:_ [NFR-1](#nfr-1-observability) · [NFR-3](#nfr-3-scalability)
 **RQ-2.4** Snow-White SHALL NOT aim to replace or duplicate full-scale observability or long-term telemetry storage solutions.
 
 _Linked NFRs:_ [NFR-1](#nfr-1-observability) · [NFR-4](#nfr-4-performance)
-
----
 
 ## RQ-3 Criteria-Based Analysis
 
@@ -66,8 +58,6 @@ _Linked NFRs:_ [NFR-1](#nfr-1-observability) · [NFR-4](#nfr-4-performance)
 
 _Linked NFRs:_ [NFR-4](#nfr-4-performance) · [NFR-5](#nfr-5-determinism)
 
----
-
 ## RQ-4 Quality Gate Evaluation
 
 **RQ-4** Snow-White SHALL group analysis criteria into configurable quality gate definitions.
@@ -81,8 +71,6 @@ _Linked NFRs:_ [NFR-4](#nfr-4-performance) · [NFR-5](#nfr-5-determinism)
 **RQ-4.4** Snow-White SHALL expose quality gate evaluation results in a machine-consumable form.
 
 _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-6](#nfr-6-reliability)
-
----
 
 ## RQ-5 Analysis Triggering
 
@@ -98,8 +86,6 @@ _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-6](#nfr-6-reliability)
 
 _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-7](#nfr-7-usability)
 
----
-
 ## RQ-6 Result Consumption
 
 **RQ-6** Snow-White SHALL make analysis and quality gate results consumable by external users and systems.
@@ -111,8 +97,6 @@ _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-7](#nfr-7-usability)
 **RQ-6.3** Snow-White SHALL provide visualization or reporting capabilities.
 
 _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-7](#nfr-7-usability)
-
----
 
 ## Non-Functional Requirements
 
@@ -143,8 +127,6 @@ Snow-White SHALL tolerate temporary unavailability of external dependencies with
 ### NFR-7 Usability
 
 Snow-White SHALL provide clear feedback when requirements for successful analysis (e.g. missing annotations) are not met.
-
----
 
 ## Traceability Notes
 
