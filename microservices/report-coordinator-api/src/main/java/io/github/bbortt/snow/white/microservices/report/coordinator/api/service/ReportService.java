@@ -124,7 +124,8 @@ public class ReportService {
           apiTest
         ),
         apiTest,
-        qualityGateConfig.getOpenApiCriteria()
+        qualityGateConfig.getOpenApiCriteria(),
+        qualityGateConfig.getMinCoveragePercentage()
       );
     } catch (QualityGateNotFoundException e) {
       logger.warn(

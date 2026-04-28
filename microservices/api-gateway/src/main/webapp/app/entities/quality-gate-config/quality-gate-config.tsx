@@ -142,6 +142,10 @@ export const QualityGateConfig = () => {
                   <Translate contentKey="snowWhiteApp.qualityGateConfig.isPredefined">Is Predefined</Translate>{' '}
                   <FontAwesomeIcon icon={getSortIconByFieldName('isPredefined')} />
                 </th>
+                <th className="hand" onClick={sort('minCoveragePercentage')}>
+                  <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Required Coverage Percentage</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('minCoveragePercentage')} />
+                </th>
                 <th />
               </tr>
             </thead>
@@ -173,6 +177,7 @@ export const QualityGateConfig = () => {
                       </td>
                       <td>{qualityGateConfig.description}</td>
                       <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
+                      <td>{qualityGateConfig.minCoveragePercentage} %</td>
                       <td className="text-end">
                         <div className="btn-group flex-btn-group-container">
                           <Button

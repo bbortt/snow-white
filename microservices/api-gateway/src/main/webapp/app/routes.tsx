@@ -4,8 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import type { ReducersMapObject } from '@reduxjs/toolkit';
-
 import { combineReducers } from '@reduxjs/toolkit';
 import getStore from 'app/config/store';
 import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';

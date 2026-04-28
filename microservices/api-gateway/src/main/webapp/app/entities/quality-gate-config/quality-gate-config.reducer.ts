@@ -26,20 +26,22 @@ const initialState: EntityState<IQualityGateConfig> = {
   updateSuccess: false,
 };
 
-const toDto = ({ name, description, openApiCriteria }: IQualityGateConfig): QualityGateConfig => {
+const toDto = ({ name, description, minCoveragePercentage, openApiCriteria }: IQualityGateConfig): QualityGateConfig => {
   return {
     name: name!,
     description: description ?? undefined,
     isPredefined: false,
+    minCoveragePercentage: minCoveragePercentage ?? 100,
     openApiCriteria: openApiCriteria ? openApiCriteria.map(openApiCriterion => openApiCriterion.name!) : [],
   };
 };
 
-const fromDto = ({ name, description, isPredefined, openApiCriteria }: QualityGateConfig): IQualityGateConfig => {
+const fromDto = ({ name, description, isPredefined, minCoveragePercentage, openApiCriteria }: QualityGateConfig): IQualityGateConfig => {
   return {
     name,
     description,
     isPredefined,
+    minCoveragePercentage,
     openApiCriteria: openApiCriteria?.map(openApiCriterion => ({ name: openApiCriterion })),
   };
 };

@@ -75,6 +75,11 @@ public class QualityGateConfiguration {
   @Column(nullable = false, updatable = false)
   private Boolean isPredefined = false;
 
+  @NonNull
+  @Builder.Default
+  @Column(nullable = false)
+  private Integer minCoveragePercentage = 100;
+
   @Setter
   @NonNull
   @Builder.Default

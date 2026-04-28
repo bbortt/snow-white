@@ -54,6 +54,12 @@ export const QualityGateConfigDetail = () => {
           </dt>
           <dd>{qualityGateConfigEntity.isPredefined ? 'true' : 'false'}</dd>
           <dt>
+            <span id="minCoveragePercentage">
+              <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Is Predefined</Translate>
+            </span>
+          </dt>
+          <dd>{qualityGateConfigEntity.minCoveragePercentage} %</dd>
+          <dt>
             <Translate contentKey="snowWhiteApp.qualityGateConfig.openApiCriteria">Open Api Criteria</Translate>
           </dt>
           <dd>

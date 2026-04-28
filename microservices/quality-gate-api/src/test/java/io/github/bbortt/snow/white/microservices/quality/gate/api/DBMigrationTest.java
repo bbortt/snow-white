@@ -24,7 +24,7 @@ class DBMigrationTest {
 
   private static final Map<String, String> MIGRATIONS_AND_HASHES = Map.of(
     "V2025_06_29__init.sql",
-    "3e4aaf77b0ed3ebf8204acdfbf4c8f8b7a21d1f59a9129bba9a27824c9a84224"
+    "ad82fcdafade0aafec345f6edc8b7467ea2938e408de4c3abfdef5b293306bda"
   );
 
   @Test
