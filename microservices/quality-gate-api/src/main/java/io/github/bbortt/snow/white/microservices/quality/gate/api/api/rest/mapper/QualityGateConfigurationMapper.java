@@ -50,6 +50,10 @@ public abstract class QualityGateConfigurationMapper {
   @Mapping(target = "description", source = "dto.description")
   @Mapping(target = "isPredefined", source = "dto.isPredefined")
   @Mapping(
+    target = "minCoveragePercentage",
+    source = "dto.minCoveragePercentage"
+  )
+  @Mapping(
     target = "openApiCoverageConfigurations",
     expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCriteria(), existingEntity))"
   )

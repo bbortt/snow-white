@@ -59,6 +59,7 @@ public final class DefaultOpenApiQualityGates {
         "A pragmatic balance of common expectations without requiring deep error validation."
       )
       .isPredefined(TRUE)
+      .minCoveragePercentage(80)
       .build();
 
     addAllOpenApiCriteria(
@@ -115,6 +116,7 @@ public final class DefaultOpenApiQualityGates {
         "Just enough to ensure the API is reachable at all expected endpoints."
       )
       .isPredefined(TRUE)
+      .minCoveragePercentage(80)
       .build();
 
     addAllOpenApiCriteria(qualityGateConfiguration, Stream.of(PATH_COVERAGE));

@@ -13,10 +13,11 @@ CREATE TABLE open_api_coverage_configuration
 
 CREATE TABLE quality_gate_configuration
 (
-    id            BIGSERIAL   NOT NULL PRIMARY KEY,
-    name          VARCHAR(64) NOT NULL,
-    description   VARCHAR(256),
-    is_predefined BOOLEAN     NOT NULL DEFAULT false,
+    id                      BIGSERIAL   NOT NULL PRIMARY KEY,
+    name                    VARCHAR(64) NOT NULL,
+    description             VARCHAR(256),
+    is_predefined           BOOLEAN     NOT NULL DEFAULT false,
+    min_coverage_percentage INTEGER     NOT NULL DEFAULT 100,
     CONSTRAINT uk_quality_gate_configuration_name UNIQUE (name)
 );
 

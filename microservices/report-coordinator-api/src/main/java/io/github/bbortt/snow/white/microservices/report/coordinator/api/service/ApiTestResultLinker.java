@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
-import static java.math.BigDecimal.ONE;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -16,6 +15,8 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,8 @@ final class ApiTestResultLinker {
   void addApiTestResultsToApiTest(
     Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
-    Set<String> includedOpenApiCriteria
+    Set<String> includedOpenApiCriteria,
+    int minCoveragePercentage
   ) {
     if (isEmpty(apiTestResults)) {
       return;
@@ -47,7 +49,9 @@ final class ApiTestResultLinker {
       .forEach(apiTest.getApiTestResults()::add);
 
     apiTestRepository.save(
-      apiTest.withReportStatus(deriveApiTestStatus(apiTest))
+      apiTest.withReportStatus(
+        deriveApiTestStatus(apiTest, minCoveragePercentage)
+      )
     );
   }
 
@@ -61,13 +65,41 @@ final class ApiTestResultLinker {
     );
   }
 
-  private ReportStatus deriveApiTestStatus(ApiTest apiTest) {
-    boolean anyIncludedFailed = apiTest
+  private ReportStatus deriveApiTestStatus(
+    ApiTest apiTest,
+    int minCoveragePercentage
+  ) {
+    var threshold = BigDecimal.valueOf(minCoveragePercentage).divide(
+      BigDecimal.valueOf(100),
+      2,
+      RoundingMode.UNNECESSARY
+    );
+
+    var includedResults = apiTest
       .getApiTestResults()
       .stream()
       .filter(ApiTestResult::getIncludedInReport)
-      .anyMatch(r -> !ONE.equals(r.getCoverage()));
+      .toList();
 
-    return anyIncludedFailed ? FAILED : PASSED;
+    if (includedResults.isEmpty()) {
+      return PASSED;
+    }
+
+    long passedCount = includedResults
+      .stream()
+      .filter(r -> r.getCoverage().compareTo(threshold) >= 0)
+      .count();
+
+    BigDecimal passRate = BigDecimal.valueOf(passedCount)
+      .divide(
+        BigDecimal.valueOf(includedResults.size()),
+        2,
+        RoundingMode.HALF_UP
+      )
+      .multiply(BigDecimal.valueOf(100));
+
+    return passRate.compareTo(BigDecimal.valueOf(minCoveragePercentage)) >= 0
+      ? PASSED
+      : FAILED;
   }
 }

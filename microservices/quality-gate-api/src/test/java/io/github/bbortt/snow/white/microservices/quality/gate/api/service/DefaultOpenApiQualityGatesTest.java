@@ -55,22 +55,45 @@ class DefaultOpenApiQualityGatesTest {
         .satisfiesExactly(
           // basic-coverage
           qualityGateConfiguration ->
-            assertThat(
-              qualityGateConfiguration.getOpenApiCoverageConfigurations()
-            ).hasSize(6),
+            assertThat(qualityGateConfiguration).satisfies(
+              configuration ->
+                assertThat(
+                  configuration.getOpenApiCoverageConfigurations()
+                ).hasSize(6),
+              configuration ->
+                assertThat(configuration.getMinCoveragePercentage()).isEqualTo(
+                  80
+                )
+            ),
           // full-feature
           qualityGateConfiguration ->
-            assertThat(
-              qualityGateConfiguration.getOpenApiCoverageConfigurations()
-            ).hasSize(OpenApiCriteria.values().length),
+            assertThat(qualityGateConfiguration).satisfies(
+              configuration ->
+                assertThat(
+                  configuration.getOpenApiCoverageConfigurations()
+                ).hasSize(OpenApiCriteria.values().length),
+              configuration ->
+                assertThat(configuration.getMinCoveragePercentage()).isEqualTo(
+                  100
+                )
+            ),
           // minimal
           qualityGateConfiguration ->
-            assertThat(
-              qualityGateConfiguration.getOpenApiCoverageConfigurations()
-            ).satisfiesExactly(configuration ->
-              assertThat(
-                configuration.getOpenApiCoverageConfiguration().getName()
-              ).isEqualTo(PATH_COVERAGE.name())
+            assertThat(qualityGateConfiguration).satisfies(
+              configuration ->
+                assertThat(
+                  configuration.getOpenApiCoverageConfigurations()
+                ).satisfiesExactly(openApiConfiguration ->
+                  assertThat(
+                    openApiConfiguration
+                      .getOpenApiCoverageConfiguration()
+                      .getName()
+                  ).isEqualTo(PATH_COVERAGE.name())
+                ),
+              configuration ->
+                assertThat(configuration.getMinCoveragePercentage()).isEqualTo(
+                  80
+                )
             ),
           // dry-run
           qualityGateConfiguration ->
