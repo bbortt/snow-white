@@ -48,8 +48,6 @@ helm uninstall my-snow-white
 > kubectl delete pvc --all
 > ```
 
----
-
 ## API Indexation
 
 By default, Snow-White does not deploy an API synchronization job.
@@ -114,8 +112,6 @@ snowWhite:
         value: 1
 ```
 
----
-
 ## Ingesting OTeL Data
 
 Snow-White deploys its own [OTel Collector](https://opentelemetry.io/docs/collector) by default.
@@ -169,8 +165,6 @@ otelCollector:
   exposeThroughApiGateway: false
 ```
 
----
-
 ## Exporting Telemetry
 
 Snow-White exposes its own OTEL telemetry.
@@ -197,8 +191,6 @@ otelCollector:
     prometheus.io/port: '8888'
     prometheus.io/path: '/metrics'
 ```
-
----
 
 ## Replacing Bundled Infrastructure
 
@@ -291,8 +283,6 @@ influxdb2:
   adminUser:
     existingSecret: custom-influxdb-credentials
 ```
-
----
 
 ## Custom Truststores
 

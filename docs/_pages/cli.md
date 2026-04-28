@@ -8,8 +8,6 @@ toc_sticky: true
 The Snow-White CLI (`snow-white`) is the integration point between your CI pipeline and the Snow-White quality gate engine.
 It ships as a self-contained binary for Linux, macOS, and Windows — no Node.js runtime required.
 
----
-
 ## Installation
 
 ### Download from GitHub Releases
@@ -39,8 +37,6 @@ Available binaries per release:
 | `snow-white-macos-arm64`     | macOS ARM64 |
 | `snow-white-macos-x64`       | macOS x64   |
 | `snow-white-windows-x64.exe` | Windows x64 |
-
----
 
 ### OCI Image
 
@@ -83,8 +79,6 @@ chmod +x out/snow-white
 mv out/snow-white ./snow-white
 ```
 
----
-
 ## Commands
 
 ### `info`
@@ -95,8 +89,6 @@ Useful for verifying the binary works in your environment.
 ```shell
 snow-white info
 ```
-
----
 
 ### `calculate`
 
@@ -168,8 +160,6 @@ snow-white calculate \
 | `0`       | Quality gate passed                      |
 | non-zero  | Quality gate failed or an error occurred |
 
----
-
 ### `upload-prereleases`
 
 Uploads one or more OpenAPI specifications from the local file system as prereleases.
@@ -199,8 +189,6 @@ snow-white upload-prereleases \
   --url http://snow-white:8080 \
   --api-specs "services/**/openapi.yaml"
 ```
-
----
 
 ## CI Pipeline Integration
 

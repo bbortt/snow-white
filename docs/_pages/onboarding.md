@@ -26,8 +26,6 @@ The link between them is three identifiers that must appear in **both** places:
 | API name     | `info.x-api-name`     | `api.name` attribute     |
 | API version  | `info.version`        | `api.version` attribute  |
 
----
-
 ## Step 1 — Annotate Your OpenAPI Specification
 
 Add `x-api-name` and `x-service-name` to the `info` block:
@@ -44,8 +42,6 @@ info:
 Both values must be stable, lowercase, hyphen-separated identifiers.
 
 See [`example-application/specs/ping-pong.yml`](https://github.com/bbortt/snow-white/blob/main/example-application/specs/ping-pong.yml) for a complete example.
-
----
 
 ## Step 2 — Instrument Your Application
 
@@ -129,8 +125,6 @@ api.version   = <value of info.version in your spec>
 
 Refer to the [Snow-White semantic convention](https://github.com/bbortt/snow-white/blob/main/semantic-convention/openapi.md) for the full attribute specification.
 
----
-
 ## Step 3 — Publish Your Specification
 
 ### Manual (quick start)
@@ -161,8 +155,6 @@ snowWhite:
 
 See [Deployment — API Indexation](/deployment/#api-indexation) for full options.
 
----
-
 ## Step 4 — Generate Traces
 
 Run your test suite with the OTEL agent attached.
@@ -173,8 +165,6 @@ Quick smoke test:
 ```shell
 curl http://localhost:8080/your-endpoint
 ```
-
----
 
 ## Step 5 — Calculate Coverage
 
@@ -207,8 +197,6 @@ snow-white calculate --config-file snow-white.json
 The CLI exits `0` on pass, non-zero on failure — suitable for CI pipelines.
 See [CLI Reference](/cli/) for all commands and options.
 
----
-
 ## Step 6 — Review Results
 
 The Snow-White UI shows:
@@ -219,8 +207,6 @@ The Snow-White UI shows:
 Snow-White ships with a `basic-coverage` gate out of the box.
 Custom gates can be configured via the UI or API.
 
----
-
 ## Checklist
 
 - [ ] `x-api-name` and `x-service-name` added to the spec `info` block
@@ -229,8 +215,6 @@ Custom gates can be configured via the UI or API.
 - [ ] `spring-web-autoconfiguration` dependency added (Spring Boot only)
 - [ ] Specification published to the API index
 - [ ] CLI config file created and coverage calculation runs successfully
-
----
 
 ## Example Application
 

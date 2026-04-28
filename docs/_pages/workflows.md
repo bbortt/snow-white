@@ -8,8 +8,6 @@ toc_sticky: true
 Snow-White integrates into your CI/CD pipeline to enforce API coverage automatically.
 Two primary workflow patterns are supported depending on how your repositories are organized.
 
----
-
 ## Specification-First Workflow
 
 The recommended workflow for teams practicing specification-first API design.
@@ -25,8 +23,6 @@ The OpenAPI specification is the source of truth and is published to the spec re
 4. The service implementation PR runs integration tests with the OTEL agent attached.
 5. The CI pipeline triggers `snow-white calculate` — the CLI evaluates the quality gate and fails the build if coverage is insufficient.
 
----
-
 ## Mono-Repository Workflow
 
 For teams using a mono-repository, the spec and implementation live side-by-side and are always in sync.
@@ -39,8 +35,6 @@ For teams using a mono-repository, the spec and implementation live side-by-side
 2. The CI pipeline builds the service, runs integration tests with OTEL instrumentation, and publishes the spec.
 3. Snow-White indexes the spec and correlates it with the traces produced during the test run.
 4. `snow-white calculate` evaluates the quality gate inline in the same pipeline.
-
----
 
 ## CLI Quick Reference
 
@@ -74,8 +68,6 @@ node toolkit/cli/target/cli/index.js calculate --configFile snow-white.json
 | non-zero  | Quality gate failed or error occurred |
 
 See [`toolkit/cli/README.md`](https://github.com/bbortt/snow-white/blob/main/toolkit/cli/README.md) for all exit codes and options.
-
----
 
 ## Setting Up the Quality Gate Step
 
