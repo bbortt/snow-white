@@ -73,11 +73,29 @@ export const QualityGateDetail = () => {
             </Label>
           </FormGroup>
         </div>
+        <div className="mb-2">
+          <Button tag={Link} onClick={() => navigate(-1)} replace color="info" data-cy="entityDetailsBackButton">
+            <FontAwesomeIcon icon="arrow-left" />{' '}
+            <span className="d-none d-md-inline">
+              <Translate contentKey="entity.action.back">Back</Translate>
+            </span>
+          </Button>
+          &nbsp;
+          <a href={`/api/rest/v1/reports/${qualityGateEntity.calculationId}/junit`}>
+            <Button replace color="primary">
+              <FontAwesomeIcon icon="file-arrow-down" />{' '}
+              <span className="d-none d-md-inline">
+                <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
+              </span>
+            </Button>
+          </a>
+        </div>
         {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0
           ? sortedApiTests.map((apiTest: IApiTest) => (
               <ApiTestCard
                 apiTest={apiTest}
                 showOnlyIncluded={showOnlyIncluded}
+                minCoveragePercentage={qualityGateEntity.qualityGateConfig?.minCoveragePercentage}
                 key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
               />
             ))
@@ -86,21 +104,6 @@ export const QualityGateDetail = () => {
                 <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
               </div>
             )}
-        <Button tag={Link} onClick={() => navigate(-1)} replace color="info" data-cy="entityDetailsBackButton">
-          <FontAwesomeIcon icon="arrow-left" />{' '}
-          <span className="d-none d-md-inline">
-            <Translate contentKey="entity.action.back">Back</Translate>
-          </span>
-        </Button>
-        &nbsp;
-        <a href={`/api/rest/v1/reports/${qualityGateEntity.calculationId}/junit`}>
-          <Button replace color="primary">
-            <FontAwesomeIcon icon="file-arrow-down" />{' '}
-            <span className="d-none d-md-inline">
-              <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
-            </span>
-          </Button>
-        </a>
       </Col>
     </Row>
   );

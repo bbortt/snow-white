@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface ApiTestCardProps {
   apiTest: IApiTest;
   showOnlyIncluded: boolean;
+  minCoveragePercentage?: number;
 }
 
 const renderCardContentConditionally = (
@@ -43,7 +44,7 @@ const renderCardContentConditionally = (
   }
 };
 
-export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyIncluded }: ApiTestCardProps) => {
+export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyIncluded, minCoveragePercentage }: ApiTestCardProps) => {
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
   const tooltipId = useMemo(() => `Tooltip-${uuidv4()}`, []);
 
@@ -81,6 +82,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyInclu
                 <div id={tooltipId}>
                   <CoverageProgressBar
                     apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)}
+                    minCoveragePercentage={minCoveragePercentage}
                   />
                 </div>
                 <Tooltip isOpen={tooltipOpen} target={tooltipId} toggle={toggleTooltip}>
