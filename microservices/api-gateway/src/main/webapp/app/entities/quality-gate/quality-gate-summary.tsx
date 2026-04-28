@@ -41,7 +41,13 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
             </span>
           </dt>
           <dd>
-            <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
+            <Button
+              color="link"
+              size="sm"
+              style={{ padding: 0 }}
+              tag={Link}
+              to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`}
+            >
               {qualityGate.qualityGateConfig?.name}
             </Button>
           </dd>

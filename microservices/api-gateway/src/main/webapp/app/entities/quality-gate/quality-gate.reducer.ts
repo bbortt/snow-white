@@ -10,6 +10,7 @@ import type { EntityState, IQueryParams } from 'app/shared/reducers/reducer.util
 import type { AxiosResponse } from 'axios';
 
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
+import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { reportApi } from 'app/entities/quality-gate/report-api';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
@@ -83,10 +84,21 @@ export const getEntities = createAsyncThunk(
 export const getEntity = createAsyncThunk(
   'qualityGate/fetch_entity',
   async (calculationId: string): Promise<AxiosResponse<IQualityGate>> => {
-    return await reportApi.getReportByCalculationId(calculationId).then(response => ({
-      ...response,
-      data: fromDto(response.data),
-    }));
+    const reportResponse = await reportApi.getReportByCalculationId(calculationId);
+    const qualityGate = fromDto(reportResponse.data);
+
+    if (qualityGate.qualityGateConfig?.name) {
+      const configResponse = await qualityGateApi.getQualityGateByName(qualityGate.qualityGateConfig.name);
+      qualityGate.qualityGateConfig = {
+        name: configResponse.data.name,
+        description: configResponse.data.description,
+        isPredefined: configResponse.data.isPredefined,
+        minCoveragePercentage: configResponse.data.minCoveragePercentage,
+        openApiCriteria: configResponse.data.openApiCriteria?.map(name => ({ name })),
+      };
+    }
+
+    return { ...reportResponse, data: qualityGate };
   },
   { serializeError: serializeAxiosError },
 );

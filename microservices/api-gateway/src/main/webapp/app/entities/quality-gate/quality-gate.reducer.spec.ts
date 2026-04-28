@@ -9,12 +9,19 @@ import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
 
+import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { reportApi } from 'app/entities/quality-gate/report-api';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
 import reducer, { getEntities, getEntity, reset } from './quality-gate.reducer';
+
+jest.mock('app/entities/quality-gate-config/quality-gate-api', () => ({
+  qualityGateApi: {
+    getQualityGateByName: jest.fn(),
+  },
+}));
 
 jest.mock('app/entities/quality-gate/report-api', () => ({
   reportApi: {
@@ -172,6 +179,16 @@ describe('Quality-Gate reducer tests', () => {
       },
     } as AxiosResponse;
 
+    const configResolvedObject = {
+      data: {
+        name: 'unit test',
+        description: null,
+        isPredefined: false,
+        minCoveragePercentage: 80,
+        openApiCriteria: ['criterion-a'],
+      },
+    };
+
     const expectedObject: IQualityGate = {
       calculationId: '7769ae2f-cc7e-448d-ab07-0b4dc075744d',
       qualityGateConfig: { name: 'unit test' },
@@ -199,12 +216,24 @@ describe('Quality-Gate reducer tests', () => {
       },
     };
 
+    const expectedEntityObject: IQualityGate = {
+      ...expectedObject,
+      qualityGateConfig: {
+        name: 'unit test',
+        description: null,
+        isPredefined: false,
+        minCoveragePercentage: 80,
+        openApiCriteria: [{ name: 'criterion-a' }],
+      },
+    };
+
     beforeEach(() => {
       mockStore = configureStore([thunk]);
       store = mockStore();
 
       (reportApi.listQualityGateReports as jest.MockedFn<any>).mockResolvedValueOnce({ data: [resolvedObject.data] });
       (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockResolvedValueOnce(resolvedObject);
+      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>).mockResolvedValueOnce(configResolvedObject);
     });
 
     it('dispatches FETCH_QUALITYGATE_LIST actions', async () => {
@@ -231,7 +260,7 @@ describe('Quality-Gate reducer tests', () => {
         },
         {
           type: getEntity.fulfilled.type,
-          payload: { data: expectedObject },
+          payload: { data: expectedEntityObject },
         },
       ];
 
@@ -242,6 +271,7 @@ describe('Quality-Gate reducer tests', () => {
       expect(store.getActions()[1]).toMatchObject(expectedActions[1]);
 
       expect(reportApi.getReportByCalculationId).toHaveBeenCalledWith(calculationId);
+      expect(qualityGateApi.getQualityGateByName).toHaveBeenCalledWith('unit test');
     });
 
     it('dispatches RESET actions', async () => {
