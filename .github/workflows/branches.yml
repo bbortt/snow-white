@@ -82,7 +82,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # ratchet:pnpm/action-setup@v6.0.3
+      - uses: pnpm/action-setup@26f6d4f2c533a43e6b5da0b4a5dd983f98f7b49a # ratchet:pnpm/action-setup@v6.0.4
         name: Install pnpm
         with:
           run_install: false

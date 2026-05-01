@@ -82,7 +82,7 @@ jobs:
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # ratchet:pnpm/action-setup@v6.0.3
+      - uses: pnpm/action-setup@26f6d4f2c533a43e6b5da0b4a5dd983f98f7b49a # ratchet:pnpm/action-setup@v6.0.4
         with:
           run_install: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # ratchet:actions/setup-node@v6
