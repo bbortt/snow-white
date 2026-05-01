@@ -6,8 +6,9 @@ on:
       - main
       - gh-pages
     paths:
-      - 'docs/**'
       - '.github/workflows/pages.yml'
+      - 'docs/**'
+      - 'index.yaml'
   workflow_dispatch:
 
 permissions:
