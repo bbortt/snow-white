@@ -423,6 +423,9 @@
                   <alias>otel-event-filter-stream</alias>
                   <run>
                     <env>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
                       <SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL>
                         http://wiremock:8080
                       </SNOW_WHITE_OTEL_EVENT_FILTER_API-INDEX_BASE-URL>

@@ -472,6 +472,9 @@
                   <alias>quality-gate-api</alias>
                   <run>
                     <env>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
                       <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>

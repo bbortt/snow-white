@@ -472,6 +472,9 @@
                   <alias>api-index-api</alias>
                   <run>
                     <env>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
                       <SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL>
                         http://localhost
                       </SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL>
