@@ -62,6 +62,11 @@ snowWhite:
   # @section -- Global Settings
   host: ''
 
+  # -- Public URL where Snow-White is reachable under.
+  # If `snowWhite.host` is not the public URL (e.g. `HTTPRoute` runs on different port than 80/443), specify the public URL here.
+  # @section -- Global Settings
+  publicAddress: ''
+
   # -- Deployment mode of Snow-White.
   # Allowed values: `minimal`, `high-available`, `autoscale`.
   # @section -- Availability

@@ -12,7 +12,6 @@ import { merge } from 'lodash';
 
 const mergeWithDefaultValues = (values: object): object => {
   return {
-    appVersionOverride: 'test-version',
     ...merge(
       {
         snowWhite: {
@@ -46,14 +45,18 @@ const transformStdoutToJson = async (
   return json;
 };
 
-export const renderHelmChart = async (options: {
+export interface HelmChartRenderParameters {
   chartPath: string;
   debug?: boolean;
   namespace?: string;
   releaseName?: string;
   values?: object;
   withDefaultValues?: boolean;
-}): Promise<any[]> => {
+}
+
+export const renderHelmChart = async (
+  options: HelmChartRenderParameters,
+): Promise<any[]> => {
   const {
     chartPath,
     debug = process.env.DEBUG?.toLowerCase() === 'true',
@@ -66,7 +69,10 @@ export const renderHelmChart = async (options: {
   const { path: tmpValuesPath } = await tmpFile();
   await writeFile(
     tmpValuesPath,
-    stringify(withDefaultValues ? mergeWithDefaultValues(values) : values),
+    stringify({
+      appVersionOverride: 'test-version',
+      ...(withDefaultValues ? mergeWithDefaultValues(values) : values),
+    }),
   );
 
   const helmArgs = [

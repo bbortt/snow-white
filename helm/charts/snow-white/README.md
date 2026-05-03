@@ -133,9 +133,10 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Global Settings
 
-| Key            | Type   | Default | Description                                                                                                                          |
-| -------------- | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| snowWhite.host | string | `""`    | Public domain where Snow-White is reachable under. Must be specified when either `ingress.enabled=true` or `httproute.enabled=true`. |
+| Key                     | Type   | Default | Description                                                                                                                                                                   |
+| ----------------------- | ------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| snowWhite.host          | string | `""`    | Public domain where Snow-White is reachable under. Must be specified when either `ingress.enabled=true` or `httproute.enabled=true`.                                          |
+| snowWhite.publicAddress | string | `""`    | Public URL where Snow-White is reachable under. If `snowWhite.host` is not the public URL (e.g. `HTTPRoute` runs on different port than 80/443), specify the public URL here. |
 
 ### Housekeeping
 

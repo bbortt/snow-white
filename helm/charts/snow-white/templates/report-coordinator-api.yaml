@@ -54,11 +54,7 @@ spec:
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC'
               value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL'
-              {{- if or .Values.snowWhite.httproute.enabled .Values.snowWhite.ingress.tls }}
-              value: 'https://{{ include "snow-white.publicHost" . }}'
-              {{- else }}
-              value: 'http://{{ include "snow-white.publicHost" . }}'
-              {{- end }}
+              value: '{{ include "snow-white.publicAddress" . }}'
             - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
