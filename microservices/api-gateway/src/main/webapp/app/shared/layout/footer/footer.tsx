@@ -19,7 +19,7 @@ const Footer = () => {
         <Col md="4" className="text-center text-md-start mb-2 mb-md-0">
           <h5>Snow-White</h5>
           <p className="small text-muted mb-0">
-            &copy; {currentYear} Timon Borter. &nbsp;
+            &copy; {currentYear} Timon Borter.
             <Translate contentKey="footer.rights">All rights reserved.</Translate>
           </p>
           <p className="small text-muted">
