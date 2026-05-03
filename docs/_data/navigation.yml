@@ -27,6 +27,8 @@ docs:
         url: /cli/
   - title: 'Reference'
     children:
+      - title: 'Quality Gate Criteria'
+        url: /quality-gate-criteria/
       - title: 'Requirements'
         url: /requirements/
       - title: 'License'
