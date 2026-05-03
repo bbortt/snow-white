@@ -85,3 +85,5 @@ Add the coverage check as a CI step after your integration tests.
 ```
 
 The step will fail the workflow if the quality gate is not met, preventing the PR from merging.
+
+See [Quality Gate Criteria](/quality-gate-criteria/) for the full list of checks available to include in a gate.
