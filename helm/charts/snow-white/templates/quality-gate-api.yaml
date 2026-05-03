@@ -46,11 +46,7 @@ spec:
           env:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
-              {{- if or .Values.snowWhite.httproute.enabled .Values.snowWhite.ingress.tls }}
-              value: 'https://{{ include "snow-white.publicHost" . }}'
-              {{- else }}
-              value: 'http://{{ include "snow-white.publicHost" . }}'
-              {{- end }}
+              value: '{{ include "snow-white.publicAddress" . }}'
           {{- if .Values.postgresql.enabled }}
             - name: 'SPRING_DATASOURCE_URL'
               value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/quality-gate-api'

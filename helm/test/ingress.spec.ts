@@ -4,23 +4,35 @@
  * See LICENSE file for full details.
  */
 
-import { renderHelmChart } from './render-helm-chart';
+import {
+  HelmChartRenderParameters,
+  renderHelmChart as originalRenderHelmChart,
+} from './render-helm-chart';
 import { expectToHaveDefaultLabelsForMicroservice } from './helpers';
+import { merge } from 'lodash';
 
-const valuesWithIngress = {
-  snowWhite: {
-    ingress: {
-      enabled: true,
-    },
-  },
-};
+const renderHelmChart = (options: HelmChartRenderParameters): Promise<any[]> =>
+  originalRenderHelmChart({
+    ...merge(
+      {
+        values: {
+          snowWhite: {
+            host: 'localhost',
+            httproute: { enabled: false },
+            ingress: { enabled: true },
+          },
+        },
+        withDefaultValues: false,
+      },
+      options,
+    ),
+  });
 
 describe('Ingress', () => {
   const renderAndGetIngress = async (manifests?: any[]) => {
     if (!manifests) {
       manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
-        values: valuesWithIngress,
       });
     }
 
@@ -53,7 +65,6 @@ describe('Ingress', () => {
   it('should be the only exposed ingress', async () => {
     const manifests = await renderHelmChart({
       chartPath: 'charts/snow-white',
-      values: valuesWithIngress,
     });
 
     const ingress = manifests.filter((m) => m.kind === 'Ingress');
@@ -67,7 +78,6 @@ describe('Ingress', () => {
       chartPath: 'charts/snow-white',
       // 53 chars is the max length for Helm release names
       releaseName: 'very-long-test-release-name-that-exceeds-the-limit-12',
-      values: valuesWithIngress,
     });
 
     const ingress = manifests.find(
@@ -82,7 +92,7 @@ describe('Ingress', () => {
 
   it('is disabled by default', async () => {
     await expect(() =>
-      renderHelmChart({
+      originalRenderHelmChart({
         chartPath: 'charts/snow-white',
         withDefaultValues: false,
       }),
@@ -93,7 +103,7 @@ describe('Ingress', () => {
 
   it('should throw error when Ingress is enabled but no public domain is set', async () => {
     await expect(() =>
-      renderHelmChart({
+      originalRenderHelmChart({
         chartPath: 'charts/snow-white',
         values: {
           snowWhite: {
@@ -247,7 +257,6 @@ describe('Ingress', () => {
         await renderHelmChart({
           chartPath: 'charts/snow-white',
           values: {
-            ...valuesWithIngress,
             otelCollector: {
               exposeThroughApiGateway: false,
             },
