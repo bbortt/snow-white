@@ -206,6 +206,7 @@ The Snow-White UI shows:
 
 Snow-White ships with a `basic-coverage` gate out of the box.
 Custom gates can be configured via the UI or API.
+See [Quality Gate Criteria](/quality-gate-criteria/) for the full list of available checks.
 
 ## Checklist
 
