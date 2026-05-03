@@ -47,11 +47,7 @@ spec:
           env:
           {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL'
-              {{- if .Values.snowWhite.ingress.tls }}
-              value: 'https://{{ include "snow-white.publicHost" . }}'
-              {{- else }}
-              value: 'http://{{ include "snow-white.publicHost" . }}'
-              {{- end }}
+              value: '{{ include "snow-white.publicAddress" . }}'
             - name: 'SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "api-index-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'

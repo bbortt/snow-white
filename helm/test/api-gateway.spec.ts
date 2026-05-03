@@ -4,11 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import { describe, it, expect } from 'vitest';
-import { parseDocument } from 'yaml';
+import { describe, expect, it } from 'vitest';
 import { renderHelmChart } from './render-helm-chart';
 import {
-  expectFailsWithMessageContaining,
   expectToHaveDefaultLabelsForMicroservice,
   getPodSpec,
   getTemplateMetadata,
@@ -483,7 +481,11 @@ describe('API Gateway', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
+                    httproute: {
+                      enabled: false,
+                    },
                     ingress: {
+                      enabled: true,
                       tls: false,
                     },
                   },
@@ -499,6 +501,31 @@ describe('API Gateway', () => {
           });
 
           it('should include public url from values with TLS', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    httproute: {
+                      enabled: false,
+                    },
+                    ingress: {
+                      enabled: true,
+                      tls: true,
+                    },
+                  },
+                },
+              }),
+            );
+
+            const publicDomain = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            );
+            expect(publicDomain).toBeDefined();
+            expect(publicDomain.value).toBe('https://localhost');
+          });
+
+          it('should include public url from values where HTTPRoute is enabled', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
 
             const publicDomain = apiGateway.env.find(
@@ -506,6 +533,26 @@ describe('API Gateway', () => {
             );
             expect(publicDomain).toBeDefined();
             expect(publicDomain.value).toBe('https://localhost');
+          });
+
+          it('should include public url from values with custom address', async () => {
+            const publicAddress = 'prefix.suffix:1234';
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    publicAddress,
+                  },
+                },
+              }),
+            );
+
+            const publicDomain = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_PUBLIC-URL',
+            );
+            expect(publicDomain).toBeDefined();
+            expect(publicDomain.value).toBe(publicAddress);
           });
 
           it('should calculate service connections based on release name', async () => {

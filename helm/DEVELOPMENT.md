@@ -34,6 +34,7 @@ helm upgrade --install \
   --set image.pullPolicy=IfNotPresent \
   --set snowWhite.mode=minimal \
   --set snowWhite.host=localhost \
+  --set snowWhite.ingress.enabled=true \
   --set snowWhite.ingress.tls=false \
   --set snowWhite.apiIndexApi.image.tag=latest \
   --set snowWhite.apiGateway.image.tag=latest \

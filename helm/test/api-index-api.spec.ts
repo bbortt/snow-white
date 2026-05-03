@@ -547,6 +547,27 @@ describe('API Index API', () => {
             expect(publicApiGatewayUrl.value).toBe('https://custom-host');
           });
 
+          it('should include public url from values with custom address', async () => {
+            const publicAddress = 'prefix.suffix:1234';
+            const qualityGateApi = await renderAndGetApiIndexApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    publicAddress,
+                  },
+                },
+              }),
+            );
+
+            const publicApiGatewayUrl = qualityGateApi.env.find(
+              (env) =>
+                env.name === 'SNOW_WHITE_API_INDEX_PUBLIC_API_GATEWAY_URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe(publicAddress);
+          });
+
           it('should calculate jdbc connection string', async () => {
             const apiIndexApi = await renderAndGetApiIndexApiContainer();
 

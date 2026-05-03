@@ -504,7 +504,7 @@ describe('Report Coordinator API', () => {
           });
 
           it('should include public host configuration with tls enabled', async () => {
-            const qualityGateApi =
+            const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
@@ -516,7 +516,7 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            const publicApiGatewayUrl = qualityGateApi.env.find(
+            const publicApiGatewayUrl = reportCoordinatorApi.env.find(
               (env) =>
                 env.name ===
                 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
@@ -526,7 +526,7 @@ describe('Report Coordinator API', () => {
           });
 
           it('should include public host configuration with tls disabled', async () => {
-            const qualityGateApi =
+            const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
@@ -543,7 +543,7 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            const publicApiGatewayUrl = qualityGateApi.env.find(
+            const publicApiGatewayUrl = reportCoordinatorApi.env.find(
               (env) =>
                 env.name ===
                 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
@@ -553,7 +553,7 @@ describe('Report Coordinator API', () => {
           });
 
           it('should include public host configuration with tls disabled but HTTPRoute enabled', async () => {
-            const qualityGateApi =
+            const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer(
                 await renderHelmChart({
                   chartPath: 'charts/snow-white',
@@ -571,7 +571,7 @@ describe('Report Coordinator API', () => {
                 }),
               );
 
-            const publicApiGatewayUrl = qualityGateApi.env.find(
+            const publicApiGatewayUrl = reportCoordinatorApi.env.find(
               (env) =>
                 env.name ===
                 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
@@ -580,18 +580,41 @@ describe('Report Coordinator API', () => {
             expect(publicApiGatewayUrl.value).toBe('https://custom-host');
           });
 
+          it('should include public url from values with custom address', async () => {
+            const publicAddress = 'prefix.suffix:1234';
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      publicAddress,
+                    },
+                  },
+                }),
+              );
+
+            const publicApiGatewayUrl = reportCoordinatorApi.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL',
+            );
+            expect(publicApiGatewayUrl).toBeDefined();
+            expect(publicApiGatewayUrl.value).toBe(publicAddress);
+          });
+
           it('should calculate quality-gate-api connection string', async () => {
             const reportCoordinatorApi =
               await renderAndGetReportCoordinatorApiContainer();
 
-            const qualityGateApiUrl = reportCoordinatorApi.env.find(
+            const reportCoordinatorApiUrl = reportCoordinatorApi.env.find(
               (env) =>
                 env.name ===
                 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL',
             );
-            expect(qualityGateApiUrl).toBeDefined();
+            expect(reportCoordinatorApiUrl).toBeDefined();
 
-            expect(qualityGateApiUrl.value).toBe(
+            expect(reportCoordinatorApiUrl.value).toBe(
               'http://snow-white-quality-gate-api-test-release.default.svc.cluster.local.:80',
             );
           });
@@ -737,7 +760,7 @@ describe('Report Coordinator API', () => {
                     apiIndexApi: {
                       additionalEnvs: onPremDatasourceProperties,
                     },
-                    qualityGateApi: {
+                    reportCoordinatorApi: {
                       additionalEnvs: onPremDatasourceProperties,
                     },
                     reportCoordinatorApi: {
@@ -765,7 +788,7 @@ describe('Report Coordinator API', () => {
                     apiIndexApi: {
                       additionalEnvs: onPremDatasourceProperties,
                     },
-                    qualityGateApi: {
+                    reportCoordinatorApi: {
                       additionalEnvs: onPremDatasourceProperties,
                     },
                     reportCoordinatorApi: {

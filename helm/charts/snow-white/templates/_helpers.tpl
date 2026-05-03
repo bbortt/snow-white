@@ -52,6 +52,19 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Helper function printing the address where Snow-White is reachable from
+*/}}
+{{- define "snow-white.publicAddress" -}}
+{{- if not (empty .Values.snowWhite.publicAddress) -}}
+{{ .Values.snowWhite.publicAddress }}
+{{- else if or .Values.snowWhite.ingress.tls .Values.snowWhite.httproute.enabled -}}
+https://{{ include "snow-white.publicHost" . }}
+{{- else -}}
+http://{{ include "snow-white.publicHost" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Helper function making sure that the public domain (exposed through ingress) is defined
 */}}
 {{- define "snow-white.publicHost" -}}
