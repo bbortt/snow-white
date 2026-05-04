@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+@use 'sass:color';
+
 /*
 * Bootstrap overrides https://v4-alpha.getbootstrap.com/getting-started/options/
 * All values defined in bootstrap source
@@ -65,17 +67,17 @@ $body-color: $near-black;
 
 // Links
 $link-color: $primary;
-$link-hover-color: darken($primary, 15%);
+$link-hover-color: color.adjust($primary, $lightness: -15%);
 
 // Gray color variants for various UI elements
-$gray-100: mix($off-white, $medium-gray, 90%); // #EAEAEA
-$gray-200: mix($off-white, $medium-gray, 75%); // #DADADA
-$gray-300: mix($off-white, $medium-gray, 60%); // #CACACA
-$gray-400: mix($off-white, $medium-gray, 45%); // #B5B5B5
+$gray-100: color.mix($off-white, $medium-gray, 90%); // #EAEAEA
+$gray-200: color.mix($off-white, $medium-gray, 75%); // #DADADA
+$gray-300: color.mix($off-white, $medium-gray, 60%); // #CACACA
+$gray-400: color.mix($off-white, $medium-gray, 45%); // #B5B5B5
 $gray-500: $medium-gray; // #8C8C8C
-$gray-600: mix($medium-gray, $near-black, 70%); // #646464
-$gray-700: mix($medium-gray, $near-black, 50%); // #4D4D4D
-$gray-800: mix($medium-gray, $near-black, 30%); // #333333
+$gray-600: color.mix($medium-gray, $near-black, 70%); // #646464
+$gray-700: color.mix($medium-gray, $near-black, 50%); // #4D4D4D
+$gray-800: color.mix($medium-gray, $near-black, 30%); // #333333
 $gray-900: $near-black; // #0D0D0D
 
 // Component specific colors

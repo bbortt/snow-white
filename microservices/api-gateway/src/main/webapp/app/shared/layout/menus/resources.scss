@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-@import '../../../bootstrap-variables';
+@use '../../../bootstrap-variables' as *;
 
 .img-svg {
   -webkit-mask-repeat: no-repeat;

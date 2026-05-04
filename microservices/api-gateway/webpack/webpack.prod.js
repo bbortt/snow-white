@@ -21,6 +21,7 @@ module.exports = async () =>
   webpackMerge(await commonConfig({ env: ENV }), {
     // devtool: 'source-map', // Enable source maps. Please note that this will slow down the build
     mode: ENV,
+    performance: false,
     entry: {
       main: './src/main/webapp/app/index',
     },
@@ -49,7 +50,7 @@ module.exports = async () =>
             },
             {
               loader: 'sass-loader',
-              options: { implementation: sass },
+              options: { implementation: sass, sassOptions: { quietDeps: true, silenceDeprecations: ['import'] } },
             },
           ],
         },
@@ -114,6 +115,7 @@ module.exports = async () =>
         clientsClaim: true,
         skipWaiting: true,
         exclude: [/swagger-ui/],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       }),
     ],
   });
