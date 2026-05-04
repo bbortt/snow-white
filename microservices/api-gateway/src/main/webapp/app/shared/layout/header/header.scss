@@ -4,9 +4,11 @@
  * See LICENSE file for full details.
  */
 
+@use 'sass:color';
+
 $header-color: #fff;
 $header-color-secondary: #bbb;
-$header-color-hover: darken($header-color, 20%);
+$header-color-hover: color.adjust($header-color, $lightness: -20%);
 
 /* ==========================================================================
 Development Ribbon

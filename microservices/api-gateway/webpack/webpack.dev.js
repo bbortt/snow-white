@@ -44,7 +44,7 @@ module.exports = async options =>
             },
             {
               loader: 'sass-loader',
-              options: { implementation: sass },
+              options: { implementation: sass, sassOptions: { quietDeps: true, silenceDeprecations: ['import'] } },
             },
           ],
         },
