@@ -100,6 +100,7 @@ module.exports = async () =>
       ],
     },
     plugins: [
+      ...(process.env.CI ? [] : [new webpack.ProgressPlugin({ profile: true })]),
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
         filename: 'content/[name].[contenthash].css',
