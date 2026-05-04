@@ -9,9 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 import static java.lang.String.format;
 
 import java.time.Duration;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 public final class DurationFormatter {
 
   String toSecondsWithPrecision(Duration duration) {
