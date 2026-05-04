@@ -1,3 +1,6 @@
+logging:
+  level:
+    org.apache.kafka.clients.admin.internals.AdminMetadataManager: WARN
 spring:
   application:
     name: openapi-coverage-stream
