@@ -7,11 +7,14 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static lombok.AccessLevel.PRIVATE;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = PRIVATE)
 public final class TestData {
 
   public static final String SERVICE_NAME = "serviceName";
