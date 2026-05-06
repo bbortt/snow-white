@@ -19,5 +19,17 @@ CREATE TABLE api_reference
         CHECK (prerelease = TRUE OR prerelease_content IS NULL)
 );
 
+CREATE UNIQUE INDEX uq_api_reference_service_api_version
+    ON api_reference (otel_service_name, api_name, api_version);
+
+CREATE INDEX idx_api_reference_otel_service_name
+    ON api_reference (otel_service_name);
+
+CREATE INDEX idx_api_reference_api_name
+    ON api_reference (api_name);
+
+CREATE INDEX idx_api_reference_api_version
+    ON api_reference (api_version);
+
 CREATE INDEX idx_api_reference_indexed_at
     ON api_reference (indexed_at);
