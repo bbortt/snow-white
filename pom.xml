@@ -183,6 +183,7 @@
           <excludes>
             <exclude>**/*AppTest.java</exclude>
             <exclude>**/*IT.java</exclude>
+            <exclude>**/*IT$*.java</exclude>
           </excludes>
         </configuration>
       </plugin>
