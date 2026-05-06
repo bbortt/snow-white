@@ -75,7 +75,7 @@ paths:
           schema:
             type: string
             maxLength: 64
-          description: 'Filter results to APIs belonging to this service name'
+          description: 'Filter results to APIs belonging to this service name (combine with apiName for cascading)'
         - name: apiName
           in: query
           required: false
@@ -94,6 +94,58 @@ paths:
                   $ref: './components/ApiInformation.yml'
         '500':
           description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+  /api/rest/v1/service-names:
+    get:
+      operationId: getAllServiceNames
+      summary: List indexed service names
+      description: Returns a deduplicated list of all service names currently present in the index.
+      tags:
+        - api-index
+      responses:
+        '200':
+          description: The list of indexed service names was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
+  /api/rest/v1/api-names:
+    get:
+      operationId: getAllApiNames
+      summary: List indexed API names
+      description: Returns a deduplicated list of all API names currently present in the index, optionally filtered to a specific service.
+      tags:
+        - api-index
+      parameters:
+        - name: serviceName
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 64
+          description: 'Filter results to API names belonging to this service name'
+      responses:
+        '200':
+          description: The list of indexed API names was successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:

@@ -172,6 +172,50 @@ class ApiIndexServiceTest {
   }
 
   @Nested
+  class FindAllServiceNamesTest {
+
+    @Test
+    void shouldReturnServiceNamesFromRepository() {
+      var serviceNames = List.of("service-a", "service-b");
+      doReturn(serviceNames)
+        .when(apiReferenceRepositoryMock)
+        .findDistinctServiceNames();
+
+      var result = fixture.findAllServiceNames();
+
+      assertThat(result).isSameAs(serviceNames);
+    }
+  }
+
+  @Nested
+  class FindAllApiNamesTest {
+
+    @Test
+    void shouldReturnAllApiNames_whenServiceNameIsNull() {
+      var apiNames = List.of("api-a", "api-b");
+      doReturn(apiNames)
+        .when(apiReferenceRepositoryMock)
+        .findDistinctApiNames();
+
+      var result = fixture.findAllApiNames(null);
+
+      assertThat(result).isSameAs(apiNames);
+    }
+
+    @Test
+    void shouldReturnApiNamesFilteredByServiceName_whenServiceNameIsProvided() {
+      var apiNames = List.of("api-a");
+      doReturn(apiNames)
+        .when(apiReferenceRepositoryMock)
+        .findDistinctApiNamesByOtelServiceName("my-service");
+
+      var result = fixture.findAllApiNames("my-service");
+
+      assertThat(result).isSameAs(apiNames);
+    }
+  }
+
+  @Nested
   class FindAllIngestedApisTest {
 
     @Test

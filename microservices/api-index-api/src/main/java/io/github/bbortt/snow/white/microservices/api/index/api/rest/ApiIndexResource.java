@@ -75,6 +75,16 @@ public class ApiIndexResource implements ApiIndexApi {
   }
 
   @Override
+  public ResponseEntity<List<String>> getAllServiceNames() {
+    return ResponseEntity.ok(apiIndexService.findAllServiceNames());
+  }
+
+  @Override
+  public ResponseEntity<List<String>> getAllApiNames(String serviceName) {
+    return ResponseEntity.ok(apiIndexService.findAllApiNames(serviceName));
+  }
+
+  @Override
   public ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> getAllApis(
     Integer page,
     Integer size,

@@ -285,6 +285,199 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  void getRequest_withApiNameFilter_shouldReturnMatchingApis()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-shared")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/shared")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-shared")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/shared")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-other")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/other")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(
+        get(ENTITY_API_URL)
+          .param("apiName", "api-shared")
+          .accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(2);
+    assertThat(responseJson.get(0).get("apiName").asString()).isEqualTo(
+      "api-shared"
+    );
+    assertThat(responseJson.get(1).get("apiName").asString()).isEqualTo(
+      "api-shared"
+    );
+  }
+
+  @Test
+  void getRequest_toListServiceNames_shouldReturnDistinctServiceNames()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-1")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/1")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-2")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/2")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-1")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/1")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(get("/api/rest/v1/service-names").accept(APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(2);
+    assertThat(responseJson.get(0).asString()).isEqualTo("service-a");
+    assertThat(responseJson.get(1).asString()).isEqualTo("service-b");
+  }
+
+  @Test
+  void getRequest_toListApiNames_shouldReturnDistinctApiNames()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-common")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/common")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-common")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/common")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-unique")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/unique")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(get("/api/rest/v1/api-names").accept(APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(2);
+    assertThat(responseJson.get(0).asString()).isEqualTo("api-common");
+    assertThat(responseJson.get(1).asString()).isEqualTo("api-unique");
+  }
+
+  @Test
+  void getRequest_toListApiNames_withServiceNameFilter_shouldReturnFilteredApiNames()
+    throws Exception {
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-x")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/x")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-a")
+        .apiName("api-y")
+        .apiVersion("1.0")
+        .sourceUrl("http://a/y")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-b")
+        .apiName("api-z")
+        .apiVersion("1.0")
+        .sourceUrl("http://b/z")
+        .apiType(OPENAPI)
+        .build()
+    );
+
+    var contentAsString = mockMvc
+      .perform(
+        get("/api/rest/v1/api-names")
+          .param("serviceName", "service-a")
+          .accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var responseJson = jsonMapper.readTree(contentAsString);
+    assertThat(responseJson.isArray()).isTrue();
+    assertThat(responseJson.size()).isEqualTo(2);
+    assertThat(responseJson.get(0).asString()).isEqualTo("api-x");
+    assertThat(responseJson.get(1).asString()).isEqualTo("api-y");
+  }
+
+  @Test
   void getRequest_forEntityDetails_shouldListSingleEntity() throws Exception {
     var apiReference = ApiReference.builder()
       .otelServiceName("otelServiceName")

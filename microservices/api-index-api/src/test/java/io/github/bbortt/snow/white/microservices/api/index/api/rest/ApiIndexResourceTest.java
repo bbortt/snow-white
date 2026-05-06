@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -196,6 +198,57 @@ class ApiIndexResourceTest {
   }
 
   @Nested
+  class GetAllServiceNamesTest {
+
+    @Test
+    void shouldReturnServiceNames() {
+      var serviceNames = List.of("service-a", "service-b");
+      doReturn(serviceNames).when(apiIndexServiceMock).findAllServiceNames();
+
+      ResponseEntity<List<String>> response = fixture.getAllServiceNames();
+
+      assertThat(response).satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+        r -> assertThat(r.getBody()).isSameAs(serviceNames)
+      );
+    }
+  }
+
+  @Nested
+  class GetAllApiNamesTest {
+
+    @Test
+    void shouldReturnAllApiNames_whenServiceNameIsNull() {
+      var apiNames = List.of("api-a", "api-b");
+      doReturn(apiNames).when(apiIndexServiceMock).findAllApiNames(null);
+
+      ResponseEntity<List<String>> response = fixture.getAllApiNames(null);
+
+      assertThat(response).satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+        r -> assertThat(r.getBody()).isSameAs(apiNames)
+      );
+    }
+
+    @Test
+    void shouldReturnFilteredApiNames_whenServiceNameIsProvided() {
+      var apiNames = List.of("api-a");
+      doReturn(apiNames)
+        .when(apiIndexServiceMock)
+        .findAllApiNames("my-service");
+
+      ResponseEntity<List<String>> response = fixture.getAllApiNames(
+        "my-service"
+      );
+
+      assertThat(response).satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+        r -> assertThat(r.getBody()).isSameAs(apiNames)
+      );
+    }
+  }
+
+  @Nested
   class GetAllApisTest {
 
     @Test
@@ -203,6 +256,9 @@ class ApiIndexResourceTest {
       var page = 0;
       var size = 10;
       var sort = "apiVersion,asc";
+
+      var serviceName = "serviceName";
+      var apiName = "apiName";
 
       var domain1 = mock(ApiReference.class);
       var domain2 = mock(ApiReference.class);
@@ -215,8 +271,8 @@ class ApiIndexResourceTest {
       doReturn(referencedApis)
         .when(apiIndexServiceMock)
         .findAllIngestedApis(
-          org.mockito.ArgumentMatchers.isNull(),
-          org.mockito.ArgumentMatchers.isNull(),
+          eq(serviceName),
+          eq(apiName),
           pageableArgumentCaptor.capture()
         );
 
@@ -227,7 +283,7 @@ class ApiIndexResourceTest {
       doReturn(dto2).when(apiReferenceMapperMock).toDto(domain2);
 
       ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> response =
-        fixture.getAllApis(page, size, sort, null, null);
+        fixture.getAllApis(page, size, sort, serviceName, apiName);
 
       assertThat(response)
         .isNotNull()
@@ -265,8 +321,8 @@ class ApiIndexResourceTest {
       doReturn(referencedApis)
         .when(apiIndexServiceMock)
         .findAllIngestedApis(
-          org.mockito.ArgumentMatchers.isNull(),
-          org.mockito.ArgumentMatchers.isNull(),
+          isNull(),
+          isNull(),
           pageableArgumentCaptor.capture()
         );
 

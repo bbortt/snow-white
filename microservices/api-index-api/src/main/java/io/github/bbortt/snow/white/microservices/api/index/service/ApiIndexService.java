@@ -13,6 +13,7 @@ import io.github.bbortt.snow.white.microservices.api.index.domain.repository.Api
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceSpecification;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -86,6 +87,19 @@ public class ApiIndexService {
       ApiReferenceSpecification.from(serviceName, apiName),
       pageable
     );
+  }
+
+  public List<String> findAllServiceNames() {
+    return apiReferenceRepository.findDistinctServiceNames();
+  }
+
+  public List<String> findAllApiNames(@Nullable String serviceName) {
+    if (serviceName != null) {
+      return apiReferenceRepository.findDistinctApiNamesByOtelServiceName(
+        serviceName
+      );
+    }
+    return apiReferenceRepository.findDistinctApiNames();
   }
 
   public Optional<ApiReference> findIngestedApi(
