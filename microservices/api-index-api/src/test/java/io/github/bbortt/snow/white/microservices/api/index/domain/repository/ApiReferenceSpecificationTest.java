@@ -29,13 +29,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ApiReferenceSpecificationTest {
 
   @Mock
-  private Root<ApiReference> root;
+  private Root<ApiReference> rootMock;
 
   @Mock
-  private CriteriaQuery<?> query;
+  private CriteriaQuery<?> criteriaQueryMock;
 
   @Mock
-  private CriteriaBuilder cb;
+  private CriteriaBuilder criteriaBuilderMock;
 
   @Nested
   class FromTest {
@@ -43,70 +43,70 @@ class ApiReferenceSpecificationTest {
     @Test
     void shouldReturnConjunction_whenBothFiltersAreNull() {
       var conjunction = mock(Predicate.class);
-      doReturn(conjunction).when(cb).conjunction();
+      doReturn(conjunction).when(criteriaBuilderMock).conjunction();
 
       var result = ApiReferenceSpecification.from(null, null).toPredicate(
-        root,
-        query,
-        cb
+        rootMock,
+        criteriaQueryMock,
+        criteriaBuilderMock
       );
 
       assertThat(result).isSameAs(conjunction);
-      verifyNoInteractions(root);
+      verifyNoInteractions(rootMock);
     }
 
     @Test
     void shouldFilterOnlyByServiceName_whenApiNameFilterIsAbsent() {
-      doReturn(mock(Predicate.class)).when(cb).conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<Object> serviceNamePath = mock();
-      doReturn(serviceNamePath).when(root).get("otelServiceName");
+      doReturn(serviceNamePath).when(rootMock).get("otelServiceName");
 
       ApiReferenceSpecification.from("my-service", null).toPredicate(
-        root,
-        query,
-        cb
+        rootMock,
+        criteriaQueryMock,
+        criteriaBuilderMock
       );
 
-      verify(cb).equal(serviceNamePath, "my-service");
-      verify(root, never()).get("apiName");
+      verify(criteriaBuilderMock).equal(serviceNamePath, "my-service");
+      verify(rootMock, never()).get("apiName");
     }
 
     @Test
     void shouldFilterOnlyByApiName_whenServiceNameFilterIsAbsent() {
-      doReturn(mock(Predicate.class)).when(cb).conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<Object> apiNamePath = mock();
-      doReturn(apiNamePath).when(root).get("apiName");
+      doReturn(apiNamePath).when(rootMock).get("apiName");
 
       ApiReferenceSpecification.from(null, "my-api").toPredicate(
-        root,
-        query,
-        cb
+        rootMock,
+        criteriaQueryMock,
+        criteriaBuilderMock
       );
 
-      verify(cb).equal(apiNamePath, "my-api");
-      verify(root, never()).get("otelServiceName");
+      verify(criteriaBuilderMock).equal(apiNamePath, "my-api");
+      verify(rootMock, never()).get("otelServiceName");
     }
 
     @Test
     void shouldFilterByServiceNameAndApiName_whenBothFiltersAreProvided() {
-      doReturn(mock(Predicate.class)).when(cb).conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<Object> serviceNamePath = mock();
-      doReturn(serviceNamePath).when(root).get("otelServiceName");
+      doReturn(serviceNamePath).when(rootMock).get("otelServiceName");
 
       Path<Object> apiNamePath = mock();
-      doReturn(apiNamePath).when(root).get("apiName");
+      doReturn(apiNamePath).when(rootMock).get("apiName");
 
       ApiReferenceSpecification.from("my-service", "my-api").toPredicate(
-        root,
-        query,
-        cb
+        rootMock,
+        criteriaQueryMock,
+        criteriaBuilderMock
       );
 
-      verify(cb).equal(serviceNamePath, "my-service");
-      verify(cb).equal(apiNamePath, "my-api");
+      verify(criteriaBuilderMock).equal(serviceNamePath, "my-service");
+      verify(criteriaBuilderMock).equal(apiNamePath, "my-api");
     }
   }
 }
