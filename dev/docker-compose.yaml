@@ -211,6 +211,8 @@ services:
     depends_on:
       otel-collector:
         condition: service_started
+      microservices.api-index-api:
+        condition: service_started
       microservices.api-sync-job:
         condition: service_completed_successfully
       microservices.quality-gate-api:
