@@ -653,4 +653,36 @@ info:
       });
     });
   });
+
+  describe('--junit-output flag', () => {
+    it('should pass junitOutput through to sanitized options', () => {
+      expect(
+        sanitizeCalculateOptions({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          junitOutput: 'report.xml',
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toEqual({
+        ...sanitizedOptions,
+        junitOutput: 'report.xml',
+      });
+    });
+
+    it('should reject --junit-output combined with --async', () => {
+      expect(() =>
+        sanitizeCalculateOptions({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          async: true,
+          junitOutput: 'report.xml',
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
+    });
+  });
 });

@@ -11,13 +11,13 @@ import { exit } from 'node:process';
 
 import type { ApiIndexApi } from '../../clients/api-index-api';
 import type { ApiSpecMetadata } from '../../common/openapi';
-import type { UploadPrereleasesOptions } from '../../config/sanitized-options.ts';
+import type { UploadPrereleasesOptions } from '../../config/sanitized-options';
 
 import { PRERELEASE_UPLOAD_FAILED } from '../../common/exit-codes';
 import { scanGlob } from '../../common/glob';
 import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, extractApiSpecMetadata } from '../../common/openapi';
-import { handleUploadError } from './handle-upload-error.ts';
-import { uploadApiSpec } from './upload-api-spec.ts';
+import { handleUploadError } from './handle-upload-error';
+import { uploadApiSpec } from './upload-api-spec';
 
 export const uploadPrereleases = async (apiIndexApi: ApiIndexApi, options: UploadPrereleasesOptions): Promise<void> => {
   const { globPattern, ignoreExisting, url } = options;

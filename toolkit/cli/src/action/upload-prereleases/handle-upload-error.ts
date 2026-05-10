@@ -6,10 +6,10 @@
 
 import chalk from 'chalk';
 
-import type { ApiSpecMetadata } from '../../common/openapi.ts';
+import type { ApiSpecMetadata } from '../../common/openapi';
 
-import { isFetchError, isResponseError } from '../../common/error-response-utils.ts';
-import { logResponseError } from './log-response-error.ts';
+import { isFetchError, isResponseError } from '../../common/error-response-utils';
+import { logResponseError } from './log-response-error';
 
 interface UploadErrorResult {
   ignored: boolean;

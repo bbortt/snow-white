@@ -20,6 +20,7 @@ export interface CliOptions {
   filter?: string[];
 
   async?: boolean;
+  junitOutput?: string;
 
   apiNamePath?: string;
   apiVersionPath?: string;

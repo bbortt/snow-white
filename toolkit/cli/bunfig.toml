@@ -11,4 +11,4 @@ coverageSkipTestFiles = true
 
 # https://bun.sh/docs/test/reporters#junit-xml-reporter
 [test.reporter]
-junit = "target/test-results/bun/junit.xml"
+junit = "target/junit.xml"

@@ -5,12 +5,15 @@
  */
 
 import chalk from 'chalk';
+import { exit } from 'node:process';
 
 import type { CalculateQualityGateRequest, QualityGateApi } from '../../clients/quality-gate-api';
 import type { ReportApi } from '../../clients/report-api';
 import type { CalculateOptions } from '../../config/sanitized-options';
 
+import { QUALITY_GATE_FAILED } from '../../common/exit-codes';
 import { toDtos } from '../../entity/mapper/api-information.mapper';
+import { persistJUnitXmlReport } from './persist-junit-xml-report';
 import { pollCalculationResult } from './poll-calculation-result';
 
 export const calculateQualityGates = async (
@@ -57,6 +60,14 @@ export const calculateQualityGates = async (
     const calculationId = calculationResponse.calculationId;
 
     console.log('');
-    await pollCalculationResult(reportApi, calculationId);
+    const passed = await pollCalculationResult(reportApi, calculationId);
+
+    if (options.junitOutput) {
+      await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput);
+    }
+
+    if (!passed) {
+      exit(QUALITY_GATE_FAILED);
+    }
   }
 };
