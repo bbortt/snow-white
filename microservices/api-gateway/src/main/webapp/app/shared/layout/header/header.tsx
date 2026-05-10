@@ -15,7 +15,7 @@ import LoadingBar from 'react-redux-loading-bar';
 import { Collapse, Nav, Navbar, NavbarToggler } from 'reactstrap';
 
 import { CriteriaMenu, LocaleMenu } from '../menus';
-import { Brand, Home, QualityGates } from './header-components';
+import { ApiIndexMenu, Brand, Home, QualityGates } from './header-components';
 
 export interface IHeaderProps {
   ribbonEnv: string;
@@ -61,6 +61,7 @@ const Header = (props: IHeaderProps) => {
             <Home />
             <QualityGates />
             <CriteriaMenu />
+            <ApiIndexMenu />
             <LocaleMenu currentLocale={props.currentLocale} onClick={handleLocaleChange} />
             <ResourcesMenu />
           </Nav>

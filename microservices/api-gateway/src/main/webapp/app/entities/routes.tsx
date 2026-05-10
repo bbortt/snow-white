@@ -15,6 +15,7 @@ import { Route } from 'react-router-dom';
 /* eslint-disable */
 // entitiesReducers must be imported upfront!
 import entitiesReducers from './reducers';
+import ApiIndex from './api-index';
 import OpenApiCriterion from './open-api-criterion';
 import QualityGate from 'app/entities/quality-gate';
 import QualityGateConfig from './quality-gate-config';
@@ -28,6 +29,7 @@ export const EntitiesRoutes = () => {
     <div>
       <ErrorBoundaryRoutes>
         {/* prettier-ignore */}
+        <Route path="api-index/*" element={<ApiIndex />} />
         <Route path="open-api-criterion/*" element={<OpenApiCriterion />} />
         <Route path="quality-gate/*" element={<QualityGate />} />
         <Route path="quality-gate-config/*" element={<QualityGateConfig />} />

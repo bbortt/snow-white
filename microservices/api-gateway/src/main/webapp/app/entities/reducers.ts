@@ -4,11 +4,13 @@
  * See LICENSE file for full details.
  */
 
+import type { GetAllApis200ResponseInner } from 'app/clients/api-index-api';
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState } from 'app/shared/reducers/reducer.utils';
 
+import apiIndex from 'app/entities/api-index/api-index.reducer';
 import openApiCriterion from 'app/entities/open-api-criterion/open-api-criterion.reducer';
 import qualityGateConfig from 'app/entities/quality-gate-config/quality-gate-config.reducer';
 import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';
@@ -16,6 +18,7 @@ import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
 export interface SnowWhiteState {
+  apiIndex: EntityState<GetAllApis200ResponseInner>;
   openApiCriterion: EntityState<IOpenApiCriterion>;
   qualityGate: EntityState<IQualityGate>;
   qualityGateConfig: EntityState<IQualityGateConfig>;
@@ -26,6 +29,7 @@ export const getSnowWhiteState = (getState): SnowWhiteState => {
 };
 
 const entitiesReducers = {
+  apiIndex,
   openApiCriterion,
   qualityGate,
   qualityGateConfig,
