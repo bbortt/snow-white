@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.api.index.api.rest;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -209,7 +210,10 @@ class ApiIndexResourceTest {
 
       assertThat(response).satisfies(
         r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-        r -> assertThat(r.getBody()).isSameAs(serviceNames)
+        r ->
+          assertThat(r.getBody()).containsExactlyInAnyOrder(
+            serviceNames.toArray(String[]::new)
+          )
       );
     }
   }
@@ -226,13 +230,16 @@ class ApiIndexResourceTest {
 
       assertThat(response).satisfies(
         r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-        r -> assertThat(r.getBody()).isSameAs(apiNames)
+        r ->
+          assertThat(r.getBody()).containsExactlyInAnyOrder(
+            apiNames.toArray(String[]::new)
+          )
       );
     }
 
     @Test
     void shouldReturnFilteredApiNames_whenServiceNameIsProvided() {
-      var apiNames = List.of("api-a");
+      var apiNames = singletonList("api-a");
       doReturn(apiNames)
         .when(apiIndexServiceMock)
         .findAllApiNames("my-service");
@@ -243,7 +250,10 @@ class ApiIndexResourceTest {
 
       assertThat(response).satisfies(
         r -> assertThat(r.getStatusCode()).isEqualTo(OK),
-        r -> assertThat(r.getBody()).isSameAs(apiNames)
+        r ->
+          assertThat(r.getBody()).containsExactlyInAnyOrder(
+            apiNames.toArray(String[]::new)
+          )
       );
     }
   }
