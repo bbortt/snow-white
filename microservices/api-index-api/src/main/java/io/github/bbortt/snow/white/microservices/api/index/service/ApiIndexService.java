@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.index.service;
 
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
@@ -94,11 +95,12 @@ public class ApiIndexService {
   }
 
   public List<String> findAllApiNames(@Nullable String serviceName) {
-    if (serviceName != null) {
+    if (nonNull(serviceName)) {
       return apiReferenceRepository.findDistinctApiNamesByOtelServiceName(
         serviceName
       );
     }
+
     return apiReferenceRepository.findDistinctApiNames();
   }
 
