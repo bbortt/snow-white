@@ -99,7 +99,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   }
 
   @Test
-  void createQualityGateConfig_withAttachedOpenAPi() throws Exception {
+  void createQualityGateConfig_withAttachedOpenAPI() throws Exception {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder()
       .name(name)
@@ -141,6 +141,26 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       );
 
     qualityGateConfigurationRepository.deleteByName(name);
+  }
+
+  @Test
+  void createQualityGateConfig_whereMinCoveragePercentageIsBelow80Percent()
+    throws Exception {
+    var name = generateUniqueName("createQualityGateConfig");
+    var qualityGateConfig = QualityGateConfig.builder()
+      .name(name)
+      .minCoveragePercentage(79)
+      .build();
+
+    mockMvc
+      .perform(
+        post(ENTITY_API_URL)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(qualityGateConfig))
+      )
+      .andExpect(status().isBadRequest());
+
+    assertThat(qualityGateConfigurationRepository.findByName(name)).isEmpty();
   }
 
   @Test
