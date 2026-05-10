@@ -6,7 +6,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 
-import * as logResponseErrorModule from './log-response-error.ts';
+import * as logResponseErrorModule from './log-response-error';
 
 const mockIsFetchError = mock();
 const mockIsResponseError = mock();

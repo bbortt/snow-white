@@ -7,7 +7,7 @@
 import type { FetchAPI } from '../clients/report-api';
 
 import { Configuration, ReportApi } from '../clients/report-api';
-import { createFetchWithRetry } from './fetch-with-retry.ts';
+import { createFetchWithRetry } from './fetch-with-retry';
 
 export const getReportApi = (baseUrl: string): ReportApi =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

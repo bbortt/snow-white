@@ -5,6 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { writeFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
 import type { QualityGateApi } from '../clients/quality-gate-api';
@@ -14,6 +15,10 @@ import type { CalculateOptions } from '../config/sanitized-options';
 import { FetchError, ResponseError } from '../clients/quality-gate-api';
 import { QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from '../common/exit-codes';
 import { calculate } from './calculate';
+
+await mock.module('node:fs', () => ({
+  writeFileSync: mock(),
+}));
 
 await mock.module('node:process', () => ({
   exit: mock(),
@@ -33,6 +38,7 @@ const qualityGateApiMock = {
 
 const reportApiMock = {
   getReportByCalculationId: mock(),
+  getReportByCalculationIdAsJUnit: mock(),
 };
 
 const defaultOptions: CalculateOptions = {
@@ -50,8 +56,12 @@ describe('calculate action', () => {
     consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
     consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
 
-    qualityGateApiMock.calculateQualityGateRaw.mockReset();
+    reportApiMock.getReportByCalculationIdAsJUnit.mockReset();
     reportApiMock.getReportByCalculationId.mockReset();
+
+    (exit as any).mockReset();
+
+    (writeFileSync as ReturnType<typeof mock>).mockReset();
   });
 
   afterEach(() => {
@@ -275,6 +285,49 @@ describe('calculate action', () => {
       await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
 
       expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledWith({ calculationId: specificId });
+    });
+
+    describe('--junit-output', () => {
+      const junitOptions: CalculateOptions = { ...syncOptions, junitOutput: 'report.xml' };
+      const xmlContent = '<testsuites />';
+
+      it('should fetch and write JUnit XML when --junit-output is set and gate passes', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+        reportApiMock.getReportByCalculationIdAsJUnit.mockResolvedValueOnce(new Blob([xmlContent], { type: 'application/xml' }));
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), junitOptions);
+
+        expect(reportApiMock.getReportByCalculationIdAsJUnit).toHaveBeenCalledWith({ calculationId: '123-456-789' });
+        expect(writeFileSync).toHaveBeenCalledWith('report.xml', xmlContent, 'utf8');
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📄 JUnit XML report written to: report.xml'));
+
+        expect(exit).not.toHaveBeenCalled();
+      });
+
+      it('should fetch and write JUnit XML when --junit-output is set and gate fails', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'FAILED' });
+        reportApiMock.getReportByCalculationIdAsJUnit.mockResolvedValueOnce(new Blob([xmlContent], { type: 'application/xml' }));
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), junitOptions);
+
+        expect(reportApiMock.getReportByCalculationIdAsJUnit).toHaveBeenCalledWith({ calculationId: '123-456-789' });
+        expect(writeFileSync).toHaveBeenCalledWith('report.xml', xmlContent, 'utf8');
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📄 JUnit XML report written to: report.xml'));
+
+        expect(exit).toHaveBeenCalledWith(QUALITY_GATE_FAILED);
+      });
+
+      it('should not fetch JUnit XML when --junit-output is not set', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+        expect(reportApiMock.getReportByCalculationIdAsJUnit).not.toHaveBeenCalled();
+        expect(writeFileSync).not.toHaveBeenCalled();
+      });
     });
   });
 

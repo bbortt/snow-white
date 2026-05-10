@@ -28,7 +28,7 @@
     "test:bun": "run-s --print-label test:wait-for-wiremock test:with-coverage",
     "test:wait-for-wiremock": "wait-on -t 30s http-get://localhost:8080/__admin/health",
     "test:watch": "bun run test:with-coverage --watch",
-    "test:with-coverage": "bun test --coverage",
+    "test:with-coverage": "bun test --coverage --isolate",
     "type-check": "tsc --noEmit",
     "wiremock:start": "wiremock --port 8080"
   },
