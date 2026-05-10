@@ -1,4 +1,4 @@
-# Report Coordinator APIs
+# Report Coordinator API
 
 The **Report Coordinator API** is a core backend component of the **Snow White** system.
 It coordinates API coverage and quality gate reports by triggering calculations, collecting results, and storing them for later querying.
