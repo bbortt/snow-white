@@ -51,3 +51,14 @@ export const QualityGates = () => (
     </NavLink>
   </NavItem>
 );
+
+export const ApiIndexMenu = () => (
+  <NavItem data-testid="api-index-menu">
+    <NavLink tag={Link} to="/api-index" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="database" />
+      <span>
+        <Translate contentKey="global.menu.entities.apiIndex">API Index</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);

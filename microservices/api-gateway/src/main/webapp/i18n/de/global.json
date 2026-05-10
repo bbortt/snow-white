@@ -9,6 +9,7 @@
       "entities": {
         "main": "Entitäten",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
+        "apiIndex": "API-Index",
         "openApiCriterion": "OpenAPI Kriterien",
         "qualityGateConfig": "Quality-Gates",
         "calculationRequestParameters": "Quality-Gate Parameter",
