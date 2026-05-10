@@ -7,7 +7,7 @@
 import type { FetchAPI } from '../clients/quality-gate-api';
 
 import { Configuration, QualityGateApi } from '../clients/quality-gate-api';
-import { createFetchWithRetry } from './fetch-with-retry.ts';
+import { createFetchWithRetry } from './fetch-with-retry';
 
 export const getQualityGateApi = (baseUrl: string): QualityGateApi =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

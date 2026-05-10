@@ -7,7 +7,7 @@
 import type { FetchAPI } from '../clients/api-index-api';
 
 import { ApiIndexApi, Configuration } from '../clients/api-index-api';
-import { createFetchWithRetry } from './fetch-with-retry.ts';
+import { createFetchWithRetry } from './fetch-with-retry';
 
 export const getApiIndexApi = (baseUrl: string): ApiIndexApi =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

@@ -15,7 +15,7 @@ import type { ApiInformation, CalculateOptions } from './sanitized-options';
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
 import { scanGlob } from '../common/glob';
 import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, extractApiSpecMetadata } from '../common/openapi';
-import { parseFilterObjectFromString } from './parse-filter-object-from-string.ts';
+import { parseFilterObjectFromString } from './parse-filter-object-from-string';
 import { resolveConfig } from './resolve-config';
 
 const exactConfigurationGroup = Object.freeze(['serviceName', 'apiName', 'apiVersion']);
@@ -73,9 +73,12 @@ const mergeWithCliOverrides = (fileConfig: Partial<CalculateOptions>, cliOptions
     result.attributeFilters = cliFilters;
   }
 
-  // async is CLI-only — never read from config file
+  // async and junitOutput are CLI-only - never read from config file
   if (cliOptions.async !== undefined) {
     result.async = cliOptions.async;
+  }
+  if (cliOptions.junitOutput !== undefined) {
+    result.junitOutput = cliOptions.junitOutput;
   }
 
   return result;
@@ -172,12 +175,13 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
     exitInvalidConfig();
   }
 
-  const { apiName, apiVersion, async, lookbackWindow, qualityGate, serviceName, url } = options;
+  const { apiName, apiVersion, async, junitOutput, lookbackWindow, qualityGate, serviceName, url } = options;
 
   return {
     apiInformation: [{ apiName, apiVersion, serviceName }],
     async: async ?? false,
     attributeFilters: parseFilterObjectFromString(options.filter),
+    junitOutput,
     lookbackWindow,
     qualityGate,
     url,
@@ -232,24 +236,39 @@ const applyApiSpecsOverlay = (
   };
 };
 
+const invalidConfigurationCombinations = [
+  {
+    configIsInvalid: (config: CalculateOptions): boolean => !config.url,
+    errorMessage: '❌ Snow-White base URL must be defined in the configuration.',
+  },
+  {
+    configIsInvalid: (config: CalculateOptions): boolean => !config.qualityGate,
+    errorMessage: '❌ Quality-Gate name must be defined in the configuration.',
+  },
+  {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    configIsInvalid: (config: CalculateOptions): boolean => !config.apiInformation || config.apiInformation.length === 0,
+    errorMessage: '❌ At least one API information must be defined in the configuration.',
+  },
+  {
+    configIsInvalid: (config: CalculateOptions): boolean =>
+      config.apiInformation.some(api => !api.serviceName || !api.apiName || !api.apiVersion),
+    errorMessage: '❌ Each API information must contain serviceName, apiName, and apiVersion.',
+  },
+  {
+    configIsInvalid: (config: CalculateOptions): boolean => (config.junitOutput && config.async) as boolean,
+    errorMessage: '❌ --junit-output cannot be used with --async (no result to report).',
+  },
+];
+
 export const validateConfiguration = (config: CalculateOptions): CalculateOptions => {
-  if (!config.url) {
-    console.error(chalk.red('❌ Snow-White base URL must be defined in the configuration.'));
-    exitInvalidConfig();
+  for (const configurationValidators of invalidConfigurationCombinations) {
+    if (configurationValidators.configIsInvalid(config)) {
+      console.error(chalk.red(configurationValidators.errorMessage));
+      exitInvalidConfig();
+    }
   }
-  if (!config.qualityGate) {
-    console.error(chalk.red('❌ Quality-Gate name must be defined in the configuration.'));
-    exitInvalidConfig();
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!config.apiInformation || config.apiInformation.length === 0) {
-    console.error(chalk.red('❌ At least one API information must be defined in the configuration.'));
-    exitInvalidConfig();
-  }
-  if (config.apiInformation.some(api => !api.serviceName || !api.apiName || !api.apiVersion)) {
-    console.error(chalk.red('❌ Each API information must contain serviceName, apiName, and apiVersion.'));
-    exitInvalidConfig();
-  }
+
   if (config.lookbackWindow !== undefined && !LOOKBACK_WINDOW_PATTERN.test(config.lookbackWindow)) {
     console.warn(
       chalk.yellow(

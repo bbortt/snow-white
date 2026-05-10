@@ -7,7 +7,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 
 import { Configuration, ReportApi } from '../clients/report-api';
-import { getReportApi } from './report-api.ts';
+import { getReportApi } from './report-api';
 
 await mock.module('../clients/report-api', () => {
   const MockConfiguration = mock((options: { basePath: string }) => ({ basePath: options.basePath }));
