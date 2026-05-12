@@ -32,9 +32,9 @@
     "prettier:format": "npm run prettier -- --write"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "21.0.0",
+    "@commitlint/config-conventional": "21.0.1",
     "@prettier/plugin-xml": "3.4.2",
-    "commitlint": "21.0.0",
+    "commitlint": "21.0.1",
     "husky": "9.1.7",
     "lint-staged": "17.0.4",
     "markdownlint-cli": "0.48.0",
@@ -45,7 +45,7 @@
     "rimraf": "6.1.3"
   },
   "optionalDependencies": {
-    "npm-check-updates": "22.1.1"
+    "npm-check-updates": "22.2.0"
   },
   "packageManager": "pnpm@10.29.1",
   "engines": {
