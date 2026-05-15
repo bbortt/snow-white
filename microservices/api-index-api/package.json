@@ -15,7 +15,7 @@
     "npm-run-all2": "8.0.4",
     "wait-on": "9.0.3"
   },
-  "packageManager": "pnpm@10.29.1",
+  "packageManager": "pnpm@11.1.2",
   "engines": {
     "node": ">=22.14.0"
   },
