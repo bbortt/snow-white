@@ -34,7 +34,7 @@ public abstract class QualityGateConfigurationMapper {
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
   @Mapping(
-    target = "openApiCriteria",
+    target = "openApiCoverageCriteria",
     expression = "java(mapOpenApiCriteriaToStringList(entity))"
   )
   public abstract QualityGateConfig toDto(QualityGateConfiguration entity);
@@ -55,7 +55,7 @@ public abstract class QualityGateConfigurationMapper {
   )
   @Mapping(
     target = "openApiCoverageConfigurations",
-    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCriteria(), existingEntity))"
+    expression = "java(mapOpenApiCriteriaToMappings(dto.getOpenApiCoverageCriteria(), existingEntity))"
   )
   public abstract QualityGateConfiguration toEntityForUpdate(
     QualityGateConfig dto,

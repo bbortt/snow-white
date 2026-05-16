@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationForConcreteKey;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.ResponseCodeCoverageCalculator.SINGLE_DIGIT_PATTERN;
@@ -17,7 +17,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * All response codes (including errors) that occurred must be documented in the OpenAPI specification.
  *
- * @see OpenApiCriteria#NO_UNDOCUMENTED_RESPONSE_CODES
+ * @see OpenApiCoverageCriteria#NO_UNDOCUMENTED_RESPONSE_CODES
  */
 @Slf4j
 @Component
@@ -43,7 +43,7 @@ public class NoUndocumentedResponseCodesCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return NO_UNDOCUMENTED_RESPONSE_CODES;
   }
 

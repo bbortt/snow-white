@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;

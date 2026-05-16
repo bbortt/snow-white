@@ -20,7 +20,7 @@ final class ApiTestResultLinker {
   void addApiTestResultsToApiTest(
     Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
-    Set<String> includedOpenApiCriteria
+    Set<String> includedOpenApiCoverageCriteria
   ) {
     if (isEmpty(apiTestResults)) {
       return;
@@ -30,7 +30,7 @@ final class ApiTestResultLinker {
       .parallelStream()
       .map(apiTestResult ->
         apiTestResult.withIncludedInReport(
-          isIncludedInReport(apiTestResult, includedOpenApiCriteria)
+          isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
         )
       )
       .forEach(apiTest.getApiTestResults()::add);
@@ -38,11 +38,13 @@ final class ApiTestResultLinker {
 
   private boolean isIncludedInReport(
     ApiTestResult apiTestResult,
-    Set<String> includedOpenApiCriteria
+    Set<String> includedOpenApiCoverageCriteria
   ) {
     return (
-      nonNull(includedOpenApiCriteria) &&
-      includedOpenApiCriteria.contains(apiTestResult.getApiTestCriteria())
+      nonNull(includedOpenApiCoverageCriteria) &&
+      includedOpenApiCoverageCriteria.contains(
+        apiTestResult.getApiTestCriteria()
+      )
     );
   }
 }

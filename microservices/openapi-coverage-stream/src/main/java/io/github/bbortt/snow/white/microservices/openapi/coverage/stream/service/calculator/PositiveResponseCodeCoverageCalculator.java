@@ -6,12 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isPositiveHttpStatusCode;
 import static java.lang.String.format;
 import static java.util.regex.Pattern.compile;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.HashSet;
@@ -25,9 +25,9 @@ import org.springframework.stereotype.Component;
 /**
  * Calculator for the following criteria:
  * Each documented positive (non-error) response code for each endpoint is tested.
- * This is a subset of {@link OpenApiCriteria#RESPONSE_CODE_COVERAGE}.
+ * This is a subset of {@link OpenApiCoverageCriteria#RESPONSE_CODE_COVERAGE}.
  *
- * @see OpenApiCriteria#POSITIVE_RESPONSE_CODE_COVERAGE
+ * @see OpenApiCoverageCriteria#POSITIVE_RESPONSE_CODE_COVERAGE
  */
 @Slf4j
 @Component
@@ -36,7 +36,7 @@ public class PositiveResponseCodeCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return POSITIVE_RESPONSE_CODE_COVERAGE;
   }
 

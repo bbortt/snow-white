@@ -6,13 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.OPERATION_SUCCESS_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
@@ -53,7 +53,7 @@ class OperationSuccessCoverageCalculatorTest {
     @EnumSource
     @ParameterizedTest
     void shouldReturnFalse_whenNotOperationSuccessCoverage(
-      OpenApiCriteria openApiCriteria
+      OpenApiCoverageCriteria openApiCriteria
     ) {
       if (OPERATION_SUCCESS_COVERAGE.equals(openApiCriteria)) {
         return;

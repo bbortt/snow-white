@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api;
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
@@ -26,15 +26,15 @@ class DatabaseInitializerIT extends AbstractQualityGateApiIT {
   private QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
   @Test
-  void shouldInitOpenApiCriteria() {
+  void shouldInitOpenApiCoverageCriteria() {
     var openApiCoverageConfigurations =
       openApiCoverageConfigurationRepository.findAll();
 
     assertThat(openApiCoverageConfigurations)
       .map(OpenApiCoverageConfiguration::getName)
       .containsExactlyInAnyOrder(
-        stream(OpenApiCriteria.values())
-          .map(OpenApiCriteria::name)
+        stream(OpenApiCoverageCriteria.values())
+          .map(OpenApiCoverageCriteria::name)
           .toArray(String[]::new)
       );
   }

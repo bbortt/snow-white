@@ -6,14 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.CONTENT_TYPE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.CONTENT_TYPE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.HashSet;
@@ -32,7 +32,7 @@ import tools.jackson.databind.JsonNode;
  * Each documented request body content type for each endpoint has been exercised.
  * Operations without a request body are skipped.
  *
- * @see OpenApiCriteria#CONTENT_TYPE_COVERAGE
+ * @see OpenApiCoverageCriteria#CONTENT_TYPE_COVERAGE
  */
 @Slf4j
 @Component
@@ -44,7 +44,7 @@ public class ContentTypeCoverageCalculator
     "http.request.header.content-type";
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return CONTENT_TYPE_COVERAGE;
   }
 

@@ -60,11 +60,11 @@ export const QualityGateConfigDetail = () => {
           </dt>
           <dd>{qualityGateConfigEntity.minCoveragePercentage} %</dd>
           <dt>
-            <Translate contentKey="snowWhiteApp.qualityGateConfig.openApiCriteria">Open Api Criteria</Translate>
+            <Translate contentKey="snowWhiteApp.qualityGateConfig.openApiCoverageCriteria">Open Api Criteria</Translate>
           </dt>
           <dd>
-            {qualityGateConfigEntity.openApiCriteria
-              ? qualityGateConfigEntity.openApiCriteria.map((openApiCriterion, i) => (
+            {qualityGateConfigEntity.openApiCoverageCriteria
+              ? qualityGateConfigEntity.openApiCoverageCriteria.map((openApiCriterion, i) => (
                   <OpenApiCriterionBadge openApiCriterion={openApiCriterion} key={openApiCriterion.name} />
                 ))
               : null}

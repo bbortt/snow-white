@@ -6,13 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -55,7 +55,7 @@ class NoUndocumentedResponseCodesCalculatorTest {
     @EnumSource
     @ParameterizedTest
     void shouldReturnFalse_whenNotNoUndocumentedResponseCodes(
-      OpenApiCriteria openApiCriteria
+      OpenApiCoverageCriteria openApiCriteria
     ) {
       if (NO_UNDOCUMENTED_RESPONSE_CODES.equals(openApiCriteria)) {
         return;

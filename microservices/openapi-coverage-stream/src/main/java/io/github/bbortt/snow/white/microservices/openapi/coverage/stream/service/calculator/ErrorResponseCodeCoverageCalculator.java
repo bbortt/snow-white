@@ -6,13 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.regex.Pattern.compile;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.HashSet;
@@ -26,9 +26,9 @@ import org.springframework.stereotype.Component;
 /**
  * Calculator for the following criteria:
  * Each documented error response code for each endpoint is tested.
- * This is a subset of {@link OpenApiCriteria#RESPONSE_CODE_COVERAGE}.
+ * This is a subset of {@link OpenApiCoverageCriteria#RESPONSE_CODE_COVERAGE}.
  *
- * @see OpenApiCriteria#ERROR_RESPONSE_CODE_COVERAGE
+ * @see OpenApiCoverageCriteria#ERROR_RESPONSE_CODE_COVERAGE
  */
 @Slf4j
 @Component
@@ -37,7 +37,7 @@ public class ErrorResponseCodeCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return ERROR_RESPONSE_CODE_COVERAGE;
   }
 

@@ -161,7 +161,7 @@ describe('Quality-Gate Config reducer tests', () => {
         ...initialState,
         updating: false,
         updateSuccess: true,
-        entity: { description: undefined, isPredefined: undefined, name: undefined, openApiCriteria: undefined },
+        entity: { description: undefined, isPredefined: undefined, name: undefined, openApiCoverageCriteria: undefined },
       });
     });
 
@@ -182,13 +182,13 @@ describe('Quality-Gate Config reducer tests', () => {
     let store;
 
     const resolvedObject: AxiosResponse<QualityGateConfig> = {
-      data: { name: 'name', isPredefined: true, openApiCriteria: ['test_openapi_criterion'] },
+      data: { name: 'name', isPredefined: true, openApiCoverageCriteria: ['test_openapi_criterion'] },
     } as AxiosResponse;
 
     const epxectedObject: IQualityGateConfig = {
       name: 'name',
       isPredefined: true,
-      openApiCriteria: [{ name: 'test_openapi_criterion' }],
+      openApiCoverageCriteria: [{ name: 'test_openapi_criterion' }],
     };
 
     beforeEach(() => {
@@ -253,7 +253,7 @@ describe('Quality-Gate Config reducer tests', () => {
         },
       ];
 
-      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCriteria: [{ name: 'test_openapi_criterion' }] };
+      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCoverageCriteria: [{ name: 'test_openapi_criterion' }] };
       await store.dispatch(createEntity(qualityGateConfig));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
@@ -264,7 +264,7 @@ describe('Quality-Gate Config reducer tests', () => {
         expect.objectContaining({
           ...qualityGateConfig,
           isPredefined: false,
-          openApiCriteria: ['test_openapi_criterion'],
+          openApiCoverageCriteria: ['test_openapi_criterion'],
         }),
       );
     });
@@ -283,7 +283,7 @@ describe('Quality-Gate Config reducer tests', () => {
         },
       ];
 
-      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCriteria: [{ name: 'test_openapi_criterion' }] };
+      const qualityGateConfig: IQualityGateConfig = { name: 'name', openApiCoverageCriteria: [{ name: 'test_openapi_criterion' }] };
       await store.dispatch(updateEntity(qualityGateConfig));
 
       expect(store.getActions()[0]).toMatchObject(expectedActions[0]);
@@ -295,7 +295,7 @@ describe('Quality-Gate Config reducer tests', () => {
         expect.objectContaining({
           ...qualityGateConfig,
           isPredefined: false,
-          openApiCriteria: ['test_openapi_criterion'],
+          openApiCoverageCriteria: ['test_openapi_criterion'],
         }),
       );
     });

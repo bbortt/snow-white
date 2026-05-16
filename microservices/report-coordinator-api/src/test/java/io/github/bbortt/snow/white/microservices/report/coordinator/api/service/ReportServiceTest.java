@@ -180,7 +180,7 @@ class ReportServiceTest {
       verify(apiTestResultLinkerMock).addApiTestResultsToApiTest(
         mappedResults,
         apiTest,
-        qualityGateConfig.getOpenApiCriteria(),
+        qualityGateConfig.getOpenApiCoverageCriteria(),
         qualityGateConfig.getMinCoveragePercentage()
       );
       verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(

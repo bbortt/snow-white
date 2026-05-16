@@ -6,10 +6,10 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
 import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -19,9 +19,9 @@ import org.springframework.stereotype.Component;
 /**
  * Calculator for the following criteria:
  * All error response codes that occurred must be documented in the OpenAPI specification.
- * This is a subset of {@link OpenApiCriteria#NO_UNDOCUMENTED_RESPONSE_CODES}.
+ * This is a subset of {@link OpenApiCoverageCriteria#NO_UNDOCUMENTED_RESPONSE_CODES}.
  *
- * @see OpenApiCriteria#NO_UNDOCUMENTED_ERROR_RESPONSE_CODES
+ * @see OpenApiCoverageCriteria#NO_UNDOCUMENTED_ERROR_RESPONSE_CODES
  */
 @Slf4j
 @Component
@@ -30,7 +30,7 @@ public class NoUndocumentedErrorResponseCodesCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
   }
 

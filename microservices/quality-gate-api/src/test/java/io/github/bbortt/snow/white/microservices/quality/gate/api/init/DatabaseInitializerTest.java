@@ -43,7 +43,9 @@ class DatabaseInitializerTest {
     void shouldInitiateDatabaseInitialization() {
       fixture.run();
 
-      verify(openApiCoverageConfigurationServiceMock).initOpenApiCriteria();
+      verify(
+        openApiCoverageConfigurationServiceMock
+      ).initOpenApiCoverageCriteria();
       verify(qualityGateServiceMock).initPredefinedQualityGates();
     }
   }

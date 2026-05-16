@@ -6,14 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Collections.sort;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * Each HTTP method ({@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, etc.) for each path has been tested.
  *
- * @see OpenApiCriteria#ERROR_RESPONSE_CODE_COVERAGE
+ * @see OpenApiCoverageCriteria#ERROR_RESPONSE_CODE_COVERAGE
  */
 @Slf4j
 @Component
@@ -38,7 +38,7 @@ public class MethodCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return HTTP_METHOD_COVERAGE;
   }
 

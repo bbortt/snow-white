@@ -6,13 +6,13 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ class OpenApiCoverageConfigurationMapperTest {
 
     @EnumSource
     @ParameterizedTest
-    void shouldMapAllProperties(OpenApiCriteria openApiCriteria) {
+    void shouldMapAllProperties(OpenApiCoverageCriteria openApiCriteria) {
       var openApiCoverageConfiguration = OpenApiCoverageConfiguration.builder()
         .name(openApiCriteria.name())
         .build();

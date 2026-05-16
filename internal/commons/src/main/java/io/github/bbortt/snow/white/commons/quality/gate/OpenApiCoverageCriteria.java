@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.commons.quality.gate;
 import lombok.Getter;
 
 @Getter
-public enum OpenApiCriteria {
+public enum OpenApiCoverageCriteria {
   PATH_COVERAGE(
     "Path Coverage",
     "Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
@@ -70,7 +70,7 @@ public enum OpenApiCriteria {
   private final String label;
   private final String description;
 
-  OpenApiCriteria(String label, String description) {
+  OpenApiCoverageCriteria(String label, String description) {
     this.label = label;
     this.description = description;
   }

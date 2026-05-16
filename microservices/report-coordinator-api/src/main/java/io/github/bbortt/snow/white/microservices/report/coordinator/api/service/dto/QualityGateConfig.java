@@ -23,7 +23,7 @@ public class QualityGateConfig {
   private final String name;
 
   @NonNull
-  private Set<String> openApiCriteria;
+  private Set<String> openApiCoverageCriteria;
 
   @NotNull
   @Min(80)
