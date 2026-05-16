@@ -6,14 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toSet;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.ArrayList;
@@ -27,16 +27,16 @@ import org.springframework.stereotype.Component;
 /**
  * Calculator for the following criteria:
  * Every path defined in the OpenAPI specification has been called.
- * This is a subset of `.{@link OpenApiCriteria#HTTP_METHOD_COVERAGE}.
+ * This is a subset of `.{@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE}.
  *
- * @see OpenApiCriteria#PATH_COVERAGE
+ * @see OpenApiCoverageCriteria#PATH_COVERAGE
  */
 @Slf4j
 @Component
 public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return PATH_COVERAGE;
   }
 

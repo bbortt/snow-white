@@ -22,7 +22,7 @@
       "description": "Description",
       "isPredefined": "Is Predefined",
       "minCoveragePercentage": "Required Coverage Percentage",
-      "openApiCriteria": "OpenAPI Criteria"
+      "openApiCoverageCriteria": "OpenAPI Coverage Criteria"
     }
   }
 }

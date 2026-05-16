@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -103,7 +103,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder()
       .name(name)
-      .openApiCriteria(singletonList(PATH_COVERAGE.name()))
+      .openApiCoverageCriteria(singletonList(PATH_COVERAGE.name()))
       .build();
 
     mockMvc
@@ -252,9 +252,9 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
           qualityGateConfiguration.getDescription()
         )
       )
-      .andExpect(jsonPath("$.openApiCriteria").value(hasSize(1)))
+      .andExpect(jsonPath("$.openApiCoverageCriteria").value(hasSize(1)))
       .andExpect(
-        jsonPath("$.openApiCriteria[0]").value(is(PATH_COVERAGE.name()))
+        jsonPath("$.openApiCoverageCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
   }
 
@@ -266,7 +266,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
 
     var qualityGateConfig = qualityGateConfigurationMapper
       .toDto(qualityGateConfiguration)
-      .openApiCriteria(singletonList(PATH_COVERAGE.name()));
+      .openApiCoverageCriteria(singletonList(PATH_COVERAGE.name()));
 
     mockMvc
       .perform(

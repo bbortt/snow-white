@@ -18,7 +18,7 @@ import 'app/shared/table-row-animation.scss';
 
 import { getEntities } from './open-api-criterion.reducer';
 
-export const OpenApiCriteria = () => {
+export const OpenApiCoverageCriteria = () => {
   const dispatch = useAppDispatch();
 
   const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
@@ -85,7 +85,7 @@ export const OpenApiCriteria = () => {
                   >
                     <tr
                       ref={nodeRef}
-                      data-testid="openApiCriteriaTable"
+                      data-testid="openApiCoverageCriteriaTable"
                       className={isExiting ? 'table-row-exit-active' : undefined}
                       style={{ transitionDelay: `${i * 30}ms` }}
                     >
@@ -115,4 +115,4 @@ export const OpenApiCriteria = () => {
   );
 };
 
-export default OpenApiCriteria;
+export default OpenApiCoverageCriteria;

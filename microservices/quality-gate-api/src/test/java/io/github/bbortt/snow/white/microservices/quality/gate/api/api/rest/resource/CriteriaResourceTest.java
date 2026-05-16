@@ -43,7 +43,7 @@ class CriteriaResourceTest {
   }
 
   @Nested
-  class ListOpenApiCriteriaTest {
+  class listOpenApiCoverageCriteriaTest {
 
     @Test
     void returnsAllCriteria() {
@@ -59,7 +59,7 @@ class CriteriaResourceTest {
         .when(openApiCoverageConfigurationMapperMock)
         .toDtos(openApiCoverageConfigurations);
 
-      var response = fixture.listOpenApiCriteria();
+      var response = fixture.listOpenApiCoverageCriteria();
 
       assertThat(response)
         .isNotNull()

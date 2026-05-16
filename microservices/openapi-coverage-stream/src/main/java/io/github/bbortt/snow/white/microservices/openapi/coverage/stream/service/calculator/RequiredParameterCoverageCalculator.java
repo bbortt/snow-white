@@ -6,12 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_PARAMETER_COVERAGE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.lang.String.join;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 /**
  * Calculator for the following criteria:
  * Each required parameter (in path, query) has been tested with valid values.
- * This is a subset of {@link OpenApiCriteria#PARAMETER_COVERAGE}.
+ * This is a subset of {@link OpenApiCoverageCriteria#PARAMETER_COVERAGE}.
  *
- * @see OpenApiCriteria#REQUIRED_PARAMETER_COVERAGE
+ * @see OpenApiCoverageCriteria#REQUIRED_PARAMETER_COVERAGE
  */
 @Slf4j
 @Component
@@ -35,7 +35,7 @@ public class RequiredParameterCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return REQUIRED_PARAMETER_COVERAGE;
   }
 

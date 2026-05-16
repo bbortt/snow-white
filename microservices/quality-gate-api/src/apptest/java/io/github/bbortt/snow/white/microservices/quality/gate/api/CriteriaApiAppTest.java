@@ -36,9 +36,9 @@ class CriteriaApiAppTest {
   //
   //  @Test
   //  @CitrusTest
-  //  void shouldGetAllOpenApiCriteria(@CitrusResource TestCaseRunner testRunner) {
-  //    testRunner.when(criteriaApi.sendListOpenApiCriteria());
+  //  void shouldGetAllOpenApiCoverageCriteria(@CitrusResource TestCaseRunner testRunner) {
+  //    testRunner.when(criteriaApi.sendListOpenApiCoverageCriteria());
   //
-  //    testRunner.then(criteriaApi.receiveListOpenApiCriteria(OK));
+  //    testRunner.then(criteriaApi.receiveListOpenApiCoverageCriteria(OK));
   //  }
 }

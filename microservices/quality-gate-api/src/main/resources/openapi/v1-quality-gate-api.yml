@@ -206,7 +206,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/rest/v1/criteria/openapi:
     get:
-      operationId: listOpenApiCriteria
+      operationId: listOpenApiCoverageCriteria
       summary: List OpenAPI Coverage Criteria
       description: Returns all available OpenAPI coverage criteria used for quality gate evaluation
       tags:
@@ -234,7 +234,7 @@ components:
         - name
         - isPredefined
         - minCoveragePercentage
-        - openApiCriteria
+        - openApiCoverageCriteria
       properties:
         name:
           type: string
@@ -258,7 +258,7 @@ components:
           maximum: 100
           default: 100
           example: 100
-        openApiCriteria:
+        openApiCoverageCriteria:
           type: array
           description: List of OpenAPI criteria IDs used in this configuration
           items:

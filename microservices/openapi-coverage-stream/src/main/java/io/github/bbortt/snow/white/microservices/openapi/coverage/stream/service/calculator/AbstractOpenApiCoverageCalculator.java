@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getStartedStopWatch;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculator;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -24,8 +24,8 @@ abstract class AbstractOpenApiCoverageCalculator
 {
 
   @Override
-  public boolean accepts(OpenApiCriteria openApiCriteria) {
-    return getSupportedOpenApiCriteria().equals(openApiCriteria);
+  public boolean accepts(OpenApiCoverageCriteria openApiCriteria) {
+    return getSupportedOpenApiCoverageCriteria().equals(openApiCriteria);
   }
 
   @Override
@@ -41,14 +41,14 @@ abstract class AbstractOpenApiCoverageCalculator
     );
 
     return new OpenApiTestResult(
-      getSupportedOpenApiCriteria(),
+      getSupportedOpenApiCoverageCriteria(),
       coverageCalculationResult.coverage(),
       stopWatch.getDuration(),
       coverageCalculationResult.additionalInformation()
     );
   }
 
-  protected abstract @NonNull OpenApiCriteria getSupportedOpenApiCriteria();
+  protected abstract @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria();
 
   protected abstract @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,

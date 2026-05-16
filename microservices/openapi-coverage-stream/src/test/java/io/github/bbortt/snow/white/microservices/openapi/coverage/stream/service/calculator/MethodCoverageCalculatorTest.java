@@ -6,14 +6,14 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
@@ -58,7 +58,7 @@ class MethodCoverageCalculatorTest {
     @EnumSource
     @ParameterizedTest
     void shouldReturnFalse_whenNotPathCoverage(
-      OpenApiCriteria openApiCriteria
+      OpenApiCoverageCriteria openApiCriteria
     ) {
       if (HTTP_METHOD_COVERAGE.equals(openApiCriteria)) {
         return;

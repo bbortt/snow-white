@@ -37,6 +37,7 @@
     <maven.install.skip>true</maven.install.skip>
 
     <citrus.version>4.10.1</citrus.version>
+    <!--    <citrus.version>5.0.0-M1</citrus.version>-->
     <io.opentelemetry.version>2.27.0</io.opentelemetry.version>
     <org.flywaydb.version>12.6.1</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>

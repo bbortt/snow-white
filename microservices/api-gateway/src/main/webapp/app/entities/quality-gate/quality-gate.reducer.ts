@@ -94,7 +94,7 @@ export const getEntity = createAsyncThunk(
         description: configResponse.data.description,
         isPredefined: configResponse.data.isPredefined,
         minCoveragePercentage: configResponse.data.minCoveragePercentage,
-        openApiCriteria: configResponse.data.openApiCriteria?.map(name => ({ name })),
+        openApiCoverageCriteria: configResponse.data.openApiCoverageCriteria?.map(name => ({ name })),
       };
     }
 

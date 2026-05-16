@@ -16,7 +16,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.List;
@@ -70,7 +70,7 @@ class OpenApiCoverageConfigurationServiceTest {
         .when(openApiCoverageConfigurationRepositoryMock)
         .existsByName(anyString());
 
-      fixture.initOpenApiCriteria();
+      fixture.initOpenApiCoverageCriteria();
 
       ArgumentCaptor<
         List<OpenApiCoverageConfiguration>
@@ -83,14 +83,14 @@ class OpenApiCoverageConfigurationServiceTest {
         .isNotEmpty()
         .map(OpenApiCoverageConfiguration::getName)
         .containsExactlyInAnyOrder(
-          stream(OpenApiCriteria.values())
-            .map(OpenApiCriteria::name)
+          stream(OpenApiCoverageCriteria.values())
+            .map(OpenApiCoverageCriteria::name)
             .toArray(String[]::new)
         );
 
       verify(
         openApiCoverageConfigurationRepositoryMock,
-        times(OpenApiCriteria.values().length)
+        times(OpenApiCoverageCriteria.values().length)
       ).existsByName(anyString());
     }
 
@@ -100,11 +100,11 @@ class OpenApiCoverageConfigurationServiceTest {
         .when(openApiCoverageConfigurationRepositoryMock)
         .existsByName(anyString());
 
-      fixture.initOpenApiCriteria();
+      fixture.initOpenApiCoverageCriteria();
 
       verify(
         openApiCoverageConfigurationRepositoryMock,
-        times(OpenApiCriteria.values().length)
+        times(OpenApiCoverageCriteria.values().length)
       ).existsByName(anyString());
       verifyNoMoreInteractions(openApiCoverageConfigurationRepositoryMock);
     }

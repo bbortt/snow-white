@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.OPERATION_SUCCESS_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
@@ -15,7 +15,7 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.ArrayList;
@@ -32,12 +32,12 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * Each operation has produced at least one successful (2xx) response.
  * <p>
- * This is distinct from {@link OpenApiCriteria#HTTP_METHOD_COVERAGE}, which only checks that
+ * This is distinct from {@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE}, which only checks that
  * an operation was called at all. This calculator additionally verifies that at least one call
  * resulted in a success response, distinguishing "untested" operations from "called but never
  * succeeded" ones.
  *
- * @see OpenApiCriteria#OPERATION_SUCCESS_COVERAGE
+ * @see OpenApiCoverageCriteria#OPERATION_SUCCESS_COVERAGE
  */
 @Slf4j
 @Component
@@ -46,7 +46,7 @@ public class OperationSuccessCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return OPERATION_SUCCESS_COVERAGE;
   }
 

@@ -6,23 +6,23 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.CONTENT_TYPE_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.OPERATION_SUCCESS_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.OPTIONAL_PARAMETER_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PARAMETER_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_PARAMETER_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.CONTENT_TYPE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPTIONAL_PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
 import static java.lang.Boolean.TRUE;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
@@ -62,7 +62,7 @@ public final class DefaultOpenApiQualityGates {
       .minCoveragePercentage(80)
       .build();
 
-    addAllOpenApiCriteria(
+    addAllOpenApiCoverageCriteria(
       qualityGateConfiguration,
       Stream.of(
         PATH_COVERAGE,
@@ -86,7 +86,7 @@ public final class DefaultOpenApiQualityGates {
       .isPredefined(TRUE)
       .build();
 
-    addAllOpenApiCriteria(
+    addAllOpenApiCoverageCriteria(
       qualityGateConfiguration,
       Stream.of(
         PATH_COVERAGE,
@@ -119,7 +119,10 @@ public final class DefaultOpenApiQualityGates {
       .minCoveragePercentage(80)
       .build();
 
-    addAllOpenApiCriteria(qualityGateConfiguration, Stream.of(PATH_COVERAGE));
+    addAllOpenApiCoverageCriteria(
+      qualityGateConfiguration,
+      Stream.of(PATH_COVERAGE)
+    );
 
     return qualityGateConfiguration;
   }
@@ -134,9 +137,9 @@ public final class DefaultOpenApiQualityGates {
       .build();
   }
 
-  private void addAllOpenApiCriteria(
+  private void addAllOpenApiCoverageCriteria(
     QualityGateConfiguration qualityGateConfiguration,
-    Stream<OpenApiCriteria> openApiCriteria
+    Stream<OpenApiCoverageCriteria> openApiCriteria
   ) {
     openApiCriteria
       .map(openApiCriterion ->

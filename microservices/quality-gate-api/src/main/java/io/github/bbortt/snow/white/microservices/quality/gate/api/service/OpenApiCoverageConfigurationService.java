@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
 import static java.util.Arrays.stream;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.HashSet;
@@ -32,10 +32,12 @@ public class OpenApiCoverageConfigurationService {
   }
 
   @Transactional
-  public void initOpenApiCriteria() {
+  public void initOpenApiCoverageCriteria() {
     logger.info("Updating OpenAPI criteria table");
 
-    var missingOpenApiCriteria = stream(OpenApiCriteria.values())
+    var missingOpenApiCoverageCriteria = stream(
+      OpenApiCoverageCriteria.values()
+    )
       .filter(openApiCriterion ->
         !openApiCoverageConfigurationRepository.existsByName(
           openApiCriterion.name()
@@ -48,7 +50,7 @@ public class OpenApiCoverageConfigurationService {
       )
       .toList();
 
-    if (missingOpenApiCriteria.isEmpty()) {
+    if (missingOpenApiCoverageCriteria.isEmpty()) {
       logger.debug(
         "All OpenApi criteria are already present in database, nothing to do"
       );
@@ -57,9 +59,11 @@ public class OpenApiCoverageConfigurationService {
 
     logger.debug(
       "The following OpenAPI criteria are missing and will be persisted: {}",
-      missingOpenApiCriteria
+      missingOpenApiCoverageCriteria
     );
 
-    openApiCoverageConfigurationRepository.saveAll(missingOpenApiCriteria);
+    openApiCoverageConfigurationRepository.saveAll(
+      missingOpenApiCoverageCriteria
+    );
   }
 }

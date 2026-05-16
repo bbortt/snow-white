@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka.listener;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static java.lang.Boolean.FALSE;
 import static java.math.BigDecimal.ONE;
 import static java.util.Collections.emptySet;
@@ -70,8 +70,8 @@ class ApiTestResultLinkerTest {
 
     @ParameterizedTest
     @MethodSource("nullOrEmptyList")
-    void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCriteria(
-      Set<String> includedOpenApiCriteria
+    void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCoverageCriteria(
+      Set<String> includedOpenApiCoverageCriteria
     ) {
       var apiTest = ApiTest.builder().apiType(ApiType.OPENAPI.getVal()).build();
 
@@ -88,7 +88,7 @@ class ApiTestResultLinkerTest {
       fixture.addApiTestResultsToApiTest(
         Set.of(apiTestResult),
         apiTest,
-        includedOpenApiCriteria
+        includedOpenApiCoverageCriteria
       );
 
       assertThat(apiTest.getApiTestResults())
@@ -100,7 +100,7 @@ class ApiTestResultLinkerTest {
     }
 
     @Test
-    void shouldReturnApiTestWithLinkedResults_includedInOpenApiCriteria() {
+    void shouldReturnApiTestWithLinkedResults_includedInOpenApiCoverageCriteria() {
       var apiTest = ApiTest.builder().apiType(ApiType.OPENAPI.getVal()).build();
 
       Set<ApiTestResult> apiTestResults = Set.of(
@@ -113,12 +113,14 @@ class ApiTestResultLinkerTest {
           .build()
       );
 
-      Set<String> includedOpenApiCriteria = Set.of(PATH_COVERAGE.name());
+      Set<String> includedOpenApiCoverageCriteria = Set.of(
+        PATH_COVERAGE.name()
+      );
 
       fixture.addApiTestResultsToApiTest(
         apiTestResults,
         apiTest,
-        includedOpenApiCriteria
+        includedOpenApiCoverageCriteria
       );
 
       assertThat(apiTest.getApiTestResults())

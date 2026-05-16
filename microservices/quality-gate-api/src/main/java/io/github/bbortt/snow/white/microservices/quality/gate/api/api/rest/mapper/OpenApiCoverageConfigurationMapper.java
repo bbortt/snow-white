@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapp
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import java.util.List;
@@ -23,7 +23,7 @@ public interface OpenApiCoverageConfigurationMapper {
     return openApiCoverageConfigurations
       .parallelStream()
       .map(openApiCoverageConfiguration -> {
-        var openApiCriteria = OpenApiCriteria.valueOf(
+        var openApiCriteria = OpenApiCoverageCriteria.valueOf(
           openApiCoverageConfiguration.getName()
         );
 

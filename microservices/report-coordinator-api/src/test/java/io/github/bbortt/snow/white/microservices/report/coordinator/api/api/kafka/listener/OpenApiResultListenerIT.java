@@ -15,9 +15,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.ERROR_RESPONSE_CODE_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiInformation;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
@@ -36,7 +36,7 @@ import static org.awaitility.Awaitility.await;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
@@ -246,7 +246,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   private void sendAndVerifyOpenApiCoverageResponseEventWithOpenApiTestResult(
     String qualityGateConfigName,
-    OpenApiCriteria openApiCriterion,
+    OpenApiCoverageCriteria openApiCriterion,
     UUID calculationId,
     BigDecimal one,
     ReportStatus reportStatus
@@ -281,11 +281,11 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   private @NonNull String createQualityGateApiWiremockStub(
     String qualityGateConfigName,
-    OpenApiCriteria openApiCriterion
+    OpenApiCoverageCriteria openApiCriterion
   ) {
     var qualityGateConfig = new QualityGateConfig()
       .name(qualityGateConfigName)
-      .addOpenApiCriteriaItem(openApiCriterion.name());
+      .addOpenApiCoverageCriteriaItem(openApiCriterion.name());
 
     var qualityGateByNameEndpoint =
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;
@@ -300,7 +300,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   private void assertThatEntityHasBeenUpdated(
     UUID calculationId,
-    OpenApiCriteria openApiCriterion,
+    OpenApiCoverageCriteria openApiCriterion,
     ReportStatus reportStatus,
     BigDecimal coverage,
     Duration duration
