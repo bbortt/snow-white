@@ -40,7 +40,10 @@ export const overrideSortStateWithQueryParams = (paginationBaseState: ISortBaseS
   return paginationBaseState;
 };
 
-export const overridePaginationStateWithQueryParams = (paginationBaseState: IPaginationBaseState, locationSearch: string) => {
+export const overridePaginationStateWithQueryParams = (
+  paginationBaseState: IPaginationBaseState,
+  locationSearch: string,
+): IPaginationBaseState => {
   const sortedPaginationState: IPaginationBaseState = overrideSortStateWithQueryParams(
     paginationBaseState,
     locationSearch,
