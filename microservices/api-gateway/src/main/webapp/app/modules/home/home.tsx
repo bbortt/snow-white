@@ -44,7 +44,7 @@ export const Home = () => {
         </Card>
       </Col>
       <Col md="8">
-        <QualityGate />
+        <QualityGate hidePagination={true} />
       </Col>
     </Row>
   );

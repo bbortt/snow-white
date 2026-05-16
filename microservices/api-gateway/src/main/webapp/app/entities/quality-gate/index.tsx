@@ -8,12 +8,12 @@ import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router';
 
-import QualityGate from './quality-gate';
 import QualityGateDetail from './quality-gate-detail';
+import QualityGateResults from './quality-gate-results';
 
 const QualityGateRoutes = () => (
   <ErrorBoundaryRoutes>
-    <Route index element={<QualityGate />} />
+    <Route index element={<QualityGateResults />} />
     <Route path=":id">
       <Route index element={<QualityGateDetail />} />
     </Route>

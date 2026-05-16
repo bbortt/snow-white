@@ -41,6 +41,17 @@ export const Home = () => (
   </NavItem>
 );
 
+export const Results = () => (
+  <NavItem data-testid="results-menu">
+    <NavLink tag={Link} to="/quality-gate" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="square-poll-horizontal" />
+      <span>
+        <Translate contentKey="global.menu.entities.results">Quality Gates</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);
+
 export const QualityGates = () => (
   <NavItem data-testid="quality-gates-menu">
     <NavLink tag={Link} to="/quality-gate-config" className="d-flex align-items-center">

@@ -10,11 +10,12 @@
         "main": "Entities",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
         "apiIndex": "API Index",
-        "openApiCriterion": "OpenAPI Criteria",
-        "qualityGateConfig": "Quality-Gates",
-        "calculationRequestParameters": "Calculation Request Parameters",
         "apiTestResult": "API Test Results",
-        "qualityGate": "Quality-Gates"
+        "calculationRequestParameters": "Calculation Request Parameters",
+        "openApiCriterion": "OpenAPI Coverage Criteria",
+        "qualityGate": "Quality-Gates",
+        "qualityGateConfig": "Quality-Gates",
+        "results": "Results"
       },
       "resources": {
         "main": "Resources",

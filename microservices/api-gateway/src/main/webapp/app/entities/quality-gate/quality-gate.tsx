@@ -4,6 +4,7 @@
  * See LICENSE file for full details.
  */
 
+import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 
 import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +17,7 @@ import { useAnimatedList } from 'app/shared/use-animated-list';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import dayjs from 'dayjs';
-import React, { createRef, useEffect, useRef, useState } from 'react';
+import React, { createRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
@@ -25,18 +26,27 @@ import { Button, Table } from 'reactstrap';
 import { getEntities } from './quality-gate.reducer';
 import 'app/shared/table-row-animation.scss';
 
-export const QualityGate = () => {
+export interface QualityGateProps {
+  hidePagination?: boolean;
+}
+
+export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
   const dispatch = useAppDispatch();
 
   const pageLocation = useLocation();
   const navigate = useNavigate();
 
-  const [paginationState, setPaginationState] = useState(
-    overridePaginationStateWithQueryParams(getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc'), pageLocation.search),
-  );
-
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGate.totalItems);
+
+  const paginationAndSortingEnabled = useMemo(() => {
+    return !hidePagination && totalItems;
+  }, [hidePagination, totalItems]);
+
+  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc');
+  const [paginationState, setPaginationState] = useState(
+    paginationAndSortingEnabled ? overridePaginationStateWithQueryParams(paginationBaseState, pageLocation.search) : paginationBaseState,
+  );
 
   const qualityGateList: IQualityGate[] = useAppSelector(state => state.snowwhite.qualityGate.entities);
 
@@ -57,7 +67,7 @@ export const QualityGate = () => {
   const sortEntities = () => {
     getAllEntities();
     const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
-    if (pageLocation.search !== endURL) {
+    if (paginationAndSortingEnabled && pageLocation.search !== endURL) {
       navigate(`${pageLocation.pathname}${endURL}`);
     }
   };
@@ -100,7 +110,20 @@ export const QualityGate = () => {
     sortEntities();
   };
 
-  const getSortIconByFieldName = (fieldName: string) => {
+  const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
+    return paginationAndSortingEnabled ? (
+      <th className="hand" onClick={sort(fieldName)}>
+        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+      </th>
+    ) : (
+      <th>
+        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+      </th>
+    );
+  };
+
+  const getSortIconByFieldName = (fieldName: string): IconDefinition => {
     const sortFieldName = paginationState.sort;
     const order = paginationState.order;
     if (sortFieldName !== fieldName) {
@@ -125,22 +148,10 @@ export const QualityGate = () => {
           <Table responsive>
             <thead>
               <tr>
-                <th className="hand" onClick={sort('calculationId')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.calculationId">Calculation Id</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('calculationId')} />
-                </th>
-                <th className="hand" onClick={sort('status')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('status')} />
-                </th>
-                <th className="hand" onClick={sort('qualityGateConfigName')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.qualityGateConfigName">Quality-Gate</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('qualityGateConfigName')} />
-                </th>
-                <th className="hand" onClick={sort('createdAt')}>
-                  <Translate contentKey="snowWhiteApp.qualityGate.createdAt">Initiated At</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('createdAt')} />
-                </th>
+                {getTableHeaderRow('snowWhiteApp.qualityGate.calculationId', 'Calculation Id', 'calculationId')}
+                {getTableHeaderRow('snowWhiteApp.qualityGate.status', 'Status', 'status')}
+                {getTableHeaderRow('snowWhiteApp.qualityGate.qualityGateConfigName', 'Quality-Gate', 'qualityGateConfigName')}
+                {getTableHeaderRow('snowWhiteApp.qualityGate.createdAt', 'Initiated At', 'createdAt')}
                 <th>
                   <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
                 </th>
@@ -157,7 +168,11 @@ export const QualityGate = () => {
                 return (
                   <CSSTransition
                     key={key}
-                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                    timeout={{
+                      enter: CSS_TRANSITION_TIMEOUT + i * 30,
+                      exit: 0,
+                      appear: CSS_TRANSITION_TIMEOUT + i * 30,
+                    }}
                     classNames="table-row"
                     nodeRef={nodeRef}
                     appear
@@ -217,9 +232,9 @@ export const QualityGate = () => {
           )
         )}
       </div>
-      {totalItems ? (
+      {paginationAndSortingEnabled ? (
         <div className={qualityGateList && qualityGateList.length > 0 ? '' : 'd-none'}>
-          <div className="justify-content-center d-flex">
+          <div className="justify-content-center d-flex mb-1">
             <JhiItemCount page={paginationState.activePage} total={totalItems} itemsPerPage={paginationState.itemsPerPage} i18nEnabled />
           </div>
           <div className="justify-content-center d-flex">
