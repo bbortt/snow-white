@@ -2,9 +2,9 @@
   "snowWhiteApp": {
     "openApiCriterion": {
       "home": {
-        "title": "OpenAPI Criteria",
+        "title": "OpenAPI Coverage Criteria",
         "refreshListLabel": "Refresh list",
-        "notFound": "No OpenAPI Criteria found"
+        "notFound": "No OpenAPI Coverage Criteria found"
       },
       "detail": {
         "title": "OpenAPI Criterion"
