@@ -11,7 +11,7 @@ export interface IQualityGateConfig {
   description?: string | null;
   isPredefined?: boolean;
   minCoveragePercentage?: number;
-  openApiCriteria?: IOpenApiCriterion[] | null;
+  openApiCoverageCriteria?: IOpenApiCriterion[] | null;
 }
 
 export const defaultValue: Readonly<IQualityGateConfig> = {

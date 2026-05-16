@@ -1,13 +1,13 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.Optional;
@@ -71,7 +71,7 @@ class DefaultOpenApiQualityGatesTest {
               configuration ->
                 assertThat(
                   configuration.getOpenApiCoverageConfigurations()
-                ).hasSize(OpenApiCriteria.values().length),
+                ).hasSize(OpenApiCoverageCriteria.values().length),
               configuration ->
                 assertThat(configuration.getMinCoveragePercentage()).isEqualTo(
                   100

@@ -12,7 +12,7 @@ import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
@@ -42,8 +42,8 @@ class ApiTestResultIT extends AbstractReportCoordinationServiceIT {
   }
 
   @ParameterizedTest
-  @EnumSource(OpenApiCriteria.class)
-  void shouldBePersisted(OpenApiCriteria openApiCriteria) {
+  @EnumSource(OpenApiCoverageCriteria.class)
+  void shouldBePersisted(OpenApiCoverageCriteria openApiCriteria) {
     var qualityGateReport = qualityGateReportRepository.save(
       QualityGateReport.builder()
         .calculationId(CALCULATION_ID)

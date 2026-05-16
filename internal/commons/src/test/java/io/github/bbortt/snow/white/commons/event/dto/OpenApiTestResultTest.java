@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.event.dto;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static java.math.BigDecimal.ONE;
 import static nl.jqno.equalsverifier.Warning.BIGDECIMAL_EQUALITY;
 import static org.assertj.core.api.Assertions.assertThat;

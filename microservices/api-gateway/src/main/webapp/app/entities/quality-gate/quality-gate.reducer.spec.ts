@@ -185,7 +185,7 @@ describe('Quality-Gate reducer tests', () => {
         description: null,
         isPredefined: false,
         minCoveragePercentage: 80,
-        openApiCriteria: ['criterion-a'],
+        openApiCoverageCriteria: ['criterion-a'],
       },
     };
 
@@ -223,7 +223,7 @@ describe('Quality-Gate reducer tests', () => {
         description: null,
         isPredefined: false,
         minCoveragePercentage: 80,
-        openApiCriteria: [{ name: 'criterion-a' }],
+        openApiCoverageCriteria: [{ name: 'criterion-a' }],
       },
     };
 

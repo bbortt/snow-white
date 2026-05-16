@@ -23,7 +23,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    openApiCoverageConfigurationService.initOpenApiCriteria();
+    openApiCoverageConfigurationService.initOpenApiCoverageCriteria();
     qualityGateService.initPredefinedQualityGates();
   }
 }

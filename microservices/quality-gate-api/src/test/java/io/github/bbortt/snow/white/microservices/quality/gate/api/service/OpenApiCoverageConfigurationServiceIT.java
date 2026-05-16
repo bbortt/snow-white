@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import org.junit.jupiter.api.Nested;
@@ -29,10 +29,10 @@ class OpenApiCoverageConfigurationServiceIT extends AbstractQualityGateApiIT {
 
     @Test
     void isIdempotent() {
-      assertDoesNotThrow(() -> fixture.initOpenApiCriteria());
+      assertDoesNotThrow(() -> fixture.initOpenApiCoverageCriteria());
 
       assertThat(openApiCoverageConfigurationRepository.count()).isEqualTo(
-        OpenApiCriteria.values().length
+        OpenApiCoverageCriteria.values().length
       );
     }
   }

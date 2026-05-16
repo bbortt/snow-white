@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
@@ -19,7 +19,7 @@ import static java.util.regex.Pattern.compile;
 import static org.springframework.data.util.Predicates.negate;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * Each documented response code for each endpoint is tested.
  *
- * @see OpenApiCriteria#RESPONSE_CODE_COVERAGE
+ * @see OpenApiCoverageCriteria#RESPONSE_CODE_COVERAGE
  */
 @Slf4j
 @Component
@@ -49,7 +49,7 @@ public class ResponseCodeCoverageCalculator
   public static final Pattern SINGLE_DIGIT_PATTERN = compile("^\\dXX$");
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return RESPONSE_CODE_COVERAGE;
   }
 

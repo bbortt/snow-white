@@ -20,7 +20,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -202,7 +202,7 @@ public class JUnitReporter {
       String suiteName,
       ApiTestResult apiTestResult
     ) {
-      var openApiCriteria = OpenApiCriteria.valueOf(
+      var openApiCriteria = OpenApiCoverageCriteria.valueOf(
         apiTestResult.getApiTestCriteria()
       );
 

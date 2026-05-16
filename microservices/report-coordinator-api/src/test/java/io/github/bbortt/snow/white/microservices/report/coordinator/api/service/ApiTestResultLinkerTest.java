@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static java.lang.Boolean.FALSE;
@@ -82,8 +82,8 @@ class ApiTestResultLinkerTest {
 
     @ParameterizedTest
     @MethodSource("nullOrEmptyList")
-    void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCriteria(
-      Set<String> includedOpenApiCriteria
+    void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCoverageCriteria(
+      Set<String> includedOpenApiCoverageCriteria
     ) {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
@@ -100,7 +100,7 @@ class ApiTestResultLinkerTest {
       fixture.addApiTestResultsToApiTest(
         Set.of(apiTestResult),
         apiTest,
-        includedOpenApiCriteria,
+        includedOpenApiCoverageCriteria,
         100
       );
 

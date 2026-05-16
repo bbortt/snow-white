@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import java.util.List;
@@ -46,7 +46,9 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
       .perform(get(OPENAPI_ENTITY_API_URL))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-      .andExpect(jsonPath("$.length()").value(OpenApiCriteria.values().length))
+      .andExpect(
+        jsonPath("$.length()").value(OpenApiCoverageCriteria.values().length)
+      )
       .andReturn()
       .getResponse()
       .getContentAsString();
@@ -57,7 +59,7 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
     );
 
     assertThat(openApiCriteria).containsExactly(
-      stream(OpenApiCriteria.values())
+      stream(OpenApiCoverageCriteria.values())
         .map(c ->
           OpenApiCriterion.builder()
             .id(c.name())

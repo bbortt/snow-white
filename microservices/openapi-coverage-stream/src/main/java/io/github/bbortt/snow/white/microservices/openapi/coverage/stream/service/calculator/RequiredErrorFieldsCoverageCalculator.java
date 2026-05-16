@@ -6,7 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isErrorHttpStatusCode;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
@@ -15,7 +15,7 @@ import static java.lang.String.join;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
  * Note: Due to OpenTelemetry's limited visibility into response bodies, this calculator primarily validates that error responses have been observed for operations that define required error fields in their schema.
  * Full field-level validation would require additional instrumentation.
  *
- * @see OpenApiCriteria#REQUIRED_ERROR_FIELDS_COVERAGE
+ * @see OpenApiCoverageCriteria#REQUIRED_ERROR_FIELDS_COVERAGE
  */
 @Slf4j
 @Component
@@ -49,7 +49,7 @@ public class RequiredErrorFieldsCoverageCalculator
 {
 
   @Override
-  protected @NonNull OpenApiCriteria getSupportedOpenApiCriteria() {
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
     return REQUIRED_ERROR_FIELDS_COVERAGE;
   }
 

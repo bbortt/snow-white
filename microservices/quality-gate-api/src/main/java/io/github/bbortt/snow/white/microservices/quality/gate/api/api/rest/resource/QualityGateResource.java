@@ -72,7 +72,7 @@ public class QualityGateResource implements QualityGateApi {
         qualityGateConfigurationMapper.toInitialEntityIgnoringRelationships(
           qualityGateConfig
         ),
-        qualityGateConfig.getOpenApiCriteria()
+        qualityGateConfig.getOpenApiCoverageCriteria()
       );
 
       return ResponseEntity.created(

@@ -29,7 +29,9 @@ public class CriteriaResource implements CriteriaApi {
   private final OpenApiCoverageConfigurationService openApiCoverageConfigurationService;
 
   @Override
-  public ResponseEntity<@NonNull List<OpenApiCriterion>> listOpenApiCriteria() {
+  public ResponseEntity<
+    @NonNull List<OpenApiCriterion>
+  > listOpenApiCoverageCriteria() {
     var openApiCoverageConfigurations = openApiCoverageConfigurationService
       .getAllOpenapiCoverageConfigurations()
       .stream()

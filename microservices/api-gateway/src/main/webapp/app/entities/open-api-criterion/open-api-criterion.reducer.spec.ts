@@ -18,7 +18,7 @@ import reducer, { getEntities, getEntity, reset } from './open-api-criterion.red
 
 jest.mock('app/entities/open-api-criterion/criteria-api', () => ({
   criteriaApi: {
-    listOpenApiCriteria: jest.fn(),
+    listOpenApiCoverageCriteria: jest.fn(),
   },
 }));
 
@@ -141,7 +141,7 @@ describe('OpenAPI Criterion reducer tests', () => {
     beforeEach(() => {
       mockStore = configureStore([thunk]);
 
-      (criteriaApi.listOpenApiCriteria as jest.MockedFn<any>).mockResolvedValueOnce(resolvedObject);
+      (criteriaApi.listOpenApiCoverageCriteria as jest.MockedFn<any>).mockResolvedValueOnce(resolvedObject);
     });
 
     afterEach(() => {

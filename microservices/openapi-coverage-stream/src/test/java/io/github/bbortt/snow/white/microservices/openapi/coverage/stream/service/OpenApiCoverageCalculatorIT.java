@@ -9,7 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractOpenApiCoverageServiceIT;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -21,8 +21,8 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
   private List<OpenApiCoverageCalculator> openApiCoverageCalculators;
 
   @Test
-  void aCalculatorShouldExistForEachOpenApiCriteria() {
-    var uncoveredCriteria = stream(OpenApiCriteria.values())
+  void aCalculatorShouldExistForEachOpenApiCoverageCriteria() {
+    var uncoveredCriteria = stream(OpenApiCoverageCriteria.values())
       .filter(
         openApiCriteria ->
           openApiCoverageCalculators

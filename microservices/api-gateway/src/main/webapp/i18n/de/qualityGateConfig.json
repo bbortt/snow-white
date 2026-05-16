@@ -21,7 +21,7 @@
       "description": "Beschreibung",
       "isPredefined": "Vordefiniert",
       "minCoveragePercentage": "Minimal benötigte Abdeckung",
-      "openApiCriteria": "OpenAPI Kriterien"
+      "openApiCoverageCriteria": "OpenAPI Abdeckungs-Kriterien"
     }
   }
 }

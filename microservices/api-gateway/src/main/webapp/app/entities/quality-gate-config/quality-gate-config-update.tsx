@@ -9,7 +9,7 @@ import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.mo
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { getEntities as getOpenApiCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
+import { getEntities as getOpenApiCoverageCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
 import { mapIdList } from 'app/shared/util/entity-utils';
 import React, { useEffect } from 'react';
 import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
@@ -25,7 +25,7 @@ export const QualityGateUpdate = () => {
   const { id } = useParams<'id'>();
   const isNew = id === undefined;
 
-  const openApiCriteriaList: IOpenApiCriterion[] = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
+  const openApiCoverageCriteriaList: IOpenApiCriterion[] = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
   const qualityGateConfigEntity: IQualityGateConfig = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const updating = useAppSelector(state => state.snowwhite.qualityGateConfig.updating);
@@ -42,7 +42,7 @@ export const QualityGateUpdate = () => {
       dispatch(getEntity(id));
     }
 
-    dispatch(getOpenApiCriteria());
+    dispatch(getOpenApiCoverageCriteria());
   }, []);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const QualityGateUpdate = () => {
       ...qualityGateConfigEntity,
       ...values,
       isPredefined: false,
-      openApiCriteria: mapIdList(values.openApiCriteria),
+      openApiCoverageCriteria: mapIdList(values.openApiCoverageCriteria),
     };
 
     if (isNew) {
@@ -72,7 +72,7 @@ export const QualityGateUpdate = () => {
       : {
           ...qualityGateConfigEntity,
           isPredefined: false,
-          openApiCriteria: qualityGateConfigEntity?.openApiCriteria?.map(openApiCriterion => openApiCriterion.name),
+          openApiCoverageCriteria: qualityGateConfigEntity?.openApiCoverageCriteria?.map(openApiCriterion => openApiCriterion.name),
         };
 
   return (
@@ -131,16 +131,16 @@ export const QualityGateUpdate = () => {
                 readOnly={true}
               />
               <ValidatedField
-                label={translate('snowWhiteApp.qualityGateConfig.openApiCriteria')}
-                id="quality-gate-config-openApiCriteria"
-                data-testid="openApiCriteria"
+                label={translate('snowWhiteApp.qualityGateConfig.openApiCoverageCriteria')}
+                id="quality-gate-config-openApiCoverageCriteria"
+                data-testid="openApiCoverageCriteria"
                 type="select"
                 multiple
-                name="openApiCriteria"
+                name="openApiCoverageCriteria"
               >
                 <option value="" key="0" />
-                {openApiCriteriaList
-                  ? openApiCriteriaList.map(otherEntity => (
+                {openApiCoverageCriteriaList
+                  ? openApiCoverageCriteriaList.map(otherEntity => (
                       <option value={otherEntity.name} key={otherEntity.name}>
                         {otherEntity.name}
                       </option>

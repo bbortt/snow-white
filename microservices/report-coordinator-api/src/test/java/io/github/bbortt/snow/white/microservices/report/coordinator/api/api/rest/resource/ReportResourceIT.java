@@ -7,7 +7,7 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT;
