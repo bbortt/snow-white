@@ -9,9 +9,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   ci:
-    name: 'Build and Test'
+    name: Build and Test
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     permissions:
@@ -20,6 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
+          persist-credentials: false
           submodules: true
       - name: Check if PR exists
         uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9 # ratchet:8BitJonny/gh-get-current-pr@4.0.0
@@ -72,14 +76,15 @@ jobs:
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
   prettier-post-release:
-    name: 'Run Prettier on Release PR'
+    name: Run Prettier on Release PR
     if: ${{ startsWith(github.head_ref, 'release-please-') }}
     runs-on: ubuntu-latest
     environment: release
     steps:
-      - name: Checkout PR branch
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
+          persist-credentials: false
           ref: ${{ github.head_ref }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # ratchet:pnpm/action-setup@v6.0.8

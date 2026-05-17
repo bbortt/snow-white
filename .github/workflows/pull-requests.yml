@@ -9,9 +9,12 @@ concurrency:
   group: mr-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   labeler:
-    name: 'Pull-Request Labels'
+    name: Pull-Request Labels
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.head_ref, 'release-please-') }}
     permissions:
@@ -20,13 +23,15 @@ jobs:
     steps:
       - uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213 # ratchet:actions/labeler@v6
   lint:
-    name: 'Lint'
+    name: Lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # ratchet:pnpm/action-setup@v6.0.8
         name: Install pnpm
         with:
@@ -43,13 +48,15 @@ jobs:
       - name: Check Markdown Formatting
         run: pnpm lint:markdown
   kube-score:
-    name: 'Score Helm Chart'
+    name: Score Helm Chart
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -65,7 +72,7 @@ jobs:
             --ignore-test pod-networkpolicy \
             -
   ci:
-    name: 'Build and Test'
+    name: Build and Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -75,6 +82,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
+          persist-credentials: false
           submodules: true
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
@@ -116,7 +124,7 @@ jobs:
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
   app-tests:
-    name: 'Application Tests'
+    name: Application Tests
     if: contains(github.event.pull_request.labels.*.name, 'include:apptests')
     runs-on: ubuntu-latest
     needs: ci
@@ -135,6 +143,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
           lfs: true
+          persist-credentials: false
           submodules: true
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
@@ -167,7 +176,7 @@ jobs:
             -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
   native-tests:
-    name: 'Native Application Tests'
+    name: Native Application Tests
     if: |
       contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
       contains(github.event.pull_request.title, 'native-maven-plugin')
@@ -229,6 +238,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
         with:
+          persist-credentials: false
           submodules: true
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5
@@ -265,3 +275,25 @@ jobs:
             -Ddocker.network=${docker_network} \
             -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # ratchet:actions/dependency-review-action@v5
+  zizmor:
+    name: Zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # ratchet:zizmorcore/zizmor-action@v0.5.6
