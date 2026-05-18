@@ -75,7 +75,7 @@
     <!-- Node.js & NPM -->
     <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
     <node.downloadRoot>https://nodejs.org/dist/</node.downloadRoot>
-    <node.version>v22.20.0</node.version>
+    <node.version>v24.15.0</node.version>
   </properties>
 
   <dependencyManagement>

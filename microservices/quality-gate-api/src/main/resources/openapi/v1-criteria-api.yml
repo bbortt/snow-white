@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Quality Gate API
+  description: A microservice for managing API Quality-Gate Configurations
+  version: 1.0.0
+  x-api-name: criteria
+  x-service-name: quality-gate-api
+paths:
+  /api/rest/v1/criteria/openapi:
+    get:
+      operationId: listOpenApiCoverageCriteria
+      summary: List OpenAPI Coverage Criteria
+      description: Returns all available OpenAPI coverage criteria used for quality gate evaluation
+      tags:
+        - criteria
+      responses:
+        '200':
+          description: List of OpenAPI criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpenApiCriterion'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    OpenApiCriterion:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique ID of the criterion
+          example: PATH_COVERAGE
+          minLength: 1
+          maxLength: 64
+        name:
+          type: string
+          description: Human-readable name
+          example: Path Coverage
+          minLength: 1
+          maxLength: 64
+        description:
+          type: string
+          description: Optional description of what the criterion checks
+          example: Every API endpoint has at least one request
+          minLength: 1
+          maxLength: 256
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: 'INVALID_REQUEST'
+        message:
+          type: string
+          example: 'Invalid request parameters'

@@ -138,7 +138,12 @@
     </dependency>
     <dependency>
       <groupId>org.citrusframework</groupId>
-      <artifactId>citrus-junit5</artifactId>
+      <artifactId>citrus-validation-json</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -241,6 +246,33 @@
           </dependency>
         </dependencies>
         <executions>
+          <execution>
+            <id>generate-criteria-api-v1</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${project.basedir}/src/main/resources/openapi/v1-criteria-api.yml
+              </inputSpec>
+              <generatorName>snow-white-spring-server</generatorName>
+              <modelPackage>
+                io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto
+              </modelPackage>
+              <apiPackage>
+                io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest
+              </apiPackage>
+              <configOptions>
+                <apiNameAttributeKey>info.x-api-name</apiNameAttributeKey>
+                <delegatePattern>true</delegatePattern>
+                <generateBuilders>true</generateBuilders>
+                <interfaceOnly>true</interfaceOnly>
+                <userOptional>true</userOptional>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
+              </configOptions>
+            </configuration>
+          </execution>
           <execution>
             <id>generate-quality-gate-api-v1</id>
             <goals>
@@ -433,6 +465,19 @@
                 </goals>
                 <configuration>
                   <apis>
+                    <api>
+                      <prefix>Criteria</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-criteria-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
                     <api>
                       <prefix>QualityGate</prefix>
                       <source>
