@@ -78,6 +78,7 @@ public class QualityGateService {
     target.setOpenApiCoverageConfigurations(openApiCoverageConfigurations);
   }
 
+  @Transactional
   public void deleteByName(String name)
     throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
     if (!qualityGateConfigurationRepository.existsByName(name)) {
