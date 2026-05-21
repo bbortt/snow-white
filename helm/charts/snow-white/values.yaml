@@ -309,7 +309,7 @@ kafka:
     name: confluentinc/cp-kafka
     # -- Image tag.
     # @section -- Infrastructure (Kafka)
-    tag: 8.2.0
+    tag: 8.2.1
   # -- Kafka cluster ID.
   # Run "kafka-storage random-uuid" to generate one.
   # @section -- Infrastructure (Kafka)
