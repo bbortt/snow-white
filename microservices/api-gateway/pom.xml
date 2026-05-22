@@ -206,6 +206,17 @@
             </configuration>
           </execution>
           <execution>
+            <id>generate-v1-criteria-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/../quality-gate-api/src/main/resources/openapi/v1-criteria-api.yml</inputSpec>
+              <generatorName>typescript-axios</generatorName>
+              <output>${project.build.directory}/generated-sources/openapi/criteria-api</output>
+            </configuration>
+          </execution>
+          <execution>
             <id>generate-v1-quality-gate-api</id>
             <goals>
               <goal>generate</goal>

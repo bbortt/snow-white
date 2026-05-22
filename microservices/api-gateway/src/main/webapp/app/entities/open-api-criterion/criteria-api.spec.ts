@@ -4,10 +4,10 @@
  * See LICENSE file for full details.
  */
 
-import { CriteriaApi } from 'app/clients/quality-gate-api';
+import { CriteriaApi } from 'app/clients/criteria-api';
 import { criteriaApi } from 'app/entities/open-api-criterion/criteria-api';
 
-jest.mock('app/clients/quality-gate-api', () => ({
+jest.mock('app/clients/criteria-api', () => ({
   CriteriaApi: jest.fn(),
 }));
 
