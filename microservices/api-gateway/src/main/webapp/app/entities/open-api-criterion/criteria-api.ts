@@ -4,6 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import { CriteriaApi } from 'app/clients/quality-gate-api';
+import { CriteriaApi } from 'app/clients/criteria-api';
 
 export const criteriaApi = new CriteriaApi(undefined, SERVER_API_URL);
