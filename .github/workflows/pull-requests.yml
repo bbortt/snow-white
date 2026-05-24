@@ -207,7 +207,6 @@ jobs:
           KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
           KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
           KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-
           # Other essential configs
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
           KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -219,7 +218,7 @@ jobs:
           - '9092:9092'
           - '9094:9094'
       postgres:
-        image: index.docker.io/library/postgres@sha256:4da1a4828be12604092fa55311276f08f9224a74a62dcb4708bd7439e2a03911 # ratchet:postgres:18.3-alpine
+        image: index.docker.io/library/postgres@sha256:54451ecb8ab38c24c3ec123f2fd501303a3a1856a5c66e98cecf2460d5e1e9d7 # ratchet:postgres:18.3-alpine
         env:
           POSTGRES_PASSWORD: postgres
         ports:
@@ -297,3 +296,4 @@ jobs:
           persist-credentials: false
       - name: Run zizmor 🌈
         uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # ratchet:zizmorcore/zizmor-action@v0.5.6
+
