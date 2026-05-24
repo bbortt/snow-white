@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -41,9 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiTestResultLinkerTest {
-
-  @Mock
-  private QualityGateReport qualityGateReportMock;
 
   @Mock
   private ApiTestRepository apiTestRepositoryMock;
