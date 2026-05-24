@@ -587,6 +587,19 @@
                 <configuration>
                   <apis>
                     <api>
+                      <prefix>Housekeeping</prefix>
+                      <source>
+                        ${project.basedir}/src/main/resources/openapi/v1-housekeeping-api.yml
+                      </source>
+                      <apiConfigOptions>
+                        <generateModels>false</generateModels>
+                        <generateModelTests>false</generateModelTests>
+                        <output>
+                          ${project.build.directory}/generated-test-sources/openapi
+                        </output>
+                      </apiConfigOptions>
+                    </api>
+                    <api>
                       <prefix>QualityGate</prefix>
                       <source>
                         ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
@@ -600,7 +613,7 @@
                       </apiConfigOptions>
                     </api>
                     <api>
-                      <prefix>ReportApi</prefix>
+                      <prefix>Report</prefix>
                       <source>
                         ${project.basedir}/src/main/resources/openapi/v1-report-api.yml
                       </source>
