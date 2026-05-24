@@ -434,7 +434,7 @@
                 <configuration>
                   <apis>
                     <api>
-                      <prefix>QualityGate</prefix>
+                      <prefix>ApiIndex</prefix>
                       <source>
                         ${project.basedir}/src/main/resources/openapi/v1-api-index-api.yml
                       </source>
