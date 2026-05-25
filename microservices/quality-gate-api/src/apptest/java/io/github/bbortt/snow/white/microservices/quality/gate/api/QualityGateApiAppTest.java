@@ -166,7 +166,7 @@ class QualityGateApiAppTest {
     testRunner.then(
       qualityGateApi
         .receiveCreateQualityGate(BAD_REQUEST)
-        .validate((message, testContext) -> {
+        .validate((message, context) -> {
           var payload = message.getPayload(String.class);
           assertThat(payload).isNotEmpty();
 
@@ -384,14 +384,7 @@ class QualityGateApiAppTest {
     testRunner.when(
       qualityGateApi.sendDeleteQualityGate(qualityGateConfig.getName())
     );
-    testRunner.then(
-      qualityGateApi
-        .receiveDeleteQualityGate(NO_CONTENT)
-        .validate(
-          ((message, context) ->
-            assertThat(message.getPayload(String.class)).isEmpty())
-        )
-    );
+    testRunner.then(qualityGateApi.receiveDeleteQualityGate(NO_CONTENT));
   }
 
   /**

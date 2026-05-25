@@ -55,7 +55,7 @@ public class ApiIndexResource implements ApiIndexApi {
   }
 
   @Override
-  public ResponseEntity<@NonNull Void> checkApiExists(
+  public ResponseEntity checkApiExists(
     String otelServiceName,
     String apiName,
     String apiVersion,
@@ -72,7 +72,16 @@ public class ApiIndexResource implements ApiIndexApi {
       return ResponseEntity.ok().build();
     }
 
-    return ResponseEntity.notFound().build();
+    return ResponseEntity.status(NOT_FOUND)
+      .contentType(APPLICATION_JSON)
+      .body(
+        GetAllApis500Response.builder()
+          .code(NOT_FOUND.getReasonPhrase())
+          .message(
+            "No API specification exists for the given service name, API name, and version."
+          )
+          .build()
+      );
   }
 
   @Override
@@ -147,12 +156,26 @@ public class ApiIndexResource implements ApiIndexApi {
     );
 
     if (optionalApi.isEmpty() || !optionalApi.get().isPrerelease()) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.status(NOT_FOUND)
+        .contentType(APPLICATION_JSON)
+        .body(
+          GetAllApis500Response.builder()
+            .code(NOT_FOUND.getReasonPhrase())
+            .message("The API specification does not exist.")
+            .build()
+        );
     }
 
     var prereleaseContent = optionalApi.get().getPrereleaseContent();
     if (prereleaseContent == null) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.status(NOT_FOUND)
+        .contentType(APPLICATION_JSON)
+        .body(
+          GetAllApis500Response.builder()
+            .code(NOT_FOUND.getReasonPhrase())
+            .message("The API specification is not a prerelease.")
+            .build()
+        );
     }
 
     if (prereleaseContent.startsWith("openapi:")) {
