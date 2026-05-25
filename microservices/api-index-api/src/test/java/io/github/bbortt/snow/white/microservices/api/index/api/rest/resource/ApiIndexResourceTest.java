@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.index.api.rest;
+package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
 import static java.util.Collections.singletonList;

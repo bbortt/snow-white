@@ -4,9 +4,11 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest;
 
-import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate400Response;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -15,19 +17,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+@NullMarked
 @RestControllerAdvice
 class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
   @Override
-  protected ResponseEntity<Object> handleExceptionInternal(
+  protected @Nullable ResponseEntity<Object> handleExceptionInternal(
     Exception ex,
-    Object body,
+    @Nullable Object body,
     HttpHeaders headers,
     HttpStatusCode statusCode,
     WebRequest request
   ) {
     var resolved = HttpStatus.resolve(statusCode.value());
-    var error = Error.builder()
+    var error = CalculateQualityGate400Response.builder()
       .code(
         resolved != null
           ? resolved.getReasonPhrase()
