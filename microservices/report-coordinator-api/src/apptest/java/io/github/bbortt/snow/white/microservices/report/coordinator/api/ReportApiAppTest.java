@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api;
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.CitrusUtils.getHttpEndpoint;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
 import java.util.List;
+import java.util.UUID;
 import org.citrusframework.TestCaseRunner;
 import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
@@ -92,11 +95,26 @@ class ReportApiAppTest {
   void shouldReturn404WhenReportNotFound(
     @CitrusResource TestCaseRunner testRunner
   ) {
-    testRunner.when(
-      reportApi.sendGetReportByCalculationId(randomUUID().toString())
-    );
+    var calculationId = randomUUID();
+    testRunner.when(reportApi.sendGetReportByCalculationId(calculationId));
 
-    testRunner.then(reportApi.receiveGetReportByCalculationId(NOT_FOUND));
+    testRunner.then(
+      reportApi
+        .receiveGetReportByCalculationId(NOT_FOUND)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            ListQualityGateReports500Response.class
+          );
+          assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            format("No report by id '%s' exists!", calculationId)
+          );
+        })
+    );
   }
 
   /**
@@ -113,12 +131,27 @@ class ReportApiAppTest {
   void shouldReturn404WhenJUnitReportNotFound(
     @CitrusResource TestCaseRunner testRunner
   ) {
+    var calculationId = randomUUID();
     testRunner.when(
-      reportApi.sendGetReportByCalculationIdAsJUnit(randomUUID().toString())
+      reportApi.sendGetReportByCalculationIdAsJUnit(calculationId)
     );
 
     testRunner.then(
-      reportApi.receiveGetReportByCalculationIdAsJUnit(NOT_FOUND)
+      reportApi
+        .receiveGetReportByCalculationIdAsJUnit(NOT_FOUND)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            ListQualityGateReports500Response.class
+          );
+          assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            format("No report by id '%s' exists!", calculationId)
+          );
+        })
     );
   }
 }

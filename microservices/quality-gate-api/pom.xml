@@ -132,21 +132,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.citrusframework</groupId>
-      <artifactId>citrus-test-api-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.citrusframework</groupId>
-      <artifactId>citrus-validation-json</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.citrusframework</groupId>
-      <artifactId>citrus-junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-webmvc-test</artifactId>
       <scope>test</scope>
@@ -425,6 +410,29 @@
     <profile>
       <id>apptest</id>
 
+      <dependencies>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-junit-jupiter</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-test-api-core</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-validation-json</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-validation-text</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+
       <build>
         <testResources>
           <testResource>
@@ -517,6 +525,9 @@
                   <alias>quality-gate-api</alias>
                   <run>
                     <env>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
                       <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>

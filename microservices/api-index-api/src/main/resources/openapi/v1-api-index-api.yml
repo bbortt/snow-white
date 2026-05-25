@@ -182,6 +182,10 @@ paths:
                 $ref: './components/ApiInformation.yml'
         '404':
           description: No API specification exists for the given service name, API name, and version.
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
         '500':
           description: 'Internal server error'
           content:
@@ -223,6 +227,10 @@ paths:
                 type: string
         '404':
           description: The API specification does not exist or is not a prerelease.
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
         '500':
           description: Internal server error
           content:
@@ -263,6 +271,10 @@ paths:
           description: The API specification exists.
         '404':
           description: The API specification does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
         '500':
           description: 'Internal server error'
           content:
