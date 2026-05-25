@@ -38,8 +38,8 @@ importers:
         version: 4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(vite@7.3.1(@types/node@25.9.1)(yaml@2.9.0))
     optionalDependencies:
       npm-check-updates:
-        specifier: 22.2.0
-        version: 22.2.0
+        specifier: 22.2.1
+        version: 22.2.1
 
 packages:
 
@@ -593,8 +593,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  npm-check-updates@22.2.0:
-    resolution: {integrity: sha512-kaxgbkGkCOtoSrsUXShgcEiEfrRPqmOGk6Yeya+5hoNptblu9vuE8/PLABUSJz+IeNgKJBFxcC3UrBYmKsB8iA==}
+  npm-check-updates@22.2.1:
+    resolution: {integrity: sha512-mGdIJfhtg+q0BzhbOpbOL73zhMZlgBQMG4wnBwPMMD5k96028UCuV0753YeSYk9odoh7HWK6/cY69bWxT7o+yg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: '>=10.0.0'}
     hasBin: true
 
@@ -1254,7 +1254,7 @@ snapshots:
 
   nanoid@3.3.12: {}
 
-  npm-check-updates@22.2.0:
+  npm-check-updates@22.2.1:
     optional: true
 
   npm-run-path@6.0.0:
