@@ -51,11 +51,12 @@
   </properties>
 
   <dependencyManagement>
+    <!-- Note that BOM's follow a "first-declaration wins" approach -->
     <dependencies>
       <dependency>
-        <groupId>org.citrusframework</groupId>
-        <artifactId>citrus-bom</artifactId>
-        <version>${citrus.version}</version>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp-bom</artifactId>
+        <version>5.3.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -74,6 +75,14 @@
         <version>2.0.5</version>
         <scope>import</scope>
         <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.citrusframework</groupId>
+        <artifactId>citrus-bom</artifactId>
+        <version>${citrus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>

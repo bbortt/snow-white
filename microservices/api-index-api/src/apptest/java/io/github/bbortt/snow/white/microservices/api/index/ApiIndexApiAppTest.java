@@ -322,7 +322,23 @@ class ApiIndexApiAppTest {
         "0.0.0"
       )
     );
-    testRunner.then(apiIndexApi.receiveGetApiDetails(NOT_FOUND));
+    testRunner.then(
+      apiIndexApi
+        .receiveGetApiDetails(NOT_FOUND)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            GetAllApis500Response.class
+          );
+          assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            "No API specification exists for the given service name, API name, and version."
+          );
+        })
+    );
   }
 
   /**
@@ -388,7 +404,24 @@ class ApiIndexApiAppTest {
         "0.0.0"
       )
     );
-    testRunner.then(apiIndexApi.receiveCheckApiExists(NOT_FOUND));
+
+    testRunner.then(
+      apiIndexApi
+        .receiveCheckApiExists(NOT_FOUND)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            GetAllApis500Response.class
+          );
+          assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            "No API specification exists for the given service name, API name, and version."
+          );
+        })
+    );
   }
 
   /**
@@ -465,6 +498,23 @@ class ApiIndexApiAppTest {
         "0.0.0"
       )
     );
-    testRunner.then(apiIndexApi.receiveGetRawApiContent(NOT_FOUND));
+    testRunner.then(
+      apiIndexApi
+        .receiveGetRawApiContent(NOT_FOUND)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            GetAllApis500Response.class
+          );
+
+          assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            "The API specification does not exist."
+          );
+        })
+    );
   }
 }

@@ -7,10 +7,11 @@
 package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -43,7 +44,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -143,57 +143,58 @@ class ApiIndexResourceTest {
   @Nested
   class CheckApiExistsTest {
 
-    public static Stream<Arguments> shouldIndicateApiExistenceWithHttpStatus() {
-      return Stream.of(arguments(true, OK), arguments(false, NOT_FOUND));
+    public static Stream<Boolean> shouldIncludePrereleases_whenRequested() {
+      return Stream.of(TRUE, FALSE);
     }
 
     @MethodSource
     @ParameterizedTest
-    void shouldIndicateApiExistenceWithHttpStatus(
-      Boolean apiExists,
-      HttpStatus responseStatus
-    ) {
-      doReturn(apiExists)
+    void shouldIncludePrereleases_whenRequested(Boolean includePrereleases) {
+      doReturn(true)
+        .when(apiIndexServiceMock)
+        .hasApiByInformationBeenIndexed("svc", "api", "v1", includePrereleases);
+
+      ResponseEntity response = fixture.checkApiExists(
+        "svc",
+        "api",
+        "v1",
+        includePrereleases
+      );
+
+      assertThat(response).satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(OK),
+        r -> assertThat(r.getBody()).isNull()
+      );
+    }
+
+    @Test
+    void shouldReturnHttpNotFoundResponse_whenApiHasNotBeenIndexed() {
+      doReturn(false)
         .when(apiIndexServiceMock)
         .hasApiByInformationBeenIndexed("svc", "api", "v1", false);
 
-      ResponseEntity<@NonNull Void> response = fixture.checkApiExists(
+      ResponseEntity response = fixture.checkApiExists(
         "svc",
         "api",
         "v1",
-        null
+        false
       );
 
       assertThat(response).satisfies(
-        r -> assertThat(r.getStatusCode()).isEqualTo(responseStatus),
-        r -> assertThat(r.getBody()).isNull()
-      );
-    }
-
-    public static Stream<Arguments> shouldIncludePrereleases_whenRequested() {
-      return Stream.of(arguments(true, OK), arguments(false, NOT_FOUND));
-    }
-
-    @MethodSource
-    @ParameterizedTest
-    void shouldIncludePrereleases_whenRequested(
-      Boolean apiExists,
-      HttpStatus responseStatus
-    ) {
-      doReturn(apiExists)
-        .when(apiIndexServiceMock)
-        .hasApiByInformationBeenIndexed("svc", "api", "v1", true);
-
-      ResponseEntity<@NonNull Void> response = fixture.checkApiExists(
-        "svc",
-        "api",
-        "v1",
-        true
-      );
-
-      assertThat(response).satisfies(
-        r -> assertThat(r.getStatusCode()).isEqualTo(responseStatus),
-        r -> assertThat(r.getBody()).isNull()
+        r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+        r ->
+          assertThat(r.getBody())
+            .asInstanceOf(type(GetAllApis500Response.class))
+            .satisfies(
+              body ->
+                assertThat(body.getCode()).isEqualTo(
+                  NOT_FOUND.getReasonPhrase()
+                ),
+              body ->
+                assertThat(body.getMessage()).isEqualTo(
+                  "No API specification exists for the given service name, API name, and version."
+                )
+            )
       );
     }
   }
@@ -434,7 +435,16 @@ class ApiIndexResourceTest {
       );
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-      assertThat(response.getBody()).isNull();
+      assertThat(response.getBody())
+        .asInstanceOf(type(GetAllApis500Response.class))
+        .satisfies(
+          body ->
+            assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
+          body ->
+            assertThat(body.getMessage()).isEqualTo(
+              "The API specification does not exist."
+            )
+        );
     }
 
     @Test
@@ -452,7 +462,16 @@ class ApiIndexResourceTest {
       );
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-      assertThat(response.getBody()).isNull();
+      assertThat(response.getBody())
+        .asInstanceOf(type(GetAllApis500Response.class))
+        .satisfies(
+          body ->
+            assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
+          body ->
+            assertThat(body.getMessage()).isEqualTo(
+              "The API specification does not exist."
+            )
+        );
     }
 
     @Test
@@ -471,7 +490,16 @@ class ApiIndexResourceTest {
       );
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-      assertThat(response.getBody()).isNull();
+      assertThat(response.getBody())
+        .asInstanceOf(type(GetAllApis500Response.class))
+        .satisfies(
+          body ->
+            assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
+          body ->
+            assertThat(body.getMessage()).isEqualTo(
+              "The API specification is not a prerelease."
+            )
+        );
     }
 
     @Test
