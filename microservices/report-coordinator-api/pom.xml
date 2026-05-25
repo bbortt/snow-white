@@ -190,6 +190,7 @@
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock</artifactId>
       <version>${org.wiremock.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.wiremock.integrations.testcontainers</groupId>

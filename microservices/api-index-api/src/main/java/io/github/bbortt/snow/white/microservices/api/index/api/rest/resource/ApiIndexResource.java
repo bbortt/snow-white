@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.api.index.api.rest;
+package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
@@ -17,6 +17,7 @@ import static org.springframework.http.MediaType.APPLICATION_YAML;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
 import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
