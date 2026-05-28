@@ -31,7 +31,7 @@ The link between them is three identifiers that must appear in **both** places:
 Add `x-api-name` and `x-service-name` to the `info` block:
 
 ```yaml
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: My Service API
   version: 1.0.0

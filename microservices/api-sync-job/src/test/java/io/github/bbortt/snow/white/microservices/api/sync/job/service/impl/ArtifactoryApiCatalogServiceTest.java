@@ -116,7 +116,7 @@ class ArtifactoryApiCatalogServiceTest {
 
       // Now we're instantiating the rest of the mocks, called when supplier is being invoked
       String openApiContent = """
-        openapi: 3.0.0
+        openapi: 3.1.2
         info:
           title: Petstore API
           version: 1.0.0
@@ -376,7 +376,7 @@ class ArtifactoryApiCatalogServiceTest {
       doReturn(List.of(aqlItem)).when(searches).artifactsByFileSpec(any());
 
       String openApiContent = """
-        openapi: 3.0.0
+        openapi: 3.1.2
         info:
           title: Petstore API
           version: 1.0.0
@@ -442,7 +442,7 @@ class ArtifactoryApiCatalogServiceTest {
     ) throws IOException {
       var openApiContent = format(
         """
-        openapi: 3.0.0
+        openapi: 3.1.2
         info:
           title: %s
           version: %s

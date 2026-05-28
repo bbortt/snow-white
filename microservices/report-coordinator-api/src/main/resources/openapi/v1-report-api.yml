@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: Report Coordinator API
   description: A gateway service dispatching jobs for all microservice. A single entrypoint into the system for all user interfaces.

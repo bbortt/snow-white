@@ -20,6 +20,16 @@ The resulting image is: `ghcr.io/bbortt/snow-white/report-coordinator-api:latest
 
 ## Running Application Tests
 
+### IntelliJ IDEA Setup
+
+To resolve apptest dependencies in IntelliJ IDEA, enable the `apptest` Maven profile:
+
+1. Open the **Maven** tool window (View → Tool Windows → Maven).
+2. Expand the project, open **Profiles**, and tick **apptest**.
+3. Click **Reload All Maven Projects**.
+
+### Prerequisites
+
 Before running tests, ensure:
 
 - Docker is installed and running.

@@ -147,7 +147,7 @@ class SyncJobIT {
     stubForArtefactGet(
       "users.yaml", // language=yaml
       """
-      openapi: 3.1.0
+      openapi: 3.1.2
       info:
         title: Users API
         version: 2.0.0

@@ -9,16 +9,13 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api;
 import static io.github.bbortt.snow.white.microservices.quality.gate.api.CitrusUtils.getHttpEndpoint;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -56,6 +53,10 @@ class QualityGateApiAppTest {
     );
   }
 
+  static Stream<String> shouldGetQualityGateByName() {
+    return Arrays.stream(PREDEFINED_QUALITY_GATE_NAMES);
+  }
+
   /**
    * Verifies that the quality-gates listing endpoint accepts pagination parameters and returns the predefined gates.
    *
@@ -78,9 +79,11 @@ class QualityGateApiAppTest {
     @CitrusResource TestCaseRunner testRunner
   ) {
     testRunner.when(
-      qualityGateApi.sendGetAllQualityGates().page(0).size(5)
-      // TODO: This causes trouble! Citrus is trying to parse a JSON here!
-      // .sort("name,asc")
+      qualityGateApi
+        .sendGetAllQualityGates()
+        .page(0)
+        .size(5)
+        .sort(URLEncoder.encode("name,asc", UTF_8))
     );
 
     testRunner.then(
@@ -98,8 +101,7 @@ class QualityGateApiAppTest {
           assertThat(qualityGateConfigs)
             .hasSizeGreaterThanOrEqualTo(4)
             .map(QualityGateConfig::getName)
-            // TODO: This should be sorted, once "sort" parameter works
-            .contains(PREDEFINED_QUALITY_GATE_NAMES);
+            .containsSequence(PREDEFINED_QUALITY_GATE_NAMES);
         })
     );
   }
@@ -121,7 +123,10 @@ class QualityGateApiAppTest {
   @CitrusTest
   void shouldCreateQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var payload = JsonMapper.shared().writeValueAsString(
-      QualityGateConfig.builder().name("shouldCreateQualityGate").build()
+      QualityGateConfig.builder()
+        .name("shouldCreateQualityGate")
+        .description("description")
+        .build()
     );
 
     testRunner.when(
@@ -199,6 +204,7 @@ class QualityGateApiAppTest {
     var payload = JsonMapper.shared().writeValueAsString(
       QualityGateConfig.builder()
         .name("shouldReturn409WhenCreatingQualityGateWithDuplicateName")
+        .description("description")
         .build()
     );
 
@@ -217,10 +223,6 @@ class QualityGateApiAppTest {
         .body(payload) /* same name as above */
     );
     testRunner.then(qualityGateApi.receiveCreateQualityGate(CONFLICT));
-  }
-
-  static Stream<String> shouldGetQualityGateByName() {
-    return Arrays.stream(PREDEFINED_QUALITY_GATE_NAMES);
   }
 
   /**
@@ -284,6 +286,7 @@ class QualityGateApiAppTest {
   void shouldUpdateQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var qualityGateConfig = QualityGateConfig.builder()
       .name("shouldUpdateQualityGate")
+      .description("description")
       .build();
 
     testRunner.when(
@@ -347,7 +350,10 @@ class QualityGateApiAppTest {
         .getMessageBuilderSupport()
         .body(
           JsonMapper.shared().writeValueAsString(
-            QualityGateConfig.builder().name(qualityGateConfigName).build()
+            QualityGateConfig.builder()
+              .name(qualityGateConfigName)
+              .description("description")
+              .build()
           )
         )
     );
@@ -370,6 +376,7 @@ class QualityGateApiAppTest {
   void shouldDeleteQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var qualityGateConfig = QualityGateConfig.builder()
       .name("shouldDeleteQualityGate")
+      .description("description")
       .build();
     var payload = JsonMapper.shared().writeValueAsString(qualityGateConfig);
 
