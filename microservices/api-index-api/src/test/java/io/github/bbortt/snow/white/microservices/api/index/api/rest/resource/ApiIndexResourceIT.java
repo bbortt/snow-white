@@ -657,7 +657,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   void getRequest_forRawApiContent_shouldReturnYaml_whenContentIsOpenApiSpec()
     throws Exception {
     var openApiContent =
-      "openapi: 3.0.0\ninfo:\n  title: Test API\n  version: v1";
+      "openapi: 3.1.2\ninfo:\n  title: Test API\n  version: v1";
 
     var prereleaseReference = ApiReference.builder()
       .otelServiceName("otelServiceName")

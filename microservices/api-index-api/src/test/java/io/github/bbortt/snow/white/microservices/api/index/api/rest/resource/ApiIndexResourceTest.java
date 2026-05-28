@@ -505,7 +505,7 @@ class ApiIndexResourceTest {
     @Test
     void shouldReturnYamlContent_whenPrereleaseContentIsOpenApiSpec() {
       var openApiContent = """
-        openapi: 3.0.0
+        openapi: 3.1.2
         info:
           title: Test API
         """;
