@@ -414,7 +414,7 @@ describe('CLI', () => {
 
   describe('command: upload-prereleases', () => {
     const VALID_OPENAPI_YAML = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: Integration Test API
   version: 2.0.0

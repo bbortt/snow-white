@@ -61,7 +61,7 @@ feature_row2:
       Generator plugin wire the three linking attributes automatically.
 
         ```yaml
-      openapi: 3.1.0
+      openapi: 3.1.2
       info:
         title: My Service API
         version: 1.0.0

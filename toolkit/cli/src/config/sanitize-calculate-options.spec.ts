@@ -447,7 +447,7 @@ describe('sanitizeCalculateOptions', () => {
 
   describe('OpenAPI glob pattern configuration', () => {
     const VALID_YAML = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: My Test API
   version: 1.2.3
@@ -515,7 +515,7 @@ metadata:
 
     it('builds apiInformation from multiple matched files', () => {
       const yaml2 = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: Second API
   version: 2.0.0
@@ -551,7 +551,7 @@ info:
 
     it('exits with code 3 when a file is missing required metadata fields', () => {
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
-      (readFileSync as any).mockReturnValue('openapi: 3.1.0');
+      (readFileSync as any).mockReturnValue('openapi: 3.1.2');
 
       expect(() =>
         sanitizeCalculateOptions({

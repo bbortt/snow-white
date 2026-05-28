@@ -5,8 +5,8 @@
   ~ See LICENSE file for full details.
   -->
 <project
-  xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
@@ -462,6 +462,42 @@
           </plugin>
 
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+              <execution>
+                <id>downgrade-openapi-for-citrus</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="${project.build.directory}/citrus-openapi" />
+                    <copy todir="${project.build.directory}/citrus-openapi">
+                      <fileset
+                        dir="${project.basedir}/src/main/resources/openapi"
+                      >
+                        <include name="**/*.yml" />
+                      </fileset>
+                    </copy>
+                    <replaceregexp
+                      match="^openapi: 3\.1\.\S+"
+                      replace="openapi: 3.0.3"
+                      byline="true"
+                    >
+                      <fileset dir="${project.build.directory}/citrus-openapi">
+                        <include name="*.yml" />
+                      </fileset>
+                    </replaceregexp>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-openapi-codegen-maven-plugin</artifactId>
             <version>${citrus.version}</version>
@@ -476,7 +512,7 @@
                     <api>
                       <prefix>Criteria</prefix>
                       <source>
-                        ${project.basedir}/src/main/resources/openapi/v1-criteria-api.yml
+                        ${project.build.directory}/citrus-openapi/v1-criteria-api.yml
                       </source>
                       <apiConfigOptions>
                         <generateModels>false</generateModels>
@@ -489,7 +525,7 @@
                     <api>
                       <prefix>QualityGate</prefix>
                       <source>
-                        ${project.basedir}/src/main/resources/openapi/v1-quality-gate-api.yml
+                        ${project.build.directory}/citrus-openapi/v1-quality-gate-api.yml
                       </source>
                       <apiConfigOptions>
                         <generateModels>false</generateModels>

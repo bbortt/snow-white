@@ -32,7 +32,7 @@ await mock.module('node:fs', () => ({
 const BASE_URL = 'http://localhost:8080';
 
 const VALID_YAML = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: My Test API
   version: 1.2.3
@@ -168,7 +168,7 @@ metadata:
 
     it('reports missing api name and counts the file as failed', () => {
       const yamlMissingTitle = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   version: 1.0.0
   x-service-name: my-service
@@ -186,7 +186,7 @@ info:
 
     it('reports missing api version and counts the file as failed', () => {
       const yamlMissingVersion = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: My API
   x-service-name: my-service
@@ -202,7 +202,7 @@ info:
 
     it('reports missing service name and counts the file as failed', () => {
       const yamlMissingServiceName = `
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: My API
   version: 1.0.0
@@ -218,7 +218,7 @@ info:
 
     it('reports all missing metadata fields when none are present', () => {
       (scanGlob as any).mockReturnValue(['openapi.yaml']);
-      (readFileSync as any).mockReturnValue('openapi: 3.1.0');
+      (readFileSync as any).mockReturnValue('openapi: 3.1.2');
 
       expect(uploadPrereleases(makeApiIndexApi(mockIngestApi), { globPattern: '*.yaml', url: BASE_URL })).rejects.toThrow();
 

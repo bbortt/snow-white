@@ -10,11 +10,7 @@ import static io.github.bbortt.snow.white.microservices.api.index.CitrusUtils.ge
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
@@ -103,6 +99,7 @@ class ApiIndexApiAppTest {
         .apiVersion("1.0.0")
         .sourceUrl("https://example.com/shouldIngestApi.yaml")
         .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
         .build()
     );
 
@@ -183,7 +180,7 @@ class ApiIndexApiAppTest {
         .sourceUrl("https://example.com/api.yaml")
         .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
         .prerelease(false)
-        .content("openapi: 3.1.0")
+        .content("openapi: 3.1.2")
         .build()
     );
 
@@ -231,6 +228,7 @@ class ApiIndexApiAppTest {
         .apiVersion("1.0.0")
         .sourceUrl("https://example.com/api.yaml")
         .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
         .build()
     );
 
@@ -271,6 +269,7 @@ class ApiIndexApiAppTest {
         .apiVersion(apiVersion)
         .sourceUrl("https://example.com/api.yaml")
         .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
         .build()
     );
 
@@ -367,6 +366,7 @@ class ApiIndexApiAppTest {
         .apiVersion(apiVersion)
         .sourceUrl("https://example.com/api.yaml")
         .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
         .build()
     );
 
@@ -428,7 +428,7 @@ class ApiIndexApiAppTest {
    * Verifies that the raw content of a prerelease API can be retrieved after ingestion.
    *
    * <p>
-   * Given a prerelease API ingested with {@code content: "openapi: 3.1.0 ..."} via
+   * Given a prerelease API ingested with {@code content: "openapi: 3.1.2 ..."} via
    * {@code POST /api/rest/v1/apis} (HTTP 201), when sending
    * {@code GET /api/rest/v1/apis/{serviceName}/{apiName}/{apiVersion}/raw}, the service must:
    * <ul>
@@ -443,7 +443,7 @@ class ApiIndexApiAppTest {
     var apiName = "shouldGetRawApiContent-api";
     var apiVersion = "0.1.0-SNAPSHOT";
     var rawContent =
-      "openapi: 3.1.0\ninfo:\n  title: Test API\n  version: 0.1.0";
+      "openapi: 3.1.2\ninfo:\n  title: Test API\n  version: 0.1.0";
 
     var payload = JsonMapper.shared().writeValueAsString(
       GetAllApis200ResponseInner.builder()
