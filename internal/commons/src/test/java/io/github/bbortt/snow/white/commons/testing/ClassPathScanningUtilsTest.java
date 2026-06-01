@@ -27,8 +27,7 @@ class ClassPathScanningUtilsTest {
       assertThat(configClasses).containsExactlyInAnyOrder(
         io.github.bbortt.snow.white.commons.testing
           .ClassPathScanningUtilsTest.class,
-        io.github.bbortt.snow.white.commons.testing
-          .ClassPathScanningExceptionTest.class,
+        ClassPathScanningExceptionUnitTest.class,
         io.github.bbortt.snow.white.commons.testing
           .ClassPathScanningUtils.class,
         io.github.bbortt.snow.white.commons.testing
