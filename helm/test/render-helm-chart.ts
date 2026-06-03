@@ -4,11 +4,13 @@
  * See LICENSE file for full details.
  */
 
-import { file as tmpFile } from 'tmp-promise';
 import { execa } from 'execa';
+import { mkdirSync, mkdtempSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
-import { stringify, parseAllDocuments } from 'yaml';
+import { parseAllDocuments, stringify } from 'yaml';
 import { merge } from 'lodash';
+import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const mergeWithDefaultValues = (values: object): object => {
   return {
@@ -66,7 +68,8 @@ export const renderHelmChart = async (
     withDefaultValues = true,
   } = options;
 
-  const { path: tmpValuesPath } = await tmpFile();
+  const tmpValuesPath = join(tmpdir(), mkdtempSync('helm-'), 'values.yaml');
+  mkdirSync(dirname(tmpValuesPath));
   await writeFile(
     tmpValuesPath,
     stringify({
