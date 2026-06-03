@@ -1,8 +1,8 @@
 {
-  "name": "api-gateway",
+  "name": "helm",
   "version": "1.0.0",
   "private": true,
-  "description": "Snow-White API Gateway",
+  "description": "Snow-White Helm chart",
   "license": "PolyForm-Small-Business-1.0.0",
   "author": {
     "name": "Timon Borter",
@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "execa": "9.6.1",
-    "tmp-promise": "3.0.3",
     "yaml": "2.9.0"
   },
   "devDependencies": {
