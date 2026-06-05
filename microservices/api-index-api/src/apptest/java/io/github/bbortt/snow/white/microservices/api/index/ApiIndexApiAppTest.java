@@ -62,18 +62,16 @@ class ApiIndexApiAppTest {
     testRunner.when(apiIndexApi.sendGetAllApis().page(0).size(5));
 
     testRunner.then(
-      apiIndexApi
-        .receiveGetAllApis(OK)
-        .validate((message, context) -> {
-          var payload = message.getPayload(String.class);
-          assertThat(payload).isNotEmpty();
+      apiIndexApi.receiveGetAllApis(OK).validate((message, context) -> {
+        var payload = message.getPayload(String.class);
+        assertThat(payload).isNotEmpty();
 
-          var apis = JsonMapper.shared().readValue(
-            payload,
-            new TypeReference<List<GetAllApis200ResponseInner>>() {}
-          );
-          assertThat(apis).isNotNull();
-        })
+        var apis = JsonMapper.shared().readValue(
+          payload,
+          new TypeReference<List<GetAllApis200ResponseInner>>() {}
+        );
+        assertThat(apis).isNotNull();
+      })
     );
   }
 
@@ -138,19 +136,17 @@ class ApiIndexApiAppTest {
     );
 
     testRunner.then(
-      apiIndexApi
-        .receiveIngestApi(BAD_REQUEST)
-        .validate((message, context) -> {
-          var payload = message.getPayload(String.class);
-          assertThat(payload).isNotEmpty();
+      apiIndexApi.receiveIngestApi(BAD_REQUEST).validate((message, context) -> {
+        var payload = message.getPayload(String.class);
+        assertThat(payload).isNotEmpty();
 
-          var error = JsonMapper.shared().readValue(
-            payload,
-            GetAllApis500Response.class
-          );
-          assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
-          assertThat(error.getMessage()).isNotBlank();
-        })
+        var error = JsonMapper.shared().readValue(
+          payload,
+          GetAllApis500Response.class
+        );
+        assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
+        assertThat(error.getMessage()).isNotBlank();
+      })
     );
   }
 
@@ -189,19 +185,17 @@ class ApiIndexApiAppTest {
     );
 
     testRunner.then(
-      apiIndexApi
-        .receiveIngestApi(BAD_REQUEST)
-        .validate((message, context) -> {
-          var payload2 = message.getPayload(String.class);
-          assertThat(payload2).isNotEmpty();
+      apiIndexApi.receiveIngestApi(BAD_REQUEST).validate((message, context) -> {
+        var payload2 = message.getPayload(String.class);
+        assertThat(payload2).isNotEmpty();
 
-          var error = JsonMapper.shared().readValue(
-            payload2,
-            GetAllApis500Response.class
-          );
-          assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
-          assertThat(error.getMessage()).isNotBlank();
-        })
+        var error = JsonMapper.shared().readValue(
+          payload2,
+          GetAllApis500Response.class
+        );
+        assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
+        assertThat(error.getMessage()).isNotBlank();
+      })
     );
   }
 
@@ -282,20 +276,18 @@ class ApiIndexApiAppTest {
       apiIndexApi.sendGetApiDetails(serviceName, apiName, apiVersion)
     );
     testRunner.then(
-      apiIndexApi
-        .receiveGetApiDetails(OK)
-        .validate((message, context) -> {
-          var responsePayload = message.getPayload(String.class);
-          assertThat(responsePayload).isNotEmpty();
+      apiIndexApi.receiveGetApiDetails(OK).validate((message, context) -> {
+        var responsePayload = message.getPayload(String.class);
+        assertThat(responsePayload).isNotEmpty();
 
-          var apiInfo = JsonMapper.shared().readValue(
-            responsePayload,
-            GetAllApis200ResponseInner.class
-          );
-          assertThat(apiInfo.getServiceName()).isEqualTo(serviceName);
-          assertThat(apiInfo.getApiName()).isEqualTo(apiName);
-          assertThat(apiInfo.getApiVersion()).isEqualTo(apiVersion);
-        })
+        var apiInfo = JsonMapper.shared().readValue(
+          responsePayload,
+          GetAllApis200ResponseInner.class
+        );
+        assertThat(apiInfo.getServiceName()).isEqualTo(serviceName);
+        assertThat(apiInfo.getApiName()).isEqualTo(apiName);
+        assertThat(apiInfo.getApiVersion()).isEqualTo(apiVersion);
+      })
     );
   }
 
@@ -466,12 +458,10 @@ class ApiIndexApiAppTest {
       apiIndexApi.sendGetRawApiContent(serviceName, apiName, apiVersion)
     );
     testRunner.then(
-      apiIndexApi
-        .receiveGetRawApiContent(OK)
-        .validate((message, context) -> {
-          var responsePayload = message.getPayload(String.class);
-          assertThat(responsePayload).contains("openapi:");
-        })
+      apiIndexApi.receiveGetRawApiContent(OK).validate((message, context) -> {
+        var responsePayload = message.getPayload(String.class);
+        assertThat(responsePayload).contains("openapi:");
+      })
     );
   }
 

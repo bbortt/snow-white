@@ -23,7 +23,9 @@ import org.mapstruct.Named;
 @Mapper(
   componentModel = SPRING,
   uses = {
-    ApiTestMapper.class, ReportParameterMapper.class, ReportStatusMapper.class,
+    ApiTestMapper.class,
+    ReportParameterMapper.class,
+    ReportStatusMapper.class,
   }
 )
 public interface QualityGateReportMapper {

@@ -63,11 +63,13 @@ class ProtobufProcessorConfigUnitTest {
         .getOutboundTopicName();
 
       contextRunner
-        .withBean(OtelInformationFilteringService.class, () ->
-          otelInformationFilteringServiceMock
+        .withBean(
+          OtelInformationFilteringService.class,
+          () -> otelInformationFilteringServiceMock
         )
-        .withBean(OtelEventFilterStreamProperties.class, () ->
-          otelEventFilterStreamPropertiesMock
+        .withBean(
+          OtelEventFilterStreamProperties.class,
+          () -> otelEventFilterStreamPropertiesMock
         )
         .withBean(StreamsBuilder.class, () -> streamsBuilder)
         .withPropertyValues(CONSUMER_MODE_PROPERTY_NAME + "=json")
@@ -114,11 +116,13 @@ class ProtobufProcessorConfigUnitTest {
         .getOutboundTopicName();
 
       contextRunner
-        .withBean(OtelInformationFilteringService.class, () ->
-          otelInformationFilteringServiceMock
+        .withBean(
+          OtelInformationFilteringService.class,
+          () -> otelInformationFilteringServiceMock
         )
-        .withBean(OtelEventFilterStreamProperties.class, () ->
-          otelEventFilterStreamPropertiesMock
+        .withBean(
+          OtelEventFilterStreamProperties.class,
+          () -> otelEventFilterStreamPropertiesMock
         )
         .withBean(Serde.class, () -> protobufSerdeMock)
         .withBean(StreamsBuilder.class, () -> streamsBuilder)

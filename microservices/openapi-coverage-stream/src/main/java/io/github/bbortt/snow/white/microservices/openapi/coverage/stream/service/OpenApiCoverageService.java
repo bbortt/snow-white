@@ -94,19 +94,17 @@ public class OpenApiCoverageService {
       return pathToOpenAPIOperationMap;
     }
 
-    openApi
-      .getPaths()
-      .forEach((path, pathItem) -> {
-        for (var pathItemMapping : METHOD_ACCESSORS) {
-          var operation = pathItemMapping.mappingFunction().apply(pathItem);
-          if (nonNull(operation)) {
-            pathToOpenAPIOperationMap.put(
-              toOperationKey(path, pathItemMapping.httpMethodString()),
-              operation
-            );
-          }
+    openApi.getPaths().forEach((path, pathItem) -> {
+      for (var pathItemMapping : METHOD_ACCESSORS) {
+        var operation = pathItemMapping.mappingFunction().apply(pathItem);
+        if (nonNull(operation)) {
+          pathToOpenAPIOperationMap.put(
+            toOperationKey(path, pathItemMapping.httpMethodString()),
+            operation
+          );
         }
-      });
+      }
+    });
 
     return pathToOpenAPIOperationMap;
   }
