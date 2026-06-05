@@ -23,13 +23,11 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @Slf4j
 @Configuration
 @NoArgsConstructor(access = PROTECTED)
-@ImportRuntimeHints(
-  {
-    NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
-    NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints.class,
-    NativeRuntimeHintsConfiguration.OtelRuntimeHints.class,
-  }
-)
+@ImportRuntimeHints({
+  NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
+  NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints.class,
+  NativeRuntimeHintsConfiguration.OtelRuntimeHints.class,
+})
 public class NativeRuntimeHintsConfiguration {
 
   @NullMarked
@@ -71,15 +69,13 @@ public class NativeRuntimeHintsConfiguration {
           io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class
         )
         .registerType(
-          io.confluent.kafka.serializers.protobuf
-            .KafkaProtobufDeserializer.class
+          io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer.class
         )
         .registerType(
           io.confluent.kafka.streams.serdes.protobuf.KafkaProtobufSerde.class
         )
         .registerType(
-          org.apache.kafka.streams.processor.internals
-            .NoOpProcessorWrapper.class
+          org.apache.kafka.streams.processor.internals.NoOpProcessorWrapper.class
         );
 
       registerTypeIgnoringClassNotFoundException(

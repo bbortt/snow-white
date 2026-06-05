@@ -29,7 +29,8 @@ public class ApiIndexCachingService implements CachingService {
   @Override
   @Retryable(
     retryFor = {
-      RestClientResponseException.class, ResourceAccessException.class,
+      RestClientResponseException.class,
+      ResourceAccessException.class,
     },
     maxAttempts = 3,
     backoff = @Backoff(delay = 200, multiplier = 2)

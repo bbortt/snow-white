@@ -38,10 +38,11 @@ public class OpenApiCoverageConfigurationService {
     var missingOpenApiCoverageCriteria = stream(
       OpenApiCoverageCriteria.values()
     )
-      .filter(openApiCriterion ->
-        !openApiCoverageConfigurationRepository.existsByName(
-          openApiCriterion.name()
-        )
+      .filter(
+        openApiCriterion ->
+          !openApiCoverageConfigurationRepository.existsByName(
+            openApiCriterion.name()
+          )
       )
       .map(openApiCriteria ->
         OpenApiCoverageConfiguration.builder()

@@ -52,8 +52,9 @@ class KafkaTopicManagerUnitTest {
     );
 
     contextRunner
-      .withBean(OtelEventFilterStreamProperties.class, () ->
-        otelEventFilterStreamPropertiesMock
+      .withBean(
+        OtelEventFilterStreamProperties.class,
+        () -> otelEventFilterStreamPropertiesMock
       )
       .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->

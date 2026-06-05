@@ -23,9 +23,9 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @Slf4j
 @Configuration
 @NoArgsConstructor(access = PROTECTED)
-@ImportRuntimeHints(
-  { NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class }
-)
+@ImportRuntimeHints({
+  NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
+})
 public class NativeRuntimeHintsConfiguration {
 
   @NullMarked

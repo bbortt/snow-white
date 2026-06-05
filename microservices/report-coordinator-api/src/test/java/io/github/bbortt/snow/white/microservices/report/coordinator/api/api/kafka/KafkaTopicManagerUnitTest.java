@@ -59,8 +59,9 @@ class KafkaTopicManagerUnitTest {
     );
 
     contextRunner
-      .withBean(ReportCoordinationServiceProperties.class, () ->
-        reportCoordinationServicePropertiesMock
+      .withBean(
+        ReportCoordinationServiceProperties.class,
+        () -> reportCoordinationServicePropertiesMock
       )
       .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->
