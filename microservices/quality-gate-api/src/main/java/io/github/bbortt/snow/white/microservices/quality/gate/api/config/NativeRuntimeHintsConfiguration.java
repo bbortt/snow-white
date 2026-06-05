@@ -19,10 +19,10 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 @NoArgsConstructor(access = PROTECTED)
-@RegisterReflectionForBinding(
-  {
-    // For Quality-Gate API Requests
-    Error.class, OpenApiCriterion.class, QualityGateConfig.class,
-  }
-)
+@RegisterReflectionForBinding({
+  // For Quality-Gate API Requests
+  Error.class,
+  OpenApiCriterion.class,
+  QualityGateConfig.class,
+})
 public class NativeRuntimeHintsConfiguration {}

@@ -142,7 +142,8 @@ class HousekeepingServiceUnitTest {
     void scheduledAnnotationShouldStartWithPrefix()
       throws NoSuchMethodException {
       assertThat(
-        HousekeepingService.class.getDeclaredMethod("runScheduledHousekeeping")
+        HousekeepingService.class
+          .getDeclaredMethod("runScheduledHousekeeping")
           .getDeclaredAnnotation(Scheduled.class)
           .cron()
       ).startsWith("${" + PREFIX + ".housekeeping");

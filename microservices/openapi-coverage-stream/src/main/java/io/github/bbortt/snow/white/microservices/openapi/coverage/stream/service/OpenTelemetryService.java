@@ -186,16 +186,14 @@ public class OpenTelemetryService {
     OpenTelemetryData
   > parseFluxTableToOpenTelemetryData(List<FluxTable> fluxTables) {
     Set<OpenTelemetryData> openTelemetryData = newKeySet();
-    fluxTables
-      .parallelStream()
-      .forEach(fluxTable ->
-        fluxTable
-          .getRecords()
-          .parallelStream()
-          .forEach(fluxRecord ->
-            openTelemetryData.add(parseOpenTelemetryData(fluxRecord))
-          )
-      );
+    fluxTables.parallelStream().forEach(fluxTable ->
+      fluxTable
+        .getRecords()
+        .parallelStream()
+        .forEach(fluxRecord ->
+          openTelemetryData.add(parseOpenTelemetryData(fluxRecord))
+        )
+    );
     return openTelemetryData;
   }
 }

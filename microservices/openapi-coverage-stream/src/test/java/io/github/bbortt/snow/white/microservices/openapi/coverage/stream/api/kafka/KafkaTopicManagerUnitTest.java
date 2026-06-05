@@ -53,8 +53,9 @@ class KafkaTopicManagerUnitTest {
     );
 
     contextRunner
-      .withBean(OpenApiCoverageStreamProperties.class, () ->
-        openApiCoverageServicePropertiesMock
+      .withBean(
+        OpenApiCoverageStreamProperties.class,
+        () -> openApiCoverageServicePropertiesMock
       )
       .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->

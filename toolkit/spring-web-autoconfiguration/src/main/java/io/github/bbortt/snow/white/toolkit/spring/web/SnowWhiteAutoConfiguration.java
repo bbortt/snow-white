@@ -19,13 +19,11 @@ import org.springframework.context.annotation.Import;
 
 @Slf4j
 @AutoConfiguration
-@Import(
-  {
-    SpringWebInterceptorProperties.class,
-    OpenApiInformationEnhancer.class,
-    InterceptorConfig.class,
-  }
-)
+@Import({
+  SpringWebInterceptorProperties.class,
+  OpenApiInformationEnhancer.class,
+  InterceptorConfig.class,
+})
 @ConditionalOnProperty(
   prefix = PROPERTY_PREFIX,
   name = PROPERTY,

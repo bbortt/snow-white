@@ -30,7 +30,8 @@ public class QualityGateService {
   @WithSpan
   @Retryable(
     retryFor = {
-      RestClientResponseException.class, ResourceAccessException.class,
+      RestClientResponseException.class,
+      ResourceAccessException.class,
     },
     maxAttempts = 3,
     backoff = @Backoff(delay = 200, multiplier = 2)

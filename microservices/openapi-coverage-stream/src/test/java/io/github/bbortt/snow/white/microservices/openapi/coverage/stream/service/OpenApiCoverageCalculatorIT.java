@@ -30,8 +30,7 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
             .filter(openApiCoverageCalculator ->
               openApiCoverageCalculator.accepts(openApiCriteria)
             )
-            .count() !=
-          1
+            .count() != 1
       )
       .toList();
 

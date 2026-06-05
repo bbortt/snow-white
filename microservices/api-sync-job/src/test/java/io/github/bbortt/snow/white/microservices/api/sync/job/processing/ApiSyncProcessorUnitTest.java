@@ -102,8 +102,9 @@ class ApiSyncProcessorUnitTest {
         () -> new ApiInformation().withLoadStatus(NO_SOURCE)
       );
 
-      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api ->
-        false
+      Map<ApiLoadStatus, Long> result = fixture.process(
+        suppliers,
+        api -> false
       );
 
       assertThat(result)
@@ -116,8 +117,9 @@ class ApiSyncProcessorUnitTest {
     void shouldHandleNullApiInformation() throws InterruptedException {
       List<Supplier<ApiInformation>> suppliers = List.of(() -> null);
 
-      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api ->
-        false
+      Map<ApiLoadStatus, Long> result = fixture.process(
+        suppliers,
+        api -> false
       );
 
       assertThat(result).containsEntry(UNLOADED, 1L);

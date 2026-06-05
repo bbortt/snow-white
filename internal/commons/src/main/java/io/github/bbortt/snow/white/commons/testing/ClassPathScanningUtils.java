@@ -41,21 +41,19 @@ public final class ClassPathScanningUtils {
 
     Set<Class<?>> classes = new HashSet<>();
 
-    scanner
-      .findCandidateComponents(packageName)
-      .forEach(beanDefinition -> {
-        try {
-          Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
-          classes.add(clazz);
+    scanner.findCandidateComponents(packageName).forEach(beanDefinition -> {
+      try {
+        Class<?> clazz = Class.forName(beanDefinition.getBeanClassName());
+        classes.add(clazz);
 
-          if (filterConfiguration.includeNestedClasses()) {
-            Class<?>[] nestedClasses = clazz.getDeclaredClasses();
-            addAll(classes, nestedClasses);
-          }
-        } catch (ClassNotFoundException e) {
-          throw new ClassPathScanningException(e);
+        if (filterConfiguration.includeNestedClasses()) {
+          Class<?>[] nestedClasses = clazz.getDeclaredClasses();
+          addAll(classes, nestedClasses);
         }
-      });
+      } catch (ClassNotFoundException e) {
+        throw new ClassPathScanningException(e);
+      }
+    });
 
     logger.debug("Scanned classes: {}", classes);
 

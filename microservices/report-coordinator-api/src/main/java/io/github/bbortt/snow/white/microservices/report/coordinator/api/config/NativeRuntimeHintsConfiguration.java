@@ -34,30 +34,26 @@ import org.springframework.core.io.ClassPathResource;
 @Slf4j
 @Configuration
 @NoArgsConstructor(access = PROTECTED)
-@RegisterReflectionForBinding(
-  {
-    // For Coverage Requests
-    QualityGateCalculationRequestEvent.class,
-    // For Coverage Responses
-    OpenApiCoverageResponseEvent.class,
-    OpenApiTestResult.class,
-    // For JUnit Report Generation
-    Failure.class,
-    Property.class,
-    Skipped.class,
-    TestCase.class,
-    TestSuite.class,
-    TestSuites.class,
-  }
-)
-@ImportRuntimeHints(
-  {
-    NativeRuntimeHintsConfiguration.ConfigResourcesRuntimeHints.class,
-    NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
-    NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints.class,
-    NativeRuntimeHintsConfiguration.RestApiDtoHints.class,
-  }
-)
+@RegisterReflectionForBinding({
+  // For Coverage Requests
+  QualityGateCalculationRequestEvent.class,
+  // For Coverage Responses
+  OpenApiCoverageResponseEvent.class,
+  OpenApiTestResult.class,
+  // For JUnit Report Generation
+  Failure.class,
+  Property.class,
+  Skipped.class,
+  TestCase.class,
+  TestSuite.class,
+  TestSuites.class,
+})
+@ImportRuntimeHints({
+  NativeRuntimeHintsConfiguration.ConfigResourcesRuntimeHints.class,
+  NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints.class,
+  NativeRuntimeHintsConfiguration.QualityGateApiDtoRuntimeHints.class,
+  NativeRuntimeHintsConfiguration.RestApiDtoHints.class,
+})
 public class NativeRuntimeHintsConfiguration {
 
   @NullMarked

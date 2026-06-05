@@ -64,19 +64,20 @@ public abstract class AbstractExportTraceServiceRequestEventProcessor {
       .filter((key, exportTraceServiceRequest) ->
         nonNull(exportTraceServiceRequest)
       )
-      .filter((key, exportTraceServiceRequest) ->
-        (exportTraceServiceRequest.getResourceSpansCount() > 0 &&
-          exportTraceServiceRequest
-            .getResourceSpansList()
-            .stream()
-            .anyMatch(
-              resourceSpans ->
-                resourceSpans.getScopeSpansCount() > 0 &&
-                resourceSpans
-                  .getScopeSpansList()
-                  .stream()
-                  .anyMatch(scopeSpans -> scopeSpans.getSpansCount() > 0)
-            ))
+      .filter(
+        (key, exportTraceServiceRequest) ->
+          (exportTraceServiceRequest.getResourceSpansCount() > 0 &&
+            exportTraceServiceRequest
+              .getResourceSpansList()
+              .stream()
+              .anyMatch(
+                resourceSpans ->
+                  resourceSpans.getScopeSpansCount() > 0 &&
+                  resourceSpans
+                    .getScopeSpansList()
+                    .stream()
+                    .anyMatch(scopeSpans -> scopeSpans.getSpansCount() > 0)
+              ))
       )
       .peek((key, value) -> logger.trace("Message '{}' passed processing", key))
       .to(

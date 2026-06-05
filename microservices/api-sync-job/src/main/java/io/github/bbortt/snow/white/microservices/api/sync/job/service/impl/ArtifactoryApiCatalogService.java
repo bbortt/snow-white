@@ -95,9 +95,10 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
 
     return repoPaths
       .parallelStream()
-      .map(repoPath ->
-        (Supplier<ApiInformation>) () ->
-          fetchItemAndExtractApiInformation(repository, repoPath)
+      .map(
+        repoPath ->
+          (Supplier<ApiInformation>) () ->
+            fetchItemAndExtractApiInformation(repository, repoPath)
       )
       .toList();
   }

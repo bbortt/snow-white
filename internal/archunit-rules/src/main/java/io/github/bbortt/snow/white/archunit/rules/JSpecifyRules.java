@@ -150,62 +150,52 @@ public final class JSpecifyRules {
       );
 
       // Check field annotations
-      javaClass
-        .getFields()
-        .forEach(field ->
+      javaClass.getFields().forEach(field ->
+        checkAnnotations(
+          javaClass,
+          field
+            .getAnnotations()
+            .stream()
+            .map(annotation -> annotation.getRawType().getName()),
+          events
+        )
+      );
+
+      // Check method annotations and parameter annotations
+      javaClass.getMethods().forEach(method -> {
+        checkAnnotations(
+          javaClass,
+          method
+            .getAnnotations()
+            .stream()
+            .map(annotation -> annotation.getRawType().getName()),
+          events
+        );
+        method.getParameters().forEach(parameter ->
           checkAnnotations(
             javaClass,
-            field
+            parameter
               .getAnnotations()
               .stream()
               .map(annotation -> annotation.getRawType().getName()),
             events
           )
         );
+      });
 
-      // Check method annotations and parameter annotations
-      javaClass
-        .getMethods()
-        .forEach(method -> {
+      // Check constructor parameter annotations
+      javaClass.getConstructors().forEach(constructor ->
+        constructor.getParameters().forEach(parameter ->
           checkAnnotations(
             javaClass,
-            method
+            parameter
               .getAnnotations()
               .stream()
               .map(annotation -> annotation.getRawType().getName()),
             events
-          );
-          method
-            .getParameters()
-            .forEach(parameter ->
-              checkAnnotations(
-                javaClass,
-                parameter
-                  .getAnnotations()
-                  .stream()
-                  .map(annotation -> annotation.getRawType().getName()),
-                events
-              )
-            );
-        });
-
-      // Check constructor parameter annotations
-      javaClass
-        .getConstructors()
-        .forEach(constructor ->
-          constructor
-            .getParameters()
-            .forEach(parameter ->
-              checkAnnotations(
-                javaClass,
-                parameter
-                  .getAnnotations()
-                  .stream()
-                  .map(annotation -> annotation.getRawType().getName()),
-                events
-              )
-            )
-        );
+          )
+        )
+      );
     }
 
     private void checkAnnotations(

@@ -80,18 +80,19 @@ class CriteriaApiAppTest {
             .hasSize(OpenApiCoverageCriteria.values().length)
             .satisfiesExactlyInAnyOrder(
               stream(OpenApiCoverageCriteria.values())
-                .map(openApiCoverageCriteria ->
-                  (ThrowingConsumer<OpenApiCriterion>) actual -> {
-                    assertThat(actual.getId()).isEqualTo(
-                      openApiCoverageCriteria.name()
-                    );
-                    assertThat(actual.getName()).isEqualTo(
-                      openApiCoverageCriteria.getLabel()
-                    );
-                    assertThat(actual.getDescription()).isEqualTo(
-                      openApiCoverageCriteria.getDescription()
-                    );
-                  }
+                .map(
+                  openApiCoverageCriteria ->
+                    (ThrowingConsumer<OpenApiCriterion>) actual -> {
+                      assertThat(actual.getId()).isEqualTo(
+                        openApiCoverageCriteria.name()
+                      );
+                      assertThat(actual.getName()).isEqualTo(
+                        openApiCoverageCriteria.getLabel()
+                      );
+                      assertThat(actual.getDescription()).isEqualTo(
+                        openApiCoverageCriteria.getDescription()
+                      );
+                    }
                 )
                 .toArray(ThrowingConsumer[]::new)
             );

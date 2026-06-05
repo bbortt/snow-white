@@ -104,30 +104,26 @@ public final class RepositoryRules {
       );
 
       // Check method annotations and parameter annotations
-      javaClass
-        .getMethods()
-        .forEach(method -> {
+      javaClass.getMethods().forEach(method -> {
+        checkAnnotations(
+          javaClass,
+          method
+            .getAnnotations()
+            .stream()
+            .map(annotation -> annotation.getRawType().getName()),
+          events
+        );
+        method.getParameters().forEach(parameter ->
           checkAnnotations(
             javaClass,
-            method
+            parameter
               .getAnnotations()
               .stream()
               .map(annotation -> annotation.getRawType().getName()),
             events
-          );
-          method
-            .getParameters()
-            .forEach(parameter ->
-              checkAnnotations(
-                javaClass,
-                parameter
-                  .getAnnotations()
-                  .stream()
-                  .map(annotation -> annotation.getRawType().getName()),
-                events
-              )
-            );
-        });
+          )
+        );
+      });
     }
 
     private void checkAnnotations(
