@@ -12,7 +12,12 @@ import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.cl
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.CachingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
@@ -22,19 +27,32 @@ public class ApiIndexCachingService implements CachingService {
   private final ApiIndexApi apiIndexApi;
 
   @Override
+  @Retryable(
+    retryFor = {
+      RestClientResponseException.class, ResourceAccessException.class,
+    },
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 200, multiplier = 2)
+  )
   public boolean apiExists(
     String otelServiceName,
     String apiName,
     String apiVersion
   ) {
-    try {
-      return apiIndexApi
-        .checkApiExistsWithHttpInfo(otelServiceName, apiName, apiVersion, true)
-        .getStatusCode()
-        .equals(OK);
-    } catch (Exception e) {
-      logger.debug("API existence check failed!", e);
-      return false;
-    }
+    return apiIndexApi
+      .checkApiExistsWithHttpInfo(otelServiceName, apiName, apiVersion, true)
+      .getStatusCode()
+      .equals(OK);
+  }
+
+  @Recover
+  boolean recoverApiExists(
+    Exception e,
+    String otelServiceName,
+    String apiName,
+    String apiVersion
+  ) {
+    logger.debug("Failed to check if API exists - recovering!", e);
+    return false;
   }
 }

@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ApiIndexService {
 
-  private final ApiIndexApi apiIndexApi;
+  private final ApiIndexApiClient apiIndexApiClient;
   private final ApiTestMapper apiTestMapper;
 
   public Set<ValidationResult> fetchCompleteApiInformation(
@@ -45,7 +44,7 @@ public class ApiIndexService {
         )
       );
 
-      var response = apiIndexApi.getApiDetailsWithHttpInfo(
+      var response = apiIndexApiClient.getApiDetailsWithHttpInfo(
         apiTest.getServiceName(),
         apiTest.getApiName(),
         apiVersion

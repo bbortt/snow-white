@@ -7,9 +7,12 @@
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.service.impl;
 
 import static java.lang.Boolean.TRUE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.api.ApiIndexApi;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientResponseException;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexCachingServiceUnitTest {
@@ -73,8 +77,17 @@ class ApiIndexCachingServiceUnitTest {
     }
 
     @Test
-    void shouldReturnFalse_whenApiExistenceCheckFails() {
-      doThrow(new IllegalArgumentException("API Exception"))
+    void shouldRethrow_whenApiExistenceCheckFails() {
+      doThrow(
+        new RestClientResponseException(
+          "Service Unavailable",
+          SERVICE_UNAVAILABLE,
+          SERVICE_UNAVAILABLE.getReasonPhrase(),
+          null,
+          null,
+          UTF_8
+        )
+      )
         .when(apiIndexApiMock)
         .checkApiExistsWithHttpInfo(
           OTEL_SERVICE_NAME,
@@ -83,9 +96,9 @@ class ApiIndexCachingServiceUnitTest {
           TRUE
         );
 
-      assertThat(
+      assertThatThrownBy(() ->
         fixture.apiExists(OTEL_SERVICE_NAME, API_NAME, API_VERSION)
-      ).isFalse();
+      ).isInstanceOf(RestClientResponseException.class);
     }
   }
 }

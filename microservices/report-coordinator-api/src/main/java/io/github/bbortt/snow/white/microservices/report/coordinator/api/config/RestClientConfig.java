@@ -9,8 +9,10 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.web.client.RestClient;
 
+@EnableRetry
 @Configuration
 public class RestClientConfig {
 
