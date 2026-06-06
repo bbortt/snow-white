@@ -8,7 +8,9 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.ApiClient;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 
+@EnableRetry
 @Configuration
 public class ApiIndexApiClientConfig {
 

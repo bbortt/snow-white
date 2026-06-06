@@ -7,12 +7,15 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import static java.lang.Boolean.FALSE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientResponseException;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexCachingServiceUnitTest {
@@ -97,8 +101,17 @@ class ApiIndexCachingServiceUnitTest {
     }
 
     @Test
-    void shouldReturnFalse_whenApiExistenceCheckFails() {
-      doThrow(new IllegalArgumentException("API Exception"))
+    void shouldRethrow_whenApiExistenceCheckFails() {
+      doThrow(
+        new RestClientResponseException(
+          "Service Unavailable",
+          SERVICE_UNAVAILABLE,
+          SERVICE_UNAVAILABLE.getReasonPhrase(),
+          null,
+          null,
+          UTF_8
+        )
+      )
         .when(apiIndexApiMock)
         .checkApiExistsWithHttpInfo(
           OTEL_SERVICE_NAME,
@@ -107,8 +120,27 @@ class ApiIndexCachingServiceUnitTest {
           FALSE
         );
 
-      assertThat(
+      assertThatThrownBy(() ->
         fixture.apiInformationIndexed(defaultApiInformation)
+      ).isInstanceOf(RestClientResponseException.class);
+
+      verifyNoInteractions(apiInformationMapperMock);
+    }
+  }
+
+  @Nested
+  class RecoverApiInformationIndexedTest {
+
+    @Mock
+    private Exception exceptionMock;
+
+    @Mock
+    private ApiInformation apiInformationMock;
+
+    @Test
+    void shouldAlwaysReturnFalse() {
+      assertThat(
+        fixture.recoverApiInformationIndexed(exceptionMock, apiInformationMock)
       ).isFalse();
 
       verifyNoInteractions(apiInformationMapperMock);

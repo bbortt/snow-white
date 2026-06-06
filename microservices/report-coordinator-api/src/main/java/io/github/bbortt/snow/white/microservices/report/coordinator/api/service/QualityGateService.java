@@ -14,7 +14,10 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Service
@@ -25,6 +28,13 @@ public class QualityGateService {
   private final QualityGateConfigMapper qualityGateConfigMapper;
 
   @WithSpan
+  @Retryable(
+    retryFor = {
+      RestClientResponseException.class, ResourceAccessException.class,
+    },
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 200, multiplier = 2)
+  )
   public QualityGateConfig findQualityGateConfigByName(
     String qualityGateConfigName
   ) throws QualityGateNotFoundException {

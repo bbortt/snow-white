@@ -16,7 +16,11 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
@@ -27,6 +31,13 @@ public class ApiIndexCachingService implements CachingService {
 
   @Override
   @WithSpan
+  @Retryable(
+    retryFor = {
+      RestClientResponseException.class, ResourceAccessException.class,
+    },
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 200, multiplier = 2)
+  )
   public @NonNull String fetchApiSourceUrl(ApiInformation apiInformation)
     throws OpenApiNotIndexedException {
     var response = apiIndexApi.getApiDetailsWithHttpInfo(
