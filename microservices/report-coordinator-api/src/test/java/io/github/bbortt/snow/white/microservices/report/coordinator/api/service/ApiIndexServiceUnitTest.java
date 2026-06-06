@@ -18,7 +18,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
@@ -38,7 +37,7 @@ import org.springframework.http.ResponseEntity;
 class ApiIndexServiceUnitTest {
 
   @Mock
-  private ApiIndexApi apiIndexApiMock;
+  private ApiIndexApiClient apiIndexApiClientMock;
 
   @Mock
   private ApiTestMapper apiTestMapperMock;
@@ -47,7 +46,7 @@ class ApiIndexServiceUnitTest {
 
   @BeforeEach
   void beforeEach() {
-    fixture = new ApiIndexService(apiIndexApiMock, apiTestMapperMock);
+    fixture = new ApiIndexService(apiIndexApiClientMock, apiTestMapperMock);
   }
 
   @Nested
@@ -64,7 +63,7 @@ class ApiIndexServiceUnitTest {
       doReturn(apiDetails).when(response).getBody();
 
       doReturn(response)
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("serviceName", "apiName", "apiVersion");
 
       doReturn(apiTest).when(apiTestMapperMock).toApiTest(apiDetails);
@@ -98,7 +97,7 @@ class ApiIndexServiceUnitTest {
       doReturn(NOT_FOUND).when(response).getStatusCode();
 
       doReturn(response)
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("serviceName", "apiName", "apiVersion");
 
       var results = fixture.fetchCompleteApiInformation(Set.of(apiTest));
@@ -135,7 +134,7 @@ class ApiIndexServiceUnitTest {
       var apiTest = defaultApiTest();
 
       doThrow(new RuntimeException("connection refused"))
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("serviceName", "apiName", "apiVersion");
 
       var results = fixture.fetchCompleteApiInformation(Set.of(apiTest));
@@ -158,7 +157,7 @@ class ApiIndexServiceUnitTest {
 
       assertThat(results).isEmpty();
 
-      verifyNoInteractions(apiIndexApiMock);
+      verifyNoInteractions(apiIndexApiClientMock);
       verifyNoInteractions(apiTestMapperMock);
     }
 
@@ -188,11 +187,11 @@ class ApiIndexServiceUnitTest {
       doReturn(NOT_FOUND).when(notFoundResponse).getStatusCode();
 
       doReturn(successResponse)
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("service1", "api1", "1.0.0");
 
       doReturn(notFoundResponse)
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("service2", "api2", "2.0.0");
 
       doReturn(apiTest1).when(apiTestMapperMock).toApiTest(apiDetails);

@@ -5,8 +5,8 @@
   ~ See LICENSE file for full details.
   -->
 <project
-  xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
@@ -41,6 +41,7 @@
     <org.flywaydb.version>12.8.1</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.3</org.springdoc.version>
+    <spring-retry.version>2.0.12</spring-retry.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
     <wiremock-spring-boot.version>4.2.1</wiremock-spring-boot.version>
 
@@ -165,6 +166,11 @@
         <groupId>org.springdoc</groupId>
         <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
         <version>${org.springdoc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+        <version>${spring-retry.version}</version>
       </dependency>
 
       <dependency>

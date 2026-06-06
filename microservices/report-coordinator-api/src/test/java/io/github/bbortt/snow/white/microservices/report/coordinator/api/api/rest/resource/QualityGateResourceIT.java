@@ -6,15 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.QualityGateApi.PATH_CALCULATE_QUALITY_GATE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -62,10 +55,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 @AutoConfigureMockMvc
 class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
-
-  private static final String ENTITY_API_URL = "/api/rest/v1/quality-gates";
-  private static final String CALCULATION_REQUEST_API_URL =
-    ENTITY_API_URL + "/{qualityGateName}/calculate";
 
   private static final String QUALITY_GATE_CONFIG_NAME = "basic-coverage";
 
@@ -150,7 +139,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
     var contentAsString = mockMvc
       .perform(
-        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
@@ -239,7 +228,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
     var contentAsString = mockMvc
       .perform(
-        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
@@ -302,7 +291,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
     var contentAsString = mockMvc
       .perform(
-        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
@@ -331,7 +320,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
     mockMvc
       .perform(
-        post(CALCULATION_REQUEST_API_URL, QUALITY_GATE_CONFIG_NAME)
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
       )
