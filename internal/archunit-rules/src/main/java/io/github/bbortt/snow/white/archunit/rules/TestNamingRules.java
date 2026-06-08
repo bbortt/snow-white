@@ -29,6 +29,8 @@ public final class TestNamingRules {
       .haveSimpleNameEndingWith("UnitTest")
       .orShould()
       .haveSimpleNameEndingWith("IT")
+      .orShould()
+      .haveSimpleNameEndingWith("AppTest")
       .because(
         "test classes must use the UnitTest suffix for unit tests or the IT suffix for integration tests"
       )
