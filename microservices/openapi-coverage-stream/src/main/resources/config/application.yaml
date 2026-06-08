@@ -2,8 +2,6 @@ logging:
   level:
     org.apache.kafka.clients.admin.internals.AdminMetadataManager: WARN
 spring:
-  aop:
-    proxy-target-class: true
   application:
     name: openapi-coverage-stream
   kafka:

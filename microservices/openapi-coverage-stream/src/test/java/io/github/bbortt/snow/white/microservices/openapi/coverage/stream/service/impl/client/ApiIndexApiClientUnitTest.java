@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client;
 
 import static org.mockito.Mockito.verify;
 
