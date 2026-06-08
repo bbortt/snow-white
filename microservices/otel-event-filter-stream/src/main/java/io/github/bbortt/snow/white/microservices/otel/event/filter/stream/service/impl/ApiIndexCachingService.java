@@ -16,8 +16,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
@@ -29,10 +29,9 @@ public class ApiIndexCachingService implements CachingService {
   @Override
   @Retryable(
     retryFor = {
-      RestClientResponseException.class,
+      HttpServerErrorException.class,
       ResourceAccessException.class,
     },
-    maxAttempts = 3,
     backoff = @Backoff(delay = 200, multiplier = 2)
   )
   public boolean apiExists(

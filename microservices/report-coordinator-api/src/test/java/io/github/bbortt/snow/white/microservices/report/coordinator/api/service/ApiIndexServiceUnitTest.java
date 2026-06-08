@@ -24,6 +24,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService.ValidationResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService.ValidationResult.Failure;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService.ValidationResult.Success;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.client.ApiIndexApiClient;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;

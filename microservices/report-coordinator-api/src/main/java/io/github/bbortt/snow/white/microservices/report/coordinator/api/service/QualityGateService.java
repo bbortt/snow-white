@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -30,10 +31,9 @@ public class QualityGateService {
   @WithSpan
   @Retryable(
     retryFor = {
-      RestClientResponseException.class,
+      HttpServerErrorException.class,
       ResourceAccessException.class,
     },
-    maxAttempts = 3,
     backoff = @Backoff(delay = 200, multiplier = 2)
   )
   public QualityGateConfig findQualityGateConfigByName(

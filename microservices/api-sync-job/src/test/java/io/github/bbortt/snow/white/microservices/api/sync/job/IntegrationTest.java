@@ -21,8 +21,8 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(
   classes = { Main.class },
   properties = {
-    "snow.white.api.sync.job.api-index.base-url=http://localhost:8085",
-    "snow.white.api.sync.job.artifactory.base-url=http://localhost:3000",
+    "snow.white.api.sync.job.api-index.base-url=${wiremock.server.baseUrl}",
+    "snow.white.api.sync.job.artifactory.base-url=${wiremock.server.baseUrl}",
     "snow.white.api.sync.job.artifactory.access-token=private-token",
     "snow.white.api.sync.job.artifactory.repository=snow-white-generic-local",
   }

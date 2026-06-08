@@ -10,38 +10,25 @@ import static java.lang.Boolean.FALSE;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
+import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.client.ApiIndexApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApiIndexCachingService implements CachingService {
 
-  private final ApiIndexApi apiIndexApi;
+  private final ApiIndexApiClient apiIndexApiClient;
   private final ApiInformationMapper apiInformationMapper;
 
   @Override
-  @Retryable(
-    retryFor = {
-      RestClientResponseException.class,
-      ResourceAccessException.class,
-    },
-    maxAttempts = 3,
-    backoff = @Backoff(delay = 200, multiplier = 2)
-  )
   public boolean apiInformationIndexed(ApiInformation apiInformation) {
-    return apiIndexApi
+    return apiIndexApiClient
       .checkApiExistsWithHttpInfo(
         apiInformation.getServiceName(),
         apiInformation.getName(),
@@ -52,27 +39,10 @@ public class ApiIndexCachingService implements CachingService {
       .equals(OK);
   }
 
-  @Recover
-  boolean recoverApiInformationIndexed(
-    Exception e,
-    ApiInformation apiInformation
-  ) {
-    logger.debug("Failed to check if API exists - recovering!", e);
-    return false;
-  }
-
   @Override
-  @Retryable(
-    retryFor = {
-      RestClientResponseException.class,
-      ResourceAccessException.class,
-    },
-    maxAttempts = 3,
-    backoff = @Backoff(delay = 200, multiplier = 2)
-  )
   public void publishApiInformation(ApiInformation apiInformation) {
     if (
-      apiIndexApi
+      apiIndexApiClient
         .ingestApiWithHttpInfo(apiInformationMapper.toDto(apiInformation))
         .getStatusCode()
         .equals(CONFLICT)
@@ -82,13 +52,5 @@ public class ApiIndexCachingService implements CachingService {
         apiInformation
       );
     }
-  }
-
-  @Recover
-  void recoverPublishApiInformation(
-    Exception e,
-    ApiInformation apiInformation
-  ) {
-    logger.error("Failed to publish API information!", e);
   }
 }

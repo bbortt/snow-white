@@ -20,23 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.IntegrationTest;
-import io.github.bbortt.snow.white.microservices.api.sync.job.Main;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 @IntegrationTest
-@SpringBootTest(
-  classes = { Main.class },
-  properties = {
-    "snow.white.api.sync.job.api-index.base-url=${wiremock.server.baseUrl}",
-    "snow.white.api.sync.job.artifactory.base-url=${wiremock.server.baseUrl}",
-    "snow.white.api.sync.job.artifactory.access-token=private-token",
-    "snow.white.api.sync.job.artifactory.repository=snow-white-generic-local",
-  }
-)
 class ApiIndexCachingServiceRetryIT {
 
   private static final ApiInformation API_INFORMATION = ApiInformation.builder()

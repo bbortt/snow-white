@@ -4,33 +4,36 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client;
 
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
-import lombok.RequiredArgsConstructor;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.api.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
 
 @Component
-@RequiredArgsConstructor
-class ApiIndexApiClient {
+public class ApiIndexApiClient {
 
-  private final ApiIndexApi apiIndexApi;
+  private ApiIndexApi apiIndexApi;
+
+  @Autowired
+  public void setApiIndexApi(ApiIndexApi apiIndexApi) {
+    this.apiIndexApi = apiIndexApi;
+  }
 
   @Retryable(
     retryFor = {
-      RestClientResponseException.class,
+      HttpServerErrorException.class,
       ResourceAccessException.class,
     },
-    maxAttempts = 3,
     backoff = @Backoff(delay = 200, multiplier = 2)
   )
-  ResponseEntity<GetAllApis200ResponseInner> getApiDetailsWithHttpInfo(
+  public ResponseEntity<GetAllApis200ResponseInner> getApiDetailsWithHttpInfo(
     String serviceName,
     String apiName,
     String apiVersion
