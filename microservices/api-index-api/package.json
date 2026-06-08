@@ -12,8 +12,8 @@
     "apptest:wait:api-index-api": "wait-on --timeout 1m http-get:localhost:8095/actuator/health"
   },
   "devDependencies": {
-    "npm-run-all2": "8.0.4",
-    "wait-on": "9.0.3"
+    "npm-run-all2": "9.0.1",
+    "wait-on": "9.0.10"
   },
   "packageManager": "pnpm@11.1.2",
   "engines": {
