@@ -34,13 +34,13 @@ class ApiIndexCachingServiceUnitTest {
   private static final String API_VERSION = "1.0.0";
 
   @Mock
-  private ApiIndexApi apiIndexApiMock;
+  private ApiIndexApiClient apiIndexApiClientMock;
 
   private ApiIndexCachingService fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new ApiIndexCachingService(apiIndexApiMock);
+    fixture = new ApiIndexCachingService(apiIndexApiClientMock);
   }
 
   @Nested
@@ -52,7 +52,7 @@ class ApiIndexCachingServiceUnitTest {
       var dto = new GetAllApis200ResponseInner().sourceUrl(sourceUrl);
 
       doReturn(ResponseEntity.ok(dto))
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
 
       var result = fixture.fetchApiSourceUrl(
@@ -82,7 +82,7 @@ class ApiIndexCachingServiceUnitTest {
       ResponseEntity<GetAllApis200ResponseInner> responseEntity
     ) {
       doReturn(responseEntity)
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
 
       var apiInformation = ApiInformation.builder()
