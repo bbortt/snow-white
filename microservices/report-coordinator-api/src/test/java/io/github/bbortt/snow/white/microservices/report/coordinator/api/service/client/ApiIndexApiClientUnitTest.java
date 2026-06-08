@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.service.client;
 
 import static org.mockito.Mockito.verify;
 

@@ -17,10 +17,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
-import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
+import io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.client.ApiIndexApiClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ class ApiIndexCachingServiceUnitTest {
   private static final String API_VERSION = "api-version";
 
   @Mock
-  private ApiIndexApi apiIndexApiMock;
+  private ApiIndexApiClient apiIndexApiClientMock;
 
   @Mock
   private ApiInformationMapper apiInformationMapperMock;
@@ -58,7 +58,7 @@ class ApiIndexCachingServiceUnitTest {
       .build();
 
     fixture = new ApiIndexCachingService(
-      apiIndexApiMock,
+      apiIndexApiClientMock,
       apiInformationMapperMock
     );
   }
@@ -69,7 +69,7 @@ class ApiIndexCachingServiceUnitTest {
     @Test
     void shouldReturnTrue_whenApiHasBeenIndexedBefore() {
       doReturn(ResponseEntity.ok().build())
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .checkApiExistsWithHttpInfo(
           OTEL_SERVICE_NAME,
           API_NAME,
@@ -85,7 +85,7 @@ class ApiIndexCachingServiceUnitTest {
     @Test
     void shouldReturnFalse_whenApiHasNotBeenIndexedBefore() {
       doReturn(ResponseEntity.notFound().build())
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .checkApiExistsWithHttpInfo(
           OTEL_SERVICE_NAME,
           API_NAME,
@@ -112,7 +112,7 @@ class ApiIndexCachingServiceUnitTest {
           UTF_8
         )
       )
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .checkApiExistsWithHttpInfo(
           OTEL_SERVICE_NAME,
           API_NAME,
@@ -129,25 +129,6 @@ class ApiIndexCachingServiceUnitTest {
   }
 
   @Nested
-  class RecoverApiInformationIndexedTest {
-
-    @Mock
-    private Exception exceptionMock;
-
-    @Mock
-    private ApiInformation apiInformationMock;
-
-    @Test
-    void shouldAlwaysReturnFalse() {
-      assertThat(
-        fixture.recoverApiInformationIndexed(exceptionMock, apiInformationMock)
-      ).isFalse();
-
-      verifyNoInteractions(apiInformationMapperMock);
-    }
-  }
-
-  @Nested
   class PublishApiInformationInformationTest {
 
     @Test
@@ -156,7 +137,7 @@ class ApiIndexCachingServiceUnitTest {
       doReturn(dto).when(apiInformationMapperMock).toDto(defaultApiInformation);
 
       doReturn(ResponseEntity.created(new URI("mock")).build())
-        .when(apiIndexApiMock)
+        .when(apiIndexApiClientMock)
         .ingestApiWithHttpInfo(dto);
 
       assertThatCode(() ->
