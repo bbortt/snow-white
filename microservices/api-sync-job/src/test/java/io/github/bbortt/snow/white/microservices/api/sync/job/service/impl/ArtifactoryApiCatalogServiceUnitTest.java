@@ -115,6 +115,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
       verifyNoInteractions(openApiValidationServiceMock);
 
       // Now we're instantiating the rest of the mocks, called when supplier is being invoked
+      // language=yaml
       String openApiContent = """
         openapi: 3.1.2
         info:
@@ -375,6 +376,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
       doReturn(searches).when(searches).repositories("api-specs");
       doReturn(List.of(aqlItem)).when(searches).artifactsByFileSpec(any());
 
+      // language=yaml
       String openApiContent = """
         openapi: 3.1.2
         info:

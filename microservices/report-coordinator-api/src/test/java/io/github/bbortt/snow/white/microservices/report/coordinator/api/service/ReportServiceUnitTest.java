@@ -35,6 +35,8 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -43,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,6 +54,10 @@ import org.springframework.data.domain.Pageable;
 
 @ExtendWith({ MockitoExtension.class })
 class ReportServiceUnitTest {
+
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting =
+    OpenTelemetryExtension.create();
 
   @Mock
   private QualityGateService qualityGateServiceMock;
@@ -323,8 +330,9 @@ class ReportServiceUnitTest {
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);
 
+      var calculationId = "6f465636-2ea3-4279-80db-6ff1643df6af";
       var savedReport = minimalQualityGateReport(
-        UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af")
+        UUID.fromString(calculationId)
       );
       doReturn(savedReport)
         .when(qualityGateReportRepositoryMock)
@@ -334,11 +342,33 @@ class ReportServiceUnitTest {
         .when(apiTestRepositoryMock)
         .save(any(ApiTest.class));
 
-      var result = fixture.initializeQualityGateCalculation(
-        qualityGateConfigName,
-        apiTests,
-        reportParameter
-      );
+      var span = otelTesting
+        .getOpenTelemetry()
+        .getTracer(getClass().getSimpleName())
+        .spanBuilder("shouldPersistReportAndApiTests_andDelegateDispatch")
+        .startSpan();
+
+      QualityGateReport result;
+
+      try (var _ = span.makeCurrent()) {
+        result = fixture.initializeQualityGateCalculation(
+          qualityGateConfigName,
+          apiTests,
+          reportParameter
+        );
+      } finally {
+        span.end();
+        assertThat(otelTesting.getSpans())
+          .hasSize(1)
+          .first()
+          .satisfies(spanData ->
+            assertThat(
+              spanData
+                .getAttributes()
+                .get(AttributeKey.stringKey("report.calculationId"))
+            ).isEqualTo(calculationId)
+          );
+      }
 
       assertThat(result).isNotNull();
       assertThat(result.getApiTests())
@@ -371,6 +401,17 @@ class ReportServiceUnitTest {
         savedReport.getReportParameter(),
         result.getApiTests()
       );
+
+      assertThat(otelTesting.getSpans())
+        .hasSize(1)
+        .first()
+        .satisfies(spanData ->
+          assertThat(
+            spanData
+              .getAttributes()
+              .get(AttributeKey.stringKey("report.calculationId"))
+          ).isEqualTo(savedReport.getCalculationId().toString())
+        );
     }
 
     @Test
