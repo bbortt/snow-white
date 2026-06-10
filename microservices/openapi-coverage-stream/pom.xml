@@ -59,6 +59,12 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-streams</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.rocksdb</groupId>
+          <artifactId>rocksdbjni</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
