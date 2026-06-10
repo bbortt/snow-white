@@ -10,6 +10,7 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.T
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.TestResultForUnknownApiException;
@@ -31,6 +33,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.support.KafkaHeaders;
 
 @ExtendWith({ MockitoExtension.class })
 class OpenApiResultListenerUnitTest {
@@ -61,11 +65,18 @@ class OpenApiResultListenerUnitTest {
   @Mock
   private ReportService reportServiceMock;
 
+  @Mock
+  private ReportCoordinationServiceProperties propertiesMock;
+
   private OpenApiResultListener fixture;
 
   @BeforeEach
   void beforeEachSetup() {
-    fixture = new OpenApiResultListener(openTelemetryMock, reportServiceMock);
+    fixture = new OpenApiResultListener(
+      openTelemetryMock,
+      reportServiceMock,
+      propertiesMock
+    );
   }
 
   @Nested
@@ -204,13 +215,39 @@ class OpenApiResultListenerUnitTest {
     }
 
     @Test
-    void shouldCatchAnyExceptionsAndTryUpdatingQualityGateReport() {
+    void shouldCatchAndThrowAnyOtherExceptionForRetrying() {
       withValidOpenTelemetryContext();
+      withMaxRetries(2);
+
+      var event = getEmptyOpenApiCoverageResponseEvent();
+
+      var exception = new IllegalArgumentException("thrown on purpose");
+      doThrow(exception)
+        .when(reportServiceMock)
+        .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+
+      assertThatThrownBy(() ->
+        fixture.onOpenApiCoverageResponse(
+          getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
+        )
+      ).isEqualTo(exception);
+
+      verify(reportServiceMock, never()).handleExceptionalResponse(
+        any(),
+        any(OpenApiCoverageResponseEvent.class)
+      );
+    }
+
+    @Test
+    void shouldCatchAndPersistExhaustedRetryException() {
+      withValidOpenTelemetryContext();
+      withMaxRetries(2);
 
       var event = getEmptyOpenApiCoverageResponseEvent();
 
       var rootCause = "thrown on purpose";
-      doThrow(new IllegalArgumentException(rootCause))
+      var exception = new IllegalArgumentException(rootCause);
+      doThrow(exception)
         .when(reportServiceMock)
         .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
 
@@ -219,9 +256,14 @@ class OpenApiResultListenerUnitTest {
         .when(reportServiceMock)
         .findReportByCalculationId(CALCULATION_ID);
 
-      fixture.onOpenApiCoverageResponse(
-        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
-      );
+      assertThatThrownBy(() ->
+        fixture.onOpenApiCoverageResponse(
+          getOpenApiCoverageResponseEventConsumerRecord(
+            event,
+            headersWithDeliveryAttempt(3)
+          )
+        )
+      ).isEqualTo(exception);
 
       ArgumentCaptor<
         OpenApiCoverageResponseEvent
@@ -237,34 +279,28 @@ class OpenApiResultListenerUnitTest {
         .isEqualTo(rootCause);
     }
 
-    @Test
-    void shouldCatchAnyExceptionsAndIgnoreItWhenQualityGateReportDoesNotExist() {
-      withValidOpenTelemetryContext();
-
-      var event = getEmptyOpenApiCoverageResponseEvent();
-
-      doThrow(new IllegalArgumentException("thrown on purpose"))
-        .when(reportServiceMock)
-        .updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
-
-      doReturn(Optional.empty())
-        .when(reportServiceMock)
-        .findReportByCalculationId(CALCULATION_ID);
-
-      fixture.onOpenApiCoverageResponse(
-        getOpenApiCoverageResponseEventConsumerRecord(event, emptyHeaders())
-      );
-
-      verify(reportServiceMock, never()).handleExceptionalResponse(
-        any(QualityGateReport.class),
-        any(OpenApiCoverageResponseEvent.class)
-      );
-    }
-
     private void withValidOpenTelemetryContext() {
       doReturn(Context.root())
         .when(textMapPropagatorMock)
         .extract(any(), any(Headers.class), any());
+    }
+
+    private void withMaxRetries(int maxRetries) {
+      var openapiProps =
+        new ReportCoordinationServiceProperties.OpenapiCalculationResponse();
+      openapiProps.setMaxRetries(maxRetries);
+      doReturn(openapiProps)
+        .when(propertiesMock)
+        .getOpenapiCalculationResponse();
+    }
+
+    private static Headers headersWithDeliveryAttempt(int attempt) {
+      var headers = new RecordHeaders();
+      headers.add(
+        KafkaHeaders.DELIVERY_ATTEMPT,
+        ByteBuffer.allocate(4).putInt(attempt).array()
+      );
+      return headers;
     }
 
     private static @NonNull OpenApiCoverageResponseEvent getEmptyOpenApiCoverageResponseEvent() {
