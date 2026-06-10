@@ -68,6 +68,8 @@ public class ReportCoordinationServiceProperties {
       "report-coordinator-api";
 
     private String consumerGroupId = DEFAULT_CONSUMER_GROUP_ID;
+    private Integer maxRetries = 2;
+    private Long backOffRetryMs = 5_000L;
     private String topic;
   }
 
