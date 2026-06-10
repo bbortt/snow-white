@@ -68,13 +68,13 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Advanced Configuration
 
-| Key                            | Type   | Default                                                                                                                                                          | Description                                                 |
-| ------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| jssecacerts.key                | string | `""`                                                                                                                                                             | Key inside the secret that contains the `jssecacerts` data. |
-| jssecacerts.secretName         | string | `""`                                                                                                                                                             | Name of secret containing the `jssecacerts`.                |
-| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger\"{2}%replace(%mdc{trace_id}){^(.+)$, traceId=\"$1\"} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.                            |
-| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                             | Annotations for Snow-White pods.                            |
-| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                              | Number of old ReplicaSets to retain.                        |
+| Key                            | Type   | Default                                                                                                                                                            | Description                                                 |
+| ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| jssecacerts.key                | string | `""`                                                                                                                                                               | Key inside the secret that contains the `jssecacerts` data. |
+| jssecacerts.secretName         | string | `""`                                                                                                                                                               | Name of secret containing the `jssecacerts`.                |
+| snowWhite.logPattern           | string | `"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=\"%level\" thread=\"%thread\" logger=\"%logger{2}\"%replace(%mdc{traceId}){^(.+)$, ' traceId=\"$1\"'} msg=\"%msg\"%n%ex"` | Log pattern for Snow-White pods.                            |
+| snowWhite.podAnnotations       | object | `{}`                                                                                                                                                               | Annotations for Snow-White pods.                            |
+| snowWhite.revisionHistoryLimit | int    | `3`                                                                                                                                                                | Number of old ReplicaSets to retain.                        |
 
 ### Infrastructure (Kafka)
 

@@ -33,8 +33,17 @@ import tools.jackson.databind.json.JsonMapper;
 @CitrusSupport
 class QualityGateApiAppTest {
 
+  // language=json
   private static final String VALID_REQUEST_BODY = """
-    {"includeApis":[{"serviceName":"test-service","apiName":"test-api","apiVersion":"1.0.0"}]}
+    {
+      "includeApis": [
+        {
+          "serviceName": "test-service",
+          "apiName": "test-api",
+          "apiVersion": "1.0.0"
+        }
+      ]
+    }
     """;
 
   private static QualityGateApi qualityGateApi;

@@ -67,11 +67,11 @@ public class OpenApiResultListener {
       );
     } catch (TestResultForUnknownApiException e) {
       logger.error("Failed to update OpenAPI result '{}'!", calculationId, e);
-    } catch (RuntimeException e) {
+    } catch (RuntimeException runtimeException) {
       logger.error(
         "Failed to persist OpenAPI result '{}'! Rejecting Kafka message for retry.",
         calculationId,
-        e
+        runtimeException
       );
 
       if (
@@ -84,12 +84,14 @@ public class OpenApiResultListener {
           .ifPresent(report ->
             reportService.handleExceptionalResponse(
               report,
-              openApiCoverageResponseEvent.withErrorMessage(e.getMessage())
+              openApiCoverageResponseEvent.withErrorMessage(
+                runtimeException.getMessage()
+              )
             )
           );
       }
 
-      throw e;
+      throw runtimeException;
     }
   }
 
