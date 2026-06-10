@@ -67,6 +67,8 @@
     <!-- Dependency Management -->
     <jackson.version>3.1.4</jackson.version>
     <jackson-v2.version>2.22</jackson-v2.version>
+    <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
+    <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
     <org.projectlombok.version>1.18.46</org.projectlombok.version>
     <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
@@ -159,7 +161,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.6</version>
+          <version>${maven-failsafe-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -205,6 +207,21 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>${license-maven-plugin.version}</version>
+        <configuration>
+          <outputDirectory>${project.basedir}</outputDirectory>
+          <thirdPartyFilename>MAVEN_LICENSES.txt</thirdPartyFilename>
+          <fileTemplate>
+            /org/codehaus/mojo/license/third-party-file-groupByLicense.ftl
+          </fileTemplate>
+          <excludedScopes>test,provided</excludedScopes>
+          <sortArtifactByName>true</sortArtifactByName>
+        </configuration>
       </plugin>
 
       <plugin>

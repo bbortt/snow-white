@@ -204,3 +204,42 @@ jobs:
             -pl :${{ matrix.service }}
       - name: Push Native Image
         run: docker image push "ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ steps.version.outputs.VERSION }}"
+  attach-license-report:
+    name: Attach License Report
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # ratchet:actions/checkout@v6.0.0
+        with:
+          persist-credentials: false
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # ratchet:actions/setup-java@v5.0.0
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Build Maven License Report
+        run: ./mvnw license:aggregate-add-third-party
+      - name: Install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # ratchet:pnpm/action-setup@v6.0.8
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # ratchet:actions/setup-node@v6.0.0
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Build pnpm License Report
+        run: pnpm licenses ls --prod --long > NODE_LICENSES.txt
+      - name: Upload License Reports
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{  github.ref_name }}" LICENSE
+          gh release upload "${{  github.ref_name }}" MAVEN_LICENSES.txt
+          gh release upload "${{  github.ref_name }}" NODE_LICENSES.txt
