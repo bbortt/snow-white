@@ -5,7 +5,7 @@
  */
 
 import type { GetAllApis200ResponseInner } from 'app/clients/api-index-api';
-import type { EntityState } from 'app/shared/reducers/reducer.utils';
+import type { EntityState, IQueryParams } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
 
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
@@ -26,8 +26,8 @@ const initialState: EntityState<GetAllApis200ResponseInner> = {
 
 export const getEntities = createAsyncThunk(
   'apiIndex/fetch_entity_list',
-  async (): Promise<AxiosResponse<GetAllApis200ResponseInner[]>> => {
-    return apiIndexApi.getAllApis();
+  async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<GetAllApis200ResponseInner[]>> => {
+    return apiIndexApi.getAllApis(page, size, sort);
   },
   { serializeError: serializeAxiosError },
 );

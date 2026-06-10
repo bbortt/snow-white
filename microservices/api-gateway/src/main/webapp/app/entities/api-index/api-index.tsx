@@ -4,12 +4,18 @@
  * See LICENSE file for full details.
  */
 
+import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+
+import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { useAnimatedList } from 'app/shared/use-animated-list';
-import React, { createRef, useEffect, useRef } from 'react';
-import { Translate } from 'react-jhipster';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
+import React, { createRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import { JhiItemCount, JhiPagination, Translate, getPaginationState } from 'react-jhipster';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Badge, Button, Table } from 'reactstrap';
 import 'app/shared/table-row-animation.scss';
@@ -19,20 +25,103 @@ import { getEntities } from './api-index.reducer';
 export const ApiIndex = () => {
   const dispatch = useAppDispatch();
 
+  const pageLocation = useLocation();
+  const navigate = useNavigate();
+
   const apiList = useAppSelector(state => state.snowwhite.apiIndex.entities);
   const loading = useAppSelector(state => state.snowwhite.apiIndex.loading);
+  const totalItems = useAppSelector(state => state.snowwhite.apiIndex.totalItems);
+
+  const paginationAndSortingEnabled = useMemo(() => {
+    return !!totalItems;
+  }, [totalItems]);
+
+  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'otelServiceName', 'asc');
+  const [paginationState, setPaginationState] = useState(
+    paginationAndSortingEnabled ? overridePaginationStateWithQueryParams(paginationBaseState, pageLocation.search) : paginationBaseState,
+  );
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
 
   const { displayedList, isExiting } = useAnimatedList([...apiList], api => `${api.serviceName}-${api.apiName}-${api.apiVersion}`);
 
-  const handleSyncList = () => {
-    dispatch(getEntities());
+  const getAllEntities = () => {
+    dispatch(
+      getEntities({
+        page: paginationState.activePage - 1,
+        size: paginationState.itemsPerPage,
+        sort: `${paginationState.sort},${paginationState.order}`,
+      }),
+    );
+  };
+
+  const sortEntities = () => {
+    getAllEntities();
+    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
+    if (paginationAndSortingEnabled && pageLocation.search !== endURL) {
+      navigate(`${pageLocation.pathname}${endURL}`);
+    }
   };
 
   useEffect(() => {
-    handleSyncList();
-  }, []);
+    sortEntities();
+  }, [paginationState.activePage, paginationState.order, paginationState.sort]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(pageLocation.search);
+    const page = params.get('page');
+    const sort = params.get(SORT);
+    if (page && sort) {
+      const sortSplit = sort.split(',');
+      setPaginationState({
+        ...paginationState,
+        activePage: +page,
+        sort: sortSplit[0],
+        order: sortSplit[1],
+      });
+    }
+  }, [pageLocation.search]);
+
+  const sort = p => () => {
+    setPaginationState({
+      ...paginationState,
+      order: paginationState.order === ASC ? DESC : ASC,
+      sort: p,
+    });
+  };
+
+  const handlePagination = currentPage => {
+    setPaginationState({
+      ...paginationState,
+      activePage: currentPage,
+    });
+  };
+
+  const handleSyncList = () => {
+    sortEntities();
+  };
+
+  const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
+    return paginationAndSortingEnabled ? (
+      <th className="hand" onClick={sort(fieldName)}>
+        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+      </th>
+    ) : (
+      <th>
+        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+      </th>
+    );
+  };
+
+  const getSortIconByFieldName = (fieldName: string): IconDefinition => {
+    const sortFieldName = paginationState.sort;
+    const order = paginationState.order;
+    if (sortFieldName !== fieldName) {
+      return faSort;
+    }
+    return order === ASC ? faSortUp : faSortDown;
+  };
 
   return (
     <div>
@@ -50,18 +139,10 @@ export const ApiIndex = () => {
           <Table responsive>
             <thead>
               <tr>
-                <th>
-                  <Translate contentKey="snowWhiteApp.apiIndex.serviceName">Service Name</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.apiIndex.apiName">API Name</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.apiIndex.apiVersion">Version</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.apiIndex.apiType">Type</Translate>
-                </th>
+                {getTableHeaderRow('snowWhiteApp.apiIndex.serviceName', 'Service Name', 'otelServiceName')}
+                {getTableHeaderRow('snowWhiteApp.apiIndex.apiName', 'API Name', 'apiName')}
+                {getTableHeaderRow('snowWhiteApp.apiIndex.apiVersion', 'Version', 'apiVersion')}
+                {getTableHeaderRow('snowWhiteApp.apiIndex.apiType', 'Type', 'apiType')}
                 <th>
                   <Translate contentKey="snowWhiteApp.apiIndex.prerelease">Prerelease</Translate>
                 </th>
@@ -114,6 +195,24 @@ export const ApiIndex = () => {
           )
         )}
       </div>
+      {paginationAndSortingEnabled ? (
+        <div className={apiList && apiList.length > 0 ? '' : 'd-none'}>
+          <div className="justify-content-center d-flex mb-1">
+            <JhiItemCount page={paginationState.activePage} total={totalItems} itemsPerPage={paginationState.itemsPerPage} i18nEnabled />
+          </div>
+          <div className="justify-content-center d-flex">
+            <JhiPagination
+              activePage={paginationState.activePage}
+              onSelect={handlePagination}
+              maxButtons={5}
+              itemsPerPage={paginationState.itemsPerPage}
+              totalItems={totalItems}
+            />
+          </div>
+        </div>
+      ) : (
+        ''
+      )}
     </div>
   );
 };
