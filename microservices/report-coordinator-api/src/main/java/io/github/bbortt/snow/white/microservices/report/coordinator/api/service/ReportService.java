@@ -11,6 +11,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
@@ -31,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
 
 @Slf4j
 @Service
@@ -156,13 +160,34 @@ public class ReportService {
       reportParameter
     );
 
+    dispatchAfterTransactionCommit(report);
+
+    return report;
+  }
+
+  private void dispatchAfterTransactionCommit(QualityGateReport report) {
+    if (isSynchronizationActive() && isActualTransactionActive()) {
+      registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            dispatchCalculationRequest(report);
+          }
+        }
+      );
+
+      return;
+    }
+
+    dispatchCalculationRequest(report);
+  }
+
+  private void dispatchCalculationRequest(QualityGateReport report) {
     dispatcher.dispatch(
       report.getCalculationId(),
       report.getReportParameter(),
       report.getApiTests()
     );
-
-    return report;
   }
 
   private QualityGateReport persistInitialQualityGateReport(
@@ -176,13 +201,15 @@ public class ReportService {
       .reportParameter(reportParameter)
       .build();
 
-    var persistedReport = qualityGateReportRepository.save(report);
+    var persistedReport = qualityGateReportRepository.saveAndFlush(report);
 
     var persistedApiTests = apiTests
       .stream()
       .map(apiTest -> apiTest.withQualityGateReport(persistedReport))
       .map(apiTestRepository::save)
       .collect(toSet());
+
+    apiTestRepository.flush();
 
     return persistedReport.withApiTests(persistedApiTests);
   }

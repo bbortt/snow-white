@@ -328,7 +328,7 @@ class ReportServiceUnitTest {
       );
       doReturn(savedReport)
         .when(qualityGateReportRepositoryMock)
-        .save(any(QualityGateReport.class));
+        .saveAndFlush(any(QualityGateReport.class));
 
       doAnswer(returnsFirstArg())
         .when(apiTestRepositoryMock)
@@ -350,7 +350,9 @@ class ReportServiceUnitTest {
         );
 
       ArgumentCaptor<QualityGateReport> reportCaptor = captor();
-      verify(qualityGateReportRepositoryMock).save(reportCaptor.capture());
+      verify(qualityGateReportRepositoryMock).saveAndFlush(
+        reportCaptor.capture()
+      );
       assertThat(reportCaptor.getValue()).satisfies(
         r ->
           assertThat(r.getQualityGateConfigName()).isEqualTo(
@@ -361,6 +363,8 @@ class ReportServiceUnitTest {
             reportParameter.getLookbackWindow()
           )
       );
+
+      verify(apiTestRepositoryMock).flush();
 
       verify(dispatcherMock).dispatch(
         savedReport.getCalculationId(),
