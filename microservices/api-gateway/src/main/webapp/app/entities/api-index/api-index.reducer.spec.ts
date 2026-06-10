@@ -160,7 +160,7 @@ describe('API Index reducer tests', () => {
     });
 
     it('dispatches FETCH_API_INDEX_LIST pending then fulfilled', async () => {
-      await store.dispatch(getEntities());
+      await store.dispatch(getEntities({}));
 
       const actions = store.getActions();
       expect(actions[0]).toMatchObject({ type: getEntities.pending.type });
@@ -168,6 +168,13 @@ describe('API Index reducer tests', () => {
         type: getEntities.fulfilled.type,
         payload: resolvedResponse,
       });
+      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(undefined, undefined, undefined);
+    });
+
+    it('passes pagination and sorting params to API client', async () => {
+      await store.dispatch(getEntities({ page: 2, size: 25, sort: 'apiName,asc' }));
+
+      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(2, 25, 'apiName,asc');
     });
 
     it('dispatches RESET action', async () => {
