@@ -23,6 +23,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
 import java.util.Set;
@@ -158,6 +159,11 @@ public class ReportService {
       qualityGateConfig.getName(),
       apiTests,
       reportParameter
+    );
+
+    Span.current().setAttribute(
+      "report.calculationId",
+      report.getCalculationId().toString()
     );
 
     dispatchAfterTransactionCommit(report);

@@ -504,6 +504,7 @@ class ApiIndexResourceUnitTest {
 
     @Test
     void shouldReturnYamlContent_whenPrereleaseContentIsOpenApiSpec() {
+      // language=yaml
       var openApiContent = """
         openapi: 3.1.2
         info:
