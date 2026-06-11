@@ -8,8 +8,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.ka
 
 import static io.github.bbortt.snow.white.commons.kafka.OtelPropagators.KAFKA_HEADERS_GETTER;
 import static io.github.bbortt.snow.white.commons.kafka.OtelPropagators.KAFKA_HEADERS_SETTER;
-import static io.opentelemetry.api.GlobalOpenTelemetry.getPropagators;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import java.util.function.BiFunction;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +33,13 @@ public class TracingProcessor<
   R
 > extends ContextualFixedKeyProcessor<K, V, R> {
 
+  private final OpenTelemetry openTelemetry;
   private final BiFunction<FixedKeyRecord<K, V>, Long, R> processorFunction;
 
   /**
    * Creates a {@link FixedKeyProcessorSupplier} for a {@link TracingProcessor}.
    *
+   * @param openTelemetry the OpenTelemetry instance used for context propagation.
    * @param processorFunction the function to process the record.
    * @param <K> the type of the key.
    * @param <V> the type of the value.
@@ -49,15 +51,17 @@ public class TracingProcessor<
     V,
     R
   > newTracingProcessor(
+    OpenTelemetry openTelemetry,
     BiFunction<FixedKeyRecord<K, V>, Long, R> processorFunction
   ) {
-    return () -> new TracingProcessor<>(processorFunction);
+    return () -> new TracingProcessor<>(openTelemetry, processorFunction);
   }
 
-  private static <K, V> Context extractTraceContextFromIncomingHeaders(
+  private Context extractTraceContextFromIncomingHeaders(
     FixedKeyRecord<K, V> kafkaEventRecord
   ) {
-    return getPropagators()
+    return openTelemetry
+      .getPropagators()
       .getTextMapPropagator()
       .extract(
         Context.current(),
@@ -66,10 +70,11 @@ public class TracingProcessor<
       );
   }
 
-  private static <K, R> void injectTraceContext(
+  private void injectTraceContext(
     @NonNull FixedKeyRecord<K, R> outgoingRecord
   ) {
-    getPropagators()
+    openTelemetry
+      .getPropagators()
       .getTextMapPropagator()
       .inject(
         Context.current(),
