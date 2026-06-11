@@ -19,7 +19,7 @@ export function useAnimatedList<T>(list: T[], getKey: (item: T) => string): { di
   getKeyRef.current = getKey;
 
   useEffect(() => {
-    if (isExitingRef.current || list.length === 0) return;
+    if (isExitingRef.current) return;
 
     const getK = getKeyRef.current;
     const prevKeys = displayedList.map(getK).join(',');

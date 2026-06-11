@@ -168,13 +168,21 @@ describe('API Index reducer tests', () => {
         type: getEntities.fulfilled.type,
         payload: resolvedResponse,
       });
-      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(undefined, undefined, undefined);
+      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(undefined, undefined, undefined, undefined, undefined);
     });
 
     it('passes pagination and sorting params to API client', async () => {
       await store.dispatch(getEntities({ page: 2, size: 25, sort: 'apiName,asc' }));
 
-      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(2, 25, 'apiName,asc');
+      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(2, 25, 'apiName,asc', undefined, undefined);
+    });
+
+    it('passes filter params to API client', async () => {
+      (apiIndexApi.getAllApis as jest.MockedFn<any>).mockResolvedValueOnce(resolvedResponse);
+
+      await store.dispatch(getEntities({ serviceName: 'my-service', apiName: 'my-api' }));
+
+      expect(apiIndexApi.getAllApis).toHaveBeenCalledWith(undefined, undefined, undefined, 'my-service', 'my-api');
     });
 
     it('dispatches RESET action', async () => {
