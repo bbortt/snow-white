@@ -33,14 +33,14 @@ export const ApiIndex = () => {
   const loading = useAppSelector(state => state.snowwhite.apiIndex.loading);
   const totalItems = useAppSelector(state => state.snowwhite.apiIndex.totalItems);
 
-  // Immediate input state (controlled inputs)
-  const [inputServiceName, setInputServiceName] = useState('');
-  const [inputApiName, setInputApiName] = useState('');
-  const [inputApiVersion, setInputApiVersion] = useState('');
+  // Immediate input state (controlled inputs) — initialized from URL on mount for shareable links
+  const [inputServiceName, setInputServiceName] = useState(() => new URLSearchParams(pageLocation.search).get('serviceName') ?? '');
+  const [inputApiName, setInputApiName] = useState(() => new URLSearchParams(pageLocation.search).get('apiName') ?? '');
+  const [inputApiVersion, setInputApiVersion] = useState(() => new URLSearchParams(pageLocation.search).get('apiVersion') ?? '');
 
-  // Debounced state driving server-side filter params
-  const [filterServiceName, setFilterServiceName] = useState('');
-  const [filterApiName, setFilterApiName] = useState('');
+  // Debounced state driving server-side filter params — mirrors input state on mount
+  const [filterServiceName, setFilterServiceName] = useState(() => new URLSearchParams(pageLocation.search).get('serviceName') ?? '');
+  const [filterApiName, setFilterApiName] = useState(() => new URLSearchParams(pageLocation.search).get('apiName') ?? '');
 
   const paginationAndSortingEnabled = useMemo(() => {
     return filterServiceName !== '' || filterApiName !== '' || !!totalItems;
@@ -52,6 +52,14 @@ export const ApiIndex = () => {
   );
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
+  // Tracks self-initiated navigations so the URL read-back effect doesn't clobber in-progress input
+  const selfNavigatingRef = useRef(false);
+  // Tracks the current URL for use in the apiVersion URL sync effect
+  const currentSearchRef = useRef(pageLocation.search);
+  currentSearchRef.current = pageLocation.search;
+  // Tracks the previous debounce input values to skip the cascading reset on initial mount
+  const prevInputServiceNameRef = useRef(inputServiceName);
+  const prevInputApiNameRef = useRef(inputApiName);
 
   const { displayedList, isExiting } = useAnimatedList(apiList, api => `${api.serviceName}-${api.apiName}-${api.apiVersion}`);
 
@@ -75,8 +83,15 @@ export const ApiIndex = () => {
 
   const sortEntities = () => {
     getAllEntities();
-    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
-    if (paginationAndSortingEnabled && pageLocation.search !== endURL) {
+    const urlParams = new URLSearchParams();
+    urlParams.set('page', String(paginationState.activePage));
+    urlParams.set('sort', `${paginationState.sort},${paginationState.order}`);
+    if (filterServiceName) urlParams.set('serviceName', filterServiceName);
+    if (filterApiName) urlParams.set('apiName', filterApiName);
+    if (inputApiVersion) urlParams.set('apiVersion', inputApiVersion);
+    const endURL = `?${urlParams.toString()}`;
+    if ((paginationAndSortingEnabled || !!pageLocation.search) && pageLocation.search !== endURL) {
+      selfNavigatingRef.current = true;
       navigate(`${pageLocation.pathname}${endURL}`);
     }
   };
@@ -86,6 +101,12 @@ export const ApiIndex = () => {
   }, [paginationState.activePage, paginationState.order, paginationState.sort, filterServiceName, filterApiName]);
 
   useEffect(() => {
+    // Skip on self-navigations — we just set this URL, no need to read it back
+    if (selfNavigatingRef.current) {
+      selfNavigatingRef.current = false;
+      return;
+    }
+    // Sync state from URL for external navigation (back/forward, shared links)
     const params = new URLSearchParams(pageLocation.search);
     const page = params.get('page');
     const sort = params.get(SORT);
@@ -98,27 +119,59 @@ export const ApiIndex = () => {
         order: sortSplit[1],
       });
     }
+    const urlServiceName = params.get('serviceName') ?? '';
+    const urlApiName = params.get('apiName') ?? '';
+    // Update prevRefs before state so the debounce effects see no change and skip the cascade
+    prevInputServiceNameRef.current = urlServiceName;
+    prevInputApiNameRef.current = urlApiName;
+    setInputServiceName(urlServiceName);
+    setFilterServiceName(urlServiceName);
+    setInputApiName(urlApiName);
+    setFilterApiName(urlApiName);
+    setInputApiVersion(params.get('apiVersion') ?? '');
   }, [pageLocation.search]);
 
   // Debounce service name — changing it also resets the API name filter
+  // prevRef guard skips the cascade on initial mount (both start at the URL-initialized value)
   useEffect(() => {
+    const prev = prevInputServiceNameRef.current;
+    prevInputServiceNameRef.current = inputServiceName;
+    if (prev === inputServiceName) return;
     const t = setTimeout(() => {
       setFilterServiceName(inputServiceName);
       setInputApiName('');
       setFilterApiName('');
-      setPaginationState(prev => ({ ...prev, activePage: 1 }));
+      setPaginationState(p => ({ ...p, activePage: 1 }));
     }, 300);
     return () => clearTimeout(t);
   }, [inputServiceName]);
 
   // Debounce API name filter
   useEffect(() => {
+    const prev = prevInputApiNameRef.current;
+    prevInputApiNameRef.current = inputApiName;
+    if (prev === inputApiName) return;
     const t = setTimeout(() => {
       setFilterApiName(inputApiName);
-      setPaginationState(prev => ({ ...prev, activePage: 1 }));
+      setPaginationState(p => ({ ...p, activePage: 1 }));
     }, 300);
     return () => clearTimeout(t);
   }, [inputApiName]);
+
+  // Sync apiVersion (client-side only) to URL using replace to avoid cluttering history
+  useEffect(() => {
+    const params = new URLSearchParams(currentSearchRef.current);
+    if (inputApiVersion) {
+      params.set('apiVersion', inputApiVersion);
+    } else {
+      params.delete('apiVersion');
+    }
+    const newSearch = params.toString() ? `?${params.toString()}` : '';
+    if (currentSearchRef.current !== newSearch) {
+      selfNavigatingRef.current = true;
+      navigate(`${pageLocation.pathname}${newSearch}`, { replace: true });
+    }
+  }, [inputApiVersion]);
 
   const sort = p => () => {
     setPaginationState({
