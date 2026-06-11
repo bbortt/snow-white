@@ -22,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
+import io.opentelemetry.api.OpenTelemetry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -43,6 +44,7 @@ import tools.jackson.databind.json.JsonMapper;
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
 
+  private final OpenTelemetry openTelemetry;
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
   private final OpenApiCoverageCalculationService openApiCoverageCalculationService;
 
@@ -62,6 +64,7 @@ public class OpenApiCoverageCalculationProcessor {
       .peek((key, _) -> logger.debug("Handling message id '{}'", key))
       .processValues(
         newTracingProcessor(
+          openTelemetry,
           this::processOpenApiCoverageRequestAndHandleExceptions
         )
       )

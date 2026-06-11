@@ -40,6 +40,9 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Set;
@@ -73,6 +76,10 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
   private final Properties snowWhiteKafkaProperties = new Properties();
 
+  private final OpenTelemetry openTelemetry = OpenTelemetry.propagating(
+    ContextPropagators.create(W3CTraceContextPropagator.getInstance())
+  );
+
   @Mock
   private OpenApiCoverageCalculationService openApiCoverageCalculationServiceMock;
 
@@ -90,6 +97,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     );
 
     fixture = new OpenApiCoverageCalculationProcessor(
+      openTelemetry,
       openApiCoverageServiceProperties,
       openApiCoverageCalculationServiceMock
     );
