@@ -4,9 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import { combineReducers } from '@reduxjs/toolkit';
-import getStore from 'app/config/store';
-import qualityGate from 'app/entities/quality-gate/quality-gate.reducer';
 import EntitiesRoutes from 'app/entities/routes';
 import Home from 'app/modules/home/home';
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
@@ -15,11 +12,6 @@ import React from 'react';
 import { Route } from 'react-router';
 
 const AppRoutes = () => {
-  const store = getStore();
-  if (!store.getState().snowwhite) {
-    store.injectReducer('snowwhite', combineReducers({ qualityGate }));
-  }
-
   return (
     <div className="view-routes">
       <ErrorBoundaryRoutes>

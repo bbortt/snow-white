@@ -21,10 +21,10 @@ import QualityGate from 'app/entities/quality-gate';
 import QualityGateConfig from './quality-gate-config';
 /* eslint-enable */
 
-export const EntitiesRoutes = () => {
-  const store = getStore();
-  store.injectReducer('snowwhite', combineReducers(entitiesReducers as ReducersMapObject));
+// Inject reducers at module load time so the store is ready before any component renders.
+getStore().injectReducer('snowwhite', combineReducers(entitiesReducers as ReducersMapObject));
 
+export const EntitiesRoutes = () => {
   return (
     <div>
       <ErrorBoundaryRoutes>
