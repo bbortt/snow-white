@@ -12,6 +12,11 @@ import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { apiIndexApi } from 'app/entities/api-index/api-index-api';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 
+interface ApiIndexQueryParams extends IQueryParams {
+  serviceName?: string;
+  apiName?: string;
+}
+
 const defaultValue: GetAllApis200ResponseInner = {} as GetAllApis200ResponseInner;
 
 const initialState: EntityState<GetAllApis200ResponseInner> = {
@@ -26,8 +31,8 @@ const initialState: EntityState<GetAllApis200ResponseInner> = {
 
 export const getEntities = createAsyncThunk(
   'apiIndex/fetch_entity_list',
-  async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<GetAllApis200ResponseInner[]>> => {
-    return apiIndexApi.getAllApis(page, size, sort);
+  async ({ page, size, sort, serviceName, apiName }: ApiIndexQueryParams): Promise<AxiosResponse<GetAllApis200ResponseInner[]>> => {
+    return apiIndexApi.getAllApis(page, size, sort, serviceName, apiName);
   },
   { serializeError: serializeAxiosError },
 );
