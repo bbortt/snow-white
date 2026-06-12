@@ -37,7 +37,7 @@
     <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
 
     <confluent.version>8.2.1</confluent.version>
-    <google-protobuf.version>4.35.0</google-protobuf.version>
+    <google-protobuf.version>4.35.1</google-protobuf.version>
     <grpc.version>1.82.0</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
 
