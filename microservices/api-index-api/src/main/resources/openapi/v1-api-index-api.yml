@@ -98,7 +98,7 @@ paths:
             application/json:
               schema:
                 $ref: './components/Error.yml'
-  /api/rest/v1/service-names:
+  /api/rest/v1/apis/meta/service-names:
     get:
       operationId: getAllServiceNames
       summary: List indexed service names
@@ -120,7 +120,7 @@ paths:
             application/json:
               schema:
                 $ref: './components/Error.yml'
-  /api/rest/v1/api-names:
+  /api/rest/v1/apis/meta/api-names:
     get:
       operationId: getAllApiNames
       summary: List indexed API names

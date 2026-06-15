@@ -7,6 +7,12 @@
 package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_CHECK_API_EXISTS;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_APIS;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_API_NAMES;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_SERVICE_NAMES;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_API_DETAILS;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_RAW_API_CONTENT;
 import static io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,8 +42,6 @@ import tools.jackson.databind.json.JsonMapper;
 @AutoConfigureMockMvc
 class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
-  private static final String ENTITY_API_URL = "/api/rest/v1/apis";
-
   @Autowired
   private JsonMapper jsonMapper;
 
@@ -64,7 +68,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     mockMvc
       .perform(
-        post(ENTITY_API_URL)
+        post(PATH_GET_ALL_APIS)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(newApiReference))
       )
@@ -96,7 +100,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     mockMvc
       .perform(
-        post(ENTITY_API_URL)
+        post(PATH_GET_ALL_APIS)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(prereleaseReference))
       )
@@ -114,7 +118,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     mockMvc
       .perform(
-        post(ENTITY_API_URL)
+        post(PATH_GET_ALL_APIS)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(updatedContent))
       )
@@ -145,7 +149,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     mockMvc
       .perform(
-        post(ENTITY_API_URL)
+        post(PATH_GET_ALL_APIS)
           .contentType(APPLICATION_JSON)
           .content(jsonMapper.writeValueAsString(newApiReference))
       )
@@ -165,7 +169,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     apiReferenceRepository.save(apiReference);
 
     var contentAsString = mockMvc
-      .perform(get(ENTITY_API_URL).accept(APPLICATION_JSON))
+      .perform(get(PATH_GET_ALL_APIS).accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
       .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
@@ -223,7 +227,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     var contentAsString = mockMvc
       .perform(
-        get(ENTITY_API_URL)
+        get(PATH_GET_ALL_APIS)
           .param("serviceName", "service-a")
           .accept(APPLICATION_JSON)
       )
@@ -265,7 +269,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     var contentAsString = mockMvc
       .perform(
-        get(ENTITY_API_URL)
+        get(PATH_GET_ALL_APIS)
           .param("serviceName", "service-c")
           .param("apiName", "api-x")
           .accept(APPLICATION_JSON)
@@ -317,7 +321,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     var contentAsString = mockMvc
       .perform(
-        get(ENTITY_API_URL)
+        get(PATH_GET_ALL_APIS)
           .param("apiName", "api-shared")
           .accept(APPLICATION_JSON)
       )
@@ -370,7 +374,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     );
 
     var contentAsString = mockMvc
-      .perform(get("/api/rest/v1/service-names").accept(APPLICATION_JSON))
+      .perform(get(PATH_GET_ALL_SERVICE_NAMES).accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andReturn()
       .getResponse()
@@ -415,7 +419,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     );
 
     var contentAsString = mockMvc
-      .perform(get("/api/rest/v1/api-names").accept(APPLICATION_JSON))
+      .perform(get(PATH_GET_ALL_API_NAMES).accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andReturn()
       .getResponse()
@@ -461,7 +465,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
     var contentAsString = mockMvc
       .perform(
-        get("/api/rest/v1/api-names")
+        get(PATH_GET_ALL_API_NAMES)
           .param("serviceName", "service-a")
           .accept(APPLICATION_JSON)
       )
@@ -492,13 +496,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     var contentAsString = mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s",
-            ENTITY_API_URL,
-            apiReference.getOtelServiceName(),
-            apiReference.getApiName(),
-            apiReference.getApiVersion()
-          )
+          PATH_GET_API_DETAILS,
+          apiReference.getOtelServiceName(),
+          apiReference.getApiName(),
+          apiReference.getApiVersion()
         ).accept(APPLICATION_JSON)
       )
       .andExpect(status().isOk())
@@ -536,9 +537,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   void getRequest_forEntityDetails_shouldReturnNotFound() throws Exception {
     mockMvc
       .perform(
-        get(format("%s/%s/%s/%s", ENTITY_API_URL, "foo", "bar", "baz")).accept(
-          APPLICATION_JSON
-        )
+        get(PATH_GET_API_DETAILS, "foo", "bar", "baz").accept(APPLICATION_JSON)
       )
       .andExpect(status().isNotFound());
   }
@@ -558,13 +557,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s/exists",
-            ENTITY_API_URL,
-            apiReference.getOtelServiceName(),
-            apiReference.getApiName(),
-            apiReference.getApiVersion()
-          )
+          PATH_CHECK_API_EXISTS,
+          apiReference.getOtelServiceName(),
+          apiReference.getApiName(),
+          apiReference.getApiVersion()
         ).accept(APPLICATION_JSON)
       )
       .andExpect(status().isOk());
@@ -574,9 +570,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   void getRequest_toCheckIfApiExists_failure() throws Exception {
     mockMvc
       .perform(
-        get(
-          format("%s/%s/%s/%s/exists", ENTITY_API_URL, "foo", "bar", "baz")
-        ).accept(APPLICATION_JSON)
+        get(PATH_CHECK_API_EXISTS, "foo", "bar", "baz").accept(APPLICATION_JSON)
       )
       .andExpect(status().isNotFound());
   }
@@ -599,13 +593,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s/exists",
-            ENTITY_API_URL,
-            prereleaseReference.getOtelServiceName(),
-            prereleaseReference.getApiName(),
-            prereleaseReference.getApiVersion()
-          )
+          PATH_CHECK_API_EXISTS,
+          prereleaseReference.getOtelServiceName(),
+          prereleaseReference.getApiName(),
+          prereleaseReference.getApiVersion()
         ).accept(APPLICATION_JSON)
       )
       .andExpect(status().isNotFound());
@@ -629,13 +620,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s/exists",
-            ENTITY_API_URL,
-            prereleaseReference.getOtelServiceName(),
-            prereleaseReference.getApiName(),
-            prereleaseReference.getApiVersion()
-          )
+          PATH_CHECK_API_EXISTS,
+          prereleaseReference.getOtelServiceName(),
+          prereleaseReference.getApiName(),
+          prereleaseReference.getApiVersion()
         )
           .param("includePrereleases", "true")
           .accept(APPLICATION_JSON)
@@ -647,9 +635,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   void getRequest_forRawApiContent_shouldReturnNotFound_whenApiDoesNotExist()
     throws Exception {
     mockMvc
-      .perform(
-        get(format("%s/%s/%s/%s/raw", ENTITY_API_URL, "foo", "bar", "baz"))
-      )
+      .perform(get(PATH_GET_RAW_API_CONTENT, "foo", "bar", "baz"))
       .andExpect(status().isNotFound());
   }
 
@@ -674,13 +660,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     var responseContent = mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s/raw",
-            ENTITY_API_URL,
-            prereleaseReference.getOtelServiceName(),
-            prereleaseReference.getApiName(),
-            prereleaseReference.getApiVersion()
-          )
+          PATH_GET_RAW_API_CONTENT,
+          prereleaseReference.getOtelServiceName(),
+          prereleaseReference.getApiName(),
+          prereleaseReference.getApiVersion()
         )
       )
       .andExpect(status().isOk())
@@ -712,13 +695,10 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     var responseContent = mockMvc
       .perform(
         get(
-          format(
-            "%s/%s/%s/%s/raw",
-            ENTITY_API_URL,
-            prereleaseReference.getOtelServiceName(),
-            prereleaseReference.getApiName(),
-            prereleaseReference.getApiVersion()
-          )
+          PATH_GET_RAW_API_CONTENT,
+          prereleaseReference.getOtelServiceName(),
+          prereleaseReference.getApiName(),
+          prereleaseReference.getApiVersion()
         )
       )
       .andExpect(status().isOk())
