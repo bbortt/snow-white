@@ -20,7 +20,7 @@ public class SpaWebFilter implements WebFilter {
   public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
     var path = exchange.getRequest().getURI().getPath();
     if (
-      !path.startsWith("/api") &&
+      !path.startsWith("/api/") &&
       !path.startsWith("/management") &&
       !path.startsWith("/swagger-ui") &&
       !path.startsWith("/v3/api-docs") &&
