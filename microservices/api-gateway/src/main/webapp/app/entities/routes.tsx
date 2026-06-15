@@ -15,10 +15,10 @@ import { Route } from 'react-router-dom';
 /* eslint-disable */
 // entitiesReducers must be imported upfront!
 import entitiesReducers from './reducers';
-import ApiIndex from './api-index';
-import OpenApiCriterion from './open-api-criterion';
+import ApiIndex from 'app/entities/api-index';
+import OpenApiCriterion from 'app/entities/open-api-criterion';
 import QualityGate from 'app/entities/quality-gate';
-import QualityGateConfig from './quality-gate-config';
+import QualityGateConfig from 'app/entities/quality-gate-config';
 /* eslint-enable */
 
 // Inject reducers at module load time so the store is ready before any component renders.
