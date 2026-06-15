@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class SpaWebFilterTestController {
+public class SpaWebFilterITController {
 
   public static final String INDEX_HTML_TEST_CONTENT = "<html>test</html>";
 

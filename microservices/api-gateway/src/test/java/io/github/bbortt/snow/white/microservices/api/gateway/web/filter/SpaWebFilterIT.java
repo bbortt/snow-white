@@ -8,7 +8,10 @@ package io.github.bbortt.snow.white.microservices.api.gateway.web.filter;
 
 import io.github.bbortt.snow.white.microservices.api.gateway.IntegrationTest;
 import java.time.Duration;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
@@ -21,18 +24,23 @@ class SpaWebFilterIT {
   @Autowired
   private WebTestClient webTestClient;
 
-  @Test
-  void testFilterForwardsToIndex() {
+  public static Stream<String> testFilterForwardsToIndex() {
+    return Stream.of("/", "/api-index", "/open-api-criterion", "/quality-gate", "/quality-gate-config");
+  }
+
+  @MethodSource
+  @ParameterizedTest
+  void testFilterForwardsToIndex(String uri) {
     webTestClient
       .get()
-      .uri("/")
+      .uri(uri)
       .exchange()
       .expectStatus()
       .isOk()
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
@@ -71,7 +79,7 @@ class SpaWebFilterIT {
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
@@ -98,7 +106,7 @@ class SpaWebFilterIT {
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
@@ -112,7 +120,7 @@ class SpaWebFilterIT {
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
@@ -126,7 +134,7 @@ class SpaWebFilterIT {
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
@@ -140,7 +148,7 @@ class SpaWebFilterIT {
       .expectHeader()
       .contentType("text/html;charset=UTF-8")
       .expectBody(String.class)
-      .isEqualTo(SpaWebFilterTestController.INDEX_HTML_TEST_CONTENT);
+      .isEqualTo(SpaWebFilterITController.INDEX_HTML_TEST_CONTENT);
   }
 
   @Test
