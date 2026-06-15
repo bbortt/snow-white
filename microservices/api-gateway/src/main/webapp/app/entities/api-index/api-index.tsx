@@ -21,6 +21,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import 'app/shared/table-row-animation.scss';
 import { Badge, Button, Input, Table } from 'reactstrap';
 
+import { apiIndexApi } from './api-index-api';
 import { getEntities } from './api-index.reducer';
 
 export const ApiIndex = () => {
@@ -41,6 +42,13 @@ export const ApiIndex = () => {
   // Debounced state driving server-side filter params — mirrors input state on mount
   const [filterServiceName, setFilterServiceName] = useState(() => new URLSearchParams(pageLocation.search).get('serviceName') ?? '');
   const [filterApiName, setFilterApiName] = useState(() => new URLSearchParams(pageLocation.search).get('apiName') ?? '');
+
+  const [serviceNames, setServiceNames] = useState<string[]>([]);
+  const [apiNames, setApiNames] = useState<string[]>([]);
+  const apiVersions = useMemo(
+    () => [...new Set(apiList.map(api => api.apiVersion))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [apiList],
+  );
 
   const paginationAndSortingEnabled = useMemo(() => {
     return filterServiceName !== '' || filterApiName !== '' || !!totalItems;
@@ -158,6 +166,14 @@ export const ApiIndex = () => {
     return () => clearTimeout(t);
   }, [inputApiName]);
 
+  useEffect(() => {
+    apiIndexApi.getAllServiceNames().then(res => setServiceNames(res.data));
+  }, []);
+
+  useEffect(() => {
+    apiIndexApi.getAllApiNames(filterServiceName || undefined).then(res => setApiNames(res.data));
+  }, [filterServiceName]);
+
   // Sync apiVersion (client-side only) to URL using replace to avoid cluttering history
   useEffect(() => {
     const params = new URLSearchParams(currentSearchRef.current);
@@ -220,9 +236,11 @@ export const ApiIndex = () => {
     fieldName: string,
     filterValue: string,
     onFilterChange: (value: string) => void,
-  ): ReactElement => (
-    <th>
-      <div className="hand d-flex align-items-center column-gap-1" onClick={sort(fieldName)}>
+    suggestions: string[],
+  ): ReactElement => {
+    const datalistId = `${fieldName}-suggestions`;
+    return (
+      <th>
         {filterValue && <Translate contentKey={contentKey}>{defaultHeader}</Translate>}
         <Input
           type="text"
@@ -231,11 +249,19 @@ export const ApiIndex = () => {
           value={filterValue}
           onChange={e => onFilterChange(e.target.value)}
           placeholder={translate(contentKey, {}, defaultHeader)}
+          list={datalistId}
         />
-        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
-      </div>
-    </th>
-  );
+        <datalist id={datalistId}>
+          {suggestions.map(s => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+        <div className="hand d-flex align-items-center column-gap-1" onClick={sort(fieldName)}>
+          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+        </div>
+      </th>
+    );
+  };
 
   return (
     <div>
@@ -258,9 +284,17 @@ export const ApiIndex = () => {
                 'otelServiceName',
                 inputServiceName,
                 setInputServiceName,
+                serviceNames,
               )}
-              {getFilterableHeaderRow('snowWhiteApp.apiIndex.apiName', 'API Name', 'apiName', inputApiName, setInputApiName)}
-              {getFilterableHeaderRow('snowWhiteApp.apiIndex.apiVersion', 'Version', 'apiVersion', inputApiVersion, setInputApiVersion)}
+              {getFilterableHeaderRow('snowWhiteApp.apiIndex.apiName', 'API Name', 'apiName', inputApiName, setInputApiName, apiNames)}
+              {getFilterableHeaderRow(
+                'snowWhiteApp.apiIndex.apiVersion',
+                'Version',
+                'apiVersion',
+                inputApiVersion,
+                setInputApiVersion,
+                apiVersions,
+              )}
               {getTableHeaderRow('snowWhiteApp.apiIndex.apiType', 'Type', 'apiType')}
               <th>
                 <Translate contentKey="snowWhiteApp.apiIndex.prerelease">Prerelease</Translate>
