@@ -20,15 +20,22 @@ public final class ApiReferenceSpecification {
     @Nullable String serviceName,
     @Nullable String apiName
   ) {
-    Specification<ApiReference> spec = (root, query, cb) -> cb.conjunction();
+    Specification<ApiReference> spec = (root, query, criteriaBuilder) ->
+      criteriaBuilder.conjunction();
     if (serviceName != null) {
-      spec = spec.and((root, query, cb) ->
-        cb.equal(root.get("otelServiceName"), serviceName)
+      spec = spec.and((root, query, criteriaBuilder) ->
+        criteriaBuilder.like(
+          criteriaBuilder.lower(root.get("otelServiceName")),
+          "%" + serviceName.toLowerCase() + "%"
+        )
       );
     }
     if (apiName != null) {
-      spec = spec.and((root, query, cb) ->
-        cb.equal(root.get("apiName"), apiName)
+      spec = spec.and((root, query, criteriaBuilder) ->
+        criteriaBuilder.like(
+          criteriaBuilder.lower(root.get("apiName")),
+          "%" + apiName.toLowerCase() + "%"
+        )
       );
     }
     return spec;
