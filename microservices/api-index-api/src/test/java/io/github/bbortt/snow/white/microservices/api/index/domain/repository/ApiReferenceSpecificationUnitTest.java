@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -59,16 +60,21 @@ class ApiReferenceSpecificationUnitTest {
     void shouldFilterOnlyByServiceName_whenApiNameFilterIsAbsent() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
-      Path<Object> serviceNamePath = mock();
+      Path<String> serviceNamePath = mock();
       doReturn(serviceNamePath).when(rootMock).get("otelServiceName");
 
-      ApiReferenceSpecification.from("my-service", null).toPredicate(
+      Expression<String> lowerServiceNamePath = mock();
+      doReturn(lowerServiceNamePath)
+        .when(criteriaBuilderMock)
+        .lower(serviceNamePath);
+
+      ApiReferenceSpecification.from("My-Service", null).toPredicate(
         rootMock,
         criteriaQueryMock,
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).equal(serviceNamePath, "my-service");
+      verify(criteriaBuilderMock).like(lowerServiceNamePath, "%my-service%");
       verify(rootMock, never()).get("apiName");
     }
 
@@ -76,16 +82,19 @@ class ApiReferenceSpecificationUnitTest {
     void shouldFilterOnlyByApiName_whenServiceNameFilterIsAbsent() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
-      Path<Object> apiNamePath = mock();
+      Path<String> apiNamePath = mock();
       doReturn(apiNamePath).when(rootMock).get("apiName");
 
-      ApiReferenceSpecification.from(null, "my-api").toPredicate(
+      Expression<String> lowerApiNamePath = mock();
+      doReturn(lowerApiNamePath).when(criteriaBuilderMock).lower(apiNamePath);
+
+      ApiReferenceSpecification.from(null, "My-Api").toPredicate(
         rootMock,
         criteriaQueryMock,
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).equal(apiNamePath, "my-api");
+      verify(criteriaBuilderMock).like(lowerApiNamePath, "%my-api%");
       verify(rootMock, never()).get("otelServiceName");
     }
 
@@ -93,11 +102,19 @@ class ApiReferenceSpecificationUnitTest {
     void shouldFilterByServiceNameAndApiName_whenBothFiltersAreProvided() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
-      Path<Object> serviceNamePath = mock();
+      Path<String> serviceNamePath = mock();
       doReturn(serviceNamePath).when(rootMock).get("otelServiceName");
 
-      Path<Object> apiNamePath = mock();
+      Expression<String> lowerServiceNamePath = mock();
+      doReturn(lowerServiceNamePath)
+        .when(criteriaBuilderMock)
+        .lower(serviceNamePath);
+
+      Path<String> apiNamePath = mock();
       doReturn(apiNamePath).when(rootMock).get("apiName");
+
+      Expression<String> lowerApiNamePath = mock();
+      doReturn(lowerApiNamePath).when(criteriaBuilderMock).lower(apiNamePath);
 
       ApiReferenceSpecification.from("my-service", "my-api").toPredicate(
         rootMock,
@@ -105,8 +122,8 @@ class ApiReferenceSpecificationUnitTest {
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).equal(serviceNamePath, "my-service");
-      verify(criteriaBuilderMock).equal(apiNamePath, "my-api");
+      verify(criteriaBuilderMock).like(lowerServiceNamePath, "%my-service%");
+      verify(criteriaBuilderMock).like(lowerApiNamePath, "%my-api%");
     }
   }
 }
