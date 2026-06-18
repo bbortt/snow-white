@@ -507,4 +507,178 @@ class ApiIndexApiAppTest {
         })
     );
   }
+
+  /**
+   * Verifies that the service-names meta endpoint returns HTTP 200 with a valid JSON array.
+   *
+   * <p>
+   * When sending {@code GET /api/rest/v1/apis/meta/service-names}, the service must:
+   * <ul>
+   *   <li>return HTTP 200 OK</li>
+   *   <li>return a valid JSON array (empty or populated)</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  void shouldGetAllServiceNames(@CitrusResource TestCaseRunner testRunner) {
+    testRunner.when(apiIndexApi.sendGetAllServiceNames());
+
+    testRunner.then(
+      apiIndexApi.receiveGetAllServiceNames(OK).validate((message, context) -> {
+        var payload = message.getPayload(String.class);
+        assertThat(payload).isNotEmpty();
+
+        var serviceNames = JsonMapper.shared().readValue(
+          payload,
+          new TypeReference<List<String>>() {}
+        );
+        assertThat(serviceNames).isNotNull();
+      })
+    );
+  }
+
+  /**
+   * Verifies that after ingesting an API, its service name appears in the service-names list.
+   *
+   * <p>
+   * Given an API ingested via {@code POST /api/rest/v1/apis} (HTTP 201), when sending
+   * {@code GET /api/rest/v1/apis/meta/service-names}, the service must:
+   * <ul>
+   *   <li>return HTTP 200 OK</li>
+   *   <li>return a JSON array containing the ingested service name</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  void shouldGetServiceNamesContainingIngestedServiceName(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName = "shouldGetServiceNamesContainingIngestedServiceName";
+
+    var payload = JsonMapper.shared().writeValueAsString(
+      GetAllApis200ResponseInner.builder()
+        .serviceName(serviceName)
+        .apiName(serviceName + "-api")
+        .apiVersion("1.0.0")
+        .sourceUrl("https://example.com/api.yaml")
+        .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
+        .build()
+    );
+
+    testRunner.when(
+      apiIndexApi.sendIngestApi().getMessageBuilderSupport().body(payload)
+    );
+    testRunner.then(apiIndexApi.receiveIngestApi(CREATED));
+
+    testRunner.when(apiIndexApi.sendGetAllServiceNames());
+    testRunner.then(
+      apiIndexApi.receiveGetAllServiceNames(OK).validate((message, context) -> {
+        var responsePayload = message.getPayload(String.class);
+        assertThat(responsePayload).isNotEmpty();
+
+        var serviceNames = JsonMapper.shared().readValue(
+          responsePayload,
+          new TypeReference<List<String>>() {}
+        );
+        assertThat(serviceNames).contains(serviceName);
+      })
+    );
+  }
+
+  /**
+   * Verifies that the api-names meta endpoint returns HTTP 200 with a valid JSON array.
+   *
+   * <p>
+   * When sending {@code GET /api/rest/v1/apis/meta/api-names}, the service must:
+   * <ul>
+   *   <li>return HTTP 200 OK</li>
+   *   <li>return a valid JSON array (empty or populated)</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  void shouldGetAllApiNames(@CitrusResource TestCaseRunner testRunner) {
+    testRunner.when(apiIndexApi.sendGetAllApiNames());
+
+    testRunner.then(
+      apiIndexApi.receiveGetAllApiNames(OK).validate((message, context) -> {
+        var payload = message.getPayload(String.class);
+        assertThat(payload).isNotEmpty();
+
+        var apiNames = JsonMapper.shared().readValue(
+          payload,
+          new TypeReference<List<String>>() {}
+        );
+        assertThat(apiNames).isNotNull();
+      })
+    );
+  }
+
+  /**
+   * Verifies that API names can be filtered by service name via the api-names meta endpoint.
+   *
+   * <p>
+   * Given an API ingested via {@code POST /api/rest/v1/apis} (HTTP 201), when sending
+   * {@code GET /api/rest/v1/apis/meta/api-names?serviceName=...}, the service must:
+   * <ul>
+   *   <li>return HTTP 200 OK with the ingested API name when filtering by its service name</li>
+   *   <li>return HTTP 200 OK without the ingested API name when filtering by a different service
+   *       name</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  void shouldGetApiNamesFilteredByServiceName(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName = "shouldGetApiNamesFilteredByServiceName";
+    var apiName = serviceName + "-api";
+
+    var payload = JsonMapper.shared().writeValueAsString(
+      GetAllApis200ResponseInner.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion("1.0.0")
+        .sourceUrl("https://example.com/api.yaml")
+        .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
+        .build()
+    );
+
+    testRunner.when(
+      apiIndexApi.sendIngestApi().getMessageBuilderSupport().body(payload)
+    );
+    testRunner.then(apiIndexApi.receiveIngestApi(CREATED));
+
+    testRunner.when(apiIndexApi.sendGetAllApiNames().serviceName(serviceName));
+    testRunner.then(
+      apiIndexApi.receiveGetAllApiNames(OK).validate((message, context) -> {
+        var responsePayload = message.getPayload(String.class);
+        assertThat(responsePayload).isNotEmpty();
+
+        var apiNames = JsonMapper.shared().readValue(
+          responsePayload,
+          new TypeReference<List<String>>() {}
+        );
+        assertThat(apiNames).contains(apiName);
+      })
+    );
+
+    testRunner.when(
+      apiIndexApi.sendGetAllApiNames().serviceName("non-existent-service")
+    );
+    testRunner.then(
+      apiIndexApi.receiveGetAllApiNames(OK).validate((message, context) -> {
+        var responsePayload = message.getPayload(String.class);
+        assertThat(responsePayload).isNotEmpty();
+
+        var apiNames = JsonMapper.shared().readValue(
+          responsePayload,
+          new TypeReference<List<String>>() {}
+        );
+        assertThat(apiNames).doesNotContain(apiName);
+      })
+    );
+  }
 }
