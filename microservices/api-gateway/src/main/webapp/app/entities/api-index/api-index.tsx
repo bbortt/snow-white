@@ -12,7 +12,7 @@ import { useAnimatedList } from 'app/shared/use-animated-list';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { createRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
-import { JhiItemCount, JhiPagination, Translate, getPaginationState, translate } from 'react-jhipster';
+import { getPaginationState, JhiItemCount, JhiPagination, Translate, translate } from 'react-jhipster';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import 'app/shared/table-row-animation.scss';
@@ -227,17 +227,19 @@ export const ApiIndex = () => {
   ): ReactElement => {
     return (
       <th>
-        {filterValue && <Translate contentKey={contentKey}>{defaultHeader}</Translate>}
-        <AutocompleteInput
-          bsSize="sm"
-          className="mt-1"
-          value={filterValue}
-          onChange={onFilterChange}
-          suggestions={suggestions}
-          placeholder={translate(contentKey, {}, defaultHeader)}
-        />
-        <div className="hand d-flex align-items-center column-gap-1" onClick={sort(fieldName)}>
-          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
+        <div className="d-flex align-items-center gap-1">
+          <span className="hand d-flex align-items-center gap-1 text-nowrap flex-shrink-0" onClick={sort(fieldName)}>
+            <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+            <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
+          </span>
+          <AutocompleteInput
+            bsSize="sm"
+            className="flex-grow-1"
+            value={filterValue}
+            onChange={onFilterChange}
+            suggestions={suggestions}
+            placeholder={translate(contentKey, {}, defaultHeader)}
+          />
         </div>
       </th>
     );
