@@ -219,6 +219,7 @@
           <fileTemplate>
             /org/codehaus/mojo/license/third-party-file-groupByLicense.ftl
           </fileTemplate>
+          <excludedGroups>io.github.bbortt</excludedGroups>
           <excludedScopes>test,provided</excludedScopes>
           <sortArtifactByName>true</sortArtifactByName>
         </configuration>
