@@ -12,6 +12,13 @@
     <a href="https://bbortt.github.io/snow-white">» Documentation</a>
 </p>
 
+<p align="center">
+  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/bbortt/snow-white">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/bbortt/snow-white/branches.yml">
+  <img alt="Sonar Reliability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=bbortt_snow-white&metric=reliability_rating">
+  <img alt="Sonar Coverage" src="https://img.shields.io/sonar/coverage/bbortt_snow-white?server=https%3A%2F%2Fsonarcloud.io">
+</p>
+
 Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts of your API are actually being tested?**
 
 It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints declared in your API specifications - then validates coverage against configurable quality gates.
