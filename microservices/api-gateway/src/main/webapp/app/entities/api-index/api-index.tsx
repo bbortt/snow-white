@@ -4,9 +4,6 @@
  * See LICENSE file for full details.
  */
 
-import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
-
-import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GetAllApis200ResponseInner } from 'app/clients/api-index-api';
 import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
@@ -19,10 +16,12 @@ import { JhiItemCount, JhiPagination, Translate, getPaginationState, translate }
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import 'app/shared/table-row-animation.scss';
-import { Badge, Button, Input, Table } from 'reactstrap';
+import { Badge, Button, Table } from 'reactstrap';
 
 import { apiIndexApi } from './api-index-api';
 import { getEntities } from './api-index.reducer';
+import { getSortIconByFieldName, uniqueSortedVersions } from './api-index.utils';
+import { AutocompleteInput } from './autocomplete-input';
 
 export const ApiIndex = () => {
   const dispatch = useAppDispatch();
@@ -45,10 +44,7 @@ export const ApiIndex = () => {
 
   const [serviceNames, setServiceNames] = useState<string[]>([]);
   const [apiNames, setApiNames] = useState<string[]>([]);
-  const apiVersions = useMemo(
-    () => [...new Set(apiList.map(api => api.apiVersion))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
-    [apiList],
-  );
+  const apiVersions = useMemo(() => uniqueSortedVersions(apiList.map(api => api.apiVersion)), [apiList]);
 
   const paginationAndSortingEnabled = useMemo(() => {
     return filterServiceName !== '' || filterApiName !== '' || !!totalItems;
@@ -208,20 +204,11 @@ export const ApiIndex = () => {
     sortEntities();
   };
 
-  const getSortIconByFieldName = (fieldName: string): IconDefinition => {
-    const sortFieldName = paginationState.sort;
-    const order = paginationState.order;
-    if (sortFieldName !== fieldName) {
-      return faSort;
-    }
-    return order === ASC ? faSortUp : faSortDown;
-  };
-
   const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
     return paginationAndSortingEnabled ? (
       <th className="hand" onClick={sort(fieldName)}>
         <Translate contentKey={contentKey}>{defaultHeader}</Translate>
-        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
       </th>
     ) : (
       <th>
@@ -238,26 +225,19 @@ export const ApiIndex = () => {
     onFilterChange: (value: string) => void,
     suggestions: string[],
   ): ReactElement => {
-    const datalistId = `${fieldName}-suggestions`;
     return (
       <th>
         {filterValue && <Translate contentKey={contentKey}>{defaultHeader}</Translate>}
-        <Input
-          type="text"
+        <AutocompleteInput
           bsSize="sm"
           className="mt-1"
           value={filterValue}
-          onChange={e => onFilterChange(e.target.value)}
+          onChange={onFilterChange}
+          suggestions={suggestions}
           placeholder={translate(contentKey, {}, defaultHeader)}
-          list={datalistId}
         />
-        <datalist id={datalistId}>
-          {suggestions.map(s => (
-            <option key={s} value={s} />
-          ))}
-        </datalist>
         <div className="hand d-flex align-items-center column-gap-1" onClick={sort(fieldName)}>
-          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
         </div>
       </th>
     );
