@@ -78,14 +78,13 @@ describe('AutocompleteInput', () => {
   });
 
   describe('suggestion filtering', () => {
-    it('filters suggestions by the current input value', async () => {
+    it('shows only suggestions that start with the input value', async () => {
       const user = userEvent.setup();
-      render(<Controlled />);
-      await user.type(screen.getByRole('textbox'), 'ap');
-      expect(screen.getByText('apple')).toBeInTheDocument();
-      expect(screen.getByText('apricot')).toBeInTheDocument();
-      expect(screen.queryByText('banana')).not.toBeInTheDocument();
-      expect(screen.queryByText('cherry')).not.toBeInTheDocument();
+      render(<Controlled suggestions={['payment-service', 'pre-payment', 'post-payment']} />);
+      await user.type(screen.getByRole('textbox'), 'pay');
+      expect(screen.getByText('payment-service')).toBeInTheDocument();
+      expect(screen.queryByText('pre-payment')).not.toBeInTheDocument();
+      expect(screen.queryByText('post-payment')).not.toBeInTheDocument();
     });
 
     it('filters case-insensitively', async () => {
@@ -94,6 +93,7 @@ describe('AutocompleteInput', () => {
       await user.type(screen.getByRole('textbox'), 'AP');
       expect(screen.getByText('apple')).toBeInTheDocument();
       expect(screen.getByText('apricot')).toBeInTheDocument();
+      expect(screen.queryByText('banana')).not.toBeInTheDocument();
     });
 
     it('excludes the suggestion that exactly matches the current input', async () => {

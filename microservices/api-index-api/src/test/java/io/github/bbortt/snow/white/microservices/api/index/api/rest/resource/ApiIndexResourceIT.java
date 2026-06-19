@@ -7,21 +7,12 @@
 package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_CHECK_API_EXISTS;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_APIS;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_API_NAMES;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_ALL_SERVICE_NAMES;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_API_DETAILS;
-import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.PATH_GET_RAW_API_CONTENT;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi.*;
 import static io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_YAML_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -367,7 +358,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     var contentAsString = mockMvc
       .perform(
         get(PATH_GET_ALL_APIS)
-          .param("serviceName", "Ingesting")
+          .param("serviceName", "Prefix")
           .accept(APPLICATION_JSON)
       )
       .andExpect(status().isOk())
@@ -409,7 +400,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
     var contentAsString = mockMvc
       .perform(
         get(PATH_GET_ALL_APIS)
-          .param("apiName", "Ingesting")
+          .param("apiName", "Prefix")
           .accept(APPLICATION_JSON)
       )
       .andExpect(status().isOk())
