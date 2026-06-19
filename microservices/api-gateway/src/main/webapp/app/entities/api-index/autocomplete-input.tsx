@@ -23,7 +23,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filtered = suggestions.filter(s => s.toLowerCase().includes(value.toLowerCase()) && s !== value);
+  const filtered = suggestions.filter(s => s.toLowerCase().startsWith(value.toLowerCase()) && s !== value);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

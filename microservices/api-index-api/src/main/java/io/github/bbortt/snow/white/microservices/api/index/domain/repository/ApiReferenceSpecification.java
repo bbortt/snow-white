@@ -26,18 +26,20 @@ public final class ApiReferenceSpecification {
       spec = spec.and((root, query, criteriaBuilder) ->
         criteriaBuilder.like(
           criteriaBuilder.lower(root.get("otelServiceName")),
-          "%" + serviceName.toLowerCase() + "%"
+          serviceName.toLowerCase() + "%"
         )
       );
     }
+
     if (apiName != null) {
       spec = spec.and((root, query, criteriaBuilder) ->
         criteriaBuilder.like(
           criteriaBuilder.lower(root.get("apiName")),
-          "%" + apiName.toLowerCase() + "%"
+          apiName.toLowerCase() + "%"
         )
       );
     }
+
     return spec;
   }
 }

@@ -7,19 +7,10 @@
 package io.github.bbortt.snow.white.microservices.api.index.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,7 +65,7 @@ class ApiReferenceSpecificationUnitTest {
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).like(lowerServiceNamePath, "%my-service%");
+      verify(criteriaBuilderMock).like(lowerServiceNamePath, "my-service%");
       verify(rootMock, never()).get("apiName");
     }
 
@@ -94,7 +85,7 @@ class ApiReferenceSpecificationUnitTest {
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).like(lowerApiNamePath, "%my-api%");
+      verify(criteriaBuilderMock).like(lowerApiNamePath, "my-api%");
       verify(rootMock, never()).get("otelServiceName");
     }
 
@@ -122,8 +113,8 @@ class ApiReferenceSpecificationUnitTest {
         criteriaBuilderMock
       );
 
-      verify(criteriaBuilderMock).like(lowerServiceNamePath, "%my-service%");
-      verify(criteriaBuilderMock).like(lowerApiNamePath, "%my-api%");
+      verify(criteriaBuilderMock).like(lowerServiceNamePath, "my-service%");
+      verify(criteriaBuilderMock).like(lowerApiNamePath, "my-api%");
     }
   }
 }
