@@ -112,9 +112,11 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
 
   const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
     return paginationAndSortingEnabled ? (
-      <th className="hand" onClick={sort(fieldName)}>
-        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
-        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+      <th>
+        <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort(fieldName)}>
+          <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName)} />
+        </button>
       </th>
     ) : (
       <th>

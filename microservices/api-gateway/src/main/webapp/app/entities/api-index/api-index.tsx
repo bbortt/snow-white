@@ -206,9 +206,11 @@ export const ApiIndex = () => {
 
   const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
     return paginationAndSortingEnabled ? (
-      <th className="hand" onClick={sort(fieldName)}>
-        <Translate contentKey={contentKey}>{defaultHeader}</Translate>
-        <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
+      <th>
+        <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort(fieldName)}>
+          <Translate contentKey={contentKey}>{defaultHeader}</Translate>
+          <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
+        </button>
       </th>
     ) : (
       <th>
@@ -228,10 +230,14 @@ export const ApiIndex = () => {
     return (
       <th>
         <div className="d-flex align-items-center gap-1">
-          <span className="hand d-flex align-items-center gap-1 text-nowrap flex-shrink-0" onClick={sort(fieldName)}>
+          <button
+            type="button"
+            className="hand d-flex align-items-center gap-1 text-nowrap flex-shrink-0 border-0 bg-transparent p-0"
+            onClick={sort(fieldName)}
+          >
             <Translate contentKey={contentKey}>{defaultHeader}</Translate>
             <FontAwesomeIcon icon={getSortIconByFieldName(fieldName, paginationState.sort, paginationState.order)} />
-          </span>
+          </button>
           <AutocompleteInput
             bsSize="sm"
             className="flex-grow-1"
