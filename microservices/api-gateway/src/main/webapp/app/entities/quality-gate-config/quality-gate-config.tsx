@@ -131,20 +131,26 @@ export const QualityGateConfig = () => {
           <Table responsive>
             <thead>
               <tr>
-                <th className="hand" onClick={sort('name')}>
-                  <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
+                <th>
+                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('name')}>
+                    <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>{' '}
+                    <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
+                  </button>
                 </th>
                 <th>
                   <Translate contentKey="snowWhiteApp.qualityGateConfig.description">Description</Translate>{' '}
                 </th>
-                <th className="hand" onClick={sort('isPredefined')}>
-                  <Translate contentKey="snowWhiteApp.qualityGateConfig.isPredefined">Is Predefined</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('isPredefined')} />
+                <th>
+                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('isPredefined')}>
+                    <Translate contentKey="snowWhiteApp.qualityGateConfig.isPredefined">Is Predefined</Translate>{' '}
+                    <FontAwesomeIcon icon={getSortIconByFieldName('isPredefined')} />
+                  </button>
                 </th>
-                <th className="hand" onClick={sort('minCoveragePercentage')}>
-                  <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Required Coverage Percentage</Translate>{' '}
-                  <FontAwesomeIcon icon={getSortIconByFieldName('minCoveragePercentage')} />
+                <th>
+                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('minCoveragePercentage')}>
+                    <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Required Coverage Percentage</Translate>{' '}
+                    <FontAwesomeIcon icon={getSortIconByFieldName('minCoveragePercentage')} />
+                  </button>
                 </th>
                 <th />
               </tr>
