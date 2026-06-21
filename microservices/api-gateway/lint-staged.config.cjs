@@ -8,5 +8,5 @@ const pattern = '{,**/}*.{ts,tsx,css,scss}';
 
 module.exports = {
   [pattern]: ['eslint --fix'],
-  [pattern]: ['prettier --write --config prettier.config.js'],
+  [pattern]: ['prettier --write --config prettier.config.cjs'],
 };

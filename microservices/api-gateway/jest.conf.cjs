@@ -17,14 +17,16 @@ module.exports = {
         diagnostics: false,
       },
     ],
+    '^.+\\.m?jsx?$': ['<rootDir>/jest-import-meta-transform.cjs'],
   },
+  transformIgnorePatterns: ['node_modules/(?!(\\.pnpm/(react-router|cookie-es)|react-router/|cookie-es/))'],
   testEnvironmentOptions: {
     url: 'http://localhost/',
   },
   cacheDirectory: '<rootDir>/target/jest-cache',
   coverageDirectory: '<rootDir>/target/test-results/',
   testMatch: ['<rootDir>/src/main/webapp/app/**/@(*.)@(spec.ts?(x))'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs', 'jsx', 'json', 'node'],
   coveragePathIgnorePatterns: ['<rootDir>/src/main/webapp/app/clients/', '<rootDir>/src/test/javascript/'],
   moduleNameMapper: mapTypescriptAliasToJestAlias({
     '\\.(css|scss)$': 'identity-obj-proxy',
@@ -52,7 +54,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/main/webapp/app/setup-testing-library.ts'],
   globals: {
     I18N_HASH: 'generated_hash',
-    ...require('./webpack/environment'),
+    ...require('./webpack/environment.cjs'),
     DEVELOPMENT: false,
   },
 };

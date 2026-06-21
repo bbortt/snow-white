@@ -4,12 +4,11 @@
  * See LICENSE file for full details.
  */
 
-import type { RoutesProps } from 'react-router-dom';
+import type { RoutesProps } from 'react-router';
 
 import ErrorBoundary from 'app/shared/error/error-boundary';
 import React from 'react';
-import { Route, Routes } from 'react-router';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router';
 
 const ErrorBoundaryRoutes = ({ children }: RoutesProps) => {
   return (

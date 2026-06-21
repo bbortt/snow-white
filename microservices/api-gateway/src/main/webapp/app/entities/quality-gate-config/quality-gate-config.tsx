@@ -15,7 +15,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { createRef, useEffect, useRef, useState } from 'react';
 import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Table } from 'reactstrap';
 import 'app/shared/table-row-animation.scss';
