@@ -13,7 +13,7 @@ import { getEntities as getOpenApiCoverageCriteria } from 'app/entities/open-api
 import { mapIdList } from 'app/shared/util/entity-utils';
 import React, { useEffect } from 'react';
 import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, Row } from 'reactstrap';
 
 import { createEntity, getEntity, reset, updateEntity } from './quality-gate-config.reducer';

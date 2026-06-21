@@ -9,7 +9,7 @@ import './header-component.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Translate } from 'react-jhipster';
-import { NavLink as Link } from 'react-router-dom';
+import { NavLink as Link } from 'react-router';
 import { NavItem, NavLink, NavbarBrand } from 'reactstrap';
 
 export const BrandIcon = props => (

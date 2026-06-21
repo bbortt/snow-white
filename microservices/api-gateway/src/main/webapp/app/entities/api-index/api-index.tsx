@@ -13,7 +13,7 @@ import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-u
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { createRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { getPaginationState, JhiItemCount, JhiPagination, Translate, translate } from 'react-jhipster';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import 'app/shared/table-row-animation.scss';
 import { Badge, Button, Table } from 'reactstrap';

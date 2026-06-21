@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import OpenApiCriterionBadge from 'app/entities/quality-gate-config/open-api-criterion-badge';
 import React, { useEffect } from 'react';
 import { Translate } from 'react-jhipster';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate-config.reducer';

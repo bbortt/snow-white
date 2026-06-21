@@ -15,7 +15,7 @@ import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React from 'react';
 import { TextFormat, Translate } from 'react-jhipster';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Button, Col, Row } from 'reactstrap';
 
 interface QualityGateSummaryProps {

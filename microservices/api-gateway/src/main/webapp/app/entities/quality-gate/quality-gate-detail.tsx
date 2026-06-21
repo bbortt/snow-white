@@ -13,7 +13,7 @@ import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
