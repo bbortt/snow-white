@@ -12,8 +12,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const sass = require('sass');
 
-const utils = require('./utils.js');
-const commonConfig = require('./webpack.common.js');
+const utils = require('./utils.cjs');
+const commonConfig = require('./webpack.common.cjs');
 
 const ENV = 'production';
 

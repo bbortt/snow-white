@@ -6,7 +6,7 @@
 
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route } from 'react-router';
 
 import QualityGateConfig from './quality-gate-config';
 import QualityGateConfigDeleteDialog from './quality-gate-config-delete-dialog';

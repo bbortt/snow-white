@@ -10,7 +10,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import getStore from 'app/config/store';
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route } from 'react-router';
 
 /* eslint-disable */
 // entitiesReducers must be imported upfront!

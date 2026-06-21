@@ -13,8 +13,8 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const { hashElement } = require('folder-hash');
 const MergeJsonWebpackPlugin = require('merge-jsons-webpack-plugin');
-const utils = require('./utils.js');
-const environment = require('./environment');
+const utils = require('./utils.cjs');
+const environment = require('./environment.cjs');
 
 const getTsLoaderRule = () => {
   return [
@@ -55,10 +55,10 @@ module.exports = async options => {
           // 2. Add your config as buildDependency to get cache invalidation on config change
           config: [
             __filename,
-            path.resolve(__dirname, `webpack.${development ? 'dev' : 'prod'}.js`),
-            path.resolve(__dirname, 'environment.js'),
-            path.resolve(__dirname, 'utils.js'),
-            path.resolve(__dirname, '../postcss.config.js'),
+            path.resolve(__dirname, `webpack.${development ? 'dev' : 'prod'}.cjs`),
+            path.resolve(__dirname, 'environment.cjs'),
+            path.resolve(__dirname, 'utils.cjs'),
+            path.resolve(__dirname, '../postcss.config.cjs'),
             path.resolve(__dirname, '../tsconfig.json'),
           ],
         },
