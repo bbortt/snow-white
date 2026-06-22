@@ -81,7 +81,14 @@ public class ReportResource implements ReportApi {
   @Override
   public ResponseEntity<
     @NonNull List<ListQualityGateReports200ResponseInner>
-  > listQualityGateReports(Integer page, Integer size, String sort) {
+  > listQualityGateReports(
+    Integer page,
+    Integer size,
+    String sort,
+    String serviceName,
+    String apiName,
+    String apiVersion
+  ) {
     var qualityGateReports = reportService.findAllReports(
       toPageable(page, size, sort)
     );
