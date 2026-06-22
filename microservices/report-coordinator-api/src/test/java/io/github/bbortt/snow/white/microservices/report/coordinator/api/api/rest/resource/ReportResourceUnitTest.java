@@ -287,7 +287,14 @@ class ReportResourceUnitTest {
 
       ResponseEntity<
         @NonNull List<ListQualityGateReports200ResponseInner>
-      > response = fixture.listQualityGateReports(page, size, sort);
+      > response = fixture.listQualityGateReports(
+        page,
+        size,
+        sort,
+        null,
+        null,
+        null
+      );
 
       assertThat(response)
         .isNotNull()
@@ -330,7 +337,14 @@ class ReportResourceUnitTest {
 
       ResponseEntity<
         @NonNull List<ListQualityGateReports200ResponseInner>
-      > response = fixture.listQualityGateReports(page, size, sort);
+      > response = fixture.listQualityGateReports(
+        page,
+        size,
+        sort,
+        null,
+        null,
+        null
+      );
 
       verifyNoInteractions(qualityGateReportMapperMock);
 
