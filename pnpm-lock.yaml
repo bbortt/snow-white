@@ -223,8 +223,8 @@ importers:
         specifier: 29.15.2
         version: 29.15.2(@typescript-eslint/eslint-plugin@8.61.1(@typescript-eslint/parser@8.61.1(eslint@10.5.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.5.0(jiti@2.6.1))(typescript@6.0.3))(eslint@10.5.0(jiti@2.6.1))(jest@30.4.2(@types/node@26.0.0)(node-notifier@9.0.1)(ts-node@10.9.2(@types/node@26.0.0)(typescript@6.0.3)))(typescript@6.0.3)
       eslint-plugin-jsdoc:
-        specifier: 63.0.6
-        version: 63.0.6(eslint@10.5.0(jiti@2.6.1))
+        specifier: 63.0.7
+        version: 63.0.7(eslint@10.5.0(jiti@2.6.1))
       eslint-plugin-perfectionist:
         specifier: 5.9.1
         version: 5.9.1(eslint@10.5.0(jiti@2.6.1))(typescript@6.0.3)
@@ -365,8 +365,8 @@ importers:
         version: 7.4.1(@types/babel__core@7.20.5)(webpack@5.107.2)
     optionalDependencies:
       npm-check-updates:
-        specifier: 22.2.3
-        version: 22.2.3
+        specifier: 22.2.7
+        version: 22.2.7
 
   microservices/api-index-api:
     devDependencies:
@@ -3877,8 +3877,8 @@ packages:
       typescript:
         optional: true
 
-  eslint-plugin-jsdoc@63.0.6:
-    resolution: {integrity: sha512-qXMUdwQf+igjSLe/DZqyY1baVR0+snEJ3l/+2odJjeoAG43PrcpA0tSaLw2dC1iHvfKzo1YnZLGvgxrvAViyfQ==}
+  eslint-plugin-jsdoc@63.0.7:
+    resolution: {integrity: sha512-pxrqGO733F7xmVYB5vQOiciiT9uddxqehawnbPjZmW2YaJR6fT5cP3UQd2BNoE85ATspCMtNL8w/a5WDGX3Qwg==}
     engines: {node: ^22.13.0 || >=24}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
@@ -5563,6 +5563,11 @@ packages:
 
   npm-check-updates@22.2.3:
     resolution: {integrity: sha512-n8HZ0ywZugYRgEqIm67hbZC5L/9S/gLX+MkGchJB43pP2xib1+u76OpVEJRZ4QP2BksPRi5M1CCStJVfc16+/A==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: '>=10.0.0'}
+    hasBin: true
+
+  npm-check-updates@22.2.7:
+    resolution: {integrity: sha512-Pzs/lTswEe23hT8JUXABl4vgrr0WRKOhw55wAldwngUflk8CwP+grXJt00yGjYiZf2wD1HIfdPa3xaOi1RCyZQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: '>=10.0.0'}
     hasBin: true
 
@@ -11579,7 +11584,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsdoc@63.0.6(eslint@10.5.0(jiti@2.6.1)):
+  eslint-plugin-jsdoc@63.0.7(eslint@10.5.0(jiti@2.6.1)):
     dependencies:
       '@es-joy/jsdoccomment': 0.87.0
       '@es-joy/resolve.exports': 1.2.0
@@ -13661,6 +13666,9 @@ snapshots:
   normalize-path@3.0.0: {}
 
   npm-check-updates@22.2.3:
+    optional: true
+
+  npm-check-updates@22.2.7:
     optional: true
 
   npm-normalize-package-bin@6.0.0: {}
