@@ -9,13 +9,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.res
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.PATH_LIST_QUALITY_GATE_REPORTS;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.*;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.*;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
 import static java.math.RoundingMode.HALF_UP;
@@ -30,18 +25,12 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.util.StreamUtils.copyToString;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.*;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
@@ -430,6 +419,239 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     return persistedQualityGateReport.withApiTests(Set.of(persistedApiTests));
+  }
+
+  @Test
+  void findAllReports_filteredByServiceName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "30f7b64c-2a31-4452-90bc-1210d4a2faab"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "84753ea3-3ee3-446b-be96-edb6b049f4a3"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "beta",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("serviceName", "alpha")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByApiName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "a785a394-c1ef-492d-b96c-fa6a24ff7e10"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "svc",
+      "foo-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "65fef062-2dfe-47b6-9182-79ede0d37a6f"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "svc",
+      "bar-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("apiName", "foo-api")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByApiVersion_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "8f75c75e-c4a2-4a36-af55-70c98565b098"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "svc",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "2a4bb6c5-ee0b-4f8d-a3ce-ac5abc24f2be"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "svc",
+      "api1",
+      "v2",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("apiVersion", "v1")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByServiceNameAndApiName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "2e2bafb5-c0cd-435c-8cb9-b91516c7ef3d"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "foo-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "3f1ba337-3bf5-46af-89a3-8ddcf199caa7"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "alpha",
+      "bar-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS)
+          .queryParam("serviceName", "alpha")
+          .queryParam("apiName", "foo-api")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_withNonMatchingFilter_returnsEmptyList()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "1eddb17f-60b6-4b8a-8a9f-d547e6204f27"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam(
+          "serviceName",
+          "nonexistent"
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "0"))
+      .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void findAllReports_withFilter_respectsPagination() throws Exception {
+    var calculationId1 = UUID.fromString(
+      "bc4600b8-abb4-4775-b650-b2139ffacc35"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+    var calculationId2 = UUID.fromString(
+      "5aa1c1ea-bd4d-4d9c-a401-d29e6da06d05"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "alpha",
+      "api2",
+      "v1",
+      "1h",
+      PASSED
+    );
+    var calculationId3 = UUID.fromString(
+      "36c06802-7be1-4ad4-800d-3e7595945e28"
+    );
+    createAndPersistQualityGateReport(
+      calculationId3,
+      "alpha",
+      "api3",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS)
+          .queryParam("serviceName", "alpha")
+          .queryParam("size", "2")
+          .queryParam("page", "0")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "3"))
+      .andExpect(jsonPath("$.length()").value(2));
   }
 
   private void createSimpleApiTestSet(QualityGateReport qualityGateReport) {
