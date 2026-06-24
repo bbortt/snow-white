@@ -14,8 +14,12 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -273,7 +277,12 @@ class ReportResourceUnitTest {
       ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllReports(pageableArgumentCaptor.capture());
+        .findAllReports(
+          isNull(),
+          isNull(),
+          isNull(),
+          pageableArgumentCaptor.capture()
+        );
 
       doReturn(Stream.of(report1, report2))
         .when(qualityGateReportsPage)
@@ -331,7 +340,12 @@ class ReportResourceUnitTest {
       ArgumentCaptor<Pageable> pageableArgumentCaptor = captor();
       doReturn(qualityGateReportsPage)
         .when(reportServiceMock)
-        .findAllReports(pageableArgumentCaptor.capture());
+        .findAllReports(
+          isNull(),
+          isNull(),
+          isNull(),
+          pageableArgumentCaptor.capture()
+        );
 
       doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
 
@@ -370,6 +384,38 @@ class ReportResourceUnitTest {
               Sort.by(Sort.Direction.DESC, "createdAt")
             )
         );
+    }
+
+    @Test
+    void shouldPassFiltersToService_whenFiltersProvided() {
+      Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
+      doReturn(0L).when(qualityGateReportsPage).getTotalElements();
+      doReturn(Stream.empty()).when(qualityGateReportsPage).stream();
+
+      doReturn(qualityGateReportsPage)
+        .when(reportServiceMock)
+        .findAllReports(
+          eq("my-service"),
+          eq("my-api"),
+          eq("v1"),
+          any(Pageable.class)
+        );
+
+      fixture.listQualityGateReports(
+        0,
+        10,
+        "createdAt,asc",
+        "my-service",
+        "my-api",
+        "v1"
+      );
+
+      verify(reportServiceMock).findAllReports(
+        eq("my-service"),
+        eq("my-api"),
+        eq("v1"),
+        any(Pageable.class)
+      );
     }
   }
 }
