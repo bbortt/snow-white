@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/bbortt/snow-white/compare/v1.1.0...v1.2.0) (2026-06-24)
+
+
+### Features
+
+* **report-coordinator-api:** filter options on quality gate report list endpoint ([2a2ae93](https://github.com/bbortt/snow-white/commit/2a2ae935c0be2f93039e3ba03fea6736e4639aaf))
+
+
+### Bug Fixes
+
+* **api-gateway:** accessiblity on sorting buttons ([414206c](https://github.com/bbortt/snow-white/commit/414206cc5d5ca977629aa3b8649b33688926602f))
+* **deps:** transition from react-router-dom to react-router v8 ([976b265](https://github.com/bbortt/snow-white/commit/976b265de76f6d8d4486ab71502aaa6c01639f2e))
+
+
+### Documentation
+
+* add links to badges ([db1f126](https://github.com/bbortt/snow-white/commit/db1f1260f201e167b67c80e4c4c9bdf455684a06))
+* add some project badges ([4a6486f](https://github.com/bbortt/snow-white/commit/4a6486ffb27e952e92e07611e16f5fc45e459c86))
+
 ## [1.1.0](https://github.com/bbortt/snow-white/compare/v1.0.0...v1.1.0) (2026-06-19)
 
 ### Features
