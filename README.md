@@ -13,17 +13,28 @@
 </p>
 
 <p align="center">
-  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/bbortt/snow-white">
-  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/bbortt/snow-white/branches.yml">
-  <img alt="Sonar Reliability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=bbortt_snow-white&metric=reliability_rating">
-  <img alt="Sonar Coverage" src="https://img.shields.io/sonar/coverage/bbortt_snow-white?server=https%3A%2F%2Fsonarcloud.io">
+  <a href="https://github.com/bbortt/snow-white/releases">
+    <img alt="GitHub Release" src="https://img.shields.io/github/v/release/bbortt/snow-white">
+  </a>
+  <a href="https://github.com/bbortt/snow-white/actions/workflows/branches.yml">
+    <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/bbortt/snow-white/branches.yml">
+  </a>
+  <a href="https://sonarcloud.io/project/overview?id=bbortt_snow-white">
+    <img alt="Sonar Reliability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=bbortt_snow-white&metric=reliability_rating">
+  </a>
+  <a href="https://sonarcloud.io/project/overview?id=bbortt_snow-white">
+    <img alt="Sonar Coverage" src="https://img.shields.io/sonar/coverage/bbortt_snow-white?server=https%3A%2F%2Fsonarcloud.io">
+  </a>
 </p>
 
-Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts of your API are actually being tested?**
+Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts
+of your API are actually being tested?**
 
-It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints declared in your API specifications - then validates coverage against configurable quality gates.
+It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints
+declared in your API specifications - then validates coverage against configurable quality gates.
 
-Snow-White works with **black-box test suites** (system tests, integration tests) as well as **live production traffic**.
+Snow-White works with **black-box test suites** (system tests, integration tests) as well as **live production traffic
+**.
 
 It currently provides insights into:
 
@@ -47,29 +58,34 @@ Full documentation is available at **[bbortt.github.io/snow-white](https://bbort
 ## Installation (for providers)
 
 Snow-White can be installed easily using Helm.
-Detailed instructions and available options are described in ["Deployment"](https://bbortt.github.io/snow-white/deployment).
+Detailed instructions and available options are described
+in ["Deployment"](https://bbortt.github.io/snow-white/deployment).
 
 Individual images could also be used for a custom installation.
 The Docker compose file `dev/docker-compose.yaml` may be used as a starting point.
 
 ## Onboarding (for users)
 
-See ["Onboarding"](https://bbortt.github.io/snow-white/onboarding) for a step-by-step guide to integrating your service with Snow-White.
+See ["Onboarding"](https://bbortt.github.io/snow-white/onboarding) for a step-by-step guide to integrating your service
+with Snow-White.
 
 ## General Concept
 
 Here's a high-level overview of Snow-White.
-For a detailed component and data-flow breakdown, see the [Architecture](https://bbortt.github.io/snow-white/architecture) docs.
+For a detailed component and data-flow breakdown, see
+the [Architecture](https://bbortt.github.io/snow-white/architecture) docs.
 
 1. **Synchronize API Specs** - Snow-White imports OpenAPI specifications from your central interface repository.
 2. **Ingest Telemetry** - It listens to OpenTelemetry tracing data emitted by your applications.
 3. **Correlate & Analyze** - Traces are matched with API operations using service, API name, and version metadata.
 4. **Evaluate Quality Gates** - Results are validated against your configured thresholds.
-5. **Visualize or Export Results** - Coverage and performance insights can be viewed in reports or integrated into CI pipelines.
+5. **Visualize or Export Results** - Coverage and performance insights can be viewed in reports or integrated into CI
+   pipelines.
 
 ### Annotating APIs
 
-The core idea behind Snow-White is that it can only interpret runtime telemetry (e.g. traces) if it knows which API the data belongs to.
+The core idea behind Snow-White is that it can only interpret runtime telemetry (e.g. traces) if it knows which API the
+data belongs to.
 This is achieved by a common annotation model applied both to the specifications and to the telemetry data.
 
 Every API must declare a few key identifiers:
@@ -96,9 +112,11 @@ These annotations are the **linking key** between specifications and runtime tel
 ### Making Specifications Available
 
 Snow-White needs access to the API specifications.
-This is typically done by publishing them to a central HTTP-based service interface repository, where Snow-White can fetch and synchronize them.
+This is typically done by publishing them to a central HTTP-based service interface repository, where Snow-White can
+fetch and synchronize them.
 
-👉 For details, see the [`api-sync-job` documentation](./microservices/api-sync-job) (handles synchronization and version management).
+👉 For details, see the [`api-sync-job` documentation](./microservices/api-sync-job) (handles synchronization and version
+management).
 
 ### Connecting Runtime Data
 
@@ -115,15 +133,18 @@ This enrichment ensures that Snow-White can correlate a runtime span to the corr
 
 To simplify this, the project provides:
 
-- [**OpenAPI Generator Plugin**](./toolkit/openapi-generator) - Generates code that automatically attaches the right annotations.
-- [**Spring Web Autoconfiguration**](./toolkit/spring-web-autoconfiguration) - Automatically enriches spans with API metadata in Spring-based services.
+- [**OpenAPI Generator Plugin**](./toolkit/openapi-generator) - Generates code that automatically attaches the right
+  annotations.
+- [**Spring Web Autoconfiguration**](./toolkit/spring-web-autoconfiguration) - Automatically enriches spans with API
+  metadata in Spring-based services.
 
 ### Coverage Calculation
 
 Once both inputs are in place (specifications + traces), you can trigger a coverage calculation.
 This can be done via the [CLI](./toolkit/cli).
 
-The CLI allows you to synchronize APIs, trigger coverage analysis, and validate results against quality gates directly from your local environment or CI pipeline.
+The CLI allows you to synchronize APIs, trigger coverage analysis, and validate results against quality gates directly
+from your local environment or CI pipeline.
 
 Coverage results are validated against Quality-Gate Configurations.
 These configurations define the rules and thresholds that your API data must satisfy.
@@ -170,10 +191,13 @@ Please be respectful and constructive in all interactions.
 
 ## License
 
-This project is licensed under the [Polyform Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0).
+This project is licensed under
+the [Polyform Small Business License 1.0.0](https://polyformproject.org/licenses/small-business/1.0.0).
 
-This means you can freely use, modify, and distribute the software **if your company generates less than $1 million USD in annual revenue** and meets other conditions in the license.
+This means you can freely use, modify, and distribute the software **if your company generates less than $1 million USD
+in annual revenue** and meets other conditions in the license.
 
-If your company exceeds this threshold or you intend to use Snow-White commercially, please reach out for licensing options: [timon.borter@gmx.ch].
+If your company exceeds this threshold or you intend to use Snow-White commercially, please reach out for licensing
+options: [timon.borter@gmx.ch].
 
 See the [LICENSE](./LICENSE) file for full details.
