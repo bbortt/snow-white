@@ -16,13 +16,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -51,6 +46,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith({ MockitoExtension.class })
 class ReportServiceUnitTest {
@@ -453,17 +449,45 @@ class ReportServiceUnitTest {
   class FindAllReportsTest {
 
     @Test
-    void shouldDelegateToRepository() {
+    void shouldDelegateToRepository_withNoFilters() {
       var pageable = Pageable.unpaged();
-      var page = Page.empty();
+      Page<QualityGateReport> page = Page.empty();
 
-      doReturn(page).when(qualityGateReportRepositoryMock).findAll(pageable);
+      doReturn(page)
+        .when(qualityGateReportRepositoryMock)
+        .findAll(any(Specification.class), eq(pageable));
 
       Page<@NonNull QualityGateReport> result = fixture.findAllReports(
+        null,
+        null,
+        null,
         pageable
       );
 
       assertThat(result).isEqualTo(page);
+    }
+
+    @Test
+    void shouldDelegateToRepository_withFilters() {
+      var pageable = Pageable.unpaged();
+      Page<QualityGateReport> page = Page.empty();
+
+      doReturn(page)
+        .when(qualityGateReportRepositoryMock)
+        .findAll(any(Specification.class), eq(pageable));
+
+      Page<@NonNull QualityGateReport> result = fixture.findAllReports(
+        "my-service",
+        "my-api",
+        "v1",
+        pageable
+      );
+
+      assertThat(result).isEqualTo(page);
+      verify(qualityGateReportRepositoryMock).findAll(
+        any(Specification.class),
+        eq(pageable)
+      );
     }
   }
 }

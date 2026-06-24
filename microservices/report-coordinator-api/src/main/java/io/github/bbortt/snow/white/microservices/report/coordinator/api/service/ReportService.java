@@ -22,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportSpecification;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -233,7 +235,15 @@ public class ReportService {
   }
 
   @WithSpan
-  public Page<@NonNull QualityGateReport> findAllReports(Pageable pageable) {
-    return qualityGateReportRepository.findAll(pageable);
+  public Page<@NonNull QualityGateReport> findAllReports(
+    @Nullable String serviceName,
+    @Nullable String apiName,
+    @Nullable String apiVersion,
+    Pageable pageable
+  ) {
+    return qualityGateReportRepository.findAll(
+      QualityGateReportSpecification.from(serviceName, apiName, apiVersion),
+      pageable
+    );
   }
 }
