@@ -44,6 +44,9 @@ export const Home = () => {
         </Card>
       </Col>
       <Col md="8">
+        <h2 id="quality-gate-heading" data-cy="QualityGateHeading">
+          <Translate contentKey="snowWhiteApp.qualityGate.home.title">Results</Translate>
+        </h2>
         <QualityGate hidePagination={true} />
       </Col>
     </Row>

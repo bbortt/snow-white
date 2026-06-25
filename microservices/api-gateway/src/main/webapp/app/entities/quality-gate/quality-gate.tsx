@@ -24,6 +24,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Table } from 'reactstrap';
 
 import { getEntities } from './quality-gate.reducer';
+import { extractQualityGateFilterParams } from './quality-gate.utils';
 import 'app/shared/table-row-animation.scss';
 
 export interface QualityGateProps {
@@ -39,9 +40,11 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
   const loading = useAppSelector(state => state.snowwhite.qualityGate.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGate.totalItems);
 
+  const [filterParams, setFilterParams] = useState(() => extractQualityGateFilterParams(pageLocation.search));
+
   const paginationAndSortingEnabled = useMemo(() => {
-    return !hidePagination && totalItems;
-  }, [hidePagination, totalItems]);
+    return !hidePagination && (!!totalItems || !!filterParams.serviceName || !!filterParams.apiName || !!filterParams.apiVersion);
+  }, [hidePagination, totalItems, filterParams.serviceName, filterParams.apiName, filterParams.apiVersion]);
 
   const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc');
   const [paginationState, setPaginationState] = useState(
@@ -52,6 +55,9 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
 
+  // Prevents the URL read-back effect from clobbering in-progress pagination/sort navigations
+  const selfNavigatingRef = useRef(false);
+
   const { displayedList, isExiting } = useAnimatedList(qualityGateList, q => String(q.calculationId));
 
   const getAllEntities = () => {
@@ -60,24 +66,48 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
         page: paginationState.activePage - 1,
         size: paginationState.itemsPerPage,
         sort: `${paginationState.sort},${paginationState.order}`,
+        serviceName: filterParams.serviceName || undefined,
+        apiName: filterParams.apiName || undefined,
+        apiVersion: filterParams.apiVersion || undefined,
       }),
     );
   };
 
   const sortEntities = () => {
     getAllEntities();
-    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
-    if (paginationAndSortingEnabled && pageLocation.search !== endURL) {
+    const urlParams = new URLSearchParams();
+    urlParams.set('page', String(paginationState.activePage));
+    urlParams.set('sort', `${paginationState.sort},${paginationState.order}`);
+    if (filterParams.serviceName) urlParams.set('serviceName', filterParams.serviceName);
+    if (filterParams.apiName) urlParams.set('apiName', filterParams.apiName);
+    if (filterParams.apiVersion) urlParams.set('apiVersion', filterParams.apiVersion);
+    const endURL = `?${urlParams.toString()}`;
+    if ((paginationAndSortingEnabled || !!pageLocation.search) && pageLocation.search !== endURL) {
+      selfNavigatingRef.current = true;
       navigate(`${pageLocation.pathname}${endURL}`);
     }
   };
 
   useEffect(() => {
     sortEntities();
-  }, [paginationState.activePage, paginationState.order, paginationState.sort]);
+  }, [
+    paginationState.activePage,
+    paginationState.order,
+    paginationState.sort,
+    filterParams.serviceName,
+    filterParams.apiName,
+    filterParams.apiVersion,
+  ]);
 
   useEffect(() => {
+    // Skip on self-navigations — we just set this URL, no need to read it back
+    if (selfNavigatingRef.current) {
+      selfNavigatingRef.current = false;
+      return;
+    }
+    // Sync state from URL for external navigation (back/forward, filter card, shared links)
     const params = new URLSearchParams(pageLocation.search);
+    setFilterParams(extractQualityGateFilterParams(pageLocation.search));
     const page = params.get('page');
     const sort = params.get(SORT);
     if (page && sort) {
@@ -110,6 +140,15 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
     sortEntities();
   };
 
+  const getSortIconByFieldName = (fieldName: string): IconDefinition => {
+    const sortFieldName = paginationState.sort;
+    const order = paginationState.order;
+    if (sortFieldName !== fieldName) {
+      return faSort;
+    }
+    return order === ASC ? faSortUp : faSortDown;
+  };
+
   const getTableHeaderRow = (contentKey: string, defaultHeader: string, fieldName: string): ReactElement => {
     return paginationAndSortingEnabled ? (
       <th>
@@ -125,26 +164,14 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
     );
   };
 
-  const getSortIconByFieldName = (fieldName: string): IconDefinition => {
-    const sortFieldName = paginationState.sort;
-    const order = paginationState.order;
-    if (sortFieldName !== fieldName) {
-      return faSort;
-    }
-    return order === ASC ? faSortUp : faSortDown;
-  };
-
   return (
     <div>
-      <h2 id="quality-gate-heading" data-cy="QualityGateHeading">
-        <Translate contentKey="snowWhiteApp.qualityGate.home.title">Results</Translate>
-        <div className="d-flex justify-content-end">
-          <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
-            <FontAwesomeIcon icon="sync" spin={loading} />{' '}
-            <Translate contentKey="snowWhiteApp.qualityGate.home.refreshListLabel">Refresh List</Translate>
-          </Button>
-        </div>
-      </h2>
+      <div className="d-flex justify-content-end">
+        <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
+          <FontAwesomeIcon icon="sync" spin={loading} />{' '}
+          <Translate contentKey="snowWhiteApp.qualityGate.home.refreshListLabel">Refresh List</Translate>
+        </Button>
+      </div>
       <div className="table-responsive">
         {displayedList && displayedList.length > 0 ? (
           <Table responsive>

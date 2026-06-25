@@ -70,10 +70,16 @@ export const joinAttributeFilters = (attributeFilters?: Record<string, string>):
 
 // Actions
 
+interface QualityGateQueryParams extends IQueryParams {
+  serviceName?: string;
+  apiName?: string;
+  apiVersion?: string;
+}
+
 export const getEntities = createAsyncThunk(
   'qualityGate/fetch_entity_list',
-  async ({ page, size, sort }: IQueryParams): Promise<AxiosResponse<IQualityGate[]>> => {
-    return await reportApi.listQualityGateReports(page, size, sort).then(response => ({
+  async ({ page, size, sort, serviceName, apiName, apiVersion }: QualityGateQueryParams): Promise<AxiosResponse<IQualityGate[]>> => {
+    return await reportApi.listQualityGateReports(page, size, sort, serviceName, apiName, apiVersion).then(response => ({
       ...response,
       data: response.data.map(qualityGateReport => fromDto(qualityGateReport)),
     }));
