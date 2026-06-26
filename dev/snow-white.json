@@ -1,6 +1,6 @@
 {
   "apiNamePath": "info.x-api-name",
-  "apiSpecs": "example-application/specs/*.yml",
+  "apiSpecs": "examples/example-snow-white-openapi-generator/specs/*.yml",
   "qualityGate": "basic-coverage",
   "url": "http://localhost:9000"
 }

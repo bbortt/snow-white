@@ -5,7 +5,7 @@ WORKDIR /app
 COPY target/*-executable.jar app.jar
 COPY target/opentelemetry-javaagent/opentelemetry-javaagent-*.jar /opt/opentelemetry-javaagent.jar
 
-ENV OTEL_SERVICE_NAME="example-application"
+ENV OTEL_SERVICE_NAME="example-spring-boot"
 
 ENTRYPOINT ["java", \
     "-javaagent:/opt/opentelemetry-javaagent.jar", \
