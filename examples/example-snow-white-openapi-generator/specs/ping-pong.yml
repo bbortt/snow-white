@@ -4,7 +4,7 @@ info:
   description: A simple API for ping-pong interactions to demonstrate OpenAPI coverage calculation
   version: 1.0.0
   x-api-name: ping-pong
-  x-service-name: example-application
+  x-service-name: example-snow-white-openapi-generator
 tags:
   - name: ping-pong
     description: Ping-pong operations

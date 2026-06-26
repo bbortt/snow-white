@@ -22,7 +22,8 @@
   </scm>
 
   <modules>
-    <module>example-application</module>
+    <module>examples/example-snow-white-openapi-generator</module>
+    <module>examples/example-spring-boot</module>
     <module>microservices</module>
     <module>toolkit</module>
     <module>internal</module>

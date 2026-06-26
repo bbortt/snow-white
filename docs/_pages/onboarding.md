@@ -41,7 +41,7 @@ info:
 
 Both values must be stable, lowercase, hyphen-separated identifiers.
 
-See [`example-application/specs/ping-pong.yml`](https://github.com/bbortt/snow-white/blob/main/example-application/specs/ping-pong.yml) for a complete example.
+See [`example-application/specs/ping-pong.yml`](https://github.com/bbortt/snow-white/blob/main/examples/example-snow-white-openapi-generator/specs/ping-pong.yml) for a complete example.
 
 ## Step 2 — Instrument Your Application
 
@@ -96,7 +96,7 @@ Use the `snow-white-spring-server` code generator (optional but recommended)**
 </plugin>
 ```
 
-See [`example-application/pom.xml`](https://github.com/bbortt/snow-white/blob/main/example-application/pom.xml) for a working reference.
+See [`example-application/pom.xml`](https://github.com/bbortt/snow-white/blob/main/examples/example-snow-white-openapi-generator/pom.xml) for a working reference.
 
 **3.
 Configure the OTEL Java agent**
@@ -219,7 +219,7 @@ See [Quality Gate Criteria](/quality-gate-criteria/) for the full list of availa
 
 ## Example Application
 
-The [`example-application`](https://github.com/bbortt/snow-white/tree/main/example-application) demonstrates a complete integration:
+The [`example-application`](https://github.com/bbortt/snow-white/tree/main/examples/example-snow-white-openapi-generator) demonstrates a complete integration:
 
 - A minimal Spring Boot service (`GET /ping`, `POST /pong`)
 - An annotated OpenAPI spec
