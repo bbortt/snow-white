@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.2.0](https://github.com/bbortt/snow-white/compare/v1.1.0...v1.2.0) (2026-06-26)
+
+
+### Features
+
+* **#1285:** result filtering frontend implementation ([48a7d04](https://github.com/bbortt/snow-white/commit/48a7d04184cd186d7629b9babc05fc61143d3064))
+* **report-coordinator-api:** filter options on quality gate report list endpoint ([eafb09d](https://github.com/bbortt/snow-white/commit/eafb09de93b0487948d7835d7a0e297b2cca5e0c))
+
+
+### Bug Fixes
+
+* **api-gateway:** accessiblity on sorting buttons ([79fcef6](https://github.com/bbortt/snow-white/commit/79fcef61505ccae06a7332827945860de6bceda6))
+* **deps:** transition from react-router-dom to react-router v8 ([8342847](https://github.com/bbortt/snow-white/commit/8342847bb565773c490d7187a763a76f877a4248))
+
+
+### Documentation
+
+* add links to badges ([7c718da](https://github.com/bbortt/snow-white/commit/7c718da064351fc34a93c8533d25fc5d80a6f9ec))
+* add some project badges ([a2f345f](https://github.com/bbortt/snow-white/commit/a2f345f0f66b03e8f9ac3a32837e8be113158174))
+* **examples:** add spring-boot example app ([e58a690](https://github.com/bbortt/snow-white/commit/e58a69081775dee7a36909c5cae2bff8d0b76a46))
+* onboarding without openapi generator maven plugin ([6e412aa](https://github.com/bbortt/snow-white/commit/6e412aa81bc4a5d6d4a8c3919093482c3a8402d6))
+
 ## [1.1.0](https://github.com/bbortt/snow-white/compare/v1.0.0...v1.1.0) (2026-06-19)
 
 ### Features
