@@ -11,7 +11,7 @@
 import eslintCommentsPlugin from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import { fixupPluginRules } from '@eslint/compat';
 import eslint from '@eslint/js';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import jsdocPlugin from 'eslint-plugin-jsdoc';
 import perfectionistPlugin from 'eslint-plugin-perfectionist';
 import prettier from 'eslint-plugin-prettier/recommended';
@@ -229,7 +229,7 @@ export default tseslint.config(
       '@eslint-community/eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
 
       //
-      // eslint-plugin-import
+      // eslint-plugin-import-x
       //
 
       // enforces consistent type specifier style for named imports
