@@ -62,7 +62,29 @@ Automatically enriches every HTTP span with `api.name` and `api.version`.
 `service.name` is picked up from `OTEL_SERVICE_NAME` (or `spring.application.name` as fallback).
 
 **2.
-Use the `snow-white-spring-server` code generator (optional but recommended)**
+Annotate your endpoints with `@SnowWhiteInformation`**
+
+The autoconfiguration reads this annotation from your controller methods at request time and stamps the active OTEL span with the API identifiers:
+
+```java
+@GetMapping("/ping")
+@SnowWhiteInformation(
+  serviceName = "my-service",
+  apiName     = "my-api",
+  apiVersion  = "1.0.0",
+  operationId = "getPing"
+)
+public ResponseEntity<PongResponse> getPing(...) { ... }
+```
+
+The values must match what you put in your OpenAPI spec (`x-service-name`, `x-api-name`, `info.version`, and the operation's `operationId`).
+
+See [`example-spring-boot`](https://github.com/bbortt/snow-white/tree/main/examples/example-spring-boot) for a complete hand-written example using Swagger annotations alongside `@SnowWhiteInformation`.
+
+**3.
+(Alternative) Generate the annotation via the `snow-white-spring-server` generator**
+
+If you follow a spec-first workflow the generator can place `@SnowWhiteInformation` on every generated interface method automatically, so you never write it by hand:
 
 ```xml
 <plugin>
@@ -96,9 +118,9 @@ Use the `snow-white-spring-server` code generator (optional but recommended)**
 </plugin>
 ```
 
-See [`example-application/pom.xml`](https://github.com/bbortt/snow-white/blob/main/examples/example-snow-white-openapi-generator/pom.xml) for a working reference.
+See [`example-snow-white-openapi-generator/pom.xml`](https://github.com/bbortt/snow-white/blob/main/examples/example-snow-white-openapi-generator/pom.xml) for a working reference.
 
-**3.
+**4.
 Configure the OTEL Java agent**
 
 ```shell
@@ -217,13 +239,26 @@ See [Quality Gate Criteria](/quality-gate-criteria/) for the full list of availa
 - [ ] Specification published to the API index
 - [ ] CLI config file created and coverage calculation runs successfully
 
-## Example Application
+## Example Applications
 
-The [`example-application`](https://github.com/bbortt/snow-white/tree/main/examples/example-snow-white-openapi-generator) demonstrates a complete integration:
+Two working examples ship with the repository.
 
-- A minimal Spring Boot service (`GET /ping`, `POST /pong`)
-- An annotated OpenAPI spec
-- Maven build with the code generator and OTEL agent
+**[`example-spring-boot`](https://github.com/bbortt/snow-white/tree/main/examples/example-spring-boot)** — hand-written integration without any code generator:
+
+- Controller methods annotated with `@SnowWhiteInformation` directly
+- Swagger annotations (`@Operation`, `@ApiResponse`, `@Schema`) used to describe the API
+- `spring-web-autoconfiguration` wiring up the OTEL span enrichment automatically
+
+**[`example-snow-white-openapi-generator`](https://github.com/bbortt/snow-white/tree/main/examples/example-snow-white-openapi-generator)** — spec-first integration using the Snow-White generator:
+
+- OpenAPI spec (`specs/ping-pong.yml`) as the single source of truth
+- `snow-white-spring-server` generator emitting interfaces with `@SnowWhiteInformation` already placed
+- `spring-web-autoconfiguration` doing the same OTEL enrichment under the hood
+
+Both examples include:
+
+- A minimal Spring Boot service (`GET /ping`, `POST /pong`, `GET /pung/{message}`)
+- Maven build with the OTEL agent
 - A `dev/` Docker Compose environment with the full stack
 
 **Prerequisites:** Java 25, Node.js 22, Docker or Podman (with Compose).
