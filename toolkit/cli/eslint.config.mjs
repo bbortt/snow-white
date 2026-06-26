@@ -11,7 +11,7 @@ import { fixupPluginRules } from '@eslint/compat';
 import eslint from '@eslint/js';
 import vitestPlugin from '@vitest/eslint-plugin';
 import eslintPluginPlugin from 'eslint-plugin-eslint-plugin';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import jsdocPlugin from 'eslint-plugin-jsdoc';
 import nPlugin from 'eslint-plugin-n';
 import perfectionistPlugin from 'eslint-plugin-perfectionist';
@@ -204,7 +204,7 @@ export default defineConfig(
       '@eslint-community/eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
 
       //
-      // eslint-plugin-import
+      // eslint-plugin-import-x
       //
       // enforces consistent type specifier style for named imports
       'import/consistent-type-specifier-style': 'error',
