@@ -20,8 +20,10 @@ import static java.util.Collections.emptySet;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -53,6 +55,7 @@ public class OpenApiCoverageService {
     new PathItemMapping(PathItem::getOptions, OPTIONS)
   );
 
+  private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
   private final OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinator;
 
   @WithSpan
@@ -78,58 +81,111 @@ public class OpenApiCoverageService {
       openTelemetryData.size()
     );
 
-    var pathToOpenAPIOperationMap = extractPathsAndOperations(openApi);
-    var pathToTelemetryMap = groupTelemetryByPath(openTelemetryData);
+    var pathIndex = buildPathIndex(openApi);
+    var pathToTelemetryMap = groupTelemetryByPath(
+      openTelemetryData,
+      pathIndex.operationIdToOperationKey()
+    );
 
     return openApiCoverageCalculationCoordinator.calculate(
-      pathToOpenAPIOperationMap,
+      pathIndex.operationKeyToOperation(),
       pathToTelemetryMap
     );
   }
 
-  private Map<String, Operation> extractPathsAndOperations(OpenAPI openApi) {
-    Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
+  private OpenApiPathIndex buildPathIndex(OpenAPI openApi) {
+    Map<String, Operation> operationKeyToOperation = new HashMap<>();
+    Map<String, String> operationIdToOperationKey = new HashMap<>();
 
     if (isEmpty(openApi.getPaths())) {
-      return pathToOpenAPIOperationMap;
+      return new OpenApiPathIndex(
+        operationKeyToOperation,
+        operationIdToOperationKey
+      );
     }
 
     openApi.getPaths().forEach((path, pathItem) -> {
       for (var pathItemMapping : METHOD_ACCESSORS) {
         var operation = pathItemMapping.mappingFunction().apply(pathItem);
         if (nonNull(operation)) {
-          pathToOpenAPIOperationMap.put(
-            toOperationKey(path, pathItemMapping.httpMethodString()),
-            operation
+          var operationKey = toOperationKey(
+            path,
+            pathItemMapping.httpMethodString()
           );
+          operationKeyToOperation.put(operationKey, operation);
+          if (hasText(operation.getOperationId())) {
+            operationIdToOperationKey.put(
+              operation.getOperationId(),
+              operationKey
+            );
+          }
         }
       }
     });
 
-    return pathToOpenAPIOperationMap;
+    return new OpenApiPathIndex(
+      operationKeyToOperation,
+      operationIdToOperationKey
+    );
   }
 
   private Map<String, List<OpenTelemetryData>> groupTelemetryByPath(
-    Set<OpenTelemetryData> telemetryData
+    Set<OpenTelemetryData> telemetryData,
+    Map<String, String> operationIdToOperationKey
   ) {
+    var operationIdAttr =
+      openApiCoverageStreamProperties.getOperationIdAttribute();
     return telemetryData
       .stream()
-      .filter(
-        data ->
-          // TODO: This should also take request/response into account!
-          data.attributes().has(HTTP_REQUEST_METHOD.getKey()) &&
-          data.attributes().has(URL_PATH.getKey())
+      .filter(data ->
+        isRoutable(data, operationIdAttr, operationIdToOperationKey)
       )
       .collect(
-        groupingBy(data -> {
-          String method = data
-            .attributes()
-            .get(HTTP_REQUEST_METHOD.getKey())
-            .asString();
-          String path = data.attributes().get(URL_PATH.getKey()).asString();
-          return toOperationKey(path, method);
-        })
+        groupingBy(data ->
+          resolveOperationKey(data, operationIdAttr, operationIdToOperationKey)
+        )
       );
+  }
+
+  private boolean isRoutable(
+    OpenTelemetryData data,
+    String operationIdAttr,
+    Map<String, String> operationIdToOperationKey
+  ) {
+    if (data.attributes().has(operationIdAttr)) {
+      var operationId = data.attributes().get(operationIdAttr).asString();
+      if (
+        hasText(operationId) &&
+        operationIdToOperationKey.containsKey(operationId)
+      ) {
+        return true;
+      }
+    }
+    // TODO: This should also take request/response into account!
+    return (
+      data.attributes().has(HTTP_REQUEST_METHOD.getKey()) &&
+      data.attributes().has(URL_PATH.getKey())
+    );
+  }
+
+  private String resolveOperationKey(
+    OpenTelemetryData data,
+    String operationIdAttr,
+    Map<String, String> operationIdToOperationKey
+  ) {
+    if (data.attributes().has(operationIdAttr)) {
+      var operationId = data.attributes().get(operationIdAttr).asString();
+      if (hasText(operationId)) {
+        var resolvedKey = operationIdToOperationKey.get(operationId);
+        if (nonNull(resolvedKey)) {
+          return resolvedKey;
+        }
+      }
+    }
+    return toOperationKey(
+      data.attributes().get(URL_PATH.getKey()).asString(),
+      data.attributes().get(HTTP_REQUEST_METHOD.getKey()).asString()
+    );
   }
 
   private record PathItemMapping(
@@ -140,4 +196,9 @@ public class OpenApiCoverageService {
       return httpMethod.name();
     }
   }
+
+  private record OpenApiPathIndex(
+    Map<String, Operation> operationKeyToOperation,
+    Map<String, String> operationIdToOperationKey
+  ) {}
 }

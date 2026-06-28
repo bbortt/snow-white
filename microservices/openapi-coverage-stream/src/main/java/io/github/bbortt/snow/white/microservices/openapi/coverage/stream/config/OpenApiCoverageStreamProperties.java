@@ -28,6 +28,8 @@ public class OpenApiCoverageStreamProperties {
 
   private Boolean initTopics = false;
 
+  private String operationIdAttribute = "openapi.operation.id";
+
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final FilteringProperties filtering = new FilteringProperties();
 
