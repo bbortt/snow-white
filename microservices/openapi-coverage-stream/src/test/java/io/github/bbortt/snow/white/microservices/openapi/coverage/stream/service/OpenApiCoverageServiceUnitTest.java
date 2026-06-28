@@ -18,11 +18,13 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -56,6 +59,7 @@ class OpenApiCoverageServiceUnitTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OpenApiCoverageService(
+      new OpenApiCoverageStreamProperties(),
       openApiCoverageCalculationCoordinatorMock
     );
   }
@@ -178,6 +182,114 @@ class OpenApiCoverageServiceUnitTest {
 
       verifyNoInteractions(openAPIMock);
       verifyNoInteractions(openApiCoverageCalculationCoordinatorMock);
+    }
+  }
+
+  @Nested
+  class TestOperationIdFastPath {
+
+    private static final String LOOKBACK_WINDOW = "lookbackWindow";
+
+    @Mock
+    private OpenAPI openAPIMock;
+
+    private OpenApiTestContext openApiTestContext;
+
+    @BeforeEach
+    void beforeEachSetup() {
+      openApiTestContext = new OpenApiTestContext(
+        defaultApiInformation(),
+        openAPIMock,
+        LOOKBACK_WINDOW,
+        null
+      );
+    }
+
+    @Test
+    void shouldGroupTelemetryByTemplateKey_whenOperationIdIsKnown() {
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"openapi.operation.id":"getPung","http.request.method":"GET","url.path":"/pung/hello"}
+        """
+      );
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var operation = mock(Operation.class);
+      doReturn("getPung").when(operation).getOperationId();
+      var paths = new Paths();
+      paths.addPathItem("/pung/{message}", new PathItem().get(operation));
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, List<OpenTelemetryData>>> telemetryCaptor =
+        captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), telemetryCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(telemetryCaptor.getValue())
+        .containsKey("GET_/pung/{message}")
+        .doesNotContainKey("GET_/pung/hello");
+    }
+
+    @Test
+    void shouldFallbackToConcretePathKey_whenOperationIdIsNotInSpec() {
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"openapi.operation.id":"unknownOp","http.request.method":"GET","url.path":"/pung/hello"}
+        """
+      );
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem("/pung/{message}", new PathItem().get(new Operation()));
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, List<OpenTelemetryData>>> telemetryCaptor =
+        captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), telemetryCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(telemetryCaptor.getValue())
+        .containsKey("GET_/pung/hello")
+        .doesNotContainKey("GET_/pung/{message}");
+    }
+
+    @Test
+    void shouldFilterOut_whenOperationIdIsUnknownAndUrlAttributesAreMissing() {
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"openapi.operation.id":"unknownOp"}
+        """
+      );
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem("/pung/{message}", new PathItem().get(new Operation()));
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, List<OpenTelemetryData>>> telemetryCaptor =
+        captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), telemetryCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(telemetryCaptor.getValue()).isEmpty();
     }
   }
 }
