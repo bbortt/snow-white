@@ -182,6 +182,7 @@ public class OpenApiCoverageService {
         }
       }
     }
+
     return toOperationKey(
       data.attributes().get(URL_PATH.getKey()).asString(),
       data.attributes().get(HTTP_REQUEST_METHOD.getKey()).asString()

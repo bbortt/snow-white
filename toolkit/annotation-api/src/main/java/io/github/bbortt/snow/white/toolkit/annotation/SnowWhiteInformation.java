@@ -11,14 +11,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SnowWhiteInformation {
-  String serviceName();
+  String serviceName() default "";
 
-  String apiName();
+  String apiName() default "";
 
-  String apiVersion();
+  String apiVersion() default "";
 
   String operationId() default "";
 }

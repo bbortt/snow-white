@@ -68,9 +68,11 @@
     <!-- Dependency Management -->
     <jackson.version>3.1.4</jackson.version>
     <jackson-v2.version>2.22</jackson-v2.version>
+    <junit.version>6.1.0</junit.version>
     <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
     <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+    <mockito.version>5.23.0</mockito.version>
     <org.projectlombok.version>1.18.46</org.projectlombok.version>
     <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
     <spring-boot.version>4.1.0</spring-boot.version>
@@ -87,7 +89,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.1.0</version>
+        <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -115,6 +117,13 @@
         <groupId>io.github.bbortt.snow-white</groupId>
         <artifactId>commons</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <dependency>

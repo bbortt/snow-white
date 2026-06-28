@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInterceptorProperties;
 import io.github.bbortt.snow.white.toolkit.spring.web.interceptor.OpenApiInformationEnhancer;
+import io.github.bbortt.snow.white.toolkit.spring.web.validation.SnowWhiteAnnotationValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,9 @@ class SnowWhiteAutoConfigurationIT {
   @Autowired
   private SpringWebInterceptorProperties springWebInterceptorProperties;
 
+  @Autowired
+  private SnowWhiteAnnotationValidator snowWhiteAnnotationValidator;
+
   @Test
   void propertiesAreLoaded() {
     assertThat(springWebInterceptorProperties).isNotNull();
@@ -31,5 +35,10 @@ class SnowWhiteAutoConfigurationIT {
   @Test
   void aspectIsLoaded() {
     assertThat(openApiInformationEnhancer).isNotNull();
+  }
+
+  @Test
+  void validatorIsLoaded() {
+    assertThat(snowWhiteAnnotationValidator).isNotNull();
   }
 }

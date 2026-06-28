@@ -52,6 +52,9 @@ import tools.jackson.databind.json.JsonMapper;
 class OpenApiCoverageServiceUnitTest {
 
   @Mock
+  private OpenApiCoverageStreamProperties openApiCoverageStreamPropertiesMock;
+
+  @Mock
   private OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinatorMock;
 
   private OpenApiCoverageService fixture;
@@ -59,7 +62,7 @@ class OpenApiCoverageServiceUnitTest {
   @BeforeEach
   void beforeEachSetup() {
     fixture = new OpenApiCoverageService(
-      new OpenApiCoverageStreamProperties(),
+      openApiCoverageStreamPropertiesMock,
       openApiCoverageCalculationCoordinatorMock
     );
   }
@@ -207,6 +210,10 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldGroupTelemetryByTemplateKey_whenOperationIdIsKnown() {
+      doReturn("openapi.operation.id")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getOperationIdAttribute();
+
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
