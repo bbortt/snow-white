@@ -100,6 +100,37 @@ class OpenApiInformationEnhancerUnitTest {
     };
   }
 
+  private static SnowWhiteInformation createOperationOnlyAnnotation(
+    String operationId
+  ) {
+    return new SnowWhiteInformation() {
+      @Override
+      public Class<SnowWhiteInformation> annotationType() {
+        return SnowWhiteInformation.class;
+      }
+
+      @Override
+      public String serviceName() {
+        return "";
+      }
+
+      @Override
+      public String apiName() {
+        return "";
+      }
+
+      @Override
+      public String apiVersion() {
+        return "";
+      }
+
+      @Override
+      public String operationId() {
+        return operationId;
+      }
+    };
+  }
+
   @BeforeEach
   void beforeEachSetup() {
     apiNameAttributeKey = "custom.api.name" + randomUUID();
@@ -134,9 +165,9 @@ class OpenApiInformationEnhancerUnitTest {
   void invocationWithNoAnnotationDoesNothing() {
     doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
     doReturn(methodMock).when(handlerMethodMock).getMethod();
-    doReturn(false)
-      .when(methodMock)
-      .isAnnotationPresent(SnowWhiteInformation.class);
+    doReturn(Object.class)
+      .when(handlerMethodMock)
+      .getBeanType();
 
     fixture.preHandle(
       httpServletRequestMock,
@@ -155,6 +186,54 @@ class OpenApiInformationEnhancerUnitTest {
     var annotation = createMockAnnotation(operationId);
 
     fullMockConfiguration(annotation);
+
+    fixture.preHandle(
+      httpServletRequestMock,
+      httpServletResponseMock,
+      handlerMethodMock
+    );
+
+    verify(spanMock).setAttribute(apiNameAttributeKey, API_NAME);
+    verify(spanMock).setAttribute(apiVersionAttributeKey, API_VERSION);
+    verify(spanMock).setAttribute(serviceNameAttributeKey, SERVICE_NAME);
+    verify(spanMock).setAttribute(operationIdAttributeKey, operationId);
+  }
+
+  @Test
+  void invocationWithClassAnnotationSetsSpanAttributes() {
+    configureMockProperties(serviceNameAttributeKey, null);
+
+    doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
+    doReturn(methodMock).when(handlerMethodMock).getMethod();
+    doReturn(ClassAnnotatedController.class)
+      .when(handlerMethodMock)
+      .getBeanType();
+
+    fixture.preHandle(
+      httpServletRequestMock,
+      httpServletResponseMock,
+      handlerMethodMock
+    );
+
+    verify(spanMock).setAttribute(apiNameAttributeKey, API_NAME);
+    verify(spanMock).setAttribute(apiVersionAttributeKey, API_VERSION);
+    verify(spanMock).setAttribute(serviceNameAttributeKey, SERVICE_NAME);
+    verifyNoMoreInteractions(spanMock);
+  }
+
+  @Test
+  void invocationWithClassAndMethodAnnotationMergesValues() {
+    configureMockProperties(serviceNameAttributeKey, operationIdAttributeKey);
+
+    var operationId = "methodOperationId";
+    doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
+    doReturn(methodMock).when(handlerMethodMock).getMethod();
+    doReturn(createOperationOnlyAnnotation(operationId))
+      .when(methodMock)
+      .getAnnotation(SnowWhiteInformation.class);
+    doReturn(ClassAnnotatedController.class)
+      .when(handlerMethodMock)
+      .getBeanType();
 
     fixture.preHandle(
       httpServletRequestMock,
@@ -239,11 +318,18 @@ class OpenApiInformationEnhancerUnitTest {
   private void fullMockConfiguration(SnowWhiteInformation annotation) {
     doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
     doReturn(methodMock).when(handlerMethodMock).getMethod();
-    doReturn(true)
-      .when(methodMock)
-      .isAnnotationPresent(SnowWhiteInformation.class);
     doReturn(annotation)
       .when(methodMock)
       .getAnnotation(SnowWhiteInformation.class);
+    doReturn(Object.class)
+      .when(handlerMethodMock)
+      .getBeanType();
   }
+
+  @SnowWhiteInformation(
+    serviceName = SERVICE_NAME,
+    apiName = API_NAME,
+    apiVersion = API_VERSION
+  )
+  private static class ClassAnnotatedController {}
 }

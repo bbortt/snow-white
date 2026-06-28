@@ -6,6 +6,10 @@
 
 package io.github.bbortt.snow.white.toolkit.spring.web.interceptor;
 
+import static io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformationExtractor.resolveApiName;
+import static io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformationExtractor.resolveApiVersion;
+import static io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformationExtractor.resolveOperationId;
+import static io.github.bbortt.snow.white.toolkit.annotation.SnowWhiteInformationExtractor.resolveServiceName;
 import static java.util.Objects.isNull;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -15,12 +19,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
 @Component
+@NullMarked
 @RequiredArgsConstructor
 public class OpenApiInformationEnhancer implements HandlerInterceptor {
 
@@ -38,36 +44,47 @@ public class OpenApiInformationEnhancer implements HandlerInterceptor {
     if (
       !(handler instanceof HandlerMethod handlerMethod) || isNull(currentSpan)
     ) {
-      return true; // No active span, nothing to enhance
+      return true;
     }
 
-    var method = handlerMethod.getMethod();
-    if (method.isAnnotationPresent(SnowWhiteInformation.class)) {
-      var snowWhiteInformation = method.getAnnotation(
-        SnowWhiteInformation.class
-      );
+    var methodAnnotation = handlerMethod
+      .getMethod()
+      .getAnnotation(SnowWhiteInformation.class);
+    var classAnnotation = handlerMethod
+      .getBeanType()
+      .getAnnotation(SnowWhiteInformation.class);
 
-      logger.trace("Enhancing span: [{}]", snowWhiteInformation);
+    if (isNull(classAnnotation) && isNull(methodAnnotation)) {
+      return true;
+    }
 
+    logger.trace(
+      "Enhancing span: method=[{}], class=[{}]",
+      methodAnnotation,
+      classAnnotation
+    );
+
+    currentSpan.setAttribute(
+      springWebInterceptorProperties.getApiNameAttribute(),
+      resolveApiName(methodAnnotation, classAnnotation)
+    );
+    currentSpan.setAttribute(
+      springWebInterceptorProperties.getApiVersionAttribute(),
+      resolveApiVersion(methodAnnotation, classAnnotation)
+    );
+
+    if (hasText(springWebInterceptorProperties.getOtelServiceNameAttribute())) {
       currentSpan.setAttribute(
-        springWebInterceptorProperties.getApiNameAttribute(),
-        snowWhiteInformation.apiName()
-      );
-      currentSpan.setAttribute(
-        springWebInterceptorProperties.getApiVersionAttribute(),
-        snowWhiteInformation.apiVersion()
-      );
-
-      if (
-        hasText(springWebInterceptorProperties.getOtelServiceNameAttribute())
-      ) currentSpan.setAttribute(
         springWebInterceptorProperties.getOtelServiceNameAttribute(),
-        snowWhiteInformation.serviceName()
+        resolveServiceName(methodAnnotation, classAnnotation)
       );
+    }
 
-      if (hasText(snowWhiteInformation.operationId())) currentSpan.setAttribute(
+    var operationId = resolveOperationId(methodAnnotation, classAnnotation);
+    if (hasText(operationId)) {
+      currentSpan.setAttribute(
         springWebInterceptorProperties.getOperationIdAttribute(),
-        snowWhiteInformation.operationId()
+        operationId
       );
     }
 

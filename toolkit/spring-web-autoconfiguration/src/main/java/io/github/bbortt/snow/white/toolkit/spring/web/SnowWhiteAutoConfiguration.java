@@ -12,6 +12,7 @@ import static io.github.bbortt.snow.white.toolkit.spring.web.SnowWhiteAutoConfig
 import io.github.bbortt.snow.white.toolkit.spring.web.config.InterceptorConfig;
 import io.github.bbortt.snow.white.toolkit.spring.web.config.SpringWebInterceptorProperties;
 import io.github.bbortt.snow.white.toolkit.spring.web.interceptor.OpenApiInformationEnhancer;
+import io.github.bbortt.snow.white.toolkit.spring.web.validation.SnowWhiteAnnotationValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Import;
   SpringWebInterceptorProperties.class,
   OpenApiInformationEnhancer.class,
   InterceptorConfig.class,
+  SnowWhiteAnnotationValidator.class,
 })
 @ConditionalOnProperty(
   prefix = PROPERTY_PREFIX,

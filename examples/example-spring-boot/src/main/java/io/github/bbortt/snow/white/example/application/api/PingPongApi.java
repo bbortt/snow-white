@@ -32,6 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "ping-pong", description = "Ping-pong operations")
+@SnowWhiteInformation(
+  serviceName = "example-spring-boot",
+  apiName = "ping-pong",
+  apiVersion = "1.0.0"
+)
 public class PingPongApi {
 
   @GetMapping("/ping")
@@ -57,12 +62,7 @@ public class PingPongApi {
       content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     ),
   })
-  @SnowWhiteInformation(
-    serviceName = "example-spring-boot",
-    apiName = "ping-pong",
-    apiVersion = "1.0.0",
-    operationId = "getPing"
-  )
+  @SnowWhiteInformation(operationId = "getPing")
   public ResponseEntity<PongResponse> getPing(
     @Parameter(
       description = "Optional message to include with the ping"
@@ -102,12 +102,7 @@ public class PingPongApi {
       content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     ),
   })
-  @SnowWhiteInformation(
-    serviceName = "example-spring-boot",
-    apiName = "ping-pong",
-    apiVersion = "1.0.0",
-    operationId = "postPong"
-  )
+  @SnowWhiteInformation(operationId = "postPong")
   public ResponseEntity<SuccessResponse> postPong(
     @Valid @RequestBody PingRequest pingRequest
   ) {
@@ -144,12 +139,7 @@ public class PingPongApi {
       content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     ),
   })
-  @SnowWhiteInformation(
-    serviceName = "example-spring-boot",
-    apiName = "ping-pong",
-    apiVersion = "1.0.0",
-    operationId = "getPung"
-  )
+  @SnowWhiteInformation(operationId = "getPung")
   public ResponseEntity<SuccessResponse> getPung(
     @Parameter(
       description = "Message to include with the ping",
