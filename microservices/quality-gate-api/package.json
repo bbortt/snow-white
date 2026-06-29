@@ -9,7 +9,7 @@
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:quality-gate-api": "wait-on --timeout 1m http-get:localhost:8091/actuator/health"
+    "apptest:wait:quality-gate-api": "wait-on --timeout 1m http-get://localhost:8091/actuator/health"
   },
   "devDependencies": {
     "npm-run-all2": "9.0.2",

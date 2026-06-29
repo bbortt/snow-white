@@ -9,7 +9,7 @@
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:api-index-api": "wait-on --timeout 1m http-get:localhost:8095/actuator/health"
+    "apptest:wait:api-index-api": "wait-on --timeout 1m http-get://localhost:8095/actuator/health"
   },
   "devDependencies": {
     "npm-run-all2": "9.0.2",

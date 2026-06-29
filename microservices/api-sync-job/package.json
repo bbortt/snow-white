@@ -10,8 +10,8 @@
   "scripts": {
     "apptest:test": "run-s --print-label apptest:test:*",
     "apptest:wait": "run-p --print-label apptest:test:wait-for-minio apptest:test:wait-for-wiremock",
-    "apptest:test:wait-for-minio": "wait-on --timeout 1m http-get:localhost:9090/minio/health/ready",
-    "apptest:test:wait-for-wiremock": "wait-on --timeout 1m http-get:localhost:9000/__admin/health",
+    "apptest:test:wait-for-minio": "wait-on --timeout 1m http-get://localhost:9090/minio/health/ready",
+    "apptest:test:wait-for-wiremock": "wait-on --timeout 1m http-get://localhost:9000/__admin/health",
     "apptest:test:vitest": "vitest run --config vitest.config.ts --dir src/apptest/vitest"
   },
   "devDependencies": {
