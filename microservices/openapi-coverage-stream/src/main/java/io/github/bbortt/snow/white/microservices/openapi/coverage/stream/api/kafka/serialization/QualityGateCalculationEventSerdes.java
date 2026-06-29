@@ -19,12 +19,9 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 @NoArgsConstructor(access = PRIVATE)
 public final class QualityGateCalculationEventSerdes {
 
-  public static Serde<
-    QualityGateCalculationRequestEvent
-  > QualityGateCalculationRequestEvent() {
-    var serializer = new JacksonJsonSerializer<
-      QualityGateCalculationRequestEvent
-    >();
+  public static Serde<QualityGateCalculationRequestEvent> QualityGateCalculationRequestEvent() {
+    var serializer =
+      new JacksonJsonSerializer<QualityGateCalculationRequestEvent>();
     var deserializer = new JacksonJsonDeserializer<>(
       QualityGateCalculationRequestEvent.class
     );
@@ -32,9 +29,7 @@ public final class QualityGateCalculationEventSerdes {
     return serdeFrom(serializer, deserializer);
   }
 
-  public static Serde<
-    OpenApiCoverageResponseEvent
-  > OpenApiCoverageResponseEvent() {
+  public static Serde<OpenApiCoverageResponseEvent> OpenApiCoverageResponseEvent() {
     var serializer = new JacksonJsonSerializer<OpenApiCoverageResponseEvent>();
     var deserializer = new JacksonJsonDeserializer<>(
       OpenApiCoverageResponseEvent.class

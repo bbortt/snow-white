@@ -95,9 +95,9 @@ public class QualityGateService {
     qualityGateConfigurationRepository.deleteByName(name);
   }
 
-  public Page<
-    @NonNull QualityGateConfiguration
-  > findAllQualityGateConfigurations(Pageable pageable) {
+  public Page<@NonNull QualityGateConfiguration> findAllQualityGateConfigurations(
+    Pageable pageable
+  ) {
     return qualityGateConfigurationRepository.findAll(pageable);
   }
 

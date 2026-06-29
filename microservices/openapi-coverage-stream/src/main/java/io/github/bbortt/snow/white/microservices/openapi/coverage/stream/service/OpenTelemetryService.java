@@ -179,12 +179,12 @@ public class OpenTelemetryService {
       return "";
     }
 
-    return (" |> filter(fn: (r) => r[\"" + key + "\"] == \"" + value + "\") ");
+    return " |> filter(fn: (r) => r[\"" + key + "\"] == \"" + value + "\") ";
   }
 
-  private static @NonNull Set<
-    OpenTelemetryData
-  > parseFluxTableToOpenTelemetryData(List<FluxTable> fluxTables) {
+  private static @NonNull Set<OpenTelemetryData> parseFluxTableToOpenTelemetryData(
+    List<FluxTable> fluxTables
+  ) {
     Set<OpenTelemetryData> openTelemetryData = newKeySet();
     fluxTables.parallelStream().forEach(fluxTable ->
       fluxTable

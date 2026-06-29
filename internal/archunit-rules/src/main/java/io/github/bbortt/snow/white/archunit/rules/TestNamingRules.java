@@ -51,9 +51,7 @@ public final class TestNamingRules {
       .allowEmptyShould(true);
   }
 
-  private static DescribedPredicate<
-    JavaClass
-  > haveTestMethodsOrArchTestFields() {
+  private static DescribedPredicate<JavaClass> haveTestMethodsOrArchTestFields() {
     return new DescribedPredicate<>(
       "have @Test/@ParameterizedTest methods or @ArchTest fields"
     ) {

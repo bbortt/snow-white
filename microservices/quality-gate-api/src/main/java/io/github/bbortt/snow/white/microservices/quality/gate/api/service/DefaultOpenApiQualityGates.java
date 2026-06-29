@@ -40,9 +40,7 @@ public final class DefaultOpenApiQualityGates {
 
   private final OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
-  public Set<
-    QualityGateConfiguration
-  > getDefaultOpenApiCoverageConfigurations() {
+  public Set<QualityGateConfiguration> getDefaultOpenApiCoverageConfigurations() {
     // LinkedHashSet preserves insertion order for deterministic iteration
     var gates = new LinkedHashSet<QualityGateConfiguration>();
     gates.add(getBasicCoverage());

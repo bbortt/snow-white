@@ -265,9 +265,8 @@ class OpenApiResultListenerUnitTest {
         )
       ).isEqualTo(exception);
 
-      ArgumentCaptor<
-        OpenApiCoverageResponseEvent
-      > openApiCoverageResponseEventArgumentCaptor = captor();
+      ArgumentCaptor<OpenApiCoverageResponseEvent> openApiCoverageResponseEventArgumentCaptor =
+        captor();
       verify(reportServiceMock).handleExceptionalResponse(
         eq(qualityGateReport),
         openApiCoverageResponseEventArgumentCaptor.capture()

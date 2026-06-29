@@ -101,9 +101,7 @@ class QualityGateConfigurationMapperUnitTest {
         .when(openApiCoverageConfigurationRepositoryMock)
         .findByName(nameCaptor.capture());
 
-      Set<
-        QualityGateOpenApiCoverageMapping
-      > qualityGateOpenApiCoverageMappings =
+      Set<QualityGateOpenApiCoverageMapping> qualityGateOpenApiCoverageMappings =
         fixture.mapOpenApiCriteriaToMappings(
           openApiCriteria,
           qualityGateConfigurationMock
@@ -159,9 +157,7 @@ class QualityGateConfigurationMapperUnitTest {
     ) {
       var qualityGateConfigurationMock = mock(QualityGateConfiguration.class);
 
-      Set<
-        QualityGateOpenApiCoverageMapping
-      > qualityGateOpenApiCoverageMappings =
+      Set<QualityGateOpenApiCoverageMapping> qualityGateOpenApiCoverageMappings =
         fixture.mapOpenApiCriteriaToMappings(
           openApiCriteria,
           qualityGateConfigurationMock

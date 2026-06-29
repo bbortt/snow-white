@@ -154,9 +154,7 @@ class QualityGateStatusCalculatorUnitTest {
       assertThat(result.getReportStatus()).isEqualTo(PASSED);
     }
 
-    public static Stream<
-      ReportStatus
-    > shouldReturnImmediately_whenReportStatusIsAlreadyTerminal() {
+    public static Stream<ReportStatus> shouldReturnImmediately_whenReportStatusIsAlreadyTerminal() {
       return TERMINAL_STATUS.stream();
     }
 

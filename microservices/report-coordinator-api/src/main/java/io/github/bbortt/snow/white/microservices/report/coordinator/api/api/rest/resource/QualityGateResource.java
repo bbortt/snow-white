@@ -120,9 +120,7 @@ public class QualityGateResource implements QualityGateApi {
     }
   }
 
-  private @NonNull ResponseEntity<
-    CalculateQualityGate202Response
-  > initializeQualityGateCalculation(
+  private @NonNull ResponseEntity<CalculateQualityGate202Response> initializeQualityGateCalculation(
     String qualityGateConfigName,
     Set<ApiTest> apiTests,
     ReportParameter reportParameter

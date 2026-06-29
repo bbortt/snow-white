@@ -47,9 +47,7 @@ class PropertyUtilsTest {
         .hasMessageContaining("property2");
     }
 
-    public static Stream<
-      String
-    > shouldThrowException_whenPropertyValueIsNullOrEmpty() {
+    public static Stream<String> shouldThrowException_whenPropertyValueIsNullOrEmpty() {
       return Stream.of(null, "", " ");
     }
 

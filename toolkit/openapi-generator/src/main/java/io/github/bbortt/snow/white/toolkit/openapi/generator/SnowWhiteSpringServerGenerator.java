@@ -181,9 +181,8 @@ public class SnowWhiteSpringServerGenerator extends SpringCodegen {
   ) {
     if (nonNull(operations)) {
       @SuppressWarnings("unchecked")
-      List<CodegenOperation> operationList = (List<
-        CodegenOperation
-      >) operations.get("operation");
+      List<CodegenOperation> operationList =
+        (List<CodegenOperation>) operations.get("operation");
       for (CodegenOperation operation : operationList) {
         operation.vendorExtensions.put(
           "x-operation-extra-annotation",

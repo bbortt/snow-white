@@ -63,9 +63,13 @@ class KafkaTopicManagerUnitTest {
           .satisfies(
             c -> assertThat(c).hasSingleBean(KafkaTopicManager.class),
             c ->
-              assertThat(c).getBean("inboundTopic", NewTopic.class).isNotNull(),
+              assertThat(c)
+                .getBean("inboundTopic", NewTopic.class)
+                .isNotNull(),
             c ->
-              assertThat(c).getBean("outboundTopic", NewTopic.class).isNotNull()
+              assertThat(c)
+                .getBean("outboundTopic", NewTopic.class)
+                .isNotNull()
           )
       );
 
