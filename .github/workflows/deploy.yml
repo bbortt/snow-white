@@ -53,7 +53,6 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am clean install
       - name: Upload CLI Artifacts
-        if: ${{ steps.release.outputs.release_created == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -237,7 +236,6 @@ jobs:
       - name: Build pnpm License Report
         run: pnpm licenses ls --prod --long > NODE_LICENSES.txt
       - name: Upload License Reports
-        if: ${{ steps.release.outputs.release_created == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{  github.ref_name }}" LICENSE
