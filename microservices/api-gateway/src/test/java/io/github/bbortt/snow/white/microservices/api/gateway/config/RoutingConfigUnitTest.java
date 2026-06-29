@@ -46,7 +46,9 @@ class RoutingConfigUnitTest {
     @BeforeEach
     void beforeEachSetup() {
       doReturn(routeLocatorBuilderInnerMock).when(routeLocatorBuilderMock).routes();
-      doReturn(routeLocatorBuilderInnerMock).when(routeLocatorBuilderInnerMock).route(anyString(), any(Function.class));
+      doReturn(routeLocatorBuilderInnerMock)
+        .when(routeLocatorBuilderInnerMock)
+        .route(anyString(), any(Function.class));
       doReturn(managementServerMock).when(routeLocatorBuilderInnerMock).build();
     }
 
@@ -61,7 +63,11 @@ class RoutingConfigUnitTest {
         .run(context ->
           assertThat(context)
             .asInstanceOf(type(AssertableApplicationContext.class))
-            .satisfies(c -> assertThat(c).getBean("managementServer", RouteLocator.class).isEqualTo(managementServerMock))
+            .satisfies(c ->
+              assertThat(c)
+                .getBean("managementServer", RouteLocator.class)
+                .isEqualTo(managementServerMock)
+            )
         );
 
       verify(routeLocatorBuilderInnerMock).route(eq("info-endpoint"), any(Function.class));

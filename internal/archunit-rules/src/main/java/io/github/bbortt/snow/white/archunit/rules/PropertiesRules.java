@@ -28,7 +28,7 @@ public final class PropertiesRules {
           "@Configuration(proxyBeanMethods = false)",
           annotation ->
             annotation.getRawType().isAssignableFrom(Configuration.class) &&
-            !(boolean) annotation.get("proxyBeanMethods").orElse(true)
+            !((boolean) annotation.get("proxyBeanMethods").orElse(true))
         )
       )
       .because(

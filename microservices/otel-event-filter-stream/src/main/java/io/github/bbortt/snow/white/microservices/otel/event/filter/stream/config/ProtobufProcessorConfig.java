@@ -65,9 +65,9 @@ public class ProtobufProcessorConfig {
   > exportTraceServiceRequestProtobufStream(
     OtelInformationFilteringService otelInformationFilteringService,
     OtelEventFilterStreamProperties otelEventFilterStreamProperties,
-    @Autowired(required = false) @Nullable Serde<
-      ExportTraceServiceRequest
-    > protobufSerde,
+    @Autowired(
+      required = false
+    ) @Nullable Serde<ExportTraceServiceRequest> protobufSerde,
     StreamsBuilder streamsBuilder
   ) {
     if (

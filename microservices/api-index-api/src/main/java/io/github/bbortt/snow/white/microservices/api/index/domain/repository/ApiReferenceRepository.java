@@ -34,9 +34,7 @@ public interface ApiReferenceRepository
     @Param("apiVersion") String apiVersion
   );
 
-  Optional<
-    ApiReference
-  > findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
+  Optional<ApiReference> findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
     @Param("otelServiceName") String otelServiceName,
     @Param("apiName") String apiName,
     @Param("apiVersion") String apiVersion

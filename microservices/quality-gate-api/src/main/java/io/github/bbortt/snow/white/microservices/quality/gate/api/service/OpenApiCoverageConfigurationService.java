@@ -25,9 +25,7 @@ public class OpenApiCoverageConfigurationService {
 
   private final OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
-  public Set<
-    OpenApiCoverageConfiguration
-  > getAllOpenapiCoverageConfigurations() {
+  public Set<OpenApiCoverageConfiguration> getAllOpenapiCoverageConfigurations() {
     return new HashSet<>(openApiCoverageConfigurationRepository.findAll());
   }
 

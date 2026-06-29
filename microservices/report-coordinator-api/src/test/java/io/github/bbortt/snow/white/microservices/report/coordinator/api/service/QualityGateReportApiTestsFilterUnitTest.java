@@ -98,9 +98,7 @@ class QualityGateReportApiTestsFilterUnitTest {
       assertThat(result).isEqualTo(apiTest);
     }
 
-    public static Stream<
-      ApiInformation
-    > shouldThrowException_whenApiInformationDoesNotMatch() {
+    public static Stream<ApiInformation> shouldThrowException_whenApiInformationDoesNotMatch() {
       return Stream.of(
         ApiInformation.builder()
           .serviceName("UnknownService")

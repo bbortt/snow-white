@@ -62,9 +62,8 @@ public class KafkaStreamsConfig {
   public Serde<ExportTraceServiceRequest> protobufSerde(
     @Qualifier("snowWhiteKafkaProperties") Properties snowWhiteKafkaProperties
   ) {
-    var kafkaProtobufSerde = new KafkaProtobufSerde<
-      ExportTraceServiceRequest
-    >();
+    var kafkaProtobufSerde =
+      new KafkaProtobufSerde<ExportTraceServiceRequest>();
     kafkaProtobufSerde.configure(
       propertiesToMap(snowWhiteKafkaProperties),
       false

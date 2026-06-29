@@ -26,8 +26,8 @@ public final class PaginationUtils {
     @Nullable Integer size,
     @Nullable String sort
   ) {
-    int safePage = (page != null && page >= 0) ? page : 0;
-    int safeSize = (size != null && size > 0) ? size : 20;
+    int safePage = page != null && page >= 0 ? page : 0;
+    int safeSize = size != null && size > 0 ? size : 20;
 
     Sort sortObj = Sort.unsorted();
 

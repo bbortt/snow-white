@@ -38,9 +38,9 @@ public class QualityGateResource implements QualityGateApi {
   private final QualityGateConfigurationMapper qualityGateConfigurationMapper;
   private final QualityGateService qualityGateService;
 
-  private static ResponseEntity<
-    @NonNull Error
-  > newHttpBadRequestResponseQualityGateConfigUnmodifiable(String message) {
+  private static ResponseEntity<@NonNull Error> newHttpBadRequestResponseQualityGateConfigUnmodifiable(
+    String message
+  ) {
     return ResponseEntity.status(BAD_REQUEST).body(
       Error.builder()
         .code(BAD_REQUEST.getReasonPhrase())
@@ -49,17 +49,17 @@ public class QualityGateResource implements QualityGateApi {
     );
   }
 
-  private static ResponseEntity<
-    @NonNull Error
-  > newHttpConflictResponseQualityGateConfigNameAlreadyExists(String message) {
+  private static ResponseEntity<@NonNull Error> newHttpConflictResponseQualityGateConfigNameAlreadyExists(
+    String message
+  ) {
     return ResponseEntity.status(CONFLICT).body(
       Error.builder().code(CONFLICT.getReasonPhrase()).message(message).build()
     );
   }
 
-  private static ResponseEntity<
-    @NonNull Error
-  > newHttpNotFoundResponseQualityGateConfigDoesNotExist(String message) {
+  private static ResponseEntity<@NonNull Error> newHttpNotFoundResponseQualityGateConfigDoesNotExist(
+    String message
+  ) {
     return ResponseEntity.status(NOT_FOUND).body(
       Error.builder().code(NOT_FOUND.getReasonPhrase()).message(message).build()
     );

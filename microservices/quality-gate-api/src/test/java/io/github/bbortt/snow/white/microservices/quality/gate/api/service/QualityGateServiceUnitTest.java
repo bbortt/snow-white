@@ -95,9 +95,8 @@ class QualityGateServiceUnitTest {
       throws ConfigurationNameAlreadyExistsException {
       var openApiCriteria = singletonList(PATH_COVERAGE.name());
 
-      Set<
-        QualityGateOpenApiCoverageMapping
-      > qualityGateOpenApiCoverageMappings = mock();
+      Set<QualityGateOpenApiCoverageMapping> qualityGateOpenApiCoverageMappings =
+        mock();
 
       ArgumentCaptor<QualityGateConfiguration> updatedQualityGateConfiguration =
         captor();
@@ -123,9 +122,7 @@ class QualityGateServiceUnitTest {
         .isEqualTo(qualityGateOpenApiCoverageMappings);
     }
 
-    ArgumentCaptor<
-      QualityGateConfiguration
-    > assertThatNewQualityGateConfigurationHasBeenPersisted(
+    ArgumentCaptor<QualityGateConfiguration> assertThatNewQualityGateConfigurationHasBeenPersisted(
       List<String> openApiCriteria
     ) throws ConfigurationNameAlreadyExistsException {
       var configuration = QualityGateConfiguration.builder()
@@ -137,9 +134,8 @@ class QualityGateServiceUnitTest {
         .existsByName(configuration.getName());
 
       var persistedQualityGateConfiguration = new QualityGateConfiguration();
-      ArgumentCaptor<
-        QualityGateConfiguration
-      > qualityGateConfigurationArgumentCaptor = captor();
+      ArgumentCaptor<QualityGateConfiguration> qualityGateConfigurationArgumentCaptor =
+        captor();
       doReturn(persistedQualityGateConfiguration)
         .when(qualityGateConfigurationRepositoryMock)
         .save(qualityGateConfigurationArgumentCaptor.capture());
