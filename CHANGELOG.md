@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/bbortt/snow-white/compare/v1.2.0...v1.3.0) (2026-06-29)
+
+
+### Features
+
+* @SnowWhiteInformation is now a class level annotation ([3385e09](https://github.com/bbortt/snow-white/commit/3385e09dc0a151e0bcbc6e0768f6bdc4d2cc9f73))
+
+
+### Bug Fixes
+
+* **openapi-coverage-stream:** match operation.id attribute first ([f99fb93](https://github.com/bbortt/snow-white/commit/f99fb93945551272f79b6e1e2444343b1d29e36f))
+* **prettier:** reformat codebase ([426425e](https://github.com/bbortt/snow-white/commit/426425e825dc7b98b7191b96cfd6f8b4033f45a1))
+
 ## [1.2.0](https://github.com/bbortt/snow-white/compare/v1.1.0...v1.2.0) (2026-06-26)
 
 ### Features
