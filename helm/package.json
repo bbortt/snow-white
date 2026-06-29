@@ -26,7 +26,7 @@
   "optionalDependencies": {
     "npm-check-updates": "22.2.7"
   },
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.9.0",
   "engines": {
     "node": ">=22.14.0"
   },
