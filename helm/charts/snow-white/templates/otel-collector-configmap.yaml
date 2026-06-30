@@ -28,28 +28,24 @@ data:
         send_batch_max_size: 1024
       filter/openapi-traces:
         error_mode: ignore
-        traces:
-          span:
-            - attributes["http.request.method"] == nil
-            - attributes["api.name"] == nil
-            - attributes["api.version"] == nil
+        trace_conditions:
+            - span.attributes["http.request.method"] == nil
+            - span.attributes["api.name"] == nil
+            - span.attributes["api.version"] == nil
       filter/snow-white-microservices:
         error_mode: propagate
-        spans:
-          exclude:
-            match_type: strict
+        trace_conditions:
             services:
-              - api-gateway
-              - api-index-api
-              - api-sync-job
-              - openapi-coverage-stream
-              - otel-event-filter-stream
-              - quality-gate-api
-              - report-coordinator-api
+              - resource.attributes["service.name"] == "api-gateway"
+              - resource.attributes["service.name"] == "api-index-api"
+              - resource.attributes["service.name"] == "api-sync-job"
+              - resource.attributes["service.name"] == "openapi-coverage-stream"
+              - resource.attributes["service.name"] == "otel-event-filter-stream"
+              - resource.attributes["service.name"] == "quality-gate-api"
+              - resource.attributes["service.name"] == "report-coordinator-api"
       filter/all-external-services:
         error_mode: propagate
-        traces:
-          span:
+        trace_conditions:
             - |
               resource.attributes["service.name"] != "api-gateway" and
               resource.attributes["service.name"] != "api-sync-job" and
