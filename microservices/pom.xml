@@ -39,7 +39,7 @@
     <citrus.version>5.0.0-M2</citrus.version>
     <io.opentelemetry.version>2.29.0</io.opentelemetry.version>
     <kafka-streams.version>4.3.0</kafka-streams.version>
-    <org.flywaydb.version>12.9.0</org.flywaydb.version>
+    <org.flywaydb.version>12.10.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.0.3</org.springdoc.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
