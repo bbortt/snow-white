@@ -21,7 +21,7 @@ import org.testcontainers.utility.DockerImageName;
   classes = { Main.class },
   properties = {
     "influxdb.org=snow-white",
-    "influxdb.bucket=raw-data",
+    "influxdb.bucket=snow-white",
     "influxdb.token=" + ADMIN_TOKEN,
     "snow.white.openapi.coverage.stream.api-index.base-url=http://localhost:8085",
     "snow.white.openapi.coverage.stream.calculation-request-topic=snow-white-calculation-request",
@@ -38,7 +38,9 @@ public abstract class AbstractOpenApiCoverageServiceIT {
   static final InfluxDBContainer<?> INFLUX_DB_CONTAINER =
     new InfluxDBContainer<>(DockerImageName.parse("influxdb:2.7.11-alpine"))
       .withAdminToken(ADMIN_TOKEN)
-      .withExposedPorts(INFLUX_DB_PORT);
+      .withExposedPorts(INFLUX_DB_PORT)
+      .withOrganization("snow-white")
+      .withBucket("snow-white");
 
   static {
     INFLUX_DB_CONTAINER.start();
