@@ -32,7 +32,7 @@ import org.wiremock.spring.EnableWireMock;
   classes = { Main.class },
   properties = {
     "influxdb.org=snow-white",
-    "influxdb.bucket=raw-data",
+    "influxdb.bucket=snow-white",
     "influxdb.token=" + ADMIN_TOKEN,
     "snow.white.openapi.coverage.stream.api-index.base-url=${wiremock.server.baseUrl}",
     "snow.white.openapi.coverage.stream.calculation-request-topic=snow-white-calculation-request",
