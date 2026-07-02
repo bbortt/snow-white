@@ -40,8 +40,8 @@
     "eslint-plugin-import-x": "4.17.1",
     "eslint-plugin-n": "18.2.1",
     "eslint-plugin-regexp": "3.1.1",
-    "js-yaml": "5.2.0",
-    "undici": "8.5.0"
+    "js-yaml": "5.2.1",
+    "undici": "8.6.0"
   },
   "devDependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "4.7.2",
@@ -60,7 +60,7 @@
     "eslint-plugin-perfectionist": "5.9.1",
     "eslint-plugin-prettier": "5.5.6",
     "eslint-plugin-simple-import-sort": "13.0.0",
-    "eslint-plugin-unicorn": "69.0.0",
+    "eslint-plugin-unicorn": "70.0.0",
     "eslint-webpack-plugin": "6.0.0",
     "globals": "17.7.0",
     "npm-run-all2": "9.0.2",
