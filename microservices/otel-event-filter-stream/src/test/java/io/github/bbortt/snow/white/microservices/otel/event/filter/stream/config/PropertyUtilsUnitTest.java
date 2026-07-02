@@ -45,9 +45,7 @@ class PropertyUtilsUnitTest {
         properties
       );
 
-      assertThat(result)
-        .isInstanceOf(HashMap.class)
-        .isEmpty();
+      assertThat(result).isInstanceOf(HashMap.class).isEmpty();
     }
 
     @Test

@@ -49,9 +49,7 @@ class ApiReferenceSpecificationUnitTest {
 
     @Test
     void shouldFilterOnlyByServiceName_whenApiNameFilterIsAbsent() {
-      doReturn(mock(Predicate.class))
-        .when(criteriaBuilderMock)
-        .conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<String> serviceNamePath = mock();
       doReturn(serviceNamePath).when(rootMock).get("otelServiceName");
@@ -73,9 +71,7 @@ class ApiReferenceSpecificationUnitTest {
 
     @Test
     void shouldFilterOnlyByApiName_whenServiceNameFilterIsAbsent() {
-      doReturn(mock(Predicate.class))
-        .when(criteriaBuilderMock)
-        .conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<String> apiNamePath = mock();
       doReturn(apiNamePath).when(rootMock).get("apiName");
@@ -95,9 +91,7 @@ class ApiReferenceSpecificationUnitTest {
 
     @Test
     void shouldFilterByServiceNameAndApiName_whenBothFiltersAreProvided() {
-      doReturn(mock(Predicate.class))
-        .when(criteriaBuilderMock)
-        .conjunction();
+      doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
       Path<String> serviceNamePath = mock();
       doReturn(serviceNamePath).when(rootMock).get("otelServiceName");

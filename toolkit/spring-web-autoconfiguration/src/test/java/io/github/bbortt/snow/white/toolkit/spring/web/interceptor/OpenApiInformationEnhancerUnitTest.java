@@ -165,9 +165,7 @@ class OpenApiInformationEnhancerUnitTest {
   void invocationWithNoAnnotationDoesNothing() {
     doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
     doReturn(methodMock).when(handlerMethodMock).getMethod();
-    doReturn(Object.class)
-      .when(handlerMethodMock)
-      .getBeanType();
+    doReturn(Object.class).when(handlerMethodMock).getBeanType();
 
     fixture.preHandle(
       httpServletRequestMock,
@@ -321,9 +319,7 @@ class OpenApiInformationEnhancerUnitTest {
     doReturn(annotation)
       .when(methodMock)
       .getAnnotation(SnowWhiteInformation.class);
-    doReturn(Object.class)
-      .when(handlerMethodMock)
-      .getBeanType();
+    doReturn(Object.class).when(handlerMethodMock).getBeanType();
   }
 
   @SnowWhiteInformation(

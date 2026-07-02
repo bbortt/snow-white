@@ -22,30 +22,27 @@ import org.springframework.stereotype.Service;
 public final class RetryableRules {
 
   public static ArchRule servicesShouldNotHaveRetriableMethods() {
-    return noClasses()
-      .that()
-      .areAnnotatedWith(Service.class)
-      .should(
-        new ArchCondition<JavaClass>("have methods annotated with @Retryable") {
-          @Override
-          public void check(JavaClass javaClass, ConditionEvents events) {
-            javaClass
-              .getMethods()
-              .stream()
-              .filter(method -> method.isAnnotatedWith(Retryable.class))
-              .forEach(method ->
-                events.add(
-                  SimpleConditionEvent.violated(
-                    javaClass,
-                    javaClass.getName() +
-                      "." +
-                      method.getName() +
-                      "() is annotated with @Retryable but declared in a @Service class"
-                  )
+    return noClasses().that().areAnnotatedWith(Service.class).should(
+      new ArchCondition<JavaClass>("have methods annotated with @Retryable") {
+        @Override
+        public void check(JavaClass javaClass, ConditionEvents events) {
+          javaClass
+            .getMethods()
+            .stream()
+            .filter(method -> method.isAnnotatedWith(Retryable.class))
+            .forEach(method ->
+              events.add(
+                SimpleConditionEvent.violated(
+                  javaClass,
+                  javaClass.getName() +
+                    "." +
+                    method.getName() +
+                    "() is annotated with @Retryable but declared in a @Service class"
                 )
-              );
-          }
+              )
+            );
         }
-      );
+      }
+    );
   }
 }
