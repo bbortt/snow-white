@@ -37,6 +37,7 @@ out/
 .vscode/
 
 # Caches
-.claude/
+.claude/*
+!.claude/skills/
 .m2/
 .npm/

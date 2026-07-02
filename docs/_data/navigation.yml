@@ -25,6 +25,8 @@ docs:
     children:
       - title: 'CLI Reference'
         url: /cli/
+      - title: 'Claude Code Skill'
+        url: /claude-skill/
   - title: 'Reference'
     children:
       - title: 'Quality Gate Criteria'
