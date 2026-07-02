@@ -7,11 +7,9 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toSet;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
-import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
@@ -19,11 +17,9 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -53,7 +49,9 @@ public class OpenApiCoverageCalculationServiceImpl
         calculationRequestEvent.getApiInformation()
       ),
       calculationRequestEvent.getLookbackWindow(),
-      mapToFluxAttributeFilters(calculationRequestEvent.getAttributeFilters())
+      Optional.ofNullable(
+        calculationRequestEvent.getAttributeFilters()
+      ).orElseGet(Collections::emptySet)
     );
   }
 
@@ -67,7 +65,7 @@ public class OpenApiCoverageCalculationServiceImpl
         openApiTestContext.apiInformation(),
         timestamp,
         openApiTestContext.lookbackWindow(),
-        openApiTestContext.fluxAttributeFilters()
+        openApiTestContext.attributeFilters()
       )
     );
   }
@@ -90,15 +88,5 @@ public class OpenApiCoverageCalculationServiceImpl
       openApiTestContext.apiInformation(),
       requireNonNull(openApiTestContext.openApiTestResults())
     );
-  }
-
-  private static @NonNull Set<FluxAttributeFilter> mapToFluxAttributeFilters(
-    Set<AttributeFilter> attributeFilters
-  ) {
-    return Optional.ofNullable(attributeFilters)
-      .orElseGet(Collections::emptySet)
-      .stream()
-      .map(FluxAttributeFilter::new)
-      .collect(toSet());
   }
 }

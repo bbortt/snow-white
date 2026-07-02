@@ -16,12 +16,12 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.opentelemetry.api.OpenTelemetry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -147,10 +147,9 @@ public class OpenApiCoverageCalculationProcessor {
           "Did not find any telemetry data with configured criteria: %s",
           JsonMapper.shared().writeValueAsString(
             openApiTestContext
-              .fluxAttributeFilters()
+              .attributeFilters()
               .stream()
-              .sorted(comparing(FluxAttributeFilter::getKey))
-              .map(FluxAttributeFilter::getBaseAttributeFilter)
+              .sorted(comparing(AttributeFilter::key))
               .toList()
           )
         )

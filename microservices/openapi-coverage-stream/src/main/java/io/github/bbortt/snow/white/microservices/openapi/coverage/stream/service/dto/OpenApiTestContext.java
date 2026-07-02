@@ -7,18 +7,20 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Set;
 import lombok.With;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public record OpenApiTestContext(
   ApiInformation apiInformation,
   OpenAPI openAPI,
   String lookbackWindow,
-  Set<FluxAttributeFilter> fluxAttributeFilters,
+  Set<AttributeFilter> attributeFilters,
   @With @Nullable Set<OpenTelemetryData> openTelemetryData,
   @With @Nullable Set<OpenApiTestResult> openApiTestResults
 ) {
@@ -26,15 +28,8 @@ public record OpenApiTestContext(
     ApiInformation apiInformation,
     OpenAPI openAPI,
     String lookbackWindow,
-    Set<FluxAttributeFilter> fluxAttributeFilters
+    Set<AttributeFilter> attributeFilters
   ) {
-    this(
-      apiInformation,
-      openAPI,
-      lookbackWindow,
-      fluxAttributeFilters,
-      null,
-      null
-    );
+    this(apiInformation, openAPI, lookbackWindow, attributeFilters, null, null);
   }
 }
