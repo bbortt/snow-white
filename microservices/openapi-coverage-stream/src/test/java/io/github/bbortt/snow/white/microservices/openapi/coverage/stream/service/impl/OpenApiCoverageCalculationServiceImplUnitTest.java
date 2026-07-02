@@ -96,7 +96,7 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
       assertThat(result.apiInformation()).isEqualTo(apiInformation);
       assertThat(result.openAPI()).isEqualTo(openAPI);
       assertThat(result.lookbackWindow()).isEqualTo("1h");
-      assertThat(result.fluxAttributeFilters()).hasSize(1);
+      assertThat(result.attributeFilters()).hasSize(1);
     }
 
     public static Stream<Exception> shouldPropagateExceptions() {

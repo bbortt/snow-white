@@ -39,7 +39,6 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -199,20 +198,12 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       doReturn(API_INFORMATION).when(enrichedContext).apiInformation();
       doReturn(
         Set.of(
-          new FluxAttributeFilter(
-            new AttributeFilter(
-              "traceparent",
-              STRING_EQUALS,
-              TRACEPARENT_HEADER
-            )
-          ),
-          new FluxAttributeFilter(
-            new AttributeFilter("foo", STRING_EQUALS, "bar")
-          )
+          new AttributeFilter("traceparent", STRING_EQUALS, TRACEPARENT_HEADER),
+          new AttributeFilter("foo", STRING_EQUALS, "bar")
         )
       )
         .when(enrichedContext)
-        .fluxAttributeFilters();
+        .attributeFilters();
 
       var responseEvent = new OpenApiCoverageResponseEvent(
         API_INFORMATION,

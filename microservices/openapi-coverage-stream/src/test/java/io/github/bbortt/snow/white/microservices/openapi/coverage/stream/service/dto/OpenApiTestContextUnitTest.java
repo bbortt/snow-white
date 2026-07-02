@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
+import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ class OpenApiTestContextUnitTest {
         apiInformation,
         openAPI,
         lookbackWindow,
-        Set.of(mock(FluxAttributeFilter.class))
+        Set.of(mock(AttributeFilter.class))
       )
     )
       .isNotNull()

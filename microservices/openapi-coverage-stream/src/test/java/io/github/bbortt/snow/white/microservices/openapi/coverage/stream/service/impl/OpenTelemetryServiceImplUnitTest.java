@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
@@ -29,7 +29,6 @@ import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -45,14 +44,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
-class OpenTelemetryServiceUnitTest {
+class OpenTelemetryServiceImplUnitTest {
 
   @Mock
   private InfluxDBClient influxDBClientMock;
 
   private InfluxDBProperties influxDBProperties;
 
-  private OpenTelemetryService fixture;
+  private OpenTelemetryServiceImpl fixture;
 
   @BeforeEach
   void beforeEachSetup() {
@@ -61,7 +60,7 @@ class OpenTelemetryServiceUnitTest {
     var openApiCoverageServiceProperties =
       new OpenApiCoverageStreamProperties();
 
-    fixture = new OpenTelemetryService(
+    fixture = new OpenTelemetryServiceImpl(
       influxDBClientMock,
       influxDBProperties,
       openApiCoverageServiceProperties
@@ -94,7 +93,7 @@ class OpenTelemetryServiceUnitTest {
     }
 
     public static Stream<
-      Set<FluxAttributeFilter>
+      Set<AttributeFilter>
     > withoutAttributeFilters_shouldBuildCorrectQuery() {
       return Stream.of(null, emptySet());
     }
@@ -102,7 +101,7 @@ class OpenTelemetryServiceUnitTest {
     @MethodSource
     @ParameterizedTest
     void withoutAttributeFilters_shouldBuildCorrectQuery(
-      Set<FluxAttributeFilter> fluxAttributeFilters
+      Set<AttributeFilter> attributeFilters
     ) {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
@@ -111,7 +110,7 @@ class OpenTelemetryServiceUnitTest {
         API_INFORMATION,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        fluxAttributeFilters
+        attributeFilters
       );
 
       assertThat(result).isEmpty();
@@ -189,13 +188,13 @@ class OpenTelemetryServiceUnitTest {
 
     @Test
     void withAttributeFilters_shouldIncludeFiltersInQuery() {
-      var filter1 = new FluxAttributeFilter(
-        new AttributeFilter("http.method", STRING_EQUALS, "GET")
+      var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
+      var filter2 = new AttributeFilter(
+        "http.status_code",
+        STRING_EQUALS,
+        "200"
       );
-      var filter2 = new FluxAttributeFilter(
-        new AttributeFilter("http.status_code", STRING_EQUALS, "200")
-      );
-      Set<FluxAttributeFilter> fluxAttributeFilters = Set.of(filter1, filter2);
+      Set<AttributeFilter> attributeFilters = Set.of(filter1, filter2);
 
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
@@ -204,7 +203,7 @@ class OpenTelemetryServiceUnitTest {
         API_INFORMATION,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        fluxAttributeFilters
+        attributeFilters
       );
 
       assertThat(result).isEmpty();
