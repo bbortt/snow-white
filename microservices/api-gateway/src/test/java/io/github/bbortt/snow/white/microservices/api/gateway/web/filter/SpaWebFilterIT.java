@@ -45,14 +45,7 @@ class SpaWebFilterIT {
 
   @Test
   void testFilterDoesNotForwardToIndexForApi() {
-    webTestClient
-      .get()
-      .uri("/api/test")
-      .exchange()
-      .expectStatus()
-      .isOk()
-      .expectBody(String.class)
-      .isEqualTo("Hello World");
+    webTestClient.get().uri("/api/test").exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("Hello World");
   }
 
   @Test

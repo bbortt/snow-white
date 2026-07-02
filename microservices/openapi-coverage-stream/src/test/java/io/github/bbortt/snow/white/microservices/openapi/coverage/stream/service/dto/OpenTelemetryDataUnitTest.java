@@ -76,9 +76,7 @@ class OpenTelemetryDataUnitTest {
       );
 
       var attributes = result.attributes();
-      assertThat(attributes)
-        .isInstanceOf(ObjectNode.class)
-        .isEmpty();
+      assertThat(attributes).isInstanceOf(ObjectNode.class).isEmpty();
     }
   }
 }
