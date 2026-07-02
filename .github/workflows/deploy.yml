@@ -62,7 +62,7 @@ jobs:
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-macos-x64
           gh release upload "${{  github.ref_name }}" toolkit/cli/target/snow-white-windows-x64.exe
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@c99871dec2022cc055c062a10cc1a1310835ceb4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -148,7 +148,7 @@ jobs:
             -Dfrontend.test.skip=true \
             -pl :api-gateway,:api-sync-job,:openapi-coverage-stream -am
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@c99871dec2022cc055c062a10cc1a1310835ceb4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -189,7 +189,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am clean install
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        uses: docker/login-action@c99871dec2022cc055c062a10cc1a1310835ceb4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
