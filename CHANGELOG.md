@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/bbortt/snow-white/compare/v1.3.0...v1.3.1) (2026-07-02)
+
+### Bug Fixes
+
+- migrate otel filter processor to new format ([5254524](https://github.com/bbortt/snow-white/commit/5254524a5f828a791ad8e0fff4e842de91de9364))
+- **openapi-coverage-stream:** immediately shutdown stream if influxdb connection fails ([43ef925](https://github.com/bbortt/snow-white/commit/43ef925672c176bceaa05a91671eefd6168fa754))
+
 ## [1.3.0](https://github.com/bbortt/snow-white/compare/v1.2.0...v1.3.0) (2026-06-29)
 
 ### Features
