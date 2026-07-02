@@ -171,7 +171,7 @@ data:
             - otlp_grpc/infra
             {{- end }}
         {{- end }}
-        traces/snow-white:
+        traces/otel-event-filter:
           receivers:
             - otlp
           processors:
@@ -184,7 +184,7 @@ data:
           exporters:
             - debug/basic
             - kafka/snow-white
-        traces/influxdb:
+        traces/snow-white:
           receivers:
             - kafka/snow-white
           processors:

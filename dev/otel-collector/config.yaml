@@ -112,7 +112,7 @@ service:
           batch,
         ]
       exporters: [debug/basic, otlp_grpc/grafana]
-    traces/snow-white:
+    traces/otel-event-filter:
       receivers: [otlp]
       processors:
         [
@@ -124,10 +124,10 @@ service:
           batch,
         ]
       exporters: [debug/basic, kafka/snow-white]
-    traces/influxdb:
+    traces/snow-white:
       receivers: [kafka/snow-white]
       processors: [memory_limiter, groupbytrace, batch]
-      exporters: [debug/basic, influxdb]
+      exporters: [debug/basic, influxdb, otlp_grpc/grafana]
     traces/infra:
       receivers: [otlp]
       processors:
