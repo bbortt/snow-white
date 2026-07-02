@@ -20,7 +20,7 @@ metrics/infra:
   exporters:
     - debug/basic
     - otlp_grpc/infra
-traces/snow-white:
+traces/otel-event-filter:
   receivers:
     - otlp
   processors:
@@ -33,7 +33,7 @@ traces/snow-white:
   exporters:
     - debug/basic
     - kafka/snow-white
-traces/influxdb:
+traces/snow-white:
   receivers:
     - kafka/snow-white
   processors:
