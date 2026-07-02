@@ -16,6 +16,6 @@ $primary-color:          #d91828 !default;
 $border-color:           mix(#fff, #0d0d0d, 80%) !default;
 $footer-background-color: #400101 !default;
 $link-color:             #d91828 !default;
-$masthead-link-color:    #f2f2f2 !default;
+$masthead-link-color:    $text-color !default;
 $masthead-link-color-hover: #d91828 !default;
 $navicon-link-color-hover:  mix(#fff, #f2f2f2, 25%) !default;
