@@ -2,22 +2,19 @@
 
 ## [1.4.0](https://github.com/bbortt/snow-white/compare/v1.3.0...v1.4.0) (2026-07-03)
 
-
 ### Features
 
-* add claude skill ([268e654](https://github.com/bbortt/snow-white/commit/268e65425a9cc3ac32e00401fe765a39df15db72))
-
+- add claude skill ([268e654](https://github.com/bbortt/snow-white/commit/268e65425a9cc3ac32e00401fe765a39df15db72))
 
 ### Bug Fixes
 
-* **helm:** adjust kafka memory limit to requested resource value ([6a76ff4](https://github.com/bbortt/snow-white/commit/6a76ff45fbb836914d0adbfe2271b28d7534500d))
-* migrate otel filter processor to new format ([5254524](https://github.com/bbortt/snow-white/commit/5254524a5f828a791ad8e0fff4e842de91de9364))
-* **openapi-coverage-stream:** immediately shutdown stream if influxdb connection fails ([43ef925](https://github.com/bbortt/snow-white/commit/43ef925672c176bceaa05a91671eefd6168fa754))
-
+- **helm:** adjust kafka memory limit to requested resource value ([6a76ff4](https://github.com/bbortt/snow-white/commit/6a76ff45fbb836914d0adbfe2271b28d7534500d))
+- migrate otel filter processor to new format ([5254524](https://github.com/bbortt/snow-white/commit/5254524a5f828a791ad8e0fff4e842de91de9364))
+- **openapi-coverage-stream:** immediately shutdown stream if influxdb connection fails ([43ef925](https://github.com/bbortt/snow-white/commit/43ef925672c176bceaa05a91671eefd6168fa754))
 
 ### Documentation
 
-* header was invisible ([955a7ec](https://github.com/bbortt/snow-white/commit/955a7ecb9485d49e281c6b4202f5bb22598f0e0a))
+- header was invisible ([955a7ec](https://github.com/bbortt/snow-white/commit/955a7ecb9485d49e281c6b4202f5bb22598f0e0a))
 
 ## [1.3.0](https://github.com/bbortt/snow-white/compare/v1.2.0...v1.3.0) (2026-06-29)
 
