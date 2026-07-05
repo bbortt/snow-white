@@ -44,14 +44,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
-class OpenTelemetryServiceImplUnitTest {
+class InfluxDBTelemetryServiceImplUnitTest {
 
   @Mock
   private InfluxDBClient influxDBClientMock;
 
   private InfluxDBProperties influxDBProperties;
 
-  private OpenTelemetryServiceImpl fixture;
+  private InfluxDBTelemetryServiceImpl fixture;
 
   @BeforeEach
   void beforeEachSetup() {
@@ -60,7 +60,7 @@ class OpenTelemetryServiceImplUnitTest {
     var openApiCoverageServiceProperties =
       new OpenApiCoverageStreamProperties();
 
-    fixture = new OpenTelemetryServiceImpl(
+    fixture = new InfluxDBTelemetryServiceImpl(
       influxDBClientMock,
       influxDBProperties,
       openApiCoverageServiceProperties

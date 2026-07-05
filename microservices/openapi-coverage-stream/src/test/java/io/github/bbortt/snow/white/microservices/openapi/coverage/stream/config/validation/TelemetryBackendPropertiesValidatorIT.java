@@ -12,13 +12,15 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.Abstrac
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class InfluxDBPropertiesValidatorIT extends AbstractOpenApiCoverageServiceIT {
+class TelemetryBackendPropertiesValidatorIT
+  extends AbstractOpenApiCoverageServiceIT
+{
 
   @Autowired
-  private InfluxDBPropertiesValidator influxDBPropertiesValidator;
+  private TelemetryBackendPropertiesValidator telemetryBackendPropertiesValidator;
 
   @Test
   void shouldBeRegisteredWithinSpringContext() {
-    assertThat(influxDBPropertiesValidator).isNotNull();
+    assertThat(telemetryBackendPropertiesValidator).isNotNull();
   }
 }
