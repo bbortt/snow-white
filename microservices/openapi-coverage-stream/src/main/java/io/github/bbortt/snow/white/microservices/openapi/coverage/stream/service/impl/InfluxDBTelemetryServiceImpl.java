@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 @Service
 @NullMarked
 @RequiredArgsConstructor
-public class OpenTelemetryServiceImpl implements OpenTelemetryService {
+public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 
   private final InfluxDBClient influxDBClient;
   private final InfluxDBProperties influxDBProperties;
