@@ -33,12 +33,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @NullMarked
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+  prefix = "influxdb",
+  name = { "url", "token", "org", "bucket" }
+)
 public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 
   private final InfluxDBClient influxDBClient;

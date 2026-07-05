@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,10 @@ import org.springframework.context.event.EventListener;
 public class InfluxDBClientConfig {
 
   @Bean
+  @ConditionalOnProperty(
+    prefix = "influxdb",
+    name = { "url", "token", "org", "bucket" }
+  )
   public InfluxDBClient influxDBClient(InfluxDBProperties influxDBProperties) {
     return InfluxDBClientFactory.create(
       influxDBProperties.getUrl(),
@@ -30,6 +35,10 @@ public class InfluxDBClientConfig {
 
   @EventListener(ApplicationReadyEvent.class)
   public void validateOnStartup(ApplicationReadyEvent event) {
+    if (!event.getApplicationContext().containsBean("influxDBClient")) {
+      return;
+    }
+
     InfluxDBClient client = event
       .getApplicationContext()
       .getBean("influxDBClient", InfluxDBClient.class);
