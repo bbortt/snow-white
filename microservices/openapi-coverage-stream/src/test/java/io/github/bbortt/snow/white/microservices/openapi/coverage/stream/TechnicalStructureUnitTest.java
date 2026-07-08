@@ -18,6 +18,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.TempoProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
@@ -38,7 +39,7 @@ class TechnicalStructureUnitTest {
     .whereLayer("Service").mayOnlyBeAccessedByLayers("Config", "Kafka")
 
     .ignoreDependency(belongToAnyOf(Main.class), alwaysTrue())
-    .ignoreDependency(alwaysTrue(), belongToAnyOf(InfluxDBProperties.class, TempoProperties.class, OpenApiCoverageStreamProperties.class))
+    .ignoreDependency(alwaysTrue(), belongToAnyOf(InfluxDBProperties.class, TempoProperties.class, TempoConfiguredCondition.class, OpenApiCoverageStreamProperties.class))
     .ignoreDependency(simpleNameEndingWith("__BeanFactoryRegistrations"), alwaysTrue())
     .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"));
 }
