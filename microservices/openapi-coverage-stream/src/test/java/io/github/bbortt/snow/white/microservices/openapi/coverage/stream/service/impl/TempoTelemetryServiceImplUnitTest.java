@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
@@ -88,11 +89,6 @@ class TempoTelemetryServiceImplUnitTest {
         "span.api.version = \"" + API_INFORMATION.getApiVersion() + "\""
       );
 
-      var selectClause = query.substring(query.indexOf("| select("));
-      assertThat(selectClause)
-        .contains("span.api.name")
-        .contains("span.api.version");
-
       assertThat(request.getQueryParams().get("start").firstValue()).isEqualTo(
         "1704063600"
       );
@@ -127,13 +123,6 @@ class TempoTelemetryServiceImplUnitTest {
         "span.http.method = \"GET\"",
         "span.http.status_code = \"200\""
       );
-
-      var selectClause = query.substring(query.indexOf("| select("));
-      assertThat(selectClause)
-        .contains("span.api.name")
-        .contains("span.api.version")
-        .contains("span.http.method")
-        .contains("span.http.status_code");
     }
 
     @Test
@@ -154,68 +143,107 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withResults_shouldParseOpenTelemetryData() {
+    void withResults_shouldFetchFullSpanAttributesAndParseThem() {
       wireMockServer.resetAll();
 
-      var spanId1 = "3f1a2c9e7d4b8a61";
+      // hex spanID <-> base64 spanId pairs (Tempo returns hex in search
+      // results, but base64-encoded bytes in the by-ID OTLP JSON response)
+      var spanId1Hex = "3f1a2c9e7d4b8a61";
+      var spanId1Base64 = "Pxosnn1LimE=";
       var traceId1 = "f2c79a8d4bce407aa65c1e7289f6febb";
-      var spanId2 = "8a7d2e4b9c3f1d0a";
+
+      var spanId2Hex = "8a7d2e4b9c3f1d0a";
+      var spanId2Base64 = "in0uS5w/HQo=";
       var traceId2 = "b1e24f988ab04129be3e2cd9275c991a";
 
       // language=json
-      var responseBody = """
+      var searchResponseBody = """
         {
           "traces": [
+            { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } },
+            { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+          ]
+        }
+        """.formatted(traceId1, spanId1Hex, traceId2, spanId2Hex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var trace1ResponseBody = """
+        {
+          "batches": [
             {
-              "traceID": "%s",
-              "spanSet": {
-                "spans": [
-                  {
-                    "spanID": "%s",
-                    "attributes": [
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "GET" }
-                      },
-                      {
-                        "key": "http.path",
-                        "value": { "stringValue": "/api/v1/test" }
-                      },
-                      {
-                        "key": "http.status_code",
-                        "value": { "intValue": "200" }
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "traceID": "%s",
-              "spanSet": {
-                "spans": [
-                  {
-                    "spanID": "%s",
-                    "attributes": [
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "POST" }
-                      },
-                      {
-                        "key": "http.path",
-                        "value": { "stringValue": "/api/v1/create" }
-                      }
-                    ]
-                  }
-                ]
-              }
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "GET" }
+                        },
+                        {
+                          "key": "http.path",
+                          "value": { "stringValue": "/api/v1/test" }
+                        },
+                        {
+                          "key": "http.status_code",
+                          "value": { "intValue": "200" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
-        """.formatted(traceId1, spanId1, traceId2, spanId2);
+        """.formatted(spanId1Base64);
 
       wireMockServer.stubFor(
-        get(urlPathEqualTo("/api/search")).willReturn(okJson(responseBody))
+        get(urlEqualTo("/api/traces/" + traceId1)).willReturn(
+          okJson(trace1ResponseBody)
+        )
+      );
+
+      // language=json
+      var trace2ResponseBody = """
+        {
+          "batches": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "POST" }
+                        },
+                        {
+                          "key": "http.path",
+                          "value": { "stringValue": "/api/v1/create" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """.formatted(spanId2Base64);
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/traces/" + traceId2)).willReturn(
+          okJson(trace2ResponseBody)
+        )
       );
 
       Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
@@ -229,7 +257,7 @@ class TempoTelemetryServiceImplUnitTest {
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
           data1 -> {
-            assertThat(data1.spanId()).isEqualTo(spanId1);
+            assertThat(data1.spanId()).isEqualTo(spanId1Hex);
             assertThat(data1.traceId()).isEqualTo(traceId1);
             assertThat(
               data1.attributes().get("http.method").asString()
@@ -240,7 +268,7 @@ class TempoTelemetryServiceImplUnitTest {
             assertThat(data1.attributes().has("http.status_code")).isFalse();
           },
           data2 -> {
-            assertThat(data2.spanId()).isEqualTo(spanId2);
+            assertThat(data2.spanId()).isEqualTo(spanId2Hex);
             assertThat(data2.traceId()).isEqualTo(traceId2);
             assertThat(
               data2.attributes().get("http.method").asString()

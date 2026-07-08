@@ -25,6 +25,8 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -39,6 +41,16 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+/**
+ * Tempo's TraceQL search API only returns attributes that are explicitly
+ * enumerated via a {@code select()} clause - it has no wildcard to return
+ * "all attributes". Since downstream coverage calculators read attribute
+ * keys that can't be enumerated up front (arbitrary OpenAPI parameter/header
+ * names), a search only identifies matching (traceId, spanId) pairs; the
+ * full attribute set for each match is then fetched via the by-ID trace
+ * endpoint, which returns the complete native span - mirroring the full
+ * attribute blob InfluxDB stores per span.
+ */
 @Slf4j
 @Service
 @NullMarked
@@ -46,6 +58,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   private static final String SEARCH_PATH = "/api/search";
+  private static final String TRACE_BY_ID_PATH = "/api/traces/{traceId}";
   private static final int SEARCH_LIMIT = 1_000;
 
   private static final Pattern LOOKBACK_WINDOW_PATTERN = Pattern.compile(
@@ -84,7 +97,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     // UriBuilder#queryParam would otherwise misinterpret as URI template
     // placeholders during expansion. Passing it as a template variable
     // instead keeps it an opaque, correctly-encoded value.
-    var response = tempoRestClient
+    var searchResponse = tempoRestClient
       .get()
       .uri(
         SEARCH_PATH + "?q={q}&start={start}&end={end}&limit={limit}",
@@ -96,7 +109,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       .retrieve()
       .body(JsonNode.class);
 
-    return parseSearchResponse(response);
+    return resolveMatchedSpans(searchResponse);
   }
 
   private String buildTraceQLQuery(
@@ -133,16 +146,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       );
     }
 
-    return (
-      "{ " +
-      join(" && ", conditions) +
-      " } | select(" +
-      join(
-        ", ",
-        buildSelectedAttributes(filteringProperties, attributeFilters)
-      ) +
-      ")"
-    );
+    return "{ " + join(" && ", conditions) + " }";
   }
 
   private static @Nullable String buildNullableAttributeCondition(
@@ -155,25 +159,6 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     }
 
     return scope + "." + key + " = \"" + value + "\"";
-  }
-
-  private static Set<String> buildSelectedAttributes(
-    OpenApiCoverageStreamProperties.FilteringProperties filteringProperties,
-    Set<AttributeFilter> attributeFilters
-  ) {
-    var selectedKeys = Stream.of(
-      filteringProperties.getApiNameAttributeKey(),
-      filteringProperties.getApiVersionAttributeKey()
-    );
-
-    if (!isEmpty(attributeFilters)) {
-      selectedKeys = Stream.concat(
-        selectedKeys,
-        attributeFilters.stream().map(AttributeFilter::key)
-      );
-    }
-
-    return selectedKeys.map(key -> "span." + key).collect(toSet());
   }
 
   private static Duration parseLookbackWindow(String lookbackWindow) {
@@ -198,35 +183,79 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     };
   }
 
-  private static Set<OpenTelemetryData> parseSearchResponse(
-    @Nullable JsonNode response
+  private Set<OpenTelemetryData> resolveMatchedSpans(
+    @Nullable JsonNode searchResponse
   ) {
     Set<OpenTelemetryData> result = newKeySet();
-    if (response == null || !response.has("traces")) {
+    if (searchResponse == null || !searchResponse.has("traces")) {
       return result;
     }
 
-    response.get("traces").forEach(trace -> {
+    searchResponse.get("traces").forEach(trace -> {
       var traceId = trace.get("traceID").asString();
       var spanSet = trace.get("spanSet");
       if (spanSet == null || !spanSet.has("spans")) {
         return;
       }
 
+      Set<String> matchedSpanIds = newKeySet();
       spanSet
         .get("spans")
-        .forEach(span ->
-          result.add(
-            new OpenTelemetryData(
-              span.get("spanID").asString(),
-              traceId,
-              buildAttributes(span.get("attributes"))
-            )
-          )
-        );
+        .forEach(span -> matchedSpanIds.add(span.get("spanID").asString()));
+
+      result.addAll(fetchFullSpans(traceId, matchedSpanIds));
     });
 
     return result;
+  }
+
+  private Set<OpenTelemetryData> fetchFullSpans(
+    String traceId,
+    Set<String> matchedSpanIds
+  ) {
+    var traceResponse = tempoRestClient
+      .get()
+      .uri(TRACE_BY_ID_PATH, traceId)
+      .retrieve()
+      .body(JsonNode.class);
+
+    Set<OpenTelemetryData> result = newKeySet();
+    if (traceResponse == null || !traceResponse.has("batches")) {
+      return result;
+    }
+
+    traceResponse.get("batches").forEach(batch -> {
+      var scopeSpans = batch.get("scopeSpans");
+      if (scopeSpans == null) {
+        return;
+      }
+
+      scopeSpans.forEach(scopeSpan -> {
+        var spans = scopeSpan.get("spans");
+        if (spans == null) {
+          return;
+        }
+
+        spans.forEach(span -> {
+          var spanId = decodeBase64SpanIdToHex(span.get("spanId").asString());
+          if (matchedSpanIds.contains(spanId)) {
+            result.add(
+              new OpenTelemetryData(
+                spanId,
+                traceId,
+                buildAttributes(span.get("attributes"))
+              )
+            );
+          }
+        });
+      });
+    });
+
+    return result;
+  }
+
+  private static String decodeBase64SpanIdToHex(String base64SpanId) {
+    return HexFormat.of().formatHex(Base64.getDecoder().decode(base64SpanId));
   }
 
   private static JsonNode buildAttributes(@Nullable JsonNode attributes) {
