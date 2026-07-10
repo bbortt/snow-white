@@ -217,9 +217,11 @@
               <modelPackage>${baseClientPackage}.apiindexapi.dto</modelPackage>
               <generatorName>java</generatorName>
               <configOptions>
-                <generateClientAsBean>true</generateClientAsBean>
                 <library>restclient</library>
+                <useJackson3>true</useJackson3>
                 <useJakartaEe>true</useJakartaEe>
+                <useJspecify>true</useJspecify>
+                <useSpringBoot4>true</useSpringBoot4>
               </configOptions>
             </configuration>
           </execution>

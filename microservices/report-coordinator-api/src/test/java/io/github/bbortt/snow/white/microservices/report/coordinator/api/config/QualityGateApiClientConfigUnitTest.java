@@ -6,46 +6,69 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.ApiClient;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.api.QualityGateApi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClient;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateApiClientConfigUnitTest {
 
   @Mock
-  private ApiClient apiClientMock;
+  private RestClient restClientMock;
 
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  private QualityGateApiClientConfig fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new QualityGateApiClientConfig(restClientMock);
+  }
+
   @Nested
-  class ConstructorTest {
+  class ApiClientTest {
 
     @Mock
-    private ReportCoordinationServiceProperties.QualityGateApiProperties qualityGateApiPropertiesMock;
+    private ReportCoordinationServiceProperties.ApiIndexProperties apiIndexPropertiesMock;
 
     @Test
     void shouldConfigureBasePath() {
-      doReturn(qualityGateApiPropertiesMock)
+      doReturn(apiIndexPropertiesMock)
         .when(reportCoordinationServicePropertiesMock)
-        .getQualityGateApi();
+        .getApiIndex();
 
       var basePath = "basePath";
-      doReturn(basePath).when(qualityGateApiPropertiesMock).getBaseUrl();
+      doReturn(basePath).when(apiIndexPropertiesMock).getBaseUrl();
 
-      new QualityGateApiClientConfig(
-        apiClientMock,
-        reportCoordinationServicePropertiesMock
-      );
+      assertThat(fixture.apiClient(reportCoordinationServicePropertiesMock))
+        .isInstanceOf(ApiClient.class)
+        .extracting(ApiClient::getBasePath)
+        .isEqualTo(basePath);
+    }
+  }
 
-      verify(apiClientMock).setBasePath(basePath);
+  @Nested
+  class QualityGateApiTest {
+
+    @Mock
+    private ApiClient apiClientMock;
+
+    @Test
+    void isConfiguredWithApiClient() {
+      assertThat(fixture.qualityGateApi(apiClientMock))
+        .isInstanceOf(QualityGateApi.class)
+        .extracting(QualityGateApi::getApiClient)
+        .isEqualTo(apiClientMock);
     }
   }
 }

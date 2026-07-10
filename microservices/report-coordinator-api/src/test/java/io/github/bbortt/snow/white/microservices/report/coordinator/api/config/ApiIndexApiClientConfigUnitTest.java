@@ -6,27 +6,37 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.ApiClient;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClient;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexApiClientConfigUnitTest {
 
   @Mock
-  private ApiClient apiClientMock;
+  private RestClient restClientMock;
 
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  private ApiIndexApiClientConfig fixture;
+
+  @BeforeEach
+  void beforeEachSetup() {
+    fixture = new ApiIndexApiClientConfig(restClientMock);
+  }
+
   @Nested
-  class ConstructorTest {
+  class ApiClientTest {
 
     @Mock
     private ReportCoordinationServiceProperties.ApiIndexProperties apiIndexPropertiesMock;
@@ -40,12 +50,25 @@ class ApiIndexApiClientConfigUnitTest {
       var basePath = "basePath";
       doReturn(basePath).when(apiIndexPropertiesMock).getBaseUrl();
 
-      new ApiIndexApiClientConfig(
-        apiClientMock,
-        reportCoordinationServicePropertiesMock
-      );
+      assertThat(fixture.apiClient(reportCoordinationServicePropertiesMock))
+        .isInstanceOf(ApiClient.class)
+        .extracting(ApiClient::getBasePath)
+        .isEqualTo(basePath);
+    }
+  }
 
-      verify(apiClientMock).setBasePath(basePath);
+  @Nested
+  class ApiIndexApiTest {
+
+    @Mock
+    private ApiClient apiClientMock;
+
+    @Test
+    void isConfiguredWithApiClient() {
+      assertThat(fixture.apiIndexApi(apiClientMock))
+        .isInstanceOf(ApiIndexApi.class)
+        .extracting(ApiIndexApi::getApiClient)
+        .isEqualTo(apiClientMock);
     }
   }
 }
