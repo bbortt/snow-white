@@ -17,13 +17,13 @@ import org.springframework.context.event.EventListener;
 
 @Slf4j
 @Configuration
+@ConditionalOnProperty(
+  prefix = "influxdb",
+  name = { "url", "token", "org", "bucket" }
+)
 public class InfluxDBClientConfig {
 
   @Bean
-  @ConditionalOnProperty(
-    prefix = "influxdb",
-    name = { "url", "token", "org", "bucket" }
-  )
   public InfluxDBClient influxDBClient(InfluxDBProperties influxDBProperties) {
     return InfluxDBClientFactory.create(
       influxDBProperties.getUrl(),
@@ -35,10 +35,6 @@ public class InfluxDBClientConfig {
 
   @EventListener(ApplicationReadyEvent.class)
   public void validateOnStartup(ApplicationReadyEvent event) {
-    if (!event.getApplicationContext().containsBean("influxDBClient")) {
-      return;
-    }
-
     InfluxDBClient client = event
       .getApplicationContext()
       .getBean("influxDBClient", InfluxDBClient.class);

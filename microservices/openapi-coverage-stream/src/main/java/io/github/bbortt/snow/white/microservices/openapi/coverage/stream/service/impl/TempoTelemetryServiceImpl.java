@@ -42,14 +42,11 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Tempo's TraceQL search API only returns attributes that are explicitly
- * enumerated via a {@code select()} clause - it has no wildcard to return
- * "all attributes". Since downstream coverage calculators read attribute
- * keys that can't be enumerated up front (arbitrary OpenAPI parameter/header
- * names), a search only identifies matching (traceId, spanId) pairs; the
- * full attribute set for each match is then fetched via the by-ID trace
- * endpoint, which returns the complete native span - mirroring the full
- * attribute blob InfluxDB stores per span.
+ * Tempo's TraceQL search API only returns attributes that are explicitly enumerated via a {@code select()} clause - it has no wildcard to return "all attributes".
+ * Since downstream coverage calculators read attribute keys that can't be enumerated up front (arbitrary OpenAPI parameter/header names),
+ * a search only identifies matching (traceId, spanId) pairs;
+ * the full attribute set for each match is then fetched via the by-ID trace endpoint,
+ * which returns the complete native span - mirroring the full attribute blob InfluxDB stores per span.
  */
 @Slf4j
 @Service
@@ -64,6 +61,12 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   private static final Pattern LOOKBACK_WINDOW_PATTERN = Pattern.compile(
     "^(\\d+)(ms|s|m|h|d|w)$"
   );
+
+  public static final String SPAN_ATTRIBUTE = "span";
+  public static final String TRACES_PROPERTY_NAME = "traces";
+  public static final String SPANS_PROPERTY_NAME = "spans";
+  public static final String TRACE_ID_PROPERTY_NAME = "traceID";
+  public static final String SPAN_ID_PROPERTY_NAME = "spanID";
 
   private final RestClient tempoRestClient;
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
@@ -93,10 +96,8 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       .getEpochSecond();
     var endEpochSeconds = eventInstant.getEpochSecond();
 
-    // The TraceQL query contains literal '{' / '}' characters, which
-    // UriBuilder#queryParam would otherwise misinterpret as URI template
-    // placeholders during expansion. Passing it as a template variable
-    // instead keeps it an opaque, correctly-encoded value.
+    // The TraceQL query contains literal '{' / '}' characters, which UriBuilder#queryParam would otherwise misinterpret as URI template placeholders during expansion.
+    // Passing it as a template variable instead keeps it an opaque, correctly-encoded value.
     var searchResponse = tempoRestClient
       .get()
       .uri(
@@ -125,12 +126,12 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
         apiInformation.getServiceName()
       ),
       buildNullableAttributeCondition(
-        "span",
+        SPAN_ATTRIBUTE,
         filteringProperties.getApiNameAttributeKey(),
         apiInformation.getApiName()
       ),
       buildNullableAttributeCondition(
-        "span",
+        SPAN_ATTRIBUTE,
         filteringProperties.getApiVersionAttributeKey(),
         apiInformation.getApiVersion()
       )
@@ -187,21 +188,23 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     @Nullable JsonNode searchResponse
   ) {
     Set<OpenTelemetryData> result = newKeySet();
-    if (searchResponse == null || !searchResponse.has("traces")) {
+    if (searchResponse == null || !searchResponse.has(TRACES_PROPERTY_NAME)) {
       return result;
     }
 
-    searchResponse.get("traces").forEach(trace -> {
-      var traceId = trace.get("traceID").asString();
+    searchResponse.get(TRACES_PROPERTY_NAME).forEach(trace -> {
+      var traceId = trace.get(TRACE_ID_PROPERTY_NAME).asString();
       var spanSet = trace.get("spanSet");
-      if (spanSet == null || !spanSet.has("spans")) {
+      if (spanSet == null || !spanSet.has(SPANS_PROPERTY_NAME)) {
         return;
       }
 
       Set<String> matchedSpanIds = newKeySet();
       spanSet
-        .get("spans")
-        .forEach(span -> matchedSpanIds.add(span.get("spanID").asString()));
+        .get(SPANS_PROPERTY_NAME)
+        .forEach(span ->
+          matchedSpanIds.add(span.get(SPAN_ID_PROPERTY_NAME).asString())
+        );
 
       result.addAll(fetchFullSpans(traceId, matchedSpanIds));
     });
@@ -231,7 +234,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       }
 
       scopeSpans.forEach(scopeSpan -> {
-        var spans = scopeSpan.get("spans");
+        var spans = scopeSpan.get(SPANS_PROPERTY_NAME);
         if (spans == null) {
           return;
         }

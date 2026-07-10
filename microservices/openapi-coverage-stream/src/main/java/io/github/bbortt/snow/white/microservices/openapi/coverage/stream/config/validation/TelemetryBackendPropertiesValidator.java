@@ -37,17 +37,12 @@ public class TelemetryBackendPropertiesValidator {
       );
     }
 
-    if (influxDBConfigured) {
-      logger.info(
-        "Configuration: {}",
-        toMaskedJsonRepresentation(influxDBProperties)
-      );
-    } else {
-      logger.info(
-        "Configuration: {}",
-        toMaskedJsonRepresentation(tempoProperties)
-      );
-    }
+    logger.info(
+      "Configuration: {}",
+      toMaskedJsonRepresentation(
+        influxDBConfigured ? influxDBProperties : tempoProperties
+      )
+    );
   }
 
   private boolean isInfluxDBConfigured(InfluxDBProperties influxDBProperties) {

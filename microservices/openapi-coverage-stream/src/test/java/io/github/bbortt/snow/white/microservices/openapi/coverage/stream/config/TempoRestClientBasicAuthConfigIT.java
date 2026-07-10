@@ -38,10 +38,6 @@ import org.wiremock.spring.EnableWireMock;
 )
 class TempoRestClientBasicAuthConfigIT {
 
-  @EnableConfigurationProperties(TempoProperties.class)
-  @Import(TempoRestClientConfig.class)
-  static class TestConfig {}
-
   @Autowired
   @Qualifier("tempoRestClient")
   private RestClient tempoRestClient;
@@ -69,4 +65,8 @@ class TempoRestClientBasicAuthConfigIT {
       );
     }
   }
+
+  @Import(TempoRestClientConfig.class)
+  @EnableConfigurationProperties(TempoProperties.class)
+  static class TestConfig {}
 }

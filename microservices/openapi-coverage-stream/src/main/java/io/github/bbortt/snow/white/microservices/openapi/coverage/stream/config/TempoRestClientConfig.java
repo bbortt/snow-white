@@ -17,10 +17,10 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.client.RestClient;
 
 @Configuration
+@Conditional(TempoConfiguredCondition.class)
 public class TempoRestClientConfig {
 
   @Bean
-  @Conditional(TempoConfiguredCondition.class)
   public RestClient tempoRestClient(TempoProperties tempoProperties) {
     var builder = RestClient.builder().baseUrl(tempoProperties.getUrl());
 
