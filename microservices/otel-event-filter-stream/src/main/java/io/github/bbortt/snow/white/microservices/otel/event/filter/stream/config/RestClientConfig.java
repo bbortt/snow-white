@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestClient;
 
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
   @Bean
+  @Primary
   @Scope("prototype")
   public RestClient restClient() {
     return RestClient.builder().build();

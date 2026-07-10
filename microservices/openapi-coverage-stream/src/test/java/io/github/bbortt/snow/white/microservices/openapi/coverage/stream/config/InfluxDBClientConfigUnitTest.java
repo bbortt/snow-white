@@ -54,10 +54,6 @@ class InfluxDBClientConfigUnitTest {
         .when(applicationReadyEventMock)
         .getApplicationContext();
 
-      doReturn(true)
-        .when(applicationContextMock)
-        .containsBean("influxDBClient");
-
       doReturn(influxDBClientMock)
         .when(applicationContextMock)
         .getBean("influxDBClient", InfluxDBClient.class);
