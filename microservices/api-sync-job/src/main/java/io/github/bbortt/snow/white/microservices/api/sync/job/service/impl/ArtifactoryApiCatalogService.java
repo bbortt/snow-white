@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.isNull;
 
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
@@ -21,6 +22,8 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -204,11 +207,13 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
       var inputStream = artifactory
         .repository(repository)
         .download(filePath)
-        .doDownload()
+        .doDownload();
+      var reader = new InputStreamReader(inputStream, UTF_8)
     ) {
-      return openAPIV3Parser.readContents(
-        new String(inputStream.readAllBytes())
-      );
+      var content = new StringWriter();
+      reader.transferTo(content);
+
+      return openAPIV3Parser.readContents(content.toString());
     } catch (Exception e) {
       var errorMessage = format("Failed to parse OpenAPI from '%s'", filePath);
 
