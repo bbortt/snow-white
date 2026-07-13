@@ -21,6 +21,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiVal
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -41,6 +42,17 @@ import tools.jackson.databind.json.JsonMapper;
 @Slf4j
 @Service
 public class ArtifactoryApiCatalogService implements ApiCatalogService {
+
+  /**
+   * Only the literal `info` fields are read from parsed specs, which cannot
+   * contain `$ref` per the OpenAPI spec, so resolving is disabled to avoid
+   * the parser reaching out to the filesystem/network for every `$ref`.
+   */
+  private static final ParseOptions PARSE_OPTIONS = new ParseOptions();
+
+  static {
+    PARSE_OPTIONS.setResolve(false);
+  }
 
   private final Artifactory artifactory;
   private final ApiSyncJobProperties.ArtifactoryProperties artifactoryProperties;
@@ -213,7 +225,11 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
       var content = new StringWriter();
       reader.transferTo(content);
 
-      return openAPIV3Parser.readContents(content.toString());
+      return openAPIV3Parser.readContents(
+        content.toString(),
+        null,
+        PARSE_OPTIONS
+      );
     } catch (Exception e) {
       var errorMessage = format("Failed to parse OpenAPI from '%s'", filePath);
 
