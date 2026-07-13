@@ -68,7 +68,7 @@
     <!-- Dependency Management -->
     <jackson.version>3.1.4</jackson.version>
     <jackson-v2.version>2.22</jackson-v2.version>
-    <junit.version>6.1.1</junit.version>
+    <junit.version>6.1.2</junit.version>
     <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
     <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
