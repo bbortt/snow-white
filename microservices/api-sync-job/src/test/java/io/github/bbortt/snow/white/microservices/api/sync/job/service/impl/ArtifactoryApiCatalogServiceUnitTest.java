@@ -132,7 +132,9 @@ class ArtifactoryApiCatalogServiceUnitTest {
       SwaggerParseResult parseResult = new SwaggerParseResult();
       parseResult.setOpenAPI(openAPI);
 
-      doReturn(parseResult).when(openAPIV3ParserMock).readContents(anyString());
+      doReturn(parseResult)
+        .when(openAPIV3ParserMock)
+        .readContents(anyString(), any(), any());
 
       OpenApiInformation openApiInformation = new OpenApiInformation(
         "petstore-api",
@@ -246,7 +248,9 @@ class ArtifactoryApiCatalogServiceUnitTest {
       parseResult.setOpenAPI(null);
       parseResult.setMessages(List.of("Invalid OpenAPI format"));
 
-      doReturn(parseResult).when(openAPIV3ParserMock).readContents(anyString());
+      doReturn(parseResult)
+        .when(openAPIV3ParserMock)
+        .readContents(anyString(), any(), any());
 
       doReturn(repositoryHandle).when(artifactoryMock).repository("api-specs");
 
@@ -392,7 +396,9 @@ class ArtifactoryApiCatalogServiceUnitTest {
       SwaggerParseResult parseResult = new SwaggerParseResult();
       parseResult.setOpenAPI(openAPI);
 
-      doReturn(parseResult).when(openAPIV3ParserMock).readContents(anyString());
+      doReturn(parseResult)
+        .when(openAPIV3ParserMock)
+        .readContents(anyString(), any(), any());
 
       OpenApiInformation openApiInformation = new OpenApiInformation(
         "petstore-api",
@@ -467,7 +473,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
       doReturn(parseResult)
         .when(openAPIV3ParserMock)
-        .readContents(openApiContent);
+        .readContents(eq(openApiContent), any(), any());
 
       OpenApiInformation openApiInformation = new OpenApiInformation(
         title.toLowerCase().replace(" ", "-"),
