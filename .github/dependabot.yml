@@ -57,6 +57,9 @@ updates:
       ui-dependencies:
         patterns:
           - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: 'npm'
     directories:
       - '/microservices/api-sync-job/'
@@ -87,6 +90,9 @@ updates:
       cli-dependencies:
         patterns:
           - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: 'maven'
     directory: '/'
     schedule:
