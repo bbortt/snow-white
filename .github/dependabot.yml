@@ -35,6 +35,9 @@ updates:
       helm-dependencies:
         patterns:
           - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: 'helm'
     directory: '/helm/charts/snow-white'
     schedule:
