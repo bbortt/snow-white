@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/bbortt/snow-white/compare/v1.4.0...v1.5.0) (2026-07-15)
+
+
+### Features
+
+* **#1697:** add grafana tempo properties to openapi-coverage-stream ([797fd24](https://github.com/bbortt/snow-white/commit/797fd2486c00d385c340ab64a09d60c69fcb662a))
+* **#1697:** implement tempo service for openapi-coverage-stream ([11d1a8f](https://github.com/bbortt/snow-white/commit/11d1a8fd66a242b0b928a8b8b432f83a8539b3bd))
+* **#1697:** influxdb configuration in openapi-coverage-service is now optional ([78eb6db](https://github.com/bbortt/snow-white/commit/78eb6dbdae1ee66985f1fb4302b6679bcf733dd5))
+
+
+### Bug Fixes
+
+* **api-sync-job:** do not fetch references for meta information parsing ([0449b1d](https://github.com/bbortt/snow-white/commit/0449b1d9977a535267e1ec95ff9bf6e69b09924f))
+* **api-sync-job:** double memory copy ([cff8d51](https://github.com/bbortt/snow-white/commit/cff8d511f427a5dc912347494e04936e232504b3))
+
 ## [1.4.0](https://github.com/bbortt/snow-white/compare/v1.3.0...v1.4.0) (2026-07-03)
 
 ### Features
