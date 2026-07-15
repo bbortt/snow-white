@@ -16,7 +16,7 @@ import {
 import { join } from 'node:path';
 
 const defaultConfigmapChecksum =
-  '6fcebe2c8dfbbfd27a31406d242cc1b84a211d46154f4193a04ad7864083137d';
+  'bd5b418841caa85609ed16eb8079d7f83b48db222f15880c6e1d9d181f2a0439';
 
 describe('OTEL Collector', () => {
   const renderAndGetDeployment = async (manifests?: any[]) => {
@@ -950,21 +950,21 @@ describe('OTEL Collector', () => {
         expectedFile: 'pipeline-without-logs.yaml',
         connectToExternalOtelCollector: { exportLogs: false },
         checksumn:
-          '819fbe5d0bfa3ab69cd57c98d337cfe8e052809da7c8a7fe410390d2e8cf139d',
+          'c943fc13ddf22509cabed475a0e9d8b284055bba11c30015d7eae2a6f3e03b81',
       },
       {
         type: 'metrics',
         expectedFile: 'pipeline-without-metrics.yaml',
         connectToExternalOtelCollector: { exportMetrics: false },
         checksumn:
-          '2ca83a3dc167b0ce4ecea7d5a2380c58257af1381cc0f7f80931fe2c09fd7362',
+          '6a3f24a13109c7209a3f86d4ad0e5c69372e15f1a972c29f6ef23d7e4a5126dc',
       },
       {
         type: 'traces',
         expectedFile: 'pipeline-without-traces.yaml',
         connectToExternalOtelCollector: { exportTraces: false },
         checksumn:
-          '4e092a7e4ae45b50480ea8174ff3531df0a53b05a71acb396ab474a2fbe16749',
+          'a2b6fc95921c17c40c8c026cf9f55d4dc456fee391ebb81c5be6b626c3602477',
       },
     ])(
       'should skip exporting: $type',
