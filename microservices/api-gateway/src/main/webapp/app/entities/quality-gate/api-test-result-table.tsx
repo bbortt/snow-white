@@ -15,7 +15,7 @@ import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { createRef, useEffect, useMemo, useRef } from 'react';
 import { translate, Translate } from 'react-jhipster';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Table } from 'reactstrap';
+import { Progress, Table } from 'reactstrap';
 
 interface ApiTestResultTableProps {
   apiTestResults: IApiTestResult[];
@@ -57,6 +57,9 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
 
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
+        const passedPercentage = apiTestResult.coverage ? Math.round(apiTestResult.coverage * 100) : 0;
+        const failedPercentage = 100 - passedPercentage;
+
         return [
           <CSSTransition key={key} timeout={CSS_TRANSITION_TIMEOUT} classNames="row-fade" nodeRef={nodeRef}>
             <tr ref={nodeRef} data-cy="apiTestResultTable">
@@ -64,7 +67,16 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
               <td>
                 <ApiCriterionInfo apiCriterion={apiCriterion} />
               </td>
-              <td>{apiTestResult.coverage}</td>
+              <td>
+                <Progress multi>
+                  <Progress bar color="success" value={passedPercentage}>
+                    {passedPercentage} %
+                  </Progress>
+                  <Progress bar color="danger" value={failedPercentage}>
+                    {failedPercentage} %
+                  </Progress>
+                </Progress>
+              </td>
               <td>{String(apiTestResult.isIncludedInQualityGate)}</td>
               <td>
                 <TextWithCode text={apiTestResult.additionalInformation} />
