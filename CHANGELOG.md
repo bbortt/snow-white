@@ -2,15 +2,13 @@
 
 ## [1.5.1](https://github.com/bbortt/snow-white/compare/v1.5.0...v1.5.1) (2026-07-16)
 
-
 ### Bug Fixes
 
-* **helm:** invalid definition of trace_conditions ([bf1ad46](https://github.com/bbortt/snow-white/commit/bf1ad460f68597e1056b54106116a1cb1dc2d6ff))
-
+- **helm:** invalid definition of trace_conditions ([bf1ad46](https://github.com/bbortt/snow-white/commit/bf1ad460f68597e1056b54106116a1cb1dc2d6ff))
 
 ### Documentation
 
-* remove claude binary skill and replace with markdown ([3f9573e](https://github.com/bbortt/snow-white/commit/3f9573e78becfd75419a99e96bc9a379433e8fea))
+- remove claude binary skill and replace with markdown ([3f9573e](https://github.com/bbortt/snow-white/commit/3f9573e78becfd75419a99e96bc9a379433e8fea))
 
 ## [1.5.0](https://github.com/bbortt/snow-white/compare/v1.4.0...v1.5.0) (2026-07-15)
 
