@@ -15,7 +15,7 @@
     "apptest:test:vitest": "vitest run --config vitest.config.ts --dir src/apptest/vitest"
   },
   "devDependencies": {
-    "execa": "9.6.1",
+    "execa": "10.0.0",
     "npm-run-all2": "9.0.2",
     "vitest": "4.1.10",
     "wait-on": "9.0.10",
