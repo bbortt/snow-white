@@ -86,7 +86,7 @@ public class ApiTest {
   @NonNull
   @Builder.Default
   @OneToMany(mappedBy = "apiTest", cascade = { ALL }, fetch = EAGER)
-  private Set<ApiTestResult> apiTestResults = new HashSet<>();
+  private final Set<ApiTestResult> apiTestResults = new HashSet<>();
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "calculation_id", nullable = false)

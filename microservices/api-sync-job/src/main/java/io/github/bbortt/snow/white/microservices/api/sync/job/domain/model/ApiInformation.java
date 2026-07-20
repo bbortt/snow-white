@@ -36,5 +36,5 @@ public class ApiInformation {
 
   @NonNull
   @Builder.Default
-  private ApiLoadStatus loadStatus = UNLOADED;
+  private final ApiLoadStatus loadStatus = UNLOADED;
 }

@@ -9,17 +9,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilter.STRING_OPERANDS;
 
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
-import lombok.Getter;
 
-public class TempoAttributeFilter {
-
-  @Getter
-  private final AttributeFilter baseAttributeFilter;
-
-  public TempoAttributeFilter(AttributeFilter baseAttributeFilter) {
-    this.baseAttributeFilter = baseAttributeFilter;
-  }
-
+public record TempoAttributeFilter(AttributeFilter baseAttributeFilter) {
   public String toTraceQLString() {
     return "span." + getKey() + " = " + getValue();
   }

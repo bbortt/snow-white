@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;

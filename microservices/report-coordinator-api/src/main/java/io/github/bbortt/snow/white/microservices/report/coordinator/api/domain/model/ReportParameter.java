@@ -48,7 +48,7 @@ public class ReportParameter {
   @Builder.Default
   @Size(max = 8)
   @Column(nullable = false, updatable = false, length = 8)
-  private String lookbackWindow = "1h";
+  private final String lookbackWindow = "1h";
 
   @Builder.Default
   @ElementCollection(fetch = EAGER)
@@ -58,7 +58,7 @@ public class ReportParameter {
     name = "attribute_filters",
     joinColumns = @JoinColumn(name = "calculation_id")
   )
-  private Map<String, String> attributeFilters = new HashMap<>();
+  private final Map<String, String> attributeFilters = new HashMap<>();
 
   @OneToOne(optional = false)
   @JoinColumn(name = "calculation_id")

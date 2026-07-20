@@ -23,7 +23,7 @@ public final class RetryableRules {
 
   public static ArchRule servicesShouldNotHaveRetriableMethods() {
     return noClasses().that().areAnnotatedWith(Service.class).should(
-      new ArchCondition<JavaClass>("have methods annotated with @Retryable") {
+      new ArchCondition<>("have methods annotated with @Retryable") {
         @Override
         public void check(JavaClass javaClass, ConditionEvents events) {
           javaClass

@@ -80,7 +80,7 @@ class TempoTelemetryServiceImplUnitTest {
 
       assertThat(result).isEmpty();
 
-      var request = wireMockServer.getAllServeEvents().get(0).getRequest();
+      var request = wireMockServer.getAllServeEvents().getFirst().getRequest();
       var query = request.getQueryParams().get("q").firstValue();
 
       assertThat(query).contains(
@@ -116,7 +116,7 @@ class TempoTelemetryServiceImplUnitTest {
 
       assertThat(result).isEmpty();
 
-      var request = wireMockServer.getAllServeEvents().get(0).getRequest();
+      var request = wireMockServer.getAllServeEvents().getFirst().getRequest();
       var query = request.getQueryParams().get("q").firstValue();
 
       assertThat(query).contains(
@@ -136,7 +136,7 @@ class TempoTelemetryServiceImplUnitTest {
         emptySet()
       );
 
-      var request = wireMockServer.getAllServeEvents().get(0).getRequest();
+      var request = wireMockServer.getAllServeEvents().getFirst().getRequest();
       var query = request.getQueryParams().get("q").firstValue();
 
       assertThat(query).doesNotContain("span.api.version = ");
