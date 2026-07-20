@@ -57,6 +57,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   private static final String SEARCH_PATH = "/api/search";
   private static final String TRACE_BY_ID_PATH = "/api/traces/{traceId}";
   private static final int SEARCH_LIMIT = 1_000;
+  private static final int TRACE_ID_HEX_LENGTH = 32;
 
   private static final Pattern LOOKBACK_WINDOW_PATTERN = Pattern.compile(
     "^(\\d+)(ms|s|m|h|d|w)$"
@@ -193,7 +194,9 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     }
 
     searchResponse.get(TRACES_PROPERTY_NAME).forEach(trace -> {
-      var traceId = trace.get(TRACE_ID_PROPERTY_NAME).asString();
+      var traceId = normalizeTraceId(
+        trace.get(TRACE_ID_PROPERTY_NAME).asString()
+      );
       var spanSet = trace.get("spanSet");
       if (spanSet == null || !spanSet.has(SPANS_PROPERTY_NAME)) {
         return;
@@ -259,6 +262,16 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   private static String decodeBase64SpanIdToHex(String base64SpanId) {
     return HexFormat.of().formatHex(Base64.getDecoder().decode(base64SpanId));
+  }
+
+  /**
+   * Tempo's search API renders trace IDs using Jaeger-compatible hex formatting,
+   * which strips leading zero nibbles instead of zero-padding to the full 128-bit (32 hex character) trace ID length.
+   */
+  private static String normalizeTraceId(String traceId) {
+    return traceId.length() < TRACE_ID_HEX_LENGTH
+      ? "0".repeat(TRACE_ID_HEX_LENGTH - traceId.length()) + traceId
+      : traceId;
   }
 
   private static JsonNode buildAttributes(@Nullable JsonNode attributes) {

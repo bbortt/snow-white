@@ -279,5 +279,75 @@ class TempoTelemetryServiceImplUnitTest {
           }
         );
     }
+
+    @Test
+    void withLeadingZeroTraceId_shouldZeroPadToFullLength() {
+      wireMockServer.resetAll();
+
+      // Tempo's search API strips leading zero nibbles from trace IDs
+      // (Jaeger-compatible hex formatting), so a 32-char trace ID starting
+      // with a "0" nibble comes back only 31 characters long.
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var spanIdBase64 = "Pxosnn1LimE=";
+      var fullTraceId = "069208015c154536b622b34aec8865f6";
+      var truncatedTraceId = "69208015c154536b622b34aec8865f6";
+
+      // language=json
+      var searchResponseBody = """
+        {
+          "traces": [
+            { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+          ]
+        }
+        """.formatted(truncatedTraceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+        {
+          "batches": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "GET" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """.formatted(spanIdBase64);
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/traces/" + fullTraceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(data -> assertThat(data.traceId()).isEqualTo(fullTraceId));
+    }
   }
 }
