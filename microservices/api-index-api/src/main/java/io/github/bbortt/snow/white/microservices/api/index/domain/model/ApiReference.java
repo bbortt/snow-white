@@ -73,7 +73,7 @@ public class ApiReference {
   @NonNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
-  private Instant indexedAt = Instant.now();
+  private final Instant indexedAt = Instant.now();
 
   @Data
   @Builder

@@ -7,7 +7,6 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
 import static java.lang.String.format;
-import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;

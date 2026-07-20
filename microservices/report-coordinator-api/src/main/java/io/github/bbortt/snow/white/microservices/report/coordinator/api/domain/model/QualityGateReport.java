@@ -63,7 +63,7 @@ public class QualityGateReport {
   @NonNull
   @Builder.Default
   @OneToMany(mappedBy = "qualityGateReport", cascade = { ALL }, fetch = EAGER)
-  private Set<ApiTest> apiTests = new HashSet<>();
+  private final Set<ApiTest> apiTests = new HashSet<>();
 
   @NonNull
   @Builder.Default
@@ -73,7 +73,7 @@ public class QualityGateReport {
   @NonNull
   @Builder.Default
   @Column(nullable = false, updatable = false)
-  private Instant createdAt = Instant.now();
+  private final Instant createdAt = Instant.now();
 
   public @NonNull ReportStatus getReportStatus() {
     return reportStatus(reportStatus);
