@@ -68,7 +68,7 @@
     "prettier-plugin-packagejson": "3.0.2",
     "typescript": "6.0.3",
     "typescript-eslint": "8.65.0",
-    "wait-on": "9.0.10",
+    "wait-on": "9.1.0",
     "wiremock": "3.13.2",
     "wiremock-captain": "4.1.3"
   },
