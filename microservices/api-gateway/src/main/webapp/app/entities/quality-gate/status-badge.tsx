@@ -26,9 +26,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ fill, status }: Status
         <span>{statusText}</span>
       </Badge>
     );
-  } else if (status === ReportStatus.FAILED || status === ReportStatus.FINISHED_EXCEPTIONALLY) {
+  } else if (status === ReportStatus.FAILED) {
     return (
       <Badge className={className} color="danger">
+        <span>{statusText}</span>
+      </Badge>
+    );
+  } else if (status === ReportStatus.FINISHED_EXCEPTIONALLY) {
+    // Distinct from FAILED: this is a run/infrastructure error, not a quality-gate failure.
+    return (
+      <Badge className={className} color="dark">
         <span>{statusText}</span>
       </Badge>
     );
@@ -41,7 +48,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ fill, status }: Status
   } else {
     return (
       <Badge className={className} color="info">
-        <span>{status?.startsWith('translation-not-found') ? 'Unknown' : status}</span>
+        <span>{statusText?.startsWith('translation-not-found') ? 'Unknown' : statusText}</span>
       </Badge>
     );
   }

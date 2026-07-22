@@ -7,9 +7,9 @@
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 
 import React, { useMemo } from 'react';
-import { Translate } from 'react-jhipster';
+import { Translate, translate } from 'react-jhipster';
 import { Alert } from 'reactstrap';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 enum ResultType {
   PASSED = 'PASSED',
@@ -88,14 +88,22 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: 
     );
   }
 
+  // Passed/Failed are encoded by color, so a percentage label and legend keep the chart
+  // readable without relying on color alone (e.g. for colorblind users).
   return (
     <ResponsiveContainer>
       <PieChart>
-        <Pie data={data as unknown as Record<string, unknown>[]} innerRadius="50%" labelLine={false}>
+        <Pie
+          data={data as unknown as Record<string, unknown>[]}
+          innerRadius="50%"
+          labelLine={false}
+          label={({ percent }: { percent?: number }) => `${Math.round((percent ?? 0) * 100)}%`}
+        >
           {data.map((entry: IGroupedTestResult) => (
             <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
           ))}
         </Pie>
+        <Legend formatter={(value: ResultType) => translate(`snowWhiteApp.reportStatus.${value}`)} />
         <Tooltip />
       </PieChart>
     </ResponsiveContainer>

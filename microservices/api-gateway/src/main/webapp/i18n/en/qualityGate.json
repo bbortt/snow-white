@@ -21,7 +21,7 @@
         "allResults": "All Criteria Status"
       },
       "action": {
-        "junitDownload": "JUnit Report Herunterladen"
+        "junitDownload": "Download JUnit Report"
       },
       "filter": {
         "title": "Filters",
