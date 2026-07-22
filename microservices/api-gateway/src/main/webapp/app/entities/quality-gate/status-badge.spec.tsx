@@ -28,7 +28,7 @@ describe('StatusBadge', () => {
   describe.each([
     { reportStatus: ReportStatus.PASSED, background: 'bg-success' },
     { reportStatus: ReportStatus.FAILED, background: 'bg-danger' },
-    { reportStatus: ReportStatus.FINISHED_EXCEPTIONALLY, background: 'bg-danger' },
+    { reportStatus: ReportStatus.FINISHED_EXCEPTIONALLY, background: 'bg-dark' },
     { reportStatus: ReportStatus.TIMED_OUT, background: 'bg-warning' },
   ])('for status: %s', ({ reportStatus, background }: { reportStatus: ReportStatus; background: string }) => {
     it('should render badge with correct text', () => {

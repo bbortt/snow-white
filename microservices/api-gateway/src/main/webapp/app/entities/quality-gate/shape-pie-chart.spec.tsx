@@ -19,11 +19,13 @@ jest.mock('recharts', () => ({
     </div>
   ),
   Cell: ({ fill }: { fill: string }) => <div data-testid="pie-cell" data-fill={fill} />,
+  Legend: () => <div data-testid="legend" />,
   Tooltip: () => <div data-testid="tooltip" />,
 }));
 
 jest.mock('react-jhipster', () => ({
   Translate: ({ contentKey }: { contentKey: string }) => <div data-testid="react-jhipster-translate">{contentKey}</div>,
+  translate: (key: string) => key,
 }));
 
 describe('ShapePieChart', () => {
@@ -55,6 +57,7 @@ describe('ShapePieChart', () => {
       expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
       expect(screen.getByTestId('pie')).toBeInTheDocument();
+      expect(screen.getByTestId('legend')).toBeInTheDocument();
       expect(screen.getByTestId('tooltip')).toBeInTheDocument();
     });
   });

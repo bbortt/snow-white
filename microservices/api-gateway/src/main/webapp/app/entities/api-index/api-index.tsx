@@ -16,7 +16,7 @@ import { getPaginationState, JhiItemCount, JhiPagination, Translate, translate }
 import { useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import 'app/shared/table-row-animation.scss';
-import { Badge, Button, Table } from 'reactstrap';
+import { Badge, Button, Spinner, Table } from 'reactstrap';
 
 import { apiIndexApi } from './api-index-api';
 import { getEntities } from './api-index.reducer';
@@ -65,7 +65,10 @@ export const ApiIndex = () => {
   const prevInputServiceNameRef = useRef(inputServiceName);
   const prevInputApiNameRef = useRef(inputApiName);
 
-  const { displayedList, isExiting } = useAnimatedList(apiList, api => `${api.serviceName}-${api.apiName}-${api.apiVersion}`);
+  const { displayedList, isExiting, animationsEnabled } = useAnimatedList(
+    apiList,
+    api => `${api.serviceName}-${api.apiName}-${api.apiVersion}`,
+  );
 
   const filteredList = useMemo(() => {
     if (!inputApiVersion) return displayedList;
@@ -289,7 +292,7 @@ export const ApiIndex = () => {
               </th>
             </tr>
           </thead>
-          <TransitionGroup component="tbody" appear>
+          <TransitionGroup component="tbody" appear={animationsEnabled}>
             {filteredList.map((api, i) => {
               const key = `entity-${api.serviceName}-${api.apiName}-${api.apiVersion}`;
               if (!nodeRefs.current.has(key)) {
@@ -303,7 +306,8 @@ export const ApiIndex = () => {
                   timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
                   classNames="table-row"
                   nodeRef={nodeRef}
-                  appear
+                  appear={animationsEnabled}
+                  enter={animationsEnabled}
                 >
                   <tr
                     ref={nodeRef}
@@ -328,6 +332,11 @@ export const ApiIndex = () => {
             })}
           </TransitionGroup>
         </Table>
+        {apiList?.length === 0 && loading && (
+          <div className="text-center py-4">
+            <Spinner color="info" />
+          </div>
+        )}
         {apiList?.length === 0 && !loading && (
           <div className="alert alert-warning">
             <Translate contentKey="snowWhiteApp.apiIndex.home.notFound">No APIs found</Translate>
