@@ -17,7 +17,7 @@ import React, { createRef, useEffect, useRef, useState } from 'react';
 import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Button, Table } from 'reactstrap';
+import { Button, Spinner, Table } from 'reactstrap';
 import 'app/shared/table-row-animation.scss';
 
 import { getEntities } from './quality-gate-config.reducer';
@@ -36,7 +36,7 @@ export const QualityGateConfig = () => {
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
 
-  const { displayedList, isExiting } = useAnimatedList(qualityGateConfigList, q => q.name!);
+  const { displayedList, isExiting, animationsEnabled } = useAnimatedList(qualityGateConfigList, q => q.name!);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGateConfig.totalItems);
 
@@ -155,7 +155,7 @@ export const QualityGateConfig = () => {
                 <th />
               </tr>
             </thead>
-            <TransitionGroup component="tbody" appear>
+            <TransitionGroup component="tbody" appear={animationsEnabled}>
               {displayedList.map((qualityGateConfig: IQualityGateConfig, i) => {
                 const key = `entity-${qualityGateConfig.name}`;
                 if (!nodeRefs.current.has(key)) {
@@ -168,7 +168,8 @@ export const QualityGateConfig = () => {
                     timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
                     classNames="table-row"
                     nodeRef={nodeRef}
-                    appear
+                    appear={animationsEnabled}
+                    enter={animationsEnabled}
                   >
                     <tr
                       ref={nodeRef}
@@ -234,12 +235,14 @@ export const QualityGateConfig = () => {
               })}
             </TransitionGroup>
           </Table>
+        ) : loading ? (
+          <div className="text-center py-4">
+            <Spinner color="info" />
+          </div>
         ) : (
-          !loading && (
-            <div className="alert alert-warning">
-              <Translate contentKey="snowWhiteApp.qualityGateConfig.home.notFound">No Quality Gate Configs found</Translate>
-            </div>
-          )
+          <div className="alert alert-warning">
+            <Translate contentKey="snowWhiteApp.qualityGateConfig.home.notFound">No Quality Gate Configs found</Translate>
+          </div>
         )}
       </div>
       {totalItems ? (
