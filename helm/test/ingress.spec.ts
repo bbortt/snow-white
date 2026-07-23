@@ -152,7 +152,7 @@ describe('Ingress', () => {
       const { metadata } = ingress;
       expect(metadata).toBeDefined();
 
-      expect(metadata.annotations).toEqual(annotations);
+      expect(metadata.annotations).toStrictEqual(annotations);
     });
   });
 
@@ -183,7 +183,7 @@ describe('Ingress', () => {
         }),
       );
 
-      expect(ingress.spec.ingressClassName).toEqual(ingressClassName);
+      expect(ingress.spec.ingressClassName).toStrictEqual(ingressClassName);
     });
   });
 

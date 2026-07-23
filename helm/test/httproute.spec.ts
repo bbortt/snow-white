@@ -142,7 +142,7 @@ describe('HttpRoute', () => {
       const { metadata } = httpRoute;
       expect(metadata).toBeDefined();
 
-      expect(metadata.annotations).toEqual(annotations);
+      expect(metadata.annotations).toStrictEqual(annotations);
     });
   });
 

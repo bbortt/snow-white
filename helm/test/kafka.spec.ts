@@ -148,7 +148,7 @@ describe('Kafka', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'kafka',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'kafka',
@@ -201,7 +201,7 @@ describe('Kafka', () => {
 
         const templateSpec = getPodSpec(statefulSet);
 
-        expect(templateSpec.imagePullSecrets).toEqual({ token });
+        expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
       });
     });
 
@@ -211,7 +211,7 @@ describe('Kafka', () => {
 
         expect(templateSpec.affinity.nodeAffinity).toBeNull();
         expect(templateSpec.affinity.podAffinity).toBeNull();
-        expect(templateSpec.affinity.podAntiAffinity).toEqual({
+        expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
           preferredDuringSchedulingIgnoredDuringExecution: [
             {
               podAffinityTerm: {
@@ -246,7 +246,7 @@ describe('Kafka', () => {
           ),
         );
 
-        expect(templateSpec.affinity).toEqual({
+        expect(templateSpec.affinity).toStrictEqual({
           myAffinity: {
             just: 'an example',
           },
@@ -410,6 +410,51 @@ describe('Kafka', () => {
               expect(kafkaQuorumVoters.value).toBe(quorumVoters);
             },
           );
+        });
+
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const kafka = await renderAndGetKafkaContainer();
+
+            expect(kafka.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '1Gi',
+              },
+              requests: {
+                cpu: '0.5',
+                'ephemeral-storage': '50Mi',
+                memory: '1Gi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const kafka = await renderAndGetKafkaContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  kafka: {
+                    resources,
+                  },
+                },
+              }),
+            );
+
+            expect(kafka.resources).toStrictEqual(resources);
+          });
         });
 
         it('should mount defined volume', async () => {
@@ -593,7 +638,7 @@ describe('Kafka', () => {
           const { spec } = service;
           expect(spec).toBeDefined();
 
-          expect(spec.selector).toEqual({
+          expect(spec.selector).toStrictEqual({
             'app.kubernetes.io/component': 'kafka',
             'app.kubernetes.io/instance': 'test-release',
             'app.kubernetes.io/name': 'kafka',
@@ -673,7 +718,7 @@ describe('Kafka', () => {
           const { spec } = service;
           expect(spec).toBeDefined();
 
-          expect(spec.selector).toEqual({
+          expect(spec.selector).toStrictEqual({
             'app.kubernetes.io/component': 'kafka',
             'app.kubernetes.io/instance': 'test-release',
             'app.kubernetes.io/name': 'kafka',

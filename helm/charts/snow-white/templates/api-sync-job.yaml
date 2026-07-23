@@ -61,13 +61,7 @@ spec:
                   {{- end }}
               {{- end }}
               resources:
-                limits:
-                  memory: {{ .Values.snowWhite.apiSyncJob.resources.memory.limit }}
-                  ephemeral-storage: '2Gi'
-                requests:
-                  cpu: '0.5'
-                  memory: {{ .Values.snowWhite.apiSyncJob.resources.memory.request }}
-                  ephemeral-storage: '50Mi'
+                {{- toYaml .Values.snowWhite.apiSyncJob.resources | nindent 16 }}
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
