@@ -80,13 +80,7 @@ spec:
               containerPort: 9093
               protocol: TCP
           resources:
-            limits:
-              memory: '1Gi'
-              ephemeral-storage: '2Gi'
-            requests:
-              cpu: '0.5'
-              memory: '1Gi'
-              ephemeral-storage: '50Mi'
+            {{- toYaml .Values.kafka.resources | nindent 12 }}
           startupProbe:
             tcpSocket:
               port: 9093
