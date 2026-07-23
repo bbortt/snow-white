@@ -49,7 +49,7 @@ export const expectToHaveDefaultLabelsForMicroservice = (
   labels: { [key: string]: string },
   microservice: string,
 ) => {
-  expect(labels).toEqual({
+  expect(labels).toStrictEqual({
     'app.kubernetes.io/managed-by': 'Helm',
     'app.kubernetes.io/version': 'test-version',
     'helm.sh/chart': 'snow-white',

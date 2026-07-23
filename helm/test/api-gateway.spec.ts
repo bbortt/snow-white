@@ -198,7 +198,7 @@ describe('API Gateway', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'api-gateway',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-gateway',
@@ -252,7 +252,7 @@ describe('API Gateway', () => {
             ),
           );
 
-          expect(metadata.annotations).toEqual(podAnnotations);
+          expect(metadata.annotations).toStrictEqual(podAnnotations);
         });
       });
 
@@ -296,7 +296,7 @@ describe('API Gateway', () => {
             ),
           );
 
-          expect(templateSpec.imagePullSecrets).toEqual({ token });
+          expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
         });
       });
 
@@ -306,7 +306,7 @@ describe('API Gateway', () => {
 
           expect(templateSpec.affinity.nodeAffinity).toBeNull();
           expect(templateSpec.affinity.podAffinity).toBeNull();
-          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+          expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
             preferredDuringSchedulingIgnoredDuringExecution: [
               {
                 podAffinityTerm: {
@@ -341,7 +341,7 @@ describe('API Gateway', () => {
             ),
           );
 
-          expect(templateSpec.affinity).toEqual({
+          expect(templateSpec.affinity).toStrictEqual({
             myAffinity: {
               just: 'an example',
             },
@@ -662,7 +662,7 @@ describe('API Gateway', () => {
         const { spec } = pdb;
         expect(spec).toBeDefined();
 
-        expect(spec.selector.matchLabels).toEqual({
+        expect(spec.selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'api-gateway',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-gateway',
@@ -823,7 +823,7 @@ describe('API Gateway', () => {
         const { spec } = service;
         expect(spec).toBeDefined();
 
-        expect(spec.selector).toEqual({
+        expect(spec.selector).toStrictEqual({
           'app.kubernetes.io/component': 'api-gateway',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-gateway',

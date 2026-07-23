@@ -209,7 +209,7 @@ describe('API Sync Job', () => {
           ),
         );
 
-        expect(metadata.annotations).toEqual(podAnnotations);
+        expect(metadata.annotations).toStrictEqual(podAnnotations);
       });
     });
 
@@ -248,7 +248,7 @@ describe('API Sync Job', () => {
         );
 
         const templateSpec = getTemplateSpec(cronJob);
-        expect(templateSpec.imagePullSecrets).toEqual({ token });
+        expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
       });
     });
   });
@@ -546,16 +546,34 @@ describe('API Sync Job', () => {
       });
 
       describe('resources', () => {
-        it('should be deployed with 1024 GB memory by default', async () => {
+        it('should be deployed default resource quota', async () => {
           const apiSyncJob = await renderAndGetApiSyncJobContainer();
 
-          expect(apiSyncJob.resources.limits.memory).toBe('1Gi');
-          expect(apiSyncJob.resources.requests.memory).toBe('1Gi');
+          expect(apiSyncJob.resources).toStrictEqual({
+            limits: {
+              'ephemeral-storage': '2Gi',
+              memory: '1Gi',
+            },
+            requests: {
+              cpu: '0.5',
+              'ephemeral-storage': '50Mi',
+              memory: '1Gi',
+            },
+          });
         });
 
-        it('should adjust memory request and limit based on values', async () => {
-          const request = 'my-request';
-          const limit = 'my-limit';
+        it('should adjust resource request and limit based on values', async () => {
+          const resources = {
+            limits: {
+              'ephemeral-storage': '1Gi',
+              memory: '2Gi',
+            },
+            requests: {
+              cpu: '3',
+              'ephemeral-storage': '4Mi',
+              memory: '5Gi',
+            },
+          };
 
           const apiSyncJob = await renderAndGetApiSyncJobContainer(
             await renderHelmChart({
@@ -564,20 +582,14 @@ describe('API Sync Job', () => {
                 snowWhite: {
                   apiSyncJob: {
                     ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob,
-                    resources: {
-                      memory: {
-                        request,
-                        limit,
-                      },
-                    },
+                    resources,
                   },
                 },
               },
             }),
           );
 
-          expect(apiSyncJob.resources.limits.memory).toBe(limit);
-          expect(apiSyncJob.resources.requests.memory).toBe(request);
+          expect(apiSyncJob.resources).toStrictEqual(resources);
         });
       });
 

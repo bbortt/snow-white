@@ -204,7 +204,7 @@ describe('Report Coordinator API', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'report-coordinator-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'report-coordinator-api',
@@ -258,7 +258,7 @@ describe('Report Coordinator API', () => {
             ),
           );
 
-          expect(metadata.annotations).toEqual(podAnnotations);
+          expect(metadata.annotations).toStrictEqual(podAnnotations);
         });
       });
 
@@ -302,7 +302,7 @@ describe('Report Coordinator API', () => {
             ),
           );
 
-          expect(templateSpec.imagePullSecrets).toEqual({ token });
+          expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
         });
       });
 
@@ -312,7 +312,7 @@ describe('Report Coordinator API', () => {
 
           expect(templateSpec.affinity.nodeAffinity).toBeNull();
           expect(templateSpec.affinity.podAffinity).toBeNull();
-          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+          expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
             preferredDuringSchedulingIgnoredDuringExecution: [
               {
                 podAffinityTerm: {
@@ -347,7 +347,7 @@ describe('Report Coordinator API', () => {
             ),
           );
 
-          expect(templateSpec.affinity).toEqual({
+          expect(templateSpec.affinity).toStrictEqual({
             myAffinity: {
               just: 'an example',
             },
@@ -853,7 +853,7 @@ describe('Report Coordinator API', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'report-coordinator-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'report-coordinator-api',
@@ -945,7 +945,7 @@ describe('Report Coordinator API', () => {
         const { spec } = service;
         expect(spec).toBeDefined();
 
-        expect(spec.selector).toEqual({
+        expect(spec.selector).toStrictEqual({
           'app.kubernetes.io/component': 'report-coordinator-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'report-coordinator-api',
