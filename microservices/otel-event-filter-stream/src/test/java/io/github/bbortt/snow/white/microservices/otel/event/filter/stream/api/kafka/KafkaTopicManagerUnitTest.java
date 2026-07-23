@@ -16,10 +16,10 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -35,15 +35,8 @@ class KafkaTopicManagerUnitTest {
   @Mock
   private OtelEventFilterStreamProperties otelEventFilterStreamPropertiesMock;
 
+  @InjectMocks
   private KafkaTopicManager fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new KafkaTopicManager(
-      environmentMock,
-      otelEventFilterStreamPropertiesMock
-    );
-  }
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {

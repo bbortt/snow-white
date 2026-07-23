@@ -15,10 +15,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.client.apiindexapi.api.ApiIndexApi;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +34,8 @@ class ApiIndexCachingServiceUnitTest {
   @Mock
   private ApiIndexApi apiIndexApiMock;
 
+  @InjectMocks
   private ApiIndexCachingService fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ApiIndexCachingService(apiIndexApiMock);
-  }
 
   @Nested
   class ApiExistsTest {

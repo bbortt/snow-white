@@ -86,6 +86,10 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
   @BeforeEach
   void setUp() {
+    // Order matters here: the constructor calls getArtifactory() eagerly to cache it,
+    // so the stub must be in place before construction.
+    // @InjectMocks would construct the fixture before this @BeforeEach body runs,
+    // breaking that ordering - manual construction is kept intentionally.
     doReturn(artifactoryProperties).when(apiSyncJobProperties).getArtifactory();
     doReturn("api-specs").when(artifactoryProperties).getRepository();
 

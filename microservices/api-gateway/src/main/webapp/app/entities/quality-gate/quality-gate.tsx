@@ -164,6 +164,115 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
     );
   };
 
+  const renderTableContent = (): React.ReactNode => {
+    if (displayedList && displayedList.length > 0) {
+      return (
+        <Table responsive>
+          <thead>
+            <tr>
+              {getTableHeaderRow('snowWhiteApp.qualityGate.calculationId', 'Calculation Id', 'calculationId')}
+              {getTableHeaderRow('snowWhiteApp.qualityGate.status', 'Status', 'status')}
+              {getTableHeaderRow('snowWhiteApp.qualityGate.qualityGateConfigName', 'Quality-Gate', 'qualityGateConfigName')}
+              {getTableHeaderRow('snowWhiteApp.qualityGate.createdAt', 'Initiated At', 'createdAt')}
+              <th>
+                <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
+              </th>
+              <th />
+            </tr>
+          </thead>
+          <TransitionGroup component="tbody" appear={animationsEnabled}>
+            {displayedList.map((qualityGate, i) => {
+              const key = `entity-${qualityGate.calculationId}`;
+              if (!nodeRefs.current.has(key)) {
+                nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+              }
+              const nodeRef = nodeRefs.current.get(key)!;
+              return (
+                <CSSTransition
+                  key={key}
+                  timeout={{
+                    enter: CSS_TRANSITION_TIMEOUT + i * 30,
+                    exit: 0,
+                    appear: CSS_TRANSITION_TIMEOUT + i * 30,
+                  }}
+                  classNames="table-row"
+                  nodeRef={nodeRef}
+                  appear={animationsEnabled}
+                  enter={animationsEnabled}
+                >
+                  <tr
+                    ref={nodeRef}
+                    data-cy="qualityGateTable"
+                    className={isExiting ? 'table-row-exit-active' : undefined}
+                    style={{ transitionDelay: `${i * 30}ms` }}
+                  >
+                    <td>
+                      <Button
+                        tag={Link}
+                        to={`/quality-gate/${qualityGate.calculationId}`}
+                        color="link"
+                        size="sm"
+                        className="text-truncate d-inline-block"
+                        style={{ maxWidth: '12rem', verticalAlign: 'bottom' }}
+                        title={qualityGate.calculationId}
+                      >
+                        {qualityGate.calculationId}
+                      </Button>
+                    </td>
+                    <td>
+                      <StatusBadge fill={true} status={qualityGate.status || ReportStatus.NOT_STARTED} />
+                    </td>
+                    <td>
+                      <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
+                        {qualityGate.qualityGateConfig?.name}
+                      </Button>
+                    </td>
+                    <td>
+                      {qualityGate.createdAt ? (
+                        <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
+                      ) : null}
+                    </td>
+                    <td>{qualityGate.apiTests?.length}</td>
+                    <td className="text-end">
+                      <div className="btn-group flex-btn-group-container">
+                        <Button
+                          tag={Link}
+                          to={`/quality-gate/${qualityGate.calculationId}`}
+                          color="info"
+                          size="sm"
+                          data-cy="entityDetailsButton"
+                        >
+                          <FontAwesomeIcon icon="eye" />{' '}
+                          <span className="d-none d-md-inline">
+                            <Translate contentKey="entity.action.view">View</Translate>
+                          </span>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                </CSSTransition>
+              );
+            })}
+          </TransitionGroup>
+        </Table>
+      );
+    }
+
+    if (loading) {
+      return (
+        <div className="text-center py-4">
+          <Spinner color="info" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="alert alert-warning">
+        <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="d-flex justify-content-end">
@@ -172,106 +281,7 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
           <Translate contentKey="snowWhiteApp.qualityGate.home.refreshListLabel">Refresh List</Translate>
         </Button>
       </div>
-      <div className="table-responsive">
-        {displayedList && displayedList.length > 0 ? (
-          <Table responsive>
-            <thead>
-              <tr>
-                {getTableHeaderRow('snowWhiteApp.qualityGate.calculationId', 'Calculation Id', 'calculationId')}
-                {getTableHeaderRow('snowWhiteApp.qualityGate.status', 'Status', 'status')}
-                {getTableHeaderRow('snowWhiteApp.qualityGate.qualityGateConfigName', 'Quality-Gate', 'qualityGateConfigName')}
-                {getTableHeaderRow('snowWhiteApp.qualityGate.createdAt', 'Initiated At', 'createdAt')}
-                <th>
-                  <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
-                </th>
-                <th />
-              </tr>
-            </thead>
-            <TransitionGroup component="tbody" appear={animationsEnabled}>
-              {displayedList.map((qualityGate, i) => {
-                const key = `entity-${qualityGate.calculationId}`;
-                if (!nodeRefs.current.has(key)) {
-                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
-                }
-                const nodeRef = nodeRefs.current.get(key)!;
-                return (
-                  <CSSTransition
-                    key={key}
-                    timeout={{
-                      enter: CSS_TRANSITION_TIMEOUT + i * 30,
-                      exit: 0,
-                      appear: CSS_TRANSITION_TIMEOUT + i * 30,
-                    }}
-                    classNames="table-row"
-                    nodeRef={nodeRef}
-                    appear={animationsEnabled}
-                    enter={animationsEnabled}
-                  >
-                    <tr
-                      ref={nodeRef}
-                      data-cy="qualityGateTable"
-                      className={isExiting ? 'table-row-exit-active' : undefined}
-                      style={{ transitionDelay: `${i * 30}ms` }}
-                    >
-                      <td>
-                        <Button
-                          tag={Link}
-                          to={`/quality-gate/${qualityGate.calculationId}`}
-                          color="link"
-                          size="sm"
-                          className="text-truncate d-inline-block"
-                          style={{ maxWidth: '12rem', verticalAlign: 'bottom' }}
-                          title={qualityGate.calculationId}
-                        >
-                          {qualityGate.calculationId}
-                        </Button>
-                      </td>
-                      <td>
-                        <StatusBadge fill={true} status={qualityGate.status || ReportStatus.NOT_STARTED} />
-                      </td>
-                      <td>
-                        <Button tag={Link} to={`/quality-gate-config/${qualityGate.qualityGateConfig?.name}`} color="link" size="sm">
-                          {qualityGate.qualityGateConfig?.name}
-                        </Button>
-                      </td>
-                      <td>
-                        {qualityGate.createdAt ? (
-                          <TextFormat type="date" value={dayjs(qualityGate.createdAt).toISOString()} format={APP_DATE_FORMAT} />
-                        ) : null}
-                      </td>
-                      <td>{qualityGate.apiTests?.length}</td>
-                      <td className="text-end">
-                        <div className="btn-group flex-btn-group-container">
-                          <Button
-                            tag={Link}
-                            to={`/quality-gate/${qualityGate.calculationId}`}
-                            color="info"
-                            size="sm"
-                            data-cy="entityDetailsButton"
-                          >
-                            <FontAwesomeIcon icon="eye" />{' '}
-                            <span className="d-none d-md-inline">
-                              <Translate contentKey="entity.action.view">View</Translate>
-                            </span>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  </CSSTransition>
-                );
-              })}
-            </TransitionGroup>
-          </Table>
-        ) : loading ? (
-          <div className="text-center py-4">
-            <Spinner color="info" />
-          </div>
-        ) : (
-          <div className="alert alert-warning">
-            <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
-          </div>
-        )}
-      </div>
+      <div className="table-responsive">{renderTableContent()}</div>
       {paginationAndSortingEnabled ? (
         <div className={qualityGateList && qualityGateList.length > 0 ? '' : 'd-none'}>
           <div className="justify-content-center d-flex mb-1">

@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.HousekeepingService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -25,12 +25,8 @@ class HousekeepingResourceUnitTest {
   @Mock
   private HousekeepingService housekeepingServiceMock;
 
+  @InjectMocks
   private HousekeepingResource fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new HousekeepingResource(housekeepingServiceMock);
-  }
 
   @Nested
   class HousekeepingTest {

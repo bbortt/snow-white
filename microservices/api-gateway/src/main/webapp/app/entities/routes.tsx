@@ -12,14 +12,13 @@ import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
 import React from 'react';
 import { Route } from 'react-router';
 
-/* eslint-disable */
-// entitiesReducers must be imported upfront!
+/* eslint-disable perfectionist/sort-imports -- entitiesReducers must be imported upfront! */
 import entitiesReducers from './reducers';
 import ApiIndex from 'app/entities/api-index';
 import OpenApiCriterion from 'app/entities/open-api-criterion';
 import QualityGate from 'app/entities/quality-gate';
 import QualityGateConfig from 'app/entities/quality-gate-config';
-/* eslint-enable */
+/* eslint-enable perfectionist/sort-imports */
 
 // Inject reducers at module load time so the store is ready before any component renders.
 getStore().injectReducer('snowwhite', combineReducers(entitiesReducers as ReducersMapObject));

@@ -46,6 +46,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -68,16 +69,8 @@ class OpenApiResultListenerUnitTest {
   @Mock
   private ReportCoordinationServiceProperties propertiesMock;
 
+  @InjectMocks
   private OpenApiResultListener fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new OpenApiResultListener(
-      openTelemetryMock,
-      reportServiceMock,
-      propertiesMock
-    );
-  }
 
   @Nested
   class OnOpenApiCoverageResponseTest {

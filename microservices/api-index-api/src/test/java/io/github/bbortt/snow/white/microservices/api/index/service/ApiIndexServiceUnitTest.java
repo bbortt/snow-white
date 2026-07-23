@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -43,12 +44,8 @@ class ApiIndexServiceUnitTest {
   @Mock
   private ApiReferenceRepository apiReferenceRepositoryMock;
 
+  @InjectMocks
   private ApiIndexService fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ApiIndexService(apiReferenceRepositoryMock);
-  }
 
   @Nested
   class PersistTest {

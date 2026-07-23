@@ -40,6 +40,74 @@ export const OpenApiCoverageCriteria = () => {
     handleSyncList();
   }, []);
 
+  const renderTableContent = (): React.ReactNode => {
+    if (displayedList && displayedList.length > 0) {
+      return (
+        <Table responsive>
+          <thead>
+            <tr>
+              <th>
+                <Translate contentKey="snowWhiteApp.openApiCriterion.name">Coverage Type</Translate>
+              </th>
+              <th>
+                <Translate contentKey="snowWhiteApp.openApiCriterion.descriptionHeader">Description</Translate>
+              </th>
+            </tr>
+          </thead>
+          <TransitionGroup component="tbody" appear={animationsEnabled}>
+            {displayedList.map((openApiCriterion, i) => {
+              const name = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.name`);
+              const description = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.description`);
+
+              const key = `entity-${openApiCriterion.name}`;
+              if (!nodeRefs.current.has(key)) {
+                nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+              }
+              const nodeRef = nodeRefs.current.get(key)!;
+
+              return (
+                <CSSTransition
+                  key={key}
+                  timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                  classNames="table-row"
+                  nodeRef={nodeRef}
+                  appear={animationsEnabled}
+                  enter={animationsEnabled}
+                >
+                  <tr
+                    ref={nodeRef}
+                    data-testid="openApiCoverageCriteriaTable"
+                    className={isExiting ? 'table-row-exit-active' : undefined}
+                    style={{ transitionDelay: `${i * 30}ms` }}
+                  >
+                    <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
+                    <td>
+                      {description.startsWith('translation-not-found') ? openApiCriterion.description : <TextWithCode text={description} />}
+                    </td>
+                  </tr>
+                </CSSTransition>
+              );
+            })}
+          </TransitionGroup>
+        </Table>
+      );
+    }
+
+    if (loading) {
+      return (
+        <div className="text-center py-4">
+          <Spinner color="info" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="alert alert-warning">
+        <Translate contentKey="snowWhiteApp.openApiCriterion.home.notFound">No Open Api Criteria found</Translate>
+      </div>
+    );
+  };
+
   return (
     <div>
       <h2 id="open-api-criterion-heading" data-testid="OpenApiCriterionHeading">
@@ -51,69 +119,7 @@ export const OpenApiCoverageCriteria = () => {
           </Button>
         </div>
       </h2>
-      <div className="table-responsive">
-        {displayedList && displayedList.length > 0 ? (
-          <Table responsive>
-            <thead>
-              <tr>
-                <th>
-                  <Translate contentKey="snowWhiteApp.openApiCriterion.name">Coverage Type</Translate>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.openApiCriterion.descriptionHeader">Description</Translate>
-                </th>
-              </tr>
-            </thead>
-            <TransitionGroup component="tbody" appear={animationsEnabled}>
-              {displayedList.map((openApiCriterion, i) => {
-                const name = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.name`);
-                const description = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.description`);
-
-                const key = `entity-${openApiCriterion.name}`;
-                if (!nodeRefs.current.has(key)) {
-                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
-                }
-                const nodeRef = nodeRefs.current.get(key)!;
-
-                return (
-                  <CSSTransition
-                    key={key}
-                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
-                    classNames="table-row"
-                    nodeRef={nodeRef}
-                    appear={animationsEnabled}
-                    enter={animationsEnabled}
-                  >
-                    <tr
-                      ref={nodeRef}
-                      data-testid="openApiCoverageCriteriaTable"
-                      className={isExiting ? 'table-row-exit-active' : undefined}
-                      style={{ transitionDelay: `${i * 30}ms` }}
-                    >
-                      <td>{name.startsWith('translation-not-found') ? openApiCriterion.name : name}</td>
-                      <td>
-                        {description.startsWith('translation-not-found') ? (
-                          openApiCriterion.description
-                        ) : (
-                          <TextWithCode text={description} />
-                        )}
-                      </td>
-                    </tr>
-                  </CSSTransition>
-                );
-              })}
-            </TransitionGroup>
-          </Table>
-        ) : loading ? (
-          <div className="text-center py-4">
-            <Spinner color="info" />
-          </div>
-        ) : (
-          <div className="alert alert-warning">
-            <Translate contentKey="snowWhiteApp.openApiCriterion.home.notFound">No Open Api Criteria found</Translate>
-          </div>
-        )}
-      </div>
+      <div className="table-responsive">{renderTableContent()}</div>
     </div>
   );
 };

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
@@ -67,6 +68,7 @@ class OpenApiInformationEnhancerUnitTest {
   @Mock
   private SpringWebInterceptorProperties propertiesMock;
 
+  @InjectMocks
   private OpenApiInformationEnhancer fixture;
 
   private static SnowWhiteInformation createMockAnnotation(
@@ -137,8 +139,6 @@ class OpenApiInformationEnhancerUnitTest {
     apiVersionAttributeKey = "custom.api.version" + randomUUID();
     serviceNameAttributeKey = "custom.service.name" + randomUUID();
     operationIdAttributeKey = "custom.operation.id" + randomUUID();
-
-    fixture = new OpenApiInformationEnhancer(propertiesMock);
 
     setField(fixture, "spanProvider", spanProviderMock, SpanProvider.class);
   }
