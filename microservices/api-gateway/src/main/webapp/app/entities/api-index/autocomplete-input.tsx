@@ -63,8 +63,10 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
     }
   };
 
+  const wrapperClassName = ['autocomplete-input-wrapper', className].filter(Boolean).join(' ');
+
   return (
-    <div ref={containerRef} className={`autocomplete-input-wrapper${className ? ` ${className}` : ''}`}>
+    <div ref={containerRef} className={wrapperClassName}>
       <Input
         type="text"
         bsSize={bsSize}
@@ -74,18 +76,22 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         autoComplete="off"
+        role="combobox"
+        aria-expanded={isOpen && filtered.length > 0}
+        aria-autocomplete="list"
       />
       {isOpen && filtered.length > 0 && (
-        <ul className="autocomplete-dropdown list-group">
-          {filtered.map((s, i) => (
-            <li
-              key={s}
-              className={`list-group-item list-group-item-action${i === activeIndex ? ' active' : ''}`}
-              onMouseDown={() => handleSelect(s)}
-            >
-              {s}
-            </li>
-          ))}
+        <ul className="autocomplete-dropdown list-group" role="listbox">
+          {filtered.map((s, i) => {
+            const itemClassName = ['list-group-item', 'list-group-item-action', i === activeIndex ? 'active' : '']
+              .filter(Boolean)
+              .join(' ');
+            return (
+              <li key={s} className={itemClassName} role="option" aria-selected={i === activeIndex} onMouseDown={() => handleSelect(s)}>
+                {s}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

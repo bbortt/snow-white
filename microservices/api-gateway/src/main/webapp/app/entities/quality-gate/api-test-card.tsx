@@ -15,7 +15,7 @@ import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-blo
 import { CoverageProgressBar } from 'app/entities/quality-gate/coverage-progress-bar';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import React, { MouseEventHandler, ReactElement, useMemo, useState } from 'react';
+import React, { ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
 import { Card, CardBody, CardTitle, Col, Collapse, Row, Tooltip } from 'reactstrap';
 import { v4 as uuidv4 } from 'uuid';

@@ -9,10 +9,10 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,12 +22,8 @@ class ApiIndexApiClientUnitTest {
   @Mock
   private ApiIndexApi apiIndexApiMock;
 
+  @InjectMocks
   private ApiIndexApiClient fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ApiIndexApiClient(apiIndexApiMock);
-  }
 
   @Nested
   class GetApiDetailsWithHttpInfoTest {

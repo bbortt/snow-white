@@ -131,11 +131,10 @@ public class ContentTypeCoverageCalculator
     var observed = new HashSet<String>();
 
     for (OpenTelemetryData data : telemetryList) {
-      if (isNull(data.attributes())) {
-        continue;
-      }
+      JsonNode headerNode = isNull(data.attributes())
+        ? null
+        : data.attributes().get(CONTENT_TYPE_HEADER_KEY);
 
-      JsonNode headerNode = data.attributes().get(CONTENT_TYPE_HEADER_KEY);
       if (isNull(headerNode)) {
         continue;
       }

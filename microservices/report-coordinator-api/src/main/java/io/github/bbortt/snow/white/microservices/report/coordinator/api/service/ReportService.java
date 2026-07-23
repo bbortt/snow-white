@@ -147,7 +147,7 @@ public class ReportService {
   }
 
   @WithSpan
-  @Transactional
+  @Transactional(rollbackFor = QualityGateNotFoundException.class)
   public QualityGateReport initializeQualityGateCalculation(
     String qualityGateConfigName,
     Set<ApiTest> apiTests,

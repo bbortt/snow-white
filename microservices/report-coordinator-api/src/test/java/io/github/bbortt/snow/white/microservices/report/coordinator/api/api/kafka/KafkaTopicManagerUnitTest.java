@@ -16,10 +16,10 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
@@ -38,15 +38,8 @@ class KafkaTopicManagerUnitTest {
   @Mock
   private ReportCoordinationServiceProperties.OpenapiCalculationResponse openapiCalculationResponseMock;
 
+  @InjectMocks
   private KafkaTopicManager fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new KafkaTopicManager(
-      environmentMock,
-      reportCoordinationServicePropertiesMock
-    );
-  }
 
   @Test
   void shouldBeEnabled_whenPropertyIsSet() {

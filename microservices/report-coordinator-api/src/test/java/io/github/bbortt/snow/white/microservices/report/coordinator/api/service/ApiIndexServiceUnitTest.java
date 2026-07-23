@@ -26,10 +26,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService.ValidationResult.Success;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.client.ApiIndexApiClient;
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
@@ -43,12 +43,8 @@ class ApiIndexServiceUnitTest {
   @Mock
   private ApiTestMapper apiTestMapperMock;
 
+  @InjectMocks
   private ApiIndexService fixture;
-
-  @BeforeEach
-  void beforeEach() {
-    fixture = new ApiIndexService(apiIndexApiClientMock, apiTestMapperMock);
-  }
 
   @Nested
   class FetchCompleteApiInformationTest {

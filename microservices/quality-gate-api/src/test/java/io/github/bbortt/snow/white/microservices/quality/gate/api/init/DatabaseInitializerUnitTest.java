@@ -10,10 +10,10 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,15 +26,8 @@ class DatabaseInitializerUnitTest {
   @Mock
   private QualityGateService qualityGateServiceMock;
 
+  @InjectMocks
   private DatabaseInitializer fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new DatabaseInitializer(
-      openApiCoverageConfigurationServiceMock,
-      qualityGateServiceMock
-    );
-  }
 
   @Nested
   class RunTest {

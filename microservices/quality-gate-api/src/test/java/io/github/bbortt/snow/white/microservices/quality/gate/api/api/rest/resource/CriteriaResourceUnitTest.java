@@ -16,10 +16,10 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mappe
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -32,15 +32,8 @@ class CriteriaResourceUnitTest {
   @Mock
   private OpenApiCoverageConfigurationService openApiCoverageConfigurationServiceMock;
 
+  @InjectMocks
   private CriteriaResource fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new CriteriaResource(
-      openApiCoverageConfigurationMapperMock,
-      openApiCoverageConfigurationServiceMock
-    );
-  }
 
   @Nested
   class listOpenApiCoverageCriteriaTest {

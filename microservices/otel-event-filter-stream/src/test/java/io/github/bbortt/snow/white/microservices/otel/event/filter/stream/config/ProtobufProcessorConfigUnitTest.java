@@ -16,10 +16,10 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -39,12 +39,8 @@ class ProtobufProcessorConfigUnitTest {
 
   private final StreamsBuilder streamsBuilder = new StreamsBuilder();
 
+  @InjectMocks
   private ProtobufProcessorConfig fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ProtobufProcessorConfig(environmentMock);
-  }
 
   @Nested
   class JsonProcessorTest {

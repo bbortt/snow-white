@@ -17,10 +17,10 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,14 +30,8 @@ class DefaultOpenApiQualityGatesUnitTest {
   @Mock
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepositoryMock;
 
+  @InjectMocks
   private DefaultOpenApiQualityGates fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new DefaultOpenApiQualityGates(
-      openApiCoverageConfigurationRepositoryMock
-    );
-  }
 
   @Nested
   class GetDefaultOpenApiCoverageConfigurationsTest {

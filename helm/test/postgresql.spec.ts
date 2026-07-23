@@ -204,35 +204,22 @@ describe('PostgreSQL', () => {
       expect(secret.metadata.name).toHaveLength(33); // static name
     });
 
-    it('should define passwords for api-index-api database users', async () => {
-      const secret = await renderAndGetPostgresqlSecret();
+    it.each([
+      { service: 'api-index-api', prefix: 'api-index' },
+      { service: 'report-coordinator-api', prefix: 'report-coord' },
+      { service: 'quality-gate-api', prefix: 'quality-gate' },
+    ])(
+      'should define passwords for $service database users',
+      async ({ prefix }) => {
+        const secret = await renderAndGetPostgresqlSecret();
 
-      const { data } = secret;
-      expect(data).toBeDefined();
+        const { data } = secret;
+        expect(data).toBeDefined();
 
-      expect(data['api-index-password']).toBeDefined();
-      expect(data['api-index-flyway-password']).toBeDefined();
-    });
-
-    it('should define passwords for report-coordinator-api database users', async () => {
-      const secret = await renderAndGetPostgresqlSecret();
-
-      const { data } = secret;
-      expect(data).toBeDefined();
-
-      expect(data['report-coord-password']).toBeDefined();
-      expect(data['report-coord-flyway-password']).toBeDefined();
-    });
-
-    it('should define passwords for quality-gate-api database users', async () => {
-      const secret = await renderAndGetPostgresqlSecret();
-
-      const { data } = secret;
-      expect(data).toBeDefined();
-
-      expect(data['quality-gate-password']).toBeDefined();
-      expect(data['quality-gate-flyway-password']).toBeDefined();
-    });
+        expect(data[`${prefix}-password`]).toBeDefined();
+        expect(data[`${prefix}-flyway-password`]).toBeDefined();
+      },
+    );
 
     it('should not be rendered when postgresql is disabled with values', async () => {
       const manifests = await renderHelmChart({
@@ -278,28 +265,19 @@ describe('PostgreSQL', () => {
       expect(metadata.name).toMatch('snow-white-postgresql-init-scripts');
     });
 
-    it('should define init script for api-index-api', async () => {
+    it.each([
+      { service: 'api-index-api', scriptName: 'api-index.sh' },
+      {
+        service: 'report-coordinator-api',
+        scriptName: 'report-coordinator.sh',
+      },
+      { service: 'quality-gate-api', scriptName: 'quality-gate.sh' },
+    ])('should define init script for $service', async ({ scriptName }) => {
       const configMap = await renderAndGetConfigMap();
 
       const { data } = configMap;
       expect(data).toBeDefined();
-      expect(data['api-index.sh']).toBeDefined();
-    });
-
-    it('should define init script for report-coordinator-api', async () => {
-      const configMap = await renderAndGetConfigMap();
-
-      const { data } = configMap;
-      expect(data).toBeDefined();
-      expect(data['report-coordinator.sh']).toBeDefined();
-    });
-
-    it('should define init script for quality-gate-api', async () => {
-      const configMap = await renderAndGetConfigMap();
-
-      const { data } = configMap;
-      expect(data).toBeDefined();
-      expect(data['quality-gate.sh']).toBeDefined();
+      expect(data[scriptName]).toBeDefined();
     });
   });
 });

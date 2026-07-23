@@ -51,41 +51,13 @@ public class ApiSyncProcessor {
     Map<ApiLoadStatus, AtomicLong> statusTracker = new ConcurrentHashMap<>();
 
     // Poison pill used to stop workers cleanly
-    Supplier<ApiInformation> POISON = () -> null;
+    Supplier<ApiInformation> poisonPill = () -> null;
 
     try (var workers = Executors.newFixedThreadPool(workerCount)) {
       for (int i = 0; i < workerCount; i++) {
-        workers.submit(() -> {
-          try {
-            while (true) {
-              Supplier<ApiInformation> supplier = queue.take();
-
-              // shutdown signal
-              if (supplier == POISON) {
-                return;
-              }
-
-              var apiInformation = supplier.get();
-              if (isNull(apiInformation)) {
-                apiInformation = ApiInformation.builder()
-                  .build()
-                  .withLoadStatus(UNLOADED);
-              }
-
-              if (apiInformationPublisher.test(apiInformation)) {
-                apiInformation = apiInformation.withLoadStatus(PUBLISHED);
-              }
-
-              statusTracker
-                .computeIfAbsent(apiInformation.getLoadStatus(), k ->
-                  new AtomicLong()
-                )
-                .incrementAndGet();
-            }
-          } catch (InterruptedException _) {
-            currentThread().interrupt();
-          }
-        });
+        workers.submit(() ->
+          runWorker(queue, poisonPill, apiInformationPublisher, statusTracker)
+        );
       }
 
       for (Supplier<ApiInformation> supplier : suppliers) {
@@ -93,10 +65,63 @@ public class ApiSyncProcessor {
       }
 
       for (int i = 0; i < workerCount; i++) {
-        queue.put(POISON);
+        queue.put(poisonPill);
       }
     }
 
+    return toStatusCounts(statusTracker);
+  }
+
+  private void runWorker(
+    BlockingQueue<Supplier<ApiInformation>> queue,
+    Supplier<ApiInformation> poisonPill,
+    Predicate<ApiInformation> apiInformationPublisher,
+    Map<ApiLoadStatus, AtomicLong> statusTracker
+  ) {
+    try {
+      while (true) {
+        Supplier<ApiInformation> supplier = queue.take();
+
+        // shutdown signal
+        if (supplier == poisonPill) {
+          return;
+        }
+
+        trackSuppliedApiInformation(
+          supplier,
+          apiInformationPublisher,
+          statusTracker
+        );
+      }
+    } catch (InterruptedException _) {
+      currentThread().interrupt();
+    }
+  }
+
+  private void trackSuppliedApiInformation(
+    Supplier<ApiInformation> supplier,
+    Predicate<ApiInformation> apiInformationPublisher,
+    Map<ApiLoadStatus, AtomicLong> statusTracker
+  ) {
+    var apiInformation = supplier.get();
+    if (isNull(apiInformation)) {
+      apiInformation = ApiInformation.builder()
+        .build()
+        .withLoadStatus(UNLOADED);
+    }
+
+    if (apiInformationPublisher.test(apiInformation)) {
+      apiInformation = apiInformation.withLoadStatus(PUBLISHED);
+    }
+
+    statusTracker
+      .computeIfAbsent(apiInformation.getLoadStatus(), k -> new AtomicLong())
+      .incrementAndGet();
+  }
+
+  private static Map<ApiLoadStatus, Long> toStatusCounts(
+    Map<ApiLoadStatus, AtomicLong> statusTracker
+  ) {
     return statusTracker
       .entrySet()
       .stream()

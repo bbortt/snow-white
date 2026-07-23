@@ -44,6 +44,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.json.JsonMapper;
@@ -57,15 +58,8 @@ class OpenApiCoverageServiceUnitTest {
   @Mock
   private OpenApiCoverageCalculationCoordinator openApiCoverageCalculationCoordinatorMock;
 
+  @InjectMocks
   private OpenApiCoverageService fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new OpenApiCoverageService(
-      openApiCoverageStreamPropertiesMock,
-      openApiCoverageCalculationCoordinatorMock
-    );
-  }
 
   @Nested
   class TestOpenApiTest {
