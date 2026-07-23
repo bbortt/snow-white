@@ -30,7 +30,7 @@ public class QualityGateApiClientConfig {
   ) {
     var apiClient = new ApiClient(restClient);
     apiClient.setBasePath(
-      reportCoordinationServiceProperties.getApiIndex().getBaseUrl()
+      reportCoordinationServiceProperties.getQualityGateApi().getBaseUrl()
     );
     return apiClient;
   }

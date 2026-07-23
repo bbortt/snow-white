@@ -8,11 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,8 +38,9 @@ class ApiIndexServiceRetryIT extends AbstractReportCoordinationServiceIT {
 
   @BeforeEach
   void setUp() {
-    reset();
-    stubFor(get(urlEqualTo(ENDPOINT)).willReturn(serverError()));
+    apiIndexApi.resetMappings();
+
+    apiIndexApi.register(get(urlEqualTo(ENDPOINT)).willReturn(serverError()));
   }
 
   @Test
@@ -53,6 +51,6 @@ class ApiIndexServiceRetryIT extends AbstractReportCoordinationServiceIT {
         assertThat(r).isInstanceOf(ValidationResult.Failure.class)
       );
 
-    verify(3, getRequestedFor(urlEqualTo(ENDPOINT)));
+    apiIndexApi.verifyThat(3, getRequestedFor(urlEqualTo(ENDPOINT)));
   }
 }

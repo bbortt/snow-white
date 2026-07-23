@@ -11,29 +11,21 @@ import static org.mockito.Mockito.doReturn;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.ApiClient;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestClient;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexApiClientConfigUnitTest {
 
   @Mock
-  private RestClient restClientMock;
-
-  @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  @InjectMocks
   private ApiIndexApiClientConfig fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ApiIndexApiClientConfig(restClientMock);
-  }
 
   @Nested
   class ApiClientTest {

@@ -9,11 +9,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kaf
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
@@ -80,7 +77,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   @BeforeEach
   void beforeEachSetup() {
-    reset();
+    qualityGateApi.resetMappings();
   }
 
   @Test
@@ -150,7 +147,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
             )
       );
 
-    verify(
+    qualityGateApi.verifyThat(
       0,
       getRequestedFor(
         urlMatching("/api/rest/v1/quality-gates/" + qualityGateConfigName)
@@ -276,7 +273,9 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
       duration
     );
 
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+    qualityGateApi.verifyThat(
+      getRequestedFor(urlEqualTo(qualityGateByNameEndpoint))
+    );
   }
 
   private @NonNull String createQualityGateApiWiremockStub(
@@ -289,7 +288,7 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
     var qualityGateByNameEndpoint =
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;
-    stubFor(
+    qualityGateApi.register(
       get(qualityGateByNameEndpoint).willReturn(
         okJson(jsonMapper.writeValueAsString(qualityGateConfig))
       )

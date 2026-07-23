@@ -11,44 +11,36 @@ import static org.mockito.Mockito.doReturn;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.ApiClient;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.api.QualityGateApi;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestClient;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateApiClientConfigUnitTest {
 
   @Mock
-  private RestClient restClientMock;
-
-  @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  @InjectMocks
   private QualityGateApiClientConfig fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new QualityGateApiClientConfig(restClientMock);
-  }
 
   @Nested
   class ApiClientTest {
 
     @Mock
-    private ReportCoordinationServiceProperties.ApiIndexProperties apiIndexPropertiesMock;
+    private ReportCoordinationServiceProperties.QualityGateApiProperties qualityGateApiPropertiesMock;
 
     @Test
     void shouldConfigureBasePath() {
-      doReturn(apiIndexPropertiesMock)
+      doReturn(qualityGateApiPropertiesMock)
         .when(reportCoordinationServicePropertiesMock)
-        .getApiIndex();
+        .getQualityGateApi();
 
       var basePath = "basePath";
-      doReturn(basePath).when(apiIndexPropertiesMock).getBaseUrl();
+      doReturn(basePath).when(qualityGateApiPropertiesMock).getBaseUrl();
 
       assertThat(fixture.apiClient(reportCoordinationServicePropertiesMock))
         .isInstanceOf(ApiClient.class)
