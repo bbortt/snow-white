@@ -6,11 +6,15 @@
 
 package io.github.bbortt.snow.white.commons.logging;
 
+import static lombok.AccessLevel.PRIVATE;
+
+import lombok.NoArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.ser.BeanSerializerFactory;
 
-public class LoggingJsonMapper {
+@NoArgsConstructor(access = PRIVATE)
+public final class LoggingJsonMapper {
 
   private static final ObjectMapper MASKING_JSON_MAPPER = JsonMapper.builder()
     .serializerFactory(

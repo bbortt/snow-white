@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.client;
 
+import static java.lang.Boolean.FALSE;
+import static java.util.Objects.requireNonNullElse;
 import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -51,7 +53,7 @@ public class ApiIndexApiClient {
       otelServiceName,
       apiName,
       apiVersion,
-      includePrereleases
+      requireNonNullElse(includePrereleases, FALSE)
     );
   }
 

@@ -35,7 +35,7 @@ public class QualityGateService {
   private final DefaultOpenApiQualityGates defaultOpenApiQualityGates;
   private final QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
-  @Transactional
+  @Transactional(rollbackFor = ConfigurationNameAlreadyExistsException.class)
   public QualityGateConfiguration persist(
     @NonNull QualityGateConfiguration qualityGateConfiguration,
     @Nullable List<String> openApiCriteria
@@ -78,7 +78,12 @@ public class QualityGateService {
     target.setOpenApiCoverageConfigurations(openApiCoverageConfigurations);
   }
 
-  @Transactional
+  @Transactional(
+    rollbackFor = {
+      ConfigurationDoesNotExistException.class,
+      UnmodifiableConfigurationException.class,
+    }
+  )
   public void deleteByName(String name)
     throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
     if (!qualityGateConfigurationRepository.existsByName(name)) {

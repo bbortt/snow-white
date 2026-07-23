@@ -6,14 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.processing;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.MANDATORY_INFORMATION_MISSING;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.NO_SOURCE;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISHED;
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.UNLOADED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
@@ -28,7 +25,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ MockitoExtension.class })
@@ -41,10 +37,14 @@ class ApiSyncProcessorUnitTest {
 
   @BeforeEach
   void setup() {
-    properties = Mockito.mock(ApiSyncJobProperties.class);
+    properties = mock(ApiSyncJobProperties.class);
 
-    Mockito.when(properties.getMaxParallelSyncTasks()).thenReturn(3);
-    Mockito.when(properties.getWorkQueueCapacity()).thenReturn(10);
+    // Order matters here: the constructor reads these getters eagerly to cache them as final int fields,
+    // so the stubs must be in place before construction.
+    // @InjectMocks would construct the fixture before this @BeforeEach body runs,
+    // breaking that ordering - manual construction is kept intentionally.
+    when(properties.getMaxParallelSyncTasks()).thenReturn(3);
+    when(properties.getWorkQueueCapacity()).thenReturn(10);
 
     fixture = new ApiSyncProcessor(properties);
   }

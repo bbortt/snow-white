@@ -18,10 +18,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.clie
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.mapper.QualityGateConfigMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestClientResponseException;
@@ -43,15 +43,8 @@ class QualityGateServiceUnitTest {
   @Mock
   private QualityGateConfig qualityGateConfig;
 
+  @InjectMocks
   private QualityGateService fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new QualityGateService(
-      qualityGateApiMock,
-      qualityGateConfigMapperMock
-    );
-  }
 
   @Nested
   class findQualityGateConfigByNameTest {

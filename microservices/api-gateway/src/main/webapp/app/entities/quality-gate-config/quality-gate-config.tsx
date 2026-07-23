@@ -105,6 +105,134 @@ export const QualityGateConfig = () => {
     return order === ASC ? faSortUp : faSortDown;
   };
 
+  const renderTableContent = (): React.ReactNode => {
+    if (displayedList && displayedList.length > 0) {
+      return (
+        <Table responsive>
+          <thead>
+            <tr>
+              <th>
+                <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('name')}>
+                  <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
+                </button>
+              </th>
+              <th>
+                <Translate contentKey="snowWhiteApp.qualityGateConfig.description">Description</Translate>{' '}
+              </th>
+              <th>
+                <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('isPredefined')}>
+                  <Translate contentKey="snowWhiteApp.qualityGateConfig.isPredefined">Is Predefined</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('isPredefined')} />
+                </button>
+              </th>
+              <th>
+                <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('minCoveragePercentage')}>
+                  <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Required Coverage Percentage</Translate>{' '}
+                  <FontAwesomeIcon icon={getSortIconByFieldName('minCoveragePercentage')} />
+                </button>
+              </th>
+              <th />
+            </tr>
+          </thead>
+          <TransitionGroup component="tbody" appear={animationsEnabled}>
+            {displayedList.map((qualityGateConfig: IQualityGateConfig, i) => {
+              const key = `entity-${qualityGateConfig.name}`;
+              if (!nodeRefs.current.has(key)) {
+                nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+              }
+              const nodeRef = nodeRefs.current.get(key)!;
+              return (
+                <CSSTransition
+                  key={key}
+                  timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
+                  classNames="table-row"
+                  nodeRef={nodeRef}
+                  appear={animationsEnabled}
+                  enter={animationsEnabled}
+                >
+                  <tr
+                    ref={nodeRef}
+                    data-testid="qualityGateConfigTable"
+                    className={isExiting ? 'table-row-exit-active' : undefined}
+                    style={{ transitionDelay: `${i * 30}ms` }}
+                  >
+                    <td>
+                      <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
+                        {qualityGateConfig.name}
+                      </Button>
+                    </td>
+                    <td>{qualityGateConfig.description}</td>
+                    <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
+                    <td>{qualityGateConfig.minCoveragePercentage} %</td>
+                    <td className="text-end">
+                      <div className="btn-group flex-btn-group-container">
+                        <Button
+                          tag={Link}
+                          to={`/quality-gate-config/${qualityGateConfig.name}`}
+                          color="info"
+                          size="sm"
+                          data-testid="entityDetailsButton"
+                        >
+                          <FontAwesomeIcon icon="eye" />{' '}
+                          <span className="d-none d-md-inline">
+                            <Translate contentKey="entity.action.view">View</Translate>
+                          </span>
+                        </Button>
+                        {!qualityGateConfig.isPredefined && (
+                          <>
+                            <Button
+                              tag={Link}
+                              to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                              color="primary"
+                              size="sm"
+                              data-testid="entityEditButton"
+                            >
+                              <FontAwesomeIcon icon="pencil-alt" />{' '}
+                              <span className="d-none d-md-inline">
+                                <Translate contentKey="entity.action.edit">Edit</Translate>
+                              </span>
+                            </Button>
+                            <Button
+                              tag={Link}
+                              to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                              color="danger"
+                              size="sm"
+                              data-testid="entityDeleteButton"
+                            >
+                              <FontAwesomeIcon icon="trash" />{' '}
+                              <span className="d-none d-md-inline">
+                                <Translate contentKey="entity.action.delete">Delete</Translate>
+                              </span>
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                </CSSTransition>
+              );
+            })}
+          </TransitionGroup>
+        </Table>
+      );
+    }
+
+    if (loading) {
+      return (
+        <div className="text-center py-4">
+          <Spinner color="info" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="alert alert-warning">
+        <Translate contentKey="snowWhiteApp.qualityGateConfig.home.notFound">No Quality Gate Configs found</Translate>
+      </div>
+    );
+  };
+
   return (
     <div>
       <h2 id="quality-gate-config-heading" data-testid="QualityGateConfigHeading">
@@ -126,125 +254,7 @@ export const QualityGateConfig = () => {
           </Link>
         </div>
       </h2>
-      <div className="table-responsive">
-        {displayedList && displayedList.length > 0 ? (
-          <Table responsive>
-            <thead>
-              <tr>
-                <th>
-                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('name')}>
-                    <Translate contentKey="snowWhiteApp.qualityGateConfig.name">Name</Translate>{' '}
-                    <FontAwesomeIcon icon={getSortIconByFieldName('name')} />
-                  </button>
-                </th>
-                <th>
-                  <Translate contentKey="snowWhiteApp.qualityGateConfig.description">Description</Translate>{' '}
-                </th>
-                <th>
-                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('isPredefined')}>
-                    <Translate contentKey="snowWhiteApp.qualityGateConfig.isPredefined">Is Predefined</Translate>{' '}
-                    <FontAwesomeIcon icon={getSortIconByFieldName('isPredefined')} />
-                  </button>
-                </th>
-                <th>
-                  <button type="button" className="hand border-0 bg-transparent p-0" onClick={sort('minCoveragePercentage')}>
-                    <Translate contentKey="snowWhiteApp.qualityGateConfig.minCoveragePercentage">Required Coverage Percentage</Translate>{' '}
-                    <FontAwesomeIcon icon={getSortIconByFieldName('minCoveragePercentage')} />
-                  </button>
-                </th>
-                <th />
-              </tr>
-            </thead>
-            <TransitionGroup component="tbody" appear={animationsEnabled}>
-              {displayedList.map((qualityGateConfig: IQualityGateConfig, i) => {
-                const key = `entity-${qualityGateConfig.name}`;
-                if (!nodeRefs.current.has(key)) {
-                  nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
-                }
-                const nodeRef = nodeRefs.current.get(key)!;
-                return (
-                  <CSSTransition
-                    key={key}
-                    timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
-                    classNames="table-row"
-                    nodeRef={nodeRef}
-                    appear={animationsEnabled}
-                    enter={animationsEnabled}
-                  >
-                    <tr
-                      ref={nodeRef}
-                      data-testid="qualityGateConfigTable"
-                      className={isExiting ? 'table-row-exit-active' : undefined}
-                      style={{ transitionDelay: `${i * 30}ms` }}
-                    >
-                      <td>
-                        <Button tag={Link} to={`/quality-gate-config/${qualityGateConfig.name}`} color="link" size="sm">
-                          {qualityGateConfig.name}
-                        </Button>
-                      </td>
-                      <td>{qualityGateConfig.description}</td>
-                      <td>{qualityGateConfig.isPredefined ? 'true' : 'false'}</td>
-                      <td>{qualityGateConfig.minCoveragePercentage} %</td>
-                      <td className="text-end">
-                        <div className="btn-group flex-btn-group-container">
-                          <Button
-                            tag={Link}
-                            to={`/quality-gate-config/${qualityGateConfig.name}`}
-                            color="info"
-                            size="sm"
-                            data-testid="entityDetailsButton"
-                          >
-                            <FontAwesomeIcon icon="eye" />{' '}
-                            <span className="d-none d-md-inline">
-                              <Translate contentKey="entity.action.view">View</Translate>
-                            </span>
-                          </Button>
-                          {!qualityGateConfig.isPredefined && (
-                            <>
-                              <Button
-                                tag={Link}
-                                to={`/quality-gate-config/${qualityGateConfig.name}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
-                                color="primary"
-                                size="sm"
-                                data-testid="entityEditButton"
-                              >
-                                <FontAwesomeIcon icon="pencil-alt" />{' '}
-                                <span className="d-none d-md-inline">
-                                  <Translate contentKey="entity.action.edit">Edit</Translate>
-                                </span>
-                              </Button>
-                              <Button
-                                tag={Link}
-                                to={`/quality-gate-config/${qualityGateConfig.name}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
-                                color="danger"
-                                size="sm"
-                                data-testid="entityDeleteButton"
-                              >
-                                <FontAwesomeIcon icon="trash" />{' '}
-                                <span className="d-none d-md-inline">
-                                  <Translate contentKey="entity.action.delete">Delete</Translate>
-                                </span>
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  </CSSTransition>
-                );
-              })}
-            </TransitionGroup>
-          </Table>
-        ) : loading ? (
-          <div className="text-center py-4">
-            <Spinner color="info" />
-          </div>
-        ) : (
-          <div className="alert alert-warning">
-            <Translate contentKey="snowWhiteApp.qualityGateConfig.home.notFound">No Quality Gate Configs found</Translate>
-          </div>
-        )}
-      </div>
+      <div className="table-responsive">{renderTableContent()}</div>
       {totalItems ? (
         <div className={qualityGateConfigList && qualityGateConfigList.length > 0 ? '' : 'd-none'}>
           <div className="justify-content-center d-flex">

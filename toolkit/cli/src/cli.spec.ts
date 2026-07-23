@@ -206,10 +206,10 @@ describe('CLI', () => {
           expect(cliResult.stdout).toContain('💡 Use the returned URL to check the calculation report.');
 
           const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
-          expect(requests.length).toBe(1);
+          expect(requests).toHaveLength(1);
 
           const unmatchedRequests = await wiremock.getUnmatchedRequests();
-          expect(unmatchedRequests.length).toBe(0);
+          expect(unmatchedRequests).toHaveLength(0);
         });
       });
     });
@@ -244,10 +244,10 @@ describe('CLI', () => {
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
-        expect(requests.length).toBe(1);
+        expect(requests).toHaveLength(1);
 
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
-        expect(unmatchedRequests.length).toBe(0);
+        expect(unmatchedRequests).toHaveLength(0);
       });
 
       it('should exit when server responds with 404 not found response', async () => {
@@ -279,10 +279,10 @@ describe('CLI', () => {
         expect(cliResult.stderr).toContain(`Details: ${message}`);
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
-        expect(requests.length).toBe(1);
+        expect(requests).toHaveLength(1);
 
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
-        expect(unmatchedRequests.length).toBe(0);
+        expect(unmatchedRequests).toHaveLength(0);
       });
 
       it('should exit when server responds with 500 internal server error response', async () => {
@@ -310,10 +310,10 @@ describe('CLI', () => {
         expect(cliResult.stderr).toContain('Error: Server Error');
 
         const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
-        expect(requests.length).toBe(1);
+        expect(requests).toHaveLength(1);
 
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
-        expect(unmatchedRequests.length).toBe(0);
+        expect(unmatchedRequests).toHaveLength(0);
       });
     });
   });
@@ -440,7 +440,7 @@ info:
         expect(cliResult.stdout).toContain('Upload complete: 1 succeeded, 0 failed.');
 
         const requests = await wiremock.getRequestsForAPI('POST', '/api/rest/v1/apis');
-        expect(requests.length).toBe(1);
+        expect(requests).toHaveLength(1);
       } finally {
         unlinkSync(tmpSpecFilename);
       }

@@ -11,10 +11,10 @@ import static org.mockito.Mockito.doReturn;
 
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -24,12 +24,8 @@ class OpenApiConfigUnitTest {
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  @InjectMocks
   private OpenApiConfig fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new OpenApiConfig(reportCoordinationServicePropertiesMock);
-  }
 
   @Test
   void constructorInitializesFields() {
