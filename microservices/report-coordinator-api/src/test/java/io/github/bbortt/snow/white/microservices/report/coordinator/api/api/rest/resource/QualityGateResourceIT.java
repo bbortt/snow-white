@@ -6,7 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.QualityGateApi.PATH_CALCULATE_QUALITY_GATE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
@@ -81,7 +86,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       )
     );
 
-    reset();
+    apiIndexApi.resetMappings();
+    qualityGateApi.resetMappings();
   }
 
   private KafkaConsumer<
@@ -197,8 +203,10 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       qualityGateCalculationRequest.getLookbackWindow()
     );
 
-    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+    apiIndexApi.verifyThat(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
+    qualityGateApi.verifyThat(
+      getRequestedFor(urlEqualTo(qualityGateByNameEndpoint))
+    );
   }
 
   @Test
@@ -261,8 +269,10 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       "1h"
     );
 
-    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
-    verify(getRequestedFor(urlEqualTo(qualityGateByNameEndpoint)));
+    apiIndexApi.verifyThat(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
+    qualityGateApi.verifyThat(
+      getRequestedFor(urlEqualTo(qualityGateByNameEndpoint))
+    );
   }
 
   @Test
@@ -306,8 +316,11 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       "Unexpected error while requesting API information: 404 Not Found"
     );
 
-    verify(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
-    verify(0, getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*")));
+    apiIndexApi.verifyThat(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
+    qualityGateApi.verifyThat(
+      0,
+      getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*"))
+    );
   }
 
   @Test
@@ -326,8 +339,14 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       )
       .andExpect(status().isBadRequest());
 
-    verify(0, getRequestedFor(urlMatching("/api/rest/v1/apis/.*")));
-    verify(0, getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*")));
+    apiIndexApi.verifyThat(
+      0,
+      getRequestedFor(urlMatching("/api/rest/v1/apis/.*"))
+    );
+    qualityGateApi.verifyThat(
+      0,
+      getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*"))
+    );
   }
 
   private @NonNull String createApiIndexApiWiremockStub(
@@ -342,7 +361,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       apiName,
       apiVersion
     );
-    stubFor(
+    apiIndexApi.register(
       get(apiIndexApiEndpoint).willReturn(
         aResponse()
           .withStatus(httpStatus.value())
@@ -369,7 +388,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     var qualityGateByNameEndpoint = "/api/rest/v1/quality-gates/basic-coverage";
-    stubFor(
+    qualityGateApi.register(
       get(qualityGateByNameEndpoint).willReturn(
         okJson(jsonMapper.writeValueAsString(qualityGateConfig))
       )

@@ -8,11 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
@@ -32,8 +29,11 @@ class QualityGateServiceRetryIT extends AbstractReportCoordinationServiceIT {
 
   @BeforeEach
   void setUp() {
-    reset();
-    stubFor(get(urlEqualTo(ENDPOINT)).willReturn(serverError()));
+    qualityGateApi.resetMappings();
+
+    qualityGateApi.register(
+      get(urlEqualTo(ENDPOINT)).willReturn(serverError())
+    );
   }
 
   @Test
@@ -42,6 +42,6 @@ class QualityGateServiceRetryIT extends AbstractReportCoordinationServiceIT {
       qualityGateService.findQualityGateConfigByName(QUALITY_GATE_NAME)
     ).isInstanceOf(RestClientResponseException.class);
 
-    verify(3, getRequestedFor(urlEqualTo(ENDPOINT)));
+    qualityGateApi.verifyThat(3, getRequestedFor(urlEqualTo(ENDPOINT)));
   }
 }
