@@ -61,56 +61,14 @@ public class ParameterCoverageCalculator
       String,
       Operation
     > entry : pathToOpenAPIOperationMap.entrySet()) {
-      String operationKey = entry.getKey();
-      Operation operation = entry.getValue();
-
-      if (isEmpty(operation.getParameters())) {
-        logger.trace("Operation '{}' has no defined parameters", operationKey);
-        continue;
-      }
-
-      var parameters = extractParameters(operation);
-      if (parameters.isEmpty()) {
-        continue;
-      }
-
-      totalParameters.addAndGet(parameters.size());
-
-      var telemetryDataList = getTelemetryForTemplate(
+      evaluateOperationParameters(
+        entry.getKey(),
+        entry.getValue(),
         pathToTelemetryMap,
-        operationKey
+        coveredParameters,
+        totalParameters,
+        uncoveredParameters
       );
-      if (telemetryDataList.isEmpty()) {
-        logger.trace("No telemetry data for operation: {}", operationKey);
-        for (Parameter param : parameters) {
-          uncoveredParameters.add(
-            format("%s [%s: %s]", operationKey, param.getIn(), param.getName())
-          );
-        }
-        continue;
-      }
-
-      for (Parameter param : parameters) {
-        if (isParameterCovered(telemetryDataList, param, operationKey)) {
-          logger.trace(
-            "Parameter '{}' ({}) covered in operation '{}'",
-            param.getName(),
-            param.getIn(),
-            operationKey
-          );
-          coveredParameters.incrementAndGet();
-        } else {
-          logger.trace(
-            "Parameter '{}' ({}) NOT covered in operation '{}'",
-            param.getName(),
-            param.getIn(),
-            operationKey
-          );
-          uncoveredParameters.add(
-            format("%s [%s: %s]", operationKey, param.getIn(), param.getName())
-          );
-        }
-      }
     }
 
     var parameterCoverage = calculatePercentage(
@@ -122,6 +80,66 @@ public class ParameterCoverageCalculator
       parameterCoverage,
       getAdditionalInformationOrNull(uncoveredParameters)
     );
+  }
+
+  private void evaluateOperationParameters(
+    String operationKey,
+    Operation operation,
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap,
+    AtomicInteger coveredParameters,
+    AtomicInteger totalParameters,
+    Set<String> uncoveredParameters
+  ) {
+    if (isEmpty(operation.getParameters())) {
+      logger.trace("Operation '{}' has no defined parameters", operationKey);
+      return;
+    }
+
+    var parameters = extractParameters(operation);
+    if (parameters.isEmpty()) {
+      return;
+    }
+
+    totalParameters.addAndGet(parameters.size());
+
+    var telemetryDataList = getTelemetryForTemplate(
+      pathToTelemetryMap,
+      operationKey
+    );
+    if (telemetryDataList.isEmpty()) {
+      logger.trace("No telemetry data for operation: {}", operationKey);
+      for (Parameter param : parameters) {
+        uncoveredParameters.add(uncoveredParameterLabel(operationKey, param));
+      }
+      return;
+    }
+
+    for (Parameter param : parameters) {
+      if (isParameterCovered(telemetryDataList, param, operationKey)) {
+        logger.trace(
+          "Parameter '{}' ({}) covered in operation '{}'",
+          param.getName(),
+          param.getIn(),
+          operationKey
+        );
+        coveredParameters.incrementAndGet();
+      } else {
+        logger.trace(
+          "Parameter '{}' ({}) NOT covered in operation '{}'",
+          param.getName(),
+          param.getIn(),
+          operationKey
+        );
+        uncoveredParameters.add(uncoveredParameterLabel(operationKey, param));
+      }
+    }
+  }
+
+  private static String uncoveredParameterLabel(
+    String operationKey,
+    Parameter param
+  ) {
+    return format("%s [%s: %s]", operationKey, param.getIn(), param.getName());
   }
 
   /**

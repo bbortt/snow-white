@@ -65,6 +65,10 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
   @BeforeEach
   void beforeEach() {
+    // Order matters here: the constructor reads getCalculationRequestTopic() eagerly to
+    // cache it, so the stub must be in place before construction. @InjectMocks would
+    // construct the fixture before this @BeforeEach body runs, breaking that ordering -
+    // manual construction is kept intentionally.
     doReturn(CALCULATION_REQUEST_TOPIC)
       .when(reportCoordinationServicePropertiesMock)
       .getCalculationRequestTopic();

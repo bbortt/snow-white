@@ -183,7 +183,7 @@ describe('OpenAPI Coverage Stream', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'openapi-coverage-stream',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'openapi-coverage-stream',
@@ -237,7 +237,7 @@ describe('OpenAPI Coverage Stream', () => {
             ),
           );
 
-          expect(metadata.annotations).toEqual(podAnnotations);
+          expect(metadata.annotations).toStrictEqual(podAnnotations);
         });
       });
 
@@ -281,7 +281,7 @@ describe('OpenAPI Coverage Stream', () => {
             ),
           );
 
-          expect(templateSpec.imagePullSecrets).toEqual({ token });
+          expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
         });
       });
 
@@ -291,7 +291,7 @@ describe('OpenAPI Coverage Stream', () => {
 
           expect(templateSpec.affinity.nodeAffinity).toBeNull();
           expect(templateSpec.affinity.podAffinity).toBeNull();
-          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+          expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
             preferredDuringSchedulingIgnoredDuringExecution: [
               {
                 podAffinityTerm: {
@@ -326,7 +326,7 @@ describe('OpenAPI Coverage Stream', () => {
             ),
           );
 
-          expect(templateSpec.affinity).toEqual({
+          expect(templateSpec.affinity).toStrictEqual({
             myAffinity: {
               just: 'an example',
             },
@@ -869,7 +869,7 @@ describe('OpenAPI Coverage Stream', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'openapi-coverage-stream',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'openapi-coverage-stream',

@@ -78,16 +78,17 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Infrastructure (Kafka)
 
-| Key                            | Type   | Default                    | Description                                                        |
-| ------------------------------ | ------ | -------------------------- | ------------------------------------------------------------------ |
-| kafka-ui.enabled               | bool   | `false`                    | Install kafbat/kafka-ui alongside Snow-White for debugging.        |
-| kafka.clusterId                | string | `"NmE4MjRhYjI1MjkwNGI5ZG"` | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
-| kafka.enabled                  | bool   | `true`                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
-| kafka.image.name               | string | `"confluentinc/cp-kafka"`  | Image name.                                                        |
-| kafka.image.registry           | string | `"docker.io"`              | Image registry.                                                    |
-| kafka.image.tag                | string | `"8.3.0"`                  | Image tag.                                                         |
-| kafka.persistence.size         | string | `"10Gi"`                   | Size of the storage for Kafka.                                     |
-| kafka.persistence.storageClass | string | `"hostpath"`               | Storage class for Kafka persistent volumes.                        |
+| Key                            | Type   | Default                                                                                                                    | Description                                                        |
+| ------------------------------ | ------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| kafka-ui.enabled               | bool   | `false`                                                                                                                    | Install kafbat/kafka-ui alongside Snow-White for debugging.        |
+| kafka.clusterId                | string | `"NmE4MjRhYjI1MjkwNGI5ZG"`                                                                                                 | Kafka cluster ID. Run "kafka-storage random-uuid" to generate one. |
+| kafka.enabled                  | bool   | `true`                                                                                                                     | Deploy Kafka StatefulSet alongside Snow-White.                     |
+| kafka.image.name               | string | `"confluentinc/cp-kafka"`                                                                                                  | Image name.                                                        |
+| kafka.image.registry           | string | `"docker.io"`                                                                                                              | Image registry.                                                    |
+| kafka.image.tag                | string | `"8.3.0"`                                                                                                                  | Image tag.                                                         |
+| kafka.persistence.size         | string | `"10Gi"`                                                                                                                   | Size of the storage for Kafka.                                     |
+| kafka.persistence.storageClass | string | `"hostpath"`                                                                                                               | Storage class for Kafka persistent volumes.                        |
+| kafka.resources                | object | `{"limits":{"ephemeral-storage":"2Gi","memory":"1Gi"},"requests":{"cpu":"0.5","ephemeral-storage":"50Mi","memory":"1Gi"}}` | Kafka pod resources.                                               |
 
 ### Infrastructure (PostgreSQL)
 
@@ -114,22 +115,21 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 
 ### Snow-White API Sync Job
 
-| Key                                                        | Type   | Default                          | Description                                                                   |
-| ---------------------------------------------------------- | ------ | -------------------------------- | ----------------------------------------------------------------------------- |
-| snowWhite.apiSyncJob.activeDeadlineSeconds                 | int    | `1800`                           | The duration in seconds relative to the startTime that the job may be active. |
-| snowWhite.apiSyncJob.additionalEnvs                        | list   | `[]`                             | Additional environment variables forwarded to container.                      |
-| snowWhite.apiSyncJob.artifactory.baseUrl                   | string | `""`                             | Artifactory Base URL (e.g. http://localhost:8092/artifactory).                |
-| snowWhite.apiSyncJob.artifactory.customApiNameJsonPath     | string | `info.title`                     | Custom JSON path to the API name inside an OpenAPI specification.             |
-| snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath  | string | `info.version`                   | Custom JSON path to the API version inside an OpenAPI specification.          |
-| snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name` | Custom JSON path to the service name inside an OpenAPI specification.         |
-| snowWhite.apiSyncJob.artifactory.repository                | string | `""`                             | Artifactory repository holding API index.                                     |
-| snowWhite.apiSyncJob.enabled                               | bool   | `false`                          | Deploy CronJob for API ingestion alongside Snow-White.                        |
-| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `3`                              | The number of failed finished jobs to keep.                                   |
-| snowWhite.apiSyncJob.image.tag                             | string | `""`                             | Image tag.                                                                    |
-| snowWhite.apiSyncJob.resources.memory.limit                | string | `"1Gi"`                          | Memory resource limit.                                                        |
-| snowWhite.apiSyncJob.resources.memory.request              | string | `"1Gi"`                          | Memory resource request.                                                      |
-| snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                    | Cron schedule for API synchronization.                                        |
-| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `1`                              | The number of successful finished jobs to keep.                               |
+| Key                                                        | Type   | Default                                                                                                                    | Description                                                                   |
+| ---------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| snowWhite.apiSyncJob.activeDeadlineSeconds                 | int    | `1800`                                                                                                                     | The duration in seconds relative to the startTime that the job may be active. |
+| snowWhite.apiSyncJob.additionalEnvs                        | list   | `[]`                                                                                                                       | Additional environment variables forwarded to container.                      |
+| snowWhite.apiSyncJob.artifactory.baseUrl                   | string | `""`                                                                                                                       | Artifactory Base URL (e.g. http://localhost:8092/artifactory).                |
+| snowWhite.apiSyncJob.artifactory.customApiNameJsonPath     | string | `info.title`                                                                                                               | Custom JSON path to the API name inside an OpenAPI specification.             |
+| snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath  | string | `info.version`                                                                                                             | Custom JSON path to the API version inside an OpenAPI specification.          |
+| snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath | string | `info.extensions.x-service-name`                                                                                           | Custom JSON path to the service name inside an OpenAPI specification.         |
+| snowWhite.apiSyncJob.artifactory.repository                | string | `""`                                                                                                                       | Artifactory repository holding API index.                                     |
+| snowWhite.apiSyncJob.enabled                               | bool   | `false`                                                                                                                    | Deploy CronJob for API ingestion alongside Snow-White.                        |
+| snowWhite.apiSyncJob.failedJobsHistoryLimit                | int    | `3`                                                                                                                        | The number of failed finished jobs to keep.                                   |
+| snowWhite.apiSyncJob.image.tag                             | string | `""`                                                                                                                       | Image tag.                                                                    |
+| snowWhite.apiSyncJob.resources                             | object | `{"limits":{"ephemeral-storage":"2Gi","memory":"1Gi"},"requests":{"cpu":"0.5","ephemeral-storage":"50Mi","memory":"1Gi"}}` | API Sync Job pod resources.                                                   |
+| snowWhite.apiSyncJob.schedule                              | string | `"0 * * * *"`                                                                                                              | Cron schedule for API synchronization.                                        |
+| snowWhite.apiSyncJob.successfulJobsHistoryLimit            | int    | `1`                                                                                                                        | The number of successful finished jobs to keep.                               |
 
 ### Global Settings
 

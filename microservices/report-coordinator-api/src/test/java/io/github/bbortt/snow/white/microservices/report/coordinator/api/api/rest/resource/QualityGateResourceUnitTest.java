@@ -35,10 +35,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -63,19 +63,8 @@ class QualityGateResourceUnitTest {
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
 
+  @InjectMocks
   private QualityGateResource fixture;
-
-  @BeforeEach
-  void beforeEach() {
-    fixture = new QualityGateResource(
-      apiIndexServiceMock,
-      reportServiceMock,
-      apiTestMapperMock,
-      reportParameterMapperMock,
-      qualityGateReportMapperMock,
-      reportCoordinationServicePropertiesMock
-    );
-  }
 
   @Nested
   class CalculateQualityGateTest {

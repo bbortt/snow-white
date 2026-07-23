@@ -15,7 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentCaptor.captor;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -34,12 +42,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -77,21 +85,8 @@ class ReportServiceUnitTest {
   @Mock
   private QualityGateCalculationRequestDispatcher dispatcherMock;
 
+  @InjectMocks
   private ReportService fixture;
-
-  @BeforeEach
-  void beforeEach() {
-    fixture = new ReportService(
-      qualityGateServiceMock,
-      apiTestRepositoryMock,
-      qualityGateReportRepositoryMock,
-      apiTestResultMapperMock,
-      qualityGateReportApiTestsFilterMock,
-      apiTestResultLinkerMock,
-      qualityGateStatusCalculatorMock,
-      dispatcherMock
-    );
-  }
 
   @Nested
   class FindReportByCalculationIdTest {

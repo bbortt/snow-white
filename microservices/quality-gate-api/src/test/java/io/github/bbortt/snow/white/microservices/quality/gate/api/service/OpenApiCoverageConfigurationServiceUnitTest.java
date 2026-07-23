@@ -21,11 +21,11 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.O
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.List;
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,14 +35,8 @@ class OpenApiCoverageConfigurationServiceUnitTest {
   @Mock
   private OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepositoryMock;
 
+  @InjectMocks
   private OpenApiCoverageConfigurationService fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new OpenApiCoverageConfigurationService(
-      openApiCoverageConfigurationRepositoryMock
-    );
-  }
 
   @Nested
   class GetAllOpenapiCoverageConfigurationsTest {

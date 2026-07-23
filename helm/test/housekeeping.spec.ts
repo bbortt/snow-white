@@ -195,7 +195,7 @@ describe('Housekeeping Job', () => {
           ),
         );
 
-        expect(metadata.annotations).toEqual(podAnnotations);
+        expect(metadata.annotations).toStrictEqual(podAnnotations);
       });
     });
 
@@ -236,7 +236,7 @@ describe('Housekeeping Job', () => {
         );
 
         const templateSpec = getTemplateSpec(cronJob);
-        expect(templateSpec.imagePullSecrets).toEqual({ token });
+        expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
       });
     });
   });

@@ -203,7 +203,7 @@ describe('API Index API', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'api-index-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-index-api',
@@ -257,7 +257,7 @@ describe('API Index API', () => {
             ),
           );
 
-          expect(metadata.annotations).toEqual(podAnnotations);
+          expect(metadata.annotations).toStrictEqual(podAnnotations);
         });
       });
 
@@ -301,7 +301,7 @@ describe('API Index API', () => {
             ),
           );
 
-          expect(templateSpec.imagePullSecrets).toEqual({ token });
+          expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
         });
       });
 
@@ -311,7 +311,7 @@ describe('API Index API', () => {
 
           expect(templateSpec.affinity.nodeAffinity).toBeNull();
           expect(templateSpec.affinity.podAffinity).toBeNull();
-          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+          expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
             preferredDuringSchedulingIgnoredDuringExecution: [
               {
                 podAffinityTerm: {
@@ -346,7 +346,7 @@ describe('API Index API', () => {
             ),
           );
 
-          expect(templateSpec.affinity).toEqual({
+          expect(templateSpec.affinity).toStrictEqual({
             myAffinity: {
               just: 'an example',
             },
@@ -798,7 +798,7 @@ describe('API Index API', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'api-index-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-index-api',
@@ -888,7 +888,7 @@ describe('API Index API', () => {
         const { spec } = service;
         expect(spec).toBeDefined();
 
-        expect(spec.selector).toEqual({
+        expect(spec.selector).toStrictEqual({
           'app.kubernetes.io/component': 'api-index-api',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'api-index-api',

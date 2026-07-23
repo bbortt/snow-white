@@ -10,7 +10,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.ser.BeanSerializerFactory;
 
-public class LoggingJsonMapper {
+public final class LoggingJsonMapper {
 
   private static final ObjectMapper MASKING_JSON_MAPPER = JsonMapper.builder()
     .serializerFactory(
@@ -19,6 +19,8 @@ public class LoggingJsonMapper {
       )
     )
     .build();
+
+  private LoggingJsonMapper() {}
 
   public static String toMaskedJsonRepresentation(Object value) {
     try {

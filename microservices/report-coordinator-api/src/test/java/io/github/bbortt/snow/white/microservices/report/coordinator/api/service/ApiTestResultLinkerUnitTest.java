@@ -29,12 +29,12 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -44,12 +44,8 @@ class ApiTestResultLinkerUnitTest {
   @Mock
   private ApiTestRepository apiTestRepositoryMock;
 
+  @InjectMocks
   private ApiTestResultLinker fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new ApiTestResultLinker(apiTestRepositoryMock);
-  }
 
   @Nested
   class AddApiTestResultsToApiTest {

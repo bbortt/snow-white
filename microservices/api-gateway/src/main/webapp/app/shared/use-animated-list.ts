@@ -9,7 +9,10 @@ import { useEffect, useRef, useState } from 'react';
 
 const STAGGER_DELAY = 30;
 
-export function useAnimatedList<T>(list: T[], getKey: (item: T) => string): { displayedList: T[]; isExiting: boolean } {
+export function useAnimatedList<T>(
+  list: T[],
+  getKey: (item: T) => string,
+): { displayedList: T[]; isExiting: boolean; animationsEnabled: boolean } {
   const [displayedList, setDisplayedList] = useState<T[]>(list);
   const [isExiting, setIsExiting] = useState(false);
   const isExitingRef = useRef(false);
@@ -17,6 +20,16 @@ export function useAnimatedList<T>(list: T[], getKey: (item: T) => string): { di
   const getKeyRef = useRef(getKey);
   latestListRef.current = list;
   getKeyRef.current = getKey;
+
+  // Skips the entrance transition for the very first batch of rows shown after mount/navigation
+  // (initial fetch resolving into an empty table), so pages don't render half-faded-in on load.
+  // Flips on once content has been shown, so later genuine updates (refresh/filter/sort) still animate.
+  const [animationsEnabled, setAnimationsEnabled] = useState(false);
+  useEffect(() => {
+    if (!animationsEnabled && displayedList.length > 0) {
+      setAnimationsEnabled(true);
+    }
+  }, [animationsEnabled, displayedList]);
 
   useEffect(() => {
     if (isExitingRef.current) return;
@@ -45,5 +58,5 @@ export function useAnimatedList<T>(list: T[], getKey: (item: T) => string): { di
     return () => clearTimeout(timer);
   }, [list, displayedList]);
 
-  return { displayedList, isExiting };
+  return { displayedList, isExiting, animationsEnabled };
 }

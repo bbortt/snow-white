@@ -21,7 +21,7 @@ import React, { createRef, ReactElement, useEffect, useMemo, useRef, useState } 
 import { JhiItemCount, JhiPagination, TextFormat, Translate, getPaginationState } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Button, Table } from 'reactstrap';
+import { Button, Spinner, Table } from 'reactstrap';
 
 import { getEntities } from './quality-gate.reducer';
 import { extractQualityGateFilterParams } from './quality-gate.utils';
@@ -58,7 +58,7 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
   // Prevents the URL read-back effect from clobbering in-progress pagination/sort navigations
   const selfNavigatingRef = useRef(false);
 
-  const { displayedList, isExiting } = useAnimatedList(qualityGateList, q => String(q.calculationId));
+  const { displayedList, isExiting, animationsEnabled } = useAnimatedList(qualityGateList, q => String(q.calculationId));
 
   const getAllEntities = () => {
     dispatch(
@@ -187,7 +187,7 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
                 <th />
               </tr>
             </thead>
-            <TransitionGroup component="tbody" appear>
+            <TransitionGroup component="tbody" appear={animationsEnabled}>
               {displayedList.map((qualityGate, i) => {
                 const key = `entity-${qualityGate.calculationId}`;
                 if (!nodeRefs.current.has(key)) {
@@ -204,7 +204,8 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
                     }}
                     classNames="table-row"
                     nodeRef={nodeRef}
-                    appear
+                    appear={animationsEnabled}
+                    enter={animationsEnabled}
                   >
                     <tr
                       ref={nodeRef}
@@ -213,7 +214,15 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
                       style={{ transitionDelay: `${i * 30}ms` }}
                     >
                       <td>
-                        <Button tag={Link} to={`/quality-gate/${qualityGate.calculationId}`} color="link" size="sm">
+                        <Button
+                          tag={Link}
+                          to={`/quality-gate/${qualityGate.calculationId}`}
+                          color="link"
+                          size="sm"
+                          className="text-truncate d-inline-block"
+                          style={{ maxWidth: '12rem', verticalAlign: 'bottom' }}
+                          title={qualityGate.calculationId}
+                        >
                           {qualityGate.calculationId}
                         </Button>
                       </td>
@@ -253,12 +262,14 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
               })}
             </TransitionGroup>
           </Table>
+        ) : loading ? (
+          <div className="text-center py-4">
+            <Spinner color="info" />
+          </div>
         ) : (
-          !loading && (
-            <div className="alert alert-warning">
-              <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
-            </div>
-          )
+          <div className="alert alert-warning">
+            <Translate contentKey="snowWhiteApp.qualityGate.home.notFound">No Quality Gates found</Translate>
+          </div>
         )}
       </div>
       {paginationAndSortingEnabled ? (

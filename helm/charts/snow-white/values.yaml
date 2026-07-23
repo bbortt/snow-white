@@ -234,14 +234,16 @@ snowWhite:
     # -- Cron schedule for API synchronization.
     # @section -- Snow-White API Sync Job
     schedule: '0 * * * *'
+    # -- API Sync Job pod resources.
+    # @section -- Snow-White API Sync Job
     resources:
-      memory:
-        # -- Memory resource limit.
-        # @section -- Snow-White API Sync Job
-        limit: '1Gi'
-        # -- Memory resource request.
-        # @section -- Snow-White API Sync Job
-        request: '1Gi'
+      limits:
+        memory: '1Gi'
+        ephemeral-storage: '2Gi'
+      requests:
+        cpu: '0.5'
+        memory: '1Gi'
+        ephemeral-storage: '50Mi'
   openapiCoverageStream:
     image:
       # -- Image tag.
@@ -321,6 +323,16 @@ kafka:
     # -- Size of the storage for Kafka.
     # @section -- Infrastructure (Kafka)
     size: 10Gi
+  # -- Kafka pod resources.
+  # @section -- Infrastructure (Kafka)
+  resources:
+    limits:
+      memory: '1Gi'
+      ephemeral-storage: '2Gi'
+    requests:
+      cpu: '0.5'
+      memory: '1Gi'
+      ephemeral-storage: '50Mi'
 
 kafka-ui:
   # -- Install kafbat/kafka-ui alongside Snow-White for debugging.

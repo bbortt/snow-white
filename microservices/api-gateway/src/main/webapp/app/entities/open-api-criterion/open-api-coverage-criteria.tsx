@@ -13,7 +13,7 @@ import { useAnimatedList } from 'app/shared/use-animated-list';
 import React, { createRef, useEffect, useRef } from 'react';
 import { Translate, translate } from 'react-jhipster';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Button, Table } from 'reactstrap';
+import { Button, Spinner, Table } from 'reactstrap';
 import 'app/shared/table-row-animation.scss';
 
 import { getEntities } from './open-api-criterion.reducer';
@@ -25,7 +25,7 @@ export const OpenApiCoverageCriteria = () => {
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
 
-  const { displayedList, isExiting } = useAnimatedList(openApiCriterionList ?? [], q => q.name!);
+  const { displayedList, isExiting, animationsEnabled } = useAnimatedList(openApiCriterionList ?? [], q => q.name!);
   const loading = useAppSelector(state => state.snowwhite.openApiCriterion.loading);
 
   const getAllEntities = () => {
@@ -64,7 +64,7 @@ export const OpenApiCoverageCriteria = () => {
                 </th>
               </tr>
             </thead>
-            <TransitionGroup component="tbody" appear>
+            <TransitionGroup component="tbody" appear={animationsEnabled}>
               {displayedList.map((openApiCriterion, i) => {
                 const name = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.name`);
                 const description = translate(`snowWhiteApp.openApiCriterion.description.${openApiCriterion.name}.description`);
@@ -81,7 +81,8 @@ export const OpenApiCoverageCriteria = () => {
                     timeout={{ enter: CSS_TRANSITION_TIMEOUT + i * 30, exit: 0, appear: CSS_TRANSITION_TIMEOUT + i * 30 }}
                     classNames="table-row"
                     nodeRef={nodeRef}
-                    appear
+                    appear={animationsEnabled}
+                    enter={animationsEnabled}
                   >
                     <tr
                       ref={nodeRef}
@@ -103,12 +104,14 @@ export const OpenApiCoverageCriteria = () => {
               })}
             </TransitionGroup>
           </Table>
+        ) : loading ? (
+          <div className="text-center py-4">
+            <Spinner color="info" />
+          </div>
         ) : (
-          !loading && (
-            <div className="alert alert-warning">
-              <Translate contentKey="snowWhiteApp.openApiCriterion.home.notFound">No Open Api Criteria found</Translate>
-            </div>
-          )
+          <div className="alert alert-warning">
+            <Translate contentKey="snowWhiteApp.openApiCriterion.home.notFound">No Open Api Criteria found</Translate>
+          </div>
         )}
       </div>
     </div>

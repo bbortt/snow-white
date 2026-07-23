@@ -184,7 +184,7 @@ describe('OTEL Event Filter Stream', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'otel-event-filter-stream',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'otel-event-filter-stream',
@@ -238,7 +238,7 @@ describe('OTEL Event Filter Stream', () => {
             ),
           );
 
-          expect(metadata.annotations).toEqual(podAnnotations);
+          expect(metadata.annotations).toStrictEqual(podAnnotations);
         });
       });
 
@@ -282,7 +282,7 @@ describe('OTEL Event Filter Stream', () => {
             ),
           );
 
-          expect(templateSpec.imagePullSecrets).toEqual({ token });
+          expect(templateSpec.imagePullSecrets).toStrictEqual({ token });
         });
       });
 
@@ -292,7 +292,7 @@ describe('OTEL Event Filter Stream', () => {
 
           expect(templateSpec.affinity.nodeAffinity).toBeNull();
           expect(templateSpec.affinity.podAffinity).toBeNull();
-          expect(templateSpec.affinity.podAntiAffinity).toEqual({
+          expect(templateSpec.affinity.podAntiAffinity).toStrictEqual({
             preferredDuringSchedulingIgnoredDuringExecution: [
               {
                 podAffinityTerm: {
@@ -327,7 +327,7 @@ describe('OTEL Event Filter Stream', () => {
             ),
           );
 
-          expect(templateSpec.affinity).toEqual({
+          expect(templateSpec.affinity).toStrictEqual({
             myAffinity: {
               just: 'an example',
             },
@@ -660,7 +660,7 @@ describe('OTEL Event Filter Stream', () => {
         const { selector } = spec;
         expect(selector).toBeDefined();
 
-        expect(selector.matchLabels).toEqual({
+        expect(selector.matchLabels).toStrictEqual({
           'app.kubernetes.io/component': 'otel-event-filter-stream',
           'app.kubernetes.io/instance': 'test-release',
           'app.kubernetes.io/name': 'otel-event-filter-stream',

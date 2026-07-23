@@ -45,16 +45,17 @@ public abstract class AbstractReportCoordinationServiceIT {
   static final PostgreSQLContainer POSTGRESQL_CONTAINER =
     new PostgreSQLContainer("postgres:18.4-alpine").withExposedPorts(5432);
 
-  static final WireMockContainer WIRE_MOCK_CONTAINER = new WireMockContainer(
-    "wiremock/wiremock:3x-alpine"
-  );
+  static final WireMockContainer API_INDEX_API_WIREMOCK_CONTAINER =
+    new WireMockContainer("wiremock/wiremock:3x-alpine");
+
+  static final WireMockContainer QUALITY_GATE_API_WIREMOCK_CONTAINER =
+    new WireMockContainer("wiremock/wiremock:3x-alpine");
 
   static {
     KAFKA_CONTAINER.start();
     POSTGRESQL_CONTAINER.start();
-    WIRE_MOCK_CONTAINER.start();
-
-    WireMock.configureFor(WIRE_MOCK_CONTAINER.getPort());
+    API_INDEX_API_WIREMOCK_CONTAINER.start();
+    QUALITY_GATE_API_WIREMOCK_CONTAINER.start();
   }
 
   @DynamicPropertySource
@@ -82,11 +83,28 @@ public abstract class AbstractReportCoordinationServiceIT {
   static void wireMockProperties(DynamicPropertyRegistry registry) {
     registry.add(
       "snow.white.report.coordinator.api.api-index.base-url",
-      WIRE_MOCK_CONTAINER::getBaseUrl
+      API_INDEX_API_WIREMOCK_CONTAINER::getBaseUrl
     );
     registry.add(
       "snow.white.report.coordinator.api.quality-gate-api.base-url",
-      WIRE_MOCK_CONTAINER::getBaseUrl
+      QUALITY_GATE_API_WIREMOCK_CONTAINER::getBaseUrl
+    );
+  }
+
+  protected final WireMock apiIndexApi;
+  protected final WireMock qualityGateApi;
+
+  protected AbstractReportCoordinationServiceIT() {
+    this.apiIndexApi = new WireMock(
+      "http",
+      API_INDEX_API_WIREMOCK_CONTAINER.getHost(),
+      API_INDEX_API_WIREMOCK_CONTAINER.getPort()
+    );
+
+    this.qualityGateApi = new WireMock(
+      "http",
+      QUALITY_GATE_API_WIREMOCK_CONTAINER.getHost(),
+      QUALITY_GATE_API_WIREMOCK_CONTAINER.getPort()
     );
   }
 }

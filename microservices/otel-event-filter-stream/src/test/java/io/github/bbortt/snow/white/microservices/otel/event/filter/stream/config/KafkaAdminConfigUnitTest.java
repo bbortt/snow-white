@@ -12,10 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
@@ -27,12 +27,8 @@ class KafkaAdminConfigUnitTest {
   @Mock
   private KafkaProperties kafkaPropertiesMock;
 
+  @InjectMocks
   private KafkaAdminConfig fixture;
-
-  @BeforeEach
-  void beforeEachSetup() {
-    fixture = new KafkaAdminConfig(kafkaPropertiesMock);
-  }
 
   @Nested
   class AdminTest {
