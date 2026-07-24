@@ -39,14 +39,16 @@ final class ApiTestResultLinker {
       return;
     }
 
-    apiTestResults
-      .parallelStream()
-      .map(apiTestResult ->
-        apiTestResult.withIncludedInReport(
-          isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
+    apiTest.getApiTestResults().addAll(
+      apiTestResults
+        .stream()
+        .map(apiTestResult ->
+          apiTestResult.withIncludedInReport(
+            isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
+          )
         )
-      )
-      .forEach(apiTest.getApiTestResults()::add);
+        .toList()
+    );
 
     apiTestRepository.save(
       apiTest.withReportStatus(
