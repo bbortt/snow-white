@@ -230,6 +230,32 @@ class ContentTypeCoverageCalculatorUnitTest {
     }
 
     @Test
+    void shouldSkipTelemetryWithNullAttributes() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "POST_/api/v1/users",
+        operationWithContentTypes("application/json")
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "POST_/api/v1/users",
+        List.of(new OpenTelemetryData("span-1", "trace-1", null))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following request body content types are uncovered: `POST_/api/v1/users [application/json]`"
+          )
+      );
+    }
+
+    @Test
     void shouldHandleMultipleOperations() {
       var pathToOpenAPIOperationMap = Map.of(
         "POST_/api/v1/users",
