@@ -67,12 +67,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build CLI Image
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           docker build \
             -f "toolkit/cli/Dockerfile" \
-            -t "ghcr.io/bbortt/snow-white/toolkit/cli:${{ steps.version.outputs.VERSION }}" \
+            -t "ghcr.io/bbortt/snow-white/toolkit/cli:$VERSION" \
             --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg PROJECT_VERSION="${{ steps.version.outputs.VERSION }}" \
+            --build-arg PROJECT_VERSION="$VERSION" \
             --push \
             "toolkit/cli"
   publish-helm-chart:
@@ -99,7 +101,9 @@ jobs:
         run: pnpm install
         working-directory: 'helm'
       - name: Bump Chart appVersion
-        run: npx --no-install ts-node scripts/bump-chart-version.ts "${{ steps.version.outputs.VERSION }}"
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: npx --no-install ts-node scripts/bump-chart-version.ts "$VERSION"
         working-directory: 'helm'
       - name: Add Helm Repos
         run: |
@@ -152,7 +156,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build JDK Images
-        run: .github/scripts/build-oci-images.sh "${{ steps.version.outputs.VERSION }}" "ghcr.io" "--push"
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: .github/scripts/build-oci-images.sh "$VERSION" "ghcr.io" "--push"
   publish-native-images:
     name: Publish Native Image
     runs-on: ubuntu-latest
@@ -192,14 +198,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Native Image
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           ./mvnw -B spring-boot:build-image \
             -b smart -T4C \
-            -Dimage.tag="${{ steps.version.outputs.VERSION }}" \
+            -Dimage.tag="$VERSION" \
             -DskipTests -Pnative,prod \
             -pl :${{ matrix.service }}
       - name: Push Native Image
-        run: docker image push "ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ steps.version.outputs.VERSION }}"
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: docker image push "ghcr.io/bbortt/snow-white/${{ matrix.service }}:$VERSION"
   attach-license-report:
     name: Attach License Report
     runs-on: ubuntu-latest
