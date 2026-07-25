@@ -86,6 +86,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.DEPENDABOT_TOKEN }}
+          persist-credentials: false
       - name: Install pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
         with:
@@ -101,11 +102,13 @@ jobs:
         run: |
           git config user.name "Timon Borter"
           git config user.email "timon.borter@gmx.ch"
-      - name: Commit Changes (if any)
+      - name: Commit and Push Changes (if any)
+        env:
+          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git commit -a --amend --no-edit
-            git push --force-with-lease
+            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push --force-with-lease
           fi
   prettier-post-release:
     name: Run Prettier on Release PR
@@ -118,6 +121,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          persist-credentials: false
       - name: Install pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
         with:
@@ -135,9 +139,11 @@ jobs:
         run: |
           git config user.name "Timon Borter"
           git config user.email "timon.borter@gmx.ch"
-      - name: Commit Changes (if any)
+      - name: Commit and Push Changes (if any)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git commit -a -m "chore(release-please): release changes cleanup"
-            git push
+            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push
           fi
