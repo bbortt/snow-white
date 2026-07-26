@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.time.Duration;
+import org.jspecify.annotations.Nullable;
 
 @Converter(autoApply = true)
 public class DurationToLongConverter
@@ -16,12 +17,14 @@ public class DurationToLongConverter
 {
 
   @Override
-  public Long convertToDatabaseColumn(Duration duration) {
+  @Nullable
+  public Long convertToDatabaseColumn(@Nullable Duration duration) {
     return duration == null ? null : duration.toNanos();
   }
 
   @Override
-  public Duration convertToEntityAttribute(Long value) {
+  @Nullable
+  public Duration convertToEntityAttribute(@Nullable Long value) {
     return value == null ? null : Duration.ofNanos(value);
   }
 }

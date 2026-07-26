@@ -312,8 +312,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
       .getContentAsString();
 
     var responseJson = jsonMapper.readTree(contentAsString);
-    assertThat(responseJson.get("message").asString()).startsWith(
-      "Unexpected error while requesting API information: 404 Not Found"
+    assertThat(responseJson.get("message").asString()).isEqualTo(
+      "API { serviceName='serviceName', apiName='apiName', apiVersion='apiVersion' } not indexed!"
     );
 
     apiIndexApi.verifyThat(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
