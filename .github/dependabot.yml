@@ -12,25 +12,10 @@ updates:
       - 'severity:medium'
       - 'status:ready-for-review'
   - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'daily'
-    cooldown:
-      default-days: 7
-    assignees:
-      - bbortt
-    labels:
-      - 'severity:medium'
-      - 'status:ready-for-review'
-    groups:
-      npm-dependencies:
-        patterns:
-          - '*'
-    ignore:
-      - dependency-name: 'typescript'
-        update-types: ['version-update:semver-major']
-  - package-ecosystem: 'npm'
-    directory: '/helm'
+    directories:
+      - '/'
+      - '/helm'
+      - '/microservices/api-gateway/'
     schedule:
       interval: 'daily'
     cooldown:
@@ -41,7 +26,8 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
-      helm-dependencies:
+      workspace-dependencies:
+        group-by: 'dependency-name'
         patterns:
           - '*'
     ignore:
@@ -58,24 +44,6 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
-  - package-ecosystem: 'npm'
-    directory: '/microservices/api-gateway/'
-    schedule:
-      interval: 'daily'
-    cooldown:
-      default-days: 7
-    assignees:
-      - bbortt
-    labels:
-      - 'severity:low'
-      - 'status:ready-for-review'
-    groups:
-      ui-dependencies:
-        patterns:
-          - '*'
-    ignore:
-      - dependency-name: 'typescript'
-        update-types: ['version-update:semver-major']
   - package-ecosystem: 'npm'
     directories:
       - '/microservices/api-sync-job/'
