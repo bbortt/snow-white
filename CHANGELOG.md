@@ -2,17 +2,15 @@
 
 ## [1.6.0](https://github.com/bbortt/snow-white/compare/v1.5.1...v1.6.0) (2026-07-26)
 
-
 ### Features
 
-* **helm:** expose kafka resource settings ([79f3c61](https://github.com/bbortt/snow-white/commit/79f3c6181869d7af95740e04092ffa6462b4949b))
-
+- **helm:** expose kafka resource settings ([79f3c61](https://github.com/bbortt/snow-white/commit/79f3c6181869d7af95740e04092ffa6462b4949b))
 
 ### Bug Fixes
 
-* **openapi-coverage-stream:** left padding of trace id ([0d6fe19](https://github.com/bbortt/snow-white/commit/0d6fe19401bcc9ea4451bbd1899c3b48bf89db6f))
-* **report-coordinator-api:** major bug where api-index-api was called instead of quality-gate-api ([29f55b8](https://github.com/bbortt/snow-white/commit/29f55b80dc14d5eb7d2ca639ba0857907ec6bf82))
-* **report-coordinator-api:** race condition within result linking service and parallel stream ([82b85ad](https://github.com/bbortt/snow-white/commit/82b85adbc61e6a663143d3580d0a03d68a7609c7))
+- **openapi-coverage-stream:** left padding of trace id ([0d6fe19](https://github.com/bbortt/snow-white/commit/0d6fe19401bcc9ea4451bbd1899c3b48bf89db6f))
+- **report-coordinator-api:** major bug where api-index-api was called instead of quality-gate-api ([29f55b8](https://github.com/bbortt/snow-white/commit/29f55b80dc14d5eb7d2ca639ba0857907ec6bf82))
+- **report-coordinator-api:** race condition within result linking service and parallel stream ([82b85ad](https://github.com/bbortt/snow-white/commit/82b85adbc61e6a663143d3580d0a03d68a7609c7))
 
 ## [1.5.1](https://github.com/bbortt/snow-white/compare/v1.5.0...v1.5.1) (2026-07-16)
 
