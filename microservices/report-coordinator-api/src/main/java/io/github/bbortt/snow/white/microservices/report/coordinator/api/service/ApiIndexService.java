@@ -11,14 +11,13 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.client.ApiIndexApiClient;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
 @Service
 @RequiredArgsConstructor
@@ -51,38 +50,35 @@ public class ApiIndexService {
         apiVersion
       );
 
-      return toValidationResult(apiTest, response);
-    } catch (Exception e) {
-      var rootCause = getRootCause(e);
-      var message = rootCause != null ? rootCause.getMessage() : e.getMessage();
-      return ValidationResult.failure(
-        "Unexpected error while requesting API information: %s".formatted(
-          message
-        )
+      var body = requireNonNull(
+        response.getBody(),
+        "API response body must not be null"
       );
+
+      return ValidationResult.success(apiTestMapper.toApiTest(body));
+    } catch (RestClientResponseException e) {
+      if (NOT_FOUND.equals(e.getStatusCode())) {
+        return ValidationResult.failure(
+          "API { serviceName='%s', apiName='%s', apiVersion='%s' } not indexed!".formatted(
+            apiTest.getServiceName(),
+            apiTest.getApiName(),
+            apiTest.getApiVersion()
+          )
+        );
+      }
+
+      return unexpectedErrorFailure(e);
+    } catch (Exception e) {
+      return unexpectedErrorFailure(e);
     }
   }
 
-  private ValidationResult toValidationResult(
-    ApiTest apiTest,
-    ResponseEntity<GetAllApis200ResponseInner> response
-  ) {
-    if (NOT_FOUND.equals(response.getStatusCode())) {
-      return ValidationResult.failure(
-        "API { serviceName='%s', apiName='%s', apiVersion='%s' } not indexed!".formatted(
-          apiTest.getServiceName(),
-          apiTest.getApiName(),
-          apiTest.getApiVersion()
-        )
-      );
-    }
-
-    var body = requireNonNull(
-      response.getBody(),
-      "API response body must not be null"
+  private ValidationResult unexpectedErrorFailure(Exception e) {
+    var rootCause = getRootCause(e);
+    var message = rootCause != null ? rootCause.getMessage() : e.getMessage();
+    return ValidationResult.failure(
+      "Unexpected error while requesting API information: %s".formatted(message)
     );
-
-    return ValidationResult.success(apiTestMapper.toApiTest(body));
   }
 
   public sealed interface ValidationResult

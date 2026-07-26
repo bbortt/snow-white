@@ -16,7 +16,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
@@ -32,7 +31,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexServiceUnitTest {
@@ -54,7 +55,6 @@ class ApiIndexServiceUnitTest {
       var apiTest = defaultApiTest();
 
       var response = mock(ResponseEntity.class);
-      doReturn(OK).when(response).getStatusCode();
 
       var apiDetails = mock(GetAllApis200ResponseInner.class);
       doReturn(apiDetails).when(response).getBody();
@@ -90,10 +90,15 @@ class ApiIndexServiceUnitTest {
     void returnsFailureWhenApiIsNotIndexed() {
       var apiTest = defaultApiTest();
 
-      var response = mock(ResponseEntity.class);
-      doReturn(NOT_FOUND).when(response).getStatusCode();
-
-      doReturn(response)
+      doThrow(
+        HttpClientErrorException.create(
+          NOT_FOUND,
+          NOT_FOUND.getReasonPhrase(),
+          HttpHeaders.EMPTY,
+          new byte[0],
+          null
+        )
+      )
         .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("serviceName", "apiName", "apiVersion");
 
@@ -175,19 +180,23 @@ class ApiIndexServiceUnitTest {
         .build();
 
       var successResponse = mock(ResponseEntity.class);
-      doReturn(OK).when(successResponse).getStatusCode();
 
       var apiDetails = mock(GetAllApis200ResponseInner.class);
       doReturn(apiDetails).when(successResponse).getBody();
-
-      var notFoundResponse = mock(ResponseEntity.class);
-      doReturn(NOT_FOUND).when(notFoundResponse).getStatusCode();
 
       doReturn(successResponse)
         .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("service1", "api1", "1.0.0");
 
-      doReturn(notFoundResponse)
+      doThrow(
+        HttpClientErrorException.create(
+          NOT_FOUND,
+          NOT_FOUND.getReasonPhrase(),
+          HttpHeaders.EMPTY,
+          new byte[0],
+          null
+        )
+      )
         .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo("service2", "api2", "2.0.0");
 

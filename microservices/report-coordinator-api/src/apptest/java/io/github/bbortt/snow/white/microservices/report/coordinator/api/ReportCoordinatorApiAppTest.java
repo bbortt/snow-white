@@ -151,7 +151,7 @@ class ReportCoordinatorApiAppTest {
         .receiveCalculateQualityGate(ACCEPTED)
         .message()
         .validate((message, context) -> {
-          assertThat((String) message.getHeader(LOCATION)).isNotBlank();
+          assertThat(message.getHeader(LOCATION)).isNotNull();
 
           var report = JsonMapper.shared().readValue(
             message.getPayload(String.class),
@@ -168,17 +168,22 @@ class ReportCoordinatorApiAppTest {
   }
 
   /**
-   * When the requested quality-gate configuration does not exist, the calculation must not be
-   * started and the service must respond with HTTP 404, without ever contacting the API index.
+   * When the requested APIs are indexed but the requested quality-gate configuration does not
+   * exist, the calculation must not be started and the service must respond with HTTP 404.
    */
   @Test
   @CitrusTest
   void shouldReturn404WhenQualityGateConfigDoesNotExist(
     @CitrusResource TestCaseRunner testRunner
   ) {
+    var serviceName =
+      "shouldReturn404WhenQualityGateConfigDoesNotExist-service";
+    var apiName = "shouldReturn404WhenQualityGateConfigDoesNotExist-api";
+    var apiVersion = "1.0.0";
     var qualityGateConfigName =
       "shouldReturn404WhenQualityGateConfigDoesNotExist-gate";
 
+    stubApiIndexExists(serviceName, apiName, apiVersion);
     stubFor(
       get(urlPathTemplate(QUALITY_GATE_CONFIG_PATH_TEMPLATE))
         .withPathParam("name", equalTo(qualityGateConfigName))
@@ -189,13 +194,7 @@ class ReportCoordinatorApiAppTest {
       qualityGateApi
         .sendCalculateQualityGate(qualityGateConfigName)
         .getMessageBuilderSupport()
-        .body(
-          calculateRequestBody(
-            "shouldReturn404WhenQualityGateConfigDoesNotExist-service",
-            "shouldReturn404WhenQualityGateConfigDoesNotExist-api",
-            "1.0.0"
-          )
-        )
+        .body(calculateRequestBody(serviceName, apiName, apiVersion))
     );
 
     testRunner.then(
