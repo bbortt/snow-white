@@ -571,6 +571,11 @@
         </dependency>
         <dependency>
           <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-kafka</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
           <artifactId>citrus-test-api-core</artifactId>
           <scope>test</scope>
         </dependency>
