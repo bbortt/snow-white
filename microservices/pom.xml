@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.6.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <groupId>io.github.bbortt.snow-white.microservices</groupId>
+  <artifactId>microservices</artifactId>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>api-gateway</module>
+    <module>api-index-api</module>
+    <module>api-sync-job</module>
+    <module>otel-event-filter-stream</module>
+    <module>openapi-coverage-stream</module>
+    <module>report-coordinator-api</module>
+    <module>quality-gate-api</module>
+  </modules>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.install.skip>true</maven.install.skip>
+
+    <citrus.version>5.0.0-M2</citrus.version>
+    <io.opentelemetry.version>2.30.0</io.opentelemetry.version>
+    <kafka-streams.version>4.3.0</kafka-streams.version>
+    <org.flywaydb.version>13.0.0</org.flywaydb.version>
+    <org.mapstruct.version>1.6.3</org.mapstruct.version>
+    <org.springdoc.version>3.0.3</org.springdoc.version>
+    <org.wiremock.version>3.13.2</org.wiremock.version>
+    <wiremock-spring-boot.version>4.2.2</wiremock-spring-boot.version>
+
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <!-- Podman socket connection `$ id` -->
+    <user.id>1000</user.id>
+  </properties>
+
+  <dependencyManagement>
+    <!-- Note that BOM's follow a "first-declaration wins" approach -->
+    <dependencies>
+      <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp-bom</artifactId>
+        <version>5.4.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-bom</artifactId>
+        <version>12.1.11</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>2.0.5</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.citrusframework</groupId>
+        <artifactId>citrus-bom</artifactId>
+        <version>${citrus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+        <version>${io.opentelemetry.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry.javaagent</groupId>
+        <artifactId>opentelemetry-javaagent</artifactId>
+        <version>${io.opentelemetry.version}</version>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>${org.flywaydb.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <version>${org.flywaydb.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.7.13</version>
+        <scope>runtime</scope>
+      </dependency>
+
+      <!-- OpenAPI Generator related -->
+      <dependency>
+        <groupId>io.swagger.core.v3</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>2.2.52</version>
+      </dependency>
+      <dependency>
+        <groupId>io.swagger.parser.v3</groupId>
+        <artifactId>swagger-parser</artifactId>
+        <version>2.1.45</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>3.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openapitools</groupId>
+        <artifactId>jackson-databind-nullable</artifactId>
+        <version>0.2.11</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+        <artifactId>annotation-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>9.1.2.Final</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${org.mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>${org.mapstruct.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+        <version>${org.springdoc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+        <version>${spring-retry.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <version>6.0.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.wiremock.integrations</groupId>
+        <artifactId>wiremock-spring-boot</artifactId>
+        <version>${wiremock-spring-boot.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>0.48.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.graalvm.buildtools</groupId>
+          <artifactId>native-maven-plugin</artifactId>
+          <version>0.11.5</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.openapitools</groupId>
+          <artifactId>openapi-generator-maven-plugin</artifactId>
+          <version>7.24.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>podman</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
+            <configuration>
+              <docker>
+                <host>unix:///run/user/${user.id}/podman/podman.sock</host>
+                <bindHostToBuilder>true</bindHostToBuilder>
+              </docker>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

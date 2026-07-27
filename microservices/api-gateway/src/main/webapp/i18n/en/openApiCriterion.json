@@ -1,0 +1,75 @@
+{
+  "snowWhiteApp": {
+    "openApiCriterion": {
+      "home": {
+        "title": "OpenAPI Coverage Criteria",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No OpenAPI Coverage Criteria found"
+      },
+      "detail": {
+        "title": "OpenAPI Criterion"
+      },
+      "name": "Coverage Type",
+      "descriptionHeader": "Description",
+      "description": {
+        "header": "Description",
+        "PATH_COVERAGE": {
+          "name": "Path",
+          "description": "Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+        },
+        "HTTP_METHOD_COVERAGE": {
+          "name": "HTTP Method",
+          "description": "Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested."
+        },
+        "OPERATION_SUCCESS_COVERAGE": {
+          "name": "Operation Success",
+          "description": "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response. Complements `HTTP_METHOD_COVERAGE`, which only checks that an operation was called at all."
+        },
+        "ERROR_RESPONSE_CODE_COVERAGE": {
+          "name": "Error Response Code",
+          "description": "Each documented error response code for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
+        },
+        "POSITIVE_RESPONSE_CODE_COVERAGE": {
+          "name": "Positive Response Code",
+          "description": "Each documented positive (non-error) response code (1xx, 2xx, 3xx) for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
+        },
+        "RESPONSE_CODE_COVERAGE": {
+          "name": "Response Code",
+          "description": "Each documented response code for each endpoint is tested."
+        },
+        "REQUIRED_PARAMETER_COVERAGE": {
+          "name": "Required Parameter",
+          "description": "Each required parameter (in path, query) has been tested with valid values. This is a subset of `PARAMETER_COVERAGE`."
+        },
+        "OPTIONAL_PARAMETER_COVERAGE": {
+          "name": "Optional Parameter",
+          "description": "Each optional (non-required) parameter (in path, query) has been tested with valid values. This is a subset of `PARAMETER_COVERAGE`."
+        },
+        "PARAMETER_COVERAGE": {
+          "name": "Parameter",
+          "description": "Each parameter (in path, query) has been tested with valid values."
+        },
+        "CONTENT_TYPE_COVERAGE": {
+          "name": "Content Type",
+          "description": "Each documented request body content type (e.g. `application/json`, `multipart/form-data`) for each endpoint has been exercised."
+        },
+        "REQUIRED_ERROR_FIELDS_COVERAGE": {
+          "name": "Required Error Fields",
+          "description": "Error responses include all required fields."
+        },
+        "NO_UNDOCUMENTED_RESPONSE_CODES": {
+          "name": "All Response Codes must be Specified",
+          "description": "All response codes (including errors) that occurred must be documented in the OpenAPI specification."
+        },
+        "NO_UNDOCUMENTED_ERROR_RESPONSE_CODES": {
+          "name": "All Error Response Codes must be Specified",
+          "description": "All error response codes that occurred must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
+        },
+        "NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES": {
+          "name": "All Non-Erroneous Response Codes must be Specified",
+          "description": "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
+        }
+      }
+    }
+  }
+}

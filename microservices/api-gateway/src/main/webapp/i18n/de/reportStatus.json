@@ -1,0 +1,13 @@
+{
+  "snowWhiteApp": {
+    "ReportStatus": {
+      "undefined": "Ungewiss",
+      "NOT_STARTED": "Nicht Gestartet",
+      "IN_PROGRESS": "In Bearbeitung",
+      "FAILED": "Fehlgeschlagen",
+      "PASSED": "Erfolgreich",
+      "FINISHED_EXCEPTIONALLY": "Fehler",
+      "TIMED_OUT": "Zeitablauf"
+    }
+  }
+}

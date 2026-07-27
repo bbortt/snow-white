@@ -1,0 +1,211 @@
+{{- $name := include "snow-white.name" (dict "name" "otel-collector" "context" .) -}}
+{{- $labels := include "snow-white.labels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "otel-collector" "context" .) | nindent 0 -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  {{- if ne .Values.snowWhite.mode "auto-scaling" }}
+  {{ include "snow-white.replicas" . | nindent 2 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/otel-collector-configmap.yaml") . | sha256sum }}
+        {{- with .Values.otelCollector.annotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{ $labels | nindent 8 }}
+    spec:
+      serviceAccountName: {{ $name }}
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "otel-collector" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "otel-collector" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: otel-collector
+          image: {{ .Values.otelCollector.image.registry }}/otel/opentelemetry-collector-contrib:{{ .Values.otelCollector.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          args:
+            - '--config=/appl/snow-white.config.yml'
+          env:
+            - name: GOMEMLIMIT
+              value: 800MiB
+            - name: INFLUXDB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
+                  name: {{ .Values.influxdb2.adminUser.existingSecret -}}
+                  {{- else }}
+                  name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- end }}
+                  key: admin-token
+          ports:
+            - name: grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: http
+              containerPort: 4318
+              protocol: TCP
+            - name: metrics
+              containerPort: 8888
+              protocol: TCP
+            - name: health
+              containerPort: 13133
+              protocol: TCP
+          resources:
+            limits:
+              memory: '512Mi'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.1'
+              memory: '512Mi'
+              ephemeral-storage: '50Mi'
+          startupProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: health
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 19
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /
+              port: health
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 2
+          livenessProbe:
+            tcpSocket:
+              port: health
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10000
+            runAsGroup: 10000
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: otel-collector-config-vol
+              mountPath: /appl
+      volumes:
+        - configMap:
+            name: {{ $name }}
+            items:
+              - key: snow-white.config.yml
+                path: snow-white.config.yml
+          name: otel-collector-config-vol
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $name }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  maxUnavailable: 25%
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  type: {{ .Values.snowWhite.apiGateway.service.type }}
+  selector: {{ $selectorLabels | nindent 4 }}
+  ports:
+    - name: grpc
+      port: 4317
+      protocol: TCP
+      targetPort: grpc
+    - name: http
+      port: 4318
+      protocol: TCP
+      targetPort: http
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups: [ "batch" ]
+    resources:
+      - jobs
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}
+    namespace: {{ include "common.names.namespace" . }}
+roleRef:
+  kind: Role
+  name: {{ $name }}
+  apiGroup: rbac.authorization.k8s.io

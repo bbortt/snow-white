@@ -1,0 +1,25 @@
+/*!
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+.autocomplete-input-wrapper {
+  position: relative;
+
+  .autocomplete-dropdown {
+    position: absolute;
+    z-index: 1050;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: none;
+    border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
