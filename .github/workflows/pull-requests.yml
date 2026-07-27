@@ -1,0 +1,302 @@
+name: Pull-Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  labeler:
+    name: Pull-Request Labels
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Check Source Formatting
+        run: pnpm run prettier:check
+      - name: Check Markdown Formatting
+        run: pnpm lint:markdown
+  kube-score:
+    name: Score Helm Chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Score Helm Chart
+        run: |
+          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+            docker run --rm -i zegl/kube-score:latest score \
+            --ignore-container-cpu-limit \
+            --ignore-test pod-networkpolicy \
+            -
+  ci:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Build with Maven
+        run: ./mvnw -B -Pprod verify
+      - name: Upload CLI Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cli
+          path: toolkit/cli/target/snow-white-*
+          if-no-files-found: error
+      - name: Fetch References
+        run: git fetch --unshallow origin
+      - name: Cache SonarQube Packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: '!steps.check.outputs.number'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Sonar Analysis
+        if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=bbortt-github \
+            -Dsonar.projectKey=bbortt_snow-white
+  app-tests:
+    name: Application Tests
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+      contains(github.event.pull_request.title, 'citrus.version')
+    runs-on: ubuntu-latest
+    needs: ci
+    strategy:
+      matrix:
+        service: [api-gateway, api-sync-job]
+      fail-fast: false
+    services:
+      wiremock:
+        image: index.docker.io/wiremock/wiremock@sha256:53dd996e0625bbaa906102d21fbfe029a209e92fd33862f73b3885a386e5db57
+        ports:
+          - '9000:8080'
+        options: --name wiremock
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          lfs: true
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -Dfrontend.test.skip=true \
+            -pl :${{ matrix.service }} -am
+      - name: Build ${{ matrix.service }} Image
+        run: |
+          docker build \
+            -f microservices/${{ matrix.service }}/Dockerfile \
+            -t ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }} \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg PROJECT_VERSION="${{ github.sha }}" \
+            microservices/${{ matrix.service }}
+      - name: Test ${{ matrix.service }} Image
+        run: |
+          docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=${docker_network} \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+  native-tests:
+    name: Native Application Tests
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+      contains(github.event.pull_request.title, 'citrus.version') ||
+      contains(github.event.pull_request.title, 'native-maven-plugin')
+    runs-on: ubuntu-latest
+    needs: ci
+    strategy:
+      matrix:
+        service:
+          [
+            api-index-api,
+            otel-event-filter-stream,
+            quality-gate-api,
+            report-coordinator-api,
+          ]
+      fail-fast: false
+    services:
+      kafka:
+        image: index.docker.io/confluentinc/cp-kafka@sha256:acbbf674f2ed40e5d0a8ca51beb0f00692c866fc22b5ce06f8cadbdc54cd4436
+        env:
+          # Cluster / broker identity
+          KAFKA_NODE_ID: 1
+          KAFKA_BROKER_ID: 1
+          CLUSTER_ID: 'NjZmNTk0MDc5OWZjNDQzYW' # run "kafka-storage random-uuid"
+          KAFKA_PROCESS_ROLES: 'broker,controller'
+          # Listener setup
+          KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+          KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092,EXTERNAL://kafka:9094'
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+          KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+          KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+          # Other essential configs
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+
+        ports:
+          - '9092:9092'
+          - '9094:9094'
+      postgres:
+        image: index.docker.io/library/postgres@sha256:54451ecb8ab38c24c3ec123f2fd501303a3a1856a5c66e98cecf2460d5e1e9d7
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      wiremock:
+        image: index.docker.io/wiremock/wiremock@sha256:53dd996e0625bbaa906102d21fbfe029a209e92fd33862f73b3885a386e5db57
+        ports:
+          - '9000:8080'
+        options: --name wiremock
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Init PostgreSQL Databases
+        if: ${{ matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api' }}
+        run: psql -h localhost -U postgres -d postgres -f ./dev/postgres/init.sql
+        env:
+          PGPASSWORD: postgres
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -Dfrontend.build.skip=true \
+            -Dfrontend.test.skip=true \
+            -pl :${{ matrix.service }} -am
+      - name: Build Native ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B spring-boot:build-image \
+            -Pnative \
+            -Dimage.tag=${{ github.sha }} \
+            -DskipTests \
+            -pl :${{ matrix.service }}
+      - name: Test Native ${{ matrix.service }} Image
+        run: |
+          docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=${docker_network} \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+  zizmor:
+    name: Zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@6fc4b006235f201fdab3722e17240ab420d580e5

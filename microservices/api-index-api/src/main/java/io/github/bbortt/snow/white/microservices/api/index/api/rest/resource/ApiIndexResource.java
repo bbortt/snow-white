@@ -1,0 +1,189 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
+
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_YAML;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
+
+import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
+import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
+import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+public class ApiIndexResource implements ApiIndexApi {
+
+  private final ApiIndexService apiIndexService;
+  private final ApiReferenceMapper apiReferenceMapper;
+
+  @Override
+  public ResponseEntity ingestApi(GetAllApis200ResponseInner apiInformation) {
+    try {
+      apiIndexService.persist(apiReferenceMapper.fromDto(apiInformation));
+    } catch (ApiAlreadyIndexedException _) {
+      return ResponseEntity.status(CONFLICT).build();
+    } catch (InvalidReleaseWithContentException e) {
+      return ResponseEntity.status(BAD_REQUEST).body(
+        GetAllApis500Response.builder()
+          .code(BAD_REQUEST.getReasonPhrase())
+          .message(e.getMessage())
+          .build()
+      );
+    }
+
+    return ResponseEntity.status(CREATED).build();
+  }
+
+  @Override
+  public ResponseEntity checkApiExists(
+    String otelServiceName,
+    String apiName,
+    String apiVersion,
+    Boolean includePrereleases
+  ) {
+    if (
+      apiIndexService.hasApiByInformationBeenIndexed(
+        otelServiceName,
+        apiName,
+        apiVersion,
+        Boolean.TRUE.equals(includePrereleases)
+      )
+    ) {
+      return ResponseEntity.ok().build();
+    }
+
+    return ResponseEntity.status(NOT_FOUND)
+      .contentType(APPLICATION_JSON)
+      .body(
+        GetAllApis500Response.builder()
+          .code(NOT_FOUND.getReasonPhrase())
+          .message(
+            "No API specification exists for the given service name, API name, and version."
+          )
+          .build()
+      );
+  }
+
+  @Override
+  public ResponseEntity<List<String>> getAllServiceNames() {
+    return ResponseEntity.ok(apiIndexService.findAllServiceNames());
+  }
+
+  @Override
+  public ResponseEntity<List<String>> getAllApiNames(String serviceName) {
+    return ResponseEntity.ok(apiIndexService.findAllApiNames(serviceName));
+  }
+
+  @Override
+  public ResponseEntity<@NonNull List<GetAllApis200ResponseInner>> getAllApis(
+    Integer page,
+    Integer size,
+    String sort,
+    String serviceName,
+    String apiName
+  ) {
+    var ingestedApis = apiIndexService.findAllIngestedApis(
+      serviceName,
+      apiName,
+      toPageable(page, size, sort)
+    );
+
+    return ResponseEntity.ok()
+      .headers(generatePaginationHttpHeaders(ingestedApis))
+      .body(ingestedApis.stream().map(apiReferenceMapper::toDto).toList());
+  }
+
+  @Override
+  public ResponseEntity getApiDetails(
+    String otelServiceName,
+    String apiName,
+    String apiVersion
+  ) {
+    var optionalIngestedApi = apiIndexService.findIngestedApi(
+      otelServiceName,
+      apiName,
+      apiVersion
+    );
+
+    if (optionalIngestedApi.isEmpty()) {
+      return ResponseEntity.status(NOT_FOUND)
+        .contentType(APPLICATION_JSON)
+        .body(
+          GetAllApis500Response.builder()
+            .code(NOT_FOUND.getReasonPhrase())
+            .message(
+              "No API specification exists for the given service name, API name, and version."
+            )
+            .build()
+        );
+    }
+
+    return ResponseEntity.ok(
+      apiReferenceMapper.toDto(optionalIngestedApi.get())
+    );
+  }
+
+  @Override
+  public ResponseEntity getRawApiContent(
+    String otelServiceName,
+    String apiName,
+    String apiVersion
+  ) {
+    var optionalApi = apiIndexService.findIngestedApi(
+      otelServiceName,
+      apiName,
+      apiVersion
+    );
+
+    if (optionalApi.isEmpty() || !optionalApi.get().isPrerelease()) {
+      return ResponseEntity.status(NOT_FOUND)
+        .contentType(APPLICATION_JSON)
+        .body(
+          GetAllApis500Response.builder()
+            .code(NOT_FOUND.getReasonPhrase())
+            .message("The API specification does not exist.")
+            .build()
+        );
+    }
+
+    var prereleaseContent = optionalApi.get().getPrereleaseContent();
+    if (prereleaseContent == null) {
+      return ResponseEntity.status(NOT_FOUND)
+        .contentType(APPLICATION_JSON)
+        .body(
+          GetAllApis500Response.builder()
+            .code(NOT_FOUND.getReasonPhrase())
+            .message("The API specification is not a prerelease.")
+            .build()
+        );
+    }
+
+    if (prereleaseContent.startsWith("openapi:")) {
+      return ResponseEntity.ok()
+        .contentType(APPLICATION_YAML)
+        .body(prereleaseContent);
+    }
+
+    return ResponseEntity.ok().contentType(TEXT_PLAIN).body(prereleaseContent);
+  }
+}

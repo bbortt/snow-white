@@ -1,0 +1,146 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:medium'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:medium'
+      - 'status:ready-for-review'
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'npm'
+    directory: '/helm'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      helm-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'helm'
+    directory: '/helm/charts/snow-white'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'npm'
+    directory: '/microservices/api-gateway/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      ui-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'npm'
+    directories:
+      - '/microservices/api-sync-job/'
+      - '/microservices/quality-gate-api'
+      - '/microservices/report-coordinator-api'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'include:apptests'
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      apptest-dependencies:
+        patterns:
+          - '*'
+  - package-ecosystem: 'bun'
+    directory: '/toolkit/cli/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      cli-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'maven'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/backstage'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/opentelemetry-proto'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'docker-compose'
+    directory: '/dev'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'docker-compose'
+    directory: '/microservices/otel-event-filter-stream/src/apptest/resources'
+    schedule:
+      interval: 'weekly'
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'

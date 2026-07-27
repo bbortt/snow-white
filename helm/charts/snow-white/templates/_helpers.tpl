@@ -1,0 +1,137 @@
+{{/*
+Common name-generation function
+*/}}
+{{- define "snow-white.name" -}}
+{{ printf "%s-%s-%s" .context.Chart.Name .name .context.Release.Name | trunc 63 | trimSuffix "-" }}
+{{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "snow-white.labels" -}}
+app.kubernetes.io/managed-by: {{ .context.Release.Service }}
+app.kubernetes.io/version: {{ .context.Values.appVersionOverride | default .context.Chart.AppVersion }}
+helm.sh/chart: snow-white
+{{ include "snow-white.selectorLabels" . }}
+{{- end -}}
+
+{{/*
+Selector labels
+*/}}
+{{- define "snow-white.selectorLabels" -}}
+app.kubernetes.io/component: {{ .name }}
+app.kubernetes.io/instance: {{ .context.Release.Name }}
+app.kubernetes.io/name: {{ .name }}
+app.kubernetes.io/part-of: snow-white
+{{- end -}}
+
+{{/*
+Mode selection:
+    minimal:        setup with only one running pod per microservice, ideal for poc installations
+    high-available: setup with three pods per deployment-unit, for producton environments
+    autoscale:      high-available setup with additional (horizontal) autoscaling enabled
+*/}}
+{{- define "snow-white.replicas" -}}
+{{ if eq .Values.snowWhite.mode "minimal" }}
+replicas: 1
+{{ else if eq .Values.snowWhite.mode "high-available" }}
+replicas: 3
+{{ else if ne .Values.snowWhite.mode "autoscale" }}
+{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.mode' to a valid value: 'minimal', 'high-available' or 'autoscale'!" }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Helper function to construct the imagePullSecrets spec
+*/}}
+{{- define "snow-white.imagePullSecrets" -}}
+{{- with .Values.global.imagePullSecrets -}}
+imagePullSecrets:
+  {{- toYaml . | nindent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Helper function printing the address where Snow-White is reachable from
+*/}}
+{{- define "snow-white.publicAddress" -}}
+{{- if not (empty .Values.snowWhite.publicAddress) -}}
+{{ .Values.snowWhite.publicAddress }}
+{{- else if or .Values.snowWhite.ingress.tls .Values.snowWhite.httproute.enabled -}}
+https://{{ include "snow-white.publicHost" . }}
+{{- else -}}
+http://{{ include "snow-white.publicHost" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Helper function making sure that the public domain (exposed through ingress) is defined
+*/}}
+{{- define "snow-white.publicHost" -}}
+{{ if and (not .Values.snowWhite.httproute.enabled) (not .Values.snowWhite.ingress.enabled) }}
+{{ fail "\n\n⚠ ERROR: You must set one of 'snowWhite.httproute.enabled' or 'snowWhite.ingress.enabled'!" }}
+{{- else if (empty .Values.snowWhite.host) -}}
+{{ fail "\n\n⚠ ERROR: You must set 'snowWhite.host' to the public URL!" }}
+{{- else -}}
+{{ .Values.snowWhite.host }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Common environment variables connecting for JDK-based microservices
+*/}}
+{{- define "snow-white.commonPodEnvironmentVariables" -}}
+- name: JAVA_TOOL_OPTIONS
+  value: >-
+    -Djava.io.tmpdir=/tmp
+    -XX:+ExitOnOutOfMemoryError
+- name: 'LOGGING_PATTERN_CONSOLE'
+  value: {{ .Values.snowWhite.logPattern | quote }}
+- name: 'OTEL_EXPORTER_OTLP_PROTOCOL'
+  value: 'grpc'
+- name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
+  value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:4317'
+{{- end -}}
+
+{{/*
+Common environment variables connecting for native microservices
+*/}}
+{{- define "snow-white.commonNativePodEnvironmentVariables" -}}
+- name: JAVA_TOOL_OPTIONS
+  value: >-
+    -Djava.io.tmpdir=/tmp
+    -XX:+ExitOnOutOfMemoryError
+- name: 'LOGGING_PATTERN_CONSOLE'
+  value: {{ .Values.snowWhite.logPattern | quote }}
+- name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
+  value: 'http://{{ include "snow-white.name" (dict "name" "otel-collector" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:4318'
+{{- end -}}
+
+{{/*
+Verifies that database connection information is present in environment variables.
+Only applicable if `postgresql.enabled=false`.
+*/}}
+{{- define "snow-white.verifyDatabaseConnectionEnvVariables" -}}
+{{- if eq .context.Values.postgresql.enabled false }}
+{{- $requiredKeys := list "SPRING_DATASOURCE_URL" "SPRING_DATASOURCE_USERNAME" "SPRING_DATASOURCE_PASSWORD" }}
+{{- $recommendedKeys := list "SPRING_FLYWAY_USER" "SPRING_FLYWAY_PASSWORD" }}
+{{- $envNames := list }}
+{{- range .envVars }}
+  {{- $envNames = append $envNames .name }}
+{{- end }}
+{{- range $requiredKey := $requiredKeys }}
+  {{- if not (has $requiredKey $envNames) }}
+    {{- fail (printf "Required environment variable '%s' is missing in snowWhite.%s.additionalEnvs" $requiredKey $.selector ) }}
+  {{- end }}
+{{- end }}
+{{- $missingRecommended := list }}
+{{- range $recommendedKey := $recommendedKeys }}
+  {{- if not (has $recommendedKey $envNames) }}
+    {{- $missingRecommended = append $missingRecommended $recommendedKey }}
+  {{- end }}
+{{- end }}
+{{- if $missingRecommended }}
+# WARNING: Missing recommended environment variables: {{ join ", " $missingRecommended }}
+{{- end }}
+{{- end }}
+{{- end -}}
