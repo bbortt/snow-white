@@ -25,7 +25,7 @@
     "vitest": "4.1.10"
   },
   "optionalDependencies": {
-    "npm-check-updates": "22.2.9"
+    "npm-check-updates": "23.0.0"
   },
   "packageManager": "pnpm@11.17.0",
   "engines": {
