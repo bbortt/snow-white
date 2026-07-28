@@ -121,11 +121,11 @@ class ArtifactoryApiCatalogServiceUnitTest {
       // Now we're instantiating the rest of the mocks, called when supplier is being invoked
       // language=yaml
       String openApiContent = """
-        openapi: 3.1.2
-        info:
-          title: Petstore API
-          version: 1.0.0
-        """;
+      openapi: 3.1.2
+      info:
+        title: Petstore API
+        version: 1.0.0
+      """;
 
       OpenAPI openAPI = new OpenAPI();
       Info info = new Info();
@@ -386,11 +386,11 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
       // language=yaml
       String openApiContent = """
-        openapi: 3.1.2
-        info:
-          title: Petstore API
-          version: 1.0.0
-        """;
+      openapi: 3.1.2
+      info:
+        title: Petstore API
+        version: 1.0.0
+      """;
 
       OpenAPI openAPI = new OpenAPI();
       Info info = new Info();

@@ -54,11 +54,11 @@ class SnowWhiteSpringServerGeneratorUnitTest {
   private static final String VALID_YAML =
     // language=yaml
     """
-      info:
-        title: Test API
-        version: 1.0.0
-        x-service-name: test-service
-      """;
+    info:
+      title: Test API
+      version: 1.0.0
+      x-service-name: test-service
+    """;
 
   @Mock
   private InformationExtractor informationExtractorMock;

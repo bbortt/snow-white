@@ -503,10 +503,10 @@ class ApiIndexResourceUnitTest {
     void shouldReturnYamlContent_whenPrereleaseContentIsOpenApiSpec() {
       // language=yaml
       var openApiContent = """
-        openapi: 3.1.2
-        info:
-          title: Test API
-        """;
+      openapi: 3.1.2
+      info:
+        title: Test API
+      """;
 
       var domain = mock(ApiReference.class);
       doReturn(true).when(domain).isPrerelease();
