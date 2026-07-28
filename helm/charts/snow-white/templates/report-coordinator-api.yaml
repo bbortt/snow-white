@@ -1,0 +1,177 @@
+{{- $labels := include "snow-white.labels" (dict "name" "report-coordinator-api" "context" .) | nindent 0 }}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "report-coordinator-api" "context" .) | nindent 0 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  {{- if ne .Values.snowWhite.mode "auto-scaling" }}
+  {{ include "snow-white.replicas" . | nindent 2 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.snowWhite.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 8 }}
+        {{- end }}
+      labels:
+        {{ $labels | nindent 8 }}
+    spec:
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        fsGroup: 101
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "report-coordinator-api" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "report-coordinator-api" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: report-coordinator-api
+          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/report-coordinator-api:{{ .Values.snowWhite.reportCoordinatorApi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+          {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL'
+              value: 'http://{{ include "snow-white.name" (dict "name" "api-index-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC'
+              value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_INIT-TOPICS'
+              value: '{{ .Values.snowWhite.kafka.initTopics }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_OPENAPI-CALCULATION-RESPONSE_TOPIC'
+              value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_PUBLIC_API_GATEWAY_URL'
+              value: '{{ include "snow-white.publicAddress" . }}'
+            - name: 'SNOW_WHITE_REPORT_COORDINATOR_API_QUALITY-GATE-API_BASE-URL'
+              value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+            - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
+              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+          {{- if .Values.postgresql.enabled }}
+            - name: 'SPRING_DATASOURCE_URL'
+              value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/report-coordinator-api'
+            - name: 'SPRING_DATASOURCE_USERNAME'
+              value: 'report_coord_app'
+            - name: 'SPRING_DATASOURCE_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: "snow-white-postgresql-credentials"
+                  key: 'report-coord-password'
+            - name: 'SPRING_FLYWAY_USER'
+              value: 'report_coord_flyway'
+            - name: 'SPRING_FLYWAY_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: "snow-white-postgresql-credentials"
+                  key: 'report-coord-flyway-password'
+          {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.reportCoordinatorApi.additionalEnvs | default list }}
+          {{- include "snow-white.verifyDatabaseConnectionEnvVariables" (dict "context" . "envVars" $additionalEnvs "selector" "reportCoordinatorApi") | nindent 12 }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: actuator
+              containerPort: 8090
+              protocol: TCP
+          resources:
+            limits:
+              memory: '128Mi'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.1'
+              memory: '128Mi'
+              ephemeral-storage: '50Mi'
+          startupProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/health
+              port: actuator
+            # native apps start fast, so allow minimal delay
+            initialDelaySeconds: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 19  # tolerate a few slow startups just in case
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/health/readiness
+              port: actuator
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1   # allow immediate readiness on success
+            failureThreshold: 2   # stop routing quickly if unhealthy
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/health/liveness
+              port: actuator
+            timeoutSeconds: 1
+            periodSeconds: 10      # liveness can be less frequent to reduce load
+            successThreshold: 1
+            failureThreshold: 3    # don’t restart on minor hiccups
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10000
+            runAsGroup: 12345
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: ""
+            sizeLimit: 256Mi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  maxUnavailable: 25%
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "report-coordinator-api" "context" .) }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector: {{ $selectorLabels | nindent 4 }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http

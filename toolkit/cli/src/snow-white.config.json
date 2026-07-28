@@ -1,0 +1,15 @@
+{
+  "apiInformation": [
+    {
+      "serviceName": "user-service",
+      "apiName": "user-api",
+      "apiVersion": "1.0.0"
+    }
+  ],
+  "qualityGate": "sonarqube",
+  "url": "http://localhost:8080",
+  "lookbackWindow": "1h",
+  "attributeFilters": {
+    "environment": "production"
+  }
+}
