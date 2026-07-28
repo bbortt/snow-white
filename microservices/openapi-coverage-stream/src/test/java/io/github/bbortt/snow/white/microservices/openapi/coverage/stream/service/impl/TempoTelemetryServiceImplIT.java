@@ -94,44 +94,44 @@ class TempoTelemetryServiceImplIT
 
     // language=json
     var otlpPayload = """
-      {
-        "resourceSpans": [
-          {
-            "resource": {
-              "attributes": [
-                { "key": "service.name", "value": { "stringValue": "%s" } }
-              ]
-            },
-            "scopeSpans": [
-              {
-                "scope": { "name": "tempo-it" },
-                "spans": [
-                  {
-                    "traceId": "%s",
-                    "spanId": "%s",
-                    "name": "GET /api/v1/test",
-                    "kind": 2,
-                    "startTimeUnixNano": "%d",
-                    "endTimeUnixNano": "%d",
-                    "attributes": [
-                      { "key": "api.name", "value": { "stringValue": "%s" } },
-                      {
-                        "key": "api.version",
-                        "value": { "stringValue": "%s" }
-                      },
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "GET" }
-                      }
-                    ]
-                  }
-                ]
-              }
+    {
+      "resourceSpans": [
+        {
+          "resource": {
+            "attributes": [
+              { "key": "service.name", "value": { "stringValue": "%s" } }
             ]
-          }
-        ]
-      }
-      """.formatted(
+          },
+          "scopeSpans": [
+            {
+              "scope": { "name": "tempo-it" },
+              "spans": [
+                {
+                  "traceId": "%s",
+                  "spanId": "%s",
+                  "name": "GET /api/v1/test",
+                  "kind": 2,
+                  "startTimeUnixNano": "%d",
+                  "endTimeUnixNano": "%d",
+                  "attributes": [
+                    { "key": "api.name", "value": { "stringValue": "%s" } },
+                    {
+                      "key": "api.version",
+                      "value": { "stringValue": "%s" }
+                    },
+                    {
+                      "key": "http.method",
+                      "value": { "stringValue": "GET" }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    """.formatted(
       serviceName,
       traceId,
       spanId,
