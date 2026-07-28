@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
+import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.util.Collections.sort;
+
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.swagger.v3.oas.models.Operation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.stereotype.Component;
+
+/**
+ * Calculator for the following criteria:
+ * Each HTTP method ({@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, etc.) for each path has been tested.
+ *
+ * @see OpenApiCoverageCriteria#ERROR_RESPONSE_CODE_COVERAGE
+ */
+@Slf4j
+@Component
+public class MethodCoverageCalculator
+  extends AbstractOpenApiCoverageCalculator
+{
+
+  @Override
+  protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
+    return HTTP_METHOD_COVERAGE;
+  }
+
+  @Override
+  public @NonNull CoverageCalculationResult calculateCoverage(
+    Map<String, Operation> pathToOpenAPIOperationMap,
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    var coveredPaths = new AtomicInteger(0);
+    var uncoveredPaths = new ArrayList<String>();
+
+    for (String operationKey : pathToOpenAPIOperationMap.keySet()) {
+      if (
+        !getTelemetryForTemplate(pathToTelemetryMap, operationKey).isEmpty()
+      ) {
+        logger.trace("Path covered: {}", operationKey);
+        coveredPaths.incrementAndGet();
+      } else {
+        logger.trace("Path not covered: {}", operationKey);
+        uncoveredPaths.add(operationKey);
+      }
+    }
+
+    var pathCoverage = calculatePercentage(
+      coveredPaths.get(),
+      pathToOpenAPIOperationMap.size()
+    );
+
+    return new CoverageCalculationResult(
+      pathCoverage,
+      getAdditionalInformationOrNull(uncoveredPaths)
+    );
+  }
+
+  private static @Nullable String getAdditionalInformationOrNull(
+    @NonNull ArrayList<String> uncoveredPaths
+  ) {
+    if (uncoveredPaths.isEmpty()) {
+      return null;
+    }
+
+    sort(uncoveredPaths);
+
+    return format(
+      "The following paths are uncovered: `%s`",
+      join("`, `", uncoveredPaths)
+    );
+  }
+}

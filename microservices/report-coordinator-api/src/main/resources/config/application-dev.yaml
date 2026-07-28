@@ -1,0 +1,37 @@
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+snow:
+  white:
+    report:
+      coordinator:
+        api:
+          api-index:
+            base-url: http://localhost:8085
+          calculation-request-topic: snow-white-calculation-request
+          init-topics: true
+          openapi-calculation-response:
+            topic: snow-white-openapi-calculation-response
+          public-api-gateway-url: http://localhost:8090
+          quality-gate-api:
+            base-url: http://localhost:8081
+server:
+  port: 8084
+spring:
+  devtools:
+    livereload:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:report-coordinator-api;MODE=PostgreSQL
+    username: sa
+    password: password
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

@@ -1,0 +1,249 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
+
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FINISHED_EXCEPTIONALLY;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization;
+
+import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportSpecification;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ReportService {
+
+  private final QualityGateService qualityGateService;
+
+  private final ApiTestRepository apiTestRepository;
+  private final QualityGateReportRepository qualityGateReportRepository;
+
+  private final ApiTestResultMapper apiTestResultMapper;
+  private final QualityGateReportApiTestsFilter qualityGateReportApiTestsFilter;
+  private final ApiTestResultLinker apiTestResultLinker;
+  private final QualityGateStatusCalculator qualityGateStatusCalculator;
+
+  private final QualityGateCalculationRequestDispatcher dispatcher;
+
+  @WithSpan
+  public Optional<QualityGateReport> findReportByCalculationId(
+    UUID calculationId
+  ) {
+    return qualityGateReportRepository.findById(calculationId);
+  }
+
+  @WithSpan
+  @Transactional
+  public void updateReportWithOpenApiCoverageResults(
+    UUID calculationId,
+    OpenApiCoverageResponseEvent event
+  ) {
+    var report = findReportByCalculationId(calculationId).orElseGet(() -> {
+      logger.warn(
+        "Received OpenAPI coverage response for unknown calculation ID: {}",
+        calculationId
+      );
+      return null;
+    });
+
+    if (isNull(report)) {
+      return;
+    }
+
+    if (nonNull(event.errorMessage())) {
+      handleExceptionalResponse(report, event);
+      return;
+    }
+
+    handleSuccessfulResponse(report, event);
+  }
+
+  public void handleExceptionalResponse(
+    QualityGateReport report,
+    OpenApiCoverageResponseEvent event
+  ) {
+    var apiTest =
+      qualityGateReportApiTestsFilter.findApiTestMatchingApiInformationInQualityGateReport(
+        report,
+        event.apiInformation()
+      );
+
+    apiTest = apiTest
+      .withStackTrace(event.errorMessage())
+      .withReportStatus(FINISHED_EXCEPTIONALLY);
+
+    apiTestRepository.save(apiTest);
+
+    updateWithStatusUpdate(report);
+  }
+
+  private void handleSuccessfulResponse(
+    QualityGateReport report,
+    OpenApiCoverageResponseEvent event
+  ) {
+    var qualityGateConfigName = report.getQualityGateConfigName();
+
+    try {
+      var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
+        qualityGateConfigName
+      );
+
+      var apiTest =
+        qualityGateReportApiTestsFilter.findApiTestMatchingApiInformationInQualityGateReport(
+          report,
+          event.apiInformation()
+        );
+
+      apiTestResultLinker.addApiTestResultsToApiTest(
+        apiTestResultMapper.fromDtos(
+          requireNonNull(event.openApiTestResults()),
+          apiTest
+        ),
+        apiTest,
+        qualityGateConfig.getOpenApiCoverageCriteria(),
+        qualityGateConfig.getMinCoveragePercentage()
+      );
+    } catch (QualityGateNotFoundException e) {
+      logger.warn(
+        "Cannot find quality-gate config: {}",
+        qualityGateConfigName,
+        e
+      );
+      return;
+    }
+
+    updateWithStatusUpdate(report);
+  }
+
+  @WithSpan
+  @Transactional(rollbackFor = QualityGateNotFoundException.class)
+  public QualityGateReport initializeQualityGateCalculation(
+    String qualityGateConfigName,
+    Set<ApiTest> apiTests,
+    ReportParameter reportParameter
+  ) throws QualityGateNotFoundException {
+    var qualityGateConfig = qualityGateService.findQualityGateConfigByName(
+      qualityGateConfigName
+    );
+
+    var report = persistInitialQualityGateReport(
+      qualityGateConfig.getName(),
+      apiTests,
+      reportParameter
+    );
+
+    Span.current().setAttribute(
+      "report.calculationId",
+      report.getCalculationId().toString()
+    );
+
+    dispatchAfterTransactionCommit(report);
+
+    return report;
+  }
+
+  private void dispatchAfterTransactionCommit(QualityGateReport report) {
+    if (isSynchronizationActive() && isActualTransactionActive()) {
+      registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            dispatchCalculationRequest(report);
+          }
+        }
+      );
+
+      return;
+    }
+
+    dispatchCalculationRequest(report);
+  }
+
+  private void dispatchCalculationRequest(QualityGateReport report) {
+    dispatcher.dispatch(
+      report.getCalculationId(),
+      report.getReportParameter(),
+      report.getApiTests()
+    );
+  }
+
+  private QualityGateReport persistInitialQualityGateReport(
+    String qualityGateConfigName,
+    Set<ApiTest> apiTests,
+    ReportParameter reportParameter
+  ) {
+    var report = QualityGateReport.builder()
+      .calculationId(reportParameter.getCalculationId())
+      .qualityGateConfigName(qualityGateConfigName)
+      .reportParameter(reportParameter)
+      .build();
+
+    var persistedReport = qualityGateReportRepository.saveAndFlush(report);
+
+    var persistedApiTests = apiTests
+      .stream()
+      .map(apiTest -> apiTest.withQualityGateReport(persistedReport))
+      .map(apiTestRepository::save)
+      .collect(toSet());
+
+    apiTestRepository.flush();
+
+    return persistedReport.withApiTests(persistedApiTests);
+  }
+
+  private void updateWithStatusUpdate(QualityGateReport qualityGateReport) {
+    var qualityGateReportWithUpdatedStatus =
+      qualityGateStatusCalculator.withUpdatedReportStatus(qualityGateReport);
+
+    qualityGateReportRepository.save(qualityGateReportWithUpdatedStatus);
+  }
+
+  @WithSpan
+  public QualityGateReport update(QualityGateReport qualityGateReport) {
+    return qualityGateReportRepository.save(qualityGateReport);
+  }
+
+  @WithSpan
+  public Page<@NonNull QualityGateReport> findAllReports(
+    @Nullable String serviceName,
+    @Nullable String apiName,
+    @Nullable String apiVersion,
+    Pageable pageable
+  ) {
+    return qualityGateReportRepository.findAll(
+      QualityGateReportSpecification.from(serviceName, apiName, apiVersion),
+      pageable
+    );
+  }
+}

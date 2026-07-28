@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
+
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
+import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
+
+import io.github.bbortt.snow.white.commons.DefaultFilteringProperties;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Getter
+@Setter
+@ConfigurationProperties(PREFIX)
+@Configuration(proxyBeanMethods = false)
+public class OtelEventFilterStreamProperties {
+
+  public static final String PREFIX = "snow.white.otel.event.filter";
+
+  public static final String INBOUND_TOPIC_PROPERTY_NAME =
+    PREFIX + ".inbound-topic-name";
+  private String inboundTopicName;
+
+  public static final String OUTBOUND_TOPIC_PROPERTY_NAME =
+    PREFIX + ".outbound-topic-name";
+  private String outboundTopicName;
+
+  private Boolean initTopics = false;
+
+  public static final String CONSUMER_MODE_PROPERTY_NAME =
+    PREFIX + ".consumer-mode";
+  private ConsumerMode consumerMode = JSON;
+
+  private String schemaRegistryUrl;
+
+  private final ApiIndexProperties apiIndex = new ApiIndexProperties();
+  private final FilteringProperties filtering = new FilteringProperties();
+
+  @Getter
+  @Setter
+  public static class ApiIndexProperties {
+
+    public static final String BASE_URL_PROPERTY_NAME =
+      PREFIX + ".api-index.base-url";
+
+    private String baseUrl;
+  }
+
+  @Getter
+  @Setter
+  public static class FilteringProperties extends DefaultFilteringProperties {}
+
+  public enum ConsumerMode {
+    JSON,
+    PROTOBUF,
+  }
+}

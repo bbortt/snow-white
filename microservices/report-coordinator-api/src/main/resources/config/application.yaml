@@ -1,0 +1,36 @@
+management:
+  opentelemetry:
+    resource-attributes:
+      'service.namespace': 'io.github.bbortt.snow.white'
+  otlp:
+    metrics:
+      export:
+        step: 10s
+springdoc:
+  packages-to-scan: io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest
+spring:
+  application:
+    name: report-coordinator-api
+  flyway:
+    placeholders:
+      app_user: ${spring.datasource.username}
+      app_schema: ${spring.flyway.schemas:public}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  kafka:
+    consumer:
+      properties:
+        spring.json.trusted.packages: 'io.github.bbortt.snow.white.*'
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        linger.ms: 20
+        request.timeout.ms: 30000
+        delivery.timeout.ms: 120000
+        retry.backoff.ms: 500
+        retries: 5
+  profiles:
+    default: prod

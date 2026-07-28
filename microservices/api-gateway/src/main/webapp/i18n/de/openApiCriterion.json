@@ -1,0 +1,75 @@
+{
+  "snowWhiteApp": {
+    "openApiCriterion": {
+      "home": {
+        "title": "OpenAPI Abdeckungs-Kriterien",
+        "refreshListLabel": "Liste aktualisieren",
+        "notFound": "Keine OpenAPI Abdeckungs-Kriterien gefunden"
+      },
+      "detail": {
+        "title": "OpenAPI Kriterium"
+      },
+      "name": "Abdeckungs-Typ",
+      "descriptionHeader": "Beschreibung",
+      "description": {
+        "header": "Beschreibung",
+        "PATH_COVERAGE": {
+          "name": "Pfad",
+          "description": "Jeder Pfad, der in der OpenAPI-Spezifikation definiert ist, wurde aufgerufen. Dies ist eine Teilmenge von `HTTP_METHOD_COVERAGE`."
+        },
+        "HTTP_METHOD_COVERAGE": {
+          "name": "HTTP Methode",
+          "description": "Jede HTTP-Methode (`GET`, `POST`, `PUT`, `DELETE`, etc.) für jeden Pfad wurde getestet."
+        },
+        "OPERATION_SUCCESS_COVERAGE": {
+          "name": "Erfolgreiche Operation",
+          "description": "Jede Operation (eindeutige Pfad- und HTTP-Methoden-Kombination) hat mindestens eine erfolgreiche (2xx) Antwort erzeugt. Ergänzt `HTTP_METHOD_COVERAGE`, das nur prüft, ob eine Operation überhaupt aufgerufen wurde."
+        },
+        "ERROR_RESPONSE_CODE_COVERAGE": {
+          "name": "Fehler Antwort-Code",
+          "description": "Jeder dokumentierte Fehlerantwortcode für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`."
+        },
+        "POSITIVE_RESPONSE_CODE_COVERAGE": {
+          "name": "Positiver Antwort-Code",
+          "description": "Jeder dokumentierte positive (nicht-fehlerhafte) Antwortcode (1xx, 2xx, 3xx) für jeden Endpunkt wurde getestet. Dies ist eine Teilmenge von `RESPONSE_CODE_COVERAGE`."
+        },
+        "RESPONSE_CODE_COVERAGE": {
+          "name": "Antwort-Code",
+          "description": "Jeder dokumentierte Antwortcode für jeden Endpunkt wird getestet."
+        },
+        "REQUIRED_PARAMETER_COVERAGE": {
+          "name": "Erforderlicher Parameter",
+          "description": "Jeder erforderliche Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`."
+        },
+        "OPTIONAL_PARAMETER_COVERAGE": {
+          "name": "Optionaler Parameter",
+          "description": "Jeder optionale (nicht erforderliche) Parameter (in path, query) wurde mit gültigen Werten getestet. Dies ist eine Teilmenge von `PARAMETER_COVERAGE`."
+        },
+        "PARAMETER_COVERAGE": {
+          "name": "Parameter",
+          "description": "Jeder Parameter (in path, query) wurde mit gültigen Werten getestet."
+        },
+        "CONTENT_TYPE_COVERAGE": {
+          "name": "Content-Type",
+          "description": "Jeder dokumentierte Content-Type des Request-Body (z.B. `application/json`, `multipart/form-data`) für jeden Endpunkt wurde verwendet."
+        },
+        "REQUIRED_ERROR_FIELDS_COVERAGE": {
+          "name": "Erfoderliche Fehler-Felder",
+          "description": "Fehlerantworten enthalten alle erforderlichen Felder."
+        },
+        "NO_UNDOCUMENTED_RESPONSE_CODES": {
+          "name": "Alle Antwort-Codes Dokumentiert",
+          "description": "Alle aufgetretenen Antwortcodes (einschließlich Fehler) müssen in der OpenAPI-Spezifikation dokumentiert sein."
+        },
+        "NO_UNDOCUMENTED_ERROR_RESPONSE_CODES": {
+          "name": "Alle Fehler-Codes Dokumentiert",
+          "description": "Alle aufgetretenen Fehler-Response-Codes müssen in der OpenAPI-Spezifikation dokumentiert sein. Dies ist eine Untermenge von `NO_UNDOCUMENTED_RESPONSE_CODES`."
+        },
+        "NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES": {
+          "name": "Alle Nicht-Fehler-Codes Dokumentiert",
+          "description": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `NO_UNDOCUMENTED_RESPONSE_CODES`."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+import { execa } from 'execa';
+import { mkdirSync, mkdtempSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { parseAllDocuments, stringify } from 'yaml';
+import { merge } from 'lodash';
+import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+const mergeWithDefaultValues = (values: object): object => {
+  return {
+    ...merge(
+      {
+        snowWhite: {
+          host: 'localhost',
+          httproute: {
+            enabled: true,
+          },
+        },
+      },
+      values,
+    ),
+  };
+};
+
+const executeHelmCommand = async (helmArgs: string[]): Promise<string> => {
+  const { stdout } = await execa('helm', helmArgs);
+  return stdout;
+};
+
+const transformStdoutToJson = async (
+  stdout: string,
+  debug: boolean,
+): Promise<any[]> => {
+  const docs = parseAllDocuments(stdout);
+  const json = docs.map((doc) => doc.toJSON()).filter(Boolean);
+
+  if (debug) {
+    console.debug('json:', json);
+  }
+
+  return json;
+};
+
+export interface HelmChartRenderParameters {
+  chartPath: string;
+  debug?: boolean;
+  namespace?: string;
+  releaseName?: string;
+  values?: object;
+  withDefaultValues?: boolean;
+}
+
+export const renderHelmChart = async (
+  options: HelmChartRenderParameters,
+): Promise<any[]> => {
+  const {
+    chartPath,
+    debug = process.env.DEBUG?.toLowerCase() === 'true',
+    namespace = 'default',
+    releaseName = 'test-release',
+    values = {},
+    withDefaultValues = true,
+  } = options;
+
+  const tmpValuesPath = join(tmpdir(), mkdtempSync('helm-'), 'values.yaml');
+  mkdirSync(dirname(tmpValuesPath));
+  await writeFile(
+    tmpValuesPath,
+    stringify({
+      appVersionOverride: 'test-version',
+      ...(withDefaultValues ? mergeWithDefaultValues(values) : values),
+    }),
+  );
+
+  const helmArgs = [
+    'template',
+    releaseName,
+    chartPath,
+    '--namespace',
+    namespace,
+    '-f',
+    tmpValuesPath,
+  ];
+
+  if (debug) {
+    helmArgs.push('--debug');
+  }
+
+  return await executeHelmCommand(helmArgs).then((stdout) =>
+    transformStdoutToJson(stdout, debug),
+  );
+};

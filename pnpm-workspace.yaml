@@ -1,0 +1,9 @@
+packages:
+  - helm
+  - microservices/*
+allowBuilds:
+  '@parcel/watcher': false
+  unrs-resolver: false
+minimumReleaseAgeExclude:
+  - eslint-plugin-jsdoc@63.3.2
+  - webpack@5.109.1
