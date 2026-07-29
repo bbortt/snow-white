@@ -94,17 +94,6 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'gitsubmodule'
-    directory: '/backstage'
-    schedule:
-      interval: 'weekly'
-    cooldown:
-      default-days: 7
-    assignees:
-      - bbortt
-    labels:
-      - 'severity:low'
-      - 'status:ready-for-review'
-  - package-ecosystem: 'gitsubmodule'
     directory: '/opentelemetry-proto'
     schedule:
       interval: 'weekly'
