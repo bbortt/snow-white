@@ -46,6 +46,7 @@ updates:
       - 'status:ready-for-review'
   - package-ecosystem: 'npm'
     directories:
+      - '/microservices/api-index-api/'
       - '/microservices/api-sync-job/'
       - '/microservices/quality-gate-api'
       - '/microservices/report-coordinator-api'
@@ -126,7 +127,12 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'docker-compose'
-    directory: '/microservices/otel-event-filter-stream/src/apptest/resources'
+    directories:
+      - '/microservices/api-index-api/src/apptest/resources'
+      - '/microservices/api-sync-job/src/apptest/resources'
+      - '/microservices/otel-event-filter-stream/src/apptest/resources'
+      - '/microservices/quality-gate-api/src/apptest/resources'
+      - '/microservices/report-coordinator-api/src/apptest/resources'
     schedule:
       interval: 'weekly'
     cooldown:
