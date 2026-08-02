@@ -88,6 +88,13 @@ services:
 
   grafana:
     image: grafana/otel-lgtm:0.29.1
+    environment:
+      # Forces real credential checking -
+      # the default image grants anonymous requests the Admin role,
+      # which would let openapi-coverage-stream reach Tempo without its Basic Auth credentials ever being validated.
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
+      GF_SECURITY_ADMIN_USER: 'apptest'
+      GF_SECURITY_ADMIN_PASSWORD: 'apptest'
     ports:
       - '15000:3000'
     networks:

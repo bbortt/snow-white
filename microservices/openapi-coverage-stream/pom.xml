@@ -380,10 +380,17 @@
                   <alias>openapi-coverage-stream-grafana</alias>
                   <run>
                     <env>
-                      <TEMPO_URL>http://grafana:3200</TEMPO_URL>
                       <!--
-                        The bundled Tempo in grafana/otel-lgtm enforces no auth of its own; these only need to be non-blank to satisfy the app's "backend configured" check.
+                        Routed through Grafana's own datasource proxy rather than Tempo's raw port (3200):
+                        the bundled Tempo has no auth of its own,
+                        but Grafana does (anonymous access disabled,
+                        see src/apptest/resources/docker-compose-apptest.yaml),
+                        so this is a real Basic Auth round-trip,
+                        not just a non-blank check.
                       -->
+                      <TEMPO_URL>
+                        http://grafana:3000/api/datasources/proxy/uid/tempo
+                      </TEMPO_URL>
                       <TEMPO_USERNAME>apptest</TEMPO_USERNAME>
                       <TEMPO_PASSWORD>apptest</TEMPO_PASSWORD>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
