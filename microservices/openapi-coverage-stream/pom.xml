@@ -321,11 +321,19 @@
             <artifactId>docker-maven-plugin</artifactId>
             <configuration>
               <images>
+                <!--
+                  Two instances of the same image run side by side, each wired to a different telemetry backend.
+                  The OTel Collector persists every trace to both InfluxDB and Grafana Tempo
+                  (see src/apptest/resources/otel-collector/config.yaml),
+                  so both instances calculate coverage off the exact same underlying data -
+                  the app test asserts their results are identical,
+                  proving the two backends are interchangeable.
+                -->
                 <image>
                   <name>
                     ${container.registry}/bbortt/snow-white/openapi-coverage-stream:${image.tag}
                   </name>
-                  <alias>openapi-coverage-stream</alias>
+                  <alias>openapi-coverage-stream-influxdb</alias>
                   <run>
                     <env>
                       <INFLUXDB_URL>http://influxdb:8086</INFLUXDB_URL>
@@ -342,14 +350,62 @@
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC
                       >
-                        snow-white-openapi-calculation-response
+                        snow-white-openapi-calculation-response-influxdb
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC>
                       <SPRING_KAFKA_BOOTSTRAP_SERVERS>
                         kafka:9094
                       </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                      <!--
+                        Distinct application-id so this instance runs its own Kafka Streams consumer group and independently processes every message on the shared input topic,
+                        rather than load-balancing partitions with the Tempo-backed instance below.
+                      -->
+                      <SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                        openapi-coverage-stream-influxdb
+                      </SPRING_KAFKA_STREAMS_APPLICATION_ID>
                     </env>
                     <log>
-                      <prefix>openapi-coverage-stream</prefix>
+                      <prefix>openapi-coverage-stream-influxdb</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                  </run>
+                </image>
+
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/openapi-coverage-stream:${image.tag}
+                  </name>
+                  <alias>openapi-coverage-stream-grafana</alias>
+                  <run>
+                    <env>
+                      <TEMPO_URL>http://grafana:3200</TEMPO_URL>
+                      <!--
+                        The bundled Tempo in grafana/otel-lgtm enforces no auth of its own; these only need to be non-blank to satisfy the app's "backend configured" check.
+                      -->
+                      <TEMPO_USERNAME>apptest</TEMPO_USERNAME>
+                      <TEMPO_PASSWORD>apptest</TEMPO_PASSWORD>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
+                      >
+                        snow-white-calculation-request
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC
+                      >
+                        snow-white-openapi-calculation-response-grafana
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                      <SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                        openapi-coverage-stream-grafana
+                      </SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                    </env>
+                    <log>
+                      <prefix>openapi-coverage-stream-grafana</prefix>
                       <date>default</date>
                     </log>
                     <network>

@@ -62,7 +62,7 @@ services:
       # manual token setup - see the influxdb service below.
       INFLUXDB_TOKEN: 'apptest-token'
     volumes:
-      - ../../../../../dev/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
       - '1888:1888' # pprof extension
       - '8888:8888' # Prometheus metrics exposed by the Collector
