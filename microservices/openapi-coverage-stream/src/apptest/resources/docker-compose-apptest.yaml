@@ -1,4 +1,4 @@
-name: 'otel-event-filter-stream: apptest'
+name: 'openapi-coverage-stream: apptest'
 
 networks:
   default:
@@ -55,10 +55,57 @@ services:
     networks:
       - default
 
-  wiremock:
-    image: wiremock/wiremock:3.13.2-alpine
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.157.0
+    environment:
+      # Fixed token so the collector can authenticate against InfluxDB without any
+      # manual token setup - see the influxdb service below.
+      INFLUXDB_TOKEN: 'apptest-token'
+    volumes:
+      - ../../../../../dev/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
-      - '9000:8080'
+      - '1888:1888' # pprof extension
+      - '8888:8888' # Prometheus metrics exposed by the Collector
+      - '8889:8889' # Prometheus exporter metrics
+      - '13133:13133' # health_check extension
+      - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP http receiver
+      - '55679:55679' # zpages extension
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+
+  grafana:
+    image: grafana/otel-lgtm:0.29.1
+    ports:
+      - '15000:3000'
+    networks:
+      - default
+
+  influxdb:
+    image: influxdb:2.9.1-alpine
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: 'setup'
+      DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
+      DOCKER_INFLUXDB_INIT_BUCKET: 'raw-data'
+      DOCKER_INFLUXDB_INIT_USERNAME: 'snow-white'
+      DOCKER_INFLUXDB_INIT_PASSWORD: 'snow-white'
+      # Fixed operator token so no one has to log into the UI and mint one by hand -
+      # see DEVELOPMENT.md for why the default flow needs a manual token.
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: 'apptest-token'
+    ports:
+      - '8086:8086'
     restart: on-failure
     networks:
       - default

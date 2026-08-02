@@ -2,7 +2,7 @@ name: 'api-gateway: apptest'
 
 networks:
   default:
-    name: github_actions
+    name: ${COMPOSE_NETWORK_NAME:-github_actions}
     external: true
     driver: bridge
 
