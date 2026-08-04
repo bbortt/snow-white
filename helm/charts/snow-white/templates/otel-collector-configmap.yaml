@@ -113,7 +113,8 @@ data:
     exporters:
       debug/basic:
         verbosity: basic
-        sampling_initial: 5
+        sampling_initial: {{ .Values.otelCollector.debug.sampling.initial }}
+        sampling_thereafter: {{ .Values.otelCollector.debug.sampling.thereafter }}
       debug/detailed:
         verbosity: detailed
         sampling_initial: 5
