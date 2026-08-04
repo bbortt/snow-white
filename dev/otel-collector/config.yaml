@@ -70,7 +70,8 @@ extensions:
 exporters:
   debug/basic:
     verbosity: basic
-    sampling_initial: 5
+    sampling_initial: 2
+    sampling_thereafter: 10
   debug/detailed:
     verbosity: detailed
     sampling_initial: 5

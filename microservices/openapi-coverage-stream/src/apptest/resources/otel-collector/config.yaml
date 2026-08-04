@@ -24,7 +24,8 @@ extensions:
 exporters:
   debug/basic:
     verbosity: basic
-    sampling_initial: 5
+    sampling_initial: 2
+    sampling_thereafter: 10
   influxdb:
     endpoint: http://influxdb:8086
     org: snow-white

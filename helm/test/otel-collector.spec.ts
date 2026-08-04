@@ -16,7 +16,7 @@ import {
 import { join } from 'node:path';
 
 const defaultConfigmapChecksum =
-  'bd5b418841caa85609ed16eb8079d7f83b48db222f15880c6e1d9d181f2a0439';
+  'a2fdd0785b38dbcc5bc1173089cbb83d64dd606ebc5c8c927306cc79ebf3a8ab';
 
 describe('OTEL Collector', () => {
   const renderAndGetDeployment = async (manifests?: any[]) => {
@@ -854,6 +854,39 @@ describe('OTEL Collector', () => {
       );
     });
 
+    it('should reconfigure debug/basic exporter from values', async () => {
+      const initial = 1234;
+      const thereafter = 9876;
+
+      const configMap = await renderAndGetOtelCollectorConfig(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            otelCollector: {
+              debug: {
+                sampling: {
+                  initial,
+                  thereafter,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      expect(snowWhiteConfig.exporters['debug/basic'].sampling_initial).toBe(
+        initial,
+      );
+      expect(snowWhiteConfig.exporters['debug/basic'].sampling_thereafter).toBe(
+        thereafter,
+      );
+    });
+
     it('should connect to OTeL collector from values', async () => {
       const endpoint = 'http://custom.collector:1234';
 
@@ -950,21 +983,21 @@ describe('OTEL Collector', () => {
         expectedFile: 'pipeline-without-logs.yaml',
         connectToExternalOtelCollector: { exportLogs: false },
         checksumn:
-          'c943fc13ddf22509cabed475a0e9d8b284055bba11c30015d7eae2a6f3e03b81',
+          '3a9b29c512fc8aaf116b4293e6b544d63ce760cbb87abb12eec3cd4ae1005280',
       },
       {
         type: 'metrics',
         expectedFile: 'pipeline-without-metrics.yaml',
         connectToExternalOtelCollector: { exportMetrics: false },
         checksumn:
-          '6a3f24a13109c7209a3f86d4ad0e5c69372e15f1a972c29f6ef23d7e4a5126dc',
+          '9bc50687bacd48751a6dba73164c7154ed97ac17daaf633de7bd1db3ce069186',
       },
       {
         type: 'traces',
         expectedFile: 'pipeline-without-traces.yaml',
         connectToExternalOtelCollector: { exportTraces: false },
         checksumn:
-          'a2b6fc95921c17c40c8c026cf9f55d4dc456fee391ebb81c5be6b626c3602477',
+          '0c47e397547eb00d61d8b7dc4f217bb80a9e292921bce69f1857a20a2a82dd4c',
       },
     ])(
       'should skip exporting: $type',
