@@ -341,6 +341,9 @@
                       <INFLUXDB_BUCKET>raw-data</INFLUXDB_BUCKET>
                       <!-- Fixed token, see src/apptest/resources/docker-compose-apptest.yaml -->
                       <INFLUXDB_TOKEN>apptest-token</INFLUXDB_TOKEN>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
                       >
                         snow-white-calculation-request
@@ -393,6 +396,9 @@
                       </TEMPO_URL>
                       <TEMPO_USERNAME>apptest</TEMPO_USERNAME>
                       <TEMPO_PASSWORD>apptest</TEMPO_PASSWORD>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
                       >
                         snow-white-calculation-request

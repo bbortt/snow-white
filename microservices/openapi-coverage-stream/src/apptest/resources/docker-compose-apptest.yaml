@@ -100,6 +100,14 @@ services:
     networks:
       - default
 
+  wiremock:
+    image: wiremock/wiremock:3.13.2-alpine
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default
+
   influxdb:
     image: influxdb:2.9.1-alpine
     environment:
