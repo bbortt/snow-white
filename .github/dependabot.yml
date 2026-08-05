@@ -27,7 +27,6 @@ updates:
       - 'status:ready-for-review'
     groups:
       workspace-dependencies:
-        group-by: 'dependency-name'
         patterns:
           - '*'
     ignore:
