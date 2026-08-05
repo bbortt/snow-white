@@ -351,10 +351,10 @@
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
                         true
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
                       >
                         snow-white-openapi-calculation-response-influxdb
-                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC>
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                       <SPRING_KAFKA_BOOTSTRAP_SERVERS>
                         kafka:9094
                       </SPRING_KAFKA_BOOTSTRAP_SERVERS>
@@ -406,10 +406,10 @@
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
                         true
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
                       >
                         snow-white-openapi-calculation-response-grafana
-                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE_TOPIC>
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                       <SPRING_KAFKA_BOOTSTRAP_SERVERS>
                         kafka:9094
                       </SPRING_KAFKA_BOOTSTRAP_SERVERS>
