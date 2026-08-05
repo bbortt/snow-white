@@ -12,7 +12,7 @@
     "apptest:wait:quality-gate-api": "wait-on --timeout 1m http-get://localhost:8091/actuator/health"
   },
   "devDependencies": {
-    "npm-run-all2": "9.0.2",
+    "npm-run-all2": "9.0.3",
     "wait-on": "9.1.0"
   },
   "packageManager": "pnpm@11.17.0",
