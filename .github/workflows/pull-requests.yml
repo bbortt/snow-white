@@ -132,7 +132,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [api-gateway, api-sync-job]
+        service: [api-gateway, api-sync-job, openapi-coverage-stream]
       fail-fast: false
     services:
       wiremock:
@@ -175,7 +175,7 @@ jobs:
           docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
           COMPOSE_NETWORK_NAME=${docker_network} docker compose \
             -f microservices/openapi-coverage-stream/src/apptest/resources/docker-compose-apptest.yaml \
-            up -d --no-deps otel-collector grafana influxdb
+            up -d --no-deps kafka otel-collector grafana influxdb
       - name: Test ${{ matrix.service }} Image
         run: |
           docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")

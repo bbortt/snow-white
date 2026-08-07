@@ -44,6 +44,8 @@ import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.automation.housekeeping.api.HousekeepingApi;
 import org.citrusframework.automation.qualitygate.api.QualityGateApi;
 import org.citrusframework.automation.report.api.ReportApi;
+import org.citrusframework.container.RepeatOnErrorUntilTrue;
+import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.junit.jupiter.CitrusSupport;
 import org.citrusframework.kafka.endpoint.KafkaEndpoint;
 import org.citrusframework.kafka.message.KafkaMessage;
@@ -51,6 +53,7 @@ import org.citrusframework.spi.BindToRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -116,7 +119,7 @@ class ReportCoordinatorApiAppTest {
   void beforeEachSetup() {
     openApiCoverageResponseEndpoint
       .getEndpointConfiguration()
-      .setValueSerializer(JsonSerializer.class);
+      .setValueSerializer(JacksonJsonSerializer.class);
 
     reset();
   }
@@ -345,7 +348,7 @@ class ReportCoordinatorApiAppTest {
                 Map.class
               );
 
-              assertThat(report.get("status")).isEqualTo("PASSED");
+              assertReportStatus(report, "PASSED");
             })
         )
     );
@@ -459,10 +462,10 @@ class ReportCoordinatorApiAppTest {
 
     var calculationId = calculationIdHolder[0];
 
-    // The report is deliberately left IN_PROGRESS - no OpenApiCoverageResponseEvent is ever
-    // published - to simulate openapi-coverage-stream never responding. Triggering housekeeping
-    // repeatedly is harmless before the cutoff elapses, so retrying the whole
-    // trigger-then-check cycle doubles as the wait for the (apptest-shortened) cutoff window.
+    // The report is deliberately left IN_PROGRESS - no OpenApiCoverageResponseEvent is ever published -
+    // to simulate openapi-coverage-stream never responding.
+    // Triggering housekeeping repeatedly is harmless before the cutoff elapses,
+    // so retrying the whole trigger-then-check cycle doubles as the wait for the (apptest-shortened) cutoff window.
     testRunner.run(
       repeatOnError()
         .index("i")
@@ -481,10 +484,27 @@ class ReportCoordinatorApiAppTest {
                 Map.class
               );
 
-              assertThat(report.get("status")).isEqualTo("TIMED_OUT");
+              assertReportStatus(report, "TIMED_OUT");
             })
         )
     );
+  }
+
+  /**
+   * {@link RepeatOnErrorUntilTrue} only retries on {@link CitrusRuntimeException} -
+   * a plain AssertJ {@link AssertionError} from inside a {@code validate()} callback propagates straight out on the first attempt instead of triggering a retry.
+   */
+  private void assertReportStatus(Map<?, ?> report, String expectedStatus) {
+    var actualStatus = report.get("status");
+    if (!expectedStatus.equals(actualStatus)) {
+      throw new CitrusRuntimeException(
+        "Expected report status '" +
+          expectedStatus +
+          "' but was '" +
+          actualStatus +
+          "'"
+      );
+    }
   }
 
   private void stubApiIndexExists(

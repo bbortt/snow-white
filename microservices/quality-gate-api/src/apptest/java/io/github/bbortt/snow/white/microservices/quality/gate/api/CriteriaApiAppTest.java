@@ -22,6 +22,7 @@ import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.automation.criteria.api.CriteriaApi;
 import org.citrusframework.junit.jupiter.CitrusSupport;
+import org.citrusframework.spi.BindToRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
@@ -30,17 +31,13 @@ import tools.jackson.databind.json.JsonMapper;
 @CitrusSupport
 class CriteriaApiAppTest {
 
-  private static CriteriaApi criteriaApi;
-
-  @BeforeAll
-  static void beforeAllSetup() {
-    criteriaApi = new CriteriaApi(
-      getHttpEndpoint(
-        getProperty("quality-gate-api.host", "localhost"),
-        parseInt(getProperty("quality-gate-api.port", "8081"))
-      )
-    );
-  }
+  @BindToRegistry
+  private final CriteriaApi criteriaApi = new CriteriaApi(
+    getHttpEndpoint(
+      getProperty("quality-gate-api.host", "localhost"),
+      parseInt(getProperty("quality-gate-api.port", "8081"))
+    )
+  );
 
   /**
    * Verifies that the criteria endpoint returns the complete, correctly mapped list of built-in OpenAPI coverage criteria.
