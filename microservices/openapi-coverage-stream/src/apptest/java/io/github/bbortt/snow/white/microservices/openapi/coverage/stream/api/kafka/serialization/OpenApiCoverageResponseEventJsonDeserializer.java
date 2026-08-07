@@ -11,8 +11,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Mirrors the deserialization side of {@code QualityGateCalculationEventSerdes} so the AppTest
- * consumes the real response event type instead of parsing raw JSON by hand.
+ * Mirrors the deserialization side of {@link QualityGateCalculationEventSerdes} so the AppTest consumes the real response event type instead of parsing raw JSON by hand.
  */
 public class OpenApiCoverageResponseEventJsonDeserializer
   implements Deserializer<OpenApiCoverageResponseEvent>

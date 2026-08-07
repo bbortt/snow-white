@@ -11,8 +11,8 @@ import static java.lang.System.getProperty;
 import org.citrusframework.junit.jupiter.CitrusSupport;
 
 /**
- * Runs every shared scenario from {@link AbstractOpenApiCoverageStreamAppTest} against the
- * InfluxDB-backed instance (see pom.xml's {@code openapi-coverage-stream-influxdb} image).
+ * Runs every shared scenario from {@link AbstractOpenApiCoverageStreamAppTest} against the InfluxDB-backed instance
+ * (see {@code pom.xml}'s {@code openapi-coverage-stream-influxdb} image).
  */
 @CitrusSupport
 class OpenApiCoverageStreamInfluxDbAppTest
