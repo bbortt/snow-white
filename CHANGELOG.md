@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.1](https://github.com/bbortt/snow-white/compare/v1.6.0...v1.6.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **deps:** update opentelemetry-proto to v1.11.0 ([e4314c8](https://github.com/bbortt/snow-white/commit/e4314c87f0f6ebd832f91220e53a0d13edbbae49))
+* **report-coordinator-api:** wrong return value when downstream connection fails ([92c2c7a](https://github.com/bbortt/snow-white/commit/92c2c7a9004342df0471a8a8aa0e2378344d64fd))
+
+
+### Documentation
+
+* **cli:** document missing junit output file option ([14e0199](https://github.com/bbortt/snow-white/commit/14e01995a59a9c1872dfa422e251255545d55097))
+
 ## [1.6.0](https://github.com/bbortt/snow-white/compare/v1.5.1...v1.6.0) (2026-07-26)
 
 ### Features
