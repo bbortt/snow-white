@@ -11,8 +11,8 @@ import static java.lang.System.getProperty;
 import org.citrusframework.junit.jupiter.CitrusSupport;
 
 /**
- * Runs every shared scenario from {@link AbstractOpenApiCoverageStreamAppTest} against the
- * Grafana Tempo-backed instance (see pom.xml's {@code openapi-coverage-stream-grafana} image),
+ * Runs every shared scenario from {@link AbstractOpenApiCoverageStreamAppTest} against the Grafana Tempo-backed instance
+ * (see {@code pom.xml}'s {@code openapi-coverage-stream-grafana} image),
  * which is routed through Grafana's authenticated datasource proxy rather than Tempo's raw port.
  */
 @CitrusSupport

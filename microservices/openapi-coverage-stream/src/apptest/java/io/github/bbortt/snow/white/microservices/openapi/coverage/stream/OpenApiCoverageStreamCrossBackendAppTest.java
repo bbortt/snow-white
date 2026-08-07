@@ -59,12 +59,11 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Both telemetry backend instances always consume every message on the shared
- * {@code snow-white-calculation-request} topic and the collector persists every trace to both
- * InfluxDB and Grafana Tempo (see src/apptest/resources/otel-collector/config.yaml) - so a single
- * request must yield identical coverage results on both response topics, proving the two backends
- * are genuinely interchangeable rather than merely both individually correct (see
- * {@link AbstractOpenApiCoverageStreamAppTest} for the per-backend scenario coverage).
+ * Both telemetry backend instances always consume every message on the shared {@code snow-white-calculation-request}
+ * topic and the collector persists every trace to both InfluxDB and Grafana Tempo (see {@code src/apptest/resources/otel-collector/config.yaml}) -
+ * so a single request must yield identical coverage results on both response topics,
+ * proving the two backends are genuinely interchangeable rather than merely both individually correct
+ * (see {@link AbstractOpenApiCoverageStreamAppTest} for the per-backend scenario coverage).
  */
 @CitrusSupport
 class OpenApiCoverageStreamCrossBackendAppTest {

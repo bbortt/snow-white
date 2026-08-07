@@ -66,14 +66,13 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Shared black-box scenarios for openapi-coverage-stream, run once per telemetry backend (see
- * {@link OpenApiCoverageStreamInfluxDbAppTest} / {@link OpenApiCoverageStreamGrafanaAppTest}).
+ * Shared black-box scenarios for openapi-coverage-stream, run once per telemetry backend
+ * (see {@link OpenApiCoverageStreamInfluxDbAppTest} / {@link OpenApiCoverageStreamGrafanaAppTest}).
  * <p>
- * Both backend instances always consume every message on the shared
- * {@code snow-white-calculation-request} topic - only the response topic differs per instance
- * ({@link #responseTopic()}) - so running these scenarios against each subclass proves the two
- * telemetry backends are interchangeable for every branch, not just the identical-results happy
- * path (see {@link OpenApiCoverageStreamCrossBackendAppTest} for that direct comparison).
+ * Both backend instances always consume every message on the shared {@code snow-white-calculation-request} topic -
+ * only the response topic differs per instance ({@link #responseTopic()}) -
+ * so running these scenarios against each subclass proves the two telemetry backends are interchangeable for every branch,
+ * not just the identical-results happy path (see {@link OpenApiCoverageStreamCrossBackendAppTest} for that direct comparison).
  */
 @CitrusSupport
 abstract class AbstractOpenApiCoverageStreamAppTest {
@@ -94,9 +93,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   );
 
   /**
-   * The collector's groupbytrace processor holds spans open for 5s before batching them onward to
-   * InfluxDB/Tempo (see src/apptest/resources/otel-collector/config.yaml) - telemetry published
-   * onto snow-white_outbound is only reliably queryable by either backend after this margin.
+   * The collector's groupbytrace processor holds spans open for 5s before batching them onward to InfluxDB/Tempo (see {@code src/apptest/resources/otel-collector/config.yaml}) -
+   * telemetry published onto snow-white_outbound is only reliably queryable by either backend after this margin.
    */
   private static final Duration TELEMETRY_INGESTION_MARGIN = Duration.ofSeconds(
     35L
@@ -185,8 +183,9 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
 
   /**
    * The straightforward pass-through case: telemetry matching every documented path is available,
-   * the API is indexed and its specification parses cleanly, so a full coverage result - one entry
-   * per {@link OpenApiCoverageCriteria} - is returned without an error.
+   * the API is indexed and its specification parses cleanly, so a full coverage result -
+   * one entry per {@link OpenApiCoverageCriteria} -
+   * is returned without an error.
    */
   @Test
   @CitrusTest
@@ -241,8 +240,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * When the telemetry backend has no data matching the request's criteria at all, the calculation
-   * short-circuits with a descriptive error instead of returning an empty/zeroed result set.
+   * When the telemetry backend has no data matching the request's criteria at all,
+   * the calculation short-circuits with a descriptive error instead of returning an empty/zeroed result set.
    */
   @Test
   @CitrusTest
@@ -270,9 +269,9 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * Attribute filters on the request narrow which telemetry counts towards coverage - here, only
-   * one of two documented paths carries the requested attribute value, so path coverage must
-   * reflect exactly that one path, not both.
+   * Attribute filters on the request narrow which telemetry counts towards coverage - here,
+   * only one of two documented paths carries the requested attribute value,
+   * so path coverage must reflect exactly that one path, not both.
    */
   @Test
   @CitrusTest
@@ -325,8 +324,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * When the API is not known to api-index-api, the calculation must fail fast with a descriptive
-   * error instead of attempting to query telemetry at all.
+   * When the API is not known to api-index-api,
+   * the calculation must fail fast with a descriptive error instead of attempting to query telemetry at all.
    */
   @Test
   @CitrusTest
@@ -360,8 +359,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * When the API is indexed but its source document does not parse as OpenAPI, the calculation
-   * must fail fast with a descriptive error.
+   * When the API is indexed but its source document does not parse as OpenAPI,
+   * the calculation must fail fast with a descriptive error.
    */
   @Test
   @CitrusTest
@@ -393,8 +392,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * A single transient api-index-api failure must be recovered from automatically by the built-in
-   * retry, so the calculation still completes successfully.
+   * A single transient api-index-api failure must be recovered from automatically by the built-in retry,
+   * so the calculation still completes successfully.
    */
   @Test
   @CitrusTest
@@ -457,9 +456,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * When api-index-api is persistently unavailable, the built-in retry must exhaust and the
-   * calculation must still complete with a descriptive error instead of hanging or crashing the
-   * stream.
+   * When api-index-api is persistently unavailable,
+   * the built-in retry must exhaust and the calculation must still complete with a descriptive error instead of hanging or crashing the stream.
    */
   @Test
   @CitrusTest
@@ -491,8 +489,8 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * A request for an API type other than OpenAPI must never produce a response on this service's
-   * output topic at all - it is filtered out upstream of any backend-specific processing.
+   * A request for an API type other than OpenAPI must never produce a response on this service's output topic at all -
+   * it is filtered out upstream of any backend-specific processing.
    */
   @Test
   @CitrusTest
@@ -534,11 +532,10 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   }
 
   /**
-   * Telemetry that does not carry the OpenAPI operation-id attribute is only routed by its literal
-   * (concrete) URL path, which never matches a templated spec path - it must be dropped from
-   * coverage entirely, leaving path coverage at 0%. Telemetry that does carry a known operation-id
-   * must instead be grouped under that operation's templated path, regardless of what its literal
-   * URL looked like - proving the fast-path routing end-to-end.
+   * Telemetry that does not carry the OpenAPI operation-id attribute is only routed by its literal (concrete) URL path,
+   * which never matches a templated spec path - it must be dropped from coverage entirely,
+   * leaving path coverage at 0%. Telemetry that does carry a known operation-id must instead be grouped under that operation's templated path,
+   * regardless of what its literal URL looked like - proving the fast-path routing end-to-end.
    */
   @Test
   @CitrusTest
