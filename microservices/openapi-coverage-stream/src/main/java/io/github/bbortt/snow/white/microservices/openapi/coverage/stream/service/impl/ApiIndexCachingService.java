@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Service
@@ -29,16 +30,23 @@ public class ApiIndexCachingService implements CachingService {
   @WithSpan
   public @NonNull String fetchApiSourceUrl(ApiInformation apiInformation)
     throws OpenApiNotIndexedException {
-    var response = apiIndexApiClient.getApiDetailsWithHttpInfo(
-      apiInformation.getServiceName(),
-      apiInformation.getApiName(),
-      apiInformation.getApiVersion()
-    );
+    try {
+      var response = apiIndexApiClient.getApiDetailsWithHttpInfo(
+        apiInformation.getServiceName(),
+        apiInformation.getApiName(),
+        apiInformation.getApiVersion()
+      );
 
-    if (
-      response.getStatusCode().is2xxSuccessful() && nonNull(response.getBody())
-    ) {
-      return response.getBody().getSourceUrl();
+      if (
+        response.getStatusCode().is2xxSuccessful() &&
+        nonNull(response.getBody())
+      ) {
+        return response.getBody().getSourceUrl();
+      }
+    } catch (HttpClientErrorException.NotFound _) {
+      // api-index-api responds 404 when the API isn't indexed,
+      // rather than 200 with an empty body -
+      // RestClient throws for this instead of returning the response entity.
     }
 
     throw new OpenApiNotIndexedException(apiInformation);

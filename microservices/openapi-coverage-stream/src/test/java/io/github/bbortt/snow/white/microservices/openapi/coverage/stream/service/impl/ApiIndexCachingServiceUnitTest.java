@@ -10,6 +10,8 @@ import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
@@ -24,7 +26,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith({ MockitoExtension.class })
 class ApiIndexCachingServiceUnitTest {
@@ -78,6 +82,37 @@ class ApiIndexCachingServiceUnitTest {
       ResponseEntity<GetAllApis200ResponseInner> responseEntity
     ) {
       doReturn(responseEntity)
+        .when(apiIndexApiClientMock)
+        .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
+
+      var apiInformation = ApiInformation.builder()
+        .serviceName(SERVICE_NAME)
+        .apiName(API_NAME)
+        .apiVersion(API_VERSION)
+        .apiType(OPENAPI)
+        .build();
+
+      assertThatThrownBy(() ->
+        fixture.fetchApiSourceUrl(apiInformation)
+      ).isInstanceOf(OpenApiNotIndexedException.class);
+    }
+
+    /**
+     * RestClient throws for non-2xx responses by default - api-index-api's 404 for an unindexed
+     * API never reaches {@code fetchApiSourceUrl} as a normal {@link ResponseEntity}, unlike the
+     * mocked cases above.
+     */
+    @Test
+    void shouldThrow_whenApiIndexRespondsNotFound() {
+      doThrow(
+        HttpClientErrorException.create(
+          NOT_FOUND,
+          "Not Found",
+          HttpHeaders.EMPTY,
+          new byte[0],
+          null
+        )
+      )
         .when(apiIndexApiClientMock)
         .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
 
