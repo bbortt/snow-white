@@ -84,7 +84,9 @@ _Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-6](#nfr-6-reliability)
 
 **RQ-5.4** Snow-White SHALL scope telemetry ingestion and analysis strictly to the triggered analysis request.
 
-_Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-7](#nfr-7-usability)
+**RQ-5.5** Snow-White SHALL resolve a triggered analysis to a terminal state within a bounded time, even if the requested telemetry or computation results never arrive.
+
+_Linked NFRs:_ [NFR-2](#nfr-2-automation) · [NFR-6](#nfr-6-reliability) · [NFR-7](#nfr-7-usability)
 
 ## RQ-6 Result Consumption
 
