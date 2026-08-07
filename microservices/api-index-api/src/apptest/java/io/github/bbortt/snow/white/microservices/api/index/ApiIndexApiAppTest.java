@@ -28,17 +28,13 @@ import tools.jackson.databind.json.JsonMapper;
 @CitrusSupport
 class ApiIndexApiAppTest {
 
-  private static ApiIndexApi apiIndexApi;
-
-  @BeforeAll
-  static void beforeAllSetup() {
-    apiIndexApi = new ApiIndexApi(
-      getHttpEndpoint(
-        getProperty("api-index-api.host", "localhost"),
-        parseInt(getProperty("api-index-api.port", "8085"))
-      )
-    );
-  }
+  @BindToRegistry
+  private final ApiIndexApi apiIndexApi = new ApiIndexApi(
+    getHttpEndpoint(
+      getProperty("api-index-api.host", "localhost"),
+      parseInt(getProperty("api-index-api.port", "8085"))
+    )
+  );
 
   /**
    * Verifies that the APIs listing endpoint accepts pagination parameters and returns HTTP 200.
