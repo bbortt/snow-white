@@ -10,7 +10,11 @@ import static io.github.bbortt.snow.white.microservices.api.index.CitrusUtils.ge
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
@@ -20,7 +24,7 @@ import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.automation.apiindex.api.ApiIndexApi;
 import org.citrusframework.junit.jupiter.CitrusSupport;
-import org.junit.jupiter.api.BeforeAll;
+import org.citrusframework.spi.BindToRegistry;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -28,17 +32,13 @@ import tools.jackson.databind.json.JsonMapper;
 @CitrusSupport
 class ApiIndexApiAppTest {
 
-  private static ApiIndexApi apiIndexApi;
-
-  @BeforeAll
-  static void beforeAllSetup() {
-    apiIndexApi = new ApiIndexApi(
-      getHttpEndpoint(
-        getProperty("api-index-api.host", "localhost"),
-        parseInt(getProperty("api-index-api.port", "8085"))
-      )
-    );
-  }
+  @BindToRegistry
+  private final ApiIndexApi apiIndexApi = new ApiIndexApi(
+    getHttpEndpoint(
+      getProperty("api-index-api.host", "localhost"),
+      parseInt(getProperty("api-index-api.port", "8085"))
+    )
+  );
 
   /**
    * Verifies that the APIs listing endpoint accepts pagination parameters and returns HTTP 200.

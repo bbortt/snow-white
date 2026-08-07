@@ -743,8 +743,7 @@
                         snow-white-calculation-request
                       </SNOW_WHITE_REPORT_COORDINATOR_API_CALCULATION-REQUEST-TOPIC>
                       <!--
-                        Short cutoff so shouldTimeOutStaleReport doesn't have to wait out the
-                        5-minute production default before triggering housekeeping.
+                        Short cutoff so shouldTimeOutStaleReport doesn't have to wait out the 5-minute production default before triggering housekeeping.
                       -->
                       <SNOW_WHITE_REPORT_COORDINATOR_API_HOUSEKEEPING-PROPERTIES_CUTOFF-SECONDS
                       >
