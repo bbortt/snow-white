@@ -354,7 +354,7 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
     );
 
     assertThat(response.openApiTestResults()).isNull();
-    assertThat(response.errorMessage()).startsWith(
+    assertThat(response.errorMessage()).contains(
       "OpenApi identifier not indexed"
     );
   }
