@@ -349,6 +349,16 @@ otelCollector:
     # -- Image tag.
     # @section -- OpenTelemetry Collector
     tag: '0.157.0'
+  debug:
+    sampling:
+      # -- Number of messages initially logged each second.
+      # See: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md#getting-started.
+      # @section -- OpenTelemetry Collector
+      initial: 2
+      # -- Sampling rate after the initial messages are logged (every Mth message is logged each second).
+      # See: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md#getting-started.
+      # @section -- OpenTelemetry Collector
+      thereafter: 10
   # -- Whether to expose the OTeL collector through the (public) ingress.
   # @section -- OpenTelemetry Collector
   exposeThroughApiGateway: true

@@ -132,7 +132,7 @@ jobs:
     needs: ci
     strategy:
       matrix:
-        service: [api-gateway, api-sync-job]
+        service: [api-gateway, api-sync-job, openapi-coverage-stream]
       fail-fast: false
     services:
       wiremock:
@@ -169,6 +169,13 @@ jobs:
             --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
             --build-arg PROJECT_VERSION="${{ github.sha }}" \
             microservices/${{ matrix.service }}
+      - name: Start Telemetry Backend
+        if: ${{ matrix.service == 'openapi-coverage-stream' }}
+        run: |
+          docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
+          COMPOSE_NETWORK_NAME=${docker_network} docker compose \
+            -f microservices/openapi-coverage-stream/src/apptest/resources/docker-compose-apptest.yaml \
+            up -d --no-deps kafka otel-collector grafana influxdb
       - name: Test ${{ matrix.service }} Image
         run: |
           docker_network=$(docker network ls --filter name=^github_network --format "{{.Name}}")
@@ -216,7 +223,6 @@ jobs:
           KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
           KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-
         ports:
           - '9092:9092'
           - '9094:9094'
