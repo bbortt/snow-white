@@ -42,12 +42,13 @@ The service fails to start if neither, or both, are configured.
 
 <!-- markdownlint-disable markdownlint-sentences-per-line -->
 
-| Property         | Description                                                                                                 | Example Value       |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- | ------------------- |
-| `TEMPO_URL`      | URL of the Grafana Tempo instance used to read telemetry data.                                              | <http://tempo:3200> |
-| `TEMPO_TOKEN`    | Bearer token used to authenticate against Tempo. Mutually exclusive with `TEMPO_USERNAME`/`TEMPO_PASSWORD`. | `my-token`          |
-| `TEMPO_USERNAME` | Username used for HTTP Basic authentication against Tempo. Requires `TEMPO_PASSWORD`.                       | `snow-white`        |
-| `TEMPO_PASSWORD` | Password used for HTTP Basic authentication against Tempo. Requires `TEMPO_USERNAME`.                       | `my-password`       |
+| Property         | Description                                                                                                                                                                                                                                                  | Example Value       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| `TEMPO_URL`      | URL of the Grafana Tempo instance used to read telemetry data.                                                                                                                                                                                               | <http://tempo:3200> |
+| `TEMPO_TOKEN`    | Bearer token used to authenticate against Tempo. Mutually exclusive with `TEMPO_USERNAME`/`TEMPO_PASSWORD`.                                                                                                                                                  | `my-token`          |
+| `TEMPO_USERNAME` | Username used for HTTP Basic authentication against Tempo. Requires `TEMPO_PASSWORD`.                                                                                                                                                                        | `snow-white`        |
+| `TEMPO_PASSWORD` | Password used for HTTP Basic authentication against Tempo. Requires `TEMPO_USERNAME`.                                                                                                                                                                        | `my-password`       |
+| `TEMPO_ORG_ID`   | Optional. Tenant sent as the `X-Scope-OrgID` header on every request, required by Tempo instances running with [multi-tenancy](https://grafana.com/docs/tempo/latest/operations/manage-advanced-systems/multitenancy/) enabled. Omitted entirely when unset. | `snow-white`        |
 
 <!-- markdownlint-enable markdownlint-sentences-per-line -->
 

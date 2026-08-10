@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -85,6 +86,55 @@ class TempoRestClientConfigUnitTest {
         getRequestedFor(urlEqualTo("/api/search")).withHeader(
           AUTHORIZATION,
           equalTo("Basic " + expectedCredentials)
+        )
+      );
+    }
+  }
+
+  /**
+   * Tempo requires the {@code X-Scope-OrgID} header on every request when multi-tenancy is
+   * enabled - otherwise it rejects the request with {@code 401 Unauthorized: "no org id"}.
+   *
+   * @see <a href="https://grafana.com/docs/tempo/latest/operations/manage-advanced-systems/multitenancy/">Tempo multi-tenancy</a>
+   */
+  @Nested
+  class OrgIdHeaderTest {
+
+    @Test
+    void shouldSendOrgIdHeader_whenConfigured() {
+      tempoProperties.setToken("my-token");
+      tempoProperties.setOrgId("my-tenant");
+
+      fixture
+        .tempoRestClient(tempoProperties)
+        .get()
+        .uri("/api/search")
+        .retrieve()
+        .toBodilessEntity();
+
+      wireMockServer.verify(
+        getRequestedFor(urlEqualTo("/api/search")).withHeader(
+          "X-Scope-OrgID",
+          equalTo("my-tenant")
+        )
+      );
+    }
+
+    @Test
+    void shouldNotSendOrgIdHeader_whenNotConfigured() {
+      tempoProperties.setToken("my-token");
+
+      fixture
+        .tempoRestClient(tempoProperties)
+        .get()
+        .uri("/api/search")
+        .retrieve()
+        .toBodilessEntity();
+
+      wireMockServer.verify(
+        getRequestedFor(urlEqualTo("/api/search")).withHeader(
+          "X-Scope-OrgID",
+          absent()
         )
       );
     }

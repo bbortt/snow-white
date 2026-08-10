@@ -20,6 +20,12 @@ import org.springframework.web.client.RestClient;
 @Conditional(TempoConfiguredCondition.class)
 public class TempoRestClientConfig {
 
+  /**
+   * Tempo's multi-tenancy header - see
+   * <a href="https://grafana.com/docs/tempo/latest/operations/manage-advanced-systems/multitenancy/">Tempo multi-tenancy</a>
+   */
+  private static final String X_SCOPE_ORG_ID = "X-Scope-OrgID";
+
   @Bean
   public RestClient tempoRestClient(TempoProperties tempoProperties) {
     var builder = RestClient.builder().baseUrl(tempoProperties.getUrl());
@@ -36,6 +42,10 @@ public class TempoRestClientConfig {
           tempoProperties.getPassword()
         )
       );
+    }
+
+    if (hasText(tempoProperties.getOrgId())) {
+      builder.defaultHeader(X_SCOPE_ORG_ID, tempoProperties.getOrgId());
     }
 
     return builder.build();
