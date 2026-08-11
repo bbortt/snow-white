@@ -1,20 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
   ~ Licensed under the Polyform Small Business License 1.0.0
   ~ See LICENSE file for full details.
   -->
-<project
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
->
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>io.github.bbortt.snow-white.microservices</groupId>
     <artifactId>microservices</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.7.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -344,15 +340,13 @@
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
                         http://wiremock:8080
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
-                      >
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
                         snow-white-calculation-request
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
                         true
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
-                      >
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                         snow-white-openapi-calculation-response-influxdb
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                       <SPRING_KAFKA_BOOTSTRAP_SERVERS>
@@ -399,15 +393,13 @@
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
                         http://wiremock:8080
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
-                      >
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
                         snow-white-calculation-request
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
                         true
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
-                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
-                      >
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                         snow-white-openapi-calculation-response-grafana
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
                       <SPRING_KAFKA_BOOTSTRAP_SERVERS>
