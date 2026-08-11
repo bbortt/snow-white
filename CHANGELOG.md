@@ -2,24 +2,21 @@
 
 ## [1.7.0](https://github.com/bbortt/snow-white/compare/v1.6.0...v1.7.0) (2026-08-11)
 
-
 ### Features
 
-* **#1697:** support multi tenant grafana tempo instances ([ff0ab74](https://github.com/bbortt/snow-white/commit/ff0ab74d735af2c6220f62bdfe3d27f262587790))
-
+- **#1697:** support multi tenant grafana tempo instances ([ff0ab74](https://github.com/bbortt/snow-white/commit/ff0ab74d735af2c6220f62bdfe3d27f262587790))
 
 ### Bug Fixes
 
-* **deps:** update opentelemetry-proto to v1.11.0 ([e4314c8](https://github.com/bbortt/snow-white/commit/e4314c87f0f6ebd832f91220e53a0d13edbbae49))
-* **helm:** expose debug/basic sampling rate through values ([5d8f1ca](https://github.com/bbortt/snow-white/commit/5d8f1caf798c62f32366f318cfb09bcbcb893936))
-* **openapi-coverage-stream:** non-reachable api not indexed branch ([99ef27a](https://github.com/bbortt/snow-white/commit/99ef27aa55e1ea9e23ec9359f4f8d8ac98b4b0ba))
-* **report-coordinator-api:** wrong return value when downstream connection fails ([92c2c7a](https://github.com/bbortt/snow-white/commit/92c2c7a9004342df0471a8a8aa0e2378344d64fd))
-
+- **deps:** update opentelemetry-proto to v1.11.0 ([e4314c8](https://github.com/bbortt/snow-white/commit/e4314c87f0f6ebd832f91220e53a0d13edbbae49))
+- **helm:** expose debug/basic sampling rate through values ([5d8f1ca](https://github.com/bbortt/snow-white/commit/5d8f1caf798c62f32366f318cfb09bcbcb893936))
+- **openapi-coverage-stream:** non-reachable api not indexed branch ([99ef27a](https://github.com/bbortt/snow-white/commit/99ef27aa55e1ea9e23ec9359f4f8d8ac98b4b0ba))
+- **report-coordinator-api:** wrong return value when downstream connection fails ([92c2c7a](https://github.com/bbortt/snow-white/commit/92c2c7a9004342df0471a8a8aa0e2378344d64fd))
 
 ### Documentation
 
-* adjust requirements based on new application tests ([e110eff](https://github.com/bbortt/snow-white/commit/e110eff20c39225207d63a4fbebd069584711768))
-* **cli:** document missing junit output file option ([14e0199](https://github.com/bbortt/snow-white/commit/14e01995a59a9c1872dfa422e251255545d55097))
+- adjust requirements based on new application tests ([e110eff](https://github.com/bbortt/snow-white/commit/e110eff20c39225207d63a4fbebd069584711768))
+- **cli:** document missing junit output file option ([14e0199](https://github.com/bbortt/snow-white/commit/14e01995a59a9c1872dfa422e251255545d55097))
 
 ## [1.6.0](https://github.com/bbortt/snow-white/compare/v1.5.1...v1.6.0) (2026-07-26)
 
