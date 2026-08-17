@@ -24,6 +24,8 @@ spring:
       properties:
         spring.json.trusted.packages: 'io.github.bbortt.snow.white.*'
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    listener:
+      observation-enabled: true
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
@@ -32,5 +34,7 @@ spring:
         delivery.timeout.ms: 120000
         retry.backoff.ms: 500
         retries: 5
+    template:
+      observation-enabled: true
   profiles:
     default: prod
