@@ -1,0 +1,6 @@
+packages:
+  - helm
+  - microservices/*
+allowBuilds:
+  '@parcel/watcher': false
+  unrs-resolver: false

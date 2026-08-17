@@ -1,0 +1,126 @@
+name: 'openapi-coverage-stream: apptest'
+
+networks:
+  default:
+    name: ${COMPOSE_NETWORK_NAME:-github_actions}
+    external: true
+    driver: bridge
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:8.3.1
+    environment:
+      # Cluster / broker identity
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      CLUSTER_ID: 'N2E5ODJjNjA5OGY3NDFiY2' # run "kafka-storage random-uuid"
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+
+      # Listener setup
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092,EXTERNAL://kafka:9094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      # Other essential configs
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list || exit 1
+      interval: 2s
+      timeout: 5s
+      retries: 12
+    restart: on-failure
+    networks:
+      - default
+
+  kafka.ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'snow-white'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9094'
+    ports:
+      - '8090:8080'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.158.0
+    environment:
+      # Fixed token so the collector can authenticate against InfluxDB without any
+      # manual token setup - see the influxdb service below.
+      INFLUXDB_TOKEN: 'apptest-token'
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - '1888:1888' # pprof extension
+      - '8888:8888' # Prometheus metrics exposed by the Collector
+      - '8889:8889' # Prometheus exporter metrics
+      - '13133:13133' # health_check extension
+      - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP http receiver
+      - '55679:55679' # zpages extension
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+
+  grafana:
+    image: grafana/otel-lgtm:0.30.0
+    environment:
+      # Forces real credential checking -
+      # the default image grants anonymous requests the Admin role,
+      # which would let openapi-coverage-stream reach Tempo without its Basic Auth credentials ever being validated.
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
+      GF_SECURITY_ADMIN_USER: 'apptest'
+      GF_SECURITY_ADMIN_PASSWORD: 'apptest'
+    ports:
+      - '15000:3000'
+    networks:
+      - default
+
+  wiremock:
+    image: wiremock/wiremock:3.13.2-alpine
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default
+
+  influxdb:
+    image: influxdb:2.9.1-alpine
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: 'setup'
+      DOCKER_INFLUXDB_INIT_ORG: 'snow-white'
+      DOCKER_INFLUXDB_INIT_BUCKET: 'raw-data'
+      DOCKER_INFLUXDB_INIT_USERNAME: 'snow-white'
+      DOCKER_INFLUXDB_INIT_PASSWORD: 'snow-white'
+      # Fixed operator token so no one has to log into the UI and mint one by hand -
+      # see DEVELOPMENT.md for why the default flow needs a manual token.
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: 'apptest-token'
+    ports:
+      - '8086:8086'
+    restart: on-failure
+    networks:
+      - default

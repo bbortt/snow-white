@@ -1,0 +1,146 @@
+{{- $labels := include "snow-white.labels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
+{{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "openapi-coverage-stream" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: {{ .Values.snowWhite.openapiCoverageStream.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.snowWhite.rollout.maxSurge }}
+      maxUnavailable: 0
+  revisionHistoryLimit: {{ .Values.snowWhite.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.snowWhite.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 8 }}
+        {{- end }}
+      labels:
+        {{ $labels | nindent 8 }}
+    spec:
+      {{ include "snow-white.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        fsGroup: 101
+      {{- if .Values.affinity }}
+      affinity: {{ include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "openapi-coverage-stream" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        podAntiAffinity: {{ include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "openapi-coverage-stream" "customLabels" $selectorLabels "context" .) | nindent 10 }}
+        nodeAffinity: {{ include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      containers:
+        - name: openapi-coverage-stream
+          image: "{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/openapi-coverage-stream:{{ .Values.snowWhite.openapiCoverageStream.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+          {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
+            - name: 'INFLUXDB_URL'
+              value: '{{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
+            - name: 'INFLUXDB_ORG'
+              value: {{ .Values.influxdb2.adminUser.organization | quote }}
+            - name: 'INFLUXDB_BUCKET'
+              value: {{ .Values.influxdb2.adminUser.bucket | quote }}
+            - name: 'INFLUXDB_TOKEN'
+              valueFrom:
+                secretKeyRef:
+                  {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
+                  name: {{ .Values.influxdb2.adminUser.existingSecret -}}
+                  {{- else }}
+                  name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- end }}
+                  key: admin-token
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL'
+              value: {{ default (printf "http://%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC'
+              value: '{{ .Values.snowWhite.kafka.calculationRequestTopic }}'
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS'
+              value: '{{ .Values.snowWhite.kafka.initTopics }}'
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC'
+              value: '{{ .Values.snowWhite.kafka.openapiCalculationResponseTopic }}'
+            - name: 'SPRING_KAFKA_BOOTSTRAP_SERVERS'
+              value: {{ default (printf "%s.%s.svc.cluster.local.:9092" (include "snow-white.name" (dict "name" "kafka-connect" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
+          {{- if .Values.otelCollector.apiNameAttributeKey }}
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_FILTERING_API-NAME-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.apiNameAttributeKey }}'
+          {{- end }}
+          {{- if .Values.otelCollector.apiVersionAttributeKey }}
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_FILTERING_API-VERSION-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.apiVersionAttributeKey }}'
+          {{- end }}
+          {{- if .Values.otelCollector.serviceNameAttributeKey }}
+            - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_FILTERING_SERVICE-NAME-ATTRIBUTE-KEY'
+              value: '{{ .Values.otelCollector.serviceNameAttributeKey }}'
+          {{- end }}
+          {{- $additionalEnvs := .Values.snowWhite.openapiCoverageStream.additionalEnvs | default list }}
+          {{- range $additionalEnvs }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+          {{- end }}
+          resources:
+            limits:
+              memory: '512Mi'
+              ephemeral-storage: '2Gi'
+            requests:
+              cpu: '0.5'
+              memory: '512Mi'
+              ephemeral-storage: '50Mi'
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10000
+            runAsGroup: 12345
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            {{- if ne .Values.jssecacerts.secretName "" }}
+            - name: truststore
+              mountPath: /opt/java/lib/security
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: ""
+            sizeLimit: 256Mi
+        {{- if ne .Values.jssecacerts.secretName "" }}
+        - name: truststore
+          secret:
+            defaultMode: 420
+            items:
+              {{- if (empty .Values.jssecacerts.key) }}
+              {{ fail "\n\n⚠ ERROR: You must set 'jssecacerts.key' to the secret key containing the jssecacerts value!" }}
+              {{- else }}
+              - key: {{ .Values.jssecacerts.key }}
+              {{- end }}
+                path: jssecacerts
+            secretName: {{ .Values.jssecacerts.secretName }}
+        {{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "openapi-coverage-stream" "context" .) }}
+  labels:
+   {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ $selectorLabels | nindent 6 }}
+  maxUnavailable: 25%

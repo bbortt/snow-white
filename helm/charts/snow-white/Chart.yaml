@@ -1,0 +1,26 @@
+apiVersion: v2
+name: snow-white
+description: A Helm chart for deploying snow-white
+type: application
+version: 0.1.0
+appVersion: v1.0.0
+maintainers:
+  - name: Timon Borter
+    email: timon.borter@gmx.ch
+dependencies:
+  - name: influxdb2
+    version: 2.1.2
+    repository: 'https://helm.influxdata.com/'
+    condition: influxdb2.enabled
+  - name: kafka-ui
+    version: 1.6.5
+    repository: 'https://kafbat.github.io/helm-charts'
+    condition: kafka-ui.enabled
+  - name: postgresql
+    version: 18.8.6
+    repository: 'https://charts.bitnami.com/bitnami'
+    condition: postgresql.enabled
+  - name: common
+    repository: 'oci://registry-1.docker.io/bitnamicharts'
+    version: 2.41.0
+engine: gotpl

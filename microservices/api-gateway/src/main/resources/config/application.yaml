@@ -1,0 +1,19 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+      base-path: /management
+  endpoint:
+    health:
+      access: read_only
+    info:
+      access: read_only
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    default: prod
+    include: api-docs

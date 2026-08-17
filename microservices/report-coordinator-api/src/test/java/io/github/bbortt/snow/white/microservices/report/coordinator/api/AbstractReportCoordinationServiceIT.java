@@ -1,0 +1,110 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.report.coordinator.api;
+
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT.CALCULATION_REQUEST_TOPIC;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT.OPENAPI_CALCULATION_RESPONSE_TOPIC;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.wiremock.integrations.testcontainers.WireMockContainer;
+
+@ActiveProfiles("test")
+@SpringBootTest(
+  classes = { Main.class },
+  properties = {
+    "snow.white.report.coordinator.api.calculation-request-topic=" +
+      CALCULATION_REQUEST_TOPIC,
+    "snow.white.report.coordinator.api.init-topics=true",
+    "snow.white.report.coordinator.api.openapi-calculation-response.topic=" +
+      OPENAPI_CALCULATION_RESPONSE_TOPIC,
+    "snow.white.report.coordinator.api.public-api-gateway-url=http://localhost:9080",
+  }
+)
+public abstract class AbstractReportCoordinationServiceIT {
+
+  static final String CALCULATION_REQUEST_TOPIC =
+    "snow-white-calculation-request";
+  static final String OPENAPI_CALCULATION_RESPONSE_TOPIC =
+    "snow-white-openapi-calculation-response";
+
+  protected static final ConfluentKafkaContainer KAFKA_CONTAINER =
+    new ConfluentKafkaContainer("confluentinc/cp-kafka:8.3.1").withExposedPorts(
+      9092
+    );
+
+  private static final PostgreSQLContainer POSTGRESQL_CONTAINER =
+    new PostgreSQLContainer("postgres:18.4-alpine").withExposedPorts(5432);
+
+  private static final WireMockContainer API_INDEX_API_WIREMOCK_CONTAINER =
+    new WireMockContainer("wiremock/wiremock:3.13.2-alpine");
+
+  private static final WireMockContainer QUALITY_GATE_API_WIREMOCK_CONTAINER =
+    new WireMockContainer("wiremock/wiremock:3.13.2-alpine");
+
+  static {
+    KAFKA_CONTAINER.start();
+    POSTGRESQL_CONTAINER.start();
+    API_INDEX_API_WIREMOCK_CONTAINER.start();
+    QUALITY_GATE_API_WIREMOCK_CONTAINER.start();
+  }
+
+  @DynamicPropertySource
+  static void kafkaProperties(DynamicPropertyRegistry registry) {
+    registry.add(
+      "spring.kafka.bootstrap-servers",
+      KAFKA_CONTAINER::getBootstrapServers
+    );
+  }
+
+  @DynamicPropertySource
+  static void postgresqlProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
+    registry.add(
+      "spring.datasource.username",
+      POSTGRESQL_CONTAINER::getUsername
+    );
+    registry.add(
+      "spring.datasource.password",
+      POSTGRESQL_CONTAINER::getPassword
+    );
+  }
+
+  @DynamicPropertySource
+  static void wireMockProperties(DynamicPropertyRegistry registry) {
+    registry.add(
+      "snow.white.report.coordinator.api.api-index.base-url",
+      API_INDEX_API_WIREMOCK_CONTAINER::getBaseUrl
+    );
+    registry.add(
+      "snow.white.report.coordinator.api.quality-gate-api.base-url",
+      QUALITY_GATE_API_WIREMOCK_CONTAINER::getBaseUrl
+    );
+  }
+
+  protected final WireMock apiIndexApi;
+  protected final WireMock qualityGateApi;
+
+  protected AbstractReportCoordinationServiceIT() {
+    this.apiIndexApi = new WireMock(
+      "http",
+      API_INDEX_API_WIREMOCK_CONTAINER.getHost(),
+      API_INDEX_API_WIREMOCK_CONTAINER.getPort()
+    );
+
+    this.qualityGateApi = new WireMock(
+      "http",
+      QUALITY_GATE_API_WIREMOCK_CONTAINER.getHost(),
+      QUALITY_GATE_API_WIREMOCK_CONTAINER.getPort()
+    );
+  }
+}

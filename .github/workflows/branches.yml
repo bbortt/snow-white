@@ -1,0 +1,149 @@
+name: Application CI
+
+on:
+  push:
+    branches:
+      - '**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Check if PR exists
+        uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9
+        id: check
+        with:
+          filterOutClosed: true
+          filterOutDraft: true
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Fetch Helm Dependencies
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Build with Maven
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        run: ./mvnw -B -Pprod verify
+      - name: Upload CLI Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        with:
+          name: cli
+          path: toolkit/cli/target/snow-white-*
+          if-no-files-found: error
+      - name: Fetch References
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        run: git fetch --unshallow origin
+      - name: Cache SonarQube Packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Sonar Analysis
+        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=bbortt-github \
+            -Dsonar.projectKey=bbortt_snow-white
+  pnpm-install-fix:
+    name: Run pnpm install on dependabot PR
+    runs-on: ubuntu-latest
+    environment: dependabot
+    if: ${{ contains(github.head_ref, 'npm_and_yarn') || contains(github.ref, 'npm_and_yarn') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.DEPENDABOT_TOKEN }}
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Git Configuration
+        run: |
+          git config user.name "Timon Borter"
+          git config user.email "timon.borter@gmx.ch"
+      - name: Commit and Push Changes (if any)
+        env:
+          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -a --amend --no-edit
+            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push --force-with-lease
+          fi
+  prettier-post-release:
+    name: Run Prettier on Release PR
+    runs-on: ubuntu-latest
+    environment: release
+    if: ${{ startsWith(github.head_ref, 'release-please-') || startsWith(github.ref, 'refs/heads/release-please-') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Run prettier:format
+        run: pnpm run prettier:format
+      - name: Git Configuration
+        run: |
+          git config user.name "Timon Borter"
+          git config user.email "timon.borter@gmx.ch"
+      - name: Commit and Push Changes (if any)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -a -m "chore(release-please): release changes cleanup"
+            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push
+          fi

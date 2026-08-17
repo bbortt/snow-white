@@ -1,0 +1,143 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:medium'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'npm'
+    directories:
+      - '/'
+      - '/helm'
+      - '/microservices/api-gateway/'
+    schedule:
+      interval: 'daily'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      workspace-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'helm'
+    directory: '/helm/charts/snow-white'
+    schedule:
+      interval: 'daily'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'bundler'
+    directory: '/docs'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'npm'
+    directories:
+      - '/microservices/api-index-api/'
+      - '/microservices/api-sync-job/'
+      - '/microservices/quality-gate-api'
+      - '/microservices/report-coordinator-api'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'include:apptests'
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      apptest-dependencies:
+        patterns:
+          - '*'
+  - package-ecosystem: 'bun'
+    directory: '/toolkit/cli/'
+    schedule:
+      interval: 'daily'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+    groups:
+      cli-dependencies:
+        patterns:
+          - '*'
+    ignore:
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'maven'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/opentelemetry-proto'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'docker-compose'
+    directory: '/dev'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'
+  - package-ecosystem: 'docker-compose'
+    directories:
+      - '/microservices/api-index-api/src/apptest/resources'
+      - '/microservices/api-sync-job/src/apptest/resources'
+      - '/microservices/otel-event-filter-stream/src/apptest/resources'
+      - '/microservices/quality-gate-api/src/apptest/resources'
+      - '/microservices/report-coordinator-api/src/apptest/resources'
+    schedule:
+      interval: 'weekly'
+    cooldown:
+      default-days: 7
+    assignees:
+      - bbortt
+    labels:
+      - 'severity:low'
+      - 'status:ready-for-review'

@@ -1,0 +1,268 @@
+name: Pull-Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  labeler:
+    name: Pull-Request Labels
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Check Source Formatting
+        run: pnpm run prettier:check
+      - name: Check Markdown Formatting
+        run: pnpm lint:markdown
+  kube-score:
+    name: Score Helm Chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Score Helm Chart
+        run: |
+          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+            docker run --rm -i zegl/kube-score:latest score \
+            --ignore-container-cpu-limit \
+            --ignore-test pod-networkpolicy \
+            -
+  ci:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Build with Maven
+        run: ./mvnw -B -Pprod verify
+      - name: Upload CLI Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cli
+          path: toolkit/cli/target/snow-white-*
+          if-no-files-found: error
+      - name: Fetch References
+        run: git fetch --unshallow origin
+      - name: Cache SonarQube Packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: '!steps.check.outputs.number'
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Sonar Analysis
+        if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=bbortt-github \
+            -Dsonar.projectKey=bbortt_snow-white
+  app-tests:
+    name: Application Tests
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+      contains(github.event.pull_request.title, 'citrus.version')
+    runs-on: ubuntu-latest
+    needs: ci
+    strategy:
+      matrix:
+        service: [api-gateway, api-sync-job, openapi-coverage-stream]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          lfs: true
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Create Docker Network
+        run: docker network create github_actions
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -Dfrontend.test.skip=true \
+            -pl :${{ matrix.service }} -am
+      - name: Build ${{ matrix.service }} Image
+        run: |
+          docker build \
+            -f microservices/${{ matrix.service }}/Dockerfile \
+            -t ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }} \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg PROJECT_VERSION="${{ github.sha }}" \
+            microservices/${{ matrix.service }}
+      - name: Start Required Services
+        run: |
+          compose_file=microservices/${{ matrix.service }}/src/apptest/resources/docker-compose-apptest.yaml
+          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
+          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
+          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
+        env:
+          COMPOSE_NETWORK_NAME: github_actions
+      - name: Test ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=github_actions \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+  native-tests:
+    name: Native Application Tests
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+      contains(github.event.pull_request.title, 'citrus.version') ||
+      contains(github.event.pull_request.title, 'native-maven-plugin')
+    runs-on: ubuntu-latest
+    needs: ci
+    strategy:
+      matrix:
+        service:
+          [
+            api-index-api,
+            otel-event-filter-stream,
+            quality-gate-api,
+            report-coordinator-api,
+          ]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Create Docker Network
+        run: docker network create github_actions
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -Dfrontend.build.skip=true \
+            -Dfrontend.test.skip=true \
+            -pl :${{ matrix.service }} -am
+      - name: Build Native ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B spring-boot:build-image \
+            -Pnative \
+            -Dimage.tag=${{ github.sha }} \
+            -DskipTests \
+            -pl :${{ matrix.service }}
+      - name: Start Required Services
+        run: |
+          compose_file=microservices/${{ matrix.service }}/src/apptest/resources/docker-compose-apptest.yaml
+          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
+          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
+          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
+        env:
+          COMPOSE_NETWORK_NAME: github_actions
+      - name: Test Native ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=github_actions \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+  zizmor:
+    name: Zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054

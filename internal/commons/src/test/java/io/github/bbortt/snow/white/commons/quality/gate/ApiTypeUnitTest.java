@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.commons.quality.gate;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+class ApiTypeUnitTest {
+
+  @EnumSource
+  @ParameterizedTest
+  void fromString(ApiType apiType) {
+    assertThat(ApiType.apiType(apiType.name())).isEqualTo(apiType);
+
+    assertThat(ApiType.apiType(apiType.name().toLowerCase())).isEqualTo(
+      apiType
+    );
+  }
+
+  @Test
+  void fromStringNullValue() {
+    assertThat(ApiType.apiType((String) null)).isEqualTo(UNSPECIFIED);
+  }
+
+  @EnumSource
+  @ParameterizedTest
+  void fromIntegerValue(ApiType apiType) {
+    assertThat(ApiType.apiType(apiType.getVal())).isEqualTo(apiType);
+  }
+
+  @Test
+  void fromIntegerNullValue() {
+    assertThat(ApiType.apiType((Short) null)).isEqualTo(UNSPECIFIED);
+  }
+}
