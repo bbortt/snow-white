@@ -44,6 +44,8 @@ import org.springframework.transaction.support.TransactionSynchronization;
 @RequiredArgsConstructor
 public class ReportService {
 
+  private static final String CALCULATION_ID_ATTRIBUTE = "report.calculationId";
+
   private final QualityGateService qualityGateService;
 
   private final ApiTestRepository apiTestRepository;
@@ -60,6 +62,8 @@ public class ReportService {
   public Optional<QualityGateReport> findReportByCalculationId(
     UUID calculationId
   ) {
+    tagCurrentSpanWithCalculationId(calculationId);
+
     return qualityGateReportRepository.findById(calculationId);
   }
 
@@ -69,6 +73,8 @@ public class ReportService {
     UUID calculationId,
     OpenApiCoverageResponseEvent event
   ) {
+    tagCurrentSpanWithCalculationId(calculationId);
+
     var report = findReportByCalculationId(calculationId).orElseGet(() -> {
       logger.warn(
         "Received OpenAPI coverage response for unknown calculation ID: {}",
@@ -163,14 +169,18 @@ public class ReportService {
       reportParameter
     );
 
-    Span.current().setAttribute(
-      "report.calculationId",
-      report.getCalculationId().toString()
-    );
+    tagCurrentSpanWithCalculationId(report.getCalculationId());
 
     dispatchAfterTransactionCommit(report);
 
     return report;
+  }
+
+  private void tagCurrentSpanWithCalculationId(UUID calculationId) {
+    Span.current().setAttribute(
+      CALCULATION_ID_ATTRIBUTE,
+      calculationId.toString()
+    );
   }
 
   private void dispatchAfterTransactionCommit(QualityGateReport report) {
@@ -231,6 +241,8 @@ public class ReportService {
 
   @WithSpan
   public QualityGateReport update(QualityGateReport qualityGateReport) {
+    tagCurrentSpanWithCalculationId(qualityGateReport.getCalculationId());
+
     return qualityGateReportRepository.save(qualityGateReport);
   }
 
