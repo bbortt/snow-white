@@ -62,12 +62,11 @@ public class QualityGateResource implements QualityGateApi {
       randomUUID()
     );
 
-    var validationResults = apiIndexService.fetchCompleteApiInformation(
-      apiTests
-    );
+    var apiInformationValidationResults =
+      apiIndexService.fetchCompleteApiInformation(apiTests);
 
     if (
-      validationResults
+      apiInformationValidationResults
         .stream()
         .anyMatch(ApiIndexService.ValidationResult::isFailure)
     ) {
@@ -75,7 +74,7 @@ public class QualityGateResource implements QualityGateApi {
         CalculateQualityGate400Response.builder()
           .code(BAD_REQUEST.getReasonPhrase())
           .message(
-            validationResults
+            apiInformationValidationResults
               .stream()
               .map(validationResult ->
                 validationResult instanceof
@@ -93,7 +92,7 @@ public class QualityGateResource implements QualityGateApi {
     try {
       return initializeQualityGateCalculation(
         qualityGateConfigName,
-        validationResults
+        apiInformationValidationResults
           .stream()
           .map(validationResult ->
             validationResult instanceof

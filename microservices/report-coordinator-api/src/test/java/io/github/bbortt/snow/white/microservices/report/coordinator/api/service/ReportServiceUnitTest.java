@@ -102,9 +102,31 @@ class ReportServiceUnitTest {
         .when(qualityGateReportRepositoryMock)
         .findById(calculationId);
 
-      var result = fixture.findReportByCalculationId(calculationId);
+      var span = otelTesting
+        .getOpenTelemetry()
+        .getTracer(getClass().getSimpleName())
+        .spanBuilder("shouldReturnQualityGateReportById")
+        .startSpan();
+
+      Optional<QualityGateReport> result;
+      try (var _ = span.makeCurrent()) {
+        result = fixture.findReportByCalculationId(calculationId);
+      } finally {
+        span.end();
+      }
 
       assertThat(result).isPresent().get().isEqualTo(qualityGateReport);
+
+      assertThat(otelTesting.getSpans())
+        .hasSize(1)
+        .first()
+        .satisfies(spanData ->
+          assertThat(
+            spanData
+              .getAttributes()
+              .get(AttributeKey.stringKey("report.calculationId"))
+          ).isEqualTo(calculationId.toString())
+        );
     }
   }
 
@@ -161,7 +183,28 @@ class ReportServiceUnitTest {
         .when(qualityGateStatusCalculatorMock)
         .withUpdatedReportStatus(originalReport);
 
-      fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+      var span = otelTesting
+        .getOpenTelemetry()
+        .getTracer(getClass().getSimpleName())
+        .spanBuilder("shouldUpdateReport_whenReportAndQualityGateConfigExist")
+        .startSpan();
+
+      try (var _ = span.makeCurrent()) {
+        fixture.updateReportWithOpenApiCoverageResults(CALCULATION_ID, event);
+      } finally {
+        span.end();
+      }
+
+      assertThat(otelTesting.getSpans())
+        .hasSize(1)
+        .first()
+        .satisfies(spanData ->
+          assertThat(
+            spanData
+              .getAttributes()
+              .get(AttributeKey.stringKey("report.calculationId"))
+          ).isEqualTo(CALCULATION_ID.toString())
+        );
 
       verify(
         qualityGateReportApiTestsFilterMock
@@ -429,12 +472,42 @@ class ReportServiceUnitTest {
 
     @Test
     void shouldDelegateToRepositoryAndReturnSavedReport() {
-      var report = new QualityGateReport();
+      var calculationId = UUID.fromString(
+        "2e6f7b5a-93d1-4e3a-8b21-4a0e2d5c7f9b"
+      );
+      var report = QualityGateReport.builder()
+        .calculationId(calculationId)
+        .reportParameter(mock(ReportParameter.class))
+        .build();
       var savedReport = new QualityGateReport();
 
       doReturn(savedReport).when(qualityGateReportRepositoryMock).save(report);
 
-      assertThat(fixture.update(report)).isEqualTo(savedReport);
+      var span = otelTesting
+        .getOpenTelemetry()
+        .getTracer(getClass().getSimpleName())
+        .spanBuilder("shouldDelegateToRepositoryAndReturnSavedReport")
+        .startSpan();
+
+      QualityGateReport result;
+      try (var _ = span.makeCurrent()) {
+        result = fixture.update(report);
+      } finally {
+        span.end();
+      }
+
+      assertThat(result).isEqualTo(savedReport);
+
+      assertThat(otelTesting.getSpans())
+        .hasSize(1)
+        .first()
+        .satisfies(spanData ->
+          assertThat(
+            spanData
+              .getAttributes()
+              .get(AttributeKey.stringKey("report.calculationId"))
+          ).isEqualTo(calculationId.toString())
+        );
     }
   }
 
