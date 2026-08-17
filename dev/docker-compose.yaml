@@ -37,6 +37,9 @@ services:
 
   grafana:
     image: grafana/otel-lgtm:0.30.0
+    volumes:
+      - ./grafana/provisioning/dashboards/snow-white-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/snow-white-dashboards.yaml
+      - ./grafana/dashboards:/snow-white-dashboards
     ports:
       - '15000:3000'
     networks:
@@ -337,11 +340,13 @@ services:
     build:
       context: ../microservices/openapi-coverage-stream
     hostname: openapi-coverage-stream
-    env_file: .env
     environment:
-      INFLUXDB_URL: 'http://influxdb:8086'
-      INFLUXDB_ORG: 'snow-white'
-      INFLUXDB_BUCKET: 'raw-data'
+      #      INFLUXDB_URL: 'http://influxdb:8086'
+      #      INFLUXDB_ORG: 'snow-white'
+      #      INFLUXDB_BUCKET: 'raw-data'
+      TEMPO_URL: 'http://grafana:3200'
+      TEMPO_USERNAME: 'snow-white'
+      TEMPO_PASSWORD: 'snow-white'
       LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger{2}"%replace(%mdc{traceId}){^(.+)$, '' traceId="$1"''} msg="%msg"%n%ex'
       OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
@@ -359,6 +364,8 @@ services:
           cpus: '0.5'
           memory: '512m'
     depends_on:
+      grafana:
+        condition: service_started
       otel-collector:
         condition: service_started
       microservices.api-sync-job:
