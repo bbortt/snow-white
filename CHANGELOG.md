@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.8.0](https://github.com/bbortt/snow-white/compare/v1.7.0...v1.8.0) (2026-08-18)
+
+
+### Features
+
+* **report-coordinator-api:** tag current span with report uuid ([9df127c](https://github.com/bbortt/snow-white/commit/9df127c880f5d222a3601c3adf778883d5b239f0))
+
+
+### Bug Fixes
+
+* end 2 end tracing of openapi coverage requests ([093261e](https://github.com/bbortt/snow-white/commit/093261e563b62f841befcc0ff2d1f03705b336c7))
+
+
+### Documentation
+
+* fix pages build ([5b42af3](https://github.com/bbortt/snow-white/commit/5b42af32157df17f85f3d1beb8f6716b47103f4e))
+
 ## [1.7.0](https://github.com/bbortt/snow-white/compare/v1.6.0...v1.7.0) (2026-08-11)
 
 ### Features
