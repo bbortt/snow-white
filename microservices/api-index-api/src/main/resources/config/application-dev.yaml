@@ -9,9 +9,6 @@ snow:
       index:
         public-api-gateway-url: http://localhost:8090
 spring:
-  devtools:
-    livereload:
-      enabled: true
   datasource:
     url: jdbc:h2:mem:api-index-api;MODE=PostgreSQL
     username: sa

@@ -8,7 +8,3 @@ snow:
           inbound-topic-name: snow-white_inbound
           init-topics: true
           outbound-topic-name: snow-white_outbound
-spring:
-  devtools:
-    livereload:
-      enabled: true
