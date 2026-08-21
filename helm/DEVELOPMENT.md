@@ -26,29 +26,7 @@ If you planned on locally installing `snow-white`, you'll have to [build all nat
 After successfully doing so, get the Helm chart up and running:
 
 ```shell
-helm upgrade --install \
-  test-release \
-  helm/charts/snow-white \
-  --set influxdb2.persistence.size=5Gi \
-  --set kafka.persistence.size=5Gi \
-  --set image.pullPolicy=IfNotPresent \
-  --set snowWhite.mode=minimal \
-  --set snowWhite.host=localhost \
-  --set snowWhite.ingress.enabled=true \
-  --set snowWhite.ingress.tls=false \
-  --set snowWhite.apiIndexApi.image.tag=latest \
-  --set snowWhite.apiGateway.image.tag=latest \
-  --set snowWhite.apiSyncJob.image.tag=latest \
-  --set-json snowWhite.apiSyncJob.additionalEnvs='[
-      {
-        "name": "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN",
-        "value": "test-token"
-      }
-    ]' \
-  --set snowWhite.openapiCoverageStream.image.tag=latest \
-  --set snowWhite.otelEventFilterStream.image.tag=latest \
-  --set snowWhite.qualityGateApi.image.tag=latest \
-  --set snowWhite.reportCoordinatorApi.image.tag=latest
+helm upgrade --install test-release helm/charts/snow-white -f helm/development_values.yml
 ```
 
 ## Kubescore
