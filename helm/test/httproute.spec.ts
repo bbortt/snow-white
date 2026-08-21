@@ -252,6 +252,35 @@ describe('HttpRoute', () => {
       expect(rule.backendRefs[0].port).toBe(80);
     });
 
+    it('should disable otel-collector port mapping when disableIngestion is true', async () => {
+      const httpRoute = await renderAndGetHttpRoute(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            ...valueWithHttpRoute,
+            otelCollector: {
+              disableIngestion: true,
+            },
+          },
+        }),
+      );
+
+      const { spec } = httpRoute;
+      expect(spec).toBeDefined();
+
+      expect(spec.rules).toHaveLength(1);
+      const rule = spec.rules[0];
+
+      expect(rule.matches).toHaveLength(1);
+      expect(rule.matches[0].path.value).toBe('/');
+
+      expect(rule.backendRefs).toHaveLength(1);
+      expect(rule.backendRefs[0].name).toBe(
+        'snow-white-api-gateway-test-release',
+      );
+      expect(rule.backendRefs[0].port).toBe(80);
+    });
+
     it('should map to api-gateway port 80 by default', async () => {
       const httpRoute = await renderAndGetHttpRoute();
 

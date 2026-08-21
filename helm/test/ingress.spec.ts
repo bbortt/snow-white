@@ -276,6 +276,30 @@ describe('Ingress', () => {
       expectPathToMapToApiGatewayService(apiGatewayPath);
     });
 
+    it('should disable otel-collector port mapping when disableIngestion is true', async () => {
+      const ingress = await renderAndGetIngress(
+        await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            otelCollector: {
+              disableIngestion: true,
+            },
+          },
+        }),
+      );
+
+      const { spec } = ingress;
+      expect(spec).toBeDefined();
+
+      expect(spec.rules).toHaveLength(1);
+      const rule = spec.rules[0];
+      expect(rule.host).toBe('localhost');
+
+      expect(rule.http.paths).toHaveLength(1);
+      const apiGatewayPath = rule.http.paths[0];
+      expectPathToMapToApiGatewayService(apiGatewayPath);
+    });
+
     it('should map to api-gateway port 80 by default', async () => {
       const ingress = await renderAndGetIngress();
 

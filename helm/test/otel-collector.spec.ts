@@ -517,6 +517,24 @@ describe('OTEL Collector', () => {
             expect(secretKeyRef.name).toBe(existingSecret);
             expect(secretKeyRef.key).toBe('admin-token');
           });
+
+          it('should not load influxdb token when disableIngestion is true', async () => {
+            const otelCollector = await renderAndGetOtelCollectorContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  otelCollector: {
+                    disableIngestion: true,
+                  },
+                },
+              }),
+            );
+
+            const influxdbToken = otelCollector.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeUndefined();
+          });
         });
       });
     });
@@ -975,6 +993,41 @@ describe('OTEL Collector', () => {
       );
 
       expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
+    });
+
+    it('should drop the coverage-ingestion pipelines when disableIngestion is true', async () => {
+      const manifest = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          otelCollector: {
+            disableIngestion: true,
+          },
+        },
+      });
+
+      const configMap = await renderAndGetOtelCollectorConfig(manifest);
+
+      const { data } = configMap;
+      expect(data).toBeDefined();
+
+      const snowWhiteConfig = extractConfigMapData(data);
+
+      const { pipelines } = snowWhiteConfig.service;
+      expect(pipelines).toBeDefined();
+
+      const pipelineWithoutIngestion = loadResourceToJson(
+        'pipeline-without-ingestion.yaml',
+      );
+
+      expect(pipelines).toStrictEqual(pipelineWithoutIngestion);
+
+      const deployment = await renderAndGetDeployment(manifest);
+      const metadata = getTemplateMetadata(deployment);
+
+      expect(metadata.annotations).toStrictEqual({
+        'checksum/config':
+          '7412b1ca45c862448beaac8b9377b7cd9a54024f89a0e122ce11709f7ec14eeb',
+      });
     });
 
     it.each([
