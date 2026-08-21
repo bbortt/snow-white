@@ -1,0 +1,31 @@
+logs/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - batch
+  exporters:
+    - debug/basic
+metrics/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - batch
+  exporters:
+    - debug/basic
+traces/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - groupbytrace
+    - batch
+  exporters:
+    - debug/basic

@@ -18,7 +18,7 @@ spec:
   hostnames:
     - '{{ include "snow-white.publicHost" . }}'
   rules:
-    {{- if .Values.otelCollector.exposeThroughApiGateway }}
+    {{- if and .Values.otelCollector.exposeThroughApiGateway (not .Values.otelCollector.disableIngestion) }}
     - matches:
         - path:
             type: PathPrefix

@@ -1,3 +1,4 @@
+{{- if not .Values.otelCollector.disableIngestion }}
 {{- $labels := include "snow-white.labels" (dict "name" "otel-event-filter-stream" "context" .) | nindent 0 }}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "otel-event-filter-stream" "context" .) | nindent 0 }}
 apiVersion: apps/v1
@@ -111,3 +112,4 @@ spec:
     matchLabels:
       {{ $selectorLabels | nindent 6 }}
   maxUnavailable: 25%
+{{- end }}
