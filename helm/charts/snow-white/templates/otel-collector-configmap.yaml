@@ -171,6 +171,7 @@ data:
             - otlp_grpc/infra
             {{- end }}
         {{- end }}
+        {{- if not .Values.otelCollector.disableIngestion }}
         traces/otel-event-filter:
           receivers:
             - otlp
@@ -194,6 +195,7 @@ data:
           exporters:
             - debug/basic
             - influxdb
+        {{- end }}
         {{- if .Values.otelCollector.connectToExternalOtelCollector.exportTraces }}
         traces/infra:
           receivers:

@@ -12,6 +12,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -220,7 +221,7 @@ public class RequiredErrorFieldsCoverageCalculator
     }
 
     // Pattern match (e.g., "4XX" matches "400", "404", etc.)
-    String upperCode = specifiedErrorCode.toUpperCase();
+    String upperCode = specifiedErrorCode.toUpperCase(ROOT);
     if (upperCode.endsWith("XX")) {
       char prefix = upperCode.charAt(0);
       for (String observed : observedErrorCodes) {

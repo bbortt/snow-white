@@ -1,9 +1,48 @@
 snowWhite:
+  mode: 'minimal'
+  host: 'localhost'
   ingress:
-    host: 'localhost'
+    enabled: true
+    tls: false
+  apiIndexApi:
+    image:
+      tag: 'latest'
   apiGateway:
     image:
       tag: 'latest'
   qualityGateApi:
     image:
       tag: 'latest'
+  apiSyncJob:
+    image:
+      tag: 'latest'
+    additionalEnvs:
+      - name: SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_ACCESS-TOKEN
+        value: test-token
+  openapiCoverageStream:
+    image:
+      tag: 'latest'
+  otelEventFilterStream:
+    image:
+      tag: 'latest'
+  reportCoordinatorApi:
+    image:
+      tag: 'latest'
+
+image:
+  pullPolicy: 'IfNotPresent'
+
+influxdb2:
+  persistence:
+    size: 5Gi
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+kafka:
+  persistence:
+    size: 5Gi

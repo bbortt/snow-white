@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.commons.quality.gate;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
+import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ class ApiTypeUnitTest {
   void fromString(ApiType apiType) {
     assertThat(ApiType.apiType(apiType.name())).isEqualTo(apiType);
 
-    assertThat(ApiType.apiType(apiType.name().toLowerCase())).isEqualTo(
+    assertThat(ApiType.apiType(apiType.name().toLowerCase(ROOT))).isEqualTo(
       apiType
     );
   }

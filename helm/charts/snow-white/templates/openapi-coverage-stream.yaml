@@ -1,5 +1,12 @@
 {{- $labels := include "snow-white.labels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
+{{- $tempo := .Values.snowWhite.openapiCoverageStream.tempo }}
+{{- if and $tempo.endpoint $tempo.token (or $tempo.username $tempo.password) }}
+{{ fail "\n\n⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'!" }}
+{{- end }}
+{{- if and $tempo.endpoint (ne (empty $tempo.username) (empty $tempo.password)) }}
+{{ fail "\n\n⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.username' and 'snowWhite.openapiCoverageStream.tempo.password' must be set together!" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,6 +50,24 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           env:
           {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 12 }}
+          {{- if $tempo.endpoint }}
+            - name: 'TEMPO_URL'
+              value: {{ $tempo.endpoint | quote }}
+            {{- if $tempo.token }}
+            - name: 'TEMPO_TOKEN'
+              value: {{ $tempo.token | quote }}
+            {{- end }}
+            {{- if $tempo.username }}
+            - name: 'TEMPO_USERNAME'
+              value: {{ $tempo.username | quote }}
+            - name: 'TEMPO_PASSWORD'
+              value: {{ $tempo.password | quote }}
+            {{- end }}
+            {{- if $tempo.orgId }}
+            - name: 'TEMPO_ORG_ID'
+              value: {{ $tempo.orgId | quote }}
+            {{- end }}
+          {{- else }}
             - name: 'INFLUXDB_URL'
               value: '{{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.snowWhite.openapiCoverageStream.influxdb.endpoint }}'
             - name: 'INFLUXDB_ORG'
@@ -50,14 +75,21 @@ spec:
             - name: 'INFLUXDB_BUCKET'
               value: {{ .Values.influxdb2.adminUser.bucket | quote }}
             - name: 'INFLUXDB_TOKEN'
+              {{- if .Values.snowWhite.openapiCoverageStream.influxdb.token }}
+              value: {{ .Values.snowWhite.openapiCoverageStream.influxdb.token | quote }}
+              {{- else }}
               valueFrom:
                 secretKeyRef:
                   {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
                   name: {{ .Values.influxdb2.adminUser.existingSecret -}}
-                  {{- else }}
+                  {{- else if .Values.influxdb2.enabled }}
                   name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- else }}
+                  {{ fail "\n\n⚠ ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — openapi-coverage-stream has no InfluxDB token to use. Either set 'influxdb2.adminUser.existingSecret'/'snowWhite.openapiCoverageStream.influxdb.token' to point at your own InfluxDB credentials, or set 'snowWhite.openapiCoverageStream.tempo.endpoint' to use Grafana Tempo instead." }}
                   {{- end }}
                   key: admin-token
+              {{- end }}
+          {{- end }}
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL'
               value: {{ default (printf "http://%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .)) .Values.snowWhite.kafka.brokers }}
             - name: 'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC'

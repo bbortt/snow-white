@@ -19,11 +19,13 @@ const Footer = () => {
         <Col md="4" className="text-center text-md-start mb-2 mb-md-0">
           <h5>Snow-White</h5>
           <p className="small text-muted mb-0">
-            &copy; {currentYear} Timon Borter.
+            &copy; {currentYear} Timon Borter.&nbsp;
             <Translate contentKey="footer.rights">All rights reserved.</Translate>
           </p>
           <p className="small text-muted">
-            <Translate contentKey="footer.license">Licensed under PolyForm Small Business License 1.0.0</Translate>
+            <a href="https://github.com/bbortt/snow-white/blob/main/LICENSE">
+              <Translate contentKey="footer.license">Licensed under PolyForm Small Business License 1.0.0.</Translate>
+            </a>
           </p>
         </Col>
         <Col md="4" className="text-center mb-2 mb-md-0">

@@ -10,7 +10,6 @@ import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.mo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities as getOpenApiCoverageCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
-import { mapIdList } from 'app/shared/util/entity-utils';
 import React, { useEffect } from 'react';
 import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -56,7 +55,7 @@ export const QualityGateUpdate = () => {
       ...qualityGateConfigEntity,
       ...values,
       isPredefined: false,
-      openApiCoverageCriteria: mapIdList(values.openApiCoverageCriteria),
+      openApiCoverageCriteria: (values.openApiCoverageCriteria as string[]).filter(name => name !== '').map(name => ({ name })),
     };
 
     if (isNew) {
@@ -94,16 +93,6 @@ export const QualityGateUpdate = () => {
             <p>Loading...</p>
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
-              {!isNew ? (
-                <ValidatedField
-                  name="id"
-                  required
-                  readOnly
-                  id="quality-gate-config-id"
-                  label={translate('global.field.id')}
-                  validate={{ required: true }}
-                />
-              ) : null}
               <ValidatedField
                 label={translate('snowWhiteApp.qualityGateConfig.name')}
                 id="quality-gate-config-name"

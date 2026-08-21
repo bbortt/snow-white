@@ -49,15 +49,19 @@ spec:
           env:
             - name: GOMEMLIMIT
               value: 800MiB
+            {{- if not .Values.otelCollector.disableIngestion }}
             - name: INFLUXDB_TOKEN
               valueFrom:
                 secretKeyRef:
                   {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
                   name: {{ .Values.influxdb2.adminUser.existingSecret -}}
-                  {{- else }}
+                  {{- else if .Values.influxdb2.enabled }}
                   name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- else }}
+                  {{ fail "\n\n⚠ ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — the OTel Collector's ingestion pipeline has no InfluxDB token to use. Either set 'influxdb2.adminUser.existingSecret' to point at your own InfluxDB credentials (alongside 'otelCollector.influxdb.endpoint'), or set 'otelCollector.disableIngestion: true' to skip the bundled ingestion pipeline entirely." }}
                   {{- end }}
                   key: admin-token
+            {{- end }}
           ports:
             - name: grpc
               containerPort: 4317

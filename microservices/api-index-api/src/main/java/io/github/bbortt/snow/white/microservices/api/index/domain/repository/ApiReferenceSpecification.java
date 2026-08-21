@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.api.index.domain.repository;
 
+import static java.util.Locale.ROOT;
 import static lombok.AccessLevel.PRIVATE;
 
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
@@ -26,7 +27,7 @@ public final class ApiReferenceSpecification {
       spec = spec.and((root, query, criteriaBuilder) ->
         criteriaBuilder.like(
           criteriaBuilder.lower(root.get("otelServiceName")),
-          serviceName.toLowerCase() + "%"
+          serviceName.toLowerCase(ROOT) + "%"
         )
       );
     }
@@ -35,7 +36,7 @@ public final class ApiReferenceSpecification {
       spec = spec.and((root, query, criteriaBuilder) ->
         criteriaBuilder.like(
           criteriaBuilder.lower(root.get("apiName")),
-          apiName.toLowerCase() + "%"
+          apiName.toLowerCase(ROOT) + "%"
         )
       );
     }

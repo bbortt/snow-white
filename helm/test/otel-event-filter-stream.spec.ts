@@ -79,6 +79,26 @@ describe('OTEL Event Filter Stream', () => {
       expect(deployment.metadata.name).toHaveLength(63);
     });
 
+    it('should not be rendered when otelCollector.disableIngestion is true', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          otelCollector: {
+            disableIngestion: true,
+          },
+        },
+      });
+
+      const deployment = manifests.find(
+        (m) =>
+          m.kind === 'Deployment' &&
+          m.metadata.name ===
+            'snow-white-otel-event-filter-stream-test-release',
+      );
+
+      expect(deployment).toBeUndefined();
+    });
+
     describe('replicas', () => {
       it('should deploy one replica by default', async () => {
         const deployment = await renderAndGetDeployment();
@@ -648,6 +668,26 @@ describe('OTEL Event Filter Stream', () => {
       );
 
       expect(pdb).toBeDefined();
+    });
+
+    it('should not be rendered when otelCollector.disableIngestion is true', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          otelCollector: {
+            disableIngestion: true,
+          },
+        },
+      });
+
+      const pdb = manifests.find(
+        (m) =>
+          m.kind === 'PodDisruptionBudget' &&
+          m.metadata.name ===
+            'snow-white-otel-event-filter-stream-test-release',
+      );
+
+      expect(pdb).toBeUndefined();
     });
 
     describe('selector', () => {
