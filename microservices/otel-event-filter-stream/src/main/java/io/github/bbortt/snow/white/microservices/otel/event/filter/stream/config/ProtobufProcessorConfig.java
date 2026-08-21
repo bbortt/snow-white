@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.CONSUMER_MODE_PROPERTY_NAME;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.JSON;
 import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.ConsumerMode.PROTOBUF;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.requireNonNull;
 
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka.stream.json.ExportTraceServiceRequestEventJsonProcessor;
@@ -45,7 +46,7 @@ public class ProtobufProcessorConfig {
         OtelEventFilterStreamProperties.ConsumerMode.valueOf(
           environment
             .getProperty(CONSUMER_MODE_PROPERTY_NAME, "json")
-            .toUpperCase()
+            .toUpperCase(ROOT)
         )
       )
     ) {
@@ -75,7 +76,7 @@ public class ProtobufProcessorConfig {
         OtelEventFilterStreamProperties.ConsumerMode.valueOf(
           environment
             .getProperty(CONSUMER_MODE_PROPERTY_NAME, "json")
-            .toUpperCase()
+            .toUpperCase(ROOT)
         )
       )
     ) {

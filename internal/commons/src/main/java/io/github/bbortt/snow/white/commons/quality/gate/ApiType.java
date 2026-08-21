@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.commons.quality.gate;
 
 import static java.util.Arrays.stream;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 
 import lombok.Getter;
@@ -30,7 +31,7 @@ public enum ApiType {
       return UNSPECIFIED;
     }
 
-    return ApiType.valueOf(typeName.toUpperCase());
+    return ApiType.valueOf(typeName.toUpperCase(ROOT));
   }
 
   public static ApiType apiType(@Nullable Short val) {

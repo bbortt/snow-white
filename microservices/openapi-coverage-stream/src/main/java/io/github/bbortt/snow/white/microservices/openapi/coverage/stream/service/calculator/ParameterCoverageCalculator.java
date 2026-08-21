@@ -12,6 +12,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.
 import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -225,7 +226,7 @@ public class ParameterCoverageCalculator
     OpenTelemetryData data,
     String paramName
   ) {
-    String headerKey = "http.request.header." + paramName.toLowerCase();
+    String headerKey = "http.request.header." + paramName.toLowerCase(ROOT);
     return data.attributes().has(headerKey);
   }
 

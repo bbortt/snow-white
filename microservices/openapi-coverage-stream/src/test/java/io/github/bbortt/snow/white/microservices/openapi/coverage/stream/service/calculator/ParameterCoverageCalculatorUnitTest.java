@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
 import static java.math.RoundingMode.HALF_UP;
+import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
@@ -410,7 +411,7 @@ class ParameterCoverageCalculatorUnitTest {
       for (Map.Entry<String, String> entry : pathToHeader.entrySet()) {
         var attributes = JsonMapper.shared().createObjectNode();
         attributes.put(
-          "http.request.header." + entry.getValue().toLowerCase(),
+          "http.request.header." + entry.getValue().toLowerCase(ROOT),
           "some-value"
         );
 
@@ -432,7 +433,7 @@ class ParameterCoverageCalculatorUnitTest {
       var attributes = JsonMapper.shared().createObjectNode();
       attributes.put("url.query", queryString);
       attributes.put(
-        "http.request.header." + headerName.toLowerCase(),
+        "http.request.header." + headerName.toLowerCase(ROOT),
         "some-value"
       );
 
