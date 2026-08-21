@@ -92,6 +92,11 @@ describe('NOTES', () => {
     const stdout = await renderNotes(ctx, {
       otelCollector: { disableIngestion: true },
       influxdb2: { enabled: false },
+      snowWhite: {
+        openapiCoverageStream: {
+          tempo: { endpoint: 'http://tempo:3200' },
+        },
+      },
     });
 
     expect(stdout).not.toContain('WARNING');
