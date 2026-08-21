@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.web;
 
+import static java.util.Locale.ROOT;
 import static lombok.AccessLevel.PRIVATE;
 
 import lombok.NoArgsConstructor;
@@ -35,7 +36,7 @@ public final class PaginationUtils {
       String[] sortParts = sort.split(",");
       if (sortParts.length == 2) {
         String property = sortParts[0].trim();
-        String direction = sortParts[1].trim().toLowerCase();
+        String direction = sortParts[1].trim().toLowerCase(ROOT);
         if (direction.equals("asc")) {
           sortObj = Sort.by(Sort.Direction.ASC, property);
         } else if (direction.equals("desc")) {

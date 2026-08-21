@@ -10,6 +10,7 @@ import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.String.format;
+import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -480,7 +481,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
         .readContents(eq(openApiContent), any(), any());
 
       OpenApiInformation openApiInformation = new OpenApiInformation(
-        title.toLowerCase().replace(" ", "-"),
+        title.toLowerCase(ROOT).replace(" ", "-"),
         version,
         "test-service"
       );

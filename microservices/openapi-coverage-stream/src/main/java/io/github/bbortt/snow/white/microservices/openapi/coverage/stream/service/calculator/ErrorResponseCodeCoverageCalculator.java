@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
+import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.regex.Pattern.compile;
 
@@ -92,7 +93,7 @@ public class ErrorResponseCodeCoverageCalculator
       return code >= 400 && code <= 599;
     } catch (NumberFormatException _) {
       // Handle pattern codes like "4XX", "5XX", "default"
-      String upperCode = statusCode.toUpperCase();
+      String upperCode = statusCode.toUpperCase(ROOT);
       return (
         upperCode.equals("4XX") ||
         upperCode.equals("5XX") ||
