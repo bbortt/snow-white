@@ -49,6 +49,7 @@ spec:
           env:
             - name: GOMEMLIMIT
               value: 800MiB
+            {{- if not .Values.otelCollector.disableIngestion }}
             - name: INFLUXDB_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -58,6 +59,7 @@ spec:
                   name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
                   {{- end }}
                   key: admin-token
+            {{- end }}
           ports:
             - name: grpc
               containerPort: 4317

@@ -360,8 +360,17 @@ otelCollector:
       # @section -- OpenTelemetry Collector
       thereafter: 10
   # -- Whether to expose the OTeL collector through the (public) ingress.
+  # Ignored when `otelCollector.disableIngestion` is `true`.
   # @section -- OpenTelemetry Collector
   exposeThroughApiGateway: true
+  # -- Disable the bundled telemetry ingestion stack: the OTel Collector's coverage-trace pipelines,
+  # the `otel-event-filter-stream` Deployment, and the public `/v1/traces` route are not created.
+  # Self-observability (Snow-White's own microservice telemetry) is unaffected.
+  # Use this to route telemetry to an externally operated backend instead of the bundled one.
+  # Does NOT disable `influxdb2.enabled` automatically (Helm can't derive one subchart's enabled
+  # flag from another value) — set that separately, or the InfluxDB StatefulSet deploys unused.
+  # @section -- OpenTelemetry Collector
+  disableIngestion: false
   connectToExternalOtelCollector:
     # -- Disable (infrastructure) metrics export entirely.
     # @section -- OpenTelemetry Collector
