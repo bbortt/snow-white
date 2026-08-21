@@ -552,6 +552,32 @@ describe('OpenAPI Coverage Stream', () => {
             expect(secretKeyRef.key).toBe('admin-token');
           });
 
+          it('should override influxdb token with plain value from values', async () => {
+            const token = 'plaintext-token';
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: {
+                        influxdb: {
+                          token,
+                        },
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const influxdbToken = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeDefined();
+            expect(influxdbToken.value).toBe(token);
+            expect(influxdbToken.valueFrom).toBeUndefined();
+          });
+
           it('should override influxdb token from custom secret if defined', async () => {
             const existingSecret = 'influxdb-auth';
             const openapiCoverageStream =
@@ -578,6 +604,210 @@ describe('OpenAPI Coverage Stream', () => {
 
             expect(secretKeyRef.name).toBe(existingSecret);
             expect(secretKeyRef.key).toBe('admin-token');
+          });
+
+          describe('tempo backend', () => {
+            it('should replace the influxdb env vars with TEMPO_URL when tempo.endpoint is set', async () => {
+              const endpoint = 'http://tempo:3200';
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: { endpoint },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoUrl = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_URL',
+              );
+              expect(tempoUrl).toBeDefined();
+              expect(tempoUrl.value).toBe(endpoint);
+
+              for (const name of [
+                'INFLUXDB_URL',
+                'INFLUXDB_ORG',
+                'INFLUXDB_BUCKET',
+                'INFLUXDB_TOKEN',
+              ]) {
+                expect(
+                  openapiCoverageStream.env.find((env) => env.name === name),
+                ).toBeUndefined();
+              }
+            });
+
+            it('should not include optional tempo env vars when unset', async () => {
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: { endpoint: 'http://tempo:3200' },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              for (const name of [
+                'TEMPO_TOKEN',
+                'TEMPO_USERNAME',
+                'TEMPO_PASSWORD',
+                'TEMPO_ORG_ID',
+              ]) {
+                expect(
+                  openapiCoverageStream.env.find((env) => env.name === name),
+                ).toBeUndefined();
+              }
+            });
+
+            it('should include TEMPO_TOKEN when set', async () => {
+              const token = 'my-token';
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: { endpoint: 'http://tempo:3200', token },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoToken = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_TOKEN',
+              );
+              expect(tempoToken).toBeDefined();
+              expect(tempoToken.value).toBe(token);
+            });
+
+            it('should include TEMPO_USERNAME and TEMPO_PASSWORD when set', async () => {
+              const username = 'snow-white';
+              const password = 'my-password';
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: {
+                            endpoint: 'http://tempo:3200',
+                            username,
+                            password,
+                          },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoUsername = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_USERNAME',
+              );
+              expect(tempoUsername).toBeDefined();
+              expect(tempoUsername.value).toBe(username);
+
+              const tempoPassword = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_PASSWORD',
+              );
+              expect(tempoPassword).toBeDefined();
+              expect(tempoPassword.value).toBe(password);
+            });
+
+            it('should include TEMPO_ORG_ID when set', async () => {
+              const orgId = 'snow-white';
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: { endpoint: 'http://tempo:3200', orgId },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoOrgId = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_ORG_ID',
+              );
+              expect(tempoOrgId).toBeDefined();
+              expect(tempoOrgId.value).toBe(orgId);
+            });
+
+            it('should fail when both token and username/password are set', async () => {
+              await expect(() =>
+                renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: {
+                        tempo: {
+                          endpoint: 'http://tempo:3200',
+                          token: 'my-token',
+                          username: 'snow-white',
+                        },
+                      },
+                    },
+                  },
+                }),
+              ).rejects.toThrow(
+                "⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'!",
+              );
+            });
+
+            it('should fail when username is set without password', async () => {
+              await expect(() =>
+                renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: {
+                        tempo: {
+                          endpoint: 'http://tempo:3200',
+                          username: 'snow-white',
+                        },
+                      },
+                    },
+                  },
+                }),
+              ).rejects.toThrow(
+                "⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.username' and 'snowWhite.openapiCoverageStream.tempo.password' must be set together!",
+              );
+            });
+
+            it('should fail when password is set without username', async () => {
+              await expect(() =>
+                renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: {
+                        tempo: {
+                          endpoint: 'http://tempo:3200',
+                          password: 'my-password',
+                        },
+                      },
+                    },
+                  },
+                }),
+              ).rejects.toThrow(
+                "⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.username' and 'snowWhite.openapiCoverageStream.tempo.password' must be set together!",
+              );
+            });
           });
 
           it('should calculate api-index api base url', async () => {
