@@ -38,6 +38,11 @@ out/
 
 # Caches
 .claude/*
+!.claude/.ai-project-context/
 !.claude/skills/
 .m2/
 .npm/
+
+# clew: regenerated tool output (state.json stays tracked)
+.clew/locations.json
+.clew/coverage.json

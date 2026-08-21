@@ -48,7 +48,7 @@ export const OpenApiCriterionDetail = () => {
           <dd>{openApiCriterionEntity.label}</dd>
           <dt>
             <span id="description">
-              <Translate contentKey="snowWhiteApp.openApiCriterion.description">Description</Translate>
+              <Translate contentKey="snowWhiteApp.openApiCriterion.descriptionHeader">Description</Translate>
             </span>
           </dt>
           <dd>{openApiCriterionEntity.description}</dd>
