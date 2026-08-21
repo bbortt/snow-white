@@ -99,11 +99,15 @@ class TempoTelemetryServiceImplUnitTest {
 
     @Test
     void withAttributeFilters_shouldIncludeFiltersInQuery() {
-      var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
-      var filter2 = new AttributeFilter(
-        "http.status_code",
+      var filter1 = new AttributeFilter(
+        "service.version",
         STRING_EQUALS,
-        "200"
+        "1.2.3"
+      );
+      var filter2 = new AttributeFilter(
+        "environment",
+        STRING_EQUALS,
+        "development"
       );
       Set<AttributeFilter> attributeFilters = Set.of(filter1, filter2);
 
@@ -120,8 +124,8 @@ class TempoTelemetryServiceImplUnitTest {
       var query = request.getQueryParams().get("q").firstValue();
 
       assertThat(query).contains(
-        "span.http.method = \"GET\"",
-        "span.http.status_code = \"200\""
+        "resource.service.version = \"1.2.3\"",
+        "resource.environment = \"development\""
       );
     }
 

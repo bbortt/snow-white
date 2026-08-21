@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream;
 
 import static java.time.Instant.now;
+import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.security.SecureRandom;
@@ -35,15 +36,23 @@ public final class OtlpTraceFixtures {
   public static String traceRequestJson(Span... spans) {
     List<Map<String, Object>> resourceSpans = new ArrayList<>();
     for (var span : spans) {
+      var resourceAttributes = new ArrayList<>();
+      resourceAttributes.add(attribute("service.name", span.serviceName));
+      resourceAttributes.addAll(
+        span.resourceAttributes
+          .entrySet()
+          .stream()
+          .map(entry -> attribute(entry.getKey(), entry.getValue()))
+          .toList()
+      );
       resourceSpans.add(
         Map.of(
           "resource",
-          Map.of(
-            "attributes",
-            List.of(attribute("service.name", span.serviceName))
-          ),
+          Map.of("attributes", resourceAttributes),
           "scopeSpans",
-          List.of(Map.of("scope", Map.of(), "spans", List.of(spanNode(span))))
+          singletonList(
+            Map.of("scope", Map.of(), "spans", singletonList(spanNode(span)))
+          )
         )
       );
     }
@@ -98,15 +107,33 @@ public final class OtlpTraceFixtures {
 
     private final String serviceName;
     private final String name;
+    private final Map<String, String> resourceAttributes;
     private final Map<String, String> attributes = new LinkedHashMap<>();
 
     private Span(String serviceName, String name) {
+      this(serviceName, name, new LinkedHashMap<>());
+    }
+
+    private Span(
+      String serviceName,
+      String name,
+      Map<String, String> resourceAttributes
+    ) {
       this.serviceName = serviceName;
       this.name = name;
+      this.resourceAttributes = resourceAttributes;
     }
 
     public static Span span(String serviceName, String name) {
       return new Span(serviceName, name);
+    }
+
+    public static Span span(
+      String serviceName,
+      String name,
+      Map<String, String> resourceAttributes
+    ) {
+      return new Span(serviceName, name, resourceAttributes);
     }
 
     public Span attribute(String key, String value) {

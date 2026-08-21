@@ -12,7 +12,7 @@ import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 
 public record TempoAttributeFilter(AttributeFilter baseAttributeFilter) {
   public String toTraceQLString() {
-    return "span." + getKey() + " = " + getValue();
+    return "resource." + getKey() + " = " + getValue();
   }
 
   public String getKey() {
