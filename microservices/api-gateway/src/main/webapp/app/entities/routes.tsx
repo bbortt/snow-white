@@ -9,6 +9,7 @@ import type { ReducersMapObject } from '@reduxjs/toolkit';
 import { combineReducers } from '@reduxjs/toolkit';
 import getStore from 'app/config/store';
 import ErrorBoundaryRoutes from 'app/shared/error/error-boundary-routes';
+import PageNotFound from 'app/shared/error/page-not-found';
 import React from 'react';
 import { Route } from 'react-router';
 
@@ -33,6 +34,7 @@ export const EntitiesRoutes = () => {
         <Route path="quality-gate/*" element={<QualityGate />} />
         <Route path="quality-gate-config/*" element={<QualityGateConfig />} />
         {/* jhipster-needle-add-route-path - JHipster will add routes here */}
+        <Route path="*" element={<PageNotFound />} />
       </ErrorBoundaryRoutes>
     </div>
   );

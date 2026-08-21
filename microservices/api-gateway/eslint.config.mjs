@@ -145,5 +145,23 @@ export default tseslint.config(
     },
   },
 
+  // Playwright e2e suite - not part of the webapp TS project (see playwright.config.ts), so this
+  // stays untyped (no `parserOptions.project`) rather than typed against tsconfig.json.
+  {
+    files: ['src/apptest/e2e/**/*.ts'],
+    extends: [...tseslint.configs.recommended],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'prefer-const': 'error',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'perfectionist/sort-imports': 'error',
+    },
+  },
+
   prettier,
 );
