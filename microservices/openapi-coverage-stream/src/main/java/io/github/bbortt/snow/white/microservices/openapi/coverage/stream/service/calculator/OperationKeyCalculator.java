@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static java.util.Locale.ROOT;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.regex.Pattern;
@@ -19,7 +20,7 @@ public final class OperationKeyCalculator {
     @NonNull String path,
     @NonNull String method
   ) {
-    return method.toUpperCase() + "_" + path;
+    return method.toUpperCase(ROOT) + "_" + path;
   }
 
   public static String toPath(@NonNull String operationKey) {
