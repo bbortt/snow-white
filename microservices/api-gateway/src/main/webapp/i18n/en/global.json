@@ -1,6 +1,6 @@
 {
   "global": {
-    "title": "SnowWhite",
+    "title": "Snow-White",
     "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"http://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
     "menu": {
       "home": "Home",
@@ -101,7 +101,7 @@
   },
   "footer": {
     "issues": "Report Issues",
-    "license": "Licensed under PolyForm Small Business License 1.0.0",
+    "license": "Licensed under PolyForm Small Business License 1.0.0.",
     "rights": "All rights reserved.",
     "sources": "Source Code",
     "version": "Version"
