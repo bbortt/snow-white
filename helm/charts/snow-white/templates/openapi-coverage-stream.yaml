@@ -82,8 +82,10 @@ spec:
                 secretKeyRef:
                   {{- if and .Values.influxdb2.adminUser .Values.influxdb2.adminUser.existingSecret }}
                   name: {{ .Values.influxdb2.adminUser.existingSecret -}}
-                  {{- else }}
+                  {{- else if .Values.influxdb2.enabled }}
                   name: {{ printf "%s-%s" .Release.Name "influxdb2-auth" }}
+                  {{- else }}
+                  {{ fail "\n\n⚠ ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — openapi-coverage-stream has no InfluxDB token to use. Either set 'influxdb2.adminUser.existingSecret'/'snowWhite.openapiCoverageStream.influxdb.token' to point at your own InfluxDB credentials, or set 'snowWhite.openapiCoverageStream.tempo.endpoint' to use Grafana Tempo instead." }}
                   {{- end }}
                   key: admin-token
               {{- end }}

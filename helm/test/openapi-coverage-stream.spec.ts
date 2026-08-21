@@ -606,6 +606,53 @@ describe('OpenAPI Coverage Stream', () => {
             expect(secretKeyRef.key).toBe('admin-token');
           });
 
+          it('should use the existingSecret even when influxdb2 is disabled', async () => {
+            const existingSecret = 'external-influxdb-auth';
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    influxdb2: {
+                      enabled: false,
+                      adminUser: {
+                        existingSecret,
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const influxdbToken = openapiCoverageStream.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeDefined();
+
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe(existingSecret);
+            expect(secretKeyRef.key).toBe('admin-token');
+          });
+
+          it('should fail when influxdb2 is disabled without an existingSecret and still in influxdb mode', async () => {
+            await expect(() =>
+              renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  influxdb2: {
+                    enabled: false,
+                  },
+                  otelCollector: {
+                    disableIngestion: true,
+                  },
+                },
+              }),
+            ).rejects.toThrow(
+              "⚠ ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — openapi-coverage-stream has no InfluxDB token to use.",
+            );
+          });
+
           describe('tempo backend', () => {
             it('should replace the influxdb env vars with TEMPO_URL when tempo.endpoint is set', async () => {
               const endpoint = 'http://tempo:3200';

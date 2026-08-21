@@ -51,21 +51,68 @@ describe('InfluxDB', () => {
     expect(statefulSet.spec.replicas).toBe(1);
   });
 
-  it('can be disabled with values', async () => {
-    const manifests = await renderHelmChart({
-      chartPath: 'charts/snow-white',
-      values: {
-        influxdb2: {
-          enabled: false,
-        },
-      },
+  describe('disabling influxdb2', () => {
+    it('fails to render when disabled without an alternative InfluxDB token source', async () => {
+      await expect(() =>
+        renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            influxdb2: {
+              enabled: false,
+            },
+          },
+        }),
+      ).rejects.toThrow(
+        "ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — the OTel Collector's ingestion pipeline has no InfluxDB token to use.",
+      );
     });
 
-    const influxdbResources = manifests.find((m) =>
-      m.metadata.name.startsWith('test-release-influxdb2'),
-    );
+    it('can be disabled when an existingSecret is provided instead', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          influxdb2: {
+            enabled: false,
+            adminUser: {
+              existingSecret: 'external-influxdb-auth',
+            },
+          },
+        },
+      });
 
-    expect(influxdbResources).toBeUndefined();
+      const influxdbResources = manifests.find((m) =>
+        m.metadata.name.startsWith('test-release-influxdb2'),
+      );
+
+      expect(influxdbResources).toBeUndefined();
+    });
+
+    it('can be disabled when ingestion is disabled and openapi-coverage-stream uses Tempo instead', async () => {
+      const manifests = await renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          influxdb2: {
+            enabled: false,
+          },
+          otelCollector: {
+            disableIngestion: true,
+          },
+          snowWhite: {
+            openapiCoverageStream: {
+              tempo: {
+                endpoint: 'http://tempo:3200',
+              },
+            },
+          },
+        },
+      });
+
+      const influxdbResources = manifests.find((m) =>
+        m.metadata.name.startsWith('test-release-influxdb2'),
+      );
+
+      expect(influxdbResources).toBeUndefined();
+    });
   });
 
   describe('authentication', () => {

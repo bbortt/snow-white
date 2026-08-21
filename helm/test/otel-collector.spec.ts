@@ -518,6 +518,49 @@ describe('OTEL Collector', () => {
             expect(secretKeyRef.key).toBe('admin-token');
           });
 
+          it('should use the existingSecret even when influxdb2 is disabled', async () => {
+            const existingSecret = 'external-influxdb-auth';
+            const otelCollector = await renderAndGetOtelCollectorContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  influxdb2: {
+                    enabled: false,
+                    adminUser: {
+                      existingSecret,
+                    },
+                  },
+                },
+              }),
+            );
+
+            const influxdbToken = otelCollector.env.find(
+              (env) => env.name === 'INFLUXDB_TOKEN',
+            );
+            expect(influxdbToken).toBeDefined();
+
+            const secretKeyRef = influxdbToken.valueFrom.secretKeyRef;
+            expect(secretKeyRef).toBeDefined();
+
+            expect(secretKeyRef.name).toBe(existingSecret);
+            expect(secretKeyRef.key).toBe('admin-token');
+          });
+
+          it('should fail when influxdb2 is disabled without an existingSecret and ingestion stays enabled', async () => {
+            await expect(() =>
+              renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  influxdb2: {
+                    enabled: false,
+                  },
+                },
+              }),
+            ).rejects.toThrow(
+              "⚠ ERROR: 'influxdb2.enabled' is 'false' but no 'influxdb2.adminUser.existingSecret' is set — the OTel Collector's ingestion pipeline has no InfluxDB token to use.",
+            );
+          });
+
           it('should not load influxdb token when disableIngestion is true', async () => {
             const otelCollector = await renderAndGetOtelCollectorContainer(
               await renderHelmChart({
