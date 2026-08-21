@@ -12,7 +12,3 @@ snow:
           calculation-request-topic: snow-white-calculation-request
           init-topics: true
           openapi-calculation-response-topic: snow-white-openapi-calculation-response
-spring:
-  devtools:
-    livereload:
-      enabled: true
