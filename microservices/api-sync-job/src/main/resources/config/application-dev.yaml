@@ -9,7 +9,3 @@ snow:
             base-url: http://localhost:3000
             repository: snow-white-generic-local
             custom-api-name-json-path: info.extensions.x-api-name
-spring:
-  devtools:
-    livereload:
-      enabled: true
