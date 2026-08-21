@@ -24,6 +24,7 @@ import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static io.opentelemetry.semconv.UrlAttributes.URL_PATH;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
+import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.citrusframework.actions.ReceiveMessageAction.Builder.receive;
@@ -230,10 +231,9 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
     assertThat(response.errorMessage()).isNull();
     assertThat(response.openApiTestResults())
       .extracting("openApiCriteria")
-      .containsExactlyInAnyOrder((Object[]) OpenApiCoverageCriteria.values());
+      .containsExactlyInAnyOrder(OpenApiCoverageCriteria.values());
 
-    var pathCoverage = response
-      .openApiTestResults()
+    var pathCoverage = requireNonNull(response.openApiTestResults())
       .stream()
       .filter(
         result ->
@@ -291,20 +291,18 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
 
     publishTelemetry(
       runner,
-      span(serviceName, "GET /pets")
+      span(serviceName, "GET /pets", Map.of("environment", "prod"))
         .attribute(HTTP_REQUEST_METHOD.getKey(), "GET")
         .attribute(URL_PATH.getKey(), "/pets")
         .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), "200")
         .attribute("api.name", apiName)
-        .attribute("api.version", apiVersion)
-        .attribute("environment", "prod"),
-      span(serviceName, "GET /pets/{petId}")
+        .attribute("api.version", apiVersion),
+      span(serviceName, "GET /pets/{petId}", Map.of("environment", "staging"))
         .attribute(HTTP_REQUEST_METHOD.getKey(), "GET")
         .attribute(URL_PATH.getKey(), "/pets/{petId}")
         .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), "200")
         .attribute("api.name", apiName)
         .attribute("api.version", apiVersion)
-        .attribute("environment", "staging")
     );
 
     var response = sendCalculationRequestAndAwaitResponse(
@@ -316,8 +314,7 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
     );
 
     assertThat(response.errorMessage()).isNull();
-    var pathCoverage = response
-      .openApiTestResults()
+    var pathCoverage = requireNonNull(response.openApiTestResults())
       .stream()
       .filter(
         result ->
@@ -581,8 +578,7 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
     );
 
     assertThat(response.errorMessage()).isNull();
-    var pathCoverage = response
-      .openApiTestResults()
+    var pathCoverage = requireNonNull(response.openApiTestResults())
       .stream()
       .filter(
         result ->
@@ -636,7 +632,7 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
             )
             .message()
             .validate(
-              (message, context) ->
+              (message, _) ->
                 responseHolder[0] = message.getPayload(
                   OpenApiCoverageResponseEvent.class
                 )
