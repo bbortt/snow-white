@@ -8,7 +8,7 @@ networks:
 
 services:
   postgres:
-    image: postgres:18.4-alpine
+    image: postgres:18.6-alpine
     environment:
       POSTGRES_USER: 'snow-white'
       POSTGRES_PASSWORD: 'snow-white'
