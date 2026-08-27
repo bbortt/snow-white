@@ -1,0 +1,75 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+import './header-component.scss';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import { Translate } from 'react-jhipster';
+import { NavLink as Link } from 'react-router';
+import { NavItem, NavLink, NavbarBrand } from 'reactstrap';
+
+export const BrandIcon = props => (
+  <div {...props} className="brand-icon">
+    <div className="logo-wrapper">
+      <img src="content/images/logo.png" alt="Logo" />
+    </div>
+  </div>
+);
+
+export const Brand = () => (
+  <NavbarBrand tag={Link} to="/" className="brand-logo">
+    <BrandIcon />
+    <span className="brand-title">
+      <Translate contentKey="global.title">SnowWhite</Translate>
+    </span>
+    <span className="navbar-version">{VERSION.toLowerCase().startsWith('v') ? VERSION : `v${VERSION}`}</span>
+  </NavbarBrand>
+);
+
+export const Home = () => (
+  <NavItem>
+    <NavLink tag={Link} to="/" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="home" />
+      <span>
+        <Translate contentKey="global.menu.home">Home</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);
+
+export const Results = () => (
+  <NavItem data-testid="results-menu">
+    <NavLink tag={Link} to="/quality-gate" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="square-poll-horizontal" />
+      <span>
+        <Translate contentKey="global.menu.entities.results">Quality Gates</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);
+
+export const QualityGates = () => (
+  <NavItem data-testid="quality-gates-menu">
+    <NavLink tag={Link} to="/quality-gate-config" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="list-check" />
+      <span>
+        <Translate contentKey="global.menu.entities.qualityGateConfig">Quality Gates</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);
+
+export const ApiIndexMenu = () => (
+  <NavItem data-testid="api-index-menu">
+    <NavLink tag={Link} to="/api-index" className="d-flex align-items-center">
+      <FontAwesomeIcon icon="database" />
+      <span>
+        <Translate contentKey="global.menu.entities.apiIndex">API Index</Translate>
+      </span>
+    </NavLink>
+  </NavItem>
+);

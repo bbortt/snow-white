@@ -1,0 +1,28 @@
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+snow:
+  white:
+    api:
+      index:
+        public-api-gateway-url: http://localhost:8090
+spring:
+  devtools:
+    livereload:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:api-index-api;MODE=PostgreSQL
+    username: sa
+    password: password
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+server:
+  port: 8085

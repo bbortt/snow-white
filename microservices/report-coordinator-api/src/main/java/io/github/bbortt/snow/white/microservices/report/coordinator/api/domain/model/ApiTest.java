@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model;
+
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.reportStatus;
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
+import static jakarta.persistence.GenerationType.SEQUENCE;
+import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
+
+import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.With;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+@Entity
+@Table
+@With
+@Getter
+@Builder
+@NoArgsConstructor(access = PROTECTED)
+@AllArgsConstructor(access = PRIVATE)
+public class ApiTest {
+
+  @Id
+  @With(PRIVATE)
+  @SequenceGenerator(name = "api_test_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = SEQUENCE, generator = "api_test_id_seq")
+  @Column(nullable = false, updatable = false)
+  private Long id;
+
+  @NotEmpty
+  @Size(min = 1, max = 256)
+  @Column(nullable = false, updatable = false, length = 64)
+  private String serviceName;
+
+  @NotEmpty
+  @Size(min = 1, max = 256)
+  @Column(nullable = false, updatable = false, length = 64)
+  private String apiName;
+
+  @Nullable
+  @Size(max = 16)
+  @Size(min = 1, max = 16)
+  @Column(updatable = false, length = 16)
+  private String apiVersion;
+
+  @NonNull
+  @Column(nullable = false, updatable = false)
+  private Short apiType;
+
+  @NonNull
+  @Builder.Default
+  @Column(nullable = false)
+  private Short reportStatus = IN_PROGRESS.getVal();
+
+  @Lob
+  @Nullable
+  @Column(columnDefinition = "TEXT")
+  private String stackTrace;
+
+  @NonNull
+  @Builder.Default
+  @OneToMany(mappedBy = "apiTest", cascade = { ALL }, fetch = EAGER)
+  private final Set<ApiTestResult> apiTestResults = new HashSet<>();
+
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "calculation_id", nullable = false)
+  private QualityGateReport qualityGateReport;
+
+  public ApiType getApiType() {
+    return ApiType.apiType(apiType);
+  }
+
+  public @NonNull ReportStatus getReportStatus() {
+    return reportStatus(reportStatus);
+  }
+
+  public @NonNull ApiTest withReportStatus(@NonNull ReportStatus reportStatus) {
+    this.reportStatus = reportStatus.getVal();
+    return this;
+  }
+}

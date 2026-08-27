@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white.microservices</groupId>
+    <artifactId>microservices</artifactId>
+    <version>1.8.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>openapi-coverage-stream</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <baseClientPackage>
+      io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client
+    </baseClientPackage>
+
+    <influxdb.version>8.0.0</influxdb.version>
+
+    <!-- Application Testing -->
+    <docker.network>bridge</docker.network>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.influxdb</groupId>
+      <artifactId>influxdb-client-java</artifactId>
+      <version>${influxdb.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.swagger.parser.v3</groupId>
+      <artifactId>swagger-parser</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.rocksdb</groupId>
+          <artifactId>rocksdbjni</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aspects</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-kafka</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.retry</groupId>
+      <artifactId>spring-retry</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>archunit-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-influxdb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${org.mapstruct.version}</version>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <version>0.2.0</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <compilerArg>-Amapstruct.unmappedTargetPolicy=ERROR</compilerArg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-otel-agent</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
+              <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
+              <outputDirectory>
+                ${project.build.directory}/opentelemetry-javaagent
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <configuration>
+              <classifier>executable</classifier>
+              <mainClass>
+                io.github.bbortt.snow.white.microservices.openapi.coverage.stream.Main
+              </mainClass>
+            </configuration>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-v1-api-index-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.apiindexapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.apiindexapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.apiindexapi.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJackson3>true</useJackson3>
+                <useJakartaEe>true</useJakartaEe>
+                <useJspecify>true</useJspecify>
+                <useSpringBoot4>true</useSpringBoot4>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>
+                    ${project.build.directory}/dependencies
+                  </outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apptest</id>
+
+      <properties>
+        <frontend.build.skip>true</frontend.build.skip>
+        <frontend.test.skip>true</frontend.test.skip>
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-junit-jupiter</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-kafka</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+
+      <build>
+        <testResources>
+          <testResource>
+            <directory>src/apptest/resources</directory>
+          </testResource>
+        </testResources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.1</version>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <!--
+                  Two instances of the same image run side by side, each wired to a different telemetry backend.
+                  The OTel Collector persists every trace to both InfluxDB and Grafana Tempo
+                  (see src/apptest/resources/otel-collector/config.yaml),
+                  so both instances calculate coverage off the exact same underlying data -
+                  the app test asserts their results are identical,
+                  proving the two backends are interchangeable.
+                -->
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/openapi-coverage-stream:${image.tag}
+                  </name>
+                  <alias>openapi-coverage-stream-influxdb</alias>
+                  <run>
+                    <env>
+                      <INFLUXDB_URL>http://influxdb:8086</INFLUXDB_URL>
+                      <INFLUXDB_ORG>snow-white</INFLUXDB_ORG>
+                      <INFLUXDB_BUCKET>raw-data</INFLUXDB_BUCKET>
+                      <!-- Fixed token, see src/apptest/resources/docker-compose-apptest.yaml -->
+                      <INFLUXDB_TOKEN>apptest-token</INFLUXDB_TOKEN>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
+                      >
+                        snow-white-calculation-request
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
+                      >
+                        snow-white-openapi-calculation-response-influxdb
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                      <!--
+                        Distinct application-id so this instance runs its own Kafka Streams consumer group and independently processes every message on the shared input topic,
+                        rather than load-balancing partitions with the Tempo-backed instance below.
+                      -->
+                      <SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                        openapi-coverage-stream-influxdb
+                      </SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                    </env>
+                    <log>
+                      <prefix>openapi-coverage-stream-influxdb</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                  </run>
+                </image>
+
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/openapi-coverage-stream:${image.tag}
+                  </name>
+                  <alias>openapi-coverage-stream-grafana</alias>
+                  <run>
+                    <env>
+                      <!--
+                        Routed through Grafana's own datasource proxy rather than Tempo's raw port (3200):
+                        the bundled Tempo has no auth of its own,
+                        but Grafana does (anonymous access disabled,
+                        see src/apptest/resources/docker-compose-apptest.yaml),
+                        so this is a real Basic Auth round-trip,
+                        not just a non-blank check.
+                      -->
+                      <TEMPO_URL>
+                        http://grafana:3000/api/datasources/proxy/uid/tempo
+                      </TEMPO_URL>
+                      <TEMPO_USERNAME>apptest</TEMPO_USERNAME>
+                      <TEMPO_PASSWORD>apptest</TEMPO_PASSWORD>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                        http://wiremock:8080
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC
+                      >
+                        snow-white-calculation-request
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_CALCULATION-REQUEST-TOPIC>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                        true
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS>
+                      <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC
+                      >
+                        snow-white-openapi-calculation-response-grafana
+                      </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPENAPI-CALCULATION-RESPONSE-TOPIC>
+                      <SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                        kafka:9094
+                      </SPRING_KAFKA_BOOTSTRAP_SERVERS>
+                      <SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                        openapi-coverage-stream-grafana
+                      </SPRING_KAFKA_STREAMS_APPLICATION_ID>
+                    </env>
+                    <log>
+                      <prefix>openapi-coverage-stream-grafana</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
