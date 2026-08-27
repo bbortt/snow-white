@@ -36,7 +36,7 @@ services:
       - internal
 
   grafana:
-    image: grafana/otel-lgtm:0.30.0
+    image: grafana/otel-lgtm:0.30.2
     volumes:
       - ./grafana/provisioning/dashboards/snow-white-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/snow-white-dashboards.yaml
       - ./grafana/dashboards:/snow-white-dashboards
