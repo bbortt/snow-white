@@ -56,7 +56,7 @@ services:
       - default
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.158.0
+    image: otel/opentelemetry-collector-contrib:0.160.0
     environment:
       # Fixed token so the collector can authenticate against InfluxDB without any
       # manual token setup - see the influxdb service below.
