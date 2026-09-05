@@ -368,7 +368,7 @@ otelCollector:
     registry: docker.io
     # -- Image tag.
     # @section -- OpenTelemetry Collector
-    tag: '0.158.0'
+    tag: '0.160.0'
   debug:
     sampling:
       # -- Number of messages initially logged each second.
