@@ -5,6 +5,6 @@
  */
 
 export default {
-  '{,**/}*.{java,js,json,md,ts,xml,yaml,yml}': ['prettier --write'],
+  '{,**/}*.{cjs,java,js,json,md,mjs,ts,xml,yaml,yml}': ['prettier --write'],
   '{,**/}*.md': ['markdownlint --rules markdownlint-sentences-per-line --fix'],
 };
