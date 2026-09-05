@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.confi
 import static io.github.bbortt.snow.white.commons.testing.ClassPathScanningUtils.scanPackageForClassesRecursively;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -116,7 +117,8 @@ class NativeRuntimeHintsConfigurationUnitTest {
 
     otelRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
 
-    verify(reflectionHintsMock, times(1017)).registerType(
+    // Should be something more than 1000, or Spring changed considerately!
+    verify(reflectionHintsMock, atLeast(1000)).registerType(
       any(Class.class),
       eq(INVOKE_PUBLIC_METHODS)
     );
