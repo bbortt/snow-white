@@ -517,6 +517,34 @@
                   <arguments>pnpm run apptest:wait</arguments>
                 </configuration>
               </execution>
+              <execution>
+                <id>install-playwright-browsers</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <arguments>pnpm exec playwright install --with-deps chromium</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <!--
+                  Runs the same Playwright suite as the `e2e` profile,
+                  but against the fully built api-gateway container started above instead of the dev bundle -
+                  see playwright.config.ts.
+                -->
+                <id>run-e2e-tests-against-container</id>
+                <goals>
+                  <goal>corepack</goal>
+                </goals>
+                <phase>integration-test</phase>
+                <configuration>
+                  <arguments>pnpm run e2e</arguments>
+                  <environmentVariables>
+                    <PLAYWRIGHT_BASE_URL>http://localhost:8080</PLAYWRIGHT_BASE_URL>
+                  </environmentVariables>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
 
