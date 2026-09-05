@@ -115,20 +115,11 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'docker-compose'
-    directory: '/dev'
-    schedule:
-      interval: 'weekly'
-    cooldown:
-      default-days: 7
-    assignees:
-      - bbortt
-    labels:
-      - 'severity:low'
-      - 'status:ready-for-review'
-  - package-ecosystem: 'docker-compose'
     directories:
+      - '/dev'
       - '/microservices/api-index-api/src/apptest/resources'
       - '/microservices/api-sync-job/src/apptest/resources'
+      - '/microservices/openapi-coverage-stream/src/apptest/resources'
       - '/microservices/otel-event-filter-stream/src/apptest/resources'
       - '/microservices/quality-gate-api/src/apptest/resources'
       - '/microservices/report-coordinator-api/src/apptest/resources'
@@ -141,3 +132,10 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      postgres:
+        patterns:
+          - 'postgres'
+      otel-lgtm:
+        patterns:
+          - 'grafana/otel-lgtm'
