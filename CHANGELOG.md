@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.9.0](https://github.com/bbortt/snow-white/compare/v1.8.0...v1.9.0) (2026-09-05)
+
+
+### Features
+
+* **#1697:** add otelCollector.disableIngestion to opt out of bundled OTel ingestion stack ([80c78ff](https://github.com/bbortt/snow-white/commit/80c78ff9c0ae24a79d0002e9b894c79e3ee5ee3b))
+* **#1697:** helm chart now supports grafana tempo datasource configuration ([b19002d](https://github.com/bbortt/snow-white/commit/b19002dc547bd13886ac1a2500907e6d94a74722))
+
+
+### Bug Fixes
+
+* **helm:** both otel-collector and openapi-coverage-stream referenced non-existing influxdb ([2261a9e](https://github.com/bbortt/snow-white/commit/2261a9edcf5d6fb98337361f4ff2c7b1347f5f80))
+* **openapi-coverage-stream:** attribute filter for grafana tempo datasource ([8d61507](https://github.com/bbortt/snow-white/commit/8d615074af28942eecff5d7318c2cbb13c66aa77))
+
+
+### Documentation
+
+* add project-specific Claude Code skills and root-level docs ([d23abd9](https://github.com/bbortt/snow-white/commit/d23abd9f4e2e2ed7e3c97ea32b48f124b2eb6146))
+* **helm:** grafana tempo configuration from secret values ([41cdce4](https://github.com/bbortt/snow-white/commit/41cdce460bdcc036746b8078e0edda4688037fe3))
+
 ## [1.8.0](https://github.com/bbortt/snow-white/compare/v1.7.0...v1.8.0) (2026-08-18)
 
 ### Features
