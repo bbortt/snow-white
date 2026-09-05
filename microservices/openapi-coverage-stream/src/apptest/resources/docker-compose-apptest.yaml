@@ -87,7 +87,7 @@ services:
       - default
 
   grafana:
-    image: grafana/otel-lgtm:0.32.0
+    image: grafana/otel-lgtm:0.32.1
     environment:
       # Forces real credential checking -
       # the default image grants anonymous requests the Admin role,
