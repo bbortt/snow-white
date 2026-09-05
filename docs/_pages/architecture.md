@@ -7,6 +7,8 @@ toc_sticky: true
 
 Snow-White follows an **event-driven microservices architecture** built on Apache Kafka and OpenTelemetry.
 
+It can work with both [InfluxDB](https://www.influxdata.com) or [Grafana Tempo](https://grafana.com/docs/tempo) telemetry backends.
+
 [![Architecture Overview]({{ "/architecture.png" | relative_url }})]({{ "/architecture.png" | relative_url }})
 
 ## Detailed Architecture

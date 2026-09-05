@@ -8,7 +8,7 @@ toc_sticky: true
 This guide walks you through integrating your service with Snow-White so it can measure OpenAPI coverage from your test suite.
 
 **Prerequisite:** A Snow-White instance must already be running and reachable.
-If you need to set one up first, see [Deployment](/deployment/).
+If you need to set one up first, see [Deployment](/deployment).
 {: .notice--info}
 
 ## How It Works
@@ -217,7 +217,7 @@ snow-white calculate --config-file snow-white.json
 ```
 
 The CLI exits `0` on pass, non-zero on failure — suitable for CI pipelines.
-See [CLI Reference](/cli/) for all commands and options.
+See [CLI Reference](/cli) for all commands and options.
 
 ## Step 6 — Review Results
 
@@ -228,7 +228,7 @@ The Snow-White UI shows:
 
 Snow-White ships with a `basic-coverage` gate out of the box.
 Custom gates can be configured via the UI or API.
-See [Quality Gate Criteria](/quality-gate-criteria/) for the full list of available checks.
+See [Quality Gate Criteria](/quality-gate-criteria) for the full list of available checks.
 
 ## Checklist
 

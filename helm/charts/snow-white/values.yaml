@@ -272,12 +272,22 @@ snowWhite:
       # -- Bearer token for Tempo authentication. Mutually exclusive with `username`/`password`.
       # @section -- Snow-White OpenAPI Coverage Stream
       token: ''
+      # -- Bearer token for Tempo authentication - read from a Secret. Mutually exclusive with `username`/`password`.
+      # @section -- Snow-White OpenAPI Coverage Stream
+      tokenFromSecret:
+        name: ''
+        key: ''
       # -- Username for Tempo HTTP Basic authentication. Requires `password`.
       # @section -- Snow-White OpenAPI Coverage Stream
       username: ''
       # -- Password for Tempo HTTP Basic authentication. Requires `username`.
       # @section -- Snow-White OpenAPI Coverage Stream
       password: ''
+      # -- Password for Tempo HTTP Basic authentication - read from a Secret. Requires `username`.
+      # @section -- Snow-White OpenAPI Coverage Stream
+      passwordFromSecret:
+        name: ''
+        key: ''
       # -- Tenant sent as the `X-Scope-OrgID` header, for multi-tenant Tempo instances. Omitted when unset.
       # @section -- Snow-White OpenAPI Coverage Stream
       orgId: ''

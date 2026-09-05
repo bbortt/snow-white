@@ -1,5 +1,5 @@
 {{- if and .Values.otelCollector.disableIngestion .Values.influxdb2.enabled }}
 ⚠ WARNING: 'otelCollector.disableIngestion' is 'true', but 'influxdb2.enabled' is still 'true'.
-   The bundled InfluxDB is only consumed by the (now disabled) OTel ingestion pipeline, so it
-   is being deployed unused, wasting resources. Set 'influxdb2.enabled: false' to skip it.
+   The bundled InfluxDB is only consumed by the (now disabled) OTel ingestion pipeline, so it is being deployed unused, wasting resources.
+   Set 'influxdb2.enabled: false' to skip it.
 {{- end }}

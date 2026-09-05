@@ -252,16 +252,35 @@ For security, use DML-only credentials at runtime and separate DDL credentials f
 
 ### Disable InfluxDB
 
-Add this to your `values.yaml`:
+To disable the bundled InfluxDB `StatefulSet`, add the following to your `values.yaml`:
 
 ```yaml
 influxdb2:
   enabled: false
 ```
 
-This disables the bundled InfluxDB StatefulSet, but the Snow-White microservices will still attempt to connect to an InfluxDB instance.
-Unlike PostgreSQL, the Helm chart does not expose dedicated values for configuring an external InfluxDB connection.
-You would need to supply the relevant environment variables manually via `additionalEnvs` — which requires reverse-engineering the expected configuration from the microservice sources.
+When InfluxDB is disabled, it is also recommended to disable OTel data ingestion.
+Without a configured backend, the OTel collector has nowhere to persist the collected data and will continuously log ingestion errors.
+
+```yaml
+otelCollector:
+  disableIngestion: true
+```
+
+When OTel ingestion is disabled, configure the datasource environment variables for the `openapi-coverage-stream`.
+For example, the following configuration uses a token stored in a Kubernetes `Secret`:
+
+```yaml
+snowWhite:
+  openapiCoverageStream:
+    tempo:
+      endpoint: ''
+      tokenFromSecret:
+        name: my-grafana-tempo-credentials
+        key: grafana-tempo-token
+```
+
+> Grafana Tempo supports either **username/password** or **token-based authentication**.
 
 ### InfluxDB Static Credentials (GitOps)
 
