@@ -736,11 +736,46 @@ describe('OpenAPI Coverage Stream', () => {
               );
               expect(tempoToken).toBeDefined();
               expect(tempoToken.value).toBe(token);
+              expect(tempoToken.valueFrom).toBeUndefined();
+            });
+
+            it('should include TEMPO_TOKEN from secret when set', async () => {
+              const tokenFromSecret = {
+                name: 'my-grafana-tempo-credentials',
+                key: 'grafana-tempo-token',
+              };
+
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: {
+                            endpoint: 'http://tempo:3200',
+                            tokenFromSecret,
+                          },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoToken = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_TOKEN',
+              );
+              expect(tempoToken).toBeDefined();
+              expect(tempoToken.value).toBeUndefined();
+              expect(tempoToken.valueFrom).toStrictEqual({
+                secretKeyRef: tokenFromSecret,
+              });
             });
 
             it('should include TEMPO_USERNAME and TEMPO_PASSWORD when set', async () => {
               const username = 'snow-white';
               const password = 'my-password';
+
               const openapiCoverageStream =
                 await renderAndGetOpenapiCoverageStreamContainer(
                   await renderHelmChart({
@@ -770,6 +805,48 @@ describe('OpenAPI Coverage Stream', () => {
               );
               expect(tempoPassword).toBeDefined();
               expect(tempoPassword.value).toBe(password);
+              expect(tempoPassword.valueFrom).toBeUndefined();
+            });
+
+            it('should include TEMPO_USERNAME and TEMPO_PASSWORD from secret when set', async () => {
+              const username = 'snow-white';
+              const passwordFromSecret = {
+                name: 'my-grafana-tempo-credentials',
+                key: 'grafana-tempo-password',
+              };
+
+              const openapiCoverageStream =
+                await renderAndGetOpenapiCoverageStreamContainer(
+                  await renderHelmChart({
+                    chartPath: 'charts/snow-white',
+                    values: {
+                      snowWhite: {
+                        openapiCoverageStream: {
+                          tempo: {
+                            endpoint: 'http://tempo:3200',
+                            username,
+                            passwordFromSecret,
+                          },
+                        },
+                      },
+                    },
+                  }),
+                );
+
+              const tempoUsername = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_USERNAME',
+              );
+              expect(tempoUsername).toBeDefined();
+              expect(tempoUsername.value).toBe(username);
+
+              const tempoPassword = openapiCoverageStream.env.find(
+                (env) => env.name === 'TEMPO_PASSWORD',
+              );
+              expect(tempoPassword).toBeDefined();
+              expect(tempoPassword.value).toBeUndefined();
+              expect(tempoPassword.valueFrom).toStrictEqual({
+                secretKeyRef: passwordFromSecret,
+              });
             });
 
             it('should include TEMPO_ORG_ID when set', async () => {
@@ -812,7 +889,7 @@ describe('OpenAPI Coverage Stream', () => {
                   },
                 }),
               ).rejects.toThrow(
-                "⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'!",
+                "⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token'/'tokenFromSecret' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'/'passwordFromSecret'!",
               );
             });
 

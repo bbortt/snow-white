@@ -15,7 +15,7 @@ Once installed, Claude automatically applies the skill whenever it encounters a 
 
 1. Parses the JUnit XML structure Snow-White emits (`testsuites` → `testsuite` per API → `testcase` per criterion).
 2. Detects **correlation failures** (`tests="0"`) and walks through the [onboarding checklist](/onboarding/#checklist) instead of treating it as a test gap.
-3. Looks up each failing criterion against the [Quality Gate Criteria](/quality-gate-criteria/) hierarchy, so it fixes the highest-level failing criterion first instead of duplicating work on children that will pass automatically once the parent does.
+3. Looks up each failing criterion against the [Quality Gate Criteria](/quality-gate-criteria) hierarchy, so it fixes the highest-level failing criterion first instead of duplicating work on children that will pass automatically once the parent does.
 4. Proposes integration tests — real HTTP calls with the OTEL agent attached, since Snow-White correlates traces, not mocks — matching your existing test style.
 5. Summarizes what was fixed, what criteria that resolves, and what's left.
 

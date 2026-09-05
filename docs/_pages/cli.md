@@ -242,4 +242,4 @@ Using the OCI image to install the binary in a pipeline:
     mv out/snow-white /usr/local/bin/snow-white
 ```
 
-For the full workflow context see [Pipeline Workflows](/workflows/).
+For the full workflow context see [Pipeline Workflows](/workflows).

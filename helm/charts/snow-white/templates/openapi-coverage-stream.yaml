@@ -1,10 +1,10 @@
 {{- $labels := include "snow-white.labels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "openapi-coverage-stream" "context" .) | nindent 0 }}
 {{- $tempo := .Values.snowWhite.openapiCoverageStream.tempo }}
-{{- if and $tempo.endpoint $tempo.token (or $tempo.username $tempo.password) }}
-{{ fail "\n\n⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'!" }}
+{{- if and $tempo.endpoint (or $tempo.token $tempo.tokenFromSecret.name) (or $tempo.username (or $tempo.password $tempo.passwordFromSecret.name)) }}
+{{ fail "\n\n⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.token'/'tokenFromSecret' is mutually exclusive with 'snowWhite.openapiCoverageStream.tempo.username'/'password'/'passwordFromSecret'!" }}
 {{- end }}
-{{- if and $tempo.endpoint (ne (empty $tempo.username) (empty $tempo.password)) }}
+{{- if and $tempo.endpoint (ne (empty $tempo.username) (and (empty $tempo.password) (empty $tempo.passwordFromSecret.name))) }}
 {{ fail "\n\n⚠ ERROR: 'snowWhite.openapiCoverageStream.tempo.username' and 'snowWhite.openapiCoverageStream.tempo.password' must be set together!" }}
 {{- end }}
 apiVersion: apps/v1
@@ -56,12 +56,26 @@ spec:
             {{- if $tempo.token }}
             - name: 'TEMPO_TOKEN'
               value: {{ $tempo.token | quote }}
+            {{- else if $tempo.tokenFromSecret.name }}
+            - name: 'TEMPO_TOKEN'
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $tempo.tokenFromSecret.name | quote }}
+                  key: {{ $tempo.tokenFromSecret.key | quote }}
             {{- end }}
             {{- if $tempo.username }}
             - name: 'TEMPO_USERNAME'
               value: {{ $tempo.username | quote }}
+            {{- if $tempo.passwordFromSecret.name }}
+            - name: 'TEMPO_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $tempo.passwordFromSecret.name | quote }}
+                  key: {{ $tempo.passwordFromSecret.key | quote }}
+            {{- else }}
             - name: 'TEMPO_PASSWORD'
               value: {{ $tempo.password | quote }}
+            {{- end }}
             {{- end }}
             {{- if $tempo.orgId }}
             - name: 'TEMPO_ORG_ID'
