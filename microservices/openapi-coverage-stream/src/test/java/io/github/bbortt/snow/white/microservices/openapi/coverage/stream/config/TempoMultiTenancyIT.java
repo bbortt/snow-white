@@ -31,7 +31,7 @@ class TempoMultiTenancyIT {
   private static final int TEMPO_HTTP_PORT = 3200;
 
   private static final GenericContainer<?> TEMPO_CONTAINER =
-    new GenericContainer<>(DockerImageName.parse("grafana/tempo:2.6.1"))
+    new GenericContainer<>(DockerImageName.parse("grafana/tempo:2.10.8"))
       .withCopyFileToContainer(
         MountableFile.forClasspathResource("tempo/tempo-multitenant.yaml"),
         "/etc/tempo.yaml"
