@@ -179,38 +179,40 @@ class TempoTelemetryServiceImplUnitTest {
       // language=json
       var trace1ResponseBody = """
       {
-        "batches": [
-          {
-            "scopeSpans": [
-              {
-                "spans": [
-                  {
-                    "spanId": "%s",
-                    "attributes": [
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "GET" }
-                      },
-                      {
-                        "key": "http.path",
-                        "value": { "stringValue": "/api/v1/test" }
-                      },
-                      {
-                        "key": "http.status_code",
-                        "value": { "intValue": "200" }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "trace": {
+          "resourceSpans": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "GET" }
+                        },
+                        {
+                          "key": "http.path",
+                          "value": { "stringValue": "/api/v1/test" }
+                        },
+                        {
+                          "key": "http.status_code",
+                          "value": { "intValue": "200" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       }
       """.formatted(spanId1Base64);
 
       wireMockServer.stubFor(
-        get(urlEqualTo("/api/traces/" + traceId1)).willReturn(
+        get(urlEqualTo("/api/v2/traces/" + traceId1)).willReturn(
           okJson(trace1ResponseBody)
         )
       );
@@ -218,34 +220,36 @@ class TempoTelemetryServiceImplUnitTest {
       // language=json
       var trace2ResponseBody = """
       {
-        "batches": [
-          {
-            "scopeSpans": [
-              {
-                "spans": [
-                  {
-                    "spanId": "%s",
-                    "attributes": [
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "POST" }
-                      },
-                      {
-                        "key": "http.path",
-                        "value": { "stringValue": "/api/v1/create" }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "trace": {
+          "resourceSpans": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "POST" }
+                        },
+                        {
+                          "key": "http.path",
+                          "value": { "stringValue": "/api/v1/create" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       }
       """.formatted(spanId2Base64);
 
       wireMockServer.stubFor(
-        get(urlEqualTo("/api/traces/" + traceId2)).willReturn(
+        get(urlEqualTo("/api/v2/traces/" + traceId2)).willReturn(
           okJson(trace2ResponseBody)
         )
       );
@@ -314,30 +318,32 @@ class TempoTelemetryServiceImplUnitTest {
       // language=json
       var traceResponseBody = """
       {
-        "batches": [
-          {
-            "scopeSpans": [
-              {
-                "spans": [
-                  {
-                    "spanId": "%s",
-                    "attributes": [
-                      {
-                        "key": "http.method",
-                        "value": { "stringValue": "GET" }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "trace": {
+          "resourceSpans": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        {
+                          "key": "http.method",
+                          "value": { "stringValue": "GET" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       }
       """.formatted(spanIdBase64);
 
       wireMockServer.stubFor(
-        get(urlEqualTo("/api/traces/" + fullTraceId)).willReturn(
+        get(urlEqualTo("/api/v2/traces/" + fullTraceId)).willReturn(
           okJson(traceResponseBody)
         )
       );
