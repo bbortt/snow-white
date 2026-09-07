@@ -6,21 +6,26 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config;
 
+import static com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import static io.github.bbortt.snow.white.archunit.rules.PropertiesRules.configurationPropertiesClassesMustHaveConfigurationAnnotation;
 
-import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.archunit.rules.PropertiesClassesRules;
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.Main;
 
 @AnalyzeClasses(
   packagesOf = Main.class,
-  importOptions = ImportOption.DoNotIncludeTests.class
+  importOptions = DoNotIncludeTests.class
 )
 public class PropertiesClassesUnitTest {
 
   @ArchTest
   static final ArchRule configurationPropertiesClassesMustHaveConfigurationAnnotation =
     configurationPropertiesClassesMustHaveConfigurationAnnotation();
+
+  @ArchTest
+  static final ArchRule propertiesClassesMustNotProxyBeanMethods =
+    PropertiesClassesRules.propertiesClassesMustNotProxyBeanMethods();
 }

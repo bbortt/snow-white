@@ -59,7 +59,9 @@ class InfluxDBQueryClientRetryIT {
 
     @Bean
     InfluxDBQueryClient influxDBQueryClient(InfluxDBClient influxDBClient) {
-      return new InfluxDBQueryClient(influxDBClient);
+      var influxDBQueryClient = new InfluxDBQueryClient();
+      influxDBQueryClient.setInfluxDBClient(influxDBClient);
+      return influxDBQueryClient;
     }
   }
 

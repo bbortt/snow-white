@@ -6,43 +6,29 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.PREFIX;
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Slf4j
 @Configuration
 public class KafkaTopicManager {
 
-  private final Environment environment;
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
   public KafkaTopicManager(
-    Environment environment,
     ReportCoordinationServiceProperties reportCoordinationServiceProperties
   ) {
-    this.environment = environment;
     this.reportCoordinationServiceProperties =
       reportCoordinationServiceProperties;
   }
 
   @Bean
   public NewTopic calculationRequestTopic() {
-    var initTopics = environment.getProperty(
-      PREFIX + ".init-topics",
-      Boolean.class,
-      FALSE
-    );
-
-    if (!TRUE.equals(initTopics)) {
+    if (!reportCoordinationServiceProperties.isInitTopics()) {
       return null;
     }
 
@@ -59,13 +45,7 @@ public class KafkaTopicManager {
 
   @Bean
   public NewTopic openapiCalculationResponseTopic() {
-    var initTopics = environment.getProperty(
-      PREFIX + ".init-topics",
-      Boolean.class,
-      FALSE
-    );
-
-    if (!TRUE.equals(initTopics)) {
+    if (!reportCoordinationServiceProperties.isInitTopics()) {
       return null;
     }
 

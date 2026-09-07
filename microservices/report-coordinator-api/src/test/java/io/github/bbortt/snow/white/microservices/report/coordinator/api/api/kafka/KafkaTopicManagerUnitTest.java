@@ -6,9 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.PREFIX;
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
@@ -24,13 +21,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.core.env.Environment;
 
 @ExtendWith({ MockitoExtension.class })
 class KafkaTopicManagerUnitTest {
-
-  @Mock
-  private Environment environmentMock;
 
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
@@ -51,12 +44,13 @@ class KafkaTopicManagerUnitTest {
       KafkaTopicManager.class
     );
 
+    doReturn(true).when(reportCoordinationServicePropertiesMock).isInitTopics();
+
     contextRunner
       .withBean(
         ReportCoordinationServiceProperties.class,
         () -> reportCoordinationServicePropertiesMock
       )
-      .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->
         assertThat(context)
           .asInstanceOf(type(AssertableApplicationContext.class))
@@ -76,10 +70,33 @@ class KafkaTopicManagerUnitTest {
     verify(
       reportCoordinationServicePropertiesMock
     ).getCalculationRequestTopic();
-    verify(
-      reportCoordinationServicePropertiesMock
-    ).getCalculationRequestTopic();
     verify(openapiCalculationResponseMock).getTopic();
+  }
+
+  @Test
+  void shouldNotBeEnabled_ifPropertyIsNotSet() {
+    var contextRunner = new ApplicationContextRunner()
+      .withUserConfiguration(KafkaTopicManager.class)
+      .withBean(
+        ReportCoordinationServiceProperties.class,
+        ReportCoordinationServiceProperties::new
+      );
+
+    contextRunner.run(context ->
+      assertThat(context)
+        .asInstanceOf(type(AssertableApplicationContext.class))
+        .satisfies(
+          c -> assertThat(c).hasSingleBean(KafkaTopicManager.class),
+          c ->
+            assertThat(c)
+              .getBean("calculationRequestTopic")
+              .isNotInstanceOf(NewTopic.class),
+          c ->
+            assertThat(c)
+              .getBean("openapiCalculationResponseTopic")
+              .isNotInstanceOf(NewTopic.class)
+        )
+    );
   }
 
   @Nested
@@ -87,9 +104,9 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnBean() {
-      doReturn(TRUE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(true)
+        .when(reportCoordinationServicePropertiesMock)
+        .isInitTopics();
 
       var testRequestTopic = "KafkaTopicManagerTest:request";
       doReturn(testRequestTopic)
@@ -103,9 +120,9 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnNullBean_whenNotEnabled() {
-      doReturn(FALSE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(false)
+        .when(reportCoordinationServicePropertiesMock)
+        .isInitTopics();
 
       assertThat(fixture.calculationRequestTopic()).isNull();
     }
@@ -116,9 +133,9 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnBean() {
-      doReturn(TRUE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(true)
+        .when(reportCoordinationServicePropertiesMock)
+        .isInitTopics();
 
       doReturn(openapiCalculationResponseMock)
         .when(reportCoordinationServicePropertiesMock)
@@ -136,9 +153,9 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnNullBean_whenNotEnabled() {
-      doReturn(FALSE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(false)
+        .when(reportCoordinationServicePropertiesMock)
+        .isInitTopics();
 
       assertThat(fixture.openapiCalculationResponseTopic()).isNull();
     }

@@ -61,8 +61,11 @@ class InfluxDBTelemetryServiceImplUnitTest {
     var openApiCoverageServiceProperties =
       new OpenApiCoverageStreamProperties();
 
+    var influxDBQueryClient = new InfluxDBQueryClient();
+    influxDBQueryClient.setInfluxDBClient(influxDBClientMock);
+
     fixture = new InfluxDBTelemetryServiceImpl(
-      new InfluxDBQueryClient(influxDBClientMock),
+      influxDBQueryClient,
       influxDBProperties,
       openApiCoverageServiceProperties
     );
