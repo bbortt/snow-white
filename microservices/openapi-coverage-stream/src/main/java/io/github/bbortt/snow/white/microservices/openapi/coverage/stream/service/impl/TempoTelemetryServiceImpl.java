@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static java.lang.String.join;
 import static java.time.Instant.ofEpochMilli;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.concurrent.ConcurrentHashMap.newKeySet;
 import static java.util.stream.Collectors.toCollection;
@@ -20,6 +21,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.TempoQueryClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.tempo.TempoAttributeFilter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.Duration;
@@ -33,11 +35,9 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -54,9 +54,6 @@ import tools.jackson.databind.json.JsonMapper;
 @Conditional(TempoConfiguredCondition.class)
 public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
-  private static final String SEARCH_PATH = "/api/search";
-  private static final String TRACE_BY_ID_PATH = "/api/v2/traces/{traceId}";
-  private static final int SEARCH_LIMIT = 1_000;
   private static final int TRACE_ID_HEX_LENGTH = 32;
 
   private static final Pattern LOOKBACK_WINDOW_PATTERN = Pattern.compile(
@@ -69,11 +66,11 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   public static final String TRACE_ID_PROPERTY_NAME = "traceID";
   public static final String SPAN_ID_PROPERTY_NAME = "spanID";
 
-  private final RestClient tempoRestClient;
+  private final TempoQueryClient tempoRestClient;
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
 
   public TempoTelemetryServiceImpl(
-    @Qualifier("tempoRestClient") RestClient tempoRestClient,
+    TempoQueryClient tempoRestClient,
     OpenApiCoverageStreamProperties openApiCoverageStreamProperties
   ) {
     this.tempoRestClient = tempoRestClient;
@@ -97,19 +94,11 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       .getEpochSecond();
     var endEpochSeconds = eventInstant.getEpochSecond();
 
-    // The TraceQL query contains literal '{' / '}' characters, which UriBuilder#queryParam would otherwise misinterpret as URI template placeholders during expansion.
-    // Passing it as a template variable instead keeps it an opaque, correctly-encoded value.
-    var searchResponse = tempoRestClient
-      .get()
-      .uri(
-        SEARCH_PATH + "?q={q}&start={start}&end={end}&limit={limit}",
-        traceQLQuery,
-        startEpochSeconds,
-        endEpochSeconds,
-        SEARCH_LIMIT
-      )
-      .retrieve()
-      .body(JsonNode.class);
+    var searchResponse = tempoRestClient.search(
+      traceQLQuery,
+      startEpochSeconds,
+      endEpochSeconds
+    );
 
     return resolveMatchedSpans(searchResponse);
   }
@@ -189,7 +178,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     @Nullable JsonNode searchResponse
   ) {
     Set<OpenTelemetryData> result = newKeySet();
-    if (searchResponse == null || !searchResponse.has(TRACES_PROPERTY_NAME)) {
+    if (isNull(searchResponse) || !searchResponse.has(TRACES_PROPERTY_NAME)) {
       return result;
     }
 
@@ -198,7 +187,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
         trace.get(TRACE_ID_PROPERTY_NAME).asString()
       );
       var spanSet = trace.get("spanSet");
-      if (spanSet == null || !spanSet.has(SPANS_PROPERTY_NAME)) {
+      if (isNull(spanSet) || !spanSet.has(SPANS_PROPERTY_NAME)) {
         return;
       }
 
@@ -221,11 +210,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   ) {
     JsonNode traceResponse;
     try {
-      traceResponse = tempoRestClient
-        .get()
-        .uri(TRACE_BY_ID_PATH, traceId)
-        .retrieve()
-        .body(JsonNode.class);
+      traceResponse = tempoRestClient.getTraceById(traceId);
     } catch (HttpClientErrorException.NotFound _) {
       logger.warn("Trace {} not found", traceId);
 
@@ -234,20 +219,20 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
     Set<OpenTelemetryData> result = newKeySet();
     // The v2 API wraps the OTLP trace under a "trace" field (alongside "metrics") - the v1 API returned the OTLP trace directly.
-    var trace = traceResponse == null ? null : traceResponse.get("trace");
-    if (trace == null || !trace.has("resourceSpans")) {
+    var trace = isNull(traceResponse) ? null : traceResponse.get("trace");
+    if (isNull(trace) || !trace.has("resourceSpans")) {
       return result;
     }
 
     trace.get("resourceSpans").forEach(resourceSpan -> {
       var scopeSpans = resourceSpan.get("scopeSpans");
-      if (scopeSpans == null) {
+      if (isNull(scopeSpans)) {
         return;
       }
 
       scopeSpans.forEach(scopeSpan -> {
         var spans = scopeSpan.get(SPANS_PROPERTY_NAME);
-        if (spans == null) {
+        if (isNull(spans)) {
           return;
         }
 

@@ -36,8 +36,8 @@ import org.wiremock.spring.EnableWireMock;
 )
 class TempoRestClientConfigIT {
 
-  @EnableConfigurationProperties(TempoProperties.class)
   @Import(TempoRestClientConfig.class)
+  @EnableConfigurationProperties(TempoProperties.class)
   static class TestConfig {}
 
   @Autowired

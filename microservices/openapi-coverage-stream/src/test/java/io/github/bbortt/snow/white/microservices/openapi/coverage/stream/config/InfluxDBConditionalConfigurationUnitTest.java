@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.influxdb.client.InfluxDBClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.InfluxDBTelemetryServiceImpl;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +30,7 @@ class InfluxDBConditionalConfigurationUnitTest {
     new ApplicationContextRunner()
       .withUserConfiguration(
         InfluxDBClientConfig.class,
+        InfluxDBQueryClient.class,
         InfluxDBTelemetryServiceImpl.class
       )
       .withBean(
@@ -47,6 +49,7 @@ class InfluxDBConditionalConfigurationUnitTest {
       .run(context ->
         assertThat(context)
           .hasSingleBean(InfluxDBClient.class)
+          .hasSingleBean(InfluxDBQueryClient.class)
           .hasSingleBean(InfluxDBTelemetryServiceImpl.class)
       );
   }
@@ -76,6 +79,7 @@ class InfluxDBConditionalConfigurationUnitTest {
       .run(context ->
         assertThat(context)
           .doesNotHaveBean(InfluxDBClient.class)
+          .doesNotHaveBean(InfluxDBQueryClient.class)
           .doesNotHaveBean(InfluxDBTelemetryServiceImpl.class)
       );
   }

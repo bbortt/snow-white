@@ -15,7 +15,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.influxdb.client.InfluxDBClient;
 import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
@@ -23,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.Instant;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 )
 public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 
-  private final InfluxDBClient influxDBClient;
+  private final InfluxDBQueryClient influxDBQueryClient;
   private final InfluxDBProperties influxDBProperties;
 
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
@@ -67,7 +67,7 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
     );
     logger.trace("Firing flux query: {}", fluxQuery);
 
-    var fluxTables = influxDBClient.getQueryApi().query(fluxQuery);
+    var fluxTables = influxDBQueryClient.query(fluxQuery);
     return parseFluxTableToOpenTelemetryData(fluxTables);
   }
 
