@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
+import static java.lang.Long.parseLong;
 import static java.lang.String.join;
 import static java.time.Instant.ofEpochMilli;
 import static java.util.Objects.isNull;
@@ -160,7 +161,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       );
     }
 
-    var amount = Long.parseLong(matcher.group(1));
+    var amount = parseLong(matcher.group(1));
     return switch (matcher.group(2)) {
       case "ms" -> Duration.ofMillis(amount);
       case "s" -> Duration.ofSeconds(amount);
