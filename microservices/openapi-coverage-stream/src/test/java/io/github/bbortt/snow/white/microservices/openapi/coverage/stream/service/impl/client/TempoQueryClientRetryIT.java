@@ -38,12 +38,15 @@ class TempoQueryClientRetryIT {
   static class TestConfig {
 
     @Bean
-    TempoQueryClient tempoQueryClient(
+    RestClient tempoRestClient(
       @Value("${wiremock.server.baseUrl}") String wireMockBaseUrl
     ) {
-      return new TempoQueryClient(
-        RestClient.builder().baseUrl(wireMockBaseUrl).build()
-      );
+      return RestClient.builder().baseUrl(wireMockBaseUrl).build();
+    }
+
+    @Bean
+    TempoQueryClient tempoQueryClient() {
+      return new TempoQueryClient();
     }
   }
 

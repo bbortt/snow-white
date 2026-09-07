@@ -12,7 +12,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -22,11 +22,22 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Service
-@RequiredArgsConstructor
 public class QualityGateService {
 
-  private final QualityGateApi qualityGateApi;
-  private final QualityGateConfigMapper qualityGateConfigMapper;
+  private QualityGateApi qualityGateApi;
+  private QualityGateConfigMapper qualityGateConfigMapper;
+
+  @Autowired
+  public void setQualityGateApi(QualityGateApi qualityGateApi) {
+    this.qualityGateApi = qualityGateApi;
+  }
+
+  @Autowired
+  public void setQualityGateConfigMapper(
+    QualityGateConfigMapper qualityGateConfigMapper
+  ) {
+    this.qualityGateConfigMapper = qualityGateConfigMapper;
+  }
 
   @WithSpan
   @Retryable(

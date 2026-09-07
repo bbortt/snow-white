@@ -31,7 +31,7 @@ public class OtelEventFilterStreamProperties {
     PREFIX + ".outbound-topic-name";
   private String outboundTopicName;
 
-  private Boolean initTopics = false;
+  private boolean initTopics = false;
 
   public static final String CONSUMER_MODE_PROPERTY_NAME =
     PREFIX + ".consumer-mode";

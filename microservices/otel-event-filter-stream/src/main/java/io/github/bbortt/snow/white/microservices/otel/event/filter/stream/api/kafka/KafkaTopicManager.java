@@ -6,42 +6,28 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-
 import io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Slf4j
 @Configuration
 public class KafkaTopicManager {
 
-  private final Environment environment;
   private final OtelEventFilterStreamProperties otelEventFilterStreamProperties;
 
   public KafkaTopicManager(
-    Environment environment,
     OtelEventFilterStreamProperties otelEventFilterStreamProperties
   ) {
-    this.environment = environment;
     this.otelEventFilterStreamProperties = otelEventFilterStreamProperties;
   }
 
   @Bean
   public NewTopic inboundTopic() {
-    var initTopics = environment.getProperty(
-      PREFIX + ".init-topics",
-      Boolean.class,
-      FALSE
-    );
-
-    if (!TRUE.equals(initTopics)) {
+    if (!otelEventFilterStreamProperties.isInitTopics()) {
       return null;
     }
 
@@ -55,13 +41,7 @@ public class KafkaTopicManager {
 
   @Bean
   public NewTopic outboundTopic() {
-    var initTopics = environment.getProperty(
-      PREFIX + ".init-topics",
-      Boolean.class,
-      FALSE
-    );
-
-    if (!TRUE.equals(initTopics)) {
+    if (!otelEventFilterStreamProperties.isInitTopics()) {
       return null;
     }
 

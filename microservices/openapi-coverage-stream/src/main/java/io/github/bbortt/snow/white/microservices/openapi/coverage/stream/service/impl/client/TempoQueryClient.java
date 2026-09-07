@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client;
 
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.retry.annotation.Backoff;
@@ -25,9 +26,10 @@ public class TempoQueryClient {
   private static final String TRACE_BY_ID_PATH = "/api/v2/traces/{traceId}";
   private static final int SEARCH_LIMIT = 1_000;
 
-  private final RestClient tempoRestClient;
+  private RestClient tempoRestClient;
 
-  public TempoQueryClient(
+  @Autowired
+  public void setTempoRestClient(
     @Qualifier("tempoRestClient") RestClient tempoRestClient
   ) {
     this.tempoRestClient = tempoRestClient;

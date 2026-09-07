@@ -6,9 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.otel.event.filter.stream.api.kafka;
 
-import static io.github.bbortt.snow.white.microservices.otel.event.filter.stream.config.OtelEventFilterStreamProperties.PREFIX;
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
@@ -24,13 +21,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.core.env.Environment;
 
 @ExtendWith({ MockitoExtension.class })
 class KafkaTopicManagerUnitTest {
-
-  @Mock
-  private Environment environmentMock;
 
   @Mock
   private OtelEventFilterStreamProperties otelEventFilterStreamPropertiesMock;
@@ -44,12 +37,13 @@ class KafkaTopicManagerUnitTest {
       KafkaTopicManager.class
     );
 
+    doReturn(true).when(otelEventFilterStreamPropertiesMock).isInitTopics();
+
     contextRunner
       .withBean(
         OtelEventFilterStreamProperties.class,
         () -> otelEventFilterStreamPropertiesMock
       )
-      .withPropertyValues(PREFIX + ".init-topics=true")
       .run(context ->
         assertThat(context)
           .asInstanceOf(type(AssertableApplicationContext.class))
@@ -66,14 +60,38 @@ class KafkaTopicManagerUnitTest {
     verify(otelEventFilterStreamPropertiesMock).getOutboundTopicName();
   }
 
+  @Test
+  void shouldNotBeEnabled_ifPropertyIsNotSet() {
+    var contextRunner = new ApplicationContextRunner()
+      .withUserConfiguration(KafkaTopicManager.class)
+      .withBean(
+        OtelEventFilterStreamProperties.class,
+        OtelEventFilterStreamProperties::new
+      );
+
+    contextRunner.run(context ->
+      assertThat(context)
+        .asInstanceOf(type(AssertableApplicationContext.class))
+        .satisfies(
+          c -> assertThat(c).hasSingleBean(KafkaTopicManager.class),
+          c ->
+            assertThat(c)
+              .getBean("inboundTopic")
+              .isNotInstanceOf(NewTopic.class),
+          c ->
+            assertThat(c)
+              .getBean("outboundTopic")
+              .isNotInstanceOf(NewTopic.class)
+        )
+    );
+  }
+
   @Nested
   class InboundTopicTest {
 
     @Test
     void shouldReturnBean() {
-      doReturn(TRUE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(true).when(otelEventFilterStreamPropertiesMock).isInitTopics();
 
       var testInboundTopic = "KafkaTopicManagerTest:inbound";
       doReturn(testInboundTopic)
@@ -87,9 +105,7 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnNullBean_whenNotEnabled() {
-      doReturn(FALSE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(false).when(otelEventFilterStreamPropertiesMock).isInitTopics();
 
       assertThat(fixture.inboundTopic()).isNull();
     }
@@ -100,9 +116,7 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnBean() {
-      doReturn(TRUE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(true).when(otelEventFilterStreamPropertiesMock).isInitTopics();
 
       var testOutboundTopic = "KafkaTopicManagerTest:outbound";
       doReturn(testOutboundTopic)
@@ -116,9 +130,7 @@ class KafkaTopicManagerUnitTest {
 
     @Test
     void shouldReturnNullBean_whenNotEnabled() {
-      doReturn(FALSE)
-        .when(environmentMock)
-        .getProperty(PREFIX + ".init-topics", Boolean.class, FALSE);
+      doReturn(false).when(otelEventFilterStreamPropertiesMock).isInitTopics();
 
       assertThat(fixture.outboundTopic()).isNull();
     }

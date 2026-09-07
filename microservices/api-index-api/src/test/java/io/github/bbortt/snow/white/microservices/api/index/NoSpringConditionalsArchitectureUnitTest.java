@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api;
+package io.github.bbortt.snow.white.microservices.api.index;
 
 import static com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 

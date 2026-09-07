@@ -11,7 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
-final class Properties {
+public final class Properties {
 
   static final String CALCULATION_ID = "calculationId";
 

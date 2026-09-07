@@ -42,8 +42,11 @@ class TempoTelemetryServiceImplUnitTest {
       .baseUrl(wireMockServer.baseUrl())
       .build();
 
+    var tempoQueryClient = new TempoQueryClient();
+    tempoQueryClient.setTempoRestClient(restClient);
+
     fixture = new TempoTelemetryServiceImpl(
-      new TempoQueryClient(restClient),
+      tempoQueryClient,
       new OpenApiCoverageStreamProperties()
     );
   }

@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.query.FluxTable;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -28,9 +29,10 @@ import org.springframework.stereotype.Component;
 )
 public class InfluxDBQueryClient {
 
-  private final InfluxDBClient influxDBClient;
+  private InfluxDBClient influxDBClient;
 
-  public InfluxDBQueryClient(InfluxDBClient influxDBClient) {
+  @Autowired
+  public void setInfluxDBClient(InfluxDBClient influxDBClient) {
     this.influxDBClient = influxDBClient;
   }
 

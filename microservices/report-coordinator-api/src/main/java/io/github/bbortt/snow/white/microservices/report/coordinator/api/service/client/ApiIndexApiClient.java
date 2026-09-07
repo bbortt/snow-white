@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -17,10 +17,14 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 @Component
-@RequiredArgsConstructor
 public class ApiIndexApiClient {
 
-  private final ApiIndexApi apiIndexApi;
+  private ApiIndexApi apiIndexApi;
+
+  @Autowired
+  public void setApiIndexApi(ApiIndexApi apiIndexApi) {
+    this.apiIndexApi = apiIndexApi;
+  }
 
   @Retryable(
     retryFor = {

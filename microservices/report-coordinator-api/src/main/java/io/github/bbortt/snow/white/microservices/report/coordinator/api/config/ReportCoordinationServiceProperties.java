@@ -23,7 +23,7 @@ public class ReportCoordinationServiceProperties {
 
   private String calculationRequestTopic;
 
-  private Boolean initTopics = false;
+  private boolean initTopics = false;
 
   private String publicApiGatewayUrl;
 

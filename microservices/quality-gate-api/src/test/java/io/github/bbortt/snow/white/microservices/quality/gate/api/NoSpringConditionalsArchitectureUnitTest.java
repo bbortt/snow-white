@@ -4,16 +4,11 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.report.coordinator.api;
-
-import static com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
+package io.github.bbortt.snow.white.microservices.quality.gate.api;
 
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import io.github.bbortt.snow.white.archunit.rules.AbstractNoSpringConditionalsArchitectureTest;
 
-@AnalyzeClasses(
-  packagesOf = Main.class,
-  importOptions = DoNotIncludeTests.class
-)
+@AnalyzeClasses(packagesOf = Main.class)
 class NoSpringConditionalsArchitectureUnitTest
   extends AbstractNoSpringConditionalsArchitectureTest {}
