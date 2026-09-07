@@ -135,6 +135,23 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 ```
 
+> `OTEL_EXPORTER_OTLP_ENDPOINT` must point at _some_ OTLP collector — Snow-White never sees a trace that isn't exported somewhere.
+> This is company-agnostic: if your organization already runs a central OTel Collector, fan a copy of that traffic to Snow-White's ingestion endpoint instead of re-pointing your whole pipeline.
+> If you don't have one yet, Snow-White ships its own — see [Deployment — Ingesting OTeL Data](/deployment/#ingesting-otel-data) for the exact in-cluster and external endpoints to target.
+> {: .notice--info}
+
+**5.
+(Optional) Enable HTTP header capture for the `full-feature` quality gate**
+
+Only needed if you plan to use the `full-feature` quality gate.
+Its [Content Type Coverage](/quality-gate-criteria/#content-type-coverage) criterion reads the request's `Content-Type` header off the span (`http.request.header.content-type`) — the OTEL Java agent does **not** capture HTTP headers by default, so without this the criterion will always report zero coverage.
+
+```shell
+OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS=content-type
+```
+
+See [OpenTelemetry — Capturing HTTP request and response headers](https://opentelemetry.io/docs/zero-code/java/agent/instrumentation/http/#capturing-http-request-and-response-headers) for the client-side and response-header equivalents.
+
 ### Option B: Manual OTEL Enrichment
 
 Attach these three attributes to your HTTP spans manually:
@@ -146,6 +163,8 @@ api.version   = <value of info.version in your spec>
 ```
 
 Refer to the [Snow-White semantic convention](https://github.com/bbortt/snow-white/blob/main/semantic-convention/openapi.md) for the full attribute specification.
+
+You are also responsible for exporting these spans to an OTLP collector (see the exporter note under Option A) and, if you plan to use the `full-feature` quality gate, for attaching `http.request.header.content-type` yourself — manual enrichment has no header-capture default to opt into.
 
 ## Step 3 — Publish Your Specification
 
@@ -235,7 +254,9 @@ See [Quality Gate Criteria](/quality-gate-criteria) for the full list of availab
 - [ ] `x-api-name` and `x-service-name` added to the spec `info` block
 - [ ] `OTEL_SERVICE_NAME` matches `x-service-name`
 - [ ] OTEL Java agent attached (or manual span enrichment in place)
+- [ ] Traces exported to an OTLP collector reachable by Snow-White
 - [ ] `spring-web-autoconfiguration` dependency added (Spring Boot only)
+- [ ] HTTP request header capture enabled for `content-type` (only if using the `full-feature` quality gate)
 - [ ] Specification published to the API index
 - [ ] CLI config file created and coverage calculation runs successfully
 
