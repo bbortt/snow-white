@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static java.time.Duration.ofSeconds;
+import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -15,7 +16,6 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractTempoOpenApiCoverageServiceIT;
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -33,7 +33,7 @@ class TempoTelemetryServiceImplIT
     var serviceName = "tempo-it-service";
     var apiName = "tempo-it-api";
     var apiVersion = "1.0.0";
-    var traceId = UUID.randomUUID().toString().replace("-", "");
+    var traceId = randomUUID().toString().replace("-", "");
     var spanId = traceId.substring(0, 16);
 
     var eventTime = Instant.now();
