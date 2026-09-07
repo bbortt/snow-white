@@ -36,6 +36,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -54,7 +55,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   private static final String SEARCH_PATH = "/api/search";
-  private static final String TRACE_BY_ID_PATH = "/api/traces/{traceId}";
+  private static final String TRACE_BY_ID_PATH = "/api/v2/traces/{traceId}";
   private static final int SEARCH_LIMIT = 1_000;
   private static final int TRACE_ID_HEX_LENGTH = 32;
 
@@ -218,19 +219,28 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     String traceId,
     Set<String> matchedSpanIds
   ) {
-    var traceResponse = tempoRestClient
-      .get()
-      .uri(TRACE_BY_ID_PATH, traceId)
-      .retrieve()
-      .body(JsonNode.class);
+    JsonNode traceResponse;
+    try {
+      traceResponse = tempoRestClient
+        .get()
+        .uri(TRACE_BY_ID_PATH, traceId)
+        .retrieve()
+        .body(JsonNode.class);
+    } catch (HttpClientErrorException.NotFound _) {
+      logger.warn("Trace {} not found", traceId);
+
+      return newKeySet();
+    }
 
     Set<OpenTelemetryData> result = newKeySet();
-    if (traceResponse == null || !traceResponse.has("batches")) {
+    // The v2 API wraps the OTLP trace under a "trace" field (alongside "metrics") - the v1 API returned the OTLP trace directly.
+    var trace = traceResponse == null ? null : traceResponse.get("trace");
+    if (trace == null || !trace.has("resourceSpans")) {
       return result;
     }
 
-    traceResponse.get("batches").forEach(batch -> {
-      var scopeSpans = batch.get("scopeSpans");
+    trace.get("resourceSpans").forEach(resourceSpan -> {
+      var scopeSpans = resourceSpan.get("scopeSpans");
       if (scopeSpans == null) {
         return;
       }
