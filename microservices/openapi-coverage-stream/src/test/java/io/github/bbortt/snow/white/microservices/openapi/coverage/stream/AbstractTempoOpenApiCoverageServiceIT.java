@@ -33,7 +33,7 @@ public abstract class AbstractTempoOpenApiCoverageServiceIT {
   protected static final int TEMPO_OTLP_HTTP_PORT = 4318;
 
   protected static final GenericContainer<?> TEMPO_CONTAINER =
-    new GenericContainer<>(DockerImageName.parse("grafana/tempo:2.6.1"))
+    new GenericContainer<>(DockerImageName.parse("grafana/tempo:2.10.8"))
       .withCopyFileToContainer(
         MountableFile.forClasspathResource("tempo/tempo.yaml"),
         "/etc/tempo.yaml"
