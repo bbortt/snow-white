@@ -38,6 +38,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -120,7 +121,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldProcessCoverageRequest()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -190,7 +191,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldReportBackCoverageRequestsWithInvalidFilterCriteria()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
       var calculationId = "f57a401d-c3b4-48eb-8592-08aa91d14bcf";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -269,7 +270,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       var cause = new OpenApiNotIndexedException(defaultApiInformation());
       assertThatEventIsBeingRespondedWithException(
         () -> cause,
-        "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException: OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }"
+        "OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }"
       );
     }
 
@@ -281,7 +282,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       );
       assertThatEventIsBeingRespondedWithException(
         () -> cause,
-        "io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException: Unparsable OpenAPI: Error message"
+        "Unparsable OpenAPI: Error message"
       );
     }
 
@@ -292,13 +293,57 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
       assertThatEventIsBeingRespondedWithException(
         () -> new IllegalArgumentException(cause),
-        "java.lang.IllegalArgumentException: Something nasty happened"
+        "Something nasty happened"
       );
+    }
+
+    @Test
+    void shouldRespondWithFriendlyMessage_whenTelemetryBackendUnavailable()
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      var calculationId = "3fb7c5b9-9c1e-4f7c-8f3f-15f5b6f4c1f0";
+      var requestEvent = qualityGateCalculationRequestEvent();
+
+      var openApiTestContext = mock(OpenApiTestContext.class);
+      doReturn(openApiTestContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(calculationId, requestEvent);
+
+      var telemetryBackendUnavailableException =
+        new TelemetryBackendUnavailableException(
+          "Grafana Tempo",
+          new IllegalStateException("502 Bad Gateway")
+        );
+      doThrow(telemetryBackendUnavailableException)
+        .when(openApiCoverageCalculationServiceMock)
+        .enrichWithOpenTelemetryData(eq(openApiTestContext), anyLong());
+
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readRecordsToList())
+          .hasSize(1)
+          .first()
+          .satisfies(
+            r -> assertThat(r.value()).isNotNull(),
+            r ->
+              assertThat(r.value().errorMessage()).isEqualTo(
+                telemetryBackendUnavailableException.getMessage()
+              )
+          )
+      );
+
+      verify(openApiCoverageCalculationServiceMock).fetchOpenApiSpecification(
+        calculationId,
+        requestEvent
+      );
+      verify(openApiCoverageCalculationServiceMock).enrichWithOpenTelemetryData(
+        eq(openApiTestContext),
+        anyLong()
+      );
+      verifyNoMoreInteractions(openApiCoverageCalculationServiceMock);
     }
 
     private void assertThatEventIsBeingRespondedWithException(
       Supplier<Exception> exceptionSupplier,
-      String expectedStacktrace
+      String expectedMessage
     ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
       var calculationId = "e872b8e9-bca6-406f-9a7e-728017171138";
       var requestEvent = qualityGateCalculationRequestEvent();
@@ -318,10 +363,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
               ),
             r -> assertThat(r.getKey()).isEqualTo(calculationId),
             r -> assertThat(r.value()).isNotNull(),
-            r ->
-              assertThat(r.value().errorMessage()).startsWith(
-                expectedStacktrace
-              )
+            r -> assertThat(r.value().errorMessage()).isEqualTo(expectedMessage)
           )
       );
 

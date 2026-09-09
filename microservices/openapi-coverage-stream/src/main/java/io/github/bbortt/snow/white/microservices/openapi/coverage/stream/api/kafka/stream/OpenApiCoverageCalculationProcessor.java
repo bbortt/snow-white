@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream;
 
-import static io.github.bbortt.snow.white.commons.logging.ExceptionConverter.extractStackTraceOrErrorMessage;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.stream.processor.TracingProcessor.newTracingProcessor;
 import static java.lang.String.format;
@@ -21,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kaf
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import lombok.RequiredArgsConstructor;
@@ -103,6 +103,19 @@ public class OpenApiCoverageCalculationProcessor {
         qualityGateCalculationRequestEventFixedKeyRecord,
         timestamp
       );
+    } catch (TelemetryBackendUnavailableException exception) {
+      logger.error(
+        "Telemetry backend unavailable while processing OpenAPI coverage for message: {}",
+        exception.getMessage(),
+        exception
+      );
+
+      return new OpenApiCoverageResponseEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord
+          .value()
+          .getApiInformation(),
+        exception.getMessage()
+      );
     } catch (Exception exception) {
       var rootCause = getRootCause(exception);
 
@@ -116,7 +129,9 @@ public class OpenApiCoverageCalculationProcessor {
         qualityGateCalculationRequestEventFixedKeyRecord
           .value()
           .getApiInformation(),
-        extractStackTraceOrErrorMessage(rootCause)
+        rootCause.getMessage() != null
+          ? rootCause.getMessage()
+          : rootCause.getClass().getSimpleName()
       );
     }
   }
@@ -127,7 +142,8 @@ public class OpenApiCoverageCalculationProcessor {
       QualityGateCalculationRequestEvent
     > qualityGateCalculationRequestEventFixedKeyRecord,
     Long timestamp
-  ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
+  )
+    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
     var openApiTestContext =
       openApiCoverageCalculationService.fetchOpenApiSpecification(
         qualityGateCalculationRequestEventFixedKeyRecord.key(),

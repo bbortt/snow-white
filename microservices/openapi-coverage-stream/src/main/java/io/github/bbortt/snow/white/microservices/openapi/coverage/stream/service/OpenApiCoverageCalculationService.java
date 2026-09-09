@@ -10,6 +10,7 @@ import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import org.jspecify.annotations.NonNull;
 
@@ -36,12 +37,14 @@ public interface OpenApiCoverageCalculationService {
    * @param openApiTestContext the test context.
    * @param timestamp the timestamp of the event.
    * @return the enriched test context.
+   * @throws TelemetryBackendUnavailableException if the backend could not be reached, or
+   *     responded with a server error, after all retries were exhausted.
    */
   @NonNull
   OpenApiTestContext enrichWithOpenTelemetryData(
     @NonNull OpenApiTestContext openApiTestContext,
     long timestamp
-  );
+  ) throws TelemetryBackendUnavailableException;
 
   /**
    * Calculates the coverage for the given test context.

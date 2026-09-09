@@ -22,6 +22,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.TempoQueryClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.tempo.TempoAttributeFilter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -39,6 +40,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -54,6 +57,12 @@ import tools.jackson.databind.json.JsonMapper;
 @NullMarked
 @Conditional(TempoConfiguredCondition.class)
 public class TempoTelemetryServiceImpl implements OpenTelemetryService {
+
+  /**
+   * Human-readable name of this backend, used in {@link TelemetryBackendUnavailableException}
+   * messages shown to end users.
+   */
+  private static final String BACKEND_NAME = "Grafana Tempo";
 
   private static final int TRACE_ID_HEX_LENGTH = 32;
 
@@ -85,7 +94,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     long lookbackFromTimestamp,
     String lookbackWindow,
     Set<AttributeFilter> attributeFilters
-  ) {
+  ) throws TelemetryBackendUnavailableException {
     var traceQLQuery = buildTraceQLQuery(apiInformation, attributeFilters);
     logger.trace("Firing TraceQL query: {}", traceQLQuery);
 
@@ -95,11 +104,16 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       .getEpochSecond();
     var endEpochSeconds = eventInstant.getEpochSecond();
 
-    var searchResponse = tempoRestClient.search(
-      traceQLQuery,
-      startEpochSeconds,
-      endEpochSeconds
-    );
+    JsonNode searchResponse;
+    try {
+      searchResponse = tempoRestClient.search(
+        traceQLQuery,
+        startEpochSeconds,
+        endEpochSeconds
+      );
+    } catch (HttpServerErrorException | ResourceAccessException e) {
+      throw new TelemetryBackendUnavailableException(BACKEND_NAME, e);
+    }
 
     return resolveMatchedSpans(searchResponse);
   }
@@ -177,19 +191,19 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   private Set<OpenTelemetryData> resolveMatchedSpans(
     @Nullable JsonNode searchResponse
-  ) {
+  ) throws TelemetryBackendUnavailableException {
     Set<OpenTelemetryData> result = newKeySet();
     if (isNull(searchResponse) || !searchResponse.has(TRACES_PROPERTY_NAME)) {
       return result;
     }
 
-    searchResponse.get(TRACES_PROPERTY_NAME).forEach(trace -> {
+    for (var trace : searchResponse.get(TRACES_PROPERTY_NAME)) {
       var traceId = normalizeTraceId(
         trace.get(TRACE_ID_PROPERTY_NAME).asString()
       );
       var spanSet = trace.get("spanSet");
       if (isNull(spanSet) || !spanSet.has(SPANS_PROPERTY_NAME)) {
-        return;
+        continue;
       }
 
       Set<String> matchedSpanIds = newKeySet();
@@ -200,7 +214,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
         );
 
       result.addAll(fetchFullSpans(traceId, matchedSpanIds));
-    });
+    }
 
     return result;
   }
@@ -208,7 +222,7 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   private Set<OpenTelemetryData> fetchFullSpans(
     String traceId,
     Set<String> matchedSpanIds
-  ) {
+  ) throws TelemetryBackendUnavailableException {
     JsonNode traceResponse;
     try {
       traceResponse = tempoRestClient.getTraceById(traceId);
@@ -216,6 +230,8 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       logger.warn("Trace {} not found", traceId);
 
       return newKeySet();
+    } catch (HttpServerErrorException | ResourceAccessException e) {
+      throw new TelemetryBackendUnavailableException(BACKEND_NAME, e);
     }
 
     Set<OpenTelemetryData> result = newKeySet();
