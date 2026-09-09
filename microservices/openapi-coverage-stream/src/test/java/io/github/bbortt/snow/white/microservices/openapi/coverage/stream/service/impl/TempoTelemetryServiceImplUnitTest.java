@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -14,18 +15,23 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOpera
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.http.Fault;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.TempoQueryClient;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 class TempoTelemetryServiceImplUnitTest {
@@ -74,7 +80,8 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withoutAttributeFilters_shouldBuildCorrectQuery() {
+    void withoutAttributeFilters_shouldBuildCorrectQuery()
+      throws TelemetryBackendUnavailableException {
       var result = fixture.findOpenTelemetryTracingData(
         API_INFORMATION,
         LOOKBACK_FROM,
@@ -102,7 +109,8 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAttributeFilters_shouldIncludeFiltersInQuery() {
+    void withAttributeFilters_shouldIncludeFiltersInQuery()
+      throws TelemetryBackendUnavailableException {
       var filter1 = new AttributeFilter(
         "service.version",
         STRING_EQUALS,
@@ -134,7 +142,8 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withoutApiVersion_shouldOmitVersionFilter() {
+    void withoutApiVersion_shouldOmitVersionFilter()
+      throws TelemetryBackendUnavailableException {
       var apiInformation = API_INFORMATION.withApiVersion(null);
 
       fixture.findOpenTelemetryTracingData(
@@ -151,7 +160,8 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withResults_shouldFetchFullSpanAttributesAndParseThem() {
+    void withResults_shouldFetchFullSpanAttributesAndParseThem()
+      throws TelemetryBackendUnavailableException {
       wireMockServer.resetAll();
 
       // hex spanID <-> base64 spanId pairs (Tempo returns hex in search
@@ -293,7 +303,8 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withLeadingZeroTraceId_shouldZeroPadToFullLength() {
+    void withLeadingZeroTraceId_shouldZeroPadToFullLength()
+      throws TelemetryBackendUnavailableException {
       wireMockServer.resetAll();
 
       // Tempo's search API strips leading zero nibbles from trace IDs
@@ -362,6 +373,57 @@ class TempoTelemetryServiceImplUnitTest {
       assertThat(result)
         .singleElement()
         .satisfies(data -> assertThat(data.traceId()).isEqualTo(fullTraceId));
+    }
+  }
+
+  @Nested
+  class FindOpenTelemetryTracingDataExceptionHandlingTest {
+
+    private static final ApiInformation API_INFORMATION =
+      defaultApiInformation();
+
+    // 2024-01-01T00:00:00Z
+    private static final long LOOKBACK_FROM = 1_704_067_200_000L;
+    private static final String LOOKBACK_WINDOW = "1h";
+
+    @Test
+    void shouldThrowTelemetryBackendUnavailableException_whenTempoRespondsWithServerError() {
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          aResponse().withStatus(502)
+        )
+      );
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          LOOKBACK_FROM,
+          LOOKBACK_WINDOW,
+          emptySet()
+        )
+      )
+        .isInstanceOf(TelemetryBackendUnavailableException.class)
+        .hasCauseInstanceOf(HttpServerErrorException.class);
+    }
+
+    @Test
+    void shouldThrowTelemetryBackendUnavailableException_whenTempoIsUnreachable() {
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)
+        )
+      );
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          LOOKBACK_FROM,
+          LOOKBACK_WINDOW,
+          emptySet()
+        )
+      )
+        .isInstanceOf(TelemetryBackendUnavailableException.class)
+        .hasCauseInstanceOf(ResourceAccessException.class);
     }
   }
 }

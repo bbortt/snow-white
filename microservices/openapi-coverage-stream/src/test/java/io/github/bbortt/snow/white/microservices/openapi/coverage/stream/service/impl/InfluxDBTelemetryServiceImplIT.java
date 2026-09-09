@@ -17,6 +17,7 @@ import com.influxdb.client.write.Point;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractOpenApiCoverageServiceIT;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import java.time.Instant;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,8 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
   private InfluxDBClient influxDBClient;
 
   @Test
-  void shouldFindRealTracingDataWrittenToInfluxDB() {
+  void shouldFindRealTracingDataWrittenToInfluxDB()
+    throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-service";
     var apiName = "influx-it-api";
     var apiVersion = "1.0.0";
@@ -76,7 +78,8 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
   }
 
   @Test
-  void shouldApplyAttributeFiltersAgainstRealInfluxDB() {
+  void shouldApplyAttributeFiltersAgainstRealInfluxDB()
+    throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-filter-service";
     var apiName = "influx-it-filter-api";
     var apiVersion = "1.0.0";

@@ -15,13 +15,16 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
+import com.influxdb.exceptions.InfluxException;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -29,6 +32,7 @@ import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
 import java.util.List;
 import java.util.Set;
@@ -106,7 +110,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     @ParameterizedTest
     void withoutAttributeFilters_shouldBuildCorrectQuery(
       Set<AttributeFilter> attributeFilters
-    ) {
+    ) throws TelemetryBackendUnavailableException {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
@@ -146,7 +150,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withApiVersion_shouldAppendFilterExpression() {
+    void withApiVersion_shouldAppendFilterExpression()
+      throws TelemetryBackendUnavailableException {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
@@ -191,7 +196,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAttributeFilters_shouldIncludeFiltersInQuery() {
+    void withAttributeFilters_shouldIncludeFiltersInQuery()
+      throws TelemetryBackendUnavailableException {
       var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
       var filter2 = new AttributeFilter(
         "http.status_code",
@@ -241,7 +247,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withResults_shouldParseOpenTelemetryData() {
+    void withResults_shouldParseOpenTelemetryData()
+      throws TelemetryBackendUnavailableException {
       // Prepare first record
       var spanId1 = "3f1a2c9e7d4b8a61";
       var traceId1 = "f2c79a8d4bce407aa65c1e7289f6febb";
@@ -298,6 +305,73 @@ class InfluxDBTelemetryServiceImplUnitTest {
             );
           }
         );
+    }
+  }
+
+  @Nested
+  class FindOpenTelemetryTracingDataExceptionHandlingTest {
+
+    private static final ApiInformation API_INFORMATION =
+      defaultApiInformation();
+
+    @Mock
+    private QueryApi queryApi;
+
+    @BeforeEach
+    void beforeEachSetup() {
+      doReturn(queryApi).when(influxDBClientMock).getQueryApi();
+    }
+
+    @Test
+    void shouldThrowTelemetryBackendUnavailableException_whenInfluxDbUnreachable() {
+      var influxException = mock(InfluxException.class);
+      doReturn(0).when(influxException).status();
+      doThrow(influxException).when(queryApi).query(anyString());
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          1234L,
+          "1h",
+          emptySet()
+        )
+      )
+        .isInstanceOf(TelemetryBackendUnavailableException.class)
+        .hasCause(influxException);
+    }
+
+    @Test
+    void shouldThrowTelemetryBackendUnavailableException_whenInfluxDbRespondsWithServerError() {
+      var influxException = mock(InfluxException.class);
+      doReturn(503).when(influxException).status();
+      doThrow(influxException).when(queryApi).query(anyString());
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          1234L,
+          "1h",
+          emptySet()
+        )
+      )
+        .isInstanceOf(TelemetryBackendUnavailableException.class)
+        .hasCause(influxException);
+    }
+
+    @Test
+    void shouldRethrowInfluxException_whenItIsAClientError() {
+      var influxException = mock(InfluxException.class);
+      doReturn(400).when(influxException).status();
+      doThrow(influxException).when(queryApi).query(anyString());
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          1234L,
+          "1h",
+          emptySet()
+        )
+      ).isSameAs(influxException);
     }
   }
 }

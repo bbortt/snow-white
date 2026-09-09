@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import com.influxdb.exceptions.InfluxException;
 import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
@@ -22,6 +23,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.influxdb.FluxAttributeFilter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -46,6 +48,12 @@ import org.springframework.stereotype.Service;
 )
 public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 
+  /**
+   * Human-readable name of this backend, used in {@link TelemetryBackendUnavailableException}
+   * messages shown to end users.
+   */
+  private static final String BACKEND_NAME = "InfluxDB";
+
   private final InfluxDBQueryClient influxDBQueryClient;
   private final InfluxDBProperties influxDBProperties;
 
@@ -58,7 +66,7 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
     long lookbackFromTimestamp,
     String lookbackWindow,
     Set<AttributeFilter> attributeFilters
-  ) {
+  ) throws TelemetryBackendUnavailableException {
     var fluxQuery = buildFluxQuery(
       apiInformation,
       lookbackFromTimestamp,
@@ -67,7 +75,17 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
     );
     logger.trace("Firing flux query: {}", fluxQuery);
 
-    var fluxTables = influxDBQueryClient.query(fluxQuery);
+    List<FluxTable> fluxTables;
+    try {
+      fluxTables = influxDBQueryClient.query(fluxQuery);
+    } catch (InfluxException e) {
+      if (e.status() == 0 || e.status() >= 500) {
+        throw new TelemetryBackendUnavailableException(BACKEND_NAME, e);
+      }
+
+      throw e;
+    }
+
     return parseFluxTableToOpenTelemetryData(fluxTables);
   }
 

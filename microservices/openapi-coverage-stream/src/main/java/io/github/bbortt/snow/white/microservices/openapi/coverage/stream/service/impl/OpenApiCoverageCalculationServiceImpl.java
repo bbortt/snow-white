@@ -16,6 +16,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Collections;
@@ -58,7 +59,7 @@ public class OpenApiCoverageCalculationServiceImpl
   public @NonNull OpenApiTestContext enrichWithOpenTelemetryData(
     @NonNull OpenApiTestContext openApiTestContext,
     long timestamp
-  ) {
+  ) throws TelemetryBackendUnavailableException {
     return openApiTestContext.withOpenTelemetryData(
       openTelemetryService.findOpenTelemetryTracingData(
         openApiTestContext.apiInformation(),

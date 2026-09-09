@@ -28,6 +28,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Set;
@@ -123,7 +124,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
   class EnrichWithOpenTelemetryDataTest {
 
     @Test
-    void shouldEnrichWithTelemetryData() {
+    void shouldEnrichWithTelemetryData()
+      throws TelemetryBackendUnavailableException {
       var apiInformation = defaultApiInformation();
       var context = new OpenApiTestContext(
         apiInformation,
@@ -145,6 +147,35 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
       var result = fixture.enrichWithOpenTelemetryData(context, 12345L);
 
       assertThat(result.openTelemetryData()).isEqualTo(telemetryData);
+    }
+
+    @Test
+    void shouldPropagateTelemetryBackendUnavailableException()
+      throws TelemetryBackendUnavailableException {
+      var apiInformation = defaultApiInformation();
+      var context = new OpenApiTestContext(
+        apiInformation,
+        mock(OpenAPI.class),
+        "1h",
+        Set.of()
+      );
+
+      var cause = new TelemetryBackendUnavailableException(
+        "Grafana Tempo",
+        new IllegalStateException("502 Bad Gateway")
+      );
+      doThrow(cause)
+        .when(openTelemetryServiceMock)
+        .findOpenTelemetryTracingData(
+          eq(apiInformation),
+          anyLong(),
+          eq("1h"),
+          any()
+        );
+
+      assertThatThrownBy(() ->
+        fixture.enrichWithOpenTelemetryData(context, 12345L)
+      ).isSameAs(cause);
     }
   }
 
