@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { exit } from 'node:process';
 
 import type { CliOptions } from './cli-options';
+import type { ResolvedConfig } from './resolve-config';
 import type { ApiInformation, CalculateOptions } from './sanitized-options';
 
 import { INVALID_CONFIG_FORMAT } from '../common/exit-codes';
@@ -37,9 +38,11 @@ const LOOKBACK_WINDOW_PATTERN = /^\d+[hdwm]$/i;
 
 const exitInvalidConfig = (): never => exit(INVALID_CONFIG_FORMAT);
 
-const warnOverride = (flag: string, fileValue: unknown, cliValue: unknown): void => {
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.warn(chalk.yellow(`⚠️ CLI parameter ${flag} overrides config file value: "${fileValue}" → "${cliValue}"`));
+const warnOverride = (flag: string, fileValue: unknown, cliValue: unknown, agentic: boolean): void => {
+  if (!agentic) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    console.warn(chalk.yellow(`⚠️CLI parameter ${flag} overrides config file value: "${fileValue}" → "${cliValue}"`));
+  }
 };
 
 const applyScalarOverride = <K extends keyof CalculateOptions>(
@@ -48,12 +51,13 @@ const applyScalarOverride = <K extends keyof CalculateOptions>(
   flag: string,
   cliValue: CalculateOptions[K] | undefined,
   fileValue: CalculateOptions[K] | undefined,
+  agentic: boolean,
 ): void => {
   if (cliValue === undefined) {
     return;
   }
   if (fileValue !== undefined && fileValue !== cliValue) {
-    warnOverride(flag, fileValue, cliValue);
+    warnOverride(flag, fileValue, cliValue, agentic);
   }
   result[key] = cliValue;
 };
@@ -61,24 +65,31 @@ const applyScalarOverride = <K extends keyof CalculateOptions>(
 const mergeWithCliOverrides = (fileConfig: Partial<CalculateOptions>, cliOptions: CliOptions): Partial<CalculateOptions> => {
   const result: Partial<CalculateOptions> = { ...fileConfig };
 
-  applyScalarOverride(result, 'url', '--url', cliOptions.url, fileConfig.url);
-  applyScalarOverride(result, 'qualityGate', '--quality-gate', cliOptions.qualityGate, fileConfig.qualityGate);
-  applyScalarOverride(result, 'lookbackWindow', '--lookback-window', cliOptions.lookbackWindow, fileConfig.lookbackWindow);
+  applyScalarOverride(result, 'url', '--url', cliOptions.url, fileConfig.url, cliOptions.agentic);
+  applyScalarOverride(result, 'qualityGate', '--quality-gate', cliOptions.qualityGate, fileConfig.qualityGate, cliOptions.agentic);
+  applyScalarOverride(
+    result,
+    'lookbackWindow',
+    '--lookback-window',
+    cliOptions.lookbackWindow,
+    fileConfig.lookbackWindow,
+    cliOptions.agentic,
+  );
 
   const cliFilters = parseFilterObjectFromString(cliOptions.filter);
   if (cliFilters !== undefined) {
     if (fileConfig.attributeFilters && Object.keys(fileConfig.attributeFilters).length > 0) {
-      console.warn(chalk.yellow('⚠️ CLI parameter --filter overrides config file attributeFilters'));
+      console.warn(chalk.yellow('⚠️CLI parameter --filter overrides config file attributeFilters'));
     }
     result.attributeFilters = cliFilters;
   }
 
-  // async and junitOutput are CLI-only - never read from config file
-  if (cliOptions.async !== undefined) {
-    result.async = cliOptions.async;
-  }
-  if (cliOptions.junitOutput !== undefined) {
-    result.junitOutput = cliOptions.junitOutput;
+  // these options are CLI-only - never read from config file
+  for (const key of ['async', 'agentic', 'junitOutput']) {
+    if (cliOptions[key] !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      result[key] = cliOptions[key];
+    }
   }
 
   return result;
@@ -94,10 +105,10 @@ const assertFileConfigIsValid = (options: CliOptions): void => {
   }
 };
 
-const loadFileConfig = (configFile?: string): CliOptions => {
-  const loaded = resolveConfig(configFile);
-  assertFileConfigIsValid(loaded);
-  return loaded;
+const loadFileConfig = (configFile?: string): ResolvedConfig => {
+  const resolvedConfig = resolveConfig(configFile);
+  assertFileConfigIsValid(resolvedConfig.config);
+  return resolvedConfig;
 };
 
 interface PathOptions {
@@ -118,7 +129,9 @@ const loadApiInformationFromGlob = (globPattern: string, fileOptions: CliOptions
     return [];
   }
 
-  console.debug(chalk.gray(`\t  Found ${files.length} file(s) matching pattern: ${globPattern}`));
+  if (!fileOptions.agentic) {
+    console.debug(chalk.gray(`\t  Found ${files.length} file(s) matching pattern: ${globPattern}`));
+  }
 
   const apiInformation: ApiInformation[] = [];
   let hasErrors = false;
@@ -137,7 +150,10 @@ const loadApiInformationFromGlob = (globPattern: string, fileOptions: CliOptions
 
       const { apiName, apiVersion, serviceName } = result.metadata;
       apiInformation.push({ apiName, apiVersion, serviceName });
-      console.log(chalk.gray(`\t  ✓ ${file}: ${serviceName}/${apiName}@${apiVersion}`));
+
+      if (!fileOptions.agentic) {
+        console.log(chalk.gray(`\t  ✓ ${file}: ${serviceName}/${apiName}@${apiVersion}`));
+      }
     } catch (error) {
       console.error(chalk.red(`❌ ${file}: Failed to parse file.`));
       console.error(chalk.red(`\t  Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
@@ -175,9 +191,10 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
     exitInvalidConfig();
   }
 
-  const { apiName, apiVersion, async, junitOutput, lookbackWindow, qualityGate, serviceName, url } = options;
+  const { agentic, apiName, apiVersion, async, junitOutput, lookbackWindow, qualityGate, serviceName, url } = options;
 
   return {
+    agentic,
     apiInformation: [{ apiName, apiVersion, serviceName }],
     async: async ?? false,
     attributeFilters: parseFilterObjectFromString(options.filter),
@@ -188,26 +205,44 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
   };
 };
 
-const resolveBaseConfig = (options: CliOptions): { base: CliOptions; fileApiSpecs?: string } => {
+export interface BaseConfig {
+  base: CliOptions;
+  fileApiSpecs?: string;
+}
+
+const resolveBaseConfig = (options: CliOptions): BaseConfig => {
+  let filepath: string | undefined;
+  let fullConfig: BaseConfig | undefined;
+
   // config file explicitly provided
   if (options.configFile) {
     const fileConfig = loadFileConfig(options.configFile);
-    return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: fileConfig.apiSpecs };
+    filepath = fileConfig.filepath;
+    fullConfig = { base: mergeWithCliOverrides(fileConfig.config, options), fileApiSpecs: fileConfig.config.apiSpecs };
   }
 
   // exact parameters provided inline
-  if (exactConfigurationGroup.some(opt => options[opt as keyof CliOptions])) {
-    return { base: buildExactConfig(options) };
+  if (!fullConfig && exactConfigurationGroup.some(opt => options[opt as keyof CliOptions])) {
+    fullConfig = { base: buildExactConfig(options) };
   }
 
   // apiSpecs-only on CLI, no config file
-  if (options.apiSpecs) {
-    return { base: mergeWithCliOverrides({}, options) };
+  if (!fullConfig && options.apiSpecs) {
+    fullConfig = { base: mergeWithCliOverrides({}, options) };
   }
 
   // fall back to default config file discovery
-  const fileConfig = loadFileConfig();
-  return { base: mergeWithCliOverrides(fileConfig, options), fileApiSpecs: fileConfig.apiSpecs };
+  if (!fullConfig) {
+    const fileConfig = loadFileConfig();
+    filepath = fileConfig.filepath;
+    fullConfig = { base: mergeWithCliOverrides(fileConfig.config, options), fileApiSpecs: fileConfig.config.apiSpecs };
+  }
+
+  if (!fullConfig.base.agentic && filepath) {
+    console.log(`⚙️  Loaded configuration file: ${filepath}`);
+  }
+
+  return fullConfig;
 };
 
 const applyApiSpecsOverlay = (
@@ -218,7 +253,7 @@ const applyApiSpecsOverlay = (
   const effectiveApiSpecs = options.apiSpecs ?? fileApiSpecs;
 
   if (options.apiSpecs && fileApiSpecs && fileApiSpecs !== options.apiSpecs) {
-    warnOverride('--api-specs', fileApiSpecs, options.apiSpecs);
+    warnOverride('--api-specs', fileApiSpecs, options.apiSpecs, base.agentic);
   }
 
   if (!effectiveApiSpecs) {
@@ -256,7 +291,11 @@ const invalidConfigurationCombinations = [
     errorMessage: '❌ Each API information must contain serviceName, apiName, and apiVersion.',
   },
   {
-    configIsInvalid: (config: CalculateOptions): boolean => (config.junitOutput && config.async) as boolean,
+    configIsInvalid: (config: CalculateOptions): boolean => (config.async ?? false) && config.agentic,
+    errorMessage: '❌ --agentic cannot be used with --async (no result to report).',
+  },
+  {
+    configIsInvalid: (config: CalculateOptions): boolean => (config.async && config.junitOutput) as boolean,
     errorMessage: '❌ --junit-output cannot be used with --async (no result to report).',
   },
 ];

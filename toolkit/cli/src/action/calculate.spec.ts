@@ -37,6 +37,7 @@ const qualityGateApiMock = {
 };
 
 const reportApiMock = {
+  configuration: { configuration: { basePath: 'http://localhost:8080' } },
   getReportByCalculationId: mock(),
   getReportByCalculationIdAsJUnit: mock(),
 };
@@ -244,7 +245,7 @@ describe('calculate action', () => {
 
       expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledTimes(2);
       expect(reportApiMock.getReportByCalculationId).toHaveBeenCalledWith({ calculationId: '123-456-789' });
-      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('⏳  Polling for calculation result...'));
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('⏳ Polling for calculation result...'));
       expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('✅ Quality-Gate passed!'));
       expect(exit).not.toHaveBeenCalled();
     });

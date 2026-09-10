@@ -15,7 +15,7 @@ import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_P
 import { resolveConfig } from './resolve-config';
 
 const warnOverride = (flag: string, fileValue: string, cliValue: string): void => {
-  console.warn(chalk.yellow(`⚠️ CLI parameter ${flag} overrides config file value: "${fileValue}" → "${cliValue}"`));
+  console.warn(chalk.yellow(`⚠️CLI parameter ${flag} overrides config file value: "${fileValue}" → "${cliValue}"`));
 };
 
 const resolveOption = (flag: string, cliValue?: string, fileValue?: string, defaultValue?: string): string | undefined => {
@@ -35,7 +35,7 @@ const requireOption = (value: string | undefined, message: string): string => {
 
 export const sanitizeUploadPrereleasesOptions = (options: CliOptions): UploadPrereleasesOptions => {
   const needsConfig = !!options.configFile || !options.url || !options.apiSpecs;
-  const fileConfig: Partial<CliOptions> = needsConfig ? resolveConfig(options.configFile) : {};
+  const fileConfig: Partial<CliOptions> = needsConfig ? resolveConfig(options.configFile).config : {};
 
   const url = requireOption(
     resolveOption('--url', options.url, fileConfig.url),

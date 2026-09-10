@@ -42,16 +42,13 @@ const createMockResolver = (explorer: ConfigExplorer): ConfigResolver => ({
 
 describe('resolveConfig', () => {
   let consoleErrorSpy: ReturnType<typeof spyOn>;
-  let consoleLogSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
     consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
-    consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
-    consoleLogSpy.mockRestore();
   });
 
   it('should create explorer with correct module name', () => {
@@ -65,7 +62,6 @@ describe('resolveConfig', () => {
     expect(createExplorerSpy).toHaveBeenCalledWith('test-module');
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
-    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   it('should use default module name when not provided', () => {
@@ -79,7 +75,6 @@ describe('resolveConfig', () => {
     expect(createExplorerSpy).toHaveBeenCalledWith('snow-white');
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
-    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   const expectConfigLoadedSuccessfully = (
@@ -94,7 +89,7 @@ describe('resolveConfig', () => {
     filepathToResolve?: string,
   ): void => {
     const result = resolveConfigInternal(filepathToResolve, mockResolver);
-    expect(result).toEqual(mockConfig.config);
+    expect(result).toEqual(mockConfig);
 
     if (!filepathToResolve) {
       expect(mockExplorer.search).toHaveBeenCalled();
@@ -103,7 +98,6 @@ describe('resolveConfig', () => {
     expect(existsSync).toHaveBeenCalledWith(filepath);
 
     expect(consoleErrorSpy).not.toHaveBeenCalled();
-    expect(consoleLogSpy).toHaveBeenCalledWith(`⚙️ Loading configuration file: ${filepath}`);
     expect(loadSpy).toHaveBeenCalledWith(filepath);
   };
 

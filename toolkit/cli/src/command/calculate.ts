@@ -41,6 +41,11 @@ export const calculate = (program: Command): void => {
       [],
     )
     .option('--async', 'Fire-and-forget: do not poll for the calculation result', false)
+    .option(
+      '--agentic',
+      'Replace human-readable output with a single-line JSON summary for coverage improvement by automated agents (cannot be combined with --async)',
+      false,
+    )
     .option('--junit-output <path>', 'Write the JUnit XML report to the given file path (cannot be combined with --async)')
     .action(async (options: CliOptions) => {
       const sanitizedOptions = sanitizeCalculateOptions(options);

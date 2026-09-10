@@ -13,6 +13,7 @@ export interface ApiInformation {
 export interface CalculateOptions {
   apiInformation: ApiInformation[];
   async?: boolean;
+  agentic: boolean;
   junitOutput?: string;
   attributeFilters?: Record<string, string>;
   lookbackWindow?: string;
