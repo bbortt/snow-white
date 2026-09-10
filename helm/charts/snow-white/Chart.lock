@@ -1,0 +1,15 @@
+dependencies:
+- name: influxdb2
+  repository: https://helm.influxdata.com/
+  version: 2.1.2
+- name: kafka-ui
+  repository: https://kafbat.github.io/helm-charts
+  version: 1.6.5
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.8.14
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 2.41.0
+digest: sha256:8077c82f9e7488fbc228d4cfb610841c928b2065acb2b8c4aa2e890af14aaa84
+generated: "2026-09-09T16:43:58.247207299Z"

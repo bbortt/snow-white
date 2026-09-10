@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) 2025 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+CREATE TABLE api_reference
+(
+    otel_service_name  VARCHAR(64)  NOT NULL,
+    api_name           VARCHAR(64)  NOT NULL,
+    api_version        VARCHAR(64)  NOT NULL,
+    source_url         VARCHAR(512) NOT NULL,
+    api_type           VARCHAR(16)  NOT NULL,
+    prerelease         BOOLEAN      NOT NULL DEFAULT FALSE,
+    prerelease_content TEXT,
+    indexed_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (otel_service_name, api_name, api_version),
+    CONSTRAINT chk_prerelease_content
+        CHECK (prerelease = TRUE OR prerelease_content IS NULL)
+);
+
+CREATE UNIQUE INDEX uq_api_reference_service_api_version
+    ON api_reference (otel_service_name, api_name, api_version);
+
+CREATE INDEX idx_api_reference_api_name
+    ON api_reference (api_name);
+
+CREATE INDEX idx_api_reference_api_version
+    ON api_reference (api_version);
+
+CREATE INDEX idx_api_reference_indexed_at
+    ON api_reference (indexed_at);

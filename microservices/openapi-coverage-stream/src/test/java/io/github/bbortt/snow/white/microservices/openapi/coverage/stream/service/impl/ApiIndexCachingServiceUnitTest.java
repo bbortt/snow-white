@@ -1,0 +1,131 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.ApiIndexApiClient;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+
+@ExtendWith({ MockitoExtension.class })
+class ApiIndexCachingServiceUnitTest {
+
+  private static final String SERVICE_NAME = "test-service";
+  private static final String API_NAME = "Test API";
+  private static final String API_VERSION = "1.0.0";
+
+  @Mock
+  private ApiIndexApiClient apiIndexApiClientMock;
+
+  @InjectMocks
+  private ApiIndexCachingService fixture;
+
+  @Nested
+  class FetchApiSourceUrlTest {
+
+    @Test
+    void shouldFetchAndReturnSourceUrl() throws OpenApiNotIndexedException {
+      var sourceUrl = "sourceUrl";
+      var dto = new GetAllApis200ResponseInner().sourceUrl(sourceUrl);
+
+      doReturn(ResponseEntity.ok(dto))
+        .when(apiIndexApiClientMock)
+        .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
+
+      var result = fixture.fetchApiSourceUrl(
+        ApiInformation.builder()
+          .serviceName(SERVICE_NAME)
+          .apiName(API_NAME)
+          .apiVersion(API_VERSION)
+          .apiType(OPENAPI)
+          .build()
+      );
+
+      assertThat(result).isEqualTo(sourceUrl);
+    }
+
+    static Stream<
+      ResponseEntity<GetAllApis200ResponseInner>
+    > shouldThrow_whenFetchFails() {
+      return Stream.of(
+        ResponseEntity.internalServerError().build(),
+        ResponseEntity.ok().build()
+      );
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldThrow_whenFetchFails(
+      ResponseEntity<GetAllApis200ResponseInner> responseEntity
+    ) {
+      doReturn(responseEntity)
+        .when(apiIndexApiClientMock)
+        .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
+
+      var apiInformation = ApiInformation.builder()
+        .serviceName(SERVICE_NAME)
+        .apiName(API_NAME)
+        .apiVersion(API_VERSION)
+        .apiType(OPENAPI)
+        .build();
+
+      assertThatThrownBy(() ->
+        fixture.fetchApiSourceUrl(apiInformation)
+      ).isInstanceOf(OpenApiNotIndexedException.class);
+    }
+
+    /**
+     * RestClient throws for non-2xx responses by default - api-index-api's 404 for an unindexed
+     * API never reaches {@code fetchApiSourceUrl} as a normal {@link ResponseEntity}, unlike the
+     * mocked cases above.
+     */
+    @Test
+    void shouldThrow_whenApiIndexRespondsNotFound() {
+      doThrow(
+        HttpClientErrorException.create(
+          NOT_FOUND,
+          "Not Found",
+          HttpHeaders.EMPTY,
+          new byte[0],
+          null
+        )
+      )
+        .when(apiIndexApiClientMock)
+        .getApiDetailsWithHttpInfo(SERVICE_NAME, API_NAME, API_VERSION);
+
+      var apiInformation = ApiInformation.builder()
+        .serviceName(SERVICE_NAME)
+        .apiName(API_NAME)
+        .apiVersion(API_VERSION)
+        .apiType(OPENAPI)
+        .build();
+
+      assertThatThrownBy(() ->
+        fixture.fetchApiSourceUrl(apiInformation)
+      ).isInstanceOf(OpenApiNotIndexedException.class);
+    }
+  }
+}

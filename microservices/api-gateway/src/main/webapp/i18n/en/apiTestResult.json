@@ -1,0 +1,20 @@
+{
+  "snowWhiteApp": {
+    "apiTestResult": {
+      "home": {
+        "title": "API Test Results",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No API Test Results found"
+      },
+      "detail": {
+        "title": "API Test Result"
+      },
+      "id": "API Criterion",
+      "coverage": "Coverage of included Criteria",
+      "isIncludedInQualityGate": "Included in Quality-Gate?",
+      "showOnlyIncluded": "Show only included",
+      "additionalInformation": "Details",
+      "qualityGate": "Quality-Gate"
+    }
+  }
+}

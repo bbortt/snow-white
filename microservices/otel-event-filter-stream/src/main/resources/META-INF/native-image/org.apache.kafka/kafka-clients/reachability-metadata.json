@@ -1,0 +1,13 @@
+{
+  "reflection": [
+    {
+      "type": "org.apache.kafka.common.security.oauthbearer.DefaultJwtValidator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    }
+  ]
+}

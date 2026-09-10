@@ -1,0 +1,21 @@
+{
+  "snowWhiteApp": {
+    "calculationRequestParameters": {
+      "home": {
+        "title": "Calculation Request Parameters",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Calculation Request Parameters found"
+      },
+      "detail": {
+        "title": "Calculation Request Parameters"
+      },
+      "id": "ID",
+      "serviceName": "Service Name",
+      "apiName": "Api Name",
+      "apiVersion": "Api Version",
+      "lookbackWindow": "Lookback Window",
+      "attributeFilters": "Attribute Filters",
+      "qualityGate": "Quality-Gate"
+    }
+  }
+}

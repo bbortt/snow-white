@@ -1,0 +1,35 @@
+{
+  "snowWhiteApp": {
+    "qualityGate": {
+      "home": {
+        "title": "Quality-Gate Results",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No Quality-Gates found"
+      },
+      "detail": {
+        "title": "Quality-Gate Result"
+      },
+      "id": "ID",
+      "calculationId": "Calculation Id",
+      "qualityGateConfigName": "Quality-Gate",
+      "status": "Status",
+      "createdAt": "Initiated At",
+      "testedAPIs": "Tested APIs",
+      "calculationRequest": "Calculation Request Parameters",
+      "shapes": {
+        "qualityGateResults": "Included Criteria Status",
+        "allResults": "All Criteria Status"
+      },
+      "action": {
+        "junitDownload": "Download JUnit Report"
+      },
+      "filter": {
+        "title": "Filters",
+        "clear": "Clear",
+        "serviceName": "Service Name",
+        "apiName": "API Name",
+        "apiVersion": "Version"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+management:
+  server:
+    port: 8090
+server:
+  compression:
+    enabled: true
+    mime-types:
+      - image/png
+      - image/jpeg
+      - image/svg+xml
+      - text/html
+      - text/css
+      - application/javascript
+      - application/json
+spring:
+  web:
+    resources:
+      add-mappings: true
+springdoc:
+  swagger-ui:
+    urls:
+      - name: api-index-api
+        display-name: API Index API
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/api-index-api'
+      - name: quality-gate-api
+        display-name: Quality-Gate API
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/quality-gate-api'
+      - name: report-coordinator-api
+        display-name: Report Coordinator API
+        url: '${snow.white.api.gateway.public-url}/v3/api-docs/report-coordinator-api'

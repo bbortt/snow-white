@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/search/aql",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer private-token"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalTo": "items.find({\"$or\":[{\"$and\":[{\"repo\":\"snow-white-generic-local\",\"path\":{\"$match\":\"*\"},\"name\":{\"$match\":\"*.yaml\"}}]}]}).include(\"name\",\"repo\",\"path\",\"actual_md5\",\"actual_sha1\",\"size\",\"type\",\"modified\",\"created\",\"property\")"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "results": []
+    }
+  }
+}

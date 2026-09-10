@@ -1,0 +1,75 @@
+@startuml
+
+!theme vibrant
+
+actor User
+participant "Application" as App
+participant "Pipeline" as Pipeline
+participant "Artifactory" as Artifactory
+participant "Snow-White" as SnowWhite
+database "Persistence\nStore" as DB
+
+== Update Application ==
+
+User -> App : Update application\nand API spec\n(API spec provider)
+
+== Pipeline Execution (QA) ==
+
+User -> Pipeline : Trigger pipeline
+activate Pipeline
+
+== Publish API Specification ==
+
+Pipeline -> SnowWhite : Publish API specification
+activate SnowWhite
+SnowWhite -> DB : Upsert API specifications
+activate DB
+DB --> SnowWhite : Confirmed
+deactivate DB
+SnowWhite --> Pipeline : Confirm publication
+deactivate SnowWhite
+
+Pipeline -> App : Deploy application
+activate App
+Pipeline -> App : Run quality assurance checks\n(black-box tests against deployed app)
+
+== Telemetry Export ==
+
+App --> SnowWhite : Export telemetry data
+activate SnowWhite
+
+Pipeline -> App : Teardown
+deactivate App
+
+== API Specification Filtering ==
+
+SnowWhite -> SnowWhite : Filter telemetry for\nAPI specification references
+SnowWhite -> DB : Lookup API specification\n(does it exist?)
+DB --> SnowWhite : Lookup result
+
+alt [API specification exists]
+
+    SnowWhite -> DB : Persist telemetry data\nfor matched API spec
+    DB --> SnowWhite : Persisted
+    SnowWhite --> Pipeline : Notify: API spec found & data persisted
+    deactivate SnowWhite
+
+    == Trigger Analysis ==
+
+    Pipeline -> SnowWhite : Trigger analysis for\nspecified (implemented)\nAPI specification
+    activate SnowWhite
+    note right of SnowWhite #90EED4 : Analysis runs against\nthe persisted telemetry\nfor the matched API spec
+    SnowWhite --> Pipeline : Analysis complete
+    deactivate SnowWhite
+
+else [API specification does NOT exist]
+
+    SnowWhite --> Pipeline : Notify: API spec not found, skip
+    deactivate Pipeline
+    note right of Pipeline #90EED4 : No analysis triggered;\nspec absent in Artifactory
+
+end
+
+User --> SnowWhite: Review Analysis Result
+
+@enduml

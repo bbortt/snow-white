@@ -1,0 +1,100 @@
+{{- if eq .Values.snowWhite.apiSyncJob.enabled true }}
+{{- $labels := include "snow-white.labels" (dict "name" "api-sync-job" "context" .) | nindent 0 }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "snow-white.name" (dict "name" "api-sync-job" "context" .) }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  schedule: '{{ .Values.snowWhite.apiSyncJob.schedule }}'
+  startingDeadlineSeconds: 60
+  failedJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.snowWhite.apiSyncJob.activeDeadlineSeconds }}
+      template:
+        metadata:
+          annotations:
+            {{- if .Values.snowWhite.podAnnotations }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 12 }}
+            {{- end }}
+          labels:
+            {{ $labels | nindent 12 }}
+        spec:
+          {{ include "snow-white.imagePullSecrets" . | nindent 10 }}
+          securityContext:
+            fsGroup: 101
+          containers:
+            - name: api-sync-job
+              image: '{{ .Values.snowWhite.image.registry }}/bbortt/snow-white/api-sync-job:{{ .Values.snowWhite.apiSyncJob.image.tag | default .Chart.AppVersion }}'
+              imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+              env:
+              {{- include "snow-white.commonPodEnvironmentVariables" . | nindent 16 }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_API-INDEX_BASE-URL'
+                  value: '{{ printf "http://%s.%s.svc.cluster.local.:80" (include "snow-white.name" (dict "name" "api-index-api" "context" .)) (include "common.names.namespace" .) }}'
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_BASE-URL'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.baseUrl }}'
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.repository }}'
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}'
+              {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_VERSION_JSON_PATH'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}'
+              {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
+              {{- end }}
+              {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
+              {{- range $additionalEnvs }}
+                - name: {{ .name }}
+                  {{- if .value }}
+                  value: {{ .value | quote }}
+                  {{- else if .valueFrom }}
+                  valueFrom:
+                    {{- toYaml .valueFrom | nindent 20 }}
+                  {{- end }}
+              {{- end }}
+              resources:
+                {{- toYaml .Values.snowWhite.apiSyncJob.resources | nindent 16 }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 10000
+                runAsGroup: 12345
+                seccompProfile:
+                  type: RuntimeDefault
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                {{- if ne .Values.jssecacerts.secretName "" }}
+                - name: truststore
+                  mountPath: /opt/java/lib/security
+                  readOnly: true
+                {{- end }}
+          restartPolicy: OnFailure
+          volumes:
+            - name: tmp
+              emptyDir:
+                medium: ""
+                sizeLimit: 256Mi
+            {{- if ne .Values.jssecacerts.secretName "" }}
+            - name: truststore
+              secret:
+                defaultMode: 420
+                items:
+                  {{- if (empty .Values.jssecacerts.key) }}
+                  {{ fail "\n\n⚠ ERROR: You must set 'jssecacerts.key' to the secret key containing the jssecacerts value!" }}
+                  {{- else }}
+                  - key: {{ .Values.jssecacerts.key }}
+                  {{- end }}
+                    path: jssecacerts
+                secretName: {{ .Values.jssecacerts.secretName }}
+            {{- end }}
+{{- end }}

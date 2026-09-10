@@ -1,0 +1,26 @@
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/traces
+  otlp:
+    metrics:
+      export:
+        url: ${otel.exporter.otlp.endpoint:http://localhost:4318}/v1/metrics
+  server:
+    port: 8090
+  tracing:
+    sampling:
+      probability: 1.0
+spring:
+  aot:
+    enabled: true
+    repositories:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  web:
+    error:
+      include-message: always
