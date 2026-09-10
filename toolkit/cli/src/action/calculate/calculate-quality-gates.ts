@@ -21,8 +21,10 @@ export const calculateQualityGates = async (
   reportApi: ReportApi,
   options: CalculateOptions,
 ): Promise<void> => {
-  console.log(chalk.blue(`🚀 Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
-  console.log(chalk.gray(`Base URL: ${options.url}`));
+  if (!options.agentic) {
+    console.log(chalk.blue(`🚀 Starting Quality-Gate calculation for ${options.apiInformation.length} API(s)...`));
+    console.log(chalk.gray(`Base URL: ${options.url}`));
+  }
 
   if (options.lookbackWindow) {
     console.log(chalk.gray(`Lookback window: ${options.lookbackWindow}`));
@@ -32,7 +34,9 @@ export const calculateQualityGates = async (
     console.log(chalk.gray(`Attribute filters: ${JSON.stringify(options.attributeFilters)}`));
   }
 
-  console.log('');
+  if (!options.agentic) {
+    console.log('');
+  }
 
   const calculationRequest: CalculateQualityGateRequest = {
     attributeFilters: options.attributeFilters,
@@ -45,11 +49,13 @@ export const calculateQualityGates = async (
     qualityGateConfigName: options.qualityGate,
   });
 
-  console.log(chalk.green('✅ Quality-Gate calculation initiated successfully!'));
-  console.log('');
+  if (!options.agentic) {
+    console.log(chalk.green('✅ Quality-Gate calculation initiated successfully!'));
+    console.log('');
+  }
 
   const location = apiResponse.raw.headers.get('location');
-  if (location) {
+  if (!options.agentic && location) {
     console.log(`Location: ${location}`);
     console.log('');
     console.log(chalk.yellow('💡 Use the returned URL to check the calculation report.'));
@@ -59,8 +65,11 @@ export const calculateQualityGates = async (
     const calculationResponse = await apiResponse.value();
     const calculationId = calculationResponse.calculationId;
 
-    console.log('');
-    const passed = await pollCalculationResult(reportApi, calculationId);
+    if (!options.agentic) {
+      console.log('');
+    }
+
+    const passed = await pollCalculationResult(reportApi, calculationId, options.agentic);
 
     if (options.junitOutput) {
       await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput);

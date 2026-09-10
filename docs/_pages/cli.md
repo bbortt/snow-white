@@ -101,22 +101,23 @@ snow-white calculate [options]
 
 **Options:**
 
-| Option                           | Description                                                                           |
-| -------------------------------- | ------------------------------------------------------------------------------------- |
-| `--config-file <path>`           | Path to a YAML or JSON config file (can contain all other options)                    |
-| `--url <baseUrl>`                | Base URL of the Snow-White instance (overrides config file)                           |
-| `--quality-gate <name>`          | Quality-Gate configuration name                                                       |
-| `--service-name <name>`          | Name of the service                                                                   |
-| `--api-name <name>`              | Name of the API                                                                       |
-| `--api-version <version>`        | API version                                                                           |
-| `--api-specs <pattern>`          | Glob pattern selecting which OpenAPI spec files to read identifiers from              |
-| `--api-name-path <jsonPath>`     | JSON path to the API name field in the spec (default: `info.title`)                   |
-| `--api-version-path <jsonPath>`  | JSON path to the API version field in the spec (default: `info.version`)              |
-| `--service-name-path <jsonPath>` | JSON path to the service name field in the spec (default: `info.x-service-name`)      |
-| `--lookback-window <window>`     | Time window for the calculation, e.g. `1h`, `24h`, `7d`                               |
-| `--filter <key=value>`           | Attribute filter for telemetry data (repeatable)                                      |
-| `--async`                        | Fire-and-forget: submit the calculation without polling for the result                |
-| `--junit-output <path>`          | Write the JUnit XML report to the given file path (cannot be combined with `--async`) |
+| Option                           | Description                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `--config-file <path>`           | Path to a YAML or JSON config file (can contain all other options)                                |
+| `--url <baseUrl>`                | Base URL of the Snow-White instance (overrides config file)                                       |
+| `--quality-gate <name>`          | Quality-Gate configuration name                                                                   |
+| `--service-name <name>`          | Name of the service                                                                               |
+| `--api-name <name>`              | Name of the API                                                                                   |
+| `--api-version <version>`        | API version                                                                                       |
+| `--api-specs <pattern>`          | Glob pattern selecting which OpenAPI spec files to read identifiers from                          |
+| `--api-name-path <jsonPath>`     | JSON path to the API name field in the spec (default: `info.title`)                               |
+| `--api-version-path <jsonPath>`  | JSON path to the API version field in the spec (default: `info.version`)                          |
+| `--service-name-path <jsonPath>` | JSON path to the service name field in the spec (default: `info.x-service-name`)                  |
+| `--lookback-window <window>`     | Time window for the calculation, e.g. `1h`, `24h`, `7d`                                           |
+| `--filter <key=value>`           | Attribute filter for telemetry data (repeatable)                                                  |
+| `--async`                        | Fire-and-forget: submit the calculation without polling for the result                            |
+| `--agentic`                      | Replace human-readable output with a single-line JSON summary (cannot be combined with `--async`) |
+| `--junit-output <path>`          | Write the JUnit XML report to the given file path (cannot be combined with `--async`)             |
 
 **Config file example (`snow-white.json`):**
 
@@ -157,7 +158,46 @@ snow-white calculate \
 snow-white calculate \
   --config-file snow-white.json \
   --junit-output report.xml
+
+# Agentic mode: emit a single-line JSON summary instead of human-readable logs
+snow-white calculate \
+  --config-file snow-white.json \
+  --agentic
 ```
+
+**Agentic mode (`--agentic`):**
+
+Instead of the usual progress logs, `--agentic` prints a single line of JSON to stdout once the calculation finishes, intended for consumption by coding agents or other automation rather than humans.
+It carries the same pass/fail result and exit codes as the default mode, plus a per-API breakdown of which quality-gate criteria failed — useful for an agent deciding what test coverage to add next:
+
+```json
+{
+  "schemaVersion": "1",
+  "status": "PASSED",
+  "calculationId": "...",
+  "qualityGateConfigName": "basic-coverage",
+  "apiLocation": "http://<snow-white-host>/quality-gate/<calculationId>",
+  "initiatedAt": "2026-01-01T00:00:00.000Z",
+  "summary": {
+    "apiCount": 1,
+    "failedApiCount": 0,
+    "qualityGateFailureCount": 0
+  },
+  "interfaces": [
+    {
+      "serviceName": "my-service",
+      "apiName": "my-api",
+      "apiVersion": "1.0.0",
+      "apiType": "REST",
+      "status": "PASSED",
+      "qualityGateFailures": [],
+      "testResults": []
+    }
+  ]
+}
+```
+
+`qualityGateFailures` on each interface lists only the criteria that are part of the quality gate and did not pass; `testResults` lists every evaluated criterion.
 
 **Exit codes:**
 

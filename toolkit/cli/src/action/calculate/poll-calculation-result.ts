@@ -12,29 +12,60 @@ import type { ListQualityGateReports200ResponseInner, ReportApi } from '../../cl
 
 import { ListQualityGateReports200ResponseInnerStatusEnum } from '../../clients/report-api';
 import { QUALITY_GATE_FAILED } from '../../common/exit-codes';
+import { AgenticQualityGateResponseTransformer } from './agent-quality-gate-response-transformer.ts';
 
 const POLL_INTERVAL_MS = 2000;
 
-export const pollCalculationResult = async (reportApi: ReportApi, calculationId: string): Promise<boolean> => {
-  console.log(chalk.blue('⏳  Polling for calculation result...'));
-  console.log('');
+export const pollCalculationResult = async (reportApi: ReportApi, calculationId: string, agentic: boolean): Promise<boolean> => {
+  // @ts-expect-error TS2341: Property configuration is private and only accessible within class Configuration
+  const baseApiPath = reportApi.configuration.configuration.basePath;
+  if (!baseApiPath) {
+    throw new Error('Invalid Snow-White base API path supplied!');
+  }
+
+  return pollCalculationResultWithTransformer(reportApi, calculationId, agentic, new AgenticQualityGateResponseTransformer(baseApiPath));
+};
+
+export const pollCalculationResultWithTransformer = async (
+  reportApi: ReportApi,
+  calculationId: string,
+  agentic: boolean,
+  transformer: AgenticQualityGateResponseTransformer,
+): Promise<boolean> => {
+  if (!agentic) {
+    console.log(chalk.blue('⏳ Polling for calculation result...'));
+    console.log('');
+  }
 
   let report: ListQualityGateReports200ResponseInner;
   do {
     await sleep(POLL_INTERVAL_MS);
     report = await reportApi.getReportByCalculationId({ calculationId });
-    console.debug(chalk.gray(`Status: ${report.status}`));
+
+    if (!agentic) {
+      console.debug(chalk.gray(`Status: ${report.status}`));
+    }
   } while (report.status === ListQualityGateReports200ResponseInnerStatusEnum.InProgress);
 
-  console.log('');
-
-  if (report.status === ListQualityGateReports200ResponseInnerStatusEnum.Passed) {
-    console.log(chalk.green('✅ Quality-Gate passed!'));
-    return true;
+  if (!agentic) {
+    console.log('');
   }
 
-  console.error(chalk.red(`❌ Quality-Gate calculation ${report.status}!`));
-  if (report.stackTrace) {
+  const passed = report.status === ListQualityGateReports200ResponseInnerStatusEnum.Passed;
+
+  if (!agentic) {
+    if (passed) {
+      console.log(chalk.green('✅ Quality-Gate passed!'));
+    } else {
+      console.error(chalk.red(`❌ Quality-Gate calculation ${report.status}!`));
+    }
+  }
+
+  if (agentic) {
+    console.info(JSON.stringify(transformer.transform(report)));
+    // @ts-expect-error TS2339: Property stackTrace does not exist on type ListQualityGateReports200ResponseInner
+  } else if (report.stackTrace) {
+    // @ts-expect-error TS2339: Property stackTrace does not exist on type ListQualityGateReports200ResponseInner
     console.error(chalk.gray(report.stackTrace));
   }
 
@@ -42,5 +73,5 @@ export const pollCalculationResult = async (reportApi: ReportApi, calculationId:
     exit(QUALITY_GATE_FAILED);
   }
 
-  return false;
+  return passed;
 };

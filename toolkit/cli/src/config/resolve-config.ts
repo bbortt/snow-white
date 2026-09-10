@@ -5,7 +5,6 @@
  */
 
 import type { CosmiconfigResult } from 'cosmiconfig';
-import type { Config } from 'cosmiconfig/dist/types';
 
 import chalk from 'chalk';
 import { cosmiconfigSync } from 'cosmiconfig';
@@ -32,7 +31,6 @@ export class CosmiconfigResolver implements ConfigResolver {
 }
 
 const resolveConfigFromFile = (filepath: string, explorer: ConfigExplorer): CosmiconfigResult => {
-  console.log(`⚙️ Loading configuration file: ${filepath}`);
   const config = explorer.load(filepath);
 
   if (config) {
@@ -50,7 +48,7 @@ export const resolveConfigInternal = (
   filepath?: string,
   resolver: ConfigResolver = new CosmiconfigResolver(),
   moduleName = 'snow-white',
-): Config => {
+): CosmiconfigResult => {
   const explorer = resolver.createExplorer(moduleName);
 
   if (!filepath) {
@@ -68,7 +66,7 @@ export const resolveConfigInternal = (
   try {
     const config = resolveConfigFromFile(filepath, explorer);
     if (config) {
-      return config.config;
+      return config;
     }
 
     console.error(chalk.red(`Configuration file '${filepath}' could not be loaded`));
@@ -79,4 +77,9 @@ export const resolveConfigInternal = (
   }
 };
 
-export const resolveConfig = (filepath?: string): CliOptions => resolveConfigInternal(filepath) as CliOptions;
+export interface ResolvedConfig {
+  filepath: string;
+  config: CliOptions;
+}
+
+export const resolveConfig = (filepath?: string): ResolvedConfig => resolveConfigInternal(filepath) as ResolvedConfig;

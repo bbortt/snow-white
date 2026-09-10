@@ -63,11 +63,13 @@ const sanitizedOptions: CalculateOptions = {
 };
 
 describe('sanitizeCalculateOptions', () => {
-  let consoleWarnSpy: ReturnType<typeof spyOn>;
   let consoleErrorSpy: ReturnType<typeof spyOn>;
+  let consoleLogSpy: ReturnType<typeof spyOn>;
+  let consoleWarnSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
     consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    consoleLogSpy = spyOn(console, 'log').mockImplementation(() => {});
     consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {});
 
     // @ts-expect-error TS2339: Property mockClear does not exist on type
@@ -138,11 +140,14 @@ describe('sanitizeCalculateOptions', () => {
 
   describe('file-based configuration', () => {
     it('resolves config from exact path if specified', () => {
-      (resolveConfig as any).mockReturnValueOnce(sanitizedOptions);
+      const configFile = 'configFile';
 
-      expect(sanitizeCalculateOptions({})).toEqual(sanitizedOptions);
+      (resolveConfig as any).mockReturnValueOnce({ config: sanitizedOptions, filepath: configFile });
 
-      expect(resolveConfig).toHaveBeenCalled();
+      expect(sanitizeCalculateOptions({ configFile })).toEqual(sanitizedOptions);
+
+      expect(resolveConfig).toHaveBeenCalledWith(configFile);
+      expect(consoleLogSpy).toHaveBeenCalledWith(`⚙️  Loaded configuration file: ${configFile}`);
     });
 
     const expectRecursiveOrEmptyConfiguration = () => {
@@ -152,8 +157,8 @@ describe('sanitizeCalculateOptions', () => {
       expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
     };
 
-    it('should exit with code 3 if file is empty', () => {
-      (resolveConfig as any).mockReturnValueOnce({});
+    it('should exit with code 3 if file is empty: %s', () => {
+      (resolveConfig as any).mockReturnValueOnce({ config: {} });
 
       expect(() => sanitizeCalculateOptions({})).toThrowError('Process exited with code 3');
 
@@ -165,7 +170,7 @@ describe('sanitizeCalculateOptions', () => {
     it('should exit with code 3 if file contains recursive configuration', () => {
       const configFile = 'configFile';
 
-      (resolveConfig as any).mockReturnValueOnce({ configFile });
+      (resolveConfig as any).mockReturnValueOnce({ config: { configFile } });
 
       expect(() => sanitizeCalculateOptions({ configFile })).toThrowError('Process exited with code 3');
 
@@ -175,7 +180,13 @@ describe('sanitizeCalculateOptions', () => {
     });
 
     it.each(incompleteApiInformation)('should exit with code 3 if any property is missing: %s', (options: Partial<CliOptions>) => {
-      (resolveConfig as any).mockReturnValueOnce({ apiInformation: [options], qualityGate: 'quality-gate', url: 'url' });
+      (resolveConfig as any).mockReturnValueOnce({
+        config: {
+          apiInformation: [options],
+          qualityGate: 'quality-gate',
+          url: 'url',
+        },
+      });
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
 
@@ -188,10 +199,12 @@ describe('sanitizeCalculateOptions', () => {
 
     it('should exit with code 3 if no URL is provided', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiName: 'test-api',
-        apiVersion: 'test-version',
-        qualityGate: 'quality-gate',
-        serviceName: 'test-service',
+        config: {
+          apiName: 'test-api',
+          apiVersion: 'test-version',
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+        },
       });
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
@@ -203,10 +216,12 @@ describe('sanitizeCalculateOptions', () => {
 
     it('should exit with code 3 if no Quality-Gate is provided', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiName: 'test-api',
-        apiVersion: 'test-version',
-        serviceName: 'test-service',
-        url: 'url',
+        config: {
+          apiName: 'test-api',
+          apiVersion: 'test-version',
+          serviceName: 'test-service',
+          url: 'url',
+        },
       });
 
       expect(() => sanitizeCalculateOptions({ configFile: 'configFile' })).toThrowError('Process exited with code 3');
@@ -218,45 +233,43 @@ describe('sanitizeCalculateOptions', () => {
   });
 
   describe('CLI parameter precedence over config file', () => {
-    it('should override URL from config file with CLI parameter', () => {
+    it('should override URL from config file withCLI parameter', () => {
       const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         url: 'http://config-file-url.com',
       };
-      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfig });
 
       const result = sanitizeCalculateOptions({ url: 'http://cli-url.com' });
 
       expect(result.url).toBe('http://cli-url.com');
-      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --url overrides config file value'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️CLI parameter --url overrides config file value'));
     });
 
-    it('should override qualityGate from config file with CLI parameter', () => {
+    it('should override qualityGate from config file withCLI parameter', () => {
       const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         qualityGate: 'file-gate',
       };
-      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfig });
 
       const result = sanitizeCalculateOptions({ qualityGate: 'cli-gate' });
 
       expect(result.qualityGate).toBe('cli-gate');
-      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️ CLI parameter --quality-gate overrides config file value'));
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️CLI parameter --quality-gate overrides config file value'));
     });
 
-    it('should override lookbackWindow from config file with CLI parameter', () => {
+    it('should override lookbackWindow from config file withCLI parameter', () => {
       const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         lookbackWindow: '1h',
       };
-      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfig });
 
       const result = sanitizeCalculateOptions({ lookbackWindow: '24h' });
 
       expect(result.lookbackWindow).toBe('24h');
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --lookback-window overrides config file value'),
-      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('⚠️CLI parameter --lookback-window overrides config file value'));
     });
 
     it('should override attributeFilters from config file with CLI filters', () => {
@@ -264,22 +277,22 @@ describe('sanitizeCalculateOptions', () => {
         ...sanitizedOptions,
         attributeFilters: { environment: 'production' },
       };
-      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfig });
 
       const result = sanitizeCalculateOptions({ filter: ['region=us-west-1'] });
 
       expect(result.attributeFilters).toEqual({ region: 'us-west-1' });
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --filter overrides config file attributeFilters'),
+        expect.stringContaining('⚠️CLI parameter --filter overrides config file attributeFilters'),
       );
     });
 
-    it('should not warn when CLI parameter matches config file value', () => {
+    it('should not warn whenCLI parameter matches config file value', () => {
       const fileConfig: CalculateOptions = {
         ...sanitizedOptions,
         url: 'http://same-url.com',
       };
-      (resolveConfig as any).mockReturnValueOnce(fileConfig);
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfig });
 
       const result = sanitizeCalculateOptions({ url: 'http://same-url.com' });
 
@@ -500,12 +513,14 @@ metadata:
       (readFileSync as any).mockReturnValue(customYaml);
 
       (resolveConfig as any).mockReturnValueOnce({
-        apiNamePath: 'metadata.name',
-        apiSpecs: '*.yaml',
-        apiVersionPath: 'metadata.release',
-        qualityGate: 'basic-coverage',
-        serviceNamePath: 'metadata.owner',
-        url: 'http://localhost:9000',
+        config: {
+          apiNamePath: 'metadata.name',
+          apiSpecs: '*.yaml',
+          apiVersionPath: 'metadata.release',
+          qualityGate: 'basic-coverage',
+          serviceNamePath: 'metadata.owner',
+          url: 'http://localhost:9000',
+        },
       });
 
       const result = sanitizeCalculateOptions({});
@@ -567,9 +582,11 @@ info:
 
     it('ignores --api-specs and warns when config file already has apiInformation', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiInformation: [{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }],
-        qualityGate: 'basic-coverage',
-        url: 'http://localhost:9000',
+        config: {
+          apiInformation: [{ apiName: 'existing-api', apiVersion: '1.0.0', serviceName: 'existing-service' }],
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        },
       });
 
       const result = sanitizeCalculateOptions({
@@ -585,7 +602,12 @@ info:
     });
 
     it('uses glob when config file is present but has no apiInformation', () => {
-      (resolveConfig as any).mockReturnValueOnce({ qualityGate: 'basic-coverage', url: 'http://localhost:9000' });
+      (resolveConfig as any).mockReturnValueOnce({
+        config: {
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        },
+      });
       (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
 
@@ -600,9 +622,11 @@ info:
 
     it('reads apiSpecs from config file when not provided via CLI', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiSpecs: 'services/**/openapi.yaml',
-        qualityGate: 'basic-coverage',
-        url: 'http://localhost:9000',
+        config: {
+          apiSpecs: 'services/**/openapi.yaml',
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        },
       });
       (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
@@ -614,9 +638,11 @@ info:
 
     it('warns when CLI --api-specs overrides config file apiSpecs', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiSpecs: 'old/**/openapi.yaml',
-        qualityGate: 'basic-coverage',
-        url: 'http://localhost:9000',
+        config: {
+          apiSpecs: 'old/**/openapi.yaml',
+          qualityGate: 'basic-coverage',
+          url: 'http://localhost:9000',
+        },
       });
       (scanGlob as any).mockReturnValue(['services/my-api/openapi.yaml']);
       (readFileSync as any).mockReturnValue(VALID_YAML);
@@ -628,7 +654,7 @@ info:
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          '⚠️ CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "services/**/openapi.yaml"',
+          '⚠️CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "services/**/openapi.yaml"',
         ),
       );
     });
@@ -651,6 +677,50 @@ info:
         ...sanitizedOptions,
         async,
       });
+    });
+
+    it('should apply --async from the CLI even when a config file is used and does not itself define it', () => {
+      const configFile = 'configFile';
+      const { async: _async, ...fileConfigWithoutAsync } = sanitizedOptions;
+
+      (resolveConfig as any).mockReturnValueOnce({ config: fileConfigWithoutAsync, filepath: configFile });
+
+      expect(sanitizeCalculateOptions({ async: true, configFile })).toEqual({
+        ...sanitizedOptions,
+        async: true,
+      });
+    });
+  });
+
+  describe('--agentic flag', () => {
+    it('should pass agentic through to sanitized options', () => {
+      expect(
+        sanitizeCalculateOptions({
+          agentic: true,
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toEqual({
+        ...sanitizedOptions,
+        agentic: true,
+      });
+    });
+
+    it('should reject --agentic combined with --async', () => {
+      expect(() =>
+        sanitizeCalculateOptions({
+          agentic: true,
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          async: true,
+          qualityGate: 'quality-gate',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
     });
   });
 

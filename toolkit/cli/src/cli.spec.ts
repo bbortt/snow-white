@@ -140,8 +140,9 @@ describe('CLI', () => {
     console.log(`Connecting to WireMock on port ${WIREMOCK_PORT}`);
   });
 
-  afterEach(() => {
-    return wiremock.clearAllExceptDefault();
+  afterEach(async () => {
+    await wiremock.clearAllMappings();
+    await wiremock.clearAllRequests();
   });
 
   [
@@ -353,7 +354,7 @@ describe('CLI', () => {
       await wiremock.register(
         { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
         {
-          body: { calculationId, qualityGateConfigName, status: 'PASSED' },
+          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'PASSED' },
           headers: { 'Content-Type': 'application/json' },
           status: 200,
         },
@@ -374,7 +375,7 @@ describe('CLI', () => {
       ]);
 
       expect(cliResult.exitCode, cliResult.stderr).toBe(0);
-      expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
+      expect(cliResult.stdout).toContain('⏳ Polling for calculation result...');
       expect(cliResult.stdout).toContain('✅ Quality-Gate passed!');
     });
 
@@ -386,7 +387,7 @@ describe('CLI', () => {
       await wiremock.register(
         { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
         {
-          body: { calculationId, qualityGateConfigName, status: 'FAILED' },
+          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'FAILED' },
           headers: { 'Content-Type': 'application/json' },
           status: 200,
         },
@@ -407,8 +408,48 @@ describe('CLI', () => {
       ]);
 
       expect(cliResult.exitCode, cliResult.stderr).toBe(QUALITY_GATE_FAILED);
-      expect(cliResult.stdout).toContain('⏳  Polling for calculation result...');
+      expect(cliResult.stdout).toContain('⏳ Polling for calculation result...');
       expect(cliResult.stderr).toContain('❌ Quality-Gate calculation FAILED!');
+    });
+
+    it('should poll and print agentic JSON output, then exit with code 0', async () => {
+      await wiremock.register(calculateWireMockRequest, makeCalculateMockResponse(), {
+        requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo },
+      });
+
+      await wiremock.register(
+        { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
+        {
+          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'PASSED' },
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      );
+
+      const cliResult = await executeCLICommand([
+        'calculate',
+        '--agentic',
+        '--quality-gate',
+        qualityGateConfigName,
+        '--service-name',
+        'user-service',
+        '--api-name',
+        'user-api',
+        '--api-version',
+        '1.0.0',
+        '--url',
+        WIREMOCK_URL,
+      ]);
+
+      expect(cliResult.exitCode, cliResult.stderr).toBe(0);
+
+      const agenticOutput = JSON.parse(cliResult.stdout);
+      expect(agenticOutput).toMatchObject({
+        calculationId,
+        initiatedAt: '2026-01-01T00:00:00.000Z',
+        qualityGateConfigName,
+        status: 'PASSED',
+      });
     });
   });
 

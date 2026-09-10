@@ -60,7 +60,7 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should read URL from config file when --url is not provided', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: BASE_URL }, filepath: 'config.json' });
 
       const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
 
@@ -69,7 +69,7 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should pass --config-file path to resolveConfig', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: BASE_URL }, filepath: 'config.json' });
 
       sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: '/path/to/config.json' });
 
@@ -77,7 +77,7 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should exit with code 3 when URL is absent from both CLI and config file', () => {
-      (resolveConfig as any).mockReturnValueOnce({});
+      (resolveConfig as any).mockReturnValueOnce({ config: {}, filepath: 'config.json' });
 
       expect(() => sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' })).toThrowError('Process exited with code 3');
 
@@ -88,7 +88,7 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should warn when CLI url overrides config file url', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: 'http://config-url.com' });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: 'http://config-url.com' }, filepath: 'config.json' });
 
       const result = sanitizeUploadPrereleasesOptions({
         apiSpecs: '*.yaml',
@@ -98,12 +98,12 @@ describe('sanitizeUploadPrereleasesOptions', () => {
 
       expect(result.url).toBe('http://cli-url.com');
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --url overrides config file value: "http://config-url.com" → "http://cli-url.com"'),
+        expect.stringContaining('⚠️CLI parameter --url overrides config file value: "http://config-url.com" → "http://cli-url.com"'),
       );
     });
 
     it('should not warn when CLI url matches config file url', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: BASE_URL }, filepath: 'config.json' });
 
       const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: 'config.json', url: BASE_URL });
 
@@ -114,7 +114,7 @@ describe('sanitizeUploadPrereleasesOptions', () => {
 
   describe('path parameter resolution', () => {
     it('should use hardcoded defaults when no CLI or config file values are provided', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: BASE_URL }, filepath: 'config.json' });
 
       const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
 
@@ -125,10 +125,13 @@ describe('sanitizeUploadPrereleasesOptions', () => {
 
     it('should read path params from config file as fallback', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiNamePath: 'custom.name',
-        apiVersionPath: 'custom.version',
-        serviceNamePath: 'custom.service',
-        url: BASE_URL,
+        config: {
+          apiNamePath: 'custom.name',
+          apiVersionPath: 'custom.version',
+          serviceNamePath: 'custom.service',
+          url: BASE_URL,
+        },
+        filepath: 'config.json',
       });
 
       const result = sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml' });
@@ -140,10 +143,13 @@ describe('sanitizeUploadPrereleasesOptions', () => {
 
     it('should use CLI path params over config file values', () => {
       (resolveConfig as any).mockReturnValueOnce({
-        apiNamePath: 'config.name',
-        apiVersionPath: 'config.version',
-        serviceNamePath: 'config.service',
-        url: BASE_URL,
+        config: {
+          apiNamePath: 'config.name',
+          apiVersionPath: 'config.version',
+          serviceNamePath: 'config.service',
+          url: BASE_URL,
+        },
+        filepath: 'config.json',
       });
 
       const result = sanitizeUploadPrereleasesOptions({
@@ -160,32 +166,32 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should warn when CLI api-name-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiNamePath: 'config.name', url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { apiNamePath: 'config.name', url: BASE_URL }, filepath: 'config.json' });
 
       sanitizeUploadPrereleasesOptions({ apiNamePath: 'cli.name', apiSpecs: '*.yaml', configFile: 'config.json' });
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --api-name-path overrides config file value: "config.name" → "cli.name"'),
+        expect.stringContaining('⚠️CLI parameter --api-name-path overrides config file value: "config.name" → "cli.name"'),
       );
     });
 
     it('should warn when CLI api-version-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiVersionPath: 'config.version', url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { apiVersionPath: 'config.version', url: BASE_URL }, filepath: 'config.json' });
 
       sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', apiVersionPath: 'cli.version', configFile: 'config.json' });
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --api-version-path overrides config file value: "config.version" → "cli.version"'),
+        expect.stringContaining('⚠️CLI parameter --api-version-path overrides config file value: "config.version" → "cli.version"'),
       );
     });
 
     it('should warn when CLI service-name-path overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ serviceNamePath: 'config.service', url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { serviceNamePath: 'config.service', url: BASE_URL }, filepath: 'config.json' });
 
       sanitizeUploadPrereleasesOptions({ apiSpecs: '*.yaml', configFile: 'config.json', serviceNamePath: 'cli.service' });
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --service-name-path overrides config file value: "config.service" → "cli.service"'),
+        expect.stringContaining('⚠️CLI parameter --service-name-path overrides config file value: "config.service" → "cli.service"'),
       );
     });
   });
@@ -199,7 +205,10 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should read apiSpecs from config file when not provided via CLI', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiSpecs: 'services/**/openapi.yaml', url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({
+        config: { apiSpecs: 'services/**/openapi.yaml', url: BASE_URL },
+        filepath: 'config.json',
+      });
 
       const result = sanitizeUploadPrereleasesOptions({});
 
@@ -207,18 +216,18 @@ describe('sanitizeUploadPrereleasesOptions', () => {
     });
 
     it('should warn when CLI --api-specs overrides config file value', () => {
-      (resolveConfig as any).mockReturnValueOnce({ apiSpecs: 'old/**/openapi.yaml', url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { apiSpecs: 'old/**/openapi.yaml', url: BASE_URL }, filepath: 'config.json' });
 
       const result = sanitizeUploadPrereleasesOptions({ apiSpecs: 'new/**/openapi.yaml', configFile: 'config.json' });
 
       expect(result.globPattern).toBe('new/**/openapi.yaml');
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️ CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "new/**/openapi.yaml"'),
+        expect.stringContaining('⚠️CLI parameter --api-specs overrides config file value: "old/**/openapi.yaml" → "new/**/openapi.yaml"'),
       );
     });
 
     it('should exit with code 3 when apiSpecs is absent from both CLI and config file', () => {
-      (resolveConfig as any).mockReturnValueOnce({ url: BASE_URL });
+      (resolveConfig as any).mockReturnValueOnce({ config: { url: BASE_URL }, filepath: 'config.json' });
 
       expect(() => sanitizeUploadPrereleasesOptions({})).toThrowError('Process exited with code 3');
 
