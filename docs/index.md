@@ -21,6 +21,12 @@ intro:
       *"Which API endpoints are our tests actually exercising?"*
       It correlates the OpenAPI specs you already have with the OpenTelemetry
       traces your applications already emit — no proprietary agents, no code changes.
+  - excerpt: >
+      **That question matters more than ever in the agentic era.** When an AI
+      coding agent writes both the implementation and the tests, a green test
+      suite no longer proves the two agree with your API contract — only with
+      each other. Snow-White checks real traffic against the real spec, an
+      independent, ground-truth guardrail no agent can talk its way around.
 
 feature_row:
   - image_path: /assets/images/screenshots/coverage-dashboard.png
@@ -70,6 +76,17 @@ feature_row2:
         ```
     url: '/onboarding/#step-2---instrument-your-application'
     btn_label: 'Instrument Your Service'
+    btn_class: 'btn--primary'
+  - image_path: /assets/images/screenshots/agentic-mode.png
+    alt: 'Agentic mode JSON summary'
+    title: 'Built for Agentic Development'
+    excerpt: >
+      `snow-white calculate --agentic` emits a single JSON summary naming
+      exactly which paths, parameters, and response codes are undercovered —
+      a concrete backlog a coding agent can act on directly. Pair it with the
+      Claude Code skill for fixes proposed automatically.
+    url: '/claude-skill/'
+    btn_label: 'See the Claude Code Skill'
     btn_class: 'btn--primary'
 ---
 

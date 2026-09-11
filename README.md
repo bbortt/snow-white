@@ -41,19 +41,39 @@ It currently provides insights into:
 - **Coverage** - which endpoints were exercised and which were not
 - **API Performance** - response time analysis across operations
 
+### A Guardrail for Agentic Development
+
+AI coding agents can now write both the implementation _and_ the tests that verify it - which
+means a green test suite no longer proves much: it may just prove the agent's tests agree with
+the agent's code, not that either matches the API contract you actually promised.
+Snow-White sits
+outside that loop.
+It checks real OpenTelemetry traces emitted by the running application against
+the OpenAPI spec on file, so coverage and quality-gate results stay an honest, ground-truth signal
+regardless of who - or what - wrote the code or the tests.
+
+That makes it a natural fit for agentic workflows specifically: run `snow-white calculate
+--agentic` and get back a single line of JSON naming exactly which paths, methods, response
+codes, and parameters are still undercovered - a concrete, machine-readable backlog an agent can
+work from without a human translating a report first.
+Snow-White also ships a
+[Claude Code skill](https://bbortt.github.io/snow-white/claude-skill/) that already knows how to
+turn that into prioritized test fixes.
+
 ## Documentation
 
 Full documentation is available at **[bbortt.github.io/snow-white](https://bbortt.github.io/snow-white)**.
 
-| Section                                                          | Description                                                 |
-| ---------------------------------------------------------------- | ----------------------------------------------------------- |
-| [Deployment](https://bbortt.github.io/snow-white/deployment)     | Install Snow-White with Helm and configure your environment |
-| [Onboarding](https://bbortt.github.io/snow-white/onboarding)     | Step-by-step guide to integrating your service              |
-| [Architecture](https://bbortt.github.io/snow-white/architecture) | Component overview and event-driven design                  |
-| [Workflows](https://bbortt.github.io/snow-white/workflows)       | CI/CD pipeline patterns and quality gate workflows          |
-| [CLI Reference](https://bbortt.github.io/snow-white/cli)         | Full CLI command reference                                  |
-| [Requirements](https://bbortt.github.io/snow-white/requirements) | System and dependency requirements                          |
-| [License](https://bbortt.github.io/snow-white/license)           | Licensing details and commercial use                        |
+| Section                                                               | Description                                                          |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [Deployment](https://bbortt.github.io/snow-white/deployment)          | Install Snow-White with Helm and configure your environment          |
+| [Onboarding](https://bbortt.github.io/snow-white/onboarding)          | Step-by-step guide to integrating your service                       |
+| [Architecture](https://bbortt.github.io/snow-white/architecture)      | Component overview and event-driven design                           |
+| [Workflows](https://bbortt.github.io/snow-white/workflows)            | CI/CD pipeline patterns and quality gate workflows                   |
+| [CLI Reference](https://bbortt.github.io/snow-white/cli)              | Full CLI command reference                                           |
+| [Claude Code Skill](https://bbortt.github.io/snow-white/claude-skill) | Turn failing quality gates into fixes from inside an agentic session |
+| [Requirements](https://bbortt.github.io/snow-white/requirements)      | System and dependency requirements                                   |
+| [License](https://bbortt.github.io/snow-white/license)                | Licensing details and commercial use                                 |
 
 ## Installation (for providers)
 

@@ -9,6 +9,21 @@ Snow-White ships a [Claude Code](https://claude.com/claude-code) skill that teac
 
 The skill lives in the repository at [`.claude/skills/snow-white/snow-white.skill`](https://github.com/bbortt/snow-white/blob/main/.claude/skills/snow-white/snow-white.skill).
 
+## Why this matters for agentic development
+
+When an AI coding agent writes both the implementation and the tests that exercise it, a green
+test suite stops being independent evidence — it can just as easily mean the agent's tests agree
+with the agent's code, not that either actually matches the API contract you specified.
+Snow-White
+sits outside that loop: it correlates real OpenTelemetry traces from the running application
+against the OpenAPI spec on file, so coverage results stay a ground-truth signal no agent can
+satisfy by construction.
+
+The [`--agentic` flag](/cli/#calculate) on `snow-white calculate` is the direct integration point:
+instead of human-readable progress logs, it prints one line of JSON with the pass/fail result and
+a per-criterion breakdown of what's still undercovered — built for a coding agent (or this skill)
+to parse and act on directly, without scraping a report format meant for people.
+
 ## What it does
 
 Once installed, Claude automatically applies the skill whenever it encounters a Snow-White JUnit XML report, a quality gate failure, or a request like "fix the failing coverage criteria." It:
