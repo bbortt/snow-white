@@ -47,6 +47,41 @@ jobs:
         run: pnpm run prettier:check
       - name: Check Markdown Formatting
         run: pnpm lint:markdown
+  skill:
+    name: Validate Agent Skill
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.13'
+      - name: Install APM CLI
+        run: pip install apm-cli==0.30.0
+      - name: Check Packaged Skill is in Sync
+        run: node .github/scripts/sync-skills.mjs --check
+      - name: Validate APM Manifest
+        run: apm pack --dry-run
+      # `apm audit --file` rejects a directory but still exits 0, so feed it real files.
+      - name: Scan Skill for Hidden Characters
+        run: find .apm/skills -type f -print0 | xargs -0 -I{} apm audit --file {}
+      # `apm pack` happily packages a SKILL.md with broken frontmatter; only the Agent
+      # Skills spec validator catches that. `--strict` promotes warnings to errors.
+      - name: Validate Agent Skill Specification
+        env:
+          DISABLE_AUTOUPDATER: '1'
+          DISABLE_ERROR_REPORTING: '1'
+          DISABLE_TELEMETRY: '1'
+        run: npx --yes @anthropic-ai/claude-code@2.1.268 plugin validate .apm/skills --strict
   kube-score:
     name: Score Helm Chart
     runs-on: ubuntu-latest
