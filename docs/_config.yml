@@ -8,7 +8,8 @@ subtitle: 'API Coverage & Observability'
 name: 'Timon Borter'
 description: >
   Connect OpenAPI specifications with OpenTelemetry traces to unlock
-  endpoint coverage insights, quality gates, and performance analysis.
+  endpoint coverage insights, quality gates, and performance analysis —
+  a ground-truth guardrail for agentic and AI-assisted development.
 url: 'https://bbortt.github.io'
 baseurl: '/snow-white'
 repository: 'bbortt/snow-white'
