@@ -18,6 +18,19 @@ concrete, correctly-prioritized fixes.
 - A CI log shows `snow-white calculate` exiting non-zero.
 - The user asks to fix failing coverage/quality-gate criteria, or asks why a Snow-White gate failed.
 
+## Invoking the CLI directly
+
+If this skill needs to run `snow-white calculate` itself (rather than just reading a report
+the user already has), always add `--agentic`.
+It replaces the human-readable progress logs
+with a single-line JSON summary once the calculation finishes — built specifically for
+consumption by coding agents — and carries the same pass/fail result, exit codes, and
+per-API/per-criterion breakdown as the JUnit report.
+See `docs/_pages/cli.md` for the full
+flag reference and JSON schema.
+
+Don't combine `--agentic` with `--async` or `--junit-output`; the CLI rejects the combination.
+
 ## Report structure
 
 Snow-White's JUnit XML follows this shape:
@@ -33,12 +46,21 @@ operation or endpoint.
 A `testcase` with a `<failure>` child means that criterion was not met.
 The `testsuite`'s `tests` attribute is the total number of criteria evaluated for that API.
 
+`--agentic`'s JSON output carries the same information in a different shape: each entry in
+`interfaces` is one API (equivalent to a `testsuite`), `qualityGateFailures` lists the failing
+criteria for it (equivalent to `testcase` elements with a `<failure>`), and `testResults` lists
+every evaluated criterion (equivalent to the full set of `testcase` elements).
+An
+`interfaces[].status` other than `"PASSED"` with an empty `testResults` is the JSON equivalent
+of a JUnit `testsuite` with `tests="0"` — see Step 2.
+
 ## Step 1 — Parse the report
 
-Read the XML and, for every `testsuite`, extract:
+Read the report and, for every API (`testsuite` in XML, or entry in `interfaces` for
+`--agentic` JSON), extract:
 
-- The API identity (service name / api name / api version — usually encoded in the suite name).
-- Every failing `testcase`: its criterion name, the specific path/method/param/response-code it concerns, and the failure message.
+- The API identity (service name / api name / api version).
+- Every failing criterion: its name, the specific path/method/param/response-code it concerns, and the failure message.
 
 ## Step 2 — Handle correlation failures first
 
@@ -96,6 +118,9 @@ When proposing fixes:
   `WebTestClient` against a running context, or equivalent for the project's stack) — never
   mock the controller/handler layer itself.
 - Match the existing test style/framework already used in the project rather than introducing a new one.
+- If the project has no black-box test suite at all yet, consider [Citrus](https://citrusframework.org)
+  — a good fit for driving real HTTP (and messaging) calls against the running application.
+  Snow-White itself uses it for its own `apptest` suites (see the `apptest` skill).
 - For missing response-code coverage, target the specific documented code that's uncovered
   (e.g. a 404 or 400 case), not just another happy-path call.
 - For missing parameter coverage, exercise the specific parameter (and, for optional params,
