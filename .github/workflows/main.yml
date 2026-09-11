@@ -18,9 +18,12 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      # Manifest mode (config-file + manifest-file) replaces the inline `release-type`,
+      # so `extra-files` can keep apm.yml's version in step with the Maven reactor.
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
         with:
-          release-type: maven
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
   zizmor:
     runs-on: ubuntu-latest

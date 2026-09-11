@@ -1,0 +1,37 @@
+lockfile_version: '1'
+dependencies: []
+deployments:
+  - kind: project-relative
+    target: claude
+    value: .claude/skills/snow-white
+    runtime: null
+    scope: project
+    owners:
+      - .
+    active_owner: .
+    content_hash: null
+  - kind: project-relative
+    target: claude
+    value: .claude/skills/snow-white/SKILL.md
+    runtime: null
+    scope: project
+    owners:
+      - .
+    active_owner: .
+    content_hash: sha256:d5e2d1f69baf9dc1454bbedd706f219158fc4384f8cb0a55b76546419cec8ae6
+  - kind: project-relative
+    target: claude
+    value: .claude/skills/snow-white/references/criteria-hierarchy.md
+    runtime: null
+    scope: project
+    owners:
+      - .
+    active_owner: .
+    content_hash: sha256:879cc1cdb2d05411bd83636935bbceff15aedb572dc00a7a5e02969b233b2048
+local_deployed_files:
+  - .claude/skills/snow-white
+  - .claude/skills/snow-white/SKILL.md
+  - .claude/skills/snow-white/references/criteria-hierarchy.md
+local_deployed_file_hashes:
+  .claude/skills/snow-white/SKILL.md: sha256:d5e2d1f69baf9dc1454bbedd706f219158fc4384f8cb0a55b76546419cec8ae6
+  .claude/skills/snow-white/references/criteria-hierarchy.md: sha256:879cc1cdb2d05411bd83636935bbceff15aedb572dc00a7a5e02969b233b2048

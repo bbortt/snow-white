@@ -11,7 +11,7 @@ This file is for Claude Code sessions working in this repo.
 
 ## Skills
 
-Four project-specific skills live in `.claude/skills/` in addition to the built-in ones.
+Five project-specific skills live in `.claude/skills/` in addition to the built-in ones.
 Prefer
 invoking these over improvising when the task matches:
 
@@ -25,6 +25,10 @@ invoking these over improvising when the task matches:
 
 If a request looks like "add a new capability" rather than "fix/refactor/clean up", start with
 `requirements`, not code.
+
+`snow-white` is also published to consumers as an APM package, so its source of truth is
+`.apm/skills/snow-white/` — `.claude/skills/snow-white/` is a generated copy.
+Edit the `.apm/` copy, then run `pnpm run skill:sync`; CI fails if the two drift apart.
 
 ## Module map
 

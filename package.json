@@ -29,7 +29,9 @@
     "prepare": "husky",
     "prettier": "prettier \"{,**/}*.{cjs,java,js,json,md,mjs,ts,xml,yaml,yml}\"",
     "prettier:check": "npm run prettier -- --list-different",
-    "prettier:format": "npm run prettier -- --write"
+    "prettier:format": "npm run prettier -- --write",
+    "skill:check": "node .github/scripts/sync-skills.mjs --check",
+    "skill:sync": "node .github/scripts/sync-skills.mjs"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "21.2.2",

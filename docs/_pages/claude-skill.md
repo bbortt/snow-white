@@ -7,7 +7,7 @@ toc_sticky: true
 
 Snow-White ships a [Claude Code](https://claude.com/claude-code) skill that teaches Claude how to read a Snow-White JUnit XML report and turn failing criteria into concrete test improvements — without you having to explain the report format every time.
 
-The skill lives in the repository at [`.claude/skills/snow-white/snow-white.skill`](https://github.com/bbortt/snow-white/blob/main/.claude/skills/snow-white/snow-white.skill).
+The skill lives in the repository at [`.apm/skills/snow-white/`](https://github.com/bbortt/snow-white/tree/main/.apm/skills/snow-white) and is published as an [APM](https://microsoft.github.io/apm) (Agent Package Manager) package, so you can install and update it like any other dependency.
 
 ## Why this matters for agentic development
 
@@ -34,14 +34,43 @@ Once installed, Claude automatically applies the skill whenever it encounters a 
 4. Proposes integration tests — real HTTP calls with the OTEL agent attached, since Snow-White correlates traces, not mocks — matching your existing test style.
 5. Summarizes what was fixed, what criteria that resolves, and what's left.
 
+The package bundles `references/criteria-hierarchy.md` alongside the skill, so Claude can look up the full criteria hierarchy offline rather than fetching this site.
+
 ## Installation
 
-Copy the skill into your own project's Claude Code skills directory:
+### With APM (recommended)
+
+[Install the APM CLI](https://microsoft.github.io/apm/getting-started/installation/), then add the skill to your project's `apm.yml`:
+
+```yaml
+dependencies:
+  apm:
+    - bbortt/snow-white/.apm/skills/snow-white#v1.10.0
+```
 
 ```shell
-mkdir -p .claude/skills/snow-white
-curl -Lo .claude/skills/snow-white/snow-white.skill \
-  https://raw.githubusercontent.com/bbortt/snow-white/main/.claude/skills/snow-white/snow-white.skill
+apm install
+```
+
+Pin a tag from the [releases page](https://github.com/bbortt/snow-white/releases) rather than tracking `main`.
+APM packaging ships from the first release containing `apm.yml`; the example above is illustrative.
+
+The `/.apm/skills/snow-white` path segment matters.
+Without it APM resolves the whole Snow-White monorepo (~18 MB) into `apm_modules/` to deploy two files; with it, only the skill directory is fetched.
+
+APM deploys the skill to the directory your harness expects — `.claude/skills/snow-white/` for Claude Code, and `.agents/skills/snow-white/` for the harnesses that share that location.
+Run `apm update` to pick up a newer release.
+
+### Manual copy
+
+If you would rather not add APM, copy the two files directly:
+
+```shell
+mkdir -p .claude/skills/snow-white/references
+curl -Lo .claude/skills/snow-white/SKILL.md \
+  https://raw.githubusercontent.com/bbortt/snow-white/main/.apm/skills/snow-white/SKILL.md
+curl -Lo .claude/skills/snow-white/references/criteria-hierarchy.md \
+  https://raw.githubusercontent.com/bbortt/snow-white/main/.apm/skills/snow-white/references/criteria-hierarchy.md
 ```
 
 Claude Code picks up skills automatically from `.claude/skills/` — no further configuration needed.
