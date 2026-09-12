@@ -2,26 +2,23 @@
 
 ## [1.10.0](https://github.com/bbortt/snow-white/compare/v1.9.0...v1.10.0) (2026-09-12)
 
-
 ### Features
 
-* **#2012:** add agentic mode flag to cli ([72bbf94](https://github.com/bbortt/snow-white/commit/72bbf947ae618b8bf88e950b6f4805259a16c5e7))
-* **skill:** publish snow-white skill as an APM package ([58b0104](https://github.com/bbortt/snow-white/commit/58b01040c78da2ae00f4ad01cb7963b294294f51))
-
+- **#2012:** add agentic mode flag to cli ([72bbf94](https://github.com/bbortt/snow-white/commit/72bbf947ae618b8bf88e950b6f4805259a16c5e7))
+- **skill:** publish snow-white skill as an APM package ([58b0104](https://github.com/bbortt/snow-white/commit/58b01040c78da2ae00f4ad01cb7963b294294f51))
 
 ### Bug Fixes
 
-* **openapi-coverage-stream:** make both influxdb and grafana tempo requests more resilient ([a0769f3](https://github.com/bbortt/snow-white/commit/a0769f3e118a8e6ffb5dd17ce4a6723d3e2b4885))
-* **openapi-coverage-stream:** migrate to grafana tempo traces v2 api ([fcb7818](https://github.com/bbortt/snow-white/commit/fcb7818a9cb78f260c962ddc465b28a2cbaf2807))
-* **report-coordinator-api:** inconsistent entity validation ([decb109](https://github.com/bbortt/snow-white/commit/decb1093992549a4757ce5e2d5f33863c60de820))
-
+- **openapi-coverage-stream:** make both influxdb and grafana tempo requests more resilient ([a0769f3](https://github.com/bbortt/snow-white/commit/a0769f3e118a8e6ffb5dd17ce4a6723d3e2b4885))
+- **openapi-coverage-stream:** migrate to grafana tempo traces v2 api ([fcb7818](https://github.com/bbortt/snow-white/commit/fcb7818a9cb78f260c962ddc465b28a2cbaf2807))
+- **report-coordinator-api:** inconsistent entity validation ([decb109](https://github.com/bbortt/snow-white/commit/decb1093992549a4757ce5e2d5f33863c60de820))
 
 ### Documentation
 
-* **#2012:** denote agentic mode in the snow-white skill ([b890b4a](https://github.com/bbortt/snow-white/commit/b890b4adde676ee10a5a4d3f4cfb16b4b25c59de))
-* **#2012:** make agentic mode more prominent across repository ([61b1b74](https://github.com/bbortt/snow-white/commit/61b1b7484cb0fcb7d20ab467b47fd70ef668d1f1))
-* add blog post and mention new agentic cli mode ([cd15b25](https://github.com/bbortt/snow-white/commit/cd15b255f5d51f41f895e99a636807e0dfebc280))
-* add note that additional http header capturing configuration might be required ([dc0f0e4](https://github.com/bbortt/snow-white/commit/dc0f0e4ca3cc03b40e89306eb61e8b5cfea686c8))
+- **#2012:** denote agentic mode in the snow-white skill ([b890b4a](https://github.com/bbortt/snow-white/commit/b890b4adde676ee10a5a4d3f4cfb16b4b25c59de))
+- **#2012:** make agentic mode more prominent across repository ([61b1b74](https://github.com/bbortt/snow-white/commit/61b1b7484cb0fcb7d20ab467b47fd70ef668d1f1))
+- add blog post and mention new agentic cli mode ([cd15b25](https://github.com/bbortt/snow-white/commit/cd15b255f5d51f41f895e99a636807e0dfebc280))
+- add note that additional http header capturing configuration might be required ([dc0f0e4](https://github.com/bbortt/snow-white/commit/dc0f0e4ca3cc03b40e89306eb61e8b5cfea686c8))
 
 ## [1.9.0](https://github.com/bbortt/snow-white/compare/v1.8.0...v1.9.0) (2026-09-05)
 
