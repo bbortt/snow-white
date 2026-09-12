@@ -51,6 +51,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.Serializer;
 import org.citrusframework.TestActionRunner;
 import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
@@ -104,6 +105,13 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   private static final Duration RESPONSE_LOOKBACK_WINDOW = Duration.ofSeconds(
     30L
   );
+
+  // JacksonJsonSerializer<T>.class erases to a raw Class<JacksonJsonSerializer>, which the
+  // compiler no longer accepts as a Class<? extends Serializer<?>> since citrus 5.0.1.
+  @SuppressWarnings("unchecked")
+  private static final Class<? extends Serializer<?>> VALUE_SERIALIZER = (Class<
+    ? extends Serializer<?>
+  >) (Class<?>) JacksonJsonSerializer.class;
 
   @BindToRegistry
   private final KafkaEndpoint calculationRequestEndpoint =
@@ -161,7 +169,7 @@ abstract class AbstractOpenApiCoverageStreamAppTest {
   void beforeEachSetup() {
     calculationRequestEndpoint
       .getEndpointConfiguration()
-      .setValueSerializer(JacksonJsonSerializer.class);
+      .setValueSerializer(VALUE_SERIALIZER);
 
     openApiCoverageResponseEndpoint
       .getEndpointConfiguration()
