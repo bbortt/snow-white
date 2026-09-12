@@ -5,6 +5,8 @@ main:
     url: /onboarding/
   - title: 'Architecture'
     url: /architecture/
+  - title: 'News'
+    url: /news/
   - title: 'GitHub ↗'
     url: https://github.com/bbortt/snow-white
 
@@ -35,3 +37,9 @@ docs:
         url: /requirements/
       - title: 'License'
         url: /license/
+  - title: 'News'
+    children:
+      - title: 'Blog'
+        url: /news/
+      - title: 'RSS Feed'
+        url: /feed.xml

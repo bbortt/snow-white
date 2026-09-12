@@ -64,6 +64,17 @@ defaults:
       author_profile: false
       sidebar:
         nav: 'docs'
+  - scope:
+      path: '_posts'
+      type: posts
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      share: true
+      related: true
+      sidebar:
+        nav: 'docs'
 
 kramdown:
   syntax_highlighter_opts:

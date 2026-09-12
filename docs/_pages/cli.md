@@ -176,7 +176,7 @@ It carries the same pass/fail result and exit codes as the default mode, plus a 
   "status": "PASSED",
   "calculationId": "...",
   "qualityGateConfigName": "basic-coverage",
-  "apiLocation": "http://<snow-white-host>/quality-gate/<calculationId>",
+  "apiLocation": "http://<snow-white-host>/api/rest/v1/reports/<calculationId>",
   "initiatedAt": "2026-01-01T00:00:00.000Z",
   "summary": {
     "apiCount": 1,
