@@ -13,7 +13,7 @@
 # `.claude/skills/snow-white/` is generated -- run `pnpm run skill:sync` after editing.
 
 name: snow-white
-version: 1.10.0 # x-release-please-version
+version: 1.10.1-SNAPSHOT # x-release-please-version
 description: Read and act on Snow-White JUnit XML quality gate reports -- turn failing API coverage criteria into prioritized test improvements.
 author: Timon Borter
 license: PolyForm-Small-Business-1.0.0
