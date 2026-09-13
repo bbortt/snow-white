@@ -15,16 +15,48 @@ Five project-specific skills live in `.claude/skills/` in addition to the built-
 Prefer
 invoking these over improvising when the task matches:
 
-| Skill          | Use for                                                                                                                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `snow-white`   | Reading a Snow-White JUnit XML quality-gate report and turning failures into concrete fixes.                                                                                             |
-| `requirements` | **Before implementing any non-trivial new feature/behavior.** Drills to the root, non-technical need and drafts an `RQ-N` entry in `docs/_pages/requirements.md` before code is written. |
-| `architect`    | Structural/cross-cutting decisions — where new functionality belongs, new services, layered-architecture questions, Kafka topic design.                                                  |
-| `apptest`      | Writing or extending Citrus black-box tests under `src/apptest` for a microservice.                                                                                                      |
-| `ui-expert`    | Reviewing or building the `api-gateway` React/TypeScript frontend — UX, accessibility, visual verification via `claude-in-chrome`.                                                       |
+| Skill          | Use for                                                                                                                                            |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snow-white`   | Reading a Snow-White JUnit XML quality-gate report and turning failures into concrete fixes.                                                       |
+| `requirements` | Drills to the root, non-technical need behind a feature request — invoked through `clew-draft` for in-scope Java source (see below), not directly. |
+| `architect`    | Structural/cross-cutting decisions — where new functionality belongs, new services, layered-architecture questions, Kafka topic design.            |
+| `apptest`      | Writing or extending Citrus black-box tests under `src/apptest` for a microservice.                                                                |
+| `ui-expert`    | Reviewing or building the `api-gateway` React/TypeScript frontend — UX, accessibility, visual verification via `claude-in-chrome`.                 |
 
-If a request looks like "add a new capability" rather than "fix/refactor/clean up", start with
-`requirements`, not code.
+For a request outside clew's scope (the `api-gateway` webapp, `toolkit/cli`) that looks like "add
+a new capability" rather than "fix/refactor/clean up", start with `requirements`, not code.
+For anything inside clew's scope, see "Spec-driven development" below instead.
+
+## Spec-driven development (clew)
+
+[clew](https://www.npmjs.com/package/clew) governs Java source in this repo: `internal/commons/`,
+every `microservices/*` module, and `toolkit/*` except `toolkit/cli`.
+(`toolkit/cli` and the `api-gateway` webapp are outside clew's scope today — its only configured
+generator targets Java, so it cannot anchor TypeScript.)
+Config: `.clewrc.json`.
+Corpus: `docs/spec/` (stories in `docs/spec/stories`, specs in `docs/spec/specs`, drafts in
+`docs/spec/drafts`).
+
+Any feature request or observable-behavior change to in-scope source must go through clew before
+code is written — do not implement it directly, even a small one.
+The flow, in order:
+
+1. `clew-draft` drafts the story and its specs, delegating the actual authoring to the
+   `requirements` skill.
+2. `clew-context` grounds the draft against the existing corpus.
+3. The user reviews and approves the draft.
+4. `clew-promote` binds real ids and moves the draft into the spec tree.
+5. `clew-implement` sets the spec active, delegates the actual coding to the project's own skills
+   (`architect`, `apptest`, `ui-expert`, etc.), then anchors the result via `clew-anchor` and
+   verifies coverage.
+
+A pure fix, refactor, or dependency bump that changes no observable behavior needs no new spec.
+If it touches code already anchored to a spec, read that spec first (`clew-context`) and work
+from its intent — the anchor is a claim someone made, not proof the code is correct.
+
+`docs/_pages/requirements.md` predates clew and is not where new requirements go.
+Treat it, and the running code, as source material for reverse-engineering the existing system
+into `docs/spec/` — an ongoing effort tracked outside this file.
 
 `snow-white` is also published to consumers as an APM package, so its source of truth is
 `.apm/skills/snow-white/` — `.claude/skills/snow-white/` is a generated copy.
@@ -104,8 +136,11 @@ save compute.
 - [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `refactor:`,
   `chore:`, with scopes like `refactor(deps):`).
 - Java is Prettier-formatted (`// prettier-ignore` used sparingly for hand-aligned ArchUnit
-  rules); static imports are generally preferred over qualified calls in tests
-  (`mock(...)`/`when(...)` not `Mockito.mock(...)`).
+  rules); static imports are preferred over qualified calls throughout — main code and tests
+  alike (`mock(...)`/`when(...)` not `Mockito.mock(...)`; `isEmpty(...)` not
+  `CollectionUtils.isEmpty(...)`).
+- Prefer `java.util.Objects.isNull(x)`/`nonNull(x)` (statically imported) over `x == null`/
+  `x != null` — matches existing usage throughout the backend.
 - Lombok is used throughout (`@RequiredArgsConstructor`, `@Slf4j`, `@Builder`) — most
   constructors are Lombok-generated pure field assignment; check before assuming.
 - Nullability: `org.jspecify.annotations.@NonNull`/`@Nullable`, sometimes with `@NullMarked` at
@@ -140,4 +175,5 @@ the governance contract is authoritative on conflict.
 `docs/_pages/requirements.md` intentionally describes **observable outcomes**, not
 implementation — numbered `RQ-N[.M]` / `NFR-N` statements using SHALL, black-box testable, no
 internal design details.
-See the `requirements` skill for the process of extending it.
+It predates clew and is being reverse-engineered into `docs/spec/` (see "Spec-driven
+development" above); new requirements are drafted there, not added to this page.
