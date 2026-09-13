@@ -125,11 +125,13 @@ data:
         traces:
           encoding: otlp_json
           topic: {{ .Values.otelCollector.kafka.inboundTopic }}
+      {{- if not .Values.otelCollector.disableIngestion }}
       influxdb:
         endpoint: {{ default (printf "http://%s-influxdb2.%s.svc.cluster.local.:80" (.Release.Name) (include "common.names.namespace" .)) .Values.otelCollector.influxdb.endpoint | quote }}
         org: {{ .Values.influxdb2.adminUser.organization | quote }}
         bucket: {{ .Values.influxdb2.adminUser.bucket | quote }}
         token: '${INFLUXDB_TOKEN}'
+      {{- end }}
       {{- if ne .Values.otelCollector.connectToExternalOtelCollector.endpoint "" }}
       otlp_grpc/infra:
         endpoint: '{{ .Values.otelCollector.connectToExternalOtelCollector.endpoint }}'

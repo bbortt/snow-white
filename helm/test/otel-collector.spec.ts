@@ -1069,7 +1069,7 @@ describe('OTEL Collector', () => {
 
       expect(metadata.annotations).toStrictEqual({
         'checksum/config':
-          '7412b1ca45c862448beaac8b9377b7cd9a54024f89a0e122ce11709f7ec14eeb',
+          'b7535ff510b93628d7b54ee942cc579ccad191ec51bfa11f5c108a06d9d4f4fd',
       });
     });
 
