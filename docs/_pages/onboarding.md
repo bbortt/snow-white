@@ -20,7 +20,7 @@ Snow-White correlates two things:
 
 The link between them is three identifiers that must appear in **both** places:
 
-| Identifier   | In the OpenAPI spec   | In the OTEL span         |
+| Identifier   | In the OpenAPI spec   | In the OTel span         |
 | ------------ | --------------------- | ------------------------ |
 | Service name | `info.x-service-name` | `service.name` attribute |
 | API name     | `info.x-api-name`     | `api.name` attribute     |
@@ -64,7 +64,7 @@ Automatically enriches every HTTP span with `api.name` and `api.version`.
 **2.
 Annotate your endpoints with `@SnowWhiteInformation`**
 
-The autoconfiguration reads this annotation from your controller methods at request time and stamps the active OTEL span with the API identifiers:
+The autoconfiguration reads this annotation from your controller methods at request time and stamps the active OTel span with the API identifiers:
 
 ```java
 @GetMapping("/ping")
@@ -121,7 +121,7 @@ If you follow a spec-first workflow the generator can place `@SnowWhiteInformati
 See [`example-snow-white-openapi-generator/pom.xml`](https://github.com/bbortt/snow-white/blob/main/examples/example-snow-white-openapi-generator/pom.xml) for a working reference.
 
 **4.
-Configure the OTEL Java agent**
+Configure the OTel Java agent**
 
 ```shell
 java \
@@ -137,14 +137,14 @@ OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
 > `OTEL_EXPORTER_OTLP_ENDPOINT` must point at _some_ OTLP collector — Snow-White never sees a trace that isn't exported somewhere.
 > This is company-agnostic: if your organization already runs a central OTel Collector, fan a copy of that traffic to Snow-White's ingestion endpoint instead of re-pointing your whole pipeline.
-> If you don't have one yet, Snow-White ships its own — see [Deployment — Ingesting OTeL Data](/deployment/#ingesting-otel-data) for the exact in-cluster and external endpoints to target.
+> If you don't have one yet, Snow-White ships its own — see [Deployment — Ingesting OTel Data](/deployment/#ingesting-otel-data) for the exact in-cluster and external endpoints to target.
 > {: .notice--info}
 
 **5.
 (Optional) Enable HTTP header capture for the `full-feature` quality gate**
 
 Only needed if you plan to use the `full-feature` quality gate.
-Its [Content Type Coverage](/quality-gate-criteria/#content-type-coverage) criterion reads the request's `Content-Type` header off the span (`http.request.header.content-type`) — the OTEL Java agent does **not** capture HTTP headers by default, so without this the criterion will always report zero coverage.
+Its [Content Type Coverage](/quality-gate-criteria/#content-type-coverage) criterion reads the request's `Content-Type` header off the span (`http.request.header.content-type`) — the OTel Java agent does **not** capture HTTP headers by default, so without this the criterion will always report zero coverage.
 
 ```shell
 OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS=content-type
@@ -152,7 +152,7 @@ OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS=content-type
 
 See [OpenTelemetry — Capturing HTTP request and response headers](https://opentelemetry.io/docs/zero-code/java/agent/instrumentation/http/#capturing-http-request-and-response-headers) for the client-side and response-header equivalents.
 
-### Option B: Manual OTEL Enrichment
+### Option B: Manual OTel Enrichment
 
 Attach these three attributes to your HTTP spans manually:
 
@@ -198,7 +198,7 @@ See [Deployment — API Indexation](/deployment/#api-indexation) for full option
 
 ## Step 4 — Generate Traces
 
-Run your test suite with the OTEL agent attached.
+Run your test suite with the OTel agent attached.
 Each HTTP call produces a span that Snow-White can process.
 
 Quick smoke test:
@@ -253,7 +253,7 @@ See [Quality Gate Criteria](/quality-gate-criteria) for the full list of availab
 
 - [ ] `x-api-name` and `x-service-name` added to the spec `info` block
 - [ ] `OTEL_SERVICE_NAME` matches `x-service-name`
-- [ ] OTEL Java agent attached (or manual span enrichment in place)
+- [ ] OTel Java agent attached (or manual span enrichment in place)
 - [ ] Traces exported to an OTLP collector reachable by Snow-White
 - [ ] `spring-web-autoconfiguration` dependency added (Spring Boot only)
 - [ ] HTTP request header capture enabled for `content-type` (only if using the `full-feature` quality gate)
@@ -268,18 +268,18 @@ Two working examples ship with the repository.
 
 - Controller methods annotated with `@SnowWhiteInformation` directly
 - Swagger annotations (`@Operation`, `@ApiResponse`, `@Schema`) used to describe the API
-- `spring-web-autoconfiguration` wiring up the OTEL span enrichment automatically
+- `spring-web-autoconfiguration` wiring up the OTel span enrichment automatically
 
 **[`example-snow-white-openapi-generator`](https://github.com/bbortt/snow-white/tree/main/examples/example-snow-white-openapi-generator)** — spec-first integration using the Snow-White generator:
 
 - OpenAPI spec (`specs/ping-pong.yml`) as the single source of truth
 - `snow-white-spring-server` generator emitting interfaces with `@SnowWhiteInformation` already placed
-- `spring-web-autoconfiguration` doing the same OTEL enrichment under the hood
+- `spring-web-autoconfiguration` doing the same OTel enrichment under the hood
 
 Both examples include:
 
 - A minimal Spring Boot service (`GET /ping`, `POST /pong`, `GET /pung/{message}`)
-- Maven build with the OTEL agent
+- Maven build with the OTel agent
 - A `dev/` Docker Compose environment with the full stack
 
 **Prerequisites:** Java 25, Node.js 22, Docker or Podman (with Compose).

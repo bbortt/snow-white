@@ -389,7 +389,7 @@ otelCollector:
       # See: https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md#getting-started.
       # @section -- OpenTelemetry Collector
       thereafter: 10
-  # -- Whether to expose the OTeL collector through the (public) ingress.
+  # -- Whether to expose the OTel collector through the (public) ingress.
   # Ignored when `otelCollector.disableIngestion` is `true`.
   # @section -- OpenTelemetry Collector
   exposeThroughApiGateway: true
@@ -411,11 +411,11 @@ otelCollector:
     # -- Disable (infrastructure) traces export entirely. Snow-White internal tracing is still functional.
     # @section -- OpenTelemetry Collector
     exportTraces: true
-    # -- Configure this endpoint to expose Snow-White internal telemetry data to external OTeL collector for monitoring.
+    # -- Configure this endpoint to expose Snow-White internal telemetry data to external OTel collector for monitoring.
     # @section -- OpenTelemetry Collector
     endpoint: ''
     tls:
-      # -- Whether the external OTeL collector connection may be insecure.
+      # -- Whether the external OTel collector connection may be insecure.
       # @section -- OpenTelemetry Collector
       insecure: true
   # -- Custom attribute key identifying the API name.
