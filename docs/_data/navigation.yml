@@ -1,8 +1,10 @@
 main:
-  - title: 'Get Started'
-    url: /deployment/
   - title: 'Onboarding'
     url: /onboarding/
+  - title: 'Skill'
+    url: /onboarding/
+  - title: 'Deployment'
+    url: /deployment/
   - title: 'Architecture'
     url: /architecture/
   - title: 'News'
@@ -13,10 +15,10 @@ main:
 docs:
   - title: 'Getting Started'
     children:
-      - title: 'Deployment'
-        url: /deployment/
       - title: 'Onboarding'
         url: /onboarding/
+      - title: 'Deployment'
+        url: /deployment/
   - title: 'Concepts'
     children:
       - title: 'Architecture'
