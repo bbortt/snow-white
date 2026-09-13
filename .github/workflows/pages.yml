@@ -6,7 +6,7 @@ on:
       - '**'
     paths:
       - '.github/workflows/pages.yml'
-      - 'docs/**'
+      - 'pages/**'
   workflow_dispatch:
 
 permissions:
@@ -31,13 +31,13 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-          working-directory: docs
+          working-directory: pages
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
       - name: Build with Jekyll
         run: bundle exec jekyll build --baseurl "$BASE_PATH"
-        working-directory: docs
+        working-directory: pages
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
           JEKYLL_ENV: production
@@ -46,7 +46,7 @@ jobs:
           if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
             git fetch origin gh-pages --depth=1
             if git show origin/gh-pages:index.yaml > /dev/null 2>&1; then
-              git show origin/gh-pages:index.yaml > docs/_site/index.yaml
+              git show origin/gh-pages:index.yaml > pages/_site/index.yaml
               echo "Helm chart index.yaml merged into site output."
             else
               echo "No index.yaml found on gh-pages branch - skipping."
@@ -57,7 +57,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
-          path: docs/_site
+          path: pages/_site
   deploy:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/gh-pages'

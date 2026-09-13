@@ -3,7 +3,7 @@
 This document is the narrative framing for the project — it explains the shape.
 The full
 narrative (diagrams, port mappings, additional Docker Compose services) lives in
-[`docs/_pages/architecture.md`](../_pages/architecture.md), the project's published docs site
+[`pages/_pages/architecture.md`](../../pages/_pages/architecture.md), the project's published docs site
 page; this file adds the dependency-direction and enforcement framing clew's method expects,
 without duplicating that page's content.
 
@@ -15,7 +15,7 @@ what the code is checked against.
 Snow-White is an **event-driven microservices system**, built as a Maven multi-module reactor
 (Java/Spring Boot backend, Kafka for async work, a React/TypeScript frontend hosted by the
 gateway).
-See `docs/_pages/architecture.md#microservices` for the full module table; in short:
+See `pages/_pages/architecture.md#microservices` for the full module table; in short:
 
 - `api-gateway` — routes incoming HTTP to internal services, hosts the web UI.
 - `api-index-api`, `quality-gate-api`, `report-coordinator-api` — synchronous REST services
