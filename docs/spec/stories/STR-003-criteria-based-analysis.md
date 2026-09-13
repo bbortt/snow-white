@@ -14,7 +14,7 @@ API are covered, which are not — instead of leaving the raw correlation for a 
 **Problem / Context**
 "This span matches this operation" is not, by itself, an answer to "is this API adequately
 tested." Answering that requires a named, comparable set of checks (path coverage, response-code
-coverage, parameter coverage, and others — see `docs/_pages/quality-gate-criteria.md`) applied
+coverage, parameter coverage, and others — see `pages/_pages/quality-gate-criteria.md`) applied
 consistently across runs.
 
 **Solution Approach**
@@ -34,7 +34,7 @@ new specification version arrives.
 **Out of scope**
 
 - Continuous background recomputation (recomputation is on request, not automatic).
-- Criteria not derivable from the specification itself (see `docs/_pages/quality-gate-criteria.md`
+- Criteria not derivable from the specification itself (see `pages/_pages/quality-gate-criteria.md`
   for the current set).
 
 ## Relations

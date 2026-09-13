@@ -1,11 +1,11 @@
 ---
 name: requirements
-description: Use before implementing any new feature, UI element, endpoint, or user-observable behavior change in Snow-White — i.e. whenever the user asks for a new capability rather than a fix, refactor, dependency bump, or lint/Sonar cleanup. Drills from the requested output down to the underlying non-technical need, then drafts or extends an RQ-N/NFR-N entry in docs/_pages/requirements.md and gets it confirmed before any code is written. Do NOT trigger for bug fixes restoring already-intended behavior, pure refactors, test-only changes, or changes the user has explicitly said to implement without a requirements step.
+description: Use before implementing any new feature, UI element, endpoint, or user-observable behavior change in Snow-White — i.e. whenever the user asks for a new capability rather than a fix, refactor, dependency bump, or lint/Sonar cleanup. Drills from the requested output down to the underlying non-technical need, then drafts or extends an RQ-N/NFR-N entry in pages/_pages/requirements.md and gets it confirmed before any code is written. Do NOT trigger for bug fixes restoring already-intended behavior, pure refactors, test-only changes, or changes the user has explicitly said to implement without a requirements step.
 ---
 
 # Requirements-First Workflow
 
-Snow-White's own requirements doc (`docs/_pages/requirements.md`) opens with:
+Snow-White's own requirements doc (`pages/_pages/requirements.md`) opens with:
 
 > **Scope:** These requirements describe **observable behavior and outcomes** of Snow-White as a
 > system.
@@ -19,7 +19,7 @@ mechanism.
 
 ## Step 1 — Check what already exists
 
-Read `docs/_pages/requirements.md` in full before asking anything.
+Read `pages/_pages/requirements.md` in full before asking anything.
 The request may already be
 covered by an existing `RQ-N`/`NFR-N`, or be a natural sub-point of one (e.g. `RQ-6.3
 Visualization or reporting capabilities` already covers most result-display asks). If so, say so
@@ -90,7 +90,7 @@ or edits **before** touching any implementation code.
 
 ## Step 5 — Write it down, then implement
 
-Apply the confirmed addition to `docs/_pages/requirements.md`, keeping numbering contiguous and
+Apply the confirmed addition to `pages/_pages/requirements.md`, keeping numbering contiguous and
 the traceability notes at the bottom accurate.
 Only then move on to implementation.
 If the

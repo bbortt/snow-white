@@ -44,7 +44,7 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
   - package-ecosystem: 'bundler'
-    directory: '/docs'
+    directory: '/pages'
     schedule:
       interval: 'weekly'
     cooldown:

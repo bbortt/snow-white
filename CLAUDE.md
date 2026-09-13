@@ -5,7 +5,7 @@ Snow-White correlates OpenAPI specifications with OpenTelemetry runtime traces t
 It's an event-driven microservices system (Java/Spring Boot backend, Kafka for async work,
 React/TypeScript frontend), built as a Maven multi-module reactor.
 
-Full docs: `docs/_pages/*.md` (architecture, onboarding, requirements, workflows, CLI, deployment).
+Full docs: `pages/_pages/*.md` (architecture, onboarding, requirements, workflows, CLI, deployment).
 Human setup guide: `DEVELOPMENT.md`.
 This file is for Claude Code sessions working in this repo.
 
@@ -54,7 +54,7 @@ A pure fix, refactor, or dependency bump that changes no observable behavior nee
 If it touches code already anchored to a spec, read that spec first (`clew-context`) and work
 from its intent — the anchor is a claim someone made, not proof the code is correct.
 
-`docs/_pages/requirements.md` predates clew and is not where new requirements go.
+`pages/_pages/requirements.md` predates clew and is not where new requirements go.
 Treat it, and the running code, as source material for reverse-engineering the existing system
 into `docs/spec/` — an ongoing effort tracked outside this file.
 
@@ -86,7 +86,7 @@ Coverage calculation is **deliberately asynchronous**: Report Coordinator publis
 `snow-white-calculation-request`, `openapi-coverage-stream` computes and publishes to
 `snow-white-openapi-calculation-response`.
 UI-facing calls through the gateway stay synchronous.
-See `docs/_pages/architecture.md` for the full diagram and reasoning.
+See `pages/_pages/architecture.md` for the full diagram and reasoning.
 
 ## Build & test
 
@@ -172,7 +172,7 @@ the governance contract is authoritative on conflict.
 
 ## Requirements
 
-`docs/_pages/requirements.md` intentionally describes **observable outcomes**, not
+`pages/_pages/requirements.md` intentionally describes **observable outcomes**, not
 implementation — numbered `RQ-N[.M]` / `NFR-N` statements using SHALL, black-box testable, no
 internal design details.
 It predates clew and is being reverse-engineered into `docs/spec/` (see "Spec-driven

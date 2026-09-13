@@ -20,7 +20,7 @@ source file before calling it a bug; a lot of "looks off" turns out to be intent
 read the component.
 
 The app is served at `http://localhost/` when `docker compose -f dev/docker-compose.yaml up -d`
-is running (port mapping per `docs/_pages/architecture.md`), or via the webpack dev server on
+is running (port mapping per `pages/_pages/architecture.md`), or via the webpack dev server on
 `9001` for live-reloading local development (`npm run start` / `webapp:dev` in
 `microservices/api-gateway`).
 

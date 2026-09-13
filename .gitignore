@@ -46,7 +46,7 @@ out/
 # clew: regenerated tool output (state.json stays tracked)
 .clew/locations.json
 .clew/coverage.json
-docs/vendor
+pages/vendor
 
 # APM: resolved dependencies and `apm pack` output (.apm/ itself stays tracked)
 .claude-plugin/

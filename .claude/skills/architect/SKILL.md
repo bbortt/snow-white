@@ -6,7 +6,7 @@ description: Use for structural or cross-cutting decisions in Snow-White — whe
 # Snow-White Architect
 
 Snow-White is an event-driven microservices system: each service has a single, well-defined
-responsibility (see the module table in `CLAUDE.md` / `docs/_pages/architecture.md`).
+responsibility (see the module table in `CLAUDE.md` / `pages/_pages/architecture.md`).
 Adding
 capability almost always means extending an existing service along its existing responsibility,
 not adding a new one — new services are for a genuinely new responsibility, not a convenient
@@ -14,7 +14,7 @@ place to put code.
 
 ## Sync vs. async — this project has an explicit rule, not a vibe
 
-From `docs/_pages/architecture.md`, stated as a deliberate decision:
+From `pages/_pages/architecture.md`, stated as a deliberate decision:
 
 > Coverage calculation is deliberately asynchronous...
 > Keeping that work off the synchronous
@@ -72,7 +72,7 @@ noise (AOT `__BeanDefinitions`, CGLIB proxy subclasses), not as a general escape
 ## Tie structural decisions back to a requirement
 
 A new microservice, a new Kafka topic, or a new cross-cutting capability is exactly the kind of
-"bigger change" that should trace back to an entry in `docs/_pages/requirements.md` (see the
+"bigger change" that should trace back to an entry in `pages/_pages/requirements.md` (see the
 `requirements` skill).
 If the structural question you're being asked to resolve doesn't map to
 an existing `RQ-N`, raise that before committing to a design — the requirement should usually be
