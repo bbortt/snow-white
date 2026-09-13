@@ -62,7 +62,7 @@ feature_row2:
     alt: 'OpenTelemetry Integration'
     title: 'OpenTelemetry Native'
     excerpt: >
-      No proprietary SDKs. Snow-White piggybacks on the OTEL traces your
+      No proprietary SDKs. Snow-White piggybacks on the OTel traces your
       services already emit. The Spring Boot autoconfiguration and OpenAPI
       Generator plugin wire the three linking attributes automatically.
 
@@ -112,7 +112,7 @@ Snow-White keeps them in sync automatically.</p>
   <div style="font-size:2rem;margin-bottom:.5rem;">📡</div>
   <strong>2.
 Ingest Traces</strong>
-  <p style="font-size:.9rem;color:#555;margin:.5rem 0 0;">Applications emit OTEL traces during tests or in production.
+  <p style="font-size:.9rem;color:#555;margin:.5rem 0 0;">Applications emit OTel traces during tests or in production.
 No code changes needed.</p>
 </div>
 

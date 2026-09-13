@@ -948,7 +948,7 @@ describe('OTEL Collector', () => {
       );
     });
 
-    it('should connect to OTeL collector from values', async () => {
+    it('should connect to OTel collector from values', async () => {
       const endpoint = 'http://custom.collector:1234';
 
       const configMap = await renderAndGetOtelCollectorConfig(
@@ -1009,7 +1009,7 @@ describe('OTEL Collector', () => {
       expect(pipelines).toStrictEqual(pipelineWithInfraExporters);
     });
 
-    it('should export logs, metrics and traces to OTeL collector from values', async () => {
+    it('should export logs, metrics and traces to OTel collector from values', async () => {
       const configMap = await renderAndGetOtelCollectorConfig(
         await renderHelmChart({
           chartPath: 'charts/snow-white',

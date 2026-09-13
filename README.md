@@ -30,7 +30,7 @@
 Snow-White connects your OpenAPI specifications with runtime telemetry data to answer a simple question: **which parts
 of your API are actually being tested?**
 
-It correlates [OpenTelemetry (OTEL)](https://opentelemetry.io) traces emitted by your application with the endpoints
+It correlates [OpenTelemetry (OTel)](https://opentelemetry.io) traces emitted by your application with the endpoints
 declared in your API specifications - then validates coverage against configurable quality gates.
 
 Snow-White works with **black-box test suites** (system tests, integration tests) as well as **live production traffic
@@ -140,7 +140,7 @@ management).
 
 ### Connecting Runtime Data
 
-Next, the running service must provide OpenTelemetry (OTEL) tracing data.
+Next, the running service must provide OpenTelemetry (OTel) tracing data.
 
 At the moment, only tracing is relevant (metrics and logs are not used yet).
 The traces must be enhanced with the same annotation information used in the specifications:

@@ -66,7 +66,7 @@ Read the report and, for every API (`testsuite` in XML, or entry in `interfaces`
 **Before treating anything as a real test gap**, check whether a `testsuite` has `tests="0"`.
 This is not "zero criteria passed" — it means Snow-White found **no correlated telemetry at
 all** for that API.
-Writing more tests will not fix this; it means the OTEL traces and the
+Writing more tests will not fix this; it means the OTel traces and the
 OpenAPI spec never linked up.
 
 When you see `tests="0"`, stop and walk through the onboarding checklist instead of proposing
@@ -74,7 +74,7 @@ test code:
 
 - [ ] `x-api-name` and `x-service-name` are present in the spec's `info` block
 - [ ] `OTEL_SERVICE_NAME` (or `spring.application.name`) matches `x-service-name` exactly
-- [ ] The OTEL Java agent is attached to the test run (or spans are manually enriched)
+- [ ] The OTel Java agent is attached to the test run (or spans are manually enriched)
 - [ ] `io.github.bbortt.snow-white.toolkit:spring-web-autoconfiguration` is on the classpath (Spring Boot projects)
 - [ ] Endpoints are annotated with `@SnowWhiteInformation` matching the spec's identifiers and `operationId`
 - [ ] The specification was actually published/indexed before the test run
@@ -108,7 +108,7 @@ over-engineer a broader fix that isn't needed.
 
 ## Step 4 — Propose integration tests, not mocks
 
-Snow-White correlates real OTEL traces, so unit tests with mocked HTTP layers do **not**
+Snow-White correlates real OTel traces, so unit tests with mocked HTTP layers do **not**
 improve coverage — only tests that make a real HTTP call through the instrumented application
 do.
 When proposing fixes:
