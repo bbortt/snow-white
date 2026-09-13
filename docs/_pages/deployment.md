@@ -112,13 +112,13 @@ snowWhite:
         value: 1
 ```
 
-## Ingesting OTeL Data
+## Ingesting OTel Data
 
 Snow-White deploys its own [OTel Collector](https://opentelemetry.io/docs/collector) by default.
 That collector is used both for ingesting tracing data, as well as [exposing Snow-White's own metrics](#exporting-telemetry).
 
 > Ingesting tracing data is a core concept of Snow-White (see ["How It Works"](/#how-it-works)).
-> Snow-White cannot function without OTeL data.
+> Snow-White cannot function without OTel data.
 >
 > At the same time, **Snow-White is a telemetry sink, not a monitoring backend.**
 > It only persists trace data — all other signal types (logs, metrics) are dropped.
@@ -167,7 +167,7 @@ otelCollector:
 
 ## Exporting Telemetry
 
-Snow-White exposes its own OTEL telemetry.
+Snow-White exposes its own OTel telemetry.
 Connect it to an external collector:
 
 ```yaml

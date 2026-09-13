@@ -2,7 +2,7 @@
 
 ## Building the Application
 
-To build the **OTEL Event Filter** application:
+To build the **OTel Event Filter** application:
 
 ### 1. Build the Maven artifact:
 
@@ -42,7 +42,7 @@ In **one terminal**, run:
 docker compose -f microservices/otel-event-filter-stream/src/apptest/resources/docker-compose-apptest.yaml up
 ```
 
-### Step 3 - Run the OTEL Event Filter tests
+### Step 3 - Run the OTel Event Filter tests
 
 In **another terminal**, run:
 
