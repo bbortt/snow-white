@@ -63,6 +63,17 @@ The requirement must still make sense if the eventual implementation changed ent
 No class names, component names, REST paths, or UI widget types belong in the requirement text —
 those are implementation, and belong in the code/PR, not here.
 
+## Keep sentences short
+
+Readability research is consistent that long sentences are harder to parse than short ones,
+regardless of how technical the reader is.
+Write short, declarative sentences.
+When a sentence runs past roughly 25 words, or tries to hold more than one clause worth
+remembering, split it into two.
+This applies everywhere prose is authored under this skill — a story's Business Value or Problem
+/ Context, a spec's Description or Rationale, this file itself — not only the `RQ-N` bullets
+below.
+
 ## Step 4 — Draft it in the existing format, then confirm
 
 Match the conventions already in the document exactly:
