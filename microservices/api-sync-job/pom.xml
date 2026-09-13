@@ -278,51 +278,6 @@
           </plugin>
 
           <plugin>
-            <groupId>io.fabric8</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-            <configuration>
-              <images>
-                <image>
-                  <name>minio/minio:latest-cicd</name>
-                  <alias>minio</alias>
-                  <run>
-                    <cmd>server /home/shared</cmd>
-                    <hostname>minio</hostname>
-                    <log>
-                      <prefix>minio</prefix>
-                      <date>default</date>
-                    </log>
-                    <network>
-                      <name>${docker.network}</name>
-                    </network>
-                    <ports>
-                      <port>9090:9000</port>
-                    </ports>
-                  </run>
-                </image>
-              </images>
-            </configuration>
-
-            <executions>
-              <execution>
-                <id>start-minio</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-              </execution>
-
-              <execution>
-                <id>stop-containers</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
             <executions>
