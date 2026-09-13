@@ -5,7 +5,7 @@ description: Use when writing, extending, or reasoning about the Citrus black-bo
 
 # Citrus Black-Box Application Tests
 
-Snow-White's own philosophy (`RQ-0.2` in `docs/_pages/requirements.md`) is that black-box tests
+Snow-White's own philosophy (`RQ-0.2` in `pages/_pages/requirements.md`) is that black-box tests
 are the primary source of truth. `src/apptest` is where each microservice applies that to itself:
 these tests exercise the packaged, running application exactly as production would, with real
 Kafka topics and real (WireMock-stubbed) downstream HTTP calls — never mocked internals.

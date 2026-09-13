@@ -71,7 +71,7 @@ For an **existing project**, also inspect the repo read-only, skipping vendor, b
 - **Build and lock files** (`pom.xml`, `package.json` + lockfile, `build.gradle`, `go.mod`, …) → runtime, framework, build tool — the stack actually in use.
 - **Executable code and architecture/convention tests** (module layout, imports, ArchUnit/dependency rules, Biome/Checkstyle/`.editorconfig`) → the **as-is** architecture and the rules the project already enforces.
 - **Accepted ADRs** → the **intended** decisions.
-- **Other docs** (`setup/`, `docs/`, READMEs) → context.
+- **Other docs** (`setup/`, `pages/`, READMEs) → context.
 
 **On conflict, weight the sources:** build and lock files decide the stack; code and architecture tests decide the as-is architecture; accepted ADRs decide intent; other docs are context, not authoritative.
 Distinguish as-is from target, and **present conflicts** (for example an ADR that says hexagonal over code that is layered) — never resolve them silently.

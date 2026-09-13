@@ -26,7 +26,7 @@ It replaces the human-readable progress logs
 with a single-line JSON summary once the calculation finishes — built specifically for
 consumption by coding agents — and carries the same pass/fail result, exit codes, and
 per-API/per-criterion breakdown as the JUnit report.
-See `docs/_pages/cli.md` for the full
+See `pages/_pages/cli.md` for the full
 flag reference and JSON schema.
 
 Don't combine `--agentic` with `--async` or `--junit-output`; the CLI rejects the combination.

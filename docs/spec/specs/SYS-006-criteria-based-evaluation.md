@@ -13,7 +13,7 @@ API version
 **Description**
 Snow-White evaluates the correlated specification and telemetry against a fixed, predefined set of
 criteria (for example path coverage, response-code coverage, parameter coverage — see
-`docs/_pages/quality-gate-criteria.md` for the full list), and expresses each criterion's outcome
+`pages/_pages/quality-gate-criteria.md` for the full list), and expresses each criterion's outcome
 as fulfilled or unfulfilled.
 Results are associated with the specific API version analyzed, not the API in general.
 
