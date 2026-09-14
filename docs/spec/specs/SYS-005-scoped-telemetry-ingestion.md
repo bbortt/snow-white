@@ -35,3 +35,12 @@ storage.
 
 - [SYS-004](SYS-004-telemetry-ingestion-and-correlation.md) — what is ingested
 - [SYS-010](SYS-010-analysis-triggering.md) — the request that defines the scope
+- [NF-006](NF-006-bounded-telemetry-fetch-footprint.md) — bounds a single fetch by result size,
+  within the scope this spec already bounds by request
+
+## Changes
+
+- **2026-09-14** — Added `NF-006` as a related spec.
+  It pins a result-size bound within the same scope this spec bounds by request, closing a gap this
+  spec left open (a request-scoped query with no bound on how large the matching result set itself
+  can be).

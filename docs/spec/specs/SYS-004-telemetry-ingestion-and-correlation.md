@@ -39,3 +39,13 @@ pass, and asserts the resulting telemetry data set is attributed to the correct 
 
 - [SYS-002](SYS-002-indexed-spec-lookup.md) — the spec side the attributes correlate against
 - [SYS-005](SYS-005-scoped-telemetry-ingestion.md) — how much telemetry is actually pulled in
+- [ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — the selection mechanism
+  and mutual exclusivity behind "the two supported telemetry backends" named above
+- [SW-008](SW-008-kafka-as-async-calculation-driver.md) — the Kafka-driven processor that performs
+  this ingestion for OpenAPI-typed requests
+
+## Changes
+
+- **2026-09-14** — Added `ARCH-001` and `SW-008` as related specs.
+  They pin the backend-selection mechanism and the Kafka-driven processor this spec's rationale
+  only named informally.

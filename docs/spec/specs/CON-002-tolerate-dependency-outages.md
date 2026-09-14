@@ -39,3 +39,11 @@ The check is rejected if data is silently dropped.
 
 - [SYS-011](SYS-011-bounded-time-resolution.md) — the terminal-state guarantee this
   invariant relies on
+- [SW-008](SW-008-kafka-as-async-calculation-driver.md) — the concrete instance of this invariant
+  for `openapi-coverage-stream`'s telemetry-backend and Kafka processing failures
+
+## Changes
+
+- **2026-09-14** — Added `SW-008` as a related spec.
+  It pins the concrete exception handling (`TelemetryBackendUnavailableException` and the
+  catch-all) that implements this invariant for `openapi-coverage-stream`.
