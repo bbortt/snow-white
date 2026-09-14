@@ -155,4 +155,4 @@ helm install my-snow-white snow-white/snow-white \
   --set snowWhite.host=snow-white.example.com
 ```
 
-For full configuration options see the [Deployment Guide](deployment).
+For full configuration options see the [Deployment Guide](_pages/deployment.md).

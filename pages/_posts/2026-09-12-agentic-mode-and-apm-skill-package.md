@@ -47,9 +47,9 @@ which interfaces failed and why.
 It's mutually exclusive with `--async`, since agentic mode
 needs the finished result to report and async mode returns before one exists.
 Full shape and an
-example are documented on the [CLI Reference](/cli/#calculate).
+example are documented on the [CLI Reference]({{ '/cli/#calculate' | relative_url }}).
 
-This is also the flag the [Claude Code skill](/claude-skill/) is built around: instead of
+This is also the flag the [Claude Code skill]({{ '/claude-skill/' | relative_url }}) is built around: instead of
 scraping a JUnit XML report meant for humans, the skill (or any agent) can invoke `--agentic` and
 get a backlog it can act on directly.
 
@@ -74,7 +74,7 @@ apm install
 stays as a generated, committed copy so Claude Code sessions working inside this repo keep
 working without the APM CLI installed.
 Manual copying remains an option if you'd rather not add
-APM as a dependency — see the [Claude Code Skill](/claude-skill/) page for both paths.
+APM as a dependency — see the [Claude Code Skill]({{ '/claude-skill/' | relative_url }}) page for both paths.
 
 ## Grafana Tempo: migrating to the v2 trace API
 
