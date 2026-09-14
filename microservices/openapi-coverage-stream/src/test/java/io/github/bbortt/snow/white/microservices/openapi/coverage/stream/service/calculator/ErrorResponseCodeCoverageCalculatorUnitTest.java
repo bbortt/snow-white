@@ -11,6 +11,8 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -235,7 +237,10 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
     }
 
     @Test
-    void shouldIgnoreDefaultErrorCode() {
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldCoverDefaultResponseCode_whenObservedErrorCodeFallsOutsideMoreSpecificEntries() {
       var pathToOpenAPIOperationMap = createOperationsWithErrorCodes(
         Map.of("GET_/api/v1/users", List.of("default"))
       );
@@ -250,10 +255,34 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
       );
 
       assertThat(result).satisfies(
-        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldLeaveDefaultErrorCodeUncovered_whenEveryObservedErrorMatchesAMoreSpecificEntry() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorCodes(
+        Map.of("GET_/api/v1/users", List.of("400", "default"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("400"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
+            "The following default response codes in paths are uncovered, as no observed status code fell outside a more specific documented response: `GET_/api/v1/users [default]`"
           )
       );
     }
@@ -338,11 +367,10 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
       );
 
       assertThat(result).satisfies(
-        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal((double) 2 / 3)),
-        r ->
-          assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
-          )
+        // "500" falls outside both "400" and "4XX", so it covers "default" too - all 3 entries
+        // are covered.
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
       );
     }
 
