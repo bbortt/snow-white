@@ -31,3 +31,13 @@ components depend on.
 **Related**
 
 - [SYS-007](SYS-007-on-demand-recomputation.md) — one of the operations that must scale
+- [SW-008](SW-008-kafka-as-async-calculation-driver.md) — the concrete Kafka-driven instance of
+  this async split
+- [NF-006](NF-006-bounded-telemetry-fetch-footprint.md) — the per-request memory-footprint
+  counterpart to this scale-out concern
+
+## Changes
+
+- **2026-09-14** — Added `SW-008` and `NF-006` as related specs.
+  They pin, at the component level, the Kafka async-driver mechanics and the per-request
+  telemetry-fetch memory bound this spec only asserted architecturally.
