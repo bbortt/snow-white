@@ -19,6 +19,8 @@ import static java.util.regex.Pattern.compile;
 import static org.springframework.data.util.Predicates.negate;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -77,11 +79,7 @@ public class ResponseCodeCoverageCalculator
 
       for (ResponseCode responseCode : responseCodes) {
         var errorCode = responseCode.errorCode();
-        if (
-          observedErrorCodes
-            .stream()
-            .anyMatch(responseCode.errorCodePattern().asPredicate())
-        ) {
+        if (isCovered(responseCode, responseCodes, observedErrorCodes)) {
           coveredErrorCodes.incrementAndGet();
           logger.trace("Error code {} is covered for path {}", errorCode, path);
         } else {
@@ -108,6 +106,45 @@ public class ResponseCodeCoverageCalculator
       errorCodesCoverage,
       getAdditionalInformationOrNull(uncoveredErrorCodes)
     );
+  }
+
+  /**
+   * A documented {@code default} entry is a catch-all, not a literal value that can appear on
+   * the wire: it is covered by any observed status code that no other, more specific entry of
+   * the same operation already matches. Every other entry is matched as before, by its own
+   * pattern.
+   */
+  @RealizesSw(
+    SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+  )
+  private boolean isCovered(
+    ResponseCode responseCode,
+    Set<ResponseCode> responseCodes,
+    Set<String> observedErrorCodes
+  ) {
+    if (!isDefaultResponseCode(responseCode.errorCode())) {
+      return observedErrorCodes
+        .stream()
+        .anyMatch(responseCode.errorCodePattern().asPredicate());
+    }
+
+    var otherPatterns = responseCodes
+      .stream()
+      .filter(other -> other != responseCode)
+      .map(ResponseCode::errorCodePattern)
+      .toList();
+
+    return observedErrorCodes
+      .stream()
+      .anyMatch(observedCode ->
+        otherPatterns
+          .stream()
+          .noneMatch(pattern -> pattern.matcher(observedCode).matches())
+      );
+  }
+
+  private static boolean isDefaultResponseCode(String errorCode) {
+    return "default".equalsIgnoreCase(errorCode);
   }
 
   protected Set<ResponseCode> extractResponseCodes(Operation operation) {
@@ -240,7 +277,7 @@ public class ResponseCodeCoverageCalculator
     if (!defaultCodes.isEmpty()) {
       additionalInformationBuilder.append(
         format(
-          "The following default response codes in paths were being ignored for the calculation: `%s`",
+          "The following default response codes in paths are uncovered, as no observed status code fell outside a more specific documented response: `%s`",
           join("`, `", defaultCodes.stream().sorted().toList())
         )
       );

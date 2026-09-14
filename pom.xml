@@ -50,6 +50,7 @@
 
     <sonar.coverage.exclusions>
       example-application/**,
+      src/**,
       **/Main.java
     </sonar.coverage.exclusions>
 

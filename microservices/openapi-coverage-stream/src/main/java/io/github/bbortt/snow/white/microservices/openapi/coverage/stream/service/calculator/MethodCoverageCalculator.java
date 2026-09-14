@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * Each HTTP method ({@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, etc.) for each path has been tested.
  *
- * @see OpenApiCoverageCriteria#ERROR_RESPONSE_CODE_COVERAGE
+ * @see OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE
  */
 @Slf4j
 @Component

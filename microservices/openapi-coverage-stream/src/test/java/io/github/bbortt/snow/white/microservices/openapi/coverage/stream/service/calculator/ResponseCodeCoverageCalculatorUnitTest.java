@@ -11,6 +11,8 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -226,13 +228,16 @@ class ResponseCodeCoverageCalculatorUnitTest {
     }
 
     @Test
-    void shouldIgnoreDefaultErrorCode() {
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldCoverDefaultResponseCode_whenObservedStatusFallsOutsideMoreSpecificEntries() {
       var pathToOpenAPIOperationMap = createOperationsWithCodes(
-        Map.of("GET_/api/v1/users", List.of("default"))
+        Map.of("GET_/api/v1/users", List.of("200", "default"))
       );
 
       var pathToTelemetryMap = createTelemetryWithStatusCodes(
-        Map.of("GET_/api/v1/users", List.of("500"))
+        Map.of("GET_/api/v1/users", List.of("200", "404"))
       );
 
       OpenApiTestResult result = fixture.calculate(
@@ -241,10 +246,34 @@ class ResponseCodeCoverageCalculatorUnitTest {
       );
 
       assertThat(result).satisfies(
-        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldLeaveDefaultResponseCodeUncovered_whenEveryObservedStatusMatchesAMoreSpecificEntry() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "default"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.5)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
+            "The following default response codes in paths are uncovered, as no observed status code fell outside a more specific documented response: `GET_/api/v1/users [default]`"
           )
       );
     }
@@ -332,11 +361,12 @@ class ResponseCodeCoverageCalculatorUnitTest {
       );
 
       assertThat(result).satisfies(
-        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.6)),
+        // "300" is the only entry left uncovered: 2XX/400/4XX each match an observed code, and
+        // the observed "301" falls outside every entry but "default", covering it too.
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.8)),
         r ->
-          assertThat(r.additionalInformation()).contains(
-            "The following response codes in paths are uncovered: `GET_/api/v1/users [300]`",
-            "The following default response codes in paths were being ignored for the calculation: `GET_/api/v1/users [default]`"
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following response codes in paths are uncovered: `GET_/api/v1/users [300]`"
           )
       );
     }

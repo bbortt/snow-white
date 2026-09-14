@@ -12,11 +12,13 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.
 import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Arrays.stream;
 import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -193,6 +195,9 @@ public class ParameterCoverageCalculator
     };
   }
 
+  @RealizesSw(
+    SwTraceables.SW_004_PARAMETER_COVERAGE_MATCHES_BY_TOKEN_NOT_SUBSTRING
+  )
   private boolean isQueryParameterPresent(
     OpenTelemetryData data,
     String paramName
@@ -202,12 +207,23 @@ public class ParameterCoverageCalculator
     }
 
     String queryString = data.attributes().get(URL_QUERY.getKey()).asString();
-    return (
-      nonNull(queryString) &&
-      (queryString.contains(paramName + "=") ||
-        queryString.contains(paramName + "&") ||
-        queryString.endsWith(paramName))
+    if (isNull(queryString) || queryString.isEmpty()) {
+      return false;
+    }
+
+    return stream(queryString.split("&")).anyMatch(token ->
+      queryTokenName(token).equals(paramName)
     );
+  }
+
+  /**
+   * A query token is either a bare flag or a {@code name=value} pair; the parameter's name is
+   * only ever the part before the first {@code =}, never a substring of a different token's name
+   * or value.
+   */
+  private static String queryTokenName(String token) {
+    var separatorIndex = token.indexOf('=');
+    return separatorIndex < 0 ? token : token.substring(0, separatorIndex);
   }
 
   /**
