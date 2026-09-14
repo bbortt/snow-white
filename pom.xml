@@ -74,7 +74,7 @@
     <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
     <mockito.version>5.23.0</mockito.version>
     <org.projectlombok.version>1.18.48</org.projectlombok.version>
-    <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
+    <sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
     <spring-boot.version>4.1.1</spring-boot.version>
     <spring-retry.version>2.0.13</spring-retry.version>
 
