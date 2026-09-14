@@ -57,5 +57,5 @@ turn off the bundled InfluxDB subchart.
 If you're switching to Tempo, set `influxdb2.enabled:
 false` yourself, or you'll have an InfluxDB StatefulSet running unused.
 
-See the [Deployment Guide](/deployment/) for the full set of `otelCollector` and
+See the [Deployment Guide]({{ '/deployment/' | relative_url }}) for the full set of `otelCollector` and
 `openapiCoverageStream` options.
