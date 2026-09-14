@@ -12,6 +12,8 @@ import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -139,6 +141,63 @@ class ParameterCoverageCalculatorUnitTest {
           assertThat(r.additionalInformation()).isEqualTo(
             "The following parameters are uncovered: `GET_/api/v1/users [query: size]`"
           )
+      );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_004_PARAMETER_COVERAGE_MATCHES_BY_TOKEN_NOT_SUBSTRING
+    )
+    void shouldNotCoverQueryParameter_whenItsNameIsOnlyASubstringOfAnotherToken() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("id", "query", true))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "validId=5")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following parameters are uncovered: `GET_/api/v1/users [query: id]`"
+          )
+      );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_004_PARAMETER_COVERAGE_MATCHES_BY_TOKEN_NOT_SUBSTRING
+    )
+    void shouldCoverQueryParameter_whenItsOwnTokenIsPresentAlongsideALookalike() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("id", "query", true))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "id=5&validId=9")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
       );
     }
 

@@ -49,6 +49,9 @@
       "type": "java"
     }
   ],
+  "scan": {
+    "unexclude": ["microservices/openapi-coverage-stream/src/**"]
+  },
   "schemas": {
     "story": "docs/spec/schemas/story.schema.yaml",
     "spec": "docs/spec/schemas/spec.schema.yaml"

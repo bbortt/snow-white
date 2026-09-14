@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +36,16 @@ class MathUtilsUnitTest {
       assertThat(MathUtils.calculatePercentage(1, 2))
         .isEqualTo(BigDecimal.valueOf(0.5).setScale(2, HALF_UP))
         .hasScaleOf(2);
+    }
+
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_004_COVERAGE_RATIO_IS_ALWAYS_BOUNDED_AND_WELL_DEFINED
+    )
+    void shouldNotReportFullCoverage_ifNearlyButNotFullyCovered() {
+      assertThat(MathUtils.calculatePercentage(999, 1000))
+        .isEqualTo(new BigDecimal("0.99"))
+        .isNotEqualTo(BigDecimal.ONE);
     }
   }
 
@@ -61,6 +73,18 @@ class MathUtilsUnitTest {
       )
         .isEqualTo(BigDecimal.valueOf(0.5).setScale(2, HALF_UP))
         .hasScaleOf(2);
+    }
+
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_004_COVERAGE_RATIO_IS_ALWAYS_BOUNDED_AND_WELL_DEFINED
+    )
+    void shouldNotReportFullCoverage_ifNearlyButNotFullyCovered() {
+      assertThat(
+        MathUtils.calculatePercentage(new AtomicLong(999), new AtomicLong(1000))
+      )
+        .isEqualTo(new BigDecimal("0.99"))
+        .isNotEqualTo(BigDecimal.ONE);
     }
   }
 }
