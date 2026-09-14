@@ -8,7 +8,7 @@ toc_sticky: true
 This guide walks you through integrating your service with Snow-White so it can measure OpenAPI coverage from your test suite.
 
 **Prerequisite:** A Snow-White instance must already be running and reachable.
-If you need to set one up first, see [Deployment](/deployment).
+If you need to set one up first, see [Deployment](./deployment.md).
 {: .notice--info}
 
 ## How It Works
@@ -137,14 +137,14 @@ OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
 > `OTEL_EXPORTER_OTLP_ENDPOINT` must point at _some_ OTLP collector — Snow-White never sees a trace that isn't exported somewhere.
 > This is company-agnostic: if your organization already runs a central OTel Collector, fan a copy of that traffic to Snow-White's ingestion endpoint instead of re-pointing your whole pipeline.
-> If you don't have one yet, Snow-White ships its own — see [Deployment — Ingesting OTel Data](/deployment/#ingesting-otel-data) for the exact in-cluster and external endpoints to target.
+> If you don't have one yet, Snow-White ships its own — see [Deployment — Ingesting OTel Data](./deployment.md#ingesting-otel-data) for the exact in-cluster and external endpoints to target.
 > {: .notice--info}
 
 **5.
 (Optional) Enable HTTP header capture for the `full-feature` quality gate**
 
 Only needed if you plan to use the `full-feature` quality gate.
-Its [Content Type Coverage](/quality-gate-criteria/#content-type-coverage) criterion reads the request's `Content-Type` header off the span (`http.request.header.content-type`) — the OTel Java agent does **not** capture HTTP headers by default, so without this the criterion will always report zero coverage.
+Its [Content Type Coverage](./quality-gate-criteria.md#content-type-coverage) criterion reads the request's `Content-Type` header off the span (`http.request.header.content-type`) — the OTel Java agent does **not** capture HTTP headers by default, so without this the criterion will always report zero coverage.
 
 ```shell
 OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS=content-type
@@ -194,7 +194,7 @@ snowWhite:
       repository: 'api-specs-local'
 ```
 
-See [Deployment — API Indexation](/deployment/#api-indexation) for full options.
+See [Deployment — API Indexation]/deployment.md#api-indexation) for full options.
 
 ## Step 4 — Generate Traces
 
@@ -210,7 +210,7 @@ curl http://localhost:8080/your-endpoint
 ## Step 5 — Calculate Coverage
 
 **Install the CLI** — pre-built binaries are available on [GitHub Releases](https://github.com/bbortt/snow-white/releases); there is no need to build from source.
-See [CLI Reference — Installation](/cli/#installation) for download instructions and the OCI image option.
+See [CLI Reference — Installation]/cli.md#installation) for download instructions and the OCI image option.
 {: .notice--info}
 
 Create a CLI config file:
@@ -236,7 +236,7 @@ snow-white calculate --config-file snow-white.json
 ```
 
 The CLI exits `0` on pass, non-zero on failure — suitable for CI pipelines.
-See [CLI Reference](/cli) for all commands and options.
+See [CLI Reference](./cli.md) for all commands and options.
 
 ## Step 6 — Review Results
 
@@ -247,7 +247,7 @@ The Snow-White UI shows:
 
 Snow-White ships with a `basic-coverage` gate out of the box.
 Custom gates can be configured via the UI or API.
-See [Quality Gate Criteria](/quality-gate-criteria) for the full list of available checks.
+See [Quality Gate Criteria](./quality-gate-criteria.md) for the full list of available checks.
 
 ## Checklist
 

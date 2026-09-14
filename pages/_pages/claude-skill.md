@@ -19,7 +19,7 @@ sits outside that loop: it correlates real OpenTelemetry traces from the running
 against the OpenAPI spec on file, so coverage results stay a ground-truth signal no agent can
 satisfy by construction.
 
-The [`--agentic` flag](/cli/#calculate) on `snow-white calculate` is the direct integration point:
+The [`--agentic` flag]/cli.md#calculate) on `snow-white calculate` is the direct integration point:
 instead of human-readable progress logs, it prints one line of JSON with the pass/fail result and
 a per-criterion breakdown of what's still undercovered — built for a coding agent (or this skill)
 to parse and act on directly, without scraping a report format meant for people.
@@ -29,8 +29,8 @@ to parse and act on directly, without scraping a report format meant for people.
 Once installed, Claude automatically applies the skill whenever it encounters a Snow-White JUnit XML report, a quality gate failure, or a request like "fix the failing coverage criteria." It:
 
 1. Parses the JUnit XML structure Snow-White emits (`testsuites` → `testsuite` per API → `testcase` per criterion).
-2. Detects **correlation failures** (`tests="0"`) and walks through the [onboarding checklist](/onboarding/#checklist) instead of treating it as a test gap.
-3. Looks up each failing criterion against the [Quality Gate Criteria](/quality-gate-criteria) hierarchy, so it fixes the highest-level failing criterion first instead of duplicating work on children that will pass automatically once the parent does.
+2. Detects **correlation failures** (`tests="0"`) and walks through the [onboarding checklist]/onboarding.md#checklist) instead of treating it as a test gap.
+3. Looks up each failing criterion against the [Quality Gate Criteria](./quality-gate-criteria.md) hierarchy, so it fixes the highest-level failing criterion first instead of duplicating work on children that will pass automatically once the parent does.
 4. Proposes integration tests — real HTTP calls with the OTel agent attached, since Snow-White correlates traces, not mocks — matching your existing test style.
 5. Summarizes what was fixed, what criteria that resolves, and what's left.
 
