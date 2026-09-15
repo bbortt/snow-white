@@ -2,10 +2,9 @@
 
 ## [1.10.1](https://github.com/bbortt/snow-white/compare/v1.10.0...v1.10.1) (2026-09-15)
 
-
 ### Bug Fixes
 
-* **helm:** remove otel collector influxdb exporter when disabled ([1b2e25b](https://github.com/bbortt/snow-white/commit/1b2e25b3dd4a024fb3d70f3210589f23a2bba92b))
+- **helm:** remove otel collector influxdb exporter when disabled ([1b2e25b](https://github.com/bbortt/snow-white/commit/1b2e25b3dd4a024fb3d70f3210589f23a2bba92b))
 
 ## [1.10.0](https://github.com/bbortt/snow-white/compare/v1.9.0...v1.10.0) (2026-09-12)
 
