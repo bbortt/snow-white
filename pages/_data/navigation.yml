@@ -1,0 +1,47 @@
+main:
+  - title: 'Onboarding'
+    url: /onboarding/
+  - title: 'Skill'
+    url: /onboarding/
+  - title: 'Deployment'
+    url: /deployment/
+  - title: 'Architecture'
+    url: /architecture/
+  - title: 'News'
+    url: /news/
+  - title: 'GitHub ↗'
+    url: https://github.com/bbortt/snow-white
+
+docs:
+  - title: 'Getting Started'
+    children:
+      - title: 'Onboarding'
+        url: /onboarding/
+      - title: 'Deployment'
+        url: /deployment/
+  - title: 'Concepts'
+    children:
+      - title: 'Architecture'
+        url: /architecture/
+      - title: 'Workflows'
+        url: /workflows/
+  - title: 'Toolkit'
+    children:
+      - title: 'CLI Reference'
+        url: /cli/
+      - title: 'Claude Code Skill'
+        url: /claude-skill/
+  - title: 'Reference'
+    children:
+      - title: 'Quality Gate Criteria'
+        url: /quality-gate-criteria/
+      - title: 'Requirements'
+        url: /requirements/
+      - title: 'License'
+        url: /license/
+  - title: 'News'
+    children:
+      - title: 'Blog'
+        url: /news/
+      - title: 'RSS Feed'
+        url: /feed.xml

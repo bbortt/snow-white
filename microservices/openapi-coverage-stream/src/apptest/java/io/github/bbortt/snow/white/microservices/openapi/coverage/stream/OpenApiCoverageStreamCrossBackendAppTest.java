@@ -42,6 +42,7 @@ import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.Serializer;
@@ -80,8 +81,13 @@ class OpenApiCoverageStreamCrossBackendAppTest {
   private static final String WIREMOCK_INTERNAL_BASE_URL =
     "http://wiremock:8080";
 
+  private static final String PETSTORE_SPEC_PATH = "/openapi/petstore-api.yaml";
+
   private static final String SPEC_CONTENT = readClasspathResource(
     "openapi/pets-api.yaml"
+  );
+  private static final String PETSTORE_SPEC_CONTENT = readClasspathResource(
+    "openapi/petstore-api.yaml"
   );
 
   private static final Duration TELEMETRY_INGESTION_MARGIN = Duration.ofSeconds(
@@ -243,13 +249,13 @@ class OpenApiCoverageStreamCrossBackendAppTest {
       span(serviceName, "GET /pets")
         .attribute(HTTP_REQUEST_METHOD.getKey(), "GET")
         .attribute(URL_PATH.getKey(), "/pets")
-        .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), "200")
+        .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), 200L)
         .attribute("api.name", apiName)
         .attribute("api.version", apiVersion),
       span(serviceName, "GET /pets/{petId}")
         .attribute(HTTP_REQUEST_METHOD.getKey(), "GET")
         .attribute(URL_PATH.getKey(), "/pets/{petId}")
-        .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), "200")
+        .attribute(HTTP_RESPONSE_STATUS_CODE.getKey(), 200L)
         .attribute("api.name", apiName)
         .attribute("api.version", apiVersion)
     );
@@ -330,6 +336,148 @@ class OpenApiCoverageStreamCrossBackendAppTest {
     assertThat(influxDbResponse[0].errorMessage()).isNull();
     assertThat(grafanaResponse[0].errorMessage()).isNull();
 
+    assertThat(coverageByCriteria(influxDbResponse[0])).isEqualTo(
+      coverageByCriteria(grafanaResponse[0])
+    );
+  }
+
+  @Test
+  @CitrusTest
+  void shouldReturnIdenticalCoverage_forRealisticPetstoreTraffic(
+    @CitrusResource TestActionRunner runner
+  ) {
+    var serviceName = "cross-backend-petstore-service";
+    var apiName = "petstore-api";
+    var apiVersion = "1.0.11";
+
+    stubFor(
+      get(urlPathTemplate(API_DETAILS_PATH_TEMPLATE))
+        .withPathParam("otelServiceName", equalTo(serviceName))
+        .withPathParam("apiName", equalTo(apiName))
+        .withPathParam("apiVersion", equalTo(apiVersion))
+        .willReturn(
+          okJson(
+            JsonMapper.shared().writeValueAsString(
+              Map.of(
+                "serviceName",
+                serviceName,
+                "apiName",
+                apiName,
+                "apiVersion",
+                apiVersion,
+                "sourceUrl",
+                WIREMOCK_INTERNAL_BASE_URL + PETSTORE_SPEC_PATH,
+                "apiType",
+                "OPENAPI"
+              )
+            )
+          )
+        )
+    );
+    stubFor(
+      get(urlEqualTo(PETSTORE_SPEC_PATH)).willReturn(ok(PETSTORE_SPEC_CONTENT))
+    );
+
+    var spans = new ArrayList<OtlpTraceFixtures.Span>();
+    spans.addAll(
+      PetstoreTelemetryFixtures.standardOperationSpans(
+        serviceName,
+        apiName,
+        apiVersion
+      )
+    );
+    spans.addAll(
+      PetstoreTelemetryFixtures.errorScenarioSpans(
+        serviceName,
+        apiName,
+        apiVersion
+      )
+    );
+
+    var payload = OtlpTraceFixtures.traceRequestJson(
+      spans.toArray(new OtlpTraceFixtures.Span[0])
+    );
+    runner.run(
+      send(otlpTraceEndpoint).message(
+        new KafkaMessage(payload).messageKey(randomUUID().toString())
+      )
+    );
+    awaitTelemetryIngestion();
+
+    var messageKey = randomUUID().toString();
+    var event = QualityGateCalculationRequestEvent.builder()
+      .apiInformation(
+        ApiInformation.builder()
+          .serviceName(serviceName)
+          .apiName(apiName)
+          .apiVersion(apiVersion)
+          .apiType(ApiType.OPENAPI)
+          .build()
+      )
+      .lookbackWindow("5m")
+      .build();
+
+    runner.run(
+      send(calculationRequestEndpoint).message(
+        new KafkaMessage(event).messageKey(messageKey)
+      )
+    );
+
+    var influxDbResponse = new OpenApiCoverageResponseEvent[1];
+    runner.run(
+      repeatOnError()
+        .index("i")
+        .until("i = 10")
+        .autoSleep(Duration.ofSeconds(2))
+        .actions(
+          receive(influxDbResponseEndpoint)
+            .selector(
+              kafkaMessageFilter()
+                .eventLookbackWindow(RESPONSE_LOOKBACK_WINDOW)
+                .kafkaMessageSelector(new KafkaMessageByKeySelector(messageKey))
+                .build()
+            )
+            .message()
+            .validate(
+              (message, context) ->
+                influxDbResponse[0] = message.getPayload(
+                  OpenApiCoverageResponseEvent.class
+                )
+            )
+        )
+    );
+
+    var grafanaResponse = new OpenApiCoverageResponseEvent[1];
+    runner.run(
+      repeatOnError()
+        .index("i")
+        .until("i = 10")
+        .autoSleep(Duration.ofSeconds(2))
+        .actions(
+          receive(grafanaResponseEndpoint)
+            .selector(
+              kafkaMessageFilter()
+                .eventLookbackWindow(RESPONSE_LOOKBACK_WINDOW)
+                .kafkaMessageSelector(new KafkaMessageByKeySelector(messageKey))
+                .build()
+            )
+            .message()
+            .validate(
+              (message, context) ->
+                grafanaResponse[0] = message.getPayload(
+                  OpenApiCoverageResponseEvent.class
+                )
+            )
+        )
+    );
+
+    assertThat(influxDbResponse[0].errorMessage()).isNull();
+    assertThat(grafanaResponse[0].errorMessage()).isNull();
+
+    // Petstore has 10 documented operations against 12 observed request/response
+    // combinations (10 happy-path + 2 documented-error), so no criteria collapses to the
+    // vacuous 100%/0% edge cases the smaller pets-api.yaml spec exercises elsewhere - this
+    // is the richer signal the cross-backend parity check above is meant to catch.
     assertThat(coverageByCriteria(influxDbResponse[0])).isEqualTo(
       coverageByCriteria(grafanaResponse[0])
     );

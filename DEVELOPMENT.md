@@ -20,8 +20,8 @@ Start all required services using Docker/Podman Compose:
 docker compose -f dev/docker-compose.yaml up -d
 ```
 
-This includes InfluxDB, Kafka, OTEL Collector, PostgreSQL, and supporting UI tools.
-For more on which services are running and their ports, see [Mapped Ports](./docs/architecture.md#mapped-ports).
+This includes InfluxDB, Kafka, OTel Collector, PostgreSQL, and supporting UI tools.
+For more on which services are running and their ports, see [Mapped Ports](./pages/_pages/architecture.md#mapped-ports).
 
 ### 3. Configure InfluxDB Access
 
@@ -62,12 +62,12 @@ node toolkit/cli/target/cli/index.js calculate --configFile dev/snow-white.json
 
 ## Previewing the Docs Site
 
-The documentation site lives in `docs/` and is built with [Jekyll](https://jekyllrb.com) using the [just-the-docs](https://just-the-docs.com) theme.
+The documentation site lives in `pages/` and is built with [Jekyll](https://jekyllrb.com) using the [just-the-docs](https://just-the-docs.com) theme.
 
 **Prerequisites:** Ruby (with Devkit) and Bundler - on Windows use [RubyInstaller](https://rubyinstaller.org) (`Ruby+Devkit` variant), then run `gem install bundler`.
 
 ```shell
-cd docs
+cd pages
 bundle install
 bundle exec jekyll serve --livereload
 ```

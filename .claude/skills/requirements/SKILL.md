@@ -1,11 +1,11 @@
 ---
 name: requirements
-description: Use before implementing any new feature, UI element, endpoint, or user-observable behavior change in Snow-White — i.e. whenever the user asks for a new capability rather than a fix, refactor, dependency bump, or lint/Sonar cleanup. Drills from the requested output down to the underlying non-technical need, then drafts or extends an RQ-N/NFR-N entry in docs/_pages/requirements.md and gets it confirmed before any code is written. Do NOT trigger for bug fixes restoring already-intended behavior, pure refactors, test-only changes, or changes the user has explicitly said to implement without a requirements step.
+description: Use before implementing any new feature, UI element, endpoint, or user-observable behavior change in Snow-White — i.e. whenever the user asks for a new capability rather than a fix, refactor, dependency bump, or lint/Sonar cleanup. Drills from the requested output down to the underlying non-technical need, then drafts or extends an RQ-N/NFR-N entry in pages/_pages/requirements.md and gets it confirmed before any code is written. Do NOT trigger for bug fixes restoring already-intended behavior, pure refactors, test-only changes, or changes the user has explicitly said to implement without a requirements step.
 ---
 
 # Requirements-First Workflow
 
-Snow-White's own requirements doc (`docs/_pages/requirements.md`) opens with:
+Snow-White's own requirements doc (`pages/_pages/requirements.md`) opens with:
 
 > **Scope:** These requirements describe **observable behavior and outcomes** of Snow-White as a
 > system.
@@ -19,7 +19,7 @@ mechanism.
 
 ## Step 1 — Check what already exists
 
-Read `docs/_pages/requirements.md` in full before asking anything.
+Read `pages/_pages/requirements.md` in full before asking anything.
 The request may already be
 covered by an existing `RQ-N`/`NFR-N`, or be a natural sub-point of one (e.g. `RQ-6.3
 Visualization or reporting capabilities` already covers most result-display asks). If so, say so
@@ -63,6 +63,17 @@ The requirement must still make sense if the eventual implementation changed ent
 No class names, component names, REST paths, or UI widget types belong in the requirement text —
 those are implementation, and belong in the code/PR, not here.
 
+## Keep sentences short
+
+Readability research is consistent that long sentences are harder to parse than short ones,
+regardless of how technical the reader is.
+Write short, declarative sentences.
+When a sentence runs past roughly 25 words, or tries to hold more than one clause worth
+remembering, split it into two.
+This applies everywhere prose is authored under this skill — a story's Business Value or Problem
+/ Context, a spec's Description or Rationale, this file itself — not only the `RQ-N` bullets
+below.
+
 ## Step 4 — Draft it in the existing format, then confirm
 
 Match the conventions already in the document exactly:
@@ -79,7 +90,7 @@ or edits **before** touching any implementation code.
 
 ## Step 5 — Write it down, then implement
 
-Apply the confirmed addition to `docs/_pages/requirements.md`, keeping numbering contiguous and
+Apply the confirmed addition to `pages/_pages/requirements.md`, keeping numbering contiguous and
 the traceability notes at the bottom accurate.
 Only then move on to implementation.
 If the

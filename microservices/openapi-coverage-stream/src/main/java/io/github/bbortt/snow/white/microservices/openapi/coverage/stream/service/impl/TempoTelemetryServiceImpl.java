@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -285,18 +286,39 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       : traceId;
   }
 
+  /**
+   * An OTLP/JSON attribute's {@code value} is a typed union (protobuf {@code oneof}) - real
+   * instrumentation encodes e.g. {@code http.response.status_code} (a {@code Long}-typed semconv
+   * attribute) as {@code intValue}, not {@code stringValue}. Every downstream coverage calculator
+   * only ever reads attributes back out via {@code JsonNode.asString()}, so each wrapper is
+   * unwrapped to its scalar node here rather than kept as a distinct Java type.
+   */
+  private static final List<String> ATTRIBUTE_VALUE_KEYS = List.of(
+    "stringValue",
+    "intValue",
+    "doubleValue",
+    "boolValue"
+  );
+
   private static JsonNode buildAttributes(@Nullable JsonNode attributes) {
     var attributesNode = JsonMapper.shared().createObjectNode();
 
     if (nonNull(attributes)) {
       attributes.forEach(attribute -> {
         var value = attribute.get("value");
-        if (nonNull(value) && value.has("stringValue")) {
-          attributesNode.set(
-            attribute.get("key").asString(),
-            value.get("stringValue")
-          );
+        if (isNull(value)) {
+          return;
         }
+
+        ATTRIBUTE_VALUE_KEYS.stream()
+          .filter(value::has)
+          .findFirst()
+          .ifPresent(valueKey ->
+            attributesNode.set(
+              attribute.get("key").asString(),
+              value.get(valueKey)
+            )
+          );
       });
     }
 
