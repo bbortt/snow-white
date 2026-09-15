@@ -37,12 +37,16 @@ public final class OtlpTraceFixtures {
     List<Map<String, Object>> resourceSpans = new ArrayList<>();
     for (var span : spans) {
       var resourceAttributes = new ArrayList<>();
-      resourceAttributes.add(attribute("service.name", span.serviceName));
+      resourceAttributes.add(
+        attribute("service.name", AttributeValue.of(span.serviceName))
+      );
       resourceAttributes.addAll(
         span.resourceAttributes
           .entrySet()
           .stream()
-          .map(entry -> attribute(entry.getKey(), entry.getValue()))
+          .map(entry ->
+            attribute(entry.getKey(), AttributeValue.of(entry.getValue()))
+          )
           .toList()
       );
       resourceSpans.add(
@@ -81,8 +85,11 @@ public final class OtlpTraceFixtures {
     return node;
   }
 
-  private static Map<String, Object> attribute(String key, String value) {
-    return Map.of("key", key, "value", Map.of("stringValue", value));
+  private static Map<String, Object> attribute(
+    String key,
+    AttributeValue value
+  ) {
+    return Map.of("key", key, "value", value.toOtlpValue());
   }
 
   private static String nanos(Instant instant) {
@@ -108,7 +115,8 @@ public final class OtlpTraceFixtures {
     private final String serviceName;
     private final String name;
     private final Map<String, String> resourceAttributes;
-    private final Map<String, String> attributes = new LinkedHashMap<>();
+    private final Map<String, AttributeValue> attributes =
+      new LinkedHashMap<>();
 
     private Span(String serviceName, String name) {
       this(serviceName, name, new LinkedHashMap<>());
@@ -137,8 +145,80 @@ public final class OtlpTraceFixtures {
     }
 
     public Span attribute(String key, String value) {
-      attributes.put(key, value);
+      attributes.put(key, AttributeValue.of(value));
       return this;
+    }
+
+    public Span attribute(String key, long value) {
+      attributes.put(key, AttributeValue.of(value));
+      return this;
+    }
+
+    public Span attribute(String key, double value) {
+      attributes.put(key, AttributeValue.of(value));
+      return this;
+    }
+
+    public Span attribute(String key, boolean value) {
+      attributes.put(key, AttributeValue.of(value));
+      return this;
+    }
+  }
+
+  /**
+   * An OTLP/JSON attribute value is a typed union (protobuf {@code oneof}) - real instrumentation
+   * encodes e.g. {@code http.response.status_code} as {@code intValue}, not {@code stringValue}
+   * (see {@code TempoTelemetryServiceImpl#buildAttributes}, which every fixture here must be able
+   * to exercise realistically rather than only the string-typed case).
+   */
+  private sealed interface AttributeValue {
+    Map<String, Object> toOtlpValue();
+
+    static AttributeValue of(String value) {
+      return new StringValue(value);
+    }
+
+    static AttributeValue of(long value) {
+      return new IntValue(value);
+    }
+
+    static AttributeValue of(double value) {
+      return new DoubleValue(value);
+    }
+
+    static AttributeValue of(boolean value) {
+      return new BoolValue(value);
+    }
+
+    record StringValue(String value) implements AttributeValue {
+      @Override
+      public Map<String, Object> toOtlpValue() {
+        return Map.of("stringValue", value);
+      }
+    }
+
+    // int64 fields serialize as JSON strings under protobuf JSON mapping, even though this is
+    // the numeric variant - matches what the collector/Tempo actually emit (see
+    // TempoTelemetryServiceImplUnitTest).
+    record IntValue(long value) implements AttributeValue {
+      @Override
+      public Map<String, Object> toOtlpValue() {
+        return Map.of("intValue", Long.toString(value));
+      }
+    }
+
+    record DoubleValue(double value) implements AttributeValue {
+      @Override
+      public Map<String, Object> toOtlpValue() {
+        return Map.of("doubleValue", value);
+      }
+    }
+
+    record BoolValue(boolean value) implements AttributeValue {
+      @Override
+      public Map<String, Object> toOtlpValue() {
+        return Map.of("boolValue", value);
+      }
     }
   }
 }
