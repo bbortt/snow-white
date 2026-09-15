@@ -213,6 +213,14 @@ class TempoTelemetryServiceImplUnitTest {
                         {
                           "key": "http.status_code",
                           "value": { "intValue": "200" }
+                        },
+                        {
+                          "key": "http.request.duration_ms",
+                          "value": { "doubleValue": 12.5 }
+                        },
+                        {
+                          "key": "http.response.cache_hit",
+                          "value": { "boolValue": true }
                         }
                       ]
                     }
@@ -287,7 +295,15 @@ class TempoTelemetryServiceImplUnitTest {
             assertThat(
               data1.attributes().get("http.path").asString()
             ).isEqualTo("/api/v1/test");
-            assertThat(data1.attributes().has("http.status_code")).isFalse();
+            assertThat(
+              data1.attributes().get("http.status_code").asString()
+            ).isEqualTo("200");
+            assertThat(
+              data1.attributes().get("http.request.duration_ms").asString()
+            ).isEqualTo("12.5");
+            assertThat(
+              data1.attributes().get("http.response.cache_hit").asString()
+            ).isEqualTo("true");
           },
           data2 -> {
             assertThat(data2.spanId()).isEqualTo(spanId2Hex);
