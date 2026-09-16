@@ -2,23 +2,21 @@
 
 ## [1.10.1](https://github.com/bbortt/snow-white/compare/v1.10.0...v1.10.1) (2026-09-16)
 
-
 ### Bug Fixes
 
-* **#2052:** bump bun to v1.4.2 which resolved cross compilation issues ([e1b2def](https://github.com/bbortt/snow-white/commit/e1b2def5eddbf933a0014e79578566506a86fafc))
-* **helm:** remove otel collector influxdb exporter when disabled ([1b2e25b](https://github.com/bbortt/snow-white/commit/1b2e25b3dd4a024fb3d70f3210589f23a2bba92b))
-* **openapi-coverage-stream:** grafana tempo scalar types ([401ecdb](https://github.com/bbortt/snow-white/commit/401ecdb63c85b809fa248b2fb483ad4e1697f06e))
-
+- **#2052:** bump bun to v1.4.2 which resolved cross compilation issues ([e1b2def](https://github.com/bbortt/snow-white/commit/e1b2def5eddbf933a0014e79578566506a86fafc))
+- **helm:** remove otel collector influxdb exporter when disabled ([1b2e25b](https://github.com/bbortt/snow-white/commit/1b2e25b3dd4a024fb3d70f3210589f23a2bba92b))
+- **openapi-coverage-stream:** grafana tempo scalar types ([401ecdb](https://github.com/bbortt/snow-white/commit/401ecdb63c85b809fa248b2fb483ad4e1697f06e))
 
 ### Documentation
 
-* **claude:** add microservice architecture rules ([0a20c0b](https://github.com/bbortt/snow-white/commit/0a20c0b09c0e6c55b7a4f22ec9a00c16a292a3e7))
-* **clew:** introduce base layer of stories and specifications ([ec7c332](https://github.com/bbortt/snow-white/commit/ec7c33297e5d405144ca5f93e7da2387cc8c5d88))
-* **clew:** retrace requirements for the openapi-coverage-stream service ([a5ff628](https://github.com/bbortt/snow-white/commit/a5ff628487b1f1d446c68e36f08344e543d6aa17))
-* move pages into own directory ([956afc1](https://github.com/bbortt/snow-white/commit/956afc1c5a38222c662713dc6a884225a3039200))
-* remove aboslute links in documentation ([f629835](https://github.com/bbortt/snow-white/commit/f629835e06841e9a3817f6fc293067c5068b9808))
-* updated navigation ([02ce448](https://github.com/bbortt/snow-white/commit/02ce448a8be117c7bfdf87f90cf45e48a7cf84ab))
-* wrong casing of open-telemetry ([9167d17](https://github.com/bbortt/snow-white/commit/9167d17467e0c65f3f8482a8dc944b3ee70fe875))
+- **claude:** add microservice architecture rules ([0a20c0b](https://github.com/bbortt/snow-white/commit/0a20c0b09c0e6c55b7a4f22ec9a00c16a292a3e7))
+- **clew:** introduce base layer of stories and specifications ([ec7c332](https://github.com/bbortt/snow-white/commit/ec7c33297e5d405144ca5f93e7da2387cc8c5d88))
+- **clew:** retrace requirements for the openapi-coverage-stream service ([a5ff628](https://github.com/bbortt/snow-white/commit/a5ff628487b1f1d446c68e36f08344e543d6aa17))
+- move pages into own directory ([956afc1](https://github.com/bbortt/snow-white/commit/956afc1c5a38222c662713dc6a884225a3039200))
+- remove aboslute links in documentation ([f629835](https://github.com/bbortt/snow-white/commit/f629835e06841e9a3817f6fc293067c5068b9808))
+- updated navigation ([02ce448](https://github.com/bbortt/snow-white/commit/02ce448a8be117c7bfdf87f90cf45e48a7cf84ab))
+- wrong casing of open-telemetry ([9167d17](https://github.com/bbortt/snow-white/commit/9167d17467e0c65f3f8482a8dc944b3ee70fe875))
 
 ## [1.10.0](https://github.com/bbortt/snow-white/compare/v1.9.0...v1.10.0) (2026-09-12)
 
