@@ -50,7 +50,7 @@
 
     <sonar.coverage.exclusions>
       example-application/**,
-      src/**,
+      src/main/java/clew/traceables/**,
       **/Main.java
     </sonar.coverage.exclusions>
 
