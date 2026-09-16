@@ -84,3 +84,51 @@ When in doubt:
 - Choose the solution that minimizes architectural surface change.
 
 **Rationale.** When the task does not decide, the reversible move is the safe one; resolving doubt toward the smallest structural change keeps an uncertain decision from enlarging its own blast radius.
+
+---
+
+## 7. Microservice Boundaries and Communication
+
+- Snow-White is an event-driven microservices architecture: each microservice owns a single,
+  well-defined responsibility and its own datastore — no microservice reads or writes another
+  microservice's data directly.
+- Communication that crosses a service boundary is chosen by what the call does, not by
+  developer preference, and takes one of two forms:
+  - **Synchronous REST** for request/response calls initiated from the UI through the API
+    Gateway to a target microservice (API Index API, Quality-Gate API, Report Coordinator API).
+  - **Asynchronous Kafka** for anything that performs a calculation or otherwise cannot bound
+    its own latency (OpenAPI Coverage Stream, OTel Event Filter Stream) — publish a request,
+    consume it, publish a response; never block a synchronous caller on this class of work.
+- A new microservice, or a new cross-service call, must fit one of these two patterns.
+  Introducing a third communication mechanism is a structural change (Section 3) and requires
+  explicit justification.
+
+**Rationale.** Per-service data ownership keeps each service's data model changeable without
+coordinating a migration across the fleet.
+Separating fast synchronous UI calls from unbounded
+calculation work by transport (REST vs. Kafka) keeps a slow calculation from becoming a gateway
+timeout — the deliberate async split this project already documents in
+`pages/_pages/architecture.md`.
+
+---
+
+## 8. Spec-Driven Interfaces
+
+- Every interface that crosses a service boundary is defined by a machine-readable spec first,
+  and the language bindings are generated from that spec — never hand-written where a generator
+  exists: REST interfaces are OpenAPI-first (`openapi-generator`); Kafka message contracts are
+  described and generated the same way (AsyncAPI or an equivalent toolchain) wherever that
+  tooling is available for the target.
+- What can be generated from a spec shall be generated from a spec — do not hand-write a DTO,
+  client, or server stub that a generator could produce from an existing OpenAPI/AsyncAPI
+  document.
+  If no such document exists yet for an interface that should have one, add it rather
+  than working around its absence.
+- This is distinct from `clew`, the requirements/spec-to-code governance workflow described in
+  `CLAUDE.md` — that governs _why_ code exists and traces it to a requirement; this section
+  governs _how_ an interface's own contract and bindings are produced.
+
+**Rationale.** A hand-maintained binding drifts from its spec silently; generating it keeps the
+contract and the code from disagreeing, and keeps the language-neutral core (Section 2) genuinely
+reachable from any target language through the same generated boundary, instead of a boundary
+each service reimplements by hand.
