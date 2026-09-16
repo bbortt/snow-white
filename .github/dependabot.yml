@@ -133,9 +133,19 @@ updates:
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
+      cp-kafka:
+        patterns:
+          - 'confluentinc/cp-kafka'
+        group-by: 'dependency-name'
       postgres:
         patterns:
           - 'postgres'
+        group-by: 'dependency-name'
       otel-lgtm:
         patterns:
           - 'grafana/otel-lgtm'
+        group-by: 'dependency-name'
+      opentelemetry-collector-contrib:
+        patterns:
+          - 'otel/opentelemetry-collector-contrib'
+        group-by: 'dependency-name'
