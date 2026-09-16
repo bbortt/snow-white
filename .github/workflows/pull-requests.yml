@@ -294,6 +294,41 @@ jobs:
             -Ddocker.network=github_actions \
             -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
+  cli-binary-verification:
+    name: Verify CLI Binary
+    if: contains(github.event.pull_request.labels.*.name, 'module:cli')
+    runs-on: ${{ matrix.os }}
+    needs: ci
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary: snow-white-linux-x64
+          - os: ubuntu-24.04-arm
+            binary: snow-white-linux-arm64
+          - os: macos-13
+            binary: snow-white-macos-x64
+          - os: macos-latest
+            binary: snow-white-macos-arm64
+          - os: windows-latest
+            binary: snow-white-windows-x64.exe
+      fail-fast: false
+    permissions:
+      contents: read
+    steps:
+      - name: Download CLI Artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: cli
+          path: toolkit/cli/target
+      - name: Make Binary Executable
+        if: runner.os != 'Windows'
+        run: chmod +x toolkit/cli/target/${{ matrix.binary }}
+      - name: Verify Binary Runs
+        shell: bash
+        run: |
+          toolkit/cli/target/${{ matrix.binary }} --version
+          toolkit/cli/target/${{ matrix.binary }} info
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
