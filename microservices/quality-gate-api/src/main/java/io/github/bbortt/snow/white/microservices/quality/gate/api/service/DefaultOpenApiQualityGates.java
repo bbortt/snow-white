@@ -7,13 +7,10 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.CONTENT_TYPE_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
-import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPTIONAL_PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
@@ -72,7 +69,6 @@ public final class DefaultOpenApiQualityGates {
     addAllOpenApiCoverageCriteria(
       qualityGateConfiguration,
       Stream.of(
-        PATH_COVERAGE,
         HTTP_METHOD_COVERAGE,
         OPERATION_SUCCESS_COVERAGE,
         POSITIVE_RESPONSE_CODE_COVERAGE,
@@ -96,20 +92,13 @@ public final class DefaultOpenApiQualityGates {
     addAllOpenApiCoverageCriteria(
       qualityGateConfiguration,
       Stream.of(
-        PATH_COVERAGE,
         HTTP_METHOD_COVERAGE,
         OPERATION_SUCCESS_COVERAGE,
         RESPONSE_CODE_COVERAGE,
-        ERROR_RESPONSE_CODE_COVERAGE,
-        POSITIVE_RESPONSE_CODE_COVERAGE,
-        REQUIRED_PARAMETER_COVERAGE,
-        OPTIONAL_PARAMETER_COVERAGE,
         PARAMETER_COVERAGE,
         CONTENT_TYPE_COVERAGE,
         REQUIRED_ERROR_FIELDS_COVERAGE,
-        NO_UNDOCUMENTED_RESPONSE_CODES,
-        NO_UNDOCUMENTED_ERROR_RESPONSE_CODES,
-        NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES
+        NO_UNDOCUMENTED_RESPONSE_CODES
       )
     );
 
