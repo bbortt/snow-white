@@ -15,7 +15,7 @@ permissions:
 jobs:
   labeler:
     name: Pull-Request Labels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
     permissions:
       contents: read
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13
   skill:
     name: Validate Agent Skill
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: read
     steps:
@@ -59,7 +59,7 @@ jobs:
         run: npx --yes @anthropic-ai/claude-code@2.1.268 plugin validate .apm/skills --strict
   kube-score:
     name: Score Helm Chart
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -83,7 +83,7 @@ jobs:
             -
   ci:
     name: Build and Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       checks: write
@@ -138,7 +138,7 @@ jobs:
     if: |
       contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
       contains(github.event.pull_request.title, 'citrus.version')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: ci
     strategy:
       matrix:
@@ -199,7 +199,7 @@ jobs:
           retention-days: 7
   ui-e2e-tests:
     name: UI End-to-End Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -237,7 +237,7 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
       contains(github.event.pull_request.title, 'citrus.version') ||
       contains(github.event.pull_request.title, 'native-maven-plugin')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: ci
     strategy:
       matrix:
@@ -302,16 +302,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-slim
             binary: snow-white-linux-x64
           - os: ubuntu-24.04-arm
             binary: snow-white-linux-arm64
-          - os: macos-13
+          - os: macos-26-intel
             binary: snow-white-macos-x64
-          - os: macos-latest
+          - os: macos-26
             binary: snow-white-macos-arm64
-          - os: windows-latest
+          - os: windows-2025
             binary: snow-white-windows-x64.exe
+          - os: windows-11-arm
+            binary: snow-white-windows-arm64.exe
       fail-fast: false
     permissions:
       contents: read
@@ -331,7 +333,7 @@ jobs:
           toolkit/cli/target/${{ matrix.binary }} info
   dependency-review:
     name: Dependency Review
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
     steps:
       - name: Checkout
@@ -342,7 +344,7 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
   zizmor:
     name: Zizmor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
     steps:

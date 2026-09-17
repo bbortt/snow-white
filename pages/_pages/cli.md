@@ -30,13 +30,14 @@ sudo mv snow-white /usr/local/bin/
 
 Available binaries per release:
 
-| File                         | Platform    |
-| ---------------------------- | ----------- |
-| `snow-white-linux-arm64`     | Linux ARM64 |
-| `snow-white-linux-x64`       | Linux x64   |
-| `snow-white-macos-arm64`     | macOS ARM64 |
-| `snow-white-macos-x64`       | macOS x64   |
-| `snow-white-windows-x64.exe` | Windows x64 |
+| File                           | Platform      |
+| ------------------------------ | ------------- |
+| `snow-white-linux-arm64`       | Linux ARM64   |
+| `snow-white-linux-x64`         | Linux x64     |
+| `snow-white-macos-arm64`       | macOS ARM64   |
+| `snow-white-macos-x64`         | macOS x64     |
+| `snow-white-windows-x64.exe`   | Windows x64   |
+| `snow-white-windows-arm64.exe` | Windows ARM64 |
 
 ### OCI Image
 
