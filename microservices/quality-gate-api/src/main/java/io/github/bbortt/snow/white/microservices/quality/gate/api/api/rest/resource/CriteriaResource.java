@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.CriteriaApi;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCoverageConfigurationMapper;
@@ -28,6 +30,10 @@ public class CriteriaResource implements CriteriaApi {
   private final OpenApiCoverageConfigurationMapper openApiCoverageConfigurationMapper;
   private final OpenApiCoverageConfigurationService openApiCoverageConfigurationService;
 
+  /**
+   * The full criteria catalog, sorted by name for a stable listing order.
+   */
+  @RealizesSw(SwTraceables.SW_012_CRITERIA_CATALOG_ENDPOINT)
   @Override
   public ResponseEntity<
     @NonNull List<OpenApiCriterion>

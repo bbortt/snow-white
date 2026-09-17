@@ -25,6 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -69,6 +73,7 @@ class QualityGateServiceUnitTest {
   class PersistTest {
 
     @Test
+    @VerifiesCon(ConTraceables.CON_005_API_CREATED_GATES_ARE_NEVER_PREDEFINED)
     void shouldSaveNewConfiguration()
       throws ConfigurationNameAlreadyExistsException {
       var qualityGateConfigurationArgumentCaptor =
@@ -117,8 +122,11 @@ class QualityGateServiceUnitTest {
     ArgumentCaptor<QualityGateConfiguration> assertThatNewQualityGateConfigurationHasBeenPersisted(
       List<String> openApiCriteria
     ) throws ConfigurationNameAlreadyExistsException {
+      // isPredefined(TRUE) on the incoming configuration falsifies this test if persist() ever
+      // stops forcing it back to FALSE.
       var configuration = QualityGateConfiguration.builder()
         .name("NonExistingConfig")
+        .isPredefined(TRUE)
         .build();
 
       doReturn(false)
@@ -333,6 +341,7 @@ class QualityGateServiceUnitTest {
   class InitPredefinedQualityGatesTest {
 
     @Test
+    @VerifiesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
     void shouldUpdatePersistedQualityGateConfigurations() {
       doReturn(buildDefaultConfigurations())
         .when(defaultOpenApiQualityGatesMock)

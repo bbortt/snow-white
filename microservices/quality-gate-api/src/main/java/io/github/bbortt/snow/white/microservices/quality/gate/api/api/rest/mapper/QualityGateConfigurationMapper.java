@@ -11,6 +11,8 @@ import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -72,6 +74,12 @@ public abstract class QualityGateConfigurationMapper {
       .toList();
   }
 
+  /**
+   * A {@code null} or empty criteria list on an update maps to an empty mapping set — the merge
+   * patch that follows then clears any previously attached criteria rather than leaving them
+   * untouched.
+   */
+  @RealizesSw(SwTraceables.SW_010_UPDATE_MERGE_PATCH_EMPTY_CRITERIA_CLEARS)
   public Set<QualityGateOpenApiCoverageMapping> mapOpenApiCriteriaToMappings(
     @Nullable List<String> openApiCriteria,
     @NonNull QualityGateConfiguration existingEntity

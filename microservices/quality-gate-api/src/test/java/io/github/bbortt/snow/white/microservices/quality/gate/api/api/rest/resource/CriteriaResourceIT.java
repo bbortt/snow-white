@@ -16,6 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
@@ -41,6 +45,8 @@ class CriteriaResourceIT extends AbstractQualityGateApiIT {
   private MockMvc mockMvc;
 
   @Test
+  @VerifiesSw(SwTraceables.SW_012_CRITERIA_CATALOG_ENDPOINT)
+  @VerifiesArch(ArchTraceables.ARCH_002_CRITERIA_METADATA_OWNED_BY_ENUM)
   void findAllOpenapiCriteria() throws Exception {
     var content = mockMvc
       .perform(get(OPENAPI_ENTITY_API_URL))

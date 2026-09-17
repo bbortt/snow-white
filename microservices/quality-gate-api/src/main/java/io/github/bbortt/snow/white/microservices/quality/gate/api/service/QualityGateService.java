@@ -9,6 +9,10 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 import static java.lang.Boolean.FALSE;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesCon;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
@@ -35,6 +39,12 @@ public class QualityGateService {
   private final DefaultOpenApiQualityGates defaultOpenApiQualityGates;
   private final QualityGateConfigurationRepository qualityGateConfigurationRepository;
 
+  /**
+   * A gate created through the API is always persisted as user-defined, regardless of what the
+   * request body's {@code isPredefined} field contains — only startup seeding can produce a
+   * predefined gate.
+   */
+  @RealizesCon(ConTraceables.CON_005_API_CREATED_GATES_ARE_NEVER_PREDEFINED)
   @Transactional(rollbackFor = ConfigurationNameAlreadyExistsException.class)
   public QualityGateConfiguration persist(
     @NonNull QualityGateConfiguration qualityGateConfiguration,
@@ -132,6 +142,11 @@ public class QualityGateService {
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
   }
 
+  /**
+   * Upserts by name so an existing gate's {@code id} (and any user-added association to it) is
+   * preserved rather than replaced; safe to run on every startup, not just a fresh database.
+   */
+  @RealizesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
   @Transactional
   public void initPredefinedQualityGates() {
     logger.info(

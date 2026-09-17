@@ -13,6 +13,8 @@ import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.OK;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import java.util.List;
@@ -58,6 +60,7 @@ class CriteriaApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_012_CRITERIA_CATALOG_ENDPOINT)
   void shouldGetAllOpenApiCoverageCriteria(
     @CitrusResource TestCaseRunner testRunner
   ) {
