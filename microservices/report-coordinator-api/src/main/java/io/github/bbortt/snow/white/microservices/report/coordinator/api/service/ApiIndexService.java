@@ -11,6 +11,8 @@ import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.client.ApiIndexApiClient;
@@ -26,6 +28,11 @@ public class ApiIndexService {
   private final ApiIndexApiClient apiIndexApiClient;
   private final ApiTestMapper apiTestMapper;
 
+  /**
+   * Every API is validated and its outcome collected, so the caller can be told about all of them
+   * at once rather than one failure per round trip.
+   */
+  @RealizesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   public Set<ValidationResult> fetchCompleteApiInformation(
     Set<ApiTest> apiTests
   ) {

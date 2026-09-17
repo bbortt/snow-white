@@ -15,6 +15,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
@@ -95,6 +97,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     );
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+    )
     void shouldSendOneRecordPerApiTest() {
       var apiTest1 = ApiTest.builder()
         .serviceName("starWars")
@@ -127,6 +132,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+    )
     void shouldRouteToCorrectTopicWithCalculationIdAsKey() {
       var apiTest = ApiTest.builder()
         .serviceName("svc")
@@ -250,6 +258,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+    )
     void shouldInjectOtelContextIntoRecordHeaders() {
       var apiTest = ApiTest.builder()
         .serviceName("svc")

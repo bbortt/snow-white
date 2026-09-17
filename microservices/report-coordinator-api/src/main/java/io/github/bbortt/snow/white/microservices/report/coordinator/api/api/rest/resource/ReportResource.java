@@ -19,6 +19,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_XML;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi;
@@ -106,6 +108,12 @@ public class ReportResource implements ReportApi {
       );
   }
 
+  /**
+   * A report that does not exist is a {@code 404}; one still running is a {@code 202} carrying the
+   * partial report as JSON — including on the JUnit endpoint, where a half-populated document
+   * would read as a genuine passing test run.
+   */
+  @RealizesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
   private ReportOrErrorResponse getReportByCalculationIdOrErrorResponse(
     UUID calculationId
   ) {

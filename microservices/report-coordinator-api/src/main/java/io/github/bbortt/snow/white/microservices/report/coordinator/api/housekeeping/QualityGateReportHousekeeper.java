@@ -10,6 +10,8 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.NOT_STARTED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.TIMED_OUT;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.time.Clock;
@@ -30,6 +32,11 @@ public class QualityGateReportHousekeeper implements HousekeepingJob {
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
   @Override
+  /**
+   * A report stuck in {@code NOT_STARTED} or {@code IN_PROGRESS} past the cutoff is transitioned
+   * to {@code TIMED_OUT} and kept — nothing is deleted.
+   */
+  @RealizesSw(SwTraceables.SW_018_STALE_REPORTS_TIME_OUT_NOT_DELETED)
   @Transactional
   public void run() {
     var cutoff = Instant.now(clock).minusSeconds(

@@ -20,6 +20,8 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
@@ -39,6 +41,7 @@ public class JUnitReporter {
   private static final DurationFormatter durationFormatter =
     new DurationFormatter();
 
+  @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
   public TestSuites transformToJUnitTestSuites(
     QualityGateReport qualityGateReport
   ) {
@@ -198,6 +201,12 @@ public class JUnitReporter {
 
   private static class TestCaseFactory {
 
+    /**
+     * A criterion the gate excluded becomes {@code skipped} rather than being omitted, and an
+     * included criterion below full coverage becomes a {@code failure} — a stricter bar than the
+     * gate's own {@code minCoveragePercentage}.
+     */
+    @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
     public TestCase buildForApiTestResult(
       String suiteName,
       ApiTestResult apiTestResult

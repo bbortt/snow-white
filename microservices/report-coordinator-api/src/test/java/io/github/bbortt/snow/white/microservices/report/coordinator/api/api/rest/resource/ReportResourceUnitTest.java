@@ -26,8 +26,11 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
@@ -101,6 +104,7 @@ class ReportResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
     void shouldReturnReport_inStatusProgress() {
       var calculationId = UUID.fromString(
         "6edca9e1-6a3a-426a-a32a-7e970b52886e"
@@ -125,6 +129,7 @@ class ReportResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
     void shouldReturnHttpNotFound_whenReportByCalculationIdNotFound() {
       var calculationId = UUID.fromString(
         "68fa43e1-df3a-4f52-a5d4-e8d88696c85e"
@@ -220,6 +225,42 @@ class ReportResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+    void shouldReturnAcceptedAsJson_whenReportIsStillInProgress() {
+      var calculationId = UUID.fromString(
+        "2a4d1e0b-0b4a-4d0e-9a3f-7b8c5d6e1f20"
+      );
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+      doReturn(IN_PROGRESS).when(qualityGateReport).getReportStatus();
+
+      var responseDto = mock(ListQualityGateReports200ResponseInner.class);
+      doReturn(responseDto)
+        .when(qualityGateReportMapperMock)
+        .toListDto(qualityGateReport);
+
+      var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
+
+      // A half-populated JUnit document would read as a genuine passing test run,
+      // so the in-progress answer stays JSON even on the XML endpoint.
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(ACCEPTED),
+          r ->
+            assertThat(r.getHeaders().toSingleValueMap()).containsEntry(
+              CONTENT_TYPE,
+              APPLICATION_JSON_VALUE
+            ),
+          r -> assertThat(r.getBody()).isEqualTo(responseDto)
+        );
+
+      verifyNoInteractions(jUnitReporterMock);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
     void shouldReturnHttpNotFound_whenReportByCalculationIdNotFound() {
       var calculationId = UUID.fromString(
         "12cfbdd4-f2f2-4b16-98fa-5dde81be1541"

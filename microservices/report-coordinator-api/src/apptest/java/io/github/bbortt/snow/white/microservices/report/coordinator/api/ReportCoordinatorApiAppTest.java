@@ -27,6 +27,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -138,6 +140,7 @@ class ReportCoordinatorApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   void shouldInitializeQualityGateCalculation(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -183,6 +186,7 @@ class ReportCoordinatorApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   void shouldReturn404WhenQualityGateConfigDoesNotExist(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -231,6 +235,7 @@ class ReportCoordinatorApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   void shouldReturn400WhenApiIsNotIndexed(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -279,6 +284,8 @@ class ReportCoordinatorApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+  @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
   void shouldCompleteFullQualityGateLifecycle(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -435,6 +442,7 @@ class ReportCoordinatorApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_018_STALE_REPORTS_TIME_OUT_NOT_DELETED)
   void shouldTimeOutStaleReport(@CitrusResource TestCaseRunner testRunner) {
     var serviceName = "shouldTimeOutStaleReport-service";
     var apiName = "shouldTimeOutStaleReport-api";

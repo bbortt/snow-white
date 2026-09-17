@@ -19,6 +19,8 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ReportParameterMapper;
@@ -76,6 +78,7 @@ class QualityGateResourceUnitTest {
     private CalculateQualityGateRequest calculateQualityGateRequestMock;
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void shouldReturnAcceptedWithLocationHeader_whenAllApiTestsAreValid()
       throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);
@@ -136,6 +139,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void shouldReturnBadRequest_whenSingleApiTestFailsValidation() {
       var apiTests = Set.of(mock(ApiTest.class));
       doReturn(apiTests)
@@ -176,6 +180,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void shouldReturnBadRequest_whenMultipleApiTestsFailValidation() {
       var apiTests = Set.of(mock(ApiTest.class));
       doReturn(apiTests)
@@ -218,6 +223,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void shouldReturnBadRequest_whenValidationResultsAreMixed() {
       var apiTest = mock(ApiTest.class);
       var apiTests = Set.of(apiTest);
@@ -260,6 +266,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void shouldReturnNotFound_whenQualityGateConfigurationDoesNotExist()
       throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);

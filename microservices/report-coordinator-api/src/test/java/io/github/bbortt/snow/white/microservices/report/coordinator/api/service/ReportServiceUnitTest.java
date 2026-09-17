@@ -24,7 +24,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.clearSynchronization;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization;
+import static org.springframework.transaction.support.TransactionSynchronizationManager.setActualTransactionActive;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
@@ -53,6 +59,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.support.TransactionSynchronization;
 
 @ExtendWith({ MockitoExtension.class })
 class ReportServiceUnitTest {
@@ -444,6 +451,65 @@ class ReportServiceUnitTest {
               .get(AttributeKey.stringKey("report.calculationId"))
           ).isEqualTo(savedReport.getCalculationId().toString())
         );
+    }
+
+    @Test
+    @VerifiesArch(ArchTraceables.ARCH_005_DISPATCH_AFTER_TRANSACTION_COMMIT)
+    void shouldDeferDispatchUntilAfterCommit_whenTransactionIsActive()
+      throws QualityGateNotFoundException {
+      var qualityGateConfigName = "test-config";
+      var apiTests = Set.of(
+        ApiTest.builder()
+          .serviceName("test-service")
+          .apiName("test-api")
+          .apiVersion("test-api-version")
+          .apiType(OPENAPI.getVal())
+          .build()
+      );
+
+      var reportParameter = ReportParameter.builder()
+        .calculationId(UUID.fromString("41386eb3-7569-4944-a39f-0bdcadf15654"))
+        .lookbackWindow("1d")
+        .build();
+
+      doReturn(new QualityGateConfig(qualityGateConfigName, emptySet(), 100))
+        .when(qualityGateServiceMock)
+        .findQualityGateConfigByName(qualityGateConfigName);
+
+      var savedReport = minimalQualityGateReport(
+        UUID.fromString("6f465636-2ea3-4279-80db-6ff1643df6af")
+      );
+      doReturn(savedReport)
+        .when(qualityGateReportRepositoryMock)
+        .saveAndFlush(any(QualityGateReport.class));
+
+      doAnswer(returnsFirstArg())
+        .when(apiTestRepositoryMock)
+        .save(any(ApiTest.class));
+
+      initSynchronization();
+      setActualTransactionActive(true);
+
+      try {
+        var result = fixture.initializeQualityGateCalculation(
+          qualityGateConfigName,
+          apiTests,
+          reportParameter
+        );
+
+        verify(dispatcherMock, never()).dispatch(any(), any(), any());
+
+        getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+
+        verify(dispatcherMock).dispatch(
+          savedReport.getCalculationId(),
+          savedReport.getReportParameter(),
+          result.getApiTests()
+        );
+      } finally {
+        clearSynchronization();
+        setActualTransactionActive(false);
+      }
     }
 
     @Test

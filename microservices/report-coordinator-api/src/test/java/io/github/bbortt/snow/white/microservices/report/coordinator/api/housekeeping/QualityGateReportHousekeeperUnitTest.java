@@ -12,6 +12,8 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.time.Clock;
@@ -62,6 +64,7 @@ class QualityGateReportHousekeeperUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_018_STALE_REPORTS_TIME_OUT_NOT_DELETED)
     void timesOutReportsCreatedMoreThanFiveMinutesAgo_byDefault() {
       fixture.run();
 
@@ -75,6 +78,7 @@ class QualityGateReportHousekeeperUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_018_STALE_REPORTS_TIME_OUT_NOT_DELETED)
     void timesOutReportsCreatedMoreThanTenMinutesAgo() {
       reportCoordinationServiceProperties
         .getHousekeepingProperties()

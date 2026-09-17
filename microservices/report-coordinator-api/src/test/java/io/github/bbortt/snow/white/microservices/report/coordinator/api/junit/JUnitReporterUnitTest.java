@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.springframework.util.StreamUtils.copyToString;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.XmlMapperConfiguration;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
@@ -136,6 +139,7 @@ class JUnitReporterUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
     void shouldTransformReport_withFailedOpenApiCoverages()
       throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
@@ -169,6 +173,7 @@ class JUnitReporterUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
     void shouldTransformReport_withMixedOpenApiCoverages()
       throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
@@ -203,6 +208,38 @@ class JUnitReporterUnitTest {
       verifyJUnitReportEqualsExpectedContent(
         jUnitReport,
         "JUnitReporterUnitTest/withMixedOpenApiCoverages.xml"
+      );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+    void shouldTransformReport_withExcludedOpenApiCoverages()
+      throws IOException, SAXException {
+      var qualityGateReport = createInitialQualityGateReport();
+
+      var apiTestMock = mock(ApiTest.class);
+      doReturn(qualityGateReport).when(apiTestMock).getQualityGateReport();
+
+      // Zero coverage on an excluded criterion: exclusion wins over the coverage
+      // bar, so this must not turn up as a failure.
+      var excludedApiTestResult = createOpenApiTestResult(
+        PATH_COVERAGE.name(),
+        ZERO,
+        Duration.ofMillis(4321),
+        null
+      )
+        .withIncludedInReport(FALSE)
+        .withApiTest(apiTestMock);
+
+      var jUnitReport = fixture.transformToJUnitTestSuites(
+        qualityGateReport.withApiTests(
+          Set.of(createApiTest("testApi", Set.of(excludedApiTestResult)))
+        )
+      );
+
+      verifyJUnitReportEqualsExpectedContent(
+        jUnitReport,
+        "JUnitReporterUnitTest/withExcludedOpenApiCoverages.xml"
       );
     }
 

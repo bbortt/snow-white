@@ -11,6 +11,10 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.c
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.DEFAULT_CONSUMER_GROUP_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties.OpenapiCalculationResponse.OPENAPI_CALCULATION_RESPONSE_TOPIC;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.ConcernsArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
@@ -39,6 +43,15 @@ public class OpenApiResultListener {
   private final ReportService reportService;
   private final ReportCoordinationServiceProperties properties;
 
+  /**
+   * An unmatchable response is acknowledged rather than retried; any other failure is rethrown for
+   * redelivery, and on the final delivery attempt it is first recorded on the report so it reaches
+   * a terminal status instead of waiting for the housekeeping timeout.
+   */
+  @RealizesSw(SwTraceables.SW_019_FINAL_DELIVERY_ATTEMPT_ABSORBS_FAILURE)
+  @ConcernsArch(
+    ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+  )
   @Transactional
   @KafkaListener(
     groupId = "${" + CONSUMER_GROUP_ID + ":" + DEFAULT_CONSUMER_GROUP_ID + "}",

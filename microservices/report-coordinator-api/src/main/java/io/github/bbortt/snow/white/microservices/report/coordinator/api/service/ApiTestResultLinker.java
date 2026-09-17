@@ -11,6 +11,8 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static java.util.Objects.nonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
@@ -29,6 +31,12 @@ final class ApiTestResultLinker {
 
   private final ApiTestRepository apiTestRepository;
 
+  /**
+   * A criterion outside the gate is persisted but flagged not-included; only included results
+   * decide the verdict, and the gate's {@code minCoveragePercentage} is the bar both for a single
+   * criterion and for the share of criteria clearing it.
+   */
+  @RealizesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
   void addApiTestResultsToApiTest(
     Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
