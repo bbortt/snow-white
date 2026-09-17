@@ -15,6 +15,8 @@ import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import com.influxdb.exceptions.InfluxException;
 import com.influxdb.query.FluxTable;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -45,6 +47,9 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(
   prefix = "influxdb",
   name = { "url", "token", "org", "bucket" }
+)
+@RealizesArch(
+  ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
 )
 public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 

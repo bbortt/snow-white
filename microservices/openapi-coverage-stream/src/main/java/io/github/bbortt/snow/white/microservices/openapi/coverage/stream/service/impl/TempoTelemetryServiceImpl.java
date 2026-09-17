@@ -16,6 +16,8 @@ import static java.util.stream.Collectors.toCollection;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
@@ -57,6 +59,9 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 @NullMarked
 @Conditional(TempoConfiguredCondition.class)
+@RealizesArch(
+  ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
+)
 public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   /**

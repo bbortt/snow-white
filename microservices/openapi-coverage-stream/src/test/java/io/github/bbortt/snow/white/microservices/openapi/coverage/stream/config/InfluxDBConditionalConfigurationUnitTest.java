@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import com.influxdb.client.InfluxDBClient;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.InfluxDBTelemetryServiceImpl;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
@@ -43,6 +45,9 @@ class InfluxDBConditionalConfigurationUnitTest {
       );
 
   @Test
+  @VerifiesArch(
+    ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
+  )
   void shouldRegisterInfluxDBBeans_whenAllPropertiesSet() {
     contextRunner
       .withPropertyValues(FULLY_CONFIGURED_PROPERTIES)

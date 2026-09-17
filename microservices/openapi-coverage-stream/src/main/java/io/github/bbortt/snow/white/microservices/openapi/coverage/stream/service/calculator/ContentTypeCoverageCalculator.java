@@ -13,6 +13,8 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -20,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -48,6 +51,12 @@ public class ContentTypeCoverageCalculator
     return CONTENT_TYPE_COVERAGE;
   }
 
+  /**
+   * Operations without a request body (or with no content map) are excluded from both required
+   * and covered entirely, rather than counted as a vacuous zero — and a content-type header is
+   * matched by prefix, so a charset or boundary parameter does not prevent a match.
+   */
+  @RealizesSw(SwTraceables.SW_005_CONTENT_TYPE_COVERAGE)
   @Override
   protected @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,
@@ -57,6 +66,8 @@ public class ContentTypeCoverageCalculator
     var totalContentTypes = new AtomicInteger(0);
 
     var uncoveredContentTypes = new HashSet<String>();
+    var anyTelemetryExamined = new AtomicBoolean(false);
+    var anyContentTypeHeaderObserved = new AtomicBoolean(false);
 
     for (Map.Entry<
       String,
@@ -80,7 +91,14 @@ public class ContentTypeCoverageCalculator
         pathToTelemetryMap,
         operationKey
       );
+      if (!telemetryList.isEmpty()) {
+        anyTelemetryExamined.set(true);
+      }
+
       var observedContentTypes = extractObservedContentTypes(telemetryList);
+      if (!observedContentTypes.isEmpty()) {
+        anyContentTypeHeaderObserved.set(true);
+      }
 
       for (String specContentType : specContentTypes) {
         if (isContentTypeCovered(specContentType, observedContentTypes)) {
@@ -110,7 +128,10 @@ public class ContentTypeCoverageCalculator
 
     return new CoverageCalculationResult(
       coverage,
-      getAdditionalInformationOrNull(uncoveredContentTypes)
+      getAdditionalInformationOrNull(
+        uncoveredContentTypes,
+        anyTelemetryExamined.get() && !anyContentTypeHeaderObserved.get()
+      )
     );
   }
 
@@ -167,8 +188,15 @@ public class ContentTypeCoverageCalculator
     return false;
   }
 
+  /**
+   * When none of the telemetry correlated to the evaluated operations carries a
+   * {@code content-type} header at all, the hint distinguishes "header capture may not be
+   * enabled" from a genuinely untested media type, which would otherwise look identical: a zero
+   * score either way.
+   */
   private @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredContentTypes
+    @NonNull Set<String> uncoveredContentTypes,
+    boolean noContentTypeHeaderObserved
   ) {
     if (uncoveredContentTypes.isEmpty()) {
       return null;
@@ -176,9 +204,17 @@ public class ContentTypeCoverageCalculator
 
     var sorted = uncoveredContentTypes.stream().sorted().toList();
 
-    return format(
+    var message = format(
       "The following request body content types are uncovered: `%s`",
       join("`, `", sorted)
     );
+
+    if (noContentTypeHeaderObserved) {
+      message +=
+        "\n" +
+        "No `content-type` header was observed on any correlated telemetry — header capture may not be enabled (see `OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS`, pages/_pages/onboarding.md).";
+    }
+
+    return message;
   }
 }

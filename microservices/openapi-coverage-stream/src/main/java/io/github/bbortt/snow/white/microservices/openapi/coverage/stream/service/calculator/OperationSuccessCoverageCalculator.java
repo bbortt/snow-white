@@ -15,6 +15,8 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -50,6 +52,7 @@ public class OperationSuccessCoverageCalculator
     return OPERATION_SUCCESS_COVERAGE;
   }
 
+  @RealizesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
   @Override
   protected @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,

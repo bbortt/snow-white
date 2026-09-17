@@ -9,12 +9,17 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static java.lang.Integer.parseInt;
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatusCode;
 
 @NoArgsConstructor(access = PRIVATE)
 final class HttpStatusCodeUtils {
 
+  @RealizesSw(
+    SwTraceables.SW_007_DEFAULT_RESPONSE_KEY_IS_THE_ERROR_FALLBACK_CASE
+  )
   static boolean isErrorHttpStatusCode(String statusCode) {
     try {
       return HttpStatusCode.valueOf(parseInt(statusCode)).isError();
@@ -28,6 +33,9 @@ final class HttpStatusCodeUtils {
     }
   }
 
+  @RealizesSw(
+    SwTraceables.SW_007_DEFAULT_RESPONSE_KEY_IS_THE_ERROR_FALLBACK_CASE
+  )
   static boolean isPositiveHttpStatusCode(String statusCode) {
     try {
       int code = parseInt(statusCode);

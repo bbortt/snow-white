@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -75,6 +77,9 @@ class TempoConfiguredConditionUnitTest {
     }
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
+    )
     void shouldReturnTrue_withUrlAndToken() {
       mockEnvironment.setProperty("tempo.url", "url");
 

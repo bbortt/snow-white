@@ -6,7 +6,7 @@
 Documented backend pluggability, Kafka messaging role, and telemetry-fetch footprint for
 `openapi-coverage-stream`
 
-**Status**: planned
+**Status**: done
 
 **Business Value**
 `openapi-coverage-stream` is the only service that talks to a telemetry backend and the only one

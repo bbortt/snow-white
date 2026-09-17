@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.InfluxDBProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.TempoProperties;
 import java.util.stream.Stream;
@@ -83,6 +85,9 @@ class TelemetryBackendPropertiesValidatorUnitTest {
   class NeitherBackendConfiguredTest {
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
+    )
     void shouldThrow_whenNothingConfigured() {
       assertThatValidatorThrows(NOT_CONFIGURED_MESSAGE);
     }
@@ -117,6 +122,9 @@ class TelemetryBackendPropertiesValidatorUnitTest {
   class BothBackendsConfiguredTest {
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_001_PLUGGABLE_INFLUXDB_OR_TEMPO_TELEMETRY_BACKEND
+    )
     void shouldThrow_whenInfluxDBAndTempoTokenBothConfigured() {
       fullyConfigureInfluxDB();
       fullyConfigureTempoWithToken();

@@ -13,6 +13,8 @@ import static java.util.Comparator.comparing;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
@@ -49,6 +51,7 @@ public class OpenApiCoverageCalculationProcessor {
   private final OpenApiCoverageCalculationService openApiCoverageCalculationService;
 
   @Bean
+  @RealizesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
   public KStream<
     String,
     QualityGateCalculationRequestEvent

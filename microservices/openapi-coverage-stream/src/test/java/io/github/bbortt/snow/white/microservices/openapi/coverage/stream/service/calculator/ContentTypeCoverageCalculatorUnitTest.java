@@ -12,6 +12,8 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -157,6 +159,7 @@ class ContentTypeCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_005_CONTENT_TYPE_COVERAGE)
     void shouldSkipOperationsWithNoRequestBody() {
       var operationWithoutBody = new Operation();
 
@@ -230,6 +233,7 @@ class ContentTypeCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_005_CONTENT_TYPE_COVERAGE)
     void shouldSkipTelemetryWithNullAttributes() {
       var pathToOpenAPIOperationMap = Map.of(
         "POST_/api/v1/users",
@@ -241,6 +245,10 @@ class ContentTypeCoverageCalculatorUnitTest {
         List.of(new OpenTelemetryData("span-1", "trace-1", null))
       );
 
+      // Telemetry exists but carries no header at all — this is exactly the case the header-capture
+      // hint (verified separately below) must catch, so the plain uncovered-list message alone is
+      // no longer the right expectation.
+
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
         pathToTelemetryMap
@@ -250,7 +258,9 @@ class ContentTypeCoverageCalculatorUnitTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
         r ->
           assertThat(r.additionalInformation()).isEqualTo(
-            "The following request body content types are uncovered: `POST_/api/v1/users [application/json]`"
+            """
+            The following request body content types are uncovered: `POST_/api/v1/users [application/json]`
+            No `content-type` header was observed on any correlated telemetry — header capture may not be enabled (see `OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS`, pages/_pages/onboarding.md)."""
           )
       );
     }

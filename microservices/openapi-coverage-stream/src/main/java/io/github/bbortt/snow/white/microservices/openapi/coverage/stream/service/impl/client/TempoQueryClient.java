@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client;
 
+import clew.traceables.clew.NfTraceables;
+import clew.traceables.clew.annotation.RealizesNf;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,6 +44,7 @@ public class TempoQueryClient {
     },
     backoff = @Backoff(delay = 200, multiplier = 2)
   )
+  @RealizesNf(NfTraceables.NF_006_BOUNDED_TELEMETRY_FETCH_FOOTPRINT)
   public JsonNode search(
     String traceQLQuery,
     long startEpochSeconds,

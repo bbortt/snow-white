@@ -11,6 +11,8 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -188,6 +190,7 @@ class OperationSuccessCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
     void shouldNotCountErrorOnlyResponses_asSuccessful() {
       var pathToOpenAPIOperationMap = Map.of(
         "DELETE_/api/v1/users/{id}",

@@ -10,6 +10,8 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCr
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toSet;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class NoUndocumentedPositiveResponseCodesCalculator
     return NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
   }
 
+  @RealizesSw(SwTraceables.SW_003_UNDOCUMENTED_RESPONSE_CODE_DETECTION)
   @Override
   protected Set<String> filterObservedResponseCodes(
     Set<String> observedResponseCodes
