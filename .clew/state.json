@@ -1,11 +1,11 @@
 {
   "sequences": {
-    "CON": 4,
+    "CON": 5,
     "NF": 6,
     "STK": 3,
     "SYS": 13,
-    "STR": 8,
-    "ARCH": 1,
-    "SW": 8
+    "STR": 9,
+    "ARCH": 3,
+    "SW": 12
   }
 }

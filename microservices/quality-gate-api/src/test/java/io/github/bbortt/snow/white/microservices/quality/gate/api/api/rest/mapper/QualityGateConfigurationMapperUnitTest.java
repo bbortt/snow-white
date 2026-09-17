@@ -16,6 +16,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
@@ -126,6 +128,7 @@ class QualityGateConfigurationMapperUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_010_UPDATE_MERGE_PATCH_EMPTY_CRITERIA_CLEARS)
     void shouldThrow_ifOpenApiCriteriaDoesNotExist() {
       var openApiCriteria = singletonList("foo");
       var qualityGateConfigurationMock = mock(QualityGateConfiguration.class);
@@ -152,6 +155,7 @@ class QualityGateConfigurationMapperUnitTest {
 
     @MethodSource
     @ParameterizedTest
+    @VerifiesSw(SwTraceables.SW_010_UPDATE_MERGE_PATCH_EMPTY_CRITERIA_CLEARS)
     void shouldReturnEmptyList_whenOpenApiCriteriaIsEmpty(
       List<String> openApiCriteria
     ) {

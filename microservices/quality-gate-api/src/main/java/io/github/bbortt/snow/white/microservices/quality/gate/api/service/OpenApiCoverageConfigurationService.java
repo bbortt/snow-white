@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.service;
 
 import static java.util.Arrays.stream;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
@@ -29,6 +31,12 @@ public class OpenApiCoverageConfigurationService {
     return new HashSet<>(openApiCoverageConfigurationRepository.findAll());
   }
 
+  /**
+   * Seeds only a name per missing {@link OpenApiCoverageCriteria} constant — an existence marker,
+   * never a copy of its label or description — and skips any constant already present, so it is
+   * safe to run on every startup.
+   */
+  @RealizesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
   @Transactional
   public void initOpenApiCoverageCriteria() {
     logger.info("Updating OpenAPI criteria table");

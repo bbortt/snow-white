@@ -13,6 +13,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
@@ -37,6 +41,7 @@ class DefaultOpenApiQualityGatesUnitTest {
   class GetDefaultOpenApiCoverageConfigurationsTest {
 
     @Test
+    @VerifiesSw(SwTraceables.SW_011_FOUR_PREDEFINED_GATES_FIXED_COMPOSITION)
     void shouldContainFourQualityGateDefinitions() {
       doAnswer(invocation ->
         Optional.of(
@@ -104,6 +109,7 @@ class DefaultOpenApiQualityGatesUnitTest {
     }
 
     @Test
+    @VerifiesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
     void shouldResultInExceptionWhenOpenApiConfigurationsDoNotExist() {
       assertThatThrownBy(() ->
         fixture.getDefaultOpenApiCoverageConfigurations()

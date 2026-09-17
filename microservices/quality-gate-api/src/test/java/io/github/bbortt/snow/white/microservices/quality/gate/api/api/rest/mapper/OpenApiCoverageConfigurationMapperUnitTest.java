@@ -12,6 +12,8 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import java.util.Set;
@@ -35,6 +37,7 @@ class OpenApiCoverageConfigurationMapperUnitTest {
 
     @EnumSource
     @ParameterizedTest
+    @VerifiesArch(ArchTraceables.ARCH_002_CRITERIA_METADATA_OWNED_BY_ENUM)
     void shouldMapAllProperties(OpenApiCoverageCriteria openApiCriteria) {
       var openApiCoverageConfiguration = OpenApiCoverageConfiguration.builder()
         .name(openApiCriteria.name())

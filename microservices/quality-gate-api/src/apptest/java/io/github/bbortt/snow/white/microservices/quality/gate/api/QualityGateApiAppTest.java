@@ -13,6 +13,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.*;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import java.net.URLEncoder;
@@ -75,6 +77,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldGetAllQualityGatesWithPaginationParameters(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -121,6 +124,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldCreateQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var payload = JsonMapper.shared().writeValueAsString(
       QualityGateConfig.builder()
@@ -198,6 +202,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldReturn409WhenCreatingQualityGateWithDuplicateName(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -242,6 +247,7 @@ class QualityGateApiAppTest {
   @CitrusTest
   @MethodSource
   @ParameterizedTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldGetQualityGateByName(
     String qualityGateName,
     @CitrusResource TestCaseRunner testRunner
@@ -261,6 +267,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldReturn404WhenQualityGateNotFound(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -283,6 +290,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldUpdateQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var qualityGateConfig = QualityGateConfig.builder()
       .name("shouldUpdateQualityGate")
@@ -338,6 +346,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldReturn404WhenUpdatingNonExistentQualityGate(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -373,6 +382,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldDeleteQualityGate(@CitrusResource TestCaseRunner testRunner) {
     var qualityGateConfig = QualityGateConfig.builder()
       .name("shouldDeleteQualityGate")
@@ -406,6 +416,7 @@ class QualityGateApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   void shouldReturn404WhenDeletingNonExistentQualityGate(
     @CitrusResource TestCaseRunner testRunner
   ) {

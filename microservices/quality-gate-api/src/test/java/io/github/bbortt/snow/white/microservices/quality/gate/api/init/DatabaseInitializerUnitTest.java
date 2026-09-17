@@ -6,8 +6,11 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.init;
 
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import org.junit.jupiter.api.Nested;
@@ -33,13 +36,18 @@ class DatabaseInitializerUnitTest {
   class RunTest {
 
     @Test
+    @VerifiesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
     void shouldInitiateDatabaseInitialization() {
       fixture.run();
 
-      verify(
-        openApiCoverageConfigurationServiceMock
-      ).initOpenApiCoverageCriteria();
-      verify(qualityGateServiceMock).initPredefinedQualityGates();
+      var inOrder = inOrder(
+        openApiCoverageConfigurationServiceMock,
+        qualityGateServiceMock
+      );
+      inOrder
+        .verify(openApiCoverageConfigurationServiceMock)
+        .initOpenApiCoverageCriteria();
+      inOrder.verify(qualityGateServiceMock).initPredefinedQualityGates();
     }
   }
 }

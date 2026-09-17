@@ -22,6 +22,10 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCr
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
 import static java.lang.Boolean.TRUE;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateOpenApiCoverageMapping;
@@ -40,6 +44,11 @@ public final class DefaultOpenApiQualityGates {
 
   private final OpenApiCoverageConfigurationRepository openApiCoverageConfigurationRepository;
 
+  /**
+   * The exact names, criteria sets, and coverage thresholds of the four predefined gates, as
+   * they ship today.
+   */
+  @RealizesSw(SwTraceables.SW_011_FOUR_PREDEFINED_GATES_FIXED_COMPOSITION)
   public Set<QualityGateConfiguration> getDefaultOpenApiCoverageConfigurations() {
     // LinkedHashSet preserves insertion order for deterministic iteration
     var gates = new LinkedHashSet<QualityGateConfiguration>();
@@ -135,6 +144,11 @@ public final class DefaultOpenApiQualityGates {
       .build();
   }
 
+  /**
+   * Fails fast if a referenced criterion row does not yet exist, so criteria seeding must run
+   * before predefined-gate seeding, every time.
+   */
+  @RealizesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
   private void addAllOpenApiCoverageCriteria(
     QualityGateConfiguration qualityGateConfiguration,
     Stream<OpenApiCoverageCriteria> openApiCriteria

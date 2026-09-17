@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapp
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.OpenApiCriterion;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
@@ -17,6 +19,11 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = SPRING)
 public interface OpenApiCoverageConfigurationMapper {
+  /**
+   * The persisted row only records a criterion's existence by name; its label and description
+   * are looked up from the {@link OpenApiCoverageCriteria} enum at read time, never stored.
+   */
+  @RealizesArch(ArchTraceables.ARCH_002_CRITERIA_METADATA_OWNED_BY_ENUM)
   default List<OpenApiCriterion> toDtos(
     Set<OpenApiCoverageConfiguration> openApiCoverageConfigurations
   ) {

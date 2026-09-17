@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapp
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import org.junit.jupiter.api.Test;
 
 class ObjectUtilsUnitTest {
@@ -33,6 +35,7 @@ class ObjectUtilsUnitTest {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_010_UPDATE_MERGE_PATCH_EMPTY_CRITERIA_CLEARS)
   void shouldIgnoreNullSourceFields() {
     var source = new Person();
     source.name = null;

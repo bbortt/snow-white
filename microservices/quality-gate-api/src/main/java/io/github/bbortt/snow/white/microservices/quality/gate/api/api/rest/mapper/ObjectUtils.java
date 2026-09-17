@@ -8,12 +8,20 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapp
 
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import java.lang.reflect.Field;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class ObjectUtils {
 
+  /**
+   * A {@code null} field is skipped and leaves the target untouched, but a non-null field —
+   * including an empty collection — overwrites the target outright; this is what lets an empty
+   * criteria set on update actually clear a gate's previously attached criteria.
+   */
+  @RealizesSw(SwTraceables.SW_010_UPDATE_MERGE_PATCH_EMPTY_CRITERIA_CLEARS)
   public static void copyNonNullFields(Object source, Object target) {
     if (source == null || target == null) {
       throw new IllegalArgumentException("Source and target must not be null!");

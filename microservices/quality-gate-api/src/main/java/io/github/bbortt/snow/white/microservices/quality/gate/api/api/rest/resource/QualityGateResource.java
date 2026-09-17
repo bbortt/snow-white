@@ -14,6 +14,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.QualityGateApi;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
@@ -65,6 +67,11 @@ public class QualityGateResource implements QualityGateApi {
     );
   }
 
+  /**
+   * The create endpoint of the quality-gate CRUD contract: 201 with the created resource, or 409
+   * on a duplicate name.
+   */
+  @RealizesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   @Override
   public ResponseEntity createQualityGate(QualityGateConfig qualityGateConfig) {
     try {
@@ -89,6 +96,11 @@ public class QualityGateResource implements QualityGateApi {
     }
   }
 
+  /**
+   * The delete endpoint of the quality-gate CRUD contract: 204 on success, 404 for an unknown
+   * name, 400 when the gate is predefined and therefore unmodifiable.
+   */
+  @RealizesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   @Override
   public ResponseEntity deleteQualityGate(String name) {
     try {
@@ -106,6 +118,11 @@ public class QualityGateResource implements QualityGateApi {
     return ResponseEntity.noContent().build();
   }
 
+  /**
+   * The list endpoint of the quality-gate CRUD contract: paginated, with pagination headers on
+   * the response.
+   */
+  @RealizesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   @Override
   public ResponseEntity<@NonNull List<QualityGateConfig>> getAllQualityGates(
     Integer page,
@@ -127,6 +144,11 @@ public class QualityGateResource implements QualityGateApi {
       );
   }
 
+  /**
+   * The get-by-name endpoint of the quality-gate CRUD contract: 200 with the resource, or 404 for
+   * an unknown name.
+   */
+  @RealizesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   @Override
   public ResponseEntity getQualityGateByName(String name) {
     try {
@@ -142,6 +164,11 @@ public class QualityGateResource implements QualityGateApi {
     }
   }
 
+  /**
+   * The update endpoint of the quality-gate CRUD contract: 200 with the merge-patched resource,
+   * 404 for an unknown name, 400 for an unknown criterion or a predefined (unmodifiable) gate.
+   */
+  @RealizesSw(SwTraceables.SW_009_QUALITY_GATE_CRUD_CONTRACT)
   @Override
   public ResponseEntity updateQualityGate(
     String name,
