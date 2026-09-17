@@ -13,6 +13,8 @@ import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toSet;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -40,6 +42,7 @@ public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
     return PATH_COVERAGE;
   }
 
+  @RealizesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
   @Override
   public @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,

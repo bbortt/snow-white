@@ -5,7 +5,7 @@
 **Title**
 Documented quality-gate configuration and criteria management for `quality-gate-api`
 
-**Status**: active
+**Status**: done
 
 **Business Value**
 `SYS-008` names "configurable quality-gate definitions, predefined and user-defined" as a system

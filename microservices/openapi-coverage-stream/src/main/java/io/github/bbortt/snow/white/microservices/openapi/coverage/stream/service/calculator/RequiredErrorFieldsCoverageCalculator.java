@@ -16,6 +16,8 @@ import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -54,6 +56,7 @@ public class RequiredErrorFieldsCoverageCalculator
     return REQUIRED_ERROR_FIELDS_COVERAGE;
   }
 
+  @RealizesSw(SwTraceables.SW_006_REQUIRED_ERROR_FIELDS_COVERAGE)
   @Override
   protected @NonNull CoverageCalculationResult calculateCoverage(
     Map<String, Operation> pathToOpenAPIOperationMap,

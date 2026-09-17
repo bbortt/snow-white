@@ -27,6 +27,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
@@ -120,6 +122,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
         .build();
 
     @Test
+    @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldProcessCoverageRequest()
       throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
@@ -253,6 +256,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @ParameterizedTest
     @EnumSource(value = ApiType.class, names = { "OPENAPI" }, mode = EXCLUDE)
+    @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldFilterOutEventsThatDontCoverOpenapi(ApiType apiType) {
       var calculationId = "bc1eed1a-251f-4c3b-98b7-5f1c5a3ee45c";
       var requestEvent = qualityGateCalculationRequestEvent(apiType);
@@ -298,6 +302,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldRespondWithFriendlyMessage_whenTelemetryBackendUnavailable()
       throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
       var calculationId = "3fb7c5b9-9c1e-4f7c-8f3f-15f5b6f4c1f0";

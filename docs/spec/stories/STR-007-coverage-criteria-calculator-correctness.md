@@ -5,7 +5,7 @@
 **Title**
 Correct, precisely-defined per-criterion coverage calculation
 
-**Status**: planned
+**Status**: done
 
 **Business Value**
 Snow-White's coverage numbers are only useful if they are trustworthy.

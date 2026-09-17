@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -51,6 +53,9 @@ class HttpStatusCodeUtilsUnitTest {
 
     @ParameterizedTest(name = "\"{0}\" → true")
     @ValueSource(strings = { "default", "DEFAULT", "Default", "dEfAuLt" })
+    @VerifiesSw(
+      SwTraceables.SW_007_DEFAULT_RESPONSE_KEY_IS_THE_ERROR_FALLBACK_CASE
+    )
     void returnsTrueForDefaultInAnyCasing(String value) {
       assertThat(HttpStatusCodeUtils.isErrorHttpStatusCode(value)).isTrue();
     }
@@ -89,6 +94,9 @@ class HttpStatusCodeUtilsUnitTest {
 
     @ParameterizedTest(name = "{0} → false")
     @ValueSource(strings = { "4XX", "4xx", "5XX", "5xx", "default", "DEFAULT" })
+    @VerifiesSw(
+      SwTraceables.SW_007_DEFAULT_RESPONSE_KEY_IS_THE_ERROR_FALLBACK_CASE
+    )
     void returnsFalseForErrorWildcardsAndDefault(String pattern) {
       assertThat(
         HttpStatusCodeUtils.isPositiveHttpStatusCode(pattern)

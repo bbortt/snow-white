@@ -7,7 +7,7 @@ Telemetry fetched from InfluxDB or Tempo per calculation is bounded, not fetched
 
 **Lens**: NF
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A single coverage calculation can correlate against thousands of spans (a busy API over a long
@@ -55,3 +55,10 @@ precondition of promoting this spec.
   this spec additionally bounds it by result size within that scope
 - [NF-003](NF-003-scalability-without-redesign.md) — the low-resource-footprint
   deployment target this constraint protects
+
+## Changes
+
+- **2026-09-17** — Promoted to active.
+  `TempoQueryClient.search`'s existing `SEARCH_LIMIT` bound is anchored as the one backend already
+  satisfying this constraint; the InfluxDB gap and the throughput/load test remain tracked follow-up
+  work, not a precondition of promotion, per this spec's own verification description.

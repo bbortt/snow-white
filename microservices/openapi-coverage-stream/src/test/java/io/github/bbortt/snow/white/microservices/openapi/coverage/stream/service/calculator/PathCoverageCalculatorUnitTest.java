@@ -12,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 import static org.mockito.Mockito.mock;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -137,6 +139,7 @@ class PathCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
     void shouldReturn0Percent_whenNoPathsCovered() {
       Map<String, Operation> pathToOpenAPIOperationMap = new HashMap<>();
       pathToOpenAPIOperationMap.put("GET_/api/v1/users", operationMock);
