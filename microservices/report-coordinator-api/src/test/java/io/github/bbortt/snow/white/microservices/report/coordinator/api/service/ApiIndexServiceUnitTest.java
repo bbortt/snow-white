@@ -17,6 +17,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
@@ -87,6 +89,7 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void returnsFailureWhenApiIsNotIndexed() {
       var apiTest = defaultApiTest();
 
@@ -164,6 +167,7 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
     void returnsOneResultPerApiTest() {
       var apiTest1 = ApiTest.builder()
         .serviceName("service1")

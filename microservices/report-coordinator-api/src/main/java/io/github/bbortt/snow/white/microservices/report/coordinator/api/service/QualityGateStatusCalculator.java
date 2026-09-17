@@ -14,6 +14,8 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.TIMED_OUT;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
@@ -30,6 +32,7 @@ final class QualityGateStatusCalculator {
     TIMED_OUT
   );
 
+  @RealizesSw(SwTraceables.SW_015_REPORT_STATUS_AGGREGATES_WITH_STICKY_TERMINAL)
   QualityGateReport withUpdatedReportStatus(
     QualityGateReport qualityGateReport
   ) {

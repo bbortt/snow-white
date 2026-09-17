@@ -22,6 +22,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
@@ -56,6 +58,7 @@ class ApiTestResultLinkerUnitTest {
 
     @ParameterizedTest
     @MethodSource("nullOrEmptyList")
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldReturnImmediately_whenThereAreNoApiTestResults(
       Set<ApiTestResult> apiTestResults
     ) {
@@ -74,6 +77,7 @@ class ApiTestResultLinkerUnitTest {
 
     @ParameterizedTest
     @MethodSource("nullOrEmptyList")
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldReturnApiTestWithLinkedResults_notIncludedInOpenApiCoverageCriteria(
       Set<String> includedOpenApiCoverageCriteria
     ) {
@@ -105,6 +109,7 @@ class ApiTestResultLinkerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldSetApiTestStatusToPassed_whenAllIncludedResultsFullyCovered() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
@@ -135,6 +140,7 @@ class ApiTestResultLinkerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldSetApiTestStatusToFailed_whenAnyIncludedResultIsNotFullyCovered() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
@@ -160,6 +166,7 @@ class ApiTestResultLinkerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldSetApiTestStatusToPassed_whenPassRateMeetsMinCoveragePercentage() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
@@ -222,6 +229,7 @@ class ApiTestResultLinkerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldSetApiTestStatusToPassed_whenCoverageThresholdMeetsMinCoveragePercentage() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 

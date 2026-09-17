@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import java.time.Instant;
 import java.util.Set;
@@ -24,6 +26,7 @@ public interface QualityGateReportRepository
     JpaRepository<@NonNull QualityGateReport, @NonNull UUID>,
     JpaSpecificationExecutor<@NonNull QualityGateReport>
 {
+  @RealizesSw(SwTraceables.SW_018_STALE_REPORTS_TIME_OUT_NOT_DELETED)
   @Modifying
   @Query(
     "UPDATE QualityGateReport r SET r.reportStatus = :status WHERE r.createdAt < :cutoff AND r.reportStatus IN (:initialStatus)"

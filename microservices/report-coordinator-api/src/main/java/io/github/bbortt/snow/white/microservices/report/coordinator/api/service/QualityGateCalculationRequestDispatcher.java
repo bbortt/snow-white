@@ -10,6 +10,8 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOpera
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
@@ -52,6 +54,9 @@ class QualityGateCalculationRequestDispatcher {
       reportCoordinationServiceProperties.getCalculationRequestTopic();
   }
 
+  @RealizesArch(
+    ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+  )
   public void dispatch(
     UUID calculationId,
     ReportParameter reportParameter,
@@ -62,6 +67,13 @@ class QualityGateCalculationRequestDispatcher {
     );
   }
 
+  /**
+   * One record per API test, all keyed by the calculation id so the whole fan-out shares a
+   * partition, with the active trace context injected into the record headers.
+   */
+  @RealizesArch(
+    ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
+  )
   private void dispatchSingle(
     UUID calculationId,
     ReportParameter reportParameter,

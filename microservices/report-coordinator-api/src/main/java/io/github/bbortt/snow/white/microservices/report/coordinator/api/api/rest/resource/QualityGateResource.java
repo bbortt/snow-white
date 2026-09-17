@@ -16,6 +16,8 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ReportParameterMapper;
@@ -51,7 +53,12 @@ public class QualityGateResource implements QualityGateApi {
 
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
+  /**
+   * All named APIs are validated before anything is persisted, and every failure is reported at
+   * once: a request with any unresolvable API creates no report and dispatches nothing.
+   */
   @Override
+  @RealizesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   public ResponseEntity calculateQualityGate(
     String qualityGateConfigName,
     CalculateQualityGateRequest calculateQualityGateRequest

@@ -20,6 +20,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
@@ -59,6 +61,9 @@ class QualityGateStatusCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_015_REPORT_STATUS_AGGREGATES_WITH_STICKY_TERMINAL
+    )
     void shouldReturnInProgress_whenAnyApiTestIsStillInProgress() {
       var report = QualityGateReport.builder()
         .calculationId(UUID.fromString("87ddf55c-4f38-4a00-b067-c3dc7abbdfcb"))
@@ -131,6 +136,9 @@ class QualityGateStatusCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_015_REPORT_STATUS_AGGREGATES_WITH_STICKY_TERMINAL
+    )
     void shouldReturnPassedWhenAllApiTestsPassed() {
       var report = QualityGateReport.builder()
         .calculationId(UUID.fromString("9c18ee4b-0fc4-4677-90e1-47eae4092d9b"))
@@ -160,6 +168,9 @@ class QualityGateStatusCalculatorUnitTest {
 
     @MethodSource
     @ParameterizedTest
+    @VerifiesSw(
+      SwTraceables.SW_015_REPORT_STATUS_AGGREGATES_WITH_STICKY_TERMINAL
+    )
     void shouldReturnImmediately_whenReportStatusIsAlreadyTerminal(
       ReportStatus terminalStatus
     ) {

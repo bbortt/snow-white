@@ -22,6 +22,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
@@ -208,6 +210,7 @@ class OpenApiResultListenerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_019_FINAL_DELIVERY_ATTEMPT_ABSORBS_FAILURE)
     void shouldCatchAndThrowAnyOtherExceptionForRetrying() {
       withValidOpenTelemetryContext();
       withMaxRetries(2);
@@ -232,6 +235,7 @@ class OpenApiResultListenerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_019_FINAL_DELIVERY_ATTEMPT_ABSORBS_FAILURE)
     void shouldCatchAndPersistExhaustedRetryException() {
       withValidOpenTelemetryContext();
       withMaxRetries(2);

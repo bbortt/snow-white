@@ -15,6 +15,10 @@ import static org.springframework.transaction.support.TransactionSynchronization
 import static org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive;
 import static org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.ApiTestResultMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
@@ -95,6 +99,7 @@ public class ReportService {
     handleSuccessfulResponse(report, event);
   }
 
+  @RealizesSw(SwTraceables.SW_019_FINAL_DELIVERY_ATTEMPT_ABSORBS_FAILURE)
   public void handleExceptionalResponse(
     QualityGateReport report,
     OpenApiCoverageResponseEvent event
@@ -183,6 +188,12 @@ public class ReportService {
     );
   }
 
+  /**
+   * Kafka is not part of the database transaction, so the calculation requests are sent only once
+   * the report they refer to is durable; without an active transaction the dispatch happens
+   * inline.
+   */
+  @RealizesArch(ArchTraceables.ARCH_005_DISPATCH_AFTER_TRANSACTION_COMMIT)
   private void dispatchAfterTransactionCommit(QualityGateReport report) {
     if (isSynchronizationActive() && isActualTransactionActive()) {
       registerSynchronization(
