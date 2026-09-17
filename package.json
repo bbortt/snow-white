@@ -50,9 +50,9 @@
   "optionalDependencies": {
     "npm-check-updates": "23.1.0"
   },
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@12.4.2",
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=24.21.0"
   },
   "cacheDirectories": [
     "node_modules"
