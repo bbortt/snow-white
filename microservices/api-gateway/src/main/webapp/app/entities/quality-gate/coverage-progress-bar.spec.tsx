@@ -75,5 +75,19 @@ describe('CoverageProgressBar', () => {
       const dangerBar = container.querySelector('.progress-bar.bg-danger');
       expect(dangerBar).toBeInTheDocument();
     });
+
+    it('should render the minimum-coverage marker when minCoveragePercentage is set', () => {
+      const { container } = render(<CoverageProgressBar apiTestResults={[result(1)]} minCoveragePercentage={80} />);
+
+      const marker = container.querySelector('div > div[style*="left: 80%"]');
+      expect(marker).toBeInTheDocument();
+    });
+
+    it('should not render the minimum-coverage marker when minCoveragePercentage is missing', () => {
+      const { container } = render(<CoverageProgressBar apiTestResults={[result(1)]} />);
+
+      const marker = container.querySelector('div[style*="left"]');
+      expect(marker).toBeNull();
+    });
   });
 });

@@ -15,7 +15,7 @@ import { defaultValue } from 'app/shared/model/quality-gate.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
-import reducer, { getEntities, getEntity, reset } from './quality-gate.reducer';
+import reducer, { getEntities, getEntity, joinAttributeFilters, reset } from './quality-gate.reducer';
 
 jest.mock('app/entities/quality-gate-config/quality-gate-api', () => ({
   qualityGateApi: {
@@ -294,6 +294,92 @@ describe('Quality-Gate reducer tests', () => {
       await store.dispatch(reset());
 
       expect(store.getActions()).toEqual(expectedActions);
+    });
+
+    it('maps a report with no interfaces to undefined apiTests', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: { ...resolvedObject.data, interfaces: undefined },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests).toBeUndefined();
+    });
+
+    it('maps an interface with no test results to undefined testResults, a set status, and a default isIncludedInQualityGate', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              status: 'PASSED',
+              testResults: undefined,
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests[0].testResults).toBeUndefined();
+      expect(fulfilledAction.payload.data.apiTests[0].status).toEqual('PASSED');
+    });
+
+    it('defaults isIncludedInQualityGate to false when omitted from a test result', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              testResults: [{ id: 'test_openapi_criterion', coverage: 0.5, additionalInformation: 'additional information' }],
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests[0].testResults[0].isIncludedInQualityGate).toBe(false);
+    });
+
+    it('does not fetch the quality-gate config when the report has no config name', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: { ...resolvedObject.data, qualityGateConfigName: undefined },
+      });
+      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>).mockClear();
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      expect(qualityGateApi.getQualityGateByName).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('joinAttributeFilters', () => {
+    it('should join attribute filters as key=value pairs', () => {
+      expect(joinAttributeFilters({ foo: 'bar', baz: 'qux' })).toEqual('foo=bar, baz=qux');
+    });
+
+    it('should return an empty string when attributeFilters is undefined', () => {
+      expect(joinAttributeFilters(undefined)).toEqual('');
+    });
+
+    it('should return an empty string when attributeFilters is empty', () => {
+      expect(joinAttributeFilters({})).toEqual('');
     });
   });
 });
