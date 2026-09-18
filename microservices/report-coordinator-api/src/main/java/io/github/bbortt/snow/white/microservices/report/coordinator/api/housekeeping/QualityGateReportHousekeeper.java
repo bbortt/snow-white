@@ -44,7 +44,10 @@ public class QualityGateReportHousekeeper implements HousekeepingJob {
         .getHousekeepingProperties()
         .getCutoffSeconds()
     );
-    logger.debug("Deleting QualityGate reports created before {}", cutoff);
+    logger.debug(
+      "Timing out stale QualityGate reports created before {}",
+      cutoff
+    );
 
     int updated =
       qualityGateReportRepository.updateStatusToTimedOutByCreatedAtBefore(

@@ -25,9 +25,16 @@ collected as a set, not consumed fail-fast.
 In both rejection cases **no report is persisted and no calculation request is dispatched**: a
 request naming four APIs of which one is unindexed leaves no trace behind.
 
+The OpenAPI contract states this: the operation description carries the all-or-nothing rule and
+the absence of any trace after a rejection, the `400` response describes the aggregation and both
+failure classifications, and the `Location` header records that it addresses the public gateway.
+
 **Rationale**
 A caller is a CI pipeline, and a pipeline that must re-run to discover its second broken API wastes
 a build cycle per fault — so validation reports every failure at once rather than the first.
+The contract has to say so, because none of it is inferable from the schemas: a generated client
+sees a `400` carrying `{code, message}` and has no way to learn that the request was atomic, that
+`message` holds more than one failure, or that there is no calculation id to poll afterwards.
 All-or-nothing creation follows from that: a partially dispatched calculation would produce a
 report that can never complete, because the coverage responses it waits for will never arrive for
 the API that was rejected, leaving it to expire via
@@ -64,3 +71,6 @@ cases.
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-09-18** — The all-or-nothing rule, the aggregated `400` body and the public-gateway
+  `Location` are now documented in the OpenAPI contract, where they were previously invisible.
+  Documentation only — the trigger's behaviour is unchanged.

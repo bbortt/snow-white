@@ -13,6 +13,20 @@ paths:
       description: >
         Starts an asynchronous calculation of a previously configured Quality-Gate.
         Returns a UUID that can be used to query the status and results of the calculation.
+
+
+        Triggering is **all-or-nothing**. Every API named in `includeApis` is resolved against the
+        API index before anything is persisted, and the results are collected rather than consumed
+        fail-fast. If *any* named API cannot be resolved, the whole request is rejected with a
+        single `400` whose message carries *every* failure - so a request naming four APIs of which
+        one is unindexed is rejected once, naming that one API, rather than being partially
+        accepted. Likewise, an unknown Quality-Gate name rejects the request with `404`.
+
+
+        In both rejection cases **no report is created and no calculation is dispatched**: the
+        request leaves no trace behind, and there is no calculation id to poll. A partially
+        dispatched calculation would otherwise produce a report that can never complete, because
+        the coverage results it waits for would never arrive for the rejected API.
       tags:
         - quality-gate
       parameters:
@@ -32,7 +46,10 @@ paths:
               $ref: './components/QualityGateCalculationRequest.yml'
       responses:
         '202':
-          description: 'Quality-Gate calculation initiated successfully'
+          description: >
+            Quality-Gate calculation initiated successfully. Every named API resolved, the report
+            has been persisted, and one calculation request per API is dispatched once that report
+            is durable. The report is returned in its initial, not-yet-calculated state.
           content:
             application/json:
               schema:
@@ -43,19 +60,40 @@ paths:
               schema:
                 type: string
                 format: uri
-              description: URI to the Quality-Gate report
+              description: >
+                URI to the Quality-Gate report, addressed on the public API gateway rather than on
+                this service's own (cluster-internal) address, because the URI is handed to a human
+                or written to a build log.
         '400':
-          description: 'Bad request, such as missing required parameters or invalid format'
+          description: >
+            The request was rejected and nothing was created. Either it is malformed - missing
+            required parameters or invalid format - or at least one API named in `includeApis`
+            could not be resolved against the API index.
+
+
+            In the latter case `message` aggregates **all** API failures, one per line: an API the
+            index answers `404` for is reported as not indexed, and any other failure as an
+            unexpected error carrying its root cause. Every named API is reported on, not just the
+            first to fail, so a caller fixes all of them in one round trip instead of one per
+            build.
           content:
             application/json:
               schema:
                 $ref: './components/Error.yml'
+              example:
+                code: 'Bad Request'
+                message: "API { serviceName='petstore', apiName='pets', apiVersion='1.0.0' } not indexed!"
         '404':
-          description: 'Quality-Gate name not found'
+          description: >
+            No Quality-Gate is configured under the given name. As with `400`, no report is created
+            and no calculation is dispatched.
           content:
             application/json:
               schema:
                 $ref: './components/Error.yml'
+              example:
+                code: 'Not Found'
+                message: "Quality-Gate configuration 'my-gate' does not exist!"
         '500':
           description: 'Internal server error'
           content:

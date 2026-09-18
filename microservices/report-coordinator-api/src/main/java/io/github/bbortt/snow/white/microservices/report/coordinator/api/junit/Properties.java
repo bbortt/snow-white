@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public final class Properties {
 
   static final String CALCULATION_ID = "calculationId";
+  static final String MIN_COVERAGE_PERCENTAGE = "minCoveragePercentage";
 
   static final String SERVICE_NAME = "serviceName";
   static final String API_NAME = "apiName";

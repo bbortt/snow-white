@@ -151,6 +151,7 @@ class ReportServiceUnitTest {
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
+        .minCoveragePercentage(80)
         .reportStatus(IN_PROGRESS.getVal())
         .reportParameter(mock(ReportParameter.class))
         .build();
@@ -159,6 +160,8 @@ class ReportServiceUnitTest {
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
 
+      // The gate has been tightened to 100% since this report was triggered; the
+      // criteria set is still read live, the threshold is not.
       var qualityGateConfig = new QualityGateConfig(
         QUALITY_GATE_CONFIG_NAME,
         Set.of("PATH_COVERAGE"),
@@ -227,7 +230,7 @@ class ReportServiceUnitTest {
         mappedResults,
         apiTest,
         qualityGateConfig.getOpenApiCoverageCriteria(),
-        qualityGateConfig.getMinCoveragePercentage()
+        originalReport.getMinCoveragePercentage()
       );
       verify(qualityGateStatusCalculatorMock).withUpdatedReportStatus(
         originalReport

@@ -14,8 +14,9 @@ Housekeeping sweeps reports that never reached a verdict.
 A report whose creation instant lies further in the past than the configured cutoff **and** whose
 status is still `NOT_STARTED` or `IN_PROGRESS` is transitioned to `TIMED_OUT` in a single bulk
 update.
-The report itself, its API tests, and its results are **retained** — nothing is removed, despite
-what the job's own debug log says.
+The report itself, its API tests, and its results are **retained** — nothing is removed, and the
+job's own logging says so at both ends: it announces the reports it is about to time out, and
+reports how many it did.
 A report in any other status is left alone, so a sweep never disturbs a settled verdict.
 
 The sweep runs on a configurable schedule and is additionally triggerable on demand through a REST
@@ -65,3 +66,6 @@ against a running service.
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-09-18** — The job's debug log announced a deletion it never performed; it now names the
+  timeout it actually applies.
+  Logging only — the sweep's behaviour is unchanged.

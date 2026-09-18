@@ -6,12 +6,12 @@
   -->
 <testsuites
   name="JUnitReporterUnitTest"
-  tests="2"
+  tests="3"
   failures="1"
   errors="0"
   skipped="0"
-  assertions="2"
-  time="5.55500"
+  assertions="3"
+  time="7.90000"
   timestamp="2025-04-24T22:30:00Z"
 >
   <properties>
@@ -19,28 +19,31 @@
       name="calculationId"
       value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
     />
-    <property name="minCoveragePercentage" value="100" />
+    <property name="minCoveragePercentage" value="80" />
   </properties>
   <testsuite
-    name="serviceName: bar apiVersion [OPENAPI]"
-    tests="1"
+    name="serviceName: testApi apiVersion [OPENAPI]"
+    tests="3"
     failures="1"
     errors="0"
     skipped="0"
-    assertions="1"
-    time="1.23400"
+    assertions="3"
+    time="7.90000"
   >
     <properties>
-      <property name="apiName" value="bar" />
+      <property name="apiName" value="testApi" />
       <property name="apiVersion" value="apiVersion" />
       <property name="serviceName" value="serviceName" />
     </properties>
     <testcase
       name="HTTP Method Coverage"
-      classname="serviceName: bar apiVersion [OPENAPI]"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
       time="1.23400"
     >
-      <failure message="Additional Information." type="AssertionError" />
+      <failure
+        message="Half the documented methods went untested."
+        type="AssertionError"
+      />
       <properties>
         <property
           name="description"
@@ -48,30 +51,31 @@
         />
       </properties>
     </testcase>
-  </testsuite>
-  <testsuite
-    name="serviceName: foo apiVersion [OPENAPI]"
-    tests="1"
-    failures="0"
-    errors="0"
-    skipped="0"
-    assertions="1"
-    time="4.32100"
-  >
-    <properties>
-      <property name="apiName" value="foo" />
-      <property name="apiVersion" value="apiVersion" />
-      <property name="serviceName" value="serviceName" />
-    </properties>
     <testcase
       name="Path Coverage"
-      classname="serviceName: foo apiVersion [OPENAPI]"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
       time="4.32100"
     >
+      <system-out
+      >Coverage is 85%, which meets Quality-Gate 'JUnitReporterUnitTest' minimum of 80% but is short of full coverage. Two of thirteen paths were never called.</system-out>
       <properties>
         <property
           name="description"
           value="Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+        />
+      </properties>
+    </testcase>
+    <testcase
+      name="Positive Response Code Coverage"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
+      time="2.34500"
+    >
+      <system-out
+      >Coverage is 90%, which meets Quality-Gate 'JUnitReporterUnitTest' minimum of 80% but is short of full coverage.</system-out>
+      <properties>
+        <property
+          name="description"
+          value="Each documented positive (non-error) response code (1xx, 2xx, 3xx) for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`."
         />
       </properties>
     </testcase>

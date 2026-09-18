@@ -43,6 +43,13 @@ public class TestCase {
   @JacksonXmlProperty
   private Skipped skipped;
 
+  /**
+   * Free-text commentary on a test case that passed — the only place the Common JUnit XML Format
+   * offers for saying something about a case a build server must still treat as green.
+   */
+  @JacksonXmlProperty(localName = "system-out")
+  private String systemOut;
+
   @JacksonXmlProperty(localName = "property")
   @JacksonXmlElementWrapper(localName = "properties")
   private Set<Property> properties;
