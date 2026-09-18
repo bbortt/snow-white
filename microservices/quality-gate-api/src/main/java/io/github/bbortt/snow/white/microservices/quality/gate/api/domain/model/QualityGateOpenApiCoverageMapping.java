@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.CascadeType.DETACH;
 import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.PERSIST;
@@ -43,10 +42,20 @@ import org.jspecify.annotations.NonNull;
 )
 public class QualityGateOpenApiCoverageMapping {
 
+  /**
+   * Deliberately excludes {@code REMOVE}: cascading a delete through this back-reference would
+   * delete the owning {@link QualityGateConfiguration} whenever a single mapping is orphan-removed
+   * from it (e.g. during startup reseeding), destroying the gate itself instead of just the one
+   * stale criterion association.
+   */
   @Id
   @NonNull
   @Setter(PACKAGE)
-  @ManyToOne(optional = false, cascade = { ALL }, fetch = EAGER)
+  @ManyToOne(
+    optional = false,
+    cascade = { PERSIST, MERGE, REFRESH, DETACH },
+    fetch = EAGER
+  )
   @JoinColumn(name = "quality_gate_configuration", nullable = false)
   private QualityGateConfiguration qualityGateConfiguration;
 

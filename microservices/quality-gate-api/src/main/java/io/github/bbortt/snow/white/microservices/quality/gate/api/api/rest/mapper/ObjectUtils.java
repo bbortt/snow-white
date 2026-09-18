@@ -11,6 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -53,12 +54,35 @@ public final class ObjectUtils {
       Object value = sourceField.get(source);
       if (value != null) {
         Field targetField = targetClass.getDeclaredField(sourceField.getName());
-
         targetField.setAccessible(true);
+
+        if (value instanceof Collection<?> newContents) {
+          Object existingValue = targetField.get(target);
+          if (existingValue instanceof Collection<?> existingCollection) {
+            replaceContents(existingCollection, newContents);
+            return;
+          }
+        }
+
         targetField.set(target, value);
       }
     } catch (IllegalAccessException | NoSuchFieldException e) {
       throw new FailedToCopyFieldException(sourceField.getName(), e);
     }
+  }
+
+  /**
+   * Mutates the existing collection in place (clear + addAll) instead of replacing the field
+   * reference outright: a JPA-managed, {@code orphanRemoval = true} collection must stay the same
+   * instance for Hibernate to track removed elements — swapping in a plain new collection makes
+   * Hibernate lose track of it and throw at flush time.
+   */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private static void replaceContents(
+    Collection<?> existingCollection,
+    Collection<?> newContents
+  ) {
+    existingCollection.clear();
+    ((Collection) existingCollection).addAll(newContents);
   }
 }

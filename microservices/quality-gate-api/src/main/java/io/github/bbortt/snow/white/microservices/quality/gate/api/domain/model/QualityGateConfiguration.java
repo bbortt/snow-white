@@ -86,7 +86,8 @@ public class QualityGateConfiguration {
   @OneToMany(
     cascade = { ALL },
     fetch = EAGER,
-    mappedBy = "qualityGateConfiguration"
+    mappedBy = "qualityGateConfiguration",
+    orphanRemoval = true
   )
   private Set<QualityGateOpenApiCoverageMapping> openApiCoverageConfigurations =
     new HashSet<>();
