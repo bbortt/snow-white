@@ -23,5 +23,13 @@ export default {
         parser: 'typescript',
       },
     },
+    {
+      // Compared verbatim by XMLUnit, so reflowing a `system-out` text node
+      // breaks the assertion.
+      files: '**/src/test/resources/JUnitReporterUnitTest/*.xml',
+      options: {
+        xmlWhitespaceSensitivity: 'strict',
+      },
+    },
   ],
 };

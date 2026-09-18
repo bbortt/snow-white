@@ -285,7 +285,7 @@ class ReportCoordinatorApiAppTest {
   @Test
   @CitrusTest
   @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
-  @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+  @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
   void shouldCompleteFullQualityGateLifecycle(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -378,7 +378,11 @@ class ReportCoordinatorApiAppTest {
           var xml = message.getPayload(String.class);
           assertThat(xml)
             .contains("<testsuites")
-            .contains(calculationId.toString());
+            .contains(calculationId.toString())
+            // The bar the whole document was judged against is the gate's own,
+            // pinned onto the report when the calculation was triggered.
+            .contains("minCoveragePercentage")
+            .contains("value=\"80\"");
         })
     );
   }

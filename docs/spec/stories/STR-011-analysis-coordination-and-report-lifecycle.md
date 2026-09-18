@@ -104,14 +104,9 @@ No code changes — this documents the existing, already-tested behaviour and an
   Those remain unanchored here, consistent with the `quality-gate-api` and
   `openapi-coverage-stream` retraces, which likewise related to their `SYS` parents without
   claiming them; closing the `SYS`/`STK`/`NF` coverage gaps is its own story.
-- The duplicate `ApiInformationFilter` in the Kafka listener package — a byte-identical copy of
-  `QualityGateReportApiTestsFilter` that no production code calls.
-  It is reported as a finding, not specced; removing it is a cleanup change, not a requirement.
 - The generic `{code, message}` error envelope `ApiExceptionHandler` normalises Spring MVC's own
   exceptions into — a convention shared by every microservice, explicitly left cross-cutting by
   `STR-009` and still unclaimed.
-- Whether the JUnit export's full-coverage bar _should_ instead follow the gate threshold — the
-  divergence is documented as-is; changing it is a product decision for its own story.
 
 ## Relations
 
@@ -125,7 +120,7 @@ No code changes — this documents the existing, already-tested behaviour and an
   status aggregation and terminal stickiness
 - [SW-016](../specs/SW-016-api-test-verdict-is-gate-scoped.md) — the API-test verdict
   rule
-- [SW-017](../specs/SW-017-junit-export-skips-excluded-fails-partial.md) — the JUnit
+- [SW-017](../specs/SW-017-junit-export-mirrors-the-gate-verdict.md) — the JUnit
   XML mapping
 - [SW-018](../specs/SW-018-stale-reports-time-out-not-deleted.md) — the stale-report
   timeout

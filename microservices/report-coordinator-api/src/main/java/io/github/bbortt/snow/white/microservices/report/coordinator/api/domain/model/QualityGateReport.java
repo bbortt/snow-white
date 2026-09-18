@@ -18,6 +18,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -50,6 +52,17 @@ public class QualityGateReport {
   @Size(min = 1, max = 64)
   @Column(nullable = false, updatable = false, length = 64)
   private String qualityGateConfigName;
+
+  /**
+   * The gate's coverage threshold as it stood when this report was created, pinned so that later
+   * edits to the gate cannot change how an already calculated report is scored or exported.
+   */
+  @NonNull
+  @Builder.Default
+  @Min(80)
+  @Max(100)
+  @Column(nullable = false, updatable = false)
+  private final Integer minCoveragePercentage = 100;
 
   @NonNull
   @OneToOne(

@@ -55,7 +55,7 @@ a running service.
   `Location` header leads here
 - [SW-015](SW-015-report-status-aggregates-with-sticky-terminal.md) — the status this
   contract branches on
-- [SW-017](SW-017-junit-export-skips-excluded-fails-partial.md) — the JUnit document
+- [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the JUnit document
   returned once the report is complete
 
 ## Changes

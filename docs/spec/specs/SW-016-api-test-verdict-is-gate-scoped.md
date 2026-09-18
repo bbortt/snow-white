@@ -26,10 +26,14 @@ When those results are attached to an API test:
 - A response carrying no results at all leaves the API test untouched — neither its results nor
   its status change.
 
+The `minCoveragePercentage` applied is the one **pinned onto the report** when the calculation was
+triggered, not the one the gate carries at the moment a response arrives.
+The gate's criteria set is still read live, because it is not pinned.
+
 **Rationale**
 Keeping excluded results rather than dropping them is what lets a report explain itself: a reader
 can see that a criterion was measured and deliberately not counted, which is also what
-[SW-017](SW-017-junit-export-skips-excluded-fails-partial.md) renders as a skipped test
+[SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) renders as a skipped test
 case rather than a missing one.
 Reusing one configured number as both the per-criterion bar and the bar on the share of criteria
 clearing it is the decision worth pinning: a gate at 80% means both "a criterion must be 80%
@@ -38,6 +42,10 @@ two altitudes at once, and neither can be tuned without the other.
 The empty-set pass is vacuous truth made explicit: a gate that selected no criterion this API
 produced results for has nothing to object to, so the API test must not fail on absence of
 evidence.
+Reading the pinned threshold rather than the live one keeps a single calculation coherent: responses
+for the same report arrive over minutes, and a gate edited in between would otherwise score the
+earlier API tests under one bar and the later ones under another, leaving a report no reader could
+explain.
 
 **Verification Description**
 A test attaches a mixed result set to an API test under a gate selecting a subset of the criteria
@@ -59,10 +67,13 @@ leaves the API test unchanged.
   ratio this comparison relies on
 - [SW-015](SW-015-report-status-aggregates-with-sticky-terminal.md) — how these
   per-API-test verdicts roll up
-- [SW-017](SW-017-junit-export-skips-excluded-fails-partial.md) — the export that
-  renders the same results under a stricter bar
+- [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the export that
+  renders the same results under this same threshold
 
 ## Changes
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-09-18** — The threshold is now read from the report, which pins it at trigger time,
+  rather than from the live gate on every arriving response.
+  Unchanged for a gate nobody edits mid-calculation, which is every gate in practice.

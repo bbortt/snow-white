@@ -10,15 +10,18 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.j
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.API_VERSION;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.CALCULATION_ID;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.DESCRIPTION;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.MIN_COVERAGE_PERCENTAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Properties.SERVICE_NAME;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Property.property;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ONE;
+import static java.math.RoundingMode.UNNECESSARY;
 import static java.time.Duration.ZERO;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toCollection;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
@@ -26,10 +29,12 @@ import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,7 +46,9 @@ public class JUnitReporter {
   private static final DurationFormatter durationFormatter =
     new DurationFormatter();
 
-  @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+  private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
+  @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
   public TestSuites transformToJUnitTestSuites(
     QualityGateReport qualityGateReport
   ) {
@@ -53,6 +60,12 @@ public class JUnitReporter {
     public TestSuites buildForQualityGateReport(
       QualityGateReport qualityGateReport
     ) {
+      // Read once, from the report rather than the live gate, so that every test
+      // case in one document is judged against the number the report was scored
+      // under.
+      var qualityGateName = qualityGateReport.getQualityGateConfigName();
+      int minCoveragePercentage = qualityGateReport.getMinCoveragePercentage();
+
       var junitReport = TestSuites.builder()
         .name(qualityGateReport.getQualityGateConfigName())
         .timestamp(qualityGateReport.getCreatedAt().toString())
@@ -61,8 +74,15 @@ public class JUnitReporter {
             property(
               CALCULATION_ID,
               qualityGateReport.getCalculationId().toString()
+            ),
+            property(
+              MIN_COVERAGE_PERCENTAGE,
+              Integer.toString(minCoveragePercentage)
             )
           )
+            .stream()
+            .sorted(comparing(Property::getName))
+            .collect(toCollection(LinkedHashSet::new))
         )
         .build();
 
@@ -70,7 +90,12 @@ public class JUnitReporter {
         var testSuites = qualityGateReport
           .getApiTests()
           .parallelStream()
-          .map(new TestSuiteFactory()::buildForApiTest)
+          .map(
+            new TestSuiteFactory(
+              qualityGateName,
+              minCoveragePercentage
+            )::buildForApiTest
+          )
           .sorted(comparing(TestSuite::getName))
           .collect(toCollection(LinkedHashSet::new));
         junitReport.addAllTestSuite(testSuites);
@@ -122,7 +147,11 @@ public class JUnitReporter {
     }
   }
 
+  @RequiredArgsConstructor
   private static class TestSuiteFactory {
+
+    private final String qualityGateName;
+    private final int minCoveragePercentage;
 
     public TestSuite buildForApiTest(ApiTest apiTest) {
       var suiteName = constructName(apiTest);
@@ -144,7 +173,10 @@ public class JUnitReporter {
         .getApiTestResults()
         .parallelStream()
         .map(apiTestResult ->
-          new TestCaseFactory().buildForApiTestResult(suiteName, apiTestResult)
+          new TestCaseFactory(
+            qualityGateName,
+            minCoveragePercentage
+          ).buildForApiTestResult(suiteName, apiTestResult)
         )
         .sorted(comparing(TestCase::getName))
         .collect(toCollection(LinkedHashSet::new));
@@ -199,14 +231,19 @@ public class JUnitReporter {
     }
   }
 
+  @RequiredArgsConstructor
   private static class TestCaseFactory {
 
+    private final String qualityGateName;
+    private final int minCoveragePercentage;
+
     /**
-     * A criterion the gate excluded becomes {@code skipped} rather than being omitted, and an
-     * included criterion below full coverage becomes a {@code failure} — a stricter bar than the
-     * gate's own {@code minCoveragePercentage}.
+     * A criterion the gate excluded becomes {@code skipped} rather than being omitted; an included
+     * criterion below the gate's {@code minCoveragePercentage} becomes a {@code failure}; and one
+     * that clears the gate without reaching full coverage passes, carrying the remaining gap as
+     * {@code system-out}.
      */
-    @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+    @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     public TestCase buildForApiTestResult(
       String suiteName,
       ApiTestResult apiTestResult
@@ -234,24 +271,63 @@ public class JUnitReporter {
             .message(
               format(
                 "Test case is not included in Quality-Gate '%s'",
-                apiTestResult
-                  .getApiTest()
-                  .getQualityGateReport()
-                  .getQualityGateConfigName()
+                qualityGateName
               )
             )
             .build()
         );
-      } else if (apiTestResult.getCoverage().compareTo(ONE) < 0) {
+      }
+
+      var coverage = apiTestResult.getCoverage();
+
+      if (coverage.compareTo(thresholdAsRatio()) < 0) {
         return testCase.withFailure(
           Failure.builder()
             .type("AssertionError")
             .message(apiTestResult.getAdditionalInformation())
             .build()
         );
+      } else if (coverage.compareTo(ONE) < 0) {
+        return testCase.withSystemOut(
+          buildShortOfFullCoverageComment(apiTestResult, coverage)
+        );
       }
 
       return testCase;
+    }
+
+    /**
+     * The Common JUnit XML Format has no verdict between pass and fail, so a criterion that clears
+     * the gate but is not fully covered passes and says why in {@code system-out}.
+     */
+    private String buildShortOfFullCoverageComment(
+      ApiTestResult apiTestResult,
+      BigDecimal coverage
+    ) {
+      var comment = format(
+        "Coverage is %s%%, which meets Quality-Gate '%s' minimum of %d%% but is short of full coverage.",
+        asPercentage(coverage),
+        qualityGateName,
+        minCoveragePercentage
+      );
+
+      var additionalInformation = apiTestResult.getAdditionalInformation();
+
+      return hasText(additionalInformation)
+        ? comment + " " + additionalInformation
+        : comment;
+    }
+
+    private BigDecimal thresholdAsRatio() {
+      return BigDecimal.valueOf(minCoveragePercentage).divide(
+        HUNDRED,
+        2,
+        UNNECESSARY
+      );
+    }
+
+    private String asPercentage(BigDecimal coverage) {
+      return coverage.multiply(HUNDRED).stripTrailingZeros().toPlainString();
     }
   }
 }

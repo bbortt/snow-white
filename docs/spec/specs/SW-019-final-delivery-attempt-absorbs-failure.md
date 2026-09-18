@@ -74,3 +74,8 @@ throwing case rethrows without touching the report, and that the final attempt m
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-09-18** — Reviewed after the retrace raised the last-attempt absorption as a finding, and
+  confirmed as intended: three failed deliveries mean something is wrong rather than briefly
+  absent, so resolving the report as `FINISHED_EXCEPTIONALLY` with the exception message is the
+  right outcome — leaving it to the housekeeping timeout would discard the reason.
+  No change.

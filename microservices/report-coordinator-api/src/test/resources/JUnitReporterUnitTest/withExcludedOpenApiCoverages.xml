@@ -19,6 +19,7 @@
       name="calculationId"
       value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
     />
+    <property name="minCoveragePercentage" value="100" />
   </properties>
   <testsuite
     name="serviceName: testApi apiVersion [OPENAPI]"

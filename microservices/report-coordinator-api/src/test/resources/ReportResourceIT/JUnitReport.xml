@@ -5,12 +5,12 @@
   ~ See LICENSE file for full details.
   -->
 <testsuites
-  name="qualityGateConfigName"
-  tests="0"
-  failures="0"
-  errors="0"
-  skipped="0"
   assertions="0"
+  errors="0"
+  failures="0"
+  name="qualityGateConfigName"
+  skipped="0"
+  tests="0"
   time="0"
   timestamp="2025-04-28T08:00:00Z"
 >
@@ -19,14 +19,15 @@
       name="calculationId"
       value="aaac28e5-2d0e-4ea6-8fef-4dc85169759e"
     />
+    <property name="minCoveragePercentage" value="100" />
   </properties>
   <testsuite
-    name="serviceName: apiName null [UNSPECIFIED]"
-    tests="0"
-    failures="0"
-    errors="0"
-    skipped="0"
     assertions="0"
+    errors="0"
+    failures="0"
+    name="serviceName: apiName null [UNSPECIFIED]"
+    skipped="0"
+    tests="0"
     time="0"
   >
     <properties>

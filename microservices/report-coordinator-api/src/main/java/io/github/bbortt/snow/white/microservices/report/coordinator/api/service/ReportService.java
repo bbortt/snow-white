@@ -143,7 +143,7 @@ public class ReportService {
         ),
         apiTest,
         qualityGateConfig.getOpenApiCoverageCriteria(),
-        qualityGateConfig.getMinCoveragePercentage()
+        report.getMinCoveragePercentage()
       );
     } catch (QualityGateNotFoundException e) {
       logger.warn(
@@ -170,6 +170,7 @@ public class ReportService {
 
     var report = persistInitialQualityGateReport(
       qualityGateConfig.getName(),
+      qualityGateConfig.getMinCoveragePercentage(),
       apiTests,
       reportParameter
     );
@@ -221,12 +222,14 @@ public class ReportService {
 
   private QualityGateReport persistInitialQualityGateReport(
     String qualityGateConfigName,
+    Integer minCoveragePercentage,
     Set<ApiTest> apiTests,
     ReportParameter reportParameter
   ) {
     var report = QualityGateReport.builder()
       .calculationId(reportParameter.getCalculationId())
       .qualityGateConfigName(qualityGateConfigName)
+      .minCoveragePercentage(minCoveragePercentage)
       .reportParameter(reportParameter)
       .build();
 

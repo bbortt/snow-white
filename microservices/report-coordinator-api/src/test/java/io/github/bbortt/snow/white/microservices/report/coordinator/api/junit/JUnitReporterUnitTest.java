@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.junit;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -47,9 +48,16 @@ class JUnitReporterUnitTest {
   );
 
   private static QualityGateReport createInitialQualityGateReport() {
+    return createInitialQualityGateReport(100);
+  }
+
+  private static QualityGateReport createInitialQualityGateReport(
+    int minCoveragePercentage
+  ) {
     return QualityGateReport.builder()
       .calculationId(CALCULATION_ID)
       .qualityGateConfigName(JUnitReporterUnitTest.class.getSimpleName())
+      .minCoveragePercentage(minCoveragePercentage)
       .createdAt(Instant.parse("2025-04-24T22:30:00.00Z"))
       .reportParameter(mock(ReportParameter.class))
       .build();
@@ -139,7 +147,7 @@ class JUnitReporterUnitTest {
     }
 
     @Test
-    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withFailedOpenApiCoverages()
       throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
@@ -173,7 +181,7 @@ class JUnitReporterUnitTest {
     }
 
     @Test
-    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withMixedOpenApiCoverages()
       throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
@@ -212,13 +220,53 @@ class JUnitReporterUnitTest {
     }
 
     @Test
-    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_SKIPS_EXCLUDED_FAILS_PARTIAL)
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
+    void shouldTransformReport_withCoveragesAroundALoweredThreshold()
+      throws IOException, SAXException {
+      // Under a gate at 80%, 0.5 is still a failure while 0.85 and 0.9 pass —
+      // carrying the gap they still have as a comment.
+      var qualityGateReport = createInitialQualityGateReport(80).withApiTests(
+        Set.of(
+          createApiTest(
+            "testApi",
+            Set.of(
+              createOpenApiTestResult(
+                HTTP_METHOD_COVERAGE.name(),
+                BigDecimal.valueOf(0.5),
+                Duration.ofMillis(1234),
+                "Half the documented methods went untested."
+              ),
+              createOpenApiTestResult(
+                PATH_COVERAGE.name(),
+                BigDecimal.valueOf(0.85),
+                Duration.ofMillis(4321),
+                "Two of thirteen paths were never called."
+              ),
+              // No additional information: the comment stands on its own.
+              createOpenApiTestResult(
+                POSITIVE_RESPONSE_CODE_COVERAGE.name(),
+                BigDecimal.valueOf(0.9),
+                Duration.ofMillis(2345),
+                null
+              )
+            )
+          )
+        )
+      );
+
+      var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
+
+      verifyJUnitReportEqualsExpectedContent(
+        jUnitReport,
+        "JUnitReporterUnitTest/withCoveragesAroundALoweredThreshold.xml"
+      );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withExcludedOpenApiCoverages()
       throws IOException, SAXException {
       var qualityGateReport = createInitialQualityGateReport();
-
-      var apiTestMock = mock(ApiTest.class);
-      doReturn(qualityGateReport).when(apiTestMock).getQualityGateReport();
 
       // Zero coverage on an excluded criterion: exclusion wins over the coverage
       // bar, so this must not turn up as a failure.
@@ -227,9 +275,7 @@ class JUnitReporterUnitTest {
         ZERO,
         Duration.ofMillis(4321),
         null
-      )
-        .withIncludedInReport(FALSE)
-        .withApiTest(apiTestMock);
+      ).withIncludedInReport(FALSE);
 
       var jUnitReport = fixture.transformToJUnitTestSuites(
         qualityGateReport.withApiTests(
