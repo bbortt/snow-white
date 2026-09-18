@@ -86,7 +86,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyInclu
                   />
                 </div>
                 <Tooltip isOpen={tooltipOpen} target={tooltipId} toggle={toggleTooltip}>
-                  <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage of included Criteria</Translate>
+                  <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>
                 </Tooltip>
               </>
             ) : (

@@ -21,47 +21,43 @@ export interface IGroupedTestResult {
   value: number;
 }
 
+// Sums each result's fractional coverage rather than bucketing by a pass/fail threshold, so the
+// chart's covered/uncovered split matches the same criteria's aggregated CoverageProgressBar
+// percentage instead of a differently-derived number.
 export const groupOpenApiTestResults = (testResults: IApiTestResult[]): IGroupedTestResult[] => {
-  const groups = testResults.reduce(
-    (acc, result) => {
-      const groupName: ResultType = result.coverage === 1 ? ResultType.PASSED : ResultType.FAILED;
-      acc[groupName] = (acc[groupName] || 0) + 1;
-      return acc;
-    },
-    {} as Record<ResultType, number>,
-  );
+  const total = testResults.length;
+  if (total === 0) {
+    return [];
+  }
 
-  return Object.entries(groups).map(
-    ([name, value]) =>
-      ({
-        name,
-        value,
-      }) as IGroupedTestResult,
-  );
+  const covered = testResults.reduce((sum, result) => sum + (result.coverage ?? 0), 0);
+  const uncovered = total - covered;
+
+  const groups: IGroupedTestResult[] = [];
+
+  if (covered > 0) {
+    groups.push({ name: ResultType.PASSED, value: covered });
+  }
+
+  if (uncovered > 0) {
+    groups.push({ name: ResultType.FAILED, value: uncovered });
+  }
+
+  return groups;
 };
 
 export const groupOpenApiTestResultsWithStats = (testResults: IApiTestResult[]) => {
   const total = testResults.length;
-  const passed = testResults.filter(result => result.coverage === 1).length;
-  const failed = total - passed;
-
-  const groups: IGroupedTestResult[] = [];
-
-  if (passed > 0) {
-    groups.push({ name: ResultType.PASSED, value: passed });
-  }
-
-  if (failed > 0) {
-    groups.push({ name: ResultType.FAILED, value: failed });
-  }
+  const covered = testResults.reduce((sum, result) => sum + (result.coverage ?? 0), 0);
+  const uncovered = total - covered;
 
   return {
-    groups,
+    groups: groupOpenApiTestResults(testResults),
     stats: {
       total,
-      passed,
-      failed,
-      passRate: total > 0 ? (passed / total) * 100 : 0,
+      covered,
+      uncovered,
+      coveragePercentage: total > 0 ? (covered / total) * 100 : 0,
     },
   };
 };

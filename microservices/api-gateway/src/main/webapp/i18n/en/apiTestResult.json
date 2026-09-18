@@ -10,8 +10,10 @@
         "title": "API Test Result"
       },
       "id": "API Criterion",
-      "coverage": "Coverage of included Criteria",
-      "isIncludedInQualityGate": "Included in Quality-Gate?",
+      "coverage": "Coverage",
+      "isIncludedInQualityGate": "Included?",
+      "included": "Included in Quality-Gate",
+      "notIncluded": "Not included in Quality-Gate",
       "showOnlyIncluded": "Show only included",
       "additionalInformation": "Details",
       "qualityGate": "Quality-Gate"

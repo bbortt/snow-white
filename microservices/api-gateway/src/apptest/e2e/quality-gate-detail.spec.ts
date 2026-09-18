@@ -42,7 +42,6 @@ test.beforeEach(async ({ page }) => {
 test('renders the summary and, once expanded, the API test results', async ({ page }) => {
   await expect(page.getByText(CALCULATION_ID)).toBeVisible();
   await expect(dataCy(page, 'qualityGateResultsHeading')).toBeVisible();
-  await expect(dataCy(page, 'allResultsHeading')).toBeVisible();
 
   // Only the included result is shown until "show only included" is switched off.
   await page.getByRole('heading', { level: 4, name: /order-service/ }).click();

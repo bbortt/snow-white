@@ -17,8 +17,7 @@
       "testedAPIs": "Tested APIs",
       "calculationRequest": "Calculation Request Parameters",
       "shapes": {
-        "qualityGateResults": "Included Criteria Status",
-        "allResults": "All Criteria Status"
+        "qualityGateResults": "Quality-Gate Coverage"
       },
       "action": {
         "junitDownload": "Download JUnit Report"

@@ -10,8 +10,10 @@
         "title": "OpenAPI Test Resultat"
       },
       "id": "API Kriterium",
-      "coverage": "Abdeckung der inkludierten Kriterien",
-      "isIncludedInQualityGate": "In Quality-Gate inkludiert?",
+      "coverage": "Abdeckung",
+      "isIncludedInQualityGate": "Inkludiert?",
+      "included": "In Quality-Gate inkludiert",
+      "notIncluded": "Nicht in Quality-Gate inkludiert",
       "showOnlyIncluded": "Nur inkludierte anzeigen",
       "additionalInformation": "Details",
       "qualityGate": "Quality-Gate"
