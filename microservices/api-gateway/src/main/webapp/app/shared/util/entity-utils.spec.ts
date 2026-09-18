@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import { cleanEntity, mapIdList } from './entity-utils';
+import { cleanEntity, mapIdList, overridePaginationStateWithQueryParams, overrideSortStateWithQueryParams } from './entity-utils';
 
 describe('Entity utils', () => {
   describe('cleanEntity', () => {
@@ -57,6 +57,50 @@ describe('Entity utils', () => {
       const ids = [];
 
       expect(mapIdList(ids)).toEqual([]);
+    });
+  });
+
+  describe('overrideSortStateWithQueryParams', () => {
+    it('should override sort and order when the sort query param is present', () => {
+      const paginationBaseState = { sort: 'id', order: 'asc' };
+
+      const result = overrideSortStateWithQueryParams(paginationBaseState, '?sort=name,desc');
+
+      expect(result).toEqual({ sort: 'name', order: 'desc' });
+    });
+
+    it('should leave the state untouched when the sort query param is absent', () => {
+      const paginationBaseState = { sort: 'id', order: 'asc' };
+
+      const result = overrideSortStateWithQueryParams(paginationBaseState, '');
+
+      expect(result).toEqual(paginationBaseState);
+    });
+  });
+
+  describe('overridePaginationStateWithQueryParams', () => {
+    it('should override activePage when the page query param is present', () => {
+      const paginationBaseState = { sort: 'id', order: 'asc', activePage: 1, itemsPerPage: 20 };
+
+      const result = overridePaginationStateWithQueryParams(paginationBaseState, '?page=3');
+
+      expect(result.activePage).toEqual(3);
+    });
+
+    it('should leave activePage untouched when the page query param is absent', () => {
+      const paginationBaseState = { sort: 'id', order: 'asc', activePage: 1, itemsPerPage: 20 };
+
+      const result = overridePaginationStateWithQueryParams(paginationBaseState, '');
+
+      expect(result.activePage).toEqual(1);
+    });
+
+    it('should also override sort and order when both query params are present', () => {
+      const paginationBaseState = { sort: 'id', order: 'asc', activePage: 1, itemsPerPage: 20 };
+
+      const result = overridePaginationStateWithQueryParams(paginationBaseState, '?sort=name,desc&page=2');
+
+      expect(result).toEqual({ sort: 'name', order: 'desc', activePage: 2, itemsPerPage: 20 });
     });
   });
 });

@@ -116,5 +116,32 @@ describe('Profile reducer tests', () => {
         isBackendUnavailable: true,
       });
     });
+
+    it('should set isBackendUnavailable to false when getProfile is rejected with a non-5xx status', () => {
+      const payload = {
+        name: 'AxiosError',
+        message: 'Request failed with status code 404',
+        status: 404,
+      };
+
+      expect(profile(undefined, { type: getProfile.rejected.type, error: payload })).toEqual({
+        ...initialState,
+        isBackendUnavailable: false,
+      });
+    });
+
+    it('should set isBackendUnavailable to false when getProfile is rejected without an error status', () => {
+      expect(profile(undefined, { type: getProfile.rejected.type, error: {} })).toEqual({
+        ...initialState,
+        isBackendUnavailable: false,
+      });
+    });
+
+    it('should set isBackendUnavailable to false when getProfile is rejected without an error object at all', () => {
+      expect(profile(undefined, { type: getProfile.rejected.type })).toEqual({
+        ...initialState,
+        isBackendUnavailable: false,
+      });
+    });
   });
 });

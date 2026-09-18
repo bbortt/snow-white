@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
+import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -96,6 +97,7 @@ export const QualityGateDetail = () => {
                 apiTest={apiTest}
                 showOnlyIncluded={showOnlyIncluded}
                 minCoveragePercentage={qualityGateEntity.qualityGateConfig?.minCoveragePercentage}
+                qualityGateTimedOut={qualityGateEntity.status === ReportStatus.TIMED_OUT}
                 key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
               />
             ))

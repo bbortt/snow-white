@@ -24,6 +24,7 @@ interface ApiTestCardProps {
   apiTest: IApiTest;
   showOnlyIncluded: boolean;
   minCoveragePercentage?: number;
+  qualityGateTimedOut: boolean;
 }
 
 const renderCardContentConditionally = (
@@ -44,7 +45,22 @@ const renderCardContentConditionally = (
   }
 };
 
-export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyIncluded, minCoveragePercentage }: ApiTestCardProps) => {
+function calculateApiTestStatus(apiTest: IApiTest, qualityGateTimedOut: boolean) {
+  if (apiTest.status && [ReportStatus.FAILED, ReportStatus.FINISHED_EXCEPTIONALLY, ReportStatus.PASSED].includes(apiTest.status)) {
+    return apiTest.status;
+  } else if (qualityGateTimedOut) {
+    return ReportStatus.TIMED_OUT;
+  } else {
+    return ReportStatus.NOT_STARTED;
+  }
+}
+
+export const ApiTestCard: React.FC<ApiTestCardProps> = ({
+  apiTest,
+  showOnlyIncluded,
+  minCoveragePercentage,
+  qualityGateTimedOut,
+}: ApiTestCardProps) => {
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
   const tooltipId = useMemo(() => `Tooltip-${uuidv4()}`, []);
 
@@ -73,7 +89,7 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({ apiTest, showOnlyInclu
           </Col>
           <Col md={2}>
             <h4 className="mb-0">
-              <StatusBadge status={apiTest.status || ReportStatus.NOT_STARTED} />
+              <StatusBadge status={calculateApiTestStatus(apiTest, qualityGateTimedOut)} />
             </h4>
           </Col>
           <Col md={3}>

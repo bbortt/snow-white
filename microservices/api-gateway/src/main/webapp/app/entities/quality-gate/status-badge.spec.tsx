@@ -64,6 +64,14 @@ describe('StatusBadge', () => {
     });
   });
 
+  it('should render "Unknown" when the translation for a non-final status is missing', () => {
+    (translate as jest.MockedFn<any>).mockReturnValueOnce('translation-not-found');
+
+    render(<StatusBadge status={ReportStatus.NOT_STARTED} />);
+
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
   describe('Translation integration', () => {
     it.each(Object.entries(ReportStatus))('should call translate with correct key for each status: %s', (reportStatus: ReportStatus) => {
       render(<StatusBadge status={reportStatus} />);

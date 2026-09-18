@@ -6,7 +6,7 @@
 
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React from 'react';
 import { translate } from 'react-jhipster';
@@ -135,6 +135,24 @@ describe('OpenApiCriterionBadge', () => {
 
       expect(screen.getByRole('button')).toBeInTheDocument();
     });
+
+    it('should fallback to prop when entities map is undefined', () => {
+      (useAppSelector as jest.MockedFn<(reducer: (state: any) => any) => any>).mockImplementation(reducer =>
+        reducer({
+          snowwhite: {
+            openApiCriterion: {
+              entities: undefined,
+            },
+          },
+        }),
+      );
+
+      const criterion = createOpenApiCriterion('TEST_CRITERION');
+
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
+
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
   });
 
   describe('Tooltip functionality', () => {
@@ -155,6 +173,19 @@ describe('OpenApiCriterionBadge', () => {
       // we at least verify the tooltip target matches the info id
       const info = screen.getByRole('button');
       expect(info).toHaveAttribute('id', 'info-TEST_CRITERION');
+    });
+
+    it('should toggle the tooltip when the info button receives focus', () => {
+      const criterion = createOpenApiCriterion('TEST_CRITERION');
+
+      render(<ApiCriterionInfo apiCriterion={criterion} />);
+
+      expect(document.querySelector('.tooltip.show')).toBeNull();
+
+      (useAppDispatch as jest.MockedFn<() => any>).mockReturnValueOnce(dispatch);
+      fireEvent.focusIn(screen.getByRole('button'));
+
+      expect(document.querySelector('.tooltip.show')).not.toBeNull();
     });
   });
 

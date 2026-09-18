@@ -48,6 +48,28 @@ describe('Locale reducer tests', () => {
     expect(TranslatorContext.context.locale).toEqual('es');
   });
 
+  it('should not re-apply the locale when it already matches the current state', () => {
+    TranslatorContext.setLocale(defaultLocale);
+    const setLocaleSpy = jest.spyOn(TranslatorContext, 'setLocale');
+
+    const localeState = locale(
+      {
+        currentLocale: defaultLocale,
+        sourcePrefixes: [],
+        lastChange: new Date().getTime(),
+        loadedKeys: [],
+      },
+      updateLocale(defaultLocale),
+    );
+
+    expect(localeState).toMatchObject({
+      currentLocale: defaultLocale,
+    });
+    expect(setLocaleSpy).not.toHaveBeenCalled();
+
+    setLocaleSpy.mockRestore();
+  });
+
   describe('setLocale reducer', () => {
     describe('with default language loaded', () => {
       let store;
@@ -98,6 +120,42 @@ describe('Locale reducer tests', () => {
         const pendingAction = dispatch.mock.calls[0][0];
         expect(pendingAction.meta.requestStatus).toBe('pending');
         expect(setLocale.fulfilled.match(result)).toBe(true);
+      });
+    });
+
+    describe('with translations already registered but locale not yet marked as loaded', () => {
+      beforeEach(() => {
+        axios.get = sinon.stub().returns(Promise.resolve({ key: 'value' }));
+      });
+
+      it('should not fetch the locale file again', async () => {
+        TranslatorContext.registerTranslations('fr', { some: 'translation' });
+
+        const localDispatch = jest.fn();
+        const getState = jest.fn(() => ({ locale: { sourcePrefixes: [], loadedLocales: [], loadedKeys: [] } }));
+
+        await setLocale('fr')(localDispatch, getState, extra);
+
+        expect((axios.get as sinon.SinonStub).called).toBe(false);
+      });
+    });
+
+    describe('when the locale key was already loaded', () => {
+      beforeEach(() => {
+        axios.get = sinon.stub().returns(Promise.resolve({ key: 'value' }));
+      });
+
+      it('should skip fetching and dispatch loaded without new keys', async () => {
+        const localDispatch = jest.fn();
+        const getState = jest.fn(() => ({
+          locale: { sourcePrefixes: [], loadedLocales: [], loadedKeys: [defaultLocale] },
+        }));
+
+        await setLocale(defaultLocale)(localDispatch, getState, extra);
+
+        expect((axios.get as sinon.SinonStub).called).toBe(false);
+        const loadedAction = localDispatch.mock.calls.find(([action]) => action.type === loaded.type)?.[0];
+        expect(loadedAction.payload.keys).toEqual([]);
       });
     });
   });

@@ -13,13 +13,15 @@ import { ShapePieChart, groupOpenApiTestResults, groupOpenApiTestResultsWithStat
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>,
   PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
-  Pie: ({ data, children }: { data: any[]; children: React.ReactNode }) => (
+  Pie: ({ data, label, children }: { data: any[]; label: (props: { percent?: number }) => React.ReactNode; children: React.ReactNode }) => (
     <div data-testid="pie" data-pie-data={JSON.stringify(data)}>
+      <div data-testid="pie-label">{label({ percent: 0.4567 })}</div>
+      <div data-testid="pie-label-no-percent">{label({ percent: undefined })}</div>
       {children}
     </div>
   ),
   Cell: ({ fill }: { fill: string }) => <div data-testid="pie-cell" data-fill={fill} />,
-  Legend: () => <div data-testid="legend" />,
+  Legend: ({ formatter }: { formatter: (value: string) => React.ReactNode }) => <div data-testid="legend">{formatter('PASSED')}</div>,
   Tooltip: () => <div data-testid="tooltip" />,
 }));
 
@@ -131,6 +133,30 @@ describe('ShapePieChart', () => {
       render(<ShapePieChart apiTestResults={testResults} />);
 
       expect(screen.getByTestId('tooltip')).toBeInTheDocument();
+    });
+
+    it('should render the rounded percentage label', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
+
+      render(<ShapePieChart apiTestResults={testResults} />);
+
+      expect(screen.getByTestId('pie-label')).toHaveTextContent('46%');
+    });
+
+    it('should treat a missing percent as 0% in the label', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
+
+      render(<ShapePieChart apiTestResults={testResults} />);
+
+      expect(screen.getByTestId('pie-label-no-percent')).toHaveTextContent('0%');
+    });
+
+    it('should translate the legend entry name', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Test')];
+
+      render(<ShapePieChart apiTestResults={testResults} />);
+
+      expect(screen.getByTestId('legend')).toHaveTextContent('snowWhiteApp.reportStatus.PASSED');
     });
   });
 
@@ -277,6 +303,15 @@ describe('Utility Functions', () => {
 
       expect(result.groups).toHaveLength(1);
       expect(result.groups).toContainEqual({ name: 'PASSED', value: 2 });
+    });
+
+    it('should treat undefined coverage as zero when summing covered results', () => {
+      const testResults: IOpenApiTestResult[] = [{ openApiCriterionName: 'Test 1' } as IOpenApiTestResult, createTestResult(1.0, 'Test 2')];
+
+      const result = groupOpenApiTestResultsWithStats(testResults);
+
+      expect(result.stats.covered).toBe(1);
+      expect(result.stats.uncovered).toBe(1);
     });
   });
 

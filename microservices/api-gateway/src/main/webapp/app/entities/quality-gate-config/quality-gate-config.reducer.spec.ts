@@ -324,6 +324,23 @@ describe('Quality-Gate Config reducer tests', () => {
       expect(qualityGateApi.deleteQualityGate).toHaveBeenCalledWith(name);
     });
 
+    it('maps description, minCoveragePercentage and a missing criteria list when creating an entity', async () => {
+      const qualityGateConfig: IQualityGateConfig = {
+        name: 'name',
+        description: 'my description',
+        minCoveragePercentage: 42,
+      };
+      await store.dispatch(createEntity(qualityGateConfig));
+
+      expect(qualityGateApi.createQualityGate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'my description',
+          minCoveragePercentage: 42,
+          openApiCoverageCriteria: [],
+        }),
+      );
+    });
+
     it('dispatches RESET actions', async () => {
       const expectedActions = [reset()];
 

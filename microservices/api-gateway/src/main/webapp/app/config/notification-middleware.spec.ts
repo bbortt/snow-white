@@ -7,6 +7,7 @@
 import { TranslatorContext } from 'react-jhipster';
 import * as toastify from 'react-toastify'; // synthetic default import doesn't work here due to mocking.
 import { applyMiddleware, createStore } from 'redux';
+import configureMockStore from 'redux-mock-store';
 import sinon from 'sinon';
 
 import notificationMiddleware from './notification-middleware';
@@ -155,6 +156,34 @@ describe('Notification Middleware', () => {
     },
   };
 
+  const DOWNSTREAM_UNAVAILABLE_ERROR = {
+    type: ERROR_TYPE,
+    error: {
+      isAxiosError: true,
+      response: {
+        data: {},
+        status: 400,
+        headers: { 'app-error': 'DOWNSTREAM_UNAVAILABLE' },
+      },
+    },
+  };
+
+  const PROBLEM_MESSAGE_WITHOUT_FIELD_ERRORS_ERROR = {
+    type: ERROR_TYPE,
+    error: {
+      isAxiosError: true,
+      response: {
+        data: {
+          type: 'https://www.jhipster.tech/problem/problem-with-message',
+          detail: 'Something went wrong',
+          message: 'error.somethingWentWrong',
+        },
+        status: 400,
+        headers: {},
+      },
+    },
+  };
+
   const makeStore = () => applyMiddleware(notificationMiddleware)(createStore)(() => null);
 
   beforeAll(() => {
@@ -242,5 +271,19 @@ describe('Notification Middleware', () => {
     expect(store.dispatch(UNKNOWN_ERROR).error.isAxiosError).toEqual(true);
     const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
     expect(toastMsg).toContain('Unknown error!');
+  });
+
+  it('should mark performance as impacted when the downstream-unavailable header is present', () => {
+    const mockStore = configureMockStore([notificationMiddleware])({});
+
+    mockStore.dispatch(DOWNSTREAM_UNAVAILABLE_ERROR);
+
+    expect(mockStore.getActions()).toContainEqual({ type: 'applicationProfile/set_performance_impacted', payload: true });
+  });
+
+  it('should trigger an error toast message for a problem with a message but no field errors', () => {
+    expect(store.dispatch(PROBLEM_MESSAGE_WITHOUT_FIELD_ERRORS_ERROR).error.response.status).toEqual(400);
+    const toastMsg = (toastify.toast as any).error.getCall(0).args[0];
+    expect(toastMsg).toContain('error.somethingWentWrong');
   });
 });
