@@ -67,7 +67,7 @@ describe('ShapePieChart', () => {
       const testResults: IOpenApiTestResult[] = [
         createTestResult(1.0, 'Passed Test 1'),
         createTestResult(1.0, 'Passed Test 2'),
-        createTestResult(0.5, 'Failed Test 1'),
+        createTestResult(0.5, 'Partial Test 1'),
       ];
 
       render(<ShapePieChart apiTestResults={testResults} />);
@@ -76,12 +76,12 @@ describe('ShapePieChart', () => {
       const pieData = JSON.parse(pieElement.getAttribute('data-pie-data') || '[]');
 
       expect(pieData).toHaveLength(2);
-      expect(pieData).toContainEqual({ name: 'PASSED', value: 2 });
-      expect(pieData).toContainEqual({ name: 'FAILED', value: 1 });
+      expect(pieData).toContainEqual({ name: 'PASSED', value: 2.5 });
+      expect(pieData).toContainEqual({ name: 'FAILED', value: 0.5 });
     });
 
     it('should render correct number of cells with proper colors', () => {
-      const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Passed Test'), createTestResult(0.8, 'Failed Test')];
+      const testResults: IOpenApiTestResult[] = [createTestResult(1.0, 'Passed Test'), createTestResult(0.8, 'Partial Test')];
 
       render(<ShapePieChart apiTestResults={testResults} />);
 
@@ -104,14 +104,23 @@ describe('ShapePieChart', () => {
       expect(cells[0]).toHaveAttribute('data-fill', '#245c45'); // PASSED color
     });
 
-    it('should render only FAILED cell when all tests fail', () => {
-      const testResults: IOpenApiTestResult[] = [createTestResult(0.5, 'Test 1'), createTestResult(0.8, 'Test 2')];
+    it('should render only FAILED cell when all tests have zero coverage', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(0, 'Test 1'), createTestResult(0, 'Test 2')];
 
       render(<ShapePieChart apiTestResults={testResults} />);
 
       const cells = screen.getAllByTestId('pie-cell');
       expect(cells).toHaveLength(1);
       expect(cells[0]).toHaveAttribute('data-fill', '#a91320'); // FAILED color
+    });
+
+    it('should render both cells when coverage is only partial across all results', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(0.5, 'Test 1'), createTestResult(0.8, 'Test 2')];
+
+      render(<ShapePieChart apiTestResults={testResults} />);
+
+      const cells = screen.getAllByTestId('pie-cell');
+      expect(cells).toHaveLength(2);
     });
   });
 
@@ -167,7 +176,7 @@ describe('Utility Functions', () => {
   });
 
   describe('groupOpenApiTestResults', () => {
-    it('should group results correctly', () => {
+    it('should sum fractional coverage rather than bucketing by a pass/fail threshold', () => {
       const testResults: IOpenApiTestResult[] = [
         createTestResult(1.0, 'Test 1'),
         createTestResult(0.5, 'Test 2'),
@@ -177,8 +186,8 @@ describe('Utility Functions', () => {
       const result = groupOpenApiTestResults(testResults);
 
       expect(result).toHaveLength(2);
-      expect(result).toContainEqual({ name: 'PASSED', value: 2 });
-      expect(result).toContainEqual({ name: 'FAILED', value: 1 });
+      expect(result).toContainEqual({ name: 'PASSED', value: 2.5 });
+      expect(result).toContainEqual({ name: 'FAILED', value: 0.5 });
     });
 
     it('should handle empty array', () => {
@@ -194,15 +203,15 @@ describe('Utility Functions', () => {
       expect(result).toEqual([{ name: 'PASSED', value: 2 }]);
     });
 
-    it('should handle all failed results', () => {
-      const testResults: IOpenApiTestResult[] = [createTestResult(0.5, 'Test 1'), createTestResult(0.8, 'Test 2')];
+    it('should handle all zero-coverage results', () => {
+      const testResults: IOpenApiTestResult[] = [createTestResult(0, 'Test 1'), createTestResult(0, 'Test 2')];
 
       const result = groupOpenApiTestResults(testResults);
 
       expect(result).toEqual([{ name: 'FAILED', value: 2 }]);
     });
 
-    it('should treat undefined coverage as failed', () => {
+    it('should treat undefined coverage as zero', () => {
       const testResults: IOpenApiTestResult[] = [
         { openApiCriterionName: 'Test 1' } as IOpenApiTestResult, // coverage is undefined
         createTestResult(1.0, 'Test 2'),
@@ -228,15 +237,13 @@ describe('Utility Functions', () => {
       const result = groupOpenApiTestResultsWithStats(testResults);
 
       expect(result.groups).toHaveLength(2);
-      expect(result.groups).toContainEqual({ name: 'PASSED', value: 2 });
-      expect(result.groups).toContainEqual({ name: 'FAILED', value: 2 });
+      expect(result.groups.find(g => String(g.name) === 'PASSED')?.value).toBeCloseTo(3.3, 5);
+      expect(result.groups.find(g => String(g.name) === 'FAILED')?.value).toBeCloseTo(0.7, 5);
 
-      expect(result.stats).toEqual({
-        total: 4,
-        passed: 2,
-        failed: 2,
-        passRate: 50,
-      });
+      expect(result.stats.total).toBe(4);
+      expect(result.stats.covered).toBeCloseTo(3.3, 5);
+      expect(result.stats.uncovered).toBeCloseTo(0.7, 5);
+      expect(result.stats.coveragePercentage).toBeCloseTo(82.5, 5);
     });
 
     it('should handle empty array', () => {
@@ -245,13 +252,13 @@ describe('Utility Functions', () => {
       expect(result.groups).toEqual([]);
       expect(result.stats).toEqual({
         total: 0,
-        passed: 0,
-        failed: 0,
-        passRate: 0,
+        covered: 0,
+        uncovered: 0,
+        coveragePercentage: 0,
       });
     });
 
-    it('should calculate pass rate correctly', () => {
+    it('should calculate coverage percentage correctly', () => {
       const testResults: IOpenApiTestResult[] = [
         createTestResult(1.0, 'Test 1'),
         createTestResult(0.5, 'Test 2'),
@@ -260,7 +267,7 @@ describe('Utility Functions', () => {
 
       const result = groupOpenApiTestResultsWithStats(testResults);
 
-      expect(result.stats.passRate).toBeCloseTo(33.33, 1);
+      expect(result.stats.coveragePercentage).toBeCloseTo(76.67, 1);
     });
 
     it('should only include groups with values > 0', () => {

@@ -77,17 +77,11 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
           </dd>
         </dl>
       </Col>
-      <Col md={3}>
+      <Col md={6}>
         <h3 className="text-center" data-cy="qualityGateResultsHeading">
-          <Translate contentKey="snowWhiteApp.qualityGate.shapes.qualityGateResults">Included Criteria Status</Translate>
+          <Translate contentKey="snowWhiteApp.qualityGate.shapes.qualityGateResults">Quality-Gate Coverage</Translate>
         </h3>
         <ShapePieChart apiTestResults={allResults.filter((r: IApiTestResult) => r.isIncludedInQualityGate)} />
-      </Col>
-      <Col md={3}>
-        <h3 className="text-center" data-cy="allResultsHeading">
-          <Translate contentKey="snowWhiteApp.qualityGate.shapes.allResults">All Criteria Status</Translate>
-        </h3>
-        <ShapePieChart apiTestResults={allResults} />
       </Col>
     </Row>
   );
