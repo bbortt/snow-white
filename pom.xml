@@ -49,7 +49,7 @@
     <sonar.test.inclusions>src/test/**/*.java</sonar.test.inclusions>
 
     <sonar.coverage.exclusions>
-      example-application/**,
+      examples/**,
       src/main/java/clew/traceables/**,
       **/Main.java
     </sonar.coverage.exclusions>
@@ -75,6 +75,8 @@
     <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
     <mockito.version>5.23.0</mockito.version>
     <org.projectlombok.version>1.18.48</org.projectlombok.version>
+    <pitest-junit5.version>1.2.3</pitest-junit5.version>
+    <pitest.version>1.30.0</pitest.version>
     <sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
     <spring-boot.version>4.1.1</spring-boot.version>
     <spring-retry.version>2.0.13</spring-retry.version>
@@ -243,9 +245,61 @@
       </plugin>
 
       <plugin>
+        <!--
+          Not inherited: this resets the shared jacoco.exec exactly once, at the very start of
+          the reactor (the root project always builds first, scoped or not), so a coverage check
+          never mixes data with a previous, unrelated invocation. Bound to validate so it runs
+          before jacoco:prepare-agent (initialize).
+        -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.2.0</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>reset-shared-jacoco-exec</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete
+                  file="${maven.multiModuleProjectDirectory}/target/jacoco.exec"
+                />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
+        <configuration>
+          <!--
+            Mirrors sonar.coverage.exclusions above (clew trace markers, Spring Boot bootstrap
+            classes), plus generated code Sonar never sees because it lives outside src/main
+            (sonar.inclusions is src/main-scoped) but JaCoCo's bytecode-based check still bundles:
+            OpenAPI-generated client SDKs and server stubs/DTOs, MapStruct mapper implementations,
+            and OpenTelemetry's generated protobuf messages. None of these carry hand-written logic
+            to test. The generator also stamps them @jakarta.annotation.Generated, but that
+            annotation is @Retention(SOURCE) - it never reaches the .class file, so JaCoCo's own
+            built-in @Generated filter cannot see it either; these excludes are the only thing that
+            works.
+          -->
+          <excludes>
+            <exclude>clew/traceables/**</exclude>
+            <exclude>**/Main.class</exclude>
+            <exclude>**/api/client/**</exclude>
+            <exclude>**/api/rest/dto/**</exclude>
+            <exclude>**/api/rest/*Api.class</exclude>
+            <exclude>**/ApiUtil.class</exclude>
+            <exclude>**/*MapperImpl.class</exclude>
+            <exclude>io/opentelemetry/proto/**</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
@@ -260,7 +314,7 @@
           </execution>
           <execution>
             <id>jacoco-report</id>
-            <phase>test</phase>
+            <phase>verify</phase>
             <goals>
               <goal>report</goal>
             </goals>
@@ -271,6 +325,35 @@
               <outputDirectory>
                 ${project.reporting.outputDirectory}/jacoco
               </outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-coverage</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <dataFile>
+                ${maven.multiModuleProjectDirectory}/target/jacoco.exec
+              </dataFile>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.9</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.9</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
             </configuration>
           </execution>
         </executions>
@@ -331,6 +414,13 @@
                   <dataFileIncludes>
                     <dataFileInclude>**/jacoco.exec</dataFileInclude>
                   </dataFileIncludes>
+                  <excludes>
+                    <exclude>clew/traceables/**</exclude>
+                    <exclude>**/Main.class</exclude>
+                    <exclude>**/api/client/apiindexapi/**</exclude>
+                    <exclude>**/*MapperImpl.class</exclude>
+                    <exclude>io/opentelemetry/proto/**</exclude>
+                  </excludes>
                   <outputDirectory>
                     ${maven.multiModuleProjectDirectory}/target/jacoco-aggregate
                   </outputDirectory>
@@ -343,6 +433,100 @@
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
             <version>${sonar-maven-plugin.version}</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <!--
+        Mutation testing with PIT: `./mvnw -P mutation verify`. Not bound by default because a
+        full mutation run takes far longer than the regular test suite. Inherited reactor-wide
+        (rather than duplicated per module) is safe: pitest-maven skips 'pom'-packaged modules
+        and any module with no production code or tests on its own, so a reactor-wide `verify`
+        only ever mutates modules that actually have something to mutate.
+
+        No targetClasses/targetTests are set here, so a full run mutates every class the module
+        contains (see pitest-maven docs: with none configured, it scans the module's own output
+        directory) - that's what the branches CI pipeline runs, unscoped, on every push.
+
+        For fast local iteration, scope a run to only what changed on the branch instead of the
+        whole module: `.github/scripts/pitest-changed-classes.sh` diffs against `main` (plus
+        uncommitted changes) and re-invokes this profile per affected module with -DtargetClasses
+        set to just those classes - targetClasses/targetTests are read from the -D system property
+        directly by pitest-maven, so no extra wiring is needed here for that to work.
+      -->
+      <id>mutation</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+              <execution>
+                <id>check-coverage</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <configuration>
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-maven</artifactId>
+            <version>${pitest.version}</version>
+            <executions>
+              <execution>
+                <id>mutation-coverage</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>mutationCoverage</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <!-- Mirrors the surefire excludes above: apptest/IT-style tests need Docker and
+                real infrastructure, so they don't take part in a mutation run. PIT globs match
+                against the (simple) class name, not a file path, unlike surefire's excludes. -->
+              <excludedTestClasses>
+                <param>*AppTest</param>
+                <param>*AppTest$*</param>
+                <param>*IT</param>
+                <param>*IT$*</param>
+              </excludedTestClasses>
+              <outputFormats>
+                <param>HTML</param>
+                <param>XML</param>
+              </outputFormats>
+              <!-- Explicit (though it matches the plugin default) so the report path stays
+                stable for CI upload: without this it lands in target/pit-reports/<timestamp>/. -->
+              <timestampedReports>false</timestampedReports>
+              <timeoutFactor>2</timeoutFactor>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-junit5-plugin</artifactId>
+                <version>${pitest-junit5.version}</version>
+              </dependency>
+              <!--
+                PIT runs tests on its own, isolated tool classpath, not the module's - without
+                this it falls back to whatever (older) JUnit Platform version pitest-junit5-plugin
+                itself was built against, rather than the version this reactor actually tests
+                with (junit.version/junit-bom above), which JUnit 6 unifies with junit-platform.
+              -->
+              <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>${junit.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

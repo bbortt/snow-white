@@ -25,7 +25,7 @@ It is the layer above the `clew-draft` "no hollow specs" guard — that asks whe
 
 ## When not to use
 
-- On a spec with no risk-bearing content — a plain data holder, a presentational behaviour.
+- On a spec with no risk-bearing content — a plain data holder, a presentational behavior.
   The content gate below filters these out; do not critique everything.
 - As a code review — critique the **spec's** completeness, never the implementation.
   That is coverage's and code review's job.
@@ -67,7 +67,7 @@ Each entry is a _prompt to check_, not an assertion the spec is wrong.
 - **Data integrity / state** — invariants over persisted data, uniqueness, migration.
   Check: the invariant under partial write; uniqueness/collision; migration of existing data; what a stale or duplicate record does downstream.
 - **Error / failure paths** — anything that can fail.
-  Check: the behaviour on failure; partial failure and rollback; an error's classification preserved vs collapsed; retry/backoff; the unhappy path a happy-path spec omits.
+  Check: the behavior on failure; partial failure and rollback; an error's classification preserved vs collapsed; retry/backoff; the unhappy path a happy-path spec omits.
 - **Boundary / domain** — the range of inputs.
   Check: empty / zero / max / negative / overflow; encoding and unicode; the degenerate case; off-by-one at the stated edge.
 - **Resource / limits** — anything that grows or waits.

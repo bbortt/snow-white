@@ -25,6 +25,7 @@ public class ApiGatewayPropertiesValidator {
 
   public ApiGatewayPropertiesValidator(ApiGatewayProperties apiGatewayProperties, Environment environment) {
     Map<String, String> fields = new HashMap<>();
+    fields.put(PREFIX + ".api-index-api-url", apiGatewayProperties.getApiIndexApiUrl());
     fields.put(PREFIX + ".quality-gate-api-url", apiGatewayProperties.getQualityGateApiUrl());
     fields.put(PREFIX + ".report-coordinator-api-url", apiGatewayProperties.getReportCoordinatorApiUrl());
 

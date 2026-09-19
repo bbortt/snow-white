@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.microservices.api.gateway.IntegrationTest;
 import java.net.URI;
 import java.time.Duration;
@@ -27,6 +29,7 @@ class RoutingConfigIT {
   }
 
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void configuresEndpoints() {
     var routes = snowWhiteRouteLocator.getRoutes().collectList().block(Duration.ofSeconds(5));
 

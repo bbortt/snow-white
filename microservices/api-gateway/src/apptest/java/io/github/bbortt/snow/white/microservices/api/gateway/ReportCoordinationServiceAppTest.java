@@ -22,6 +22,8 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.RestAssured;
 import java.util.Optional;
@@ -53,6 +55,7 @@ class ReportCoordinationServiceAppTest {
    * When the client calls {@code /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate}, the gateway must forward the request to {@code /api/rest/v1/quality-gates/{qualityGateConfigName}/calculate} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void qualityGateCalculationRequestShouldBeForwarded() {
     var qualityGateConfigName = "report-coordinator-api";
 
@@ -73,6 +76,7 @@ class ReportCoordinationServiceAppTest {
    * When the client calls {@code /api/rest/v1/reports}, the gateway must forward the request to {@code /api/rest/v1/reports} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void reportsResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/reports").willReturn(ok()));
 
@@ -87,6 +91,7 @@ class ReportCoordinationServiceAppTest {
    * When the client calls {@code /api/rest/v1/reports/{reportId}}, the gateway must forward the request to {@code /api/rest/v1/reports/{reportId}} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void reportByIdResourceRequestShouldBeForwarded() {
     var reportId = "report-id";
 
@@ -103,6 +108,7 @@ class ReportCoordinationServiceAppTest {
    * Requests to {@code /v3/api-docs/report-coordinator-api} must be forwarded to the report-coordinator-api {@code /v3/api-docs} endpoint.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 

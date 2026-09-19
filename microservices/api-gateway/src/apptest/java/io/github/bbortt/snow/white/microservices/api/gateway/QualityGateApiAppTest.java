@@ -20,6 +20,8 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,6 +49,7 @@ class QualityGateApiAppTest {
    * When the client calls {@code /api/rest/v1/criteria/openapi}, the gateway must forward the request to {@code /api/rest/v1/criteria/openapi} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void openApiCriteriaResourceShouldBeForwarded() {
     stubFor(get("/api/rest/v1/criteria/openapi").willReturn(ok()));
 
@@ -61,6 +64,7 @@ class QualityGateApiAppTest {
    * When the client calls {@code /api/rest/v1/quality-gates}, the gateway must forward the request to {@code /api/rest/v1/quality-gates} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void qualityGatesResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/quality-gates").willReturn(ok()));
 
@@ -75,6 +79,7 @@ class QualityGateApiAppTest {
    * When the client calls {@code /api/rest/v1/quality-gates/{reportId}}, the gateway must forward the request to {@code /api/rest/v1/quality-gates/{reportId}} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void qualityGateByIdResourceRequestShouldBeForwarded() {
     var qualityGateConfigName = "report-id";
 
@@ -95,6 +100,7 @@ class QualityGateApiAppTest {
    * Requests to {@code /v3/api-docs/quality-gate-api} must be forwarded to the quality-gate-api {@code /v3/api-docs} endpoint.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 

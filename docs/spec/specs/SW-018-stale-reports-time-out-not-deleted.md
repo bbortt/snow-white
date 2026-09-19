@@ -68,4 +68,4 @@ against a running service.
   implementation (`STR-011`).
 - **2026-09-18** — The job's debug log announced a deletion it never performed; it now names the
   timeout it actually applies.
-  Logging only — the sweep's behaviour is unchanged.
+  Logging only — the sweep's behavior is unchanged.

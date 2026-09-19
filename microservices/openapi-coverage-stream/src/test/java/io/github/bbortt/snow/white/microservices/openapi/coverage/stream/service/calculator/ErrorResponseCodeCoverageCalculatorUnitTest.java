@@ -70,6 +70,33 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
   }
 
   @Nested
+  class IncludeObservedResponseCodeInCalculationTest {
+
+    @Test
+    void shouldReturnTrue_whenNonStandardCodeStartsWithFour() {
+      boolean result = fixture.includeObservedResponseCodeInCalculation("4YY");
+
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    void shouldReturnTrue_whenNonStandardCodeStartsWithFive() {
+      boolean result = fixture.includeObservedResponseCodeInCalculation("5ZZ");
+
+      assertThat(result).isTrue();
+    }
+
+    @Test
+    void shouldReturnFalse_whenNonStandardCodeMatchesNoErrorPrefix() {
+      boolean result = fixture.includeObservedResponseCodeInCalculation(
+        "unknown"
+      );
+
+      assertThat(result).isFalse();
+    }
+  }
+
+  @Nested
   class CalculatesTest {
 
     @Test
@@ -418,6 +445,24 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
         r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)), // No error codes to cover
         r -> assertThat(r.additionalInformation()).isNull()
       );
+    }
+
+    @Test
+    void shouldIgnoreOutOfRangeNumericStatusCodes_whenPresentInTelemetry() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorCodes(
+        Map.of("GET_/api/v1/users", List.of("500"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("600"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
     }
 
     private Map<String, Operation> createOperationsWithErrorCodes(
