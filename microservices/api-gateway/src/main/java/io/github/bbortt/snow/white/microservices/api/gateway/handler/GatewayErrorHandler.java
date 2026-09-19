@@ -10,6 +10,8 @@ import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
@@ -31,6 +33,7 @@ public class GatewayErrorHandler implements ErrorWebExceptionHandler {
   static final String DOWNSTREAM_UNAVAILABLE_HEADER = "DOWNSTREAM_UNAVAILABLE";
 
   @Override
+  @RealizesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
   public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
     HttpStatus status = mapStatus(ex);
 

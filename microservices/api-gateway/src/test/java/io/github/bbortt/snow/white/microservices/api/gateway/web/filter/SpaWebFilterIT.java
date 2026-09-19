@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.gateway.web.filter;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.gateway.IntegrationTest;
 import java.time.Duration;
 import java.util.stream.Stream;
@@ -31,6 +33,7 @@ class SpaWebFilterIT {
 
   @MethodSource
   @ParameterizedTest
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void testFilterForwardsToIndex(String uri) {
     webTestClient
       .get()
@@ -45,11 +48,13 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void testFilterDoesNotForwardToIndexForApi() {
     webTestClient.get().uri("/api/test").exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("Hello World");
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void testFilterDoesNotForwardToIndexForV3ApiDocs() {
     webTestClient
       .mutate()
@@ -65,11 +70,13 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void testFilterDoesNotForwardToIndexForDotFile() {
     webTestClient.get().uri("/file.js").exchange().expectStatus().isNotFound();
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void testFilterDoesNotForwardToIndexForManagementEndpoint() {
     webTestClient
       .get()
@@ -82,6 +89,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void getBackendEndpoint() {
     webTestClient
       .get()
@@ -109,6 +117,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void forwardUnmappedFirstLevelMapping() {
     webTestClient
       .get()
@@ -123,6 +132,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void forwardUnmappedSecondLevelMapping() {
     webTestClient
       .get()
@@ -137,6 +147,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void forwardUnmappedThirdLevelMapping() {
     webTestClient
       .get()
@@ -151,6 +162,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void forwardUnmappedDeepMapping() {
     webTestClient
       .get()
@@ -165,6 +177,7 @@ class SpaWebFilterIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void getUnmappedFirstLevelFile() {
     webTestClient.get().uri("/foo.js").exchange().expectStatus().isNotFound();
   }
@@ -175,11 +188,13 @@ class SpaWebFilterIT {
    * allows this file in SecurityConfiguration.
    */
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void getUnmappedSecondLevelFile() {
     webTestClient.get().uri("/foo/bar.js").exchange().expectStatus().isNotFound();
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_024_SPA_FALLBACK_REWRITES_UNMAPPED_ROUTES_TO_INDEX_HTML)
   void getUnmappedThirdLevelFile() {
     webTestClient.get().uri("/foo/another/bar.js").exchange().expectStatus().isNotFound();
   }

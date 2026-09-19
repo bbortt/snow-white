@@ -13,6 +13,10 @@ import static java.lang.System.getProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
 import io.restassured.RestAssured;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,6 +36,8 @@ class ManagementEndpointsAppTest {
    * When the client calls {@code /management/info}, the gateway must forward the request to {@code http://localhost:${management.port}/actuator/info} (on the management port).
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
+  @VerifiesCon(ConTraceables.CON_006_ACTUATOR_ENDPOINTS_DENY_BY_DEFAULT)
   void requestToInfoEndpointShouldSucceed() {
     when().get("/management/info").then().statusCode(200).body("activeProfiles", notNullValue()).body("activeProfiles.size()", is(2));
   }

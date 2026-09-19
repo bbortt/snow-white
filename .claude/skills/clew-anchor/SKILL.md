@@ -17,7 +17,7 @@ So this skill resolves _where_ and _how_ from the project, never from a fixed as
 
 ## When to use
 
-- You implemented a behaviour a spec describes → add a **realizes** anchor.
+- You implemented a behavior a spec describes → add a **realizes** anchor.
 - You wrote a test that exercises a spec → add a **verifies** anchor.
 - You wrote code coupled to a spec it does not implement or test — and the coupling is not already a call into the realizing code → add a **concerns** anchor.
 
@@ -76,7 +76,7 @@ Three relations, the same in every language:
   Add this **only** when the coupling is not already a call into the realizing code; a coupling on the call path is recovered from the call graph and needs no marker.
 
 A spec is **Covered** only when it carries **both** a `realizes` and a `verifies` anchor — for **every** lens, no exception.
-The lens sets the _altitude_ of the two anchors, never whether both are needed: a high-altitude need or capability (a stakeholder or system spec) realizes on the top-level code that delivers it and verifies via an acceptance or system test; a component behaviour realizes on its service and verifies with a unit test.
+The lens sets the _altitude_ of the two anchors, never whether both are needed: a high-altitude need or capability (a stakeholder or system spec) realizes on the top-level code that delivers it and verifies via an acceptance or system test; a component behavior realizes on its service and verifies with a unit test.
 No lens is verify-only, realize-only, or waived by default — a genuine exception is a per-spec waiver, not a lens-wide rule.
 
 Apply the chosen relation with the form the generator's documentation gives for your target language and for the kind of element you are anchoring — a value, a function, a class, a method, a test, a type, or an interface.

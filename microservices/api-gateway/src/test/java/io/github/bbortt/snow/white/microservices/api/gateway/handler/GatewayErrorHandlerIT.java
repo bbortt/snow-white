@@ -11,6 +11,8 @@ import static io.github.bbortt.snow.white.microservices.api.gateway.handler.Gate
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.gateway.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ class GatewayErrorHandlerIT {
   private WebTestClient webTestClient;
 
   @Test
+  @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
   void shouldReturnServiceUnavailableStatusCodeForUnreachableHost() {
     webTestClient
       .get()

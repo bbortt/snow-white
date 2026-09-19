@@ -21,7 +21,7 @@ Where such a skill and these conventions disagree — on the lenses, the decisio
 
 ## What a lens is
 
-A **lens** is a category of spec — a viewpoint the system is described through: a software behaviour (`SW`), a constraint (`CON`), an architecture decision (`ARCH`), and so on.
+A **lens** is a category of spec — a viewpoint the system is described through: a software behavior (`SW`), a constraint (`CON`), an architecture decision (`ARCH`), and so on.
 A project declares its lenses in `.clewrc.json`, each with an `id` and a one-line `description`; the `id` is also the prefix of the ids minted for that kind (lens `SW` → `SW-001`, `SW-002`, …).
 
 ## When to use
@@ -107,7 +107,7 @@ Keep each spec to one concern, with a verification a test or review can check.
 
 - **Story** (story prefix, e.g. `STR`): the work item — title, business value, problem/context, solution approach, acceptance criteria, out of scope, and the specs it realizes.
   A story may realize **no** spec — a pure setup or scaffolding increment introduces no new decision of its own; when it realizes none, omit the `Realizes` sub-section entirely rather than inventing a placeholder like "None" (the schema does not require it).
-- **SW** (software spec): one observable, verifiable behaviour of a component — what the system does, with a verification a test can run.
+- **SW** (software spec): one observable, verifiable behavior of a component — what the system does, with a verification a test can run.
 - **CON** (constraint): an invariant that must always hold — stated as a rule, with a verification that confirms it holds and that violating it is rejected.
 - **ARCH** (architecture spec): a structural rule or design decision, with its rationale.
 - **NF** (non-functional spec): a quality attribute such as performance or security, with a measurable verification where possible.
