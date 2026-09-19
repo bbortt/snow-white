@@ -25,6 +25,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -46,6 +48,8 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
@@ -217,6 +221,100 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
       );
   }
 
+  @Test
+  void kafkaEvent_redeliveredForSameApiTest_shouldReplaceOverlappingCriterionAndKeepOthers() {
+    var calculationId = UUID.fromString("3e6f9f2a-1b1a-4b4a-8c2b-7f6e5d4c3b2a");
+    var qualityGateReport = persistInitialQualityGateReport(calculationId);
+
+    createQualityGateApiWiremockStub(
+      qualityGateReport.getQualityGateConfigName(),
+      PATH_COVERAGE,
+      HTTP_METHOD_COVERAGE,
+      ERROR_RESPONSE_CODE_COVERAGE
+    );
+
+    var topic = reportCoordinationServiceProperties
+      .getOpenapiCalculationResponse()
+      .getTopic();
+
+    var firstDuration = Duration.ofMillis(1000);
+    kafkaTemplate.send(
+      topic,
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        defaultApiInformation(),
+        Set.of(
+          new OpenApiTestResult(PATH_COVERAGE, ONE, firstDuration),
+          new OpenApiTestResult(HTTP_METHOD_COVERAGE, ONE, firstDuration)
+        )
+      )
+    );
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(
+        () -> qualityGateReportRepository.findById(calculationId),
+        persistedQualityGateReport ->
+          assertThat(apiTestResultsOf(persistedQualityGateReport)).hasSize(2)
+      );
+
+    var secondDuration = Duration.ofMillis(2000);
+    kafkaTemplate.send(
+      topic,
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        defaultApiInformation(),
+        Set.of(
+          new OpenApiTestResult(PATH_COVERAGE, ZERO, secondDuration),
+          new OpenApiTestResult(
+            ERROR_RESPONSE_CODE_COVERAGE,
+            ONE,
+            secondDuration
+          )
+        )
+      )
+    );
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(
+        () -> qualityGateReportRepository.findById(calculationId),
+        persistedQualityGateReport -> {
+          assertThat(persistedQualityGateReport)
+            .isPresent()
+            .get()
+            .extracting(QualityGateReport::getReportStatus)
+            .isEqualTo(FAILED);
+
+          var resultsByCriteria = apiTestResultsOf(persistedQualityGateReport);
+          assertThat(resultsByCriteria).hasSize(3);
+
+          assertThat(resultsByCriteria.get(PATH_COVERAGE.name()))
+            .extracting(ApiTestResult::getCoverage, ApiTestResult::getDuration)
+            .containsExactly(ZERO.setScale(2, HALF_UP), secondDuration);
+          assertThat(resultsByCriteria.get(HTTP_METHOD_COVERAGE.name()))
+            .extracting(ApiTestResult::getCoverage, ApiTestResult::getDuration)
+            .containsExactly(ONE.setScale(2, HALF_UP), firstDuration);
+          assertThat(resultsByCriteria.get(ERROR_RESPONSE_CODE_COVERAGE.name()))
+            .extracting(ApiTestResult::getCoverage, ApiTestResult::getDuration)
+            .containsExactly(ONE.setScale(2, HALF_UP), secondDuration);
+        }
+      );
+  }
+
+  private Map<String, ApiTestResult> apiTestResultsOf(
+    Optional<QualityGateReport> persistedQualityGateReport
+  ) {
+    return persistedQualityGateReport
+      .orElseThrow()
+      .getApiTests()
+      .iterator()
+      .next()
+      .getApiTestResults()
+      .stream()
+      .collect(toMap(ApiTestResult::getApiTestCriteria, identity()));
+  }
+
   private @NonNull QualityGateReport persistInitialQualityGateReport(
     UUID calculationId
   ) {
@@ -280,11 +378,12 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   private @NonNull String createQualityGateApiWiremockStub(
     String qualityGateConfigName,
-    OpenApiCoverageCriteria openApiCriterion
+    OpenApiCoverageCriteria... openApiCriteria
   ) {
-    var qualityGateConfig = new QualityGateConfig()
-      .name(qualityGateConfigName)
-      .addOpenApiCoverageCriteriaItem(openApiCriterion.name());
+    var qualityGateConfig = new QualityGateConfig().name(qualityGateConfigName);
+    for (var openApiCriterion : openApiCriteria) {
+      qualityGateConfig.addOpenApiCoverageCriteriaItem(openApiCriterion.name());
+    }
 
     var qualityGateByNameEndpoint =
       "/api/rest/v1/quality-gates/" + qualityGateConfigName;

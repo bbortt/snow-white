@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -23,12 +25,18 @@ import java.time.Duration;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.With;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Identity is the {@code (apiTestCriteria, apiTest)} pair: a redelivered result for a criterion
+ * already scored must be recognized as the same entry, not a new one, so it replaces rather than
+ * duplicates.
+ */
 @Entity
 @Table
 @With
@@ -37,6 +45,10 @@ import org.jspecify.annotations.Nullable;
 @NoArgsConstructor
 @AllArgsConstructor(access = PRIVATE)
 @IdClass(ApiTestResult.ApiTestResultId.class)
+@EqualsAndHashCode(of = { "apiTestCriteria", "apiTest" })
+@RealizesSw(
+  SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
+)
 public class ApiTestResult {
 
   @Id

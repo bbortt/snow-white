@@ -12,7 +12,7 @@ fetch
 
 **Description**
 `TempoTelemetryServiceImpl.findOpenTelemetryTracingData` builds its TraceQL query with a
-`select()` clause naming the given required attribute-key set (`SW-TMP-002`), and builds every
+`select()` clause naming the given required attribute-key set (`SW-021`), and builds every
 `OpenTelemetryData` it returns directly from the search response. `TempoQueryClient.getTraceById`
 is no longer called, and `fetchFullSpans` is removed — a single `search()` round trip is
 sufficient for the whole calculation, regardless of how many traces matched.
@@ -21,12 +21,12 @@ sufficient for the whole calculation, regardless of how many traces matched.
 Tempo's TraceQL `select()` clause returns exactly the attributes it names, for every matched span,
 in the same search response — the only reason the previous implementation needed a per-trace
 follow-up fetch was that the calculators' required keys were assumed unenumerable up front
-(`STR-TMP-002`'s problem statement); `SW-TMP-002` establishes they are not.
+(`STR-013`'s problem statement); `SW-021` establishes they are not.
 Removing the follow-up
 fetch removes the dominant cost of a calculation against a busy API (one HTTP round trip per
 matched trace, previously — confirmed via a production stack trace — enough to exceed
 `max.poll.interval.ms` and fence the Kafka Streams consumer out of its group, the root cause
-`STR-TMP-001` exists to tolerate).
+`STR-012` exists to tolerate).
 
 **Verification Description**
 An integration test against a Tempo test double asserts: the search request's TraceQL query
@@ -42,9 +42,9 @@ regardless.
 
 **Related**
 
-- [SW-TMP-002](SW-TMP-002-required-attribute-key-set-derivation.md) — the key set this search
+- [SW-021](SW-021-required-attribute-key-set-derivation.md) — the key set this search
   request projects
-- [ARCH-TMP-001](ARCH-TMP-001-required-attribute-keys-computed-once-by-caller.md) — how this
+- [ARCH-007](ARCH-007-required-attribute-keys-computed-once-by-caller.md) — how this
   backend receives the key set it projects
 - [ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — the pluggable-backend
   interface this implementation satisfies

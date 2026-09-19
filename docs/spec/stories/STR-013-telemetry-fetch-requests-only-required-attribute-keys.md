@@ -16,7 +16,7 @@ round trip per matched trace, and the InfluxDB backend returns each matching spa
 attribute blob regardless of how few of those attributes any calculator reads.
 Both cost latency, memory, and — for Tempo, confirmed in production — availability: a slow
 telemetry fetch is what fences `openapi-coverage-stream`'s Kafka Streams consumer out of its group
-(`STR-TMP-001`), which is what makes the redelivery this system now has to tolerate happen in the
+(`STR-012`), which is what makes the redelivery this system now has to tolerate happen in the
 first place.
 
 **Problem / Context**
@@ -58,7 +58,7 @@ matched trace, counts against `max.poll.interval.ms`.
 A busy API with many matched traces can push
 that past the poll interval, fencing the consumer out of its group
 (`TaskMigratedException`/`CommitFailedException`, confirmed via a production stack trace) and
-causing Kafka to redeliver the same calculation request — the exact scenario `STR-TMP-001` makes
+causing Kafka to redeliver the same calculation request — the exact scenario `STR-012` makes
 `report-coordinator-api` tolerate rather than crash on.
 Removing the per-trace round trip removes
 the dominant cause of that latency spike, rather than only tolerating its consequence.
@@ -108,7 +108,7 @@ requests only those keys:
 - Bounding the _number_ of spans or traces a query can return (InfluxDB currently applies no such
   bound at all; Tempo already does via `TempoQueryClient.SEARCH_LIMIT`) — that is a result-_count_
   bound, the concern `NF-006` already tracks; this story narrows result _width_ (attributes per
-  record), an independent axis. `STR-TMP-003` addresses making Tempo's existing count bound
+  record), an independent axis. `STR-014` addresses making Tempo's existing count bound
   configurable; an InfluxDB count bound remains unaddressed follow-up.
 - Extracting `OpenTelemetryData`'s InfluxDB-specific parsing (`parseOpenTelemetryData(FluxRecord)`,
   the `com.influxdb.query.FluxRecord` dependency) out of the shared DTO.
@@ -119,25 +119,25 @@ requests only those keys:
 - A future calculator reading an attribute key outside today's fixed set will need that key added
   to the required-key computation in the same change that adds the calculator — this story does
   not make that computation self-maintaining (for example by having each calculator declare its
-  own required keys); `ARCH-TMP-001` pins this as the accepted trade-off, not an oversight to close
+  own required keys); `ARCH-007` pins this as the accepted trade-off, not an oversight to close
   later.
 
 ## Relations
 
 **Realizes**
 
-- [ARCH-TMP-001](../specs/ARCH-TMP-001-required-attribute-keys-computed-once-by-caller.md) — where
+- [ARCH-007](../specs/ARCH-007-required-attribute-keys-computed-once-by-caller.md) — where
   the required-key computation lives and how it reaches either backend
-- [SW-TMP-002](../specs/SW-TMP-002-required-attribute-key-set-derivation.md) — what the required
+- [SW-021](../specs/SW-021-required-attribute-key-set-derivation.md) — what the required
   key set contains and how it is derived
-- [SW-TMP-003](../specs/SW-TMP-003-tempo-search-returns-only-required-keys.md) — the Tempo-specific
+- [SW-022](../specs/SW-022-tempo-search-returns-only-required-keys.md) — the Tempo-specific
   observable behavior change
-- [SW-TMP-004](../specs/SW-TMP-004-influxdb-query-narrows-attributes-to-required-keys.md) — the
+- [SW-023](../specs/SW-023-influxdb-query-narrows-attributes-to-required-keys.md) — the
   InfluxDB-specific observable behavior change
 
 **Related**
 
-- [STR-TMP-001](STR-TMP-001-redelivered-coverage-result-replaces-not-accumulates.md) — the
+- [STR-012](STR-012-redelivered-coverage-result-replaces-not-accumulates.md) — the
   redelivery-tolerance story whose root cause (Tempo per-trace fetch latency fencing the consumer)
   this story removes rather than only tolerates
 - [ARCH-001](../specs/ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — documents

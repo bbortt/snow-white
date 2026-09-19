@@ -55,6 +55,14 @@ precondition of promoting this spec.
   this spec additionally bounds it by result size within that scope
 - [NF-003](NF-003-scalability-without-redesign.md) — the low-resource-footprint
   deployment target this constraint protects
+- [SW-022](SW-022-tempo-search-returns-only-required-keys.md) — narrows Tempo's fetch _width_
+  (attributes per record); complements, but does not substitute for, this spec's result-_count_
+  bound
+- [SW-023](SW-023-influxdb-query-narrows-attributes-to-required-keys.md) — the same width-narrowing
+  on InfluxDB; the InfluxDB result-_count_ bound this spec's description flags as an open gap is
+  still not closed by it
+- [NF-007](NF-007-tempo-search-limit-is-operator-configurable.md) — makes the existing
+  `SEARCH_LIMIT` bound this spec anchors operator-configurable rather than a fixed constant
 
 ## Changes
 
@@ -62,3 +70,6 @@ precondition of promoting this spec.
   `TempoQueryClient.search`'s existing `SEARCH_LIMIT` bound is anchored as the one backend already
   satisfying this constraint; the InfluxDB gap and the throughput/load test remain tracked follow-up
   work, not a precondition of promotion, per this spec's own verification description.
+- **2026-09-19** — Added `SW-022`, `SW-023`, and `NF-007` as related specs.
+  They narrow fetch _width_ on both backends and make Tempo's count bound configurable; the
+  InfluxDB result-count gap this spec already flags remains open, not closed by any of the three.

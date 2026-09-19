@@ -54,3 +54,12 @@ context startup fails.
   implementations must independently satisfy
 - [SYS-004](SYS-004-telemetry-ingestion-and-correlation.md) — names both backends in
   passing; this spec pins the selection mechanism and exclusivity itself
+- [ARCH-007](ARCH-007-required-attribute-keys-computed-once-by-caller.md) — adds a required
+  attribute-key-set parameter to the `OpenTelemetryService` interface this spec documents; the
+  signature quoted above is pre-`ARCH-007` and needs updating once that spec's implementation lands
+
+## Changes
+
+- **2026-09-19** — Added `ARCH-007` as a related spec.
+  It extends the `OpenTelemetryService` interface signature this spec documents with a new
+  parameter; the signature itself is left unchanged here until `ARCH-007`'s implementation lands.

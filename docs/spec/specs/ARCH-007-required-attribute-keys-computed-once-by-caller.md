@@ -13,12 +13,12 @@ independently by each backend
 **Description**
 `OpenApiCoverageCalculationServiceImpl` — the sole caller of
 `OpenTelemetryService.findOpenTelemetryTracingData` — computes the calculation's required
-telemetry attribute-key set (`SW-TMP-002`) once, before invoking whichever backend implementation
+telemetry attribute-key set (`SW-021`) once, before invoking whichever backend implementation
 is active, and passes it as a new parameter on the interface method.
 Neither
 `TempoTelemetryServiceImpl` nor `InfluxDBTelemetryServiceImpl` derives this set itself; each only
 consumes the key set it is given to shape its own query (a TraceQL `select()` clause for Tempo, a
-narrowed Flux `_value` object for InfluxDB — `SW-TMP-003`, `SW-TMP-004`).
+narrowed Flux `_value` object for InfluxDB — `SW-022`, `SW-023`).
 
 **Rationale**
 The required-key computation depends only on the fixed calculator inputs and the target
@@ -35,7 +35,7 @@ with the new key attached, and the divergence would surface as a silent coverage
 lagging backend rather than a visible failure.
 
 This is a deliberate, accepted trade-off, not an oversight: the required-key set itself remains a
-fixed enumeration (`SW-TMP-002`) rather than something each calculator declares for itself.
+fixed enumeration (`SW-021`) rather than something each calculator declares for itself.
 A
 calculator added later that reads an attribute key outside today's fixed set must have that key
 added to the enumeration in the same change — nothing enforces this automatically.
@@ -58,11 +58,11 @@ purpose.
 
 **Related**
 
-- [SW-TMP-002](SW-TMP-002-required-attribute-key-set-derivation.md) — what the computed key set
+- [SW-021](SW-021-required-attribute-key-set-derivation.md) — what the computed key set
   contains
-- [SW-TMP-003](SW-TMP-003-tempo-search-returns-only-required-keys.md) — the Tempo consumer of the
+- [SW-022](SW-022-tempo-search-returns-only-required-keys.md) — the Tempo consumer of the
   computed key set
-- [SW-TMP-004](SW-TMP-004-influxdb-query-narrows-attributes-to-required-keys.md) — the InfluxDB
+- [SW-023](SW-023-influxdb-query-narrows-attributes-to-required-keys.md) — the InfluxDB
   consumer of the computed key set
 - [ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — the pluggable-backend
   shape this decision preserves; its documented `OpenTelemetryService` signature needs amending to

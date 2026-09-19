@@ -15,6 +15,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -252,6 +253,76 @@ class ApiTestResultLinkerUnitTest {
       );
 
       assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
+    )
+    void shouldReplaceExistingResult_whenRedeliveredForSameCriterion() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      var includedCriteria = Set.of(PATH_COVERAGE.name(), "OTHER_CRITERIA");
+
+      fixture.addApiTestResultsToApiTest(
+        Set.of(
+          ApiTestResult.builder()
+            .apiTestCriteria(PATH_COVERAGE.name())
+            .coverage(ONE)
+            .includedInReport(FALSE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(apiTest)
+            .build(),
+          ApiTestResult.builder()
+            .apiTestCriteria("OTHER_CRITERIA")
+            .coverage(ONE)
+            .includedInReport(FALSE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(apiTest)
+            .build()
+        ),
+        apiTest,
+        includedCriteria,
+        100
+      );
+
+      var redeliveredDuration = Duration.ofSeconds(5);
+
+      assertThatCode(() ->
+        fixture.addApiTestResultsToApiTest(
+          Set.of(
+            ApiTestResult.builder()
+              .apiTestCriteria(PATH_COVERAGE.name())
+              .coverage(ZERO)
+              .includedInReport(FALSE)
+              .duration(redeliveredDuration)
+              .apiTest(apiTest)
+              .build()
+          ),
+          apiTest,
+          includedCriteria,
+          100
+        )
+      ).doesNotThrowAnyException();
+
+      assertThat(apiTest.getApiTestResults())
+        .hasSize(2)
+        .filteredOn(result ->
+          PATH_COVERAGE.name().equals(result.getApiTestCriteria())
+        )
+        .singleElement()
+        .satisfies(
+          result -> assertThat(result.getCoverage()).isEqualTo(ZERO),
+          result ->
+            assertThat(result.getDuration()).isEqualTo(redeliveredDuration)
+        );
+
+      assertThat(apiTest.getApiTestResults())
+        .filteredOn(result ->
+          "OTHER_CRITERIA".equals(result.getApiTestCriteria())
+        )
+        .singleElement()
+        .satisfies(result -> assertThat(result.getCoverage()).isEqualTo(ONE));
     }
   }
 }
