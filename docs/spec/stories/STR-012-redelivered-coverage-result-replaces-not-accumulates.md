@@ -5,7 +5,7 @@
 **Title**
 A redelivered coverage result replaces the prior one instead of accumulating beside it
 
-**Status**: planned
+**Status**: done
 
 **Business Value**
 A quality-gate report must reflect the true, current coverage for every criterion — never a
@@ -78,7 +78,7 @@ criterion in the pass-rate calculation.
 
 **Realizes**
 
-- [SW-TMP-001](../specs/SW-TMP-001-redelivered-criterion-result-replaces-existing-one.md) — the
+- [SW-020](../specs/SW-020-redelivered-criterion-result-replaces-existing-one.md) — the
   replace-not-accumulate behavior for a redelivered criterion result
 
 **Related**

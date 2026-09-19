@@ -28,12 +28,12 @@ A spec with no header parameters at all still yields the fixed
 key set, never an empty one.
 
 **Rationale**
-This is the enumeration `ARCH-TMP-001` pins as the single, explicit source of the required-key set,
+This is the enumeration `ARCH-007` pins as the single, explicit source of the required-key set,
 computed once and handed to whichever backend is active.
 Keeping it as one small, readable method
 — rather than spread across each calculator — makes the complete key inventory reviewable in one
 place, which matters because nothing enforces it staying in sync with the calculators automatically
-(`ARCH-TMP-001`'s accepted trade-off).
+(`ARCH-007`'s accepted trade-off).
 
 **Verification Description**
 A unit test builds an `OpenAPI` spec with a mix of operations — one with no parameters, one with
@@ -46,11 +46,11 @@ duplicates and no keys for path or query parameters.
 
 **Related**
 
-- [ARCH-TMP-001](ARCH-TMP-001-required-attribute-keys-computed-once-by-caller.md) — where this
+- [ARCH-007](ARCH-007-required-attribute-keys-computed-once-by-caller.md) — where this
   computation is invoked and how its result is passed on
-- [SW-TMP-003](SW-TMP-003-tempo-search-returns-only-required-keys.md) — the Tempo backend's use of
+- [SW-022](SW-022-tempo-search-returns-only-required-keys.md) — the Tempo backend's use of
   this key set
-- [SW-TMP-004](SW-TMP-004-influxdb-query-narrows-attributes-to-required-keys.md) — the InfluxDB
+- [SW-023](SW-023-influxdb-query-narrows-attributes-to-required-keys.md) — the InfluxDB
   backend's use of this key set
 - [SW-004](SW-004-parameter-coverage-matches-by-token-not-substring.md) — the query-parameter
   matching behavior this spec's rationale for excluding per-query-parameter keys depends on

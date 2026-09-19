@@ -35,8 +35,14 @@ final class ApiTestResultLinker {
    * A criterion outside the gate is persisted but flagged not-included; only included results
    * decide the verdict, and the gate's {@code minCoveragePercentage} is the bar both for a single
    * criterion and for the share of criteria clearing it.
+   * A redelivered result for a criterion already present on the {@code ApiTest} replaces it rather
+   * than accumulating beside it: the incoming results are removed from the set by identity before
+   * being re-added, so a redelivery never leaves two entries for the same criterion.
    */
   @RealizesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
+  @RealizesSw(
+    SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
+  )
   void addApiTestResultsToApiTest(
     Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
@@ -47,16 +53,23 @@ final class ApiTestResultLinker {
       return;
     }
 
-    apiTest.getApiTestResults().addAll(
-      apiTestResults
-        .stream()
-        .map(apiTestResult ->
-          apiTestResult.withIncludedInReport(
-            isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
-          )
+    var incomingResults = apiTestResults
+      .stream()
+      .map(apiTestResult ->
+        apiTestResult.withIncludedInReport(
+          isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
         )
-        .toList()
-    );
+      )
+      .toList();
+
+    var existingResults = apiTest.getApiTestResults();
+    if (existingResults.removeAll(incomingResults)) {
+      // A replaced result shares its composite primary key (apiTestCriteria, apiTest) with the
+      // incoming one; without flushing the orphan removal first, Hibernate would order the new
+      // row's insert before the old row's delete and collide on that key.
+      apiTestRepository.saveAndFlush(apiTest);
+    }
+    existingResults.addAll(incomingResults);
 
     apiTestRepository.save(
       apiTest.withReportStatus(

@@ -7,7 +7,7 @@ A redelivered criterion result replaces the existing one for that (criterion, AP
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `ApiTestResultLinker.addApiTestResultsToApiTest` folds the `ApiTestResult`s carried by an
@@ -70,3 +70,7 @@ breaks equality.
 - [CON-002](CON-002-tolerate-dependency-outages.md) — the outage-tolerance invariant this spec
   is the concrete instance of for `report-coordinator-api`'s own inbound response processing,
   mirroring `SW-008`'s role for `openapi-coverage-stream`
+
+## Changes
+
+- **2026-09-19** — Set active: implementation of STR-012 began.

@@ -43,20 +43,20 @@ from `TempoProperties` instead of the constant.
 - An equivalent configurable limit for the InfluxDB backend — InfluxDB currently applies no
   result-count bound at all (a pre-existing gap `NF-006` already tracks as follow-up, not
   introduced or closed by this story).
-- Any change to what a matched trace/span returns once fetched — that is `STR-TMP-002`'s concern,
+- Any change to what a matched trace/span returns once fetched — that is `STR-013`'s concern,
   independent of how many matches a query is allowed to return.
 
 ## Relations
 
 **Realizes**
 
-- [NF-TMP-001](../specs/NF-TMP-001-tempo-search-limit-is-operator-configurable.md) — the
+- [NF-007](../specs/NF-007-tempo-search-limit-is-operator-configurable.md) — the
   configurability behavior itself
 
 **Related**
 
 - [NF-006](../specs/NF-006-bounded-telemetry-fetch-footprint.md) — the bounded-fetch constraint
   `SEARCH_LIMIT` satisfies; this story changes who sets its value, not that it remains a bound
-- [STR-TMP-002](STR-TMP-002-telemetry-fetch-requests-only-required-attribute-keys.md) — the sibling
+- [STR-013](STR-013-telemetry-fetch-requests-only-required-attribute-keys.md) — the sibling
   telemetry-fetch story narrowing fetch _width_; this story concerns fetch _count_, unaffected by
   that change
