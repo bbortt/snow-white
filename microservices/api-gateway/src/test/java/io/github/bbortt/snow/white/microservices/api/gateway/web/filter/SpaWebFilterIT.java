@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.ApiVersion;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -66,6 +67,18 @@ class SpaWebFilterIT {
   @Test
   void testFilterDoesNotForwardToIndexForDotFile() {
     webTestClient.get().uri("/file.js").exchange().expectStatus().isNotFound();
+  }
+
+  @Test
+  void testFilterDoesNotForwardToIndexForManagementEndpoint() {
+    webTestClient
+      .get()
+      .uri("/management/health")
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectHeader()
+      .contentType(ApiVersion.V3.getProducedMimeType().toString());
   }
 
   @Test

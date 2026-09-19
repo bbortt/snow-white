@@ -74,6 +74,20 @@
           </annotationProcessorPaths>
         </configuration>
       </plugin>
+
+      <!--
+        This module has no tests by design (see sonar.coverage.exclusions above): it defines
+        reusable ArchUnit rule constants, exercised by consuming modules' own ArchUnit tests
+        rather than by tests of its own.
+      -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

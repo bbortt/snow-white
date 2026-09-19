@@ -165,6 +165,7 @@ jobs:
             -b smart -T4C \
             -Pprod \
             -DskipTests \
+            -Djacoco.skip=true \
             -Dfrontend.test.skip=true \
             -pl :${{ matrix.service }} -am
       - name: Build ${{ matrix.service }} Image
@@ -269,6 +270,7 @@ jobs:
             -b smart -T4C \
             -Pprod \
             -DskipTests \
+            -Djacoco.skip=true \
             -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
             -pl :${{ matrix.service }} -am

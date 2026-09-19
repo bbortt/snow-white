@@ -90,6 +90,14 @@ class ApiGatewayPropertiesValidatorUnitTest {
     }
 
     @Test
+    void doesNotRequirePublicUrl_whenEnvironmentIsNull() {
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
+
+      assertThatNoException().isThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, null));
+    }
+
+    @Test
     void doesNotThrowAnythingIfInProdProfileAndPublicUrlIsSet() {
       doReturn(true).when(environmentMock).acceptsProfiles(PROD);
       fixture.setEnvironment(environmentMock);

@@ -28,6 +28,10 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
+
+    <sonar.coverage.exclusions>**/*.java</sonar.coverage.exclusions>
+    <sonar.tests />
+    <sonar.test.inclusions />
   </properties>
 
   <dependencies>
@@ -115,6 +119,10 @@
         </executions>
       </plugin>
 
+      <!--
+        This module has no tests by design (see sonar.coverage.exclusions above): it is
+        and example application for others to explore how Snow-White works.
+      -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

@@ -14,7 +14,7 @@ import { exit } from 'node:process';
 import type { ConfigExplorer, ConfigResolver } from './resolve-config';
 
 import { CONFIG_FILE_NOT_FOUND, FAILED_LOADING_CONFIG_FILE } from '../common/exit-codes';
-import { resolveConfigInternal } from './resolve-config';
+import { CosmiconfigResolver, resolveConfig, resolveConfigInternal } from './resolve-config';
 
 await mock.module('node:fs', () => ({
   existsSync: mock(),
@@ -157,5 +157,39 @@ describe('resolveConfig', () => {
       expect.stringContaining(`⚙️ Failed to load configuration file: Config file not found: ${filepath}`),
     );
     expect(exit).toHaveBeenCalledWith(FAILED_LOADING_CONFIG_FILE);
+  });
+
+  it('should log error and exit when the explorer finds no config at all', () => {
+    const filepath = '/path/to/.snow-whiterc';
+    const mockExplorer = createMockExplorer(null);
+    const mockResolver = createMockResolver(mockExplorer);
+
+    // @ts-expect-error TS2339: Property mockReturnValue does not exist on type (path: PathLike) => boolean
+    existsSync.mockReturnValue(true);
+
+    expect(() => resolveConfigInternal(filepath, mockResolver)).toThrowError('Process exited with code 2');
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file not found at '${filepath}'`));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`⚙️ Failed to load configuration file: Process exited with code 1`),
+    );
+  });
+
+  it('creates a real cosmiconfig explorer for the given module name', () => {
+    const resolver = new CosmiconfigResolver();
+    const explorer = resolver.createExplorer('snow-white');
+
+    expect(typeof explorer.load).toBe('function');
+    expect(typeof explorer.search).toBe('function');
+  });
+
+  it('resolveConfig delegates to the default CosmiconfigResolver', () => {
+    // @ts-expect-error TS2339: Property mockReturnValue does not exist on type (path: PathLike) => boolean
+    existsSync.mockReturnValue(false);
+
+    const filepath = '/definitely/does/not/exist/.snow-whiterc';
+    expect(() => resolveConfig(filepath)).toThrowError('Process exited with code 1');
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining(`⚙️ Configuration file '${filepath}' does not exist`));
   });
 });
