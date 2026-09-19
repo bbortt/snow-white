@@ -157,7 +157,7 @@
 
       <dependency>
         <groupId>io.github.bbortt.snow-white.toolkit</groupId>
-        <artifactId>annotation-api</artifactId>
+        <artifactId>spring-web-autoconfiguration</artifactId>
         <version>${project.version}</version>
       </dependency>
 
