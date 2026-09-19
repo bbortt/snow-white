@@ -6,7 +6,7 @@
 
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import React from 'react';
 import { translate } from 'react-jhipster';
@@ -175,7 +175,7 @@ describe('OpenApiCriterionBadge', () => {
       expect(info).toHaveAttribute('id', 'info-TEST_CRITERION');
     });
 
-    it('should toggle the tooltip when the info button receives focus', () => {
+    it('should toggle the tooltip when the info button receives focus', async () => {
       const criterion = createOpenApiCriterion('TEST_CRITERION');
 
       render(<ApiCriterionInfo apiCriterion={criterion} />);
@@ -185,7 +185,7 @@ describe('OpenApiCriterionBadge', () => {
       (useAppDispatch as jest.MockedFn<() => any>).mockReturnValueOnce(dispatch);
       fireEvent.focusIn(screen.getByRole('button'));
 
-      expect(document.querySelector('.tooltip.show')).not.toBeNull();
+      await waitFor(() => expect(document.querySelector('.tooltip.show')).not.toBeNull());
     });
   });
 
