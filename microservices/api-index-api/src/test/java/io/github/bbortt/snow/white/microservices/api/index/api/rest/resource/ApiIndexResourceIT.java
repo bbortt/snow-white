@@ -18,6 +18,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.AbstractApiIndexApiIT;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
@@ -77,6 +79,9 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  @VerifiesSw(
+    SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
+  )
   void postRequest_forPrerelease_shouldOverrideExistingEntry()
     throws Exception {
     var prereleaseReference = GetAllApis200ResponseInner.builder()
@@ -707,6 +712,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   void getRequest_forRawApiContent_shouldReturnNotFound_whenApiDoesNotExist()
     throws Exception {
     mockMvc
@@ -715,6 +721,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   void getRequest_forRawApiContent_shouldReturnYaml_whenContentIsOpenApiSpec()
     throws Exception {
     var openApiContent =
@@ -751,6 +758,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   void getRequest_forRawApiContent_shouldReturnPlainText_whenContentIsNotOpenApiSpec()
     throws Exception {
     var rawContent = "some raw spec content that is not openapi";

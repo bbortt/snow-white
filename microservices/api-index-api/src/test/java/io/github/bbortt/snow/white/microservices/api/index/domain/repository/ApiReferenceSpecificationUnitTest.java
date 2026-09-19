@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.api.index.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import jakarta.persistence.criteria.*;
 import org.junit.jupiter.api.Nested;
@@ -48,6 +50,9 @@ class ApiReferenceSpecificationUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX
+    )
     void shouldFilterOnlyByServiceName_whenApiNameFilterIsAbsent() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
@@ -70,6 +75,9 @@ class ApiReferenceSpecificationUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX
+    )
     void shouldFilterOnlyByApiName_whenServiceNameFilterIsAbsent() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 
@@ -90,6 +98,9 @@ class ApiReferenceSpecificationUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX
+    )
     void shouldFilterByServiceNameAndApiName_whenBothFiltersAreProvided() {
       doReturn(mock(Predicate.class)).when(criteriaBuilderMock).conjunction();
 

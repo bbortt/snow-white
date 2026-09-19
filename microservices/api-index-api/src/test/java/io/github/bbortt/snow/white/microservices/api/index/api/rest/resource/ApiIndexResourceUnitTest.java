@@ -28,6 +28,8 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_YAML;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
@@ -420,6 +422,9 @@ class ApiIndexResourceUnitTest {
   class GetRawApiContentTest {
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES
+    )
     void shouldReturnNotFound_whenApiDoesNotExist() {
       doReturn(Optional.empty())
         .when(apiIndexServiceMock)
@@ -445,6 +450,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES
+    )
     void shouldReturnNotFound_whenApiIsNotPrerelease() {
       var domain = mock(ApiReference.class);
       doReturn(false).when(domain).isPrerelease();
@@ -472,6 +480,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES
+    )
     void shouldReturnNotFound_whenPrereleaseContentIsNull() {
       var domain = mock(ApiReference.class);
       doReturn(true).when(domain).isPrerelease();
@@ -500,6 +511,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES
+    )
     void shouldReturnYamlContent_whenPrereleaseContentIsOpenApiSpec() {
       // language=yaml
       var openApiContent = """
@@ -529,6 +543,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES
+    )
     void shouldReturnPlainTextContent_whenPrereleaseContentIsNotOpenApiSpec() {
       var plainContent = "some raw content that is not an openapi spec";
 
