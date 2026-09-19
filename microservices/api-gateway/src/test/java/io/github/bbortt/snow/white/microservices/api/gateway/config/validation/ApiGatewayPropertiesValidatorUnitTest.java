@@ -47,6 +47,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       doReturn(false).when(environmentMock).acceptsProfiles(PROD);
       fixture.setEnvironment(environmentMock);
 
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -54,7 +55,18 @@ class ApiGatewayPropertiesValidatorUnitTest {
     }
 
     @Test
+    void shouldThrowException_withMissingApiIndexApiUrl() {
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
+
+      assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.api-index-api-url].");
+    }
+
+    @Test
     void shouldThrowException_withMissingQualityGateApiUrl() {
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
@@ -64,6 +76,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
 
     @Test
     void shouldThrowException_withMissingReportCoordinationServiceUrl() {
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
@@ -81,6 +94,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       doReturn(true).when(environmentMock).acceptsProfiles(PROD);
       fixture.setEnvironment(environmentMock);
 
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -91,6 +105,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
 
     @Test
     void doesNotRequirePublicUrl_whenEnvironmentIsNull() {
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -102,6 +117,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       doReturn(true).when(environmentMock).acceptsProfiles(PROD);
       fixture.setEnvironment(environmentMock);
 
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 

@@ -49,7 +49,7 @@
     <sonar.test.inclusions>src/test/**/*.java</sonar.test.inclusions>
 
     <sonar.coverage.exclusions>
-      example-application/**,
+      examples/**,
       src/main/java/clew/traceables/**,
       **/Main.java
     </sonar.coverage.exclusions>

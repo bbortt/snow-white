@@ -15,7 +15,7 @@ dispatches the Kafka calculation requests **outside** it.
 When the call runs inside an active, synchronization-capable transaction, the dispatch is
 registered as an after-commit callback and fires only once that transaction has committed.
 When there is no such transaction — the component invoked directly, as in a unit test — the
-dispatch happens inline, so the behaviour degrades to the obvious one rather than being silently
+dispatch happens inline, so the behavior degrades to the obvious one rather than being silently
 skipped.
 
 **Rationale**

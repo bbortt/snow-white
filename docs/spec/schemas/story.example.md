@@ -56,7 +56,7 @@ How the increment is carried out, at a high level — the decisions, not the cod
 
 **Realizes**
 
-- [SW-001](../specs/SW-001-the-behaviour.md) — the behaviour this story delivers
+- [SW-001](../specs/SW-001-the-behavior.md) — the behavior this story delivers
 
 **Related**
 

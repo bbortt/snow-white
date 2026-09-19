@@ -73,4 +73,4 @@ cases.
   implementation (`STR-011`).
 - **2026-09-18** — The all-or-nothing rule, the aggregated `400` body and the public-gateway
   `Location` are now documented in the OpenAPI contract, where they were previously invisible.
-  Documentation only — the trigger's behaviour is unchanged.
+  Documentation only — the trigger's behavior is unchanged.
