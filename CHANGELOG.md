@@ -2,23 +2,20 @@
 
 ## [1.11.0](https://github.com/bbortt/snow-white/compare/v1.10.1...v1.11.0) (2026-09-19)
 
-
 ### Features
 
-* **#2010:** cleanup of parent-child criteria relationships ([8861a6c](https://github.com/bbortt/snow-white/commit/8861a6cc1e67cbb5b817e932776c001da2dffeeb))
-* **cli:** cross-compile cli for windows arm targets ([db33a95](https://github.com/bbortt/snow-white/commit/db33a957a55ad31dfe5a246dab6d522bdb4f3fde))
-* **report-coordinator-api:** judge the JUnit export by the gate's own threshold ([74dd8e4](https://github.com/bbortt/snow-white/commit/74dd8e417a313d25471512d19d8f7e83dbc12d8e))
-
+- **#2010:** cleanup of parent-child criteria relationships ([8861a6c](https://github.com/bbortt/snow-white/commit/8861a6cc1e67cbb5b817e932776c001da2dffeeb))
+- **cli:** cross-compile cli for windows arm targets ([db33a95](https://github.com/bbortt/snow-white/commit/db33a957a55ad31dfe5a246dab6d522bdb4f3fde))
+- **report-coordinator-api:** judge the JUnit export by the gate's own threshold ([74dd8e4](https://github.com/bbortt/snow-white/commit/74dd8e417a313d25471512d19d8f7e83dbc12d8e))
 
 ### Bug Fixes
 
-* **quality-gate-api:** reseed removes stale predefined-gate criteria ([b87f7a4](https://github.com/bbortt/snow-white/commit/b87f7a49fb6ef76913dbfaad1eab1c43380bd972))
-* **report-coordinator-api:** redelivery of messages is an upsert operation ([305906a](https://github.com/bbortt/snow-white/commit/305906a07eebf71b914986a59e0ecbf8839f0e64))
-
+- **quality-gate-api:** reseed removes stale predefined-gate criteria ([b87f7a4](https://github.com/bbortt/snow-white/commit/b87f7a49fb6ef76913dbfaad1eab1c43380bd972))
+- **report-coordinator-api:** redelivery of messages is an upsert operation ([305906a](https://github.com/bbortt/snow-white/commit/305906a07eebf71b914986a59e0ecbf8839f0e64))
 
 ### Documentation
 
-* draft improvements for the openapi-coverage-stream under load ([4ac6795](https://github.com/bbortt/snow-white/commit/4ac67959d8d1a0b8c7f8f2aaaaa97278ec434373))
+- draft improvements for the openapi-coverage-stream under load ([4ac6795](https://github.com/bbortt/snow-white/commit/4ac67959d8d1a0b8c7f8f2aaaaa97278ec434373))
 
 ## [1.10.1](https://github.com/bbortt/snow-white/compare/v1.10.0...v1.10.1) (2026-09-16)
 
