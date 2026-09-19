@@ -11,17 +11,25 @@ This file is for Claude Code sessions working in this repo.
 
 ## Skills
 
-Five project-specific skills live in `.claude/skills/` in addition to the built-in ones.
+Six project-specific skills live in `.claude/skills/` in addition to the built-in ones.
 Prefer
 invoking these over improvising when the task matches:
 
-| Skill          | Use for                                                                                                                                            |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `snow-white`   | Reading a Snow-White JUnit XML quality-gate report and turning failures into concrete fixes.                                                       |
-| `requirements` | Drills to the root, non-technical need behind a feature request — invoked through `clew-draft` for in-scope Java source (see below), not directly. |
-| `architect`    | Structural/cross-cutting decisions — where new functionality belongs, new services, layered-architecture questions, Kafka topic design.            |
-| `apptest`      | Writing or extending Citrus black-box tests under `src/apptest` for a microservice.                                                                |
-| `ui-expert`    | Reviewing or building the `api-gateway` React/TypeScript frontend — UX, accessibility, visual verification via `claude-in-chrome`.                 |
+| Skill           | Use for                                                                                                                                            |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `premise-check` | Verifying the factual claims a request rests on, before drafting, speccing, or coding — runs first whenever a request asserts a fact.              |
+| `snow-white`    | Reading a Snow-White JUnit XML quality-gate report and turning failures into concrete fixes.                                                       |
+| `requirements`  | Drills to the root, non-technical need behind a feature request — invoked through `clew-draft` for in-scope Java source (see below), not directly. |
+| `architect`     | Structural/cross-cutting decisions — where new functionality belongs, new services, layered-architecture questions, Kafka topic design.            |
+| `apptest`       | Writing or extending Citrus black-box tests under `src/apptest` for a microservice.                                                                |
+| `ui-expert`     | Reviewing or building the `api-gateway` React/TypeScript frontend — UX, accessibility, visual verification via `claude-in-chrome`.                 |
+
+`premise-check` runs before all the others, on any request — feature, fix, or refactor — that
+asserts a fact you would build on: what Tempo or Kafka can do, what a limit is, why something is
+slow, what the calculators read.
+The rest of this file's workflow takes the request's facts as given; that skill is the only step
+that checks them.
+It is cheap by design — most requests have nothing to verify, and saying so is a valid outcome.
 
 For a request outside clew's scope (the `api-gateway` webapp, `toolkit/cli`) that looks like "add
 a new capability" rather than "fix/refactor/clean up", start with `requirements`, not code.
