@@ -162,6 +162,19 @@ class OpenApiInformationEnhancerUnitTest {
   }
 
   @Test
+  void invocationWithNonHandlerMethodHandlerDoesNothing() {
+    doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
+
+    fixture.preHandle(
+      httpServletRequestMock,
+      httpServletResponseMock,
+      new Object()
+    );
+
+    verifyNoInteractions(handlerMethodMock, spanMock);
+  }
+
+  @Test
   void invocationWithNoAnnotationDoesNothing() {
     doReturn(spanMock).when(spanProviderMock).getCurrentSpan();
     doReturn(methodMock).when(handlerMethodMock).getMethod();

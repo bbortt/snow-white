@@ -243,9 +243,61 @@
       </plugin>
 
       <plugin>
+        <!--
+          Not inherited: this resets the shared jacoco.exec exactly once, at the very start of
+          the reactor (the root project always builds first, scoped or not), so a coverage check
+          never mixes data with a previous, unrelated invocation. Bound to validate so it runs
+          before jacoco:prepare-agent (initialize).
+        -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.2.0</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>reset-shared-jacoco-exec</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete
+                  file="${maven.multiModuleProjectDirectory}/target/jacoco.exec"
+                />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
+        <configuration>
+          <!--
+            Mirrors sonar.coverage.exclusions above (clew trace markers, Spring Boot bootstrap
+            classes), plus generated code Sonar never sees because it lives outside src/main
+            (sonar.inclusions is src/main-scoped) but JaCoCo's bytecode-based check still bundles:
+            OpenAPI-generated client SDKs and server stubs/DTOs, MapStruct mapper implementations,
+            and OpenTelemetry's generated protobuf messages. None of these carry hand-written logic
+            to test. The generator also stamps them @jakarta.annotation.Generated, but that
+            annotation is @Retention(SOURCE) - it never reaches the .class file, so JaCoCo's own
+            built-in @Generated filter cannot see it either; these excludes are the only thing that
+            works.
+          -->
+          <excludes>
+            <exclude>clew/traceables/**</exclude>
+            <exclude>**/Main.class</exclude>
+            <exclude>**/api/client/**</exclude>
+            <exclude>**/api/rest/dto/**</exclude>
+            <exclude>**/api/rest/*Api.class</exclude>
+            <exclude>**/ApiUtil.class</exclude>
+            <exclude>**/*MapperImpl.class</exclude>
+            <exclude>io/opentelemetry/proto/**</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
@@ -260,7 +312,7 @@
           </execution>
           <execution>
             <id>jacoco-report</id>
-            <phase>test</phase>
+            <phase>verify</phase>
             <goals>
               <goal>report</goal>
             </goals>
@@ -271,6 +323,35 @@
               <outputDirectory>
                 ${project.reporting.outputDirectory}/jacoco
               </outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check-coverage</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <dataFile>
+                ${maven.multiModuleProjectDirectory}/target/jacoco.exec
+              </dataFile>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.9</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.9</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
             </configuration>
           </execution>
         </executions>
@@ -285,6 +366,27 @@
   </build>
 
   <profiles>
+    <profile>
+      <!--
+        Application tests exercise a published image over the network: the code under test runs
+        inside a container, while the JaCoCo agent is attached to the local failsafe JVM. No
+        production class is ever loaded in the instrumented JVM, so the shared jacoco.exec comes
+        out empty and `check-coverage` reports a 0.0 covered ratio for the whole bundle.
+
+        Coverage is measured and gated by the regular `verify` build, where the code actually runs
+        in-process; re-running the same gate here can only ever fail. Disabling the plugin outright
+        (rather than just the check) also keeps the apptest run from truncating the reactor-wide
+        jacoco.exec that the coverage build writes.
+
+        Inherited: every module that defines its own `apptest` profile merges with this one by id.
+      -->
+      <id>apptest</id>
+
+      <properties>
+        <jacoco.skip>true</jacoco.skip>
+      </properties>
+    </profile>
+
     <profile>
       <id>node</id>
 
@@ -331,6 +433,13 @@
                   <dataFileIncludes>
                     <dataFileInclude>**/jacoco.exec</dataFileInclude>
                   </dataFileIncludes>
+                  <excludes>
+                    <exclude>clew/traceables/**</exclude>
+                    <exclude>**/Main.class</exclude>
+                    <exclude>**/api/client/apiindexapi/**</exclude>
+                    <exclude>**/*MapperImpl.class</exclude>
+                    <exclude>io/opentelemetry/proto/**</exclude>
+                  </excludes>
                   <outputDirectory>
                     ${maven.multiModuleProjectDirectory}/target/jacoco-aggregate
                   </outputDirectory>

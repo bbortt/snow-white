@@ -409,6 +409,121 @@ class ParameterCoverageCalculatorUnitTest {
       );
     }
 
+    @Test
+    void shouldNotCoverParameter_whenTelemetryAttributesAreNull() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("page", "query", false))
+        )
+      );
+
+      var telemetryData = new OpenTelemetryData("span-123", "trace-456", null);
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(telemetryData)
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldNotCoverParameter_whenParameterLocationIsUnsupported() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("session", "cookie", false))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "page=1")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldNotCoverQueryParameter_whenQueryAttributeIsAbsent() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("page", "query", false))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldNotCoverQueryParameter_whenQueryStringIsEmpty() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("page", "query", false))
+        )
+      );
+
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("url.query", "");
+      var telemetryData = new OpenTelemetryData(
+        "span-123",
+        "trace-456",
+        attributes
+      );
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(telemetryData)
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldCoverQueryParameter_whenPresentAsBareFlagToken() {
+      var pathToOpenAPIOperationMap = createOperationsWithParameters(
+        Map.of(
+          "GET_/api/v1/users",
+          List.of(createParameter("debug", "query", false))
+        )
+      );
+
+      var pathToTelemetryMap = createTelemetryWithQueryParams(
+        Map.of("GET_/api/v1/users", "page=1&debug")
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(1.0));
+    }
+
     private Map<String, Operation> createOperationsWithParameters(
       Map<String, List<Parameter>> pathToParameters
     ) {

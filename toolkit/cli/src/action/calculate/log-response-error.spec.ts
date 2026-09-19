@@ -66,4 +66,38 @@ describe('logResponseError', () => {
 
     expect(consoleErrorSpy.mock.calls[0][0]).toContain('Error: Internal Server Error');
   });
+
+  it('falls back to text body when json() rejects', async () => {
+    const error = {
+      response: {
+        json: () => Promise.reject(new Error('not json')),
+        status: 502,
+        statusText: 'Bad Gateway',
+        text: () => Promise.resolve(JSON.stringify({ message: 'Parsed from text' })),
+      },
+    } as unknown as Error & { response: Response };
+
+    await logResponseError(error);
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+
+    expect(consoleErrorSpy.mock.calls[0][0]).toContain('Details: Parsed from text');
+  });
+
+  it('falls back to statusText when json() rejects and the text body is empty', async () => {
+    const error = {
+      response: {
+        json: () => Promise.reject(new Error('not json')),
+        status: 502,
+        statusText: 'Bad Gateway',
+        text: () => Promise.resolve(''),
+      },
+    } as unknown as Error & { response: Response };
+
+    await logResponseError(error);
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+
+    expect(consoleErrorSpy.mock.calls[0][0]).toContain('Error: Bad Gateway');
+  });
 });

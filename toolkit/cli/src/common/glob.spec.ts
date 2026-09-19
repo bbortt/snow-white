@@ -9,7 +9,21 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { scanGlob } from './glob';
+import { compareLexicographically, scanGlob } from './glob';
+
+describe('compareLexicographically', () => {
+  test('orders a before b', () => {
+    expect(compareLexicographically('a', 'b')).toBe(-1);
+  });
+
+  test('orders b after a', () => {
+    expect(compareLexicographically('b', 'a')).toBe(1);
+  });
+
+  test('treats equal values as equal', () => {
+    expect(compareLexicographically('a', 'a')).toBe(0);
+  });
+});
 
 describe('scanGlob', () => {
   const tempDir = mkdtempSync(join(tmpdir(), 'scan-glob-'));

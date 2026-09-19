@@ -323,6 +323,148 @@ class RequiredErrorFieldsCoverageCalculatorUnitTest {
       );
     }
 
+    @Test
+    void shouldIgnoreMediaTypeWithNullSchema() {
+      var operation = new Operation();
+      var responses = new ApiResponses();
+
+      var apiResponse = new ApiResponse();
+      var content = new Content();
+      var mediaType = new MediaType();
+      mediaType.setSchema(null);
+      content.addMediaType("application/json", mediaType);
+      apiResponse.setContent(content);
+
+      responses.addApiResponse("400", apiResponse);
+      operation.setResponses(responses);
+
+      var pathToOpenAPIOperationMap = Map.of("GET_/api/v1/users", operation);
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("400"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    void shouldIgnoreSchemaWithNullRequiredFields() {
+      var operation = new Operation();
+      var responses = new ApiResponses();
+
+      var apiResponse = new ApiResponse();
+      var content = new Content();
+      var mediaType = new MediaType();
+      var schema = new Schema();
+      schema.setRequired(null);
+      mediaType.setSchema(schema);
+      content.addMediaType("application/json", mediaType);
+      apiResponse.setContent(content);
+
+      responses.addApiResponse("400", apiResponse);
+      operation.setResponses(responses);
+
+      var pathToOpenAPIOperationMap = Map.of("GET_/api/v1/users", operation);
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("400"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldIgnoreTelemetryWithNullAttributes() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
+        Map.of("GET_/api/v1/users", Map.of("400", List.of("message")))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(new OpenTelemetryData("span-123", "trace-456", null))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldIgnoreTelemetryMissingStatusCodeAttribute() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
+        Map.of("GET_/api/v1/users", Map.of("400", List.of("message")))
+      );
+
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("other.attribute", "value");
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(new OpenTelemetryData("span-123", "trace-456", attributes))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldNotMatchWildcardWhenNoErrorCodesObserved() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
+        Map.of("GET_/api/v1/users", Map.of("4XX", List.of("message")))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
+    @Test
+    void shouldNotCoverDefaultResponseWhenNoErrorsObserved() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
+        Map.of("GET_/api/v1/users", Map.of("default", List.of("message")))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result.coverage()).isEqualTo(getBigDecimal(0.0));
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Map<String, Operation> createOperationsWithErrorSchemas(
       Map<String, Map<String, List<String>>> pathToErrorSchemas

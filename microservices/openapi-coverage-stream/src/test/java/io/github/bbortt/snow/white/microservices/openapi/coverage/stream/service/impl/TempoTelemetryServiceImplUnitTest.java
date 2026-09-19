@@ -16,6 +16,7 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.http.Fault;
@@ -26,10 +27,14 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.TempoQueryClient;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -390,6 +395,424 @@ class TempoTelemetryServiceImplUnitTest {
         .singleElement()
         .satisfies(data -> assertThat(data.traceId()).isEqualTo(fullTraceId));
     }
+
+    @Test
+    void withUnparseableLookbackWindow_shouldThrowIllegalArgumentException() {
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          LOOKBACK_FROM,
+          "not-a-window",
+          emptySet()
+        )
+      )
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Unparseable lookback window");
+    }
+
+    static Stream<Arguments> lookbackWindowsAndExpectedStartEpochSeconds() {
+      return Stream.of(
+        arguments("1ms", "1704067199"),
+        arguments("1s", "1704067199"),
+        arguments("1m", "1704067140"),
+        arguments("1d", "1703980800"),
+        arguments("1w", "1703462400")
+      );
+    }
+
+    @ParameterizedTest
+    @MethodSource("lookbackWindowsAndExpectedStartEpochSeconds")
+    void withVariousLookbackWindowUnits_shouldComputeCorrectStartEpochSeconds(
+      String lookbackWindow,
+      String expectedStartEpochSeconds
+    ) throws TelemetryBackendUnavailableException {
+      fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        lookbackWindow,
+        emptySet()
+      );
+
+      var request = wireMockServer.getAllServeEvents().getFirst().getRequest();
+      assertThat(request.getQueryParams().get("start").firstValue()).isEqualTo(
+        expectedStartEpochSeconds
+      );
+    }
+
+    @Test
+    void withSearchResponseMissingTracesProperty_shouldReturnEmptyResult()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(okJson("{}"))
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withEmptySearchResponseBody_shouldReturnEmptyResult()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          aResponse().withStatus(200)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withTraceMissingSpanSet_shouldSkipTrace()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      { "traces": [{ "traceID": "%s" }] }
+      """.formatted(traceId);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withSpanSetMissingSpansProperty_shouldSkipTrace()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      { "traces": [{ "traceID": "%s", "spanSet": {} }] }
+      """.formatted(traceId);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withResourceSpanMissingScopeSpansProperty_shouldSkipResourceSpan()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+      { "trace": { "resourceSpans": [{}] } }
+      """;
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withScopeSpanMissingSpansProperty_shouldSkipScopeSpan()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+      { "trace": { "resourceSpans": [{ "scopeSpans": [{}] }] } }
+      """;
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void withUnmatchedSpanInTraceResponse_shouldExcludeItFromResult()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var matchedSpanIdHex = "3f1a2c9e7d4b8a61";
+      var matchedSpanIdBase64 = "Pxosnn1LimE=";
+      var unmatchedSpanIdBase64 = "in0uS5w/HQo=";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, matchedSpanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+      {
+        "trace": {
+          "resourceSpans": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    { "spanId": "%s", "attributes": [] },
+                    { "spanId": "%s", "attributes": [] }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+      """.formatted(matchedSpanIdBase64, unmatchedSpanIdBase64);
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(data ->
+          assertThat(data.spanId()).isEqualTo(matchedSpanIdHex)
+        );
+    }
+
+    @Test
+    void withSpanMissingAttributesProperty_shouldResultInEmptyAttributes()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var spanIdBase64 = "Pxosnn1LimE=";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+      {
+        "trace": {
+          "resourceSpans": [
+            { "scopeSpans": [{ "spans": [{ "spanId": "%s" }] }] }
+          ]
+        }
+      }
+      """.formatted(spanIdBase64);
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(data -> assertThat(data.attributes().isEmpty()).isTrue());
+    }
+
+    @Test
+    void withAttributeMissingValueProperty_shouldSkipAttribute()
+      throws TelemetryBackendUnavailableException {
+      wireMockServer.resetAll();
+
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var spanIdBase64 = "Pxosnn1LimE=";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      // language=json
+      var traceResponseBody = """
+      {
+        "trace": {
+          "resourceSpans": [
+            {
+              "scopeSpans": [
+                {
+                  "spans": [
+                    {
+                      "spanId": "%s",
+                      "attributes": [
+                        { "key": "http.method" },
+                        {
+                          "key": "http.path",
+                          "value": { "stringValue": "/api/v1/test" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+      """.formatted(spanIdBase64);
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson(traceResponseBody)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(data -> {
+          assertThat(data.attributes().has("http.method")).isFalse();
+          assertThat(data.attributes().get("http.path").asString()).isEqualTo(
+            "/api/v1/test"
+          );
+        });
+    }
   }
 
   @Nested
@@ -440,6 +863,155 @@ class TempoTelemetryServiceImplUnitTest {
       )
         .isInstanceOf(TelemetryBackendUnavailableException.class)
         .hasCauseInstanceOf(ResourceAccessException.class);
+    }
+
+    @Test
+    void shouldReturnEmptyResult_whenTraceByIdReturnsNotFound()
+      throws TelemetryBackendUnavailableException {
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          aResponse().withStatus(404)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldThrowTelemetryBackendUnavailableException_whenTraceByIdRespondsWithServerError() {
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          aResponse().withStatus(502)
+        )
+      );
+
+      assertThatThrownBy(() ->
+        fixture.findOpenTelemetryTracingData(
+          API_INFORMATION,
+          LOOKBACK_FROM,
+          LOOKBACK_WINDOW,
+          emptySet()
+        )
+      )
+        .isInstanceOf(TelemetryBackendUnavailableException.class)
+        .hasCauseInstanceOf(HttpServerErrorException.class);
+    }
+
+    @Test
+    void shouldReturnEmptyResult_whenTraceByIdRespondsWithEmptyBody()
+      throws TelemetryBackendUnavailableException {
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          aResponse().withStatus(200)
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyResult_whenTraceByIdResponseMissingResourceSpansProperty()
+      throws TelemetryBackendUnavailableException {
+      var spanIdHex = "3f1a2c9e7d4b8a61";
+      var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
+
+      // language=json
+      var searchResponseBody = """
+      {
+        "traces": [
+          { "traceID": "%s", "spanSet": { "spans": [{ "spanID": "%s" }] } }
+        ]
+      }
+      """.formatted(traceId, spanIdHex);
+
+      wireMockServer.stubFor(
+        get(urlPathEqualTo("/api/search")).willReturn(
+          okJson(searchResponseBody)
+        )
+      );
+
+      wireMockServer.stubFor(
+        get(urlEqualTo("/api/v2/traces/" + traceId)).willReturn(
+          okJson("{ \"trace\": {} }")
+        )
+      );
+
+      var result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        emptySet()
+      );
+
+      assertThat(result).isEmpty();
     }
   }
 }

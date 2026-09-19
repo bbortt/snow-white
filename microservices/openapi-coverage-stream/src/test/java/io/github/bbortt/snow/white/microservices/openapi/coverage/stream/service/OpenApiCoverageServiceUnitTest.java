@@ -156,6 +156,41 @@ class OpenApiCoverageServiceUnitTest {
         );
     }
 
+    @Test
+    void shouldReturnEmptyOperationMap_whenOpenApiHasNoPaths() {
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"http.request.method":"GET","url.path":"/unknown/path" }
+        """
+      );
+
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      doReturn(new Paths()).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, Operation>> pathToOpenAPIOperationMapCaptor =
+        captor();
+      ArgumentCaptor<
+        Map<String, List<OpenTelemetryData>>
+      > pathToTelemetryMapCaptor = captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(
+          pathToOpenAPIOperationMapCaptor.capture(),
+          pathToTelemetryMapCaptor.capture()
+        );
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(pathToOpenAPIOperationMapCaptor.getValue()).isEmpty();
+      assertThat(pathToTelemetryMapCaptor.getValue()).containsKey(
+        "GET_/unknown/path"
+      );
+    }
+
     public static Stream<
       Set<OpenTelemetryData>
     > shouldReturnEmptySet_whenNoTelemetryDataGathered() {
@@ -239,10 +274,47 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFallbackToConcretePathKey_whenOperationIdIsNotInSpec() {
+      doReturn("openapi.operation.id")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getOperationIdAttribute();
+
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
         {"openapi.operation.id":"unknownOp","http.request.method":"GET","url.path":"/pung/hello"}
+        """
+      );
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem("/pung/{message}", new PathItem().get(new Operation()));
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, List<OpenTelemetryData>>> telemetryCaptor =
+        captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), telemetryCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(telemetryCaptor.getValue())
+        .containsKey("GET_/pung/hello")
+        .doesNotContainKey("GET_/pung/{message}");
+    }
+
+    @Test
+    void shouldFallbackToConcretePathKey_whenOperationIdAttributeIsBlank() {
+      doReturn("openapi.operation.id")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getOperationIdAttribute();
+
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"openapi.operation.id":" ","http.request.method":"GET","url.path":"/pung/hello"}
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
@@ -272,6 +344,33 @@ class OpenApiCoverageServiceUnitTest {
         // language=json
         """
         {"openapi.operation.id":"unknownOp"}
+        """
+      );
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem("/pung/{message}", new PathItem().get(new Operation()));
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<Map<String, List<OpenTelemetryData>>> telemetryCaptor =
+        captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), telemetryCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(telemetryCaptor.getValue()).isEmpty();
+    }
+
+    @Test
+    void shouldFilterOut_whenUrlPathAttributeIsMissing() {
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {"http.request.method":"GET"}
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(

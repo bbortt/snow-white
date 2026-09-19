@@ -25,6 +25,12 @@ export interface ConfigResolver {
 }
 
 export class CosmiconfigResolver implements ConfigResolver {
+  // Explicit (if empty) so `bun test --coverage` can instrument it - a class relying on the
+  // implicit constructor is counted in the function-coverage total but can never be marked hit,
+  // capping coverage below 100% no matter how often the class is instantiated.
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function
+  constructor() {}
+
   createExplorer(moduleName: string): ConfigExplorer {
     return cosmiconfigSync(moduleName);
   }
@@ -64,13 +70,9 @@ export const resolveConfigInternal = (
   }
 
   try {
-    const config = resolveConfigFromFile(filepath, explorer);
-    if (config) {
-      return config;
-    }
-
-    console.error(chalk.red(`Configuration file '${filepath}' could not be loaded`));
-    exit(FAILED_LOADING_CONFIG_FILE);
+    // `resolveConfigFromFile` never returns falsy - it either returns a config or calls
+    // `exit()` (typed `never`, so this line is dead in practice) itself.
+    return resolveConfigFromFile(filepath, explorer);
   } catch (error) {
     console.error(chalk.red(`⚙️ Failed to load configuration file: ${error instanceof Error ? error.message : JSON.stringify(error)}`));
     exit(FAILED_LOADING_CONFIG_FILE);
