@@ -9,6 +9,10 @@ package io.github.bbortt.snow.white.microservices.api.index.service;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesCon;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceSpecification;
@@ -29,6 +33,13 @@ public class ApiIndexService {
 
   private final ApiReferenceRepository apiReferenceRepository;
 
+  @RealizesCon({
+    ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED,
+    ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT,
+  })
+  @RealizesSw(
+    SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
+  )
   public void persist(ApiReference apiReference)
     throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
     var id = ApiReference.ApiReferenceId.builder()

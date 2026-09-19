@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.api.index.domain.repository;
 import static java.util.Locale.ROOT;
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 @NoArgsConstructor(access = PRIVATE)
 public final class ApiReferenceSpecification {
 
+  @RealizesSw(SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX)
   public static Specification<ApiReference> from(
     @Nullable String serviceName,
     @Nullable String apiName

@@ -16,6 +16,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
 import java.util.List;
@@ -165,6 +169,9 @@ class ApiIndexApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesCon(
+    ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT
+  )
   void shouldReturn400WhenIngestingStableApiWithContent(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -212,6 +219,9 @@ class ApiIndexApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesCon(
+    ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
+  )
   void shouldReturn409WhenIngestingDuplicateApi(
     @CitrusResource TestCaseRunner testRunner
   ) {
@@ -430,6 +440,7 @@ class ApiIndexApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   void shouldGetRawApiContent(@CitrusResource TestCaseRunner testRunner) {
     var serviceName = "shouldGetRawApiContent";
     var apiName = "shouldGetRawApiContent-api";
@@ -478,6 +489,7 @@ class ApiIndexApiAppTest {
    */
   @Test
   @CitrusTest
+  @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   void shouldReturn404WhenRawApiContentNotFound(
     @CitrusResource TestCaseRunner testRunner
   ) {

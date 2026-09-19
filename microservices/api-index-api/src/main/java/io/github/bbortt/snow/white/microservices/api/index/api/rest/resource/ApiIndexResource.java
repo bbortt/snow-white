@@ -16,6 +16,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_YAML;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
@@ -144,6 +146,7 @@ public class ApiIndexResource implements ApiIndexApi {
   }
 
   @Override
+  @RealizesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
   public ResponseEntity getRawApiContent(
     String otelServiceName,
     String apiName,

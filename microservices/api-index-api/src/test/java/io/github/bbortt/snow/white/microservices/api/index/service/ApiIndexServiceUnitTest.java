@@ -16,6 +16,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
@@ -82,6 +86,9 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesCon(
+      ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
+    )
     void shouldThrowException_whenApiReferenceAlreadyExists() {
       doReturn(Optional.of(mock(ApiReference.class)))
         .when(apiReferenceRepositoryMock)
@@ -101,6 +108,62 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesCon(
+      ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
+    )
+    void shouldThrowException_whenApiReferenceAlreadyExists_andIncomingIsPrerelease() {
+      var incomingPrerelease = apiReference
+        .withPrerelease(true)
+        .withPrereleaseContent("spec: content");
+
+      doReturn(Optional.of(mock(ApiReference.class)))
+        .when(apiReferenceRepositoryMock)
+        .findById(
+          ApiReference.ApiReferenceId.builder()
+            .otelServiceName(incomingPrerelease.getOtelServiceName())
+            .apiName(incomingPrerelease.getApiName())
+            .apiVersion(incomingPrerelease.getApiVersion())
+            .build()
+        );
+
+      assertThatThrownBy(() ->
+        fixture.persist(incomingPrerelease)
+      ).isInstanceOf(ApiAlreadyIndexedException.class);
+
+      verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
+    }
+
+    @Test
+    @VerifiesCon({
+      ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED,
+      ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT,
+    })
+    void shouldThrowAlreadyIndexedException_whenExistingIsStable_evenIfIncomingContentIsInvalid() {
+      var invalidStableReference = apiReference
+        .withPrerelease(false)
+        .withPrereleaseContent("spec: content");
+
+      doReturn(Optional.of(mock(ApiReference.class)))
+        .when(apiReferenceRepositoryMock)
+        .findById(
+          ApiReference.ApiReferenceId.builder()
+            .otelServiceName(invalidStableReference.getOtelServiceName())
+            .apiName(invalidStableReference.getApiName())
+            .apiVersion(invalidStableReference.getApiVersion())
+            .build()
+        );
+
+      assertThatThrownBy(() ->
+        fixture.persist(invalidStableReference)
+      ).isInstanceOf(ApiAlreadyIndexedException.class);
+
+      verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
+    )
     void shouldReplaceExistingPrerelease_whenPrereleaseIsReUploaded()
       throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var prereleaseReference = apiReference
@@ -125,6 +188,9 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
+    )
     void shouldReplaceExistingPrerelease_whenReleaseIsReUploaded()
       throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var prereleaseReference = apiReference
@@ -149,6 +215,9 @@ class ApiIndexServiceUnitTest {
     }
 
     @Test
+    @VerifiesCon(
+      ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT
+    )
     void shouldThrowException_whenReleaseContainsContent() {
       var prereleaseReference = apiReference
         .withPrerelease(false)
@@ -165,6 +234,36 @@ class ApiIndexServiceUnitTest {
       assertThatThrownBy(() ->
         fixture.persist(prereleaseReference)
       ).isInstanceOf(InvalidReleaseWithContentException.class);
+    }
+
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT
+    )
+    void shouldThrowException_whenReleaseContainsContent_andExistingIsPrerelease() {
+      var existingPrerelease = mock(ApiReference.class);
+      doReturn(true).when(existingPrerelease).isPrerelease();
+
+      var invalidStableReference = apiReference
+        .withPrerelease(false)
+        .withPrereleaseContent("spec: content");
+
+      var id = ApiReference.ApiReferenceId.builder()
+        .otelServiceName(invalidStableReference.getOtelServiceName())
+        .apiName(invalidStableReference.getApiName())
+        .apiVersion(invalidStableReference.getApiVersion())
+        .build();
+
+      doReturn(Optional.of(existingPrerelease))
+        .when(apiReferenceRepositoryMock)
+        .findById(id);
+
+      assertThatThrownBy(() ->
+        fixture.persist(invalidStableReference)
+      ).isInstanceOf(InvalidReleaseWithContentException.class);
+
+      verify(apiReferenceRepositoryMock, never()).deleteById(id);
+      verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
     }
   }
 
