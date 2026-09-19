@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 
 import static java.lang.String.format;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
+@RealizesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
 public class RoutingConfig {
 
   private final ApiGatewayProperties apiGatewayProperties;

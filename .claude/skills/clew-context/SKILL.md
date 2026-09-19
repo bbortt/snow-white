@@ -13,7 +13,7 @@ This is read-only analysis — it produces understanding; it does not write or c
 The core idea: the story's _stated_ relations are what its author had in mind, but the _code_ around the area often anchors specs that are just as relevant.
 The strongest signal is the gap between the two — especially a spec the code points at that has been abandoned.
 
-Relevance reaches a piece of code two ways, and this skill walks both: **across** the call graph (the behaviours it interacts with — usually `SW`), and **up** the file/module tree (the high-altitude specs that govern where it lives — usually `STK`/`SYS`, anchored coarsely at the file or module-entrypoint level).
+Relevance reaches a piece of code two ways, and this skill walks both: **across** the call graph (the behaviors it interacts with — usually `SW`), and **up** the file/module tree (the high-altitude specs that govern where it lives — usually `STK`/`SYS`, anchored coarsely at the file or module-entrypoint level).
 The first is the execution-path expansion; the second is the containment ascent.
 
 If you already built this context for these drafts earlier in the session, reuse it — unless the drafts or the code area have changed since, in which case rebuild.
@@ -24,12 +24,12 @@ The build checks only that an anchor's spec id **exists** — never that the cod
 `realizes` and `verifies` are _stated_, not _proven_: an anchor records that someone asserted this code implements or exercises the spec, not that it does.
 Do not rely on it as evidence the code is right.
 
-So when you change code that realizes a spec, **read that spec first** and make the change from its **intent**, not from the code's current behaviour.
+So when you change code that realizes a spec, **read that spec first** and make the change from its **intent**, not from the code's current behavior.
 Where the code has drifted from the intent, the anchor was masking that drift — and reasoning from the intent, rather than preserving what the code happens to do, is what surfaces the bug.
 
 ## What a lens is
 
-A **lens** is a category of spec — a viewpoint the system is described through: a software behaviour (`SW`), a constraint (`CON`), an architecture decision (`ARCH`), and so on.
+A **lens** is a category of spec — a viewpoint the system is described through: a software behavior (`SW`), a constraint (`CON`), an architecture decision (`ARCH`), and so on.
 A project declares its lenses in `.clewrc.json`, each with an `id` and a one-line `description`; the `id` is also the prefix of the ids minted for that kind (lens `SW` → `SW-001`, `SW-002`, …).
 
 ## When to use
@@ -91,7 +91,7 @@ A `linked` spec also found on the path is not reclassified; note the overlap, as
 
 ### 5. Lateral scan — the other anchors of each local spec
 
-Steps 2–4 gather the specs near the change; this goes the other way — from each **fine-grained** spec found so far (a behaviour anchored at a precise site, typically `SW`/`CON`), find its **other** anchors across the codebase and read them.
+Steps 2–4 gather the specs near the change; this goes the other way — from each **fine-grained** spec found so far (a behavior anchored at a precise site, typically `SW`/`CON`), find its **other** anchors across the codebase and read them.
 That is where code sharing the same unit of intent — a sibling implementation, a distant test, a configuration point — lives without ever touching the call path.
 
 - For each such spec, look up everything that anchors it — run `clew anchors <id>` (pass several ids in one call); it returns each id's sites, and its freshness flags a stale index — grep the traceable across the code instead when that happens or the command is unavailable (see _Reading the project_) — and read each new site, collecting its markers.
@@ -122,7 +122,7 @@ Surface these as the "why": an agent changing a file that ascends to `STK-003` (
 
 For specs that share a code location, rank the coupling so attention goes to the highest-impact first:
 
-- **same anchor site** — strongest; changing the traced behaviour likely affects all of them at once;
+- **same anchor site** — strongest; changing the traced behavior likely affects all of them at once;
 - **same callable** (function or method) — strong;
 - **same enclosing scope** (class, module, or namespace) — moderate;
 - **same file**, then **same package/module** — informational.
@@ -135,7 +135,7 @@ Flag the locations where the planned work might affect other specs.
   A `path` spec that is obsolete is a high-priority signal that a design direction was tried and abandoned; surface it prominently, never silently drop it.
 - **Conflicts** — existing specs the story's direction would contradict.
   Call it a conflict only when both cannot hold at once; where they can coexist uneasily, surface it as a _tension_, not a conflict.
-- **Gaps** — behaviour the story implies that no active spec covers; this tells the drafting step which specs (and which lenses) to create.
+- **Gaps** — behavior the story implies that no active spec covers; this tells the drafting step which specs (and which lenses) to create.
   A gap is only as reliable as the area searched — if coverage was partial, say so rather than asserting absence.
 
 ### 9. Summarize

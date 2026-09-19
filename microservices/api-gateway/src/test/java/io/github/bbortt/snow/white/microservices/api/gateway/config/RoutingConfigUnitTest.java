@@ -16,6 +16,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +53,7 @@ class RoutingConfigUnitTest {
     }
 
     @Test
+    @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
     void beanShouldBeEnabled_ifServerPortDoesNotEqualManagementServerPort() {
       var contextRunner = new ApplicationContextRunner().withUserConfiguration(RoutingConfig.class);
 
@@ -68,6 +71,7 @@ class RoutingConfigUnitTest {
     }
 
     @Test
+    @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
     void beanShouldBeDisabled_ifServerPortIsAlsoManagementServerPort() {
       var contextRunner = new ApplicationContextRunner().withUserConfiguration(RoutingConfig.class);
 

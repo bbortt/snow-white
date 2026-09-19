@@ -60,7 +60,7 @@ For anything beyond a trivial change, run `clew-context` for the area: it walks 
 
 **This skill does not teach coding.** Write the implementation and its test the way the project works: **follow whatever implementation, testing, debugging, and language skills are installed** (for example a TDD skill, a testing-conventions skill, a systematic-debugging skill, a framework skill), and the project's governance (`003` code conventions, `005` testing contract).
 
-Within that, implement the behaviour the spec describes and a test that exercises it, from the intent read in step 2.
+Within that, implement the behavior the spec describes and a test that exercises it, from the intent read in step 2.
 If no such skill is installed, implement to the project's conventions and the spec's verification description.
 
 The `verifies` test must encode a **falsifying** case — one that _fails_ if the spec were violated.

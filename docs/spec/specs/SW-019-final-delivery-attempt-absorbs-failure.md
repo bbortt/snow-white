@@ -51,7 +51,7 @@ attempt — asserting that the first two are acknowledged without a report chang
 throwing case rethrows without touching the report, and that the final attempt marks the API test
 `FINISHED_EXCEPTIONALLY` with the exception message before rethrowing.
 `OpenApiResultListenerUnitTest` covers the delivery-attempt branching and
-`OpenApiResultListenerIT` the redelivery behaviour against a broker.
+`OpenApiResultListenerIT` the redelivery behavior against a broker.
 
 ## Relations
 

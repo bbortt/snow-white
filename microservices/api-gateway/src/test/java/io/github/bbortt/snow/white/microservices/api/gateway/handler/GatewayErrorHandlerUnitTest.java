@@ -15,6 +15,8 @@ import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.UnknownHostException;
@@ -57,6 +59,7 @@ class GatewayErrorHandlerUnitTest {
   class HandleTest {
 
     @Test
+    @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
     void noRouteToHostException() {
       doReturn(httpHeaders).when(serverHttpResponseMock).getHeaders();
 
@@ -67,6 +70,7 @@ class GatewayErrorHandlerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
     void connectException() {
       doReturn(httpHeaders).when(serverHttpResponseMock).getHeaders();
 
@@ -77,6 +81,7 @@ class GatewayErrorHandlerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
     void unknownHostException() {
       doReturn(httpHeaders).when(serverHttpResponseMock).getHeaders();
 
@@ -87,6 +92,7 @@ class GatewayErrorHandlerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
     void timeoutException() {
       fixture.handle(serverWebExchangeMock, new TimeoutException("timeout")).block();
 
@@ -95,6 +101,7 @@ class GatewayErrorHandlerUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_025_GATEWAY_ERROR_MAPPING_DISTINGUISHES_DOWNSTREAM_UNAVAILABLE)
     void unexpectedException() {
       fixture.handle(serverWebExchangeMock, new IllegalStateException("boom")).block();
 

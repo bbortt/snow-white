@@ -15,6 +15,8 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import io.restassured.RestAssured;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,6 +46,7 @@ class StaticResourcesAppTest {
    * Note: RestAssured automatically decompresses gzip responses, so the body is already raw PNG bytes.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_009_STATIC_ASSETS_BYPASS_THE_SECURITY_FILTER_CHAIN)
   void requestToInfoEndpointShouldSucceed() {
     byte[] responseBody = when()
       .get("/content/images/logo.png")

@@ -12,6 +12,10 @@ import static org.springframework.security.web.server.header.ReferrerPolicyServe
 import static org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter.Mode.DENY;
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesCon;
 import io.github.bbortt.snow.white.microservices.api.gateway.web.filter.SpaWebFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +34,8 @@ public class SecurityConfig {
   private final ApiGatewayProperties apiGatewayProperties;
 
   @Bean
+  @RealizesArch(ArchTraceables.ARCH_009_STATIC_ASSETS_BYPASS_THE_SECURITY_FILTER_CHAIN)
+  @RealizesCon(ConTraceables.CON_006_ACTUATOR_ENDPOINTS_DENY_BY_DEFAULT)
   public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
     http
       .securityMatcher(

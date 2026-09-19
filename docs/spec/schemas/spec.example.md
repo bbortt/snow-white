@@ -35,7 +35,7 @@ The one decision this spec pins, stated concretely
 **Status**: planned
 
 **Description**
-The single behaviour, rule, or decision this spec fixes — what it requires and,
+The single behavior, rule, or decision this spec fixes — what it requires and,
 where there is a real choice, what it excludes.
 
 **Rationale**

@@ -13,7 +13,7 @@ terminal state, and a machine-consumable gate result as system capabilities — 
 spec corpus pins down the component that actually owns all three.
 `report-coordinator-api` is that component: it is the entry point a CI pipeline calls, the owner
 of the report a caller polls, and the producer of the JUnit XML a build server consumes.
-Its most consequential behaviours are exactly the ones a caller cannot see from the OpenAPI
+Its most consequential behaviors are exactly the ones a caller cannot see from the OpenAPI
 contract: that a trigger with one unindexed API creates no report at all, that a report still
 running answers `202` rather than `200`, that a report can pass its quality gate while the JUnit
 export marks the same criteria as failures, and that a stale report is timed out rather than
@@ -32,10 +32,10 @@ A source read of the module (`QualityGateResource`, `ReportResource`, `Housekeep
 `QualityGateStatusCalculator`, `QualityGateCalculationRequestDispatcher`, `OpenApiResultListener`,
 `QualityGateReportHousekeeper`, `JUnitReporter`, and the `ReportStatus` model, against the
 existing unit, integration, and `ReportCoordinatorApiAppTest` black-box suites) found no code
-anchored to any spec in the corpus — this module's behaviour is currently undocumented outside
+anchored to any spec in the corpus — this module's behavior is currently undocumented outside
 the code.
 
-Several behaviours stood out as consequential enough to need a spec of their own:
+Several behaviors stood out as consequential enough to need a spec of their own:
 
 - A trigger is **all-or-nothing**: `ApiIndexService` validates every requested API in parallel and
   `QualityGateResource` aggregates _all_ failures into one `400` body, so a request naming four
@@ -52,13 +52,13 @@ Several behaviours stood out as consequential enough to need a spec of their own
   response resolves the report instead of leaving it to the housekeeping timeout.
 
 **Solution Approach**
-Add seven software specs for the module's observable behaviour — the trigger contract, the
+Add seven software specs for the module's observable behavior — the trigger contract, the
 report-retrieval polling contract, report-status aggregation, the API-test verdict rule, the
 JUnit export mapping, the stale-report timeout, and the last-delivery-attempt absorption — and
 three architecture specs for the structural decisions behind them: the per-API-test Kafka fan-out
 keyed by calculation id, dispatch deferred until after the report transaction commits, and report
 status persisted as a stable numeric code with a tolerant decode.
-No code changes — this documents the existing, already-tested behaviour and anchors it.
+No code changes — this documents the existing, already-tested behavior and anchors it.
 
 **Acceptance Criteria**
 

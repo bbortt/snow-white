@@ -19,6 +19,8 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,6 +42,7 @@ class ApiIndexApiAppTest {
    * When the client calls {@code /api/rest/v1/apis}, the gateway must forward the request to {@code /api/rest/v1/apis} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void apisResourceRequestShouldBeForwarded() {
     stubFor(get("/api/rest/v1/apis").willReturn(ok()));
 
@@ -55,6 +58,7 @@ class ApiIndexApiAppTest {
    * {@code /api/rest/v1/apis/{service}/{api}/{version}} exactly as received.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void apiByPathResourceRequestShouldBeForwarded() {
     var service = "my-service";
     var api = "my-api";
@@ -79,6 +83,7 @@ class ApiIndexApiAppTest {
    * Requests to {@code /v3/api-docs/api-index-api} must be forwarded to the api-index-api {@code /v3/api-docs} endpoint.
    */
   @Test
+  @VerifiesArch(ArchTraceables.ARCH_008_BACKEND_SERVICES_ADDRESSED_BY_PATH_PREFIX_WITH_AGGREGATED_OPENAPI_DOCS)
   void shouldTransformSwaggerApiRequest() {
     stubFor(get("/v3/api-docs").willReturn(ok()));
 
