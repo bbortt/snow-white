@@ -75,6 +75,35 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
+  mutation-testing:
+    name: Mutation Testing (PIT)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      # 'helm' holds no Java: there is nothing to mutate, but its `verify` shells out to
+      # `helm template` and would need the chart dependencies fetched first. Excluded from
+      # the reactor instead of set up, since mutation testing never touches it.
+      - name: Run PIT Mutation Coverage
+        run: ./mvnw -B -P mutation verify -pl '!helm'
+      - name: Upload PIT Reports
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pit-reports
+          path: '**/target/pit-reports/'
+          if-no-files-found: error
   lint:
     name: Lint
     runs-on: ubuntu-slim

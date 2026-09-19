@@ -154,6 +154,25 @@
     </pluginManagement>
 
     <plugins>
+      <!--
+        Route definitions and the security filter chain are Spring wiring: every mutant PIT
+        generates for them is a null return of a @Bean method or of a route lambda, which says
+        nothing about the tests. What they actually do is asserted by RoutingConfigIT and
+        SecurityConfigIT - and ITs are excluded from a mutation run (see the root pom), because
+        they need Docker.
+      -->
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest.version}</version>
+        <configuration>
+          <excludedClasses combine.children="append">
+            <param>*.config.RoutingConfig</param>
+            <param>*.config.SecurityConfig</param>
+          </excludedClasses>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
