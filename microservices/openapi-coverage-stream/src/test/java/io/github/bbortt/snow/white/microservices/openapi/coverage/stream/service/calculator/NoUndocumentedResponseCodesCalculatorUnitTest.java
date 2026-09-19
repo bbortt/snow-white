@@ -320,6 +320,92 @@ class NoUndocumentedResponseCodesCalculatorUnitTest {
       );
     }
 
+    @Test
+    void shouldSkipOperation_whenTelemetryListIsEmpty() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of())
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldTreatObservedCodesAsUndocumented_whenNoOperationMatchesPath() {
+      var pathToOpenAPIOperationMap = new HashMap<String, Operation>();
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/unknown", List.of("200"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(0.0)),
+        r ->
+          assertThat(r.additionalInformation()).isEqualTo(
+            "The following response codes are not documented in the OpenAPI specification: `GET_/api/v1/unknown [200]`"
+          )
+      );
+    }
+
+    @Test
+    void shouldIgnoreTelemetryWithNullAttributes() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(new OpenTelemetryData("span-123", "trace-456", null))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
+    void shouldHandleUppercaseDefaultCatchAll() {
+      var pathToOpenAPIOperationMap = createOperationsWithResponseCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "DEFAULT"))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "500"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
     private Map<String, Operation> createOperationsWithResponseCodes(
       Map<String, List<String>> pathToResponseCodes
     ) {

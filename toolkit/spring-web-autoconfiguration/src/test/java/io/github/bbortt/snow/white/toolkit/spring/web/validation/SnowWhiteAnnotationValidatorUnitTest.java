@@ -83,6 +83,50 @@ class SnowWhiteAnnotationValidatorUnitTest {
       .hasMessageContaining("Incomplete @SnowWhiteInformation");
   }
 
+  @Test
+  void throwsIllegalStateException_whenServiceNameIsMissing() {
+    doReturn(Map.of("controller", new MissingServiceNameController()))
+      .when(contextMock)
+      .getBeansWithAnnotation(Controller.class);
+
+    assertThatThrownBy(() -> fixture.validateOnStartup(eventMock))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Incomplete @SnowWhiteInformation");
+  }
+
+  @Test
+  void throwsIllegalStateException_whenApiVersionIsMissing() {
+    doReturn(Map.of("controller", new MissingApiVersionController()))
+      .when(contextMock)
+      .getBeansWithAnnotation(Controller.class);
+
+    assertThatThrownBy(() -> fixture.validateOnStartup(eventMock))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessageContaining("Incomplete @SnowWhiteInformation");
+  }
+
+  @Test
+  void passesValidation_whenOnlyMethodIsAnnotated() {
+    doReturn(Map.of("controller", new MethodOnlyAnnotatedController()))
+      .when(contextMock)
+      .getBeansWithAnnotation(Controller.class);
+
+    assertThatNoException().isThrownBy(() ->
+      fixture.validateOnStartup(eventMock)
+    );
+  }
+
+  @Test
+  void skipsMethod_whenNotARequestMapping() {
+    doReturn(Map.of("controller", new NonRequestMappingMethodController()))
+      .when(contextMock)
+      .getBeansWithAnnotation(Controller.class);
+
+    assertThatNoException().isThrownBy(() ->
+      fixture.validateOnStartup(eventMock)
+    );
+  }
+
   @SnowWhiteInformation(serviceName = "svc", apiName = "api", apiVersion = "v1")
   private static class CompleteClassAnnotatedController {
 
@@ -115,6 +159,50 @@ class SnowWhiteAnnotationValidatorUnitTest {
 
     @GetMapping("/test")
     public void endpoint() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @SnowWhiteInformation(apiName = "api", apiVersion = "v1")
+  private static class MissingServiceNameController {
+
+    @GetMapping("/test")
+    public void endpoint() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @SnowWhiteInformation(serviceName = "svc", apiName = "api")
+  private static class MissingApiVersionController {
+
+    @GetMapping("/test")
+    public void endpoint() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  private static class MethodOnlyAnnotatedController {
+
+    @GetMapping("/test")
+    @SnowWhiteInformation(
+      serviceName = "svc",
+      apiName = "api",
+      apiVersion = "v1"
+    )
+    public void endpoint() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @SnowWhiteInformation(serviceName = "svc", apiName = "api", apiVersion = "v1")
+  private static class NonRequestMappingMethodController {
+
+    @GetMapping("/test")
+    public void endpoint() {
+      throw new UnsupportedOperationException();
+    }
+
+    public void notARequestMapping() {
       throw new UnsupportedOperationException();
     }
   }

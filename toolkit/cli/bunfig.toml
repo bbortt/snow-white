@@ -2,6 +2,7 @@
 # https://bun.sh/docs/test/coverage#coverage-reporters
 coverageDir = "target/coverage"
 coverageReporter = ["text", "lcov"]
+coverageThreshold = 0.9
 
 # https://bun.sh/docs/test/coverage#exclude-test-files-from-coverage
 coveragePathIgnorePatterns = [
