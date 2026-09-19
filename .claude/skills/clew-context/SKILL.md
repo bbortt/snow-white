@@ -84,7 +84,7 @@ From each anchor, walk the call graph and collect the project's trace markers:
 - read the anchor and collect its markers;
 - walk **callers 1 level** and **callees up to 2 levels**, collecting markers along the way;
 - stop at framework/library boundaries — do not chase into third-party code;
-- cap at about **8 files per anchor** and **~24 files overall** across all anchors, and prefer breadth (more immediate neighbours) over depth.
+- cap at about **8 files per anchor** and **~24 files overall** across all anchors, and prefer breadth (more immediate neighbors) over depth.
 
 Each spec found this way that was not already `linked` is tagged `path` — relevant via the code, though the story never named it.
 A `linked` spec also found on the path is not reclassified; note the overlap, as two independent channels are stronger evidence than one.
