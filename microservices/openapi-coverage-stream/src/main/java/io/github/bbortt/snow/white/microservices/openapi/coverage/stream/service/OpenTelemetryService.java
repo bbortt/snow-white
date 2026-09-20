@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
@@ -20,19 +22,29 @@ import org.jspecify.annotations.NullMarked;
 public interface OpenTelemetryService {
   /**
    * Finds tracing data matching the given API within the requested lookback window.
+   * <p>
+   * Implementations shape their own query so that only {@code requiredAttributeKeys} is
+   * requested - they do not derive that set themselves.
    *
    * @param apiInformation the API to fetch tracing data for.
    * @param lookbackFromTimestamp the timestamp (epoch millis) to look back from.
    * @param lookbackWindow the lookback window duration.
    * @param attributeFilters optional attribute filters to apply.
-   * @return the matching telemetry data.
+   * @param requiredAttributeKeys the attribute keys this calculation reads, computed once by the
+   *     caller.
+   * @return the matching telemetry data, carrying no attribute outside
+   *     {@code requiredAttributeKeys}.
    * @throws TelemetryBackendUnavailableException if the backend could not be reached, or
    *     responded with a server error, after all retries were exhausted.
    */
+  @RealizesArch(
+    ArchTraceables.ARCH_007_REQUIRED_ATTRIBUTE_KEYS_COMPUTED_ONCE_BY_CALLER
+  )
   Set<OpenTelemetryData> findOpenTelemetryTracingData(
     ApiInformation apiInformation,
     long lookbackFromTimestamp,
     String lookbackWindow,
-    Set<AttributeFilter> attributeFilters
+    Set<AttributeFilter> attributeFilters,
+    Set<String> requiredAttributeKeys
   ) throws TelemetryBackendUnavailableException;
 }

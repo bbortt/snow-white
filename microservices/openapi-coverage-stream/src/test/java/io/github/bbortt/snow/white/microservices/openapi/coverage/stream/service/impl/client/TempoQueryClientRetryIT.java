@@ -11,11 +11,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.TempoProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,8 +32,6 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(classes = TempoQueryClientRetryIT.TestConfig.class)
 class TempoQueryClientRetryIT {
 
-  private static final String TRACE_ID = "f2c79a8d4bce407aa65c1e7289f6febb";
-
   @EnableRetry
   static class TestConfig {
 
@@ -42,6 +40,11 @@ class TempoQueryClientRetryIT {
       @Value("${wiremock.server.baseUrl}") String wireMockBaseUrl
     ) {
       return RestClient.builder().baseUrl(wireMockBaseUrl).build();
+    }
+
+    @Bean
+    TempoProperties tempoProperties() {
+      return new TempoProperties();
     }
 
     @Bean
@@ -70,23 +73,6 @@ class TempoQueryClientRetryIT {
       ).isInstanceOf(HttpServerErrorException.class);
 
       verify(3, getRequestedFor(urlPathEqualTo("/api/search")));
-    }
-  }
-
-  @Nested
-  class GetTraceByIdTest {
-
-    @Test
-    void shouldRetryBeforePropagatingFailure() {
-      stubFor(
-        get(urlEqualTo("/api/v2/traces/" + TRACE_ID)).willReturn(serverError())
-      );
-
-      assertThatThrownBy(() -> fixture.getTraceById(TRACE_ID)).isInstanceOf(
-        HttpServerErrorException.class
-      );
-
-      verify(3, getRequestedFor(urlEqualTo("/api/v2/traces/" + TRACE_ID)));
     }
   }
 }

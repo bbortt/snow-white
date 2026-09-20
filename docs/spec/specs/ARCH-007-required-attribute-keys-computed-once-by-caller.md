@@ -8,7 +8,7 @@ independently by each backend
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `OpenApiCoverageCalculationServiceImpl` — the sole caller of
@@ -67,3 +67,7 @@ purpose.
 - [ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — the pluggable-backend
   shape this decision preserves; its documented `OpenTelemetryService` signature needs amending to
   include the new parameter once this lands
+
+## Changes
+
+- **2026-09-19** — Set active: implementation of STR-013 began.

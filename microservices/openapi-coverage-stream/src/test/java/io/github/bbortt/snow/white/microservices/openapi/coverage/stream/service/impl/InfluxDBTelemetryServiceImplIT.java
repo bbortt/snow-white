@@ -11,6 +11,8 @@ import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
@@ -64,7 +66,8 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       apiInformation,
       eventTime.plusSeconds(60).toEpochMilli(),
       "1h",
-      emptySet()
+      emptySet(),
+      Set.of("http.method")
     );
 
     assertThat(result).hasSize(1);
@@ -123,7 +126,8 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       apiInformation,
       eventTime.plusSeconds(60).toEpochMilli(),
       "1h",
-      Set.of(new AttributeFilter("http.method", STRING_EQUALS, "GET"))
+      Set.of(new AttributeFilter("http.method", STRING_EQUALS, "GET")),
+      Set.of("http.method")
     );
 
     assertThat(result).hasSize(1);
@@ -134,6 +138,59 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
     assertThat(data.attributes().get("http.method").asString()).isEqualTo(
       "GET"
     );
+  }
+
+  @Test
+  @RealizesSw(
+    SwTraceables.SW_023_INFLUXDB_QUERY_NARROWS_ATTRIBUTES_TO_REQUIRED_KEYS
+  )
+  void shouldReturnNoAttributeOutsideTheRequiredKeys()
+    throws TelemetryBackendUnavailableException {
+    var serviceName = "influx-it-narrowing-service";
+    var apiName = "influx-it-narrowing-api";
+    var apiVersion = "1.0.0";
+    var spanId = "5c6d7e8f90a1b2c3";
+    var traceId = "5c6d7e8f90a1b2c35c6d7e8f90a1b2c3";
+
+    var eventTime = Instant.now();
+
+    writeSpan(
+      serviceName,
+      spanId,
+      traceId,
+      eventTime,
+      // language=json
+      """
+      {"api.name":"%s","api.version":"%s","http.method":"GET","http.path":"/pets","db.statement":"select 1"}
+      """.formatted(apiName, apiVersion)
+    );
+
+    var apiInformation = ApiInformation.builder()
+      .serviceName(serviceName)
+      .apiName(apiName)
+      .apiVersion(apiVersion)
+      .apiType(OPENAPI)
+      .build();
+
+    var result = influxDBTelemetryService.findOpenTelemetryTracingData(
+      apiInformation,
+      eventTime.plusSeconds(60).toEpochMilli(),
+      "1h",
+      emptySet(),
+      // `url.query` is required but absent from the span, which must not fail the query.
+      Set.of("http.method", "url.query")
+    );
+
+    assertThat(result)
+      .singleElement()
+      .satisfies(data -> {
+        assertThat(data.attributes().get("http.method").asString()).isEqualTo(
+          "GET"
+        );
+        assertThat(data.attributes().propertyNames()).containsExactly(
+          "http.method"
+        );
+      });
   }
 
   private void writeSpan(

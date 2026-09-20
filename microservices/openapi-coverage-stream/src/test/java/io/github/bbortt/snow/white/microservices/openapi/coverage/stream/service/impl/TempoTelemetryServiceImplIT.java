@@ -64,7 +64,8 @@ class TempoTelemetryServiceImplIT
           apiInformation,
           eventTime.plusSeconds(60).toEpochMilli(),
           "1h",
-          Set.of()
+          Set.of(),
+          Set.of("http.method")
         );
 
         assertThat(result).hasSize(1);

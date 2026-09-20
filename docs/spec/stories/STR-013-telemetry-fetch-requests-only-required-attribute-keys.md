@@ -6,7 +6,7 @@
 A coverage calculation's telemetry fetch requests only the attribute keys the calculators actually
 read
 
-**Status**: planned
+**Status**: done
 
 **Business Value**
 A quality-gate calculation must complete reliably and cheaply, without a telemetry backend that

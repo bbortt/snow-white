@@ -63,6 +63,10 @@ precondition of promoting this spec.
   still not closed by it
 - [NF-007](NF-007-tempo-search-limit-is-operator-configurable.md) — makes the existing
   `SEARCH_LIMIT` bound this spec anchors operator-configurable rather than a fixed constant
+- [NF-008](NF-008-tempo-search-returns-every-matched-span-per-trace.md) — bounds the spans each
+  matched trace contributes, an axis this spec's description did not account for: Tempo applied its
+  own default of three, so the Tempo fetch was in fact bounded more tightly than this spec claimed,
+  and silently so
 
 ## Changes
 
@@ -73,3 +77,10 @@ precondition of promoting this spec.
 - **2026-09-19** — Added `SW-022`, `SW-023`, and `NF-007` as related specs.
   They narrow fetch _width_ on both backends and make Tempo's count bound configurable; the
   InfluxDB result-count gap this spec already flags remains open, not closed by any of the three.
+- **2026-09-19** — Added `NF-008` as a related spec, correcting this spec's account of the Tempo
+  backend.
+  Its description credited `SEARCH_LIMIT` as the whole of Tempo's result-count bound; in
+  fact Tempo's own `spss` default also capped each matched trace at three spans, which bounded the
+  fetch further than described while under-reporting coverage. `NF-008` makes that second bound
+  explicit and operator-set.
+  The InfluxDB result-count gap remains open.

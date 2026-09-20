@@ -25,6 +25,7 @@ import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.RequiredAttributeKeyService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
@@ -53,6 +54,9 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
 
   @Mock
   private OpenApiCoverageService openApiCoverageServiceMock;
+
+  @Mock
+  private RequiredAttributeKeyService requiredAttributeKeyServiceMock;
 
   @InjectMocks
   private OpenApiCoverageCalculationServiceImpl fixture;
@@ -127,13 +131,19 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
     void shouldEnrichWithTelemetryData()
       throws TelemetryBackendUnavailableException {
       var apiInformation = defaultApiInformation();
+      var openAPI = mock(OpenAPI.class);
       var context = new OpenApiTestContext(
         apiInformation,
-        mock(OpenAPI.class),
+        openAPI,
         "1h",
         Set.of()
       );
       var telemetryData = Set.of(mock(OpenTelemetryData.class));
+
+      var requiredAttributeKeys = Set.of("http.request.method", "url.path");
+      doReturn(requiredAttributeKeys)
+        .when(requiredAttributeKeyServiceMock)
+        .requiredAttributeKeys(openAPI);
 
       doReturn(telemetryData)
         .when(openTelemetryServiceMock)
@@ -141,7 +151,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
           eq(apiInformation),
           anyLong(),
           eq("1h"),
-          any()
+          any(),
+          eq(requiredAttributeKeys)
         );
 
       var result = fixture.enrichWithOpenTelemetryData(context, 12345L);
@@ -170,6 +181,7 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
           eq(apiInformation),
           anyLong(),
           eq("1h"),
+          any(),
           any()
         );
 
