@@ -98,6 +98,15 @@ See `pages/_pages/architecture.md` for the full diagram and reasoning.
 
 ## Build & test
 
+Build inside the development container (`.devcontainer/`) whenever one can be started —
+`npx @devcontainers/cli up --workspace-folder .`, then `exec` into it.
+A build here runs a lot of
+unreviewed third-party code (Maven plugins, pnpm and Bun lifecycle scripts, Testcontainers images)
+with whatever the session's user can reach, which is a worse deal for an agent than for a human.
+Where no container runtime is available, build on the host and say so in the summary rather than
+leaving it implied.
+Setup and platform caveats: `DEVELOPMENT.md#development-container`.
+
 ```shell
 ./mvnw -b smart package              # build everything
 ./mvnw -pl :<artifactId> -am test    # test one module (+ its dependencies)
