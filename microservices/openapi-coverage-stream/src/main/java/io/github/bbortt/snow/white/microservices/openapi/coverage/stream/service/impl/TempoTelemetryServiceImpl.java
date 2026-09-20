@@ -12,12 +12,16 @@ import static java.time.Instant.ofEpochMilli;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.concurrent.ConcurrentHashMap.newKeySet;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.StreamSupport.stream;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
@@ -30,8 +34,6 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,7 +44,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import tools.jackson.databind.JsonNode;
@@ -50,10 +51,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Tempo's TraceQL search API only returns attributes that are explicitly enumerated via a {@code select()} clause - it has no wildcard to return "all attributes".
- * Since downstream coverage calculators read attribute keys that can't be enumerated up front (arbitrary OpenAPI parameter/header names),
- * a search only identifies matching (traceId, spanId) pairs;
- * the full attribute set for each match is then fetched via the by-ID trace endpoint,
- * which returns the complete native span - mirroring the full attribute blob InfluxDB stores per span.
+ * The keys a calculation reads are enumerable before the query fires, so they are named in a {@code select()} clause
+ * and every result is built from the search response alone - no follow-up fetch per matched trace.
+ * <p>
+ * What the search response omits is therefore lost outright, which is why {@code spss} is always sent explicitly;
+ * Tempo's own default returns three spans per span-set and reports no truncation.
  */
 @Slf4j
 @Service
@@ -79,6 +81,8 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
   public static final String SPAN_ATTRIBUTE = "span";
   public static final String TRACES_PROPERTY_NAME = "traces";
   public static final String SPANS_PROPERTY_NAME = "spans";
+  public static final String SPAN_SETS_PROPERTY_NAME = "spanSets";
+  public static final String SPAN_SET_PROPERTY_NAME = "spanSet";
   public static final String TRACE_ID_PROPERTY_NAME = "traceID";
   public static final String SPAN_ID_PROPERTY_NAME = "spanID";
 
@@ -95,13 +99,19 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   @Override
   @WithSpan
+  @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
   public Set<OpenTelemetryData> findOpenTelemetryTracingData(
     ApiInformation apiInformation,
     long lookbackFromTimestamp,
     String lookbackWindow,
-    Set<AttributeFilter> attributeFilters
+    Set<AttributeFilter> attributeFilters,
+    Set<String> requiredAttributeKeys
   ) throws TelemetryBackendUnavailableException {
-    var traceQLQuery = buildTraceQLQuery(apiInformation, attributeFilters);
+    var traceQLQuery = buildTraceQLQuery(
+      apiInformation,
+      attributeFilters,
+      requiredAttributeKeys
+    );
     logger.trace("Firing TraceQL query: {}", traceQLQuery);
 
     var eventInstant = ofEpochMilli(lookbackFromTimestamp);
@@ -126,7 +136,8 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
 
   private String buildTraceQLQuery(
     ApiInformation apiInformation,
-    Set<AttributeFilter> attributeFilters
+    Set<AttributeFilter> attributeFilters,
+    Set<String> requiredAttributeKeys
   ) {
     var filteringProperties = openApiCoverageStreamProperties.getFiltering();
 
@@ -158,7 +169,38 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       );
     }
 
-    return "{ " + join(" && ", conditions) + " }";
+    return (
+      "{ " +
+      join(" && ", conditions) +
+      " }" +
+      buildSelectClause(requiredAttributeKeys)
+    );
+  }
+
+  /**
+   * Attribute names are always quoted.
+   * Every required key is dotted, and an unquoted dotted name is ambiguous to TraceQL's parser
+   * (a span attribute literally named {@code resource.x} being the pathological case);
+   * header keys additionally carry hyphens, which would otherwise terminate the name.
+   *
+   * @see <a href="https://grafana.com/docs/tempo/latest/traceql/construct-traceql-queries/">Construct a TraceQL query</a>
+   */
+  private static String buildSelectClause(Set<String> requiredAttributeKeys) {
+    if (isEmpty(requiredAttributeKeys)) {
+      return "";
+    }
+
+    return requiredAttributeKeys
+      .stream()
+      .map(key -> SPAN_ATTRIBUTE + ".\"" + escapeAttributeName(key) + "\"")
+      .collect(joining(", ", " | select(", ")"));
+  }
+
+  /**
+   * TraceQL supports exactly two escape sequences inside a quoted attribute name.
+   */
+  private static String escapeAttributeName(String attributeName) {
+    return attributeName.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 
   private static @Nullable String buildNullableAttributeCondition(
@@ -195,9 +237,10 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
     };
   }
 
-  private Set<OpenTelemetryData> resolveMatchedSpans(
+  @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
+  private static Set<OpenTelemetryData> resolveMatchedSpans(
     @Nullable JsonNode searchResponse
-  ) throws TelemetryBackendUnavailableException {
+  ) {
     Set<OpenTelemetryData> result = newKeySet();
     if (isNull(searchResponse) || !searchResponse.has(TRACES_PROPERTY_NAME)) {
       return result;
@@ -207,78 +250,44 @@ public class TempoTelemetryServiceImpl implements OpenTelemetryService {
       var traceId = normalizeTraceId(
         trace.get(TRACE_ID_PROPERTY_NAME).asString()
       );
-      var spanSet = trace.get("spanSet");
-      if (isNull(spanSet) || !spanSet.has(SPANS_PROPERTY_NAME)) {
-        continue;
-      }
 
-      Set<String> matchedSpanIds = newKeySet();
-      spanSet
-        .get(SPANS_PROPERTY_NAME)
-        .forEach(span ->
-          matchedSpanIds.add(span.get(SPAN_ID_PROPERTY_NAME).asString())
-        );
-
-      result.addAll(fetchFullSpans(traceId, matchedSpanIds));
-    }
-
-    return result;
-  }
-
-  private Set<OpenTelemetryData> fetchFullSpans(
-    String traceId,
-    Set<String> matchedSpanIds
-  ) throws TelemetryBackendUnavailableException {
-    JsonNode traceResponse;
-    try {
-      traceResponse = tempoRestClient.getTraceById(traceId);
-    } catch (HttpClientErrorException.NotFound _) {
-      logger.warn("Trace {} not found", traceId);
-
-      return newKeySet();
-    } catch (HttpServerErrorException | ResourceAccessException e) {
-      throw new TelemetryBackendUnavailableException(BACKEND_NAME, e);
-    }
-
-    Set<OpenTelemetryData> result = newKeySet();
-    // The v2 API wraps the OTLP trace under a "trace" field (alongside "metrics") - the v1 API returned the OTLP trace directly.
-    var trace = isNull(traceResponse) ? null : traceResponse.get("trace");
-    if (isNull(trace) || !trace.has("resourceSpans")) {
-      return result;
-    }
-
-    trace.get("resourceSpans").forEach(resourceSpan -> {
-      var scopeSpans = resourceSpan.get("scopeSpans");
-      if (isNull(scopeSpans)) {
-        return;
-      }
-
-      scopeSpans.forEach(scopeSpan -> {
-        var spans = scopeSpan.get(SPANS_PROPERTY_NAME);
-        if (isNull(spans)) {
-          return;
+      for (var spanSet : resolveSpanSets(trace)) {
+        if (!spanSet.has(SPANS_PROPERTY_NAME)) {
+          continue;
         }
 
-        spans.forEach(span -> {
-          var spanId = decodeBase64SpanIdToHex(span.get("spanId").asString());
-          if (matchedSpanIds.contains(spanId)) {
+        spanSet
+          .get(SPANS_PROPERTY_NAME)
+          .forEach(span ->
             result.add(
               new OpenTelemetryData(
-                spanId,
+                span.get(SPAN_ID_PROPERTY_NAME).asString(),
                 traceId,
                 buildAttributes(span.get("attributes"))
               )
-            );
-          }
-        });
-      });
-    });
+            )
+          );
+      }
+    }
 
     return result;
   }
 
-  private static String decodeBase64SpanIdToHex(String base64SpanId) {
-    return HexFormat.of().formatHex(Base64.getDecoder().decode(base64SpanId));
+  /**
+   * Tempo populates both {@code spanSets} and the deprecated singular {@code spanSet} with the
+   * same spans, so reading both would count every span twice.
+   * Only {@code spanSets} can carry more
+   * than one span set, which grouping queries produce - this backend issues none today, but
+   * reading the array keeps that a query-shape change rather than a silent data loss.
+   */
+  private static List<JsonNode> resolveSpanSets(JsonNode trace) {
+    var spanSets = trace.get(SPAN_SETS_PROPERTY_NAME);
+    if (nonNull(spanSets) && !spanSets.isEmpty()) {
+      return stream(spanSets.spliterator(), false).toList();
+    }
+
+    var spanSet = trace.get(SPAN_SET_PROPERTY_NAME);
+    return isNull(spanSet) ? List.of() : List.of(spanSet);
   }
 
   /**

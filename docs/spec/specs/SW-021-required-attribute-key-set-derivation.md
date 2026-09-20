@@ -8,7 +8,7 @@ spec's own header-parameter names
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Given the `OpenAPI` spec for a calculation, the required-key computation returns exactly:
@@ -54,3 +54,7 @@ duplicates and no keys for path or query parameters.
   backend's use of this key set
 - [SW-004](SW-004-parameter-coverage-matches-by-token-not-substring.md) — the query-parameter
   matching behavior this spec's rationale for excluding per-query-parameter keys depends on
+
+## Changes
+
+- **2026-09-19** — Set active: implementation of STR-013 began.

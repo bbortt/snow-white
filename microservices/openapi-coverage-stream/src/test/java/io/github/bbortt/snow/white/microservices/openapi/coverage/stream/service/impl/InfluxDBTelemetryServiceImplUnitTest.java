@@ -10,7 +10,6 @@ import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOpera
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.SPAN_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.TRACE_ID_KEY;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.VALUE_KEY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -34,6 +33,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.impl.client.InfluxDBQueryClient;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -50,6 +50,20 @@ import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith({ MockitoExtension.class })
 class InfluxDBTelemetryServiceImplUnitTest {
+
+  /**
+   * Insertion-ordered, because the query numbers its per-attribute columns by position in this
+   * set - {@code attr_0} is this set's first key.
+   */
+  private static final Set<String> REQUIRED_ATTRIBUTE_KEYS =
+    new LinkedHashSet<>(List.of("http.request.method", "url.path"));
+
+  private static final String EXPECTED_ATTRIBUTE_PROJECTIONS =
+    "attr_0: (if exists parsed[\"http.request.method\"] then string(v: parsed[\"http.request.method\"]) else \"\"), " +
+    "attr_1: (if exists parsed[\"url.path\"] then string(v: parsed[\"url.path\"]) else \"\")";
+
+  private static final String EXPECTED_KEEP_CLAUSE =
+    "|> keep(columns: [\"span_id\", \"trace_id\", \"attr_0\", \"attr_1\"])";
 
   @Mock
   private InfluxDBClient influxDBClientMock;
@@ -118,7 +132,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
         API_INFORMATION,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        attributeFilters
+        attributeFilters,
+        REQUIRED_ATTRIBUTE_KEYS
       );
 
       assertThat(result).isEmpty();
@@ -136,16 +151,13 @@ class InfluxDBTelemetryServiceImplUnitTest {
           API_INFORMATION.getServiceName() +
           "\")",
         "|> filter(fn: (r) => r._field == \"attributes\")",
-        """
-        |> map(fn: (r) => {
-          parsed = json.parse(data: bytes(v: r._value))
-          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
-        })
-        """,
+        "return { r with api_name: parsed[\"api.name\"], api_version: parsed[\"api.version\"], " +
+          EXPECTED_ATTRIBUTE_PROJECTIONS +
+          " }",
         "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           API_INFORMATION.getApiName() +
           "\")",
-        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+        EXPECTED_KEEP_CLAUSE
       );
     }
 
@@ -161,7 +173,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
         apiInformation,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        emptySet()
+        emptySet(),
+        REQUIRED_ATTRIBUTE_KEYS
       );
 
       assertThat(result).isEmpty();
@@ -179,19 +192,16 @@ class InfluxDBTelemetryServiceImplUnitTest {
           apiInformation.getServiceName() +
           "\")",
         "|> filter(fn: (r) => r._field == \"attributes\")",
-        """
-        |> map(fn: (r) => {
-          parsed = json.parse(data: bytes(v: r._value))
-          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"] }
-        })
-        """,
+        "return { r with api_name: parsed[\"api.name\"], api_version: parsed[\"api.version\"], " +
+          EXPECTED_ATTRIBUTE_PROJECTIONS +
+          " }",
         "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           apiInformation.getApiName() +
           "\")",
         "|> filter(fn: (r) => r[\"api_version\"] == \"" +
           apiInformation.getApiVersion() +
           "\")",
-        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"]) "
+        EXPECTED_KEEP_CLAUSE
       );
     }
 
@@ -204,7 +214,10 @@ class InfluxDBTelemetryServiceImplUnitTest {
         STRING_EQUALS,
         "200"
       );
-      Set<AttributeFilter> attributeFilters = Set.of(filter1, filter2);
+      // Ordered, because the projections this query builds follow the filters' iteration order.
+      Set<AttributeFilter> attributeFilters = new LinkedHashSet<>(
+        List.of(filter1, filter2)
+      );
 
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
@@ -213,7 +226,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
         API_INFORMATION,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        attributeFilters
+        attributeFilters,
+        REQUIRED_ATTRIBUTE_KEYS
       );
 
       assertThat(result).isEmpty();
@@ -231,18 +245,15 @@ class InfluxDBTelemetryServiceImplUnitTest {
           API_INFORMATION.getServiceName() +
           "\")",
         "|> filter(fn: (r) => r._field == \"attributes\")",
-        """
-        |> map(fn: (r) => {
-          parsed = json.parse(data: bytes(v: r._value))
-          return { r with api_name: parsed["api.name"], api_version: parsed["api.version"], http_method: parsed["http.method"], http_status_code: parsed["http.status_code"] }
-        })
-        """,
+        "return { r with api_name: parsed[\"api.name\"], api_version: parsed[\"api.version\"], http_method: parsed[\"http.method\"], http_status_code: parsed[\"http.status_code\"], " +
+          EXPECTED_ATTRIBUTE_PROJECTIONS +
+          " }",
         "|> filter(fn: (r) => r[\"api_name\"] == \"" +
           API_INFORMATION.getApiName() +
           "\")",
         "|> filter(fn: (r) => r.http_method == \"GET\")",
         "|> filter(fn: (r) => r.http_status_code == \"200\")",
-        "|> keep(columns: [\"_value\", \"span_id\", \"trace_id\"])"
+        EXPECTED_KEEP_CLAUSE
       );
     }
 
@@ -252,30 +263,22 @@ class InfluxDBTelemetryServiceImplUnitTest {
       // Prepare first record
       var spanId1 = "3f1a2c9e7d4b8a61";
       var traceId1 = "f2c79a8d4bce407aa65c1e7289f6febb";
-      var attributesValue1 =
-        // language=json
-        """
-        {"http.method":"GET","http.path":"/api/v1/test"}
-        """;
 
       var fluxRecord1 = mock(FluxRecord.class);
       doReturn(spanId1).when(fluxRecord1).getValueByKey(SPAN_ID_KEY);
       doReturn(traceId1).when(fluxRecord1).getValueByKey(TRACE_ID_KEY);
-      doReturn(attributesValue1).when(fluxRecord1).getValueByKey(VALUE_KEY);
+      doReturn("GET").when(fluxRecord1).getValueByKey("attr_0");
+      doReturn("/api/v1/test").when(fluxRecord1).getValueByKey("attr_1");
 
       // Prepare second record
       var spanId2 = "8a7d2e4b9c3f1d0a";
       var traceId2 = "b1e24f988ab04129be3e2cd9275c991a";
-      var attributesValue2 =
-        // language=json
-        """
-        {"http.method":"POST","http.path":"/api/v1/create"}
-        """;
 
       var fluxRecord2 = mock(FluxRecord.class);
       doReturn(spanId2).when(fluxRecord2).getValueByKey(SPAN_ID_KEY);
       doReturn(traceId2).when(fluxRecord2).getValueByKey(TRACE_ID_KEY);
-      doReturn(attributesValue2).when(fluxRecord2).getValueByKey(VALUE_KEY);
+      doReturn("POST").when(fluxRecord2).getValueByKey("attr_0");
+      doReturn("/api/v1/create").when(fluxRecord2).getValueByKey("attr_1");
 
       doReturn(List.of(fluxRecord1, fluxRecord2)).when(fluxTable).getRecords();
       doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
@@ -284,7 +287,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
         API_INFORMATION,
         LOOKBACK_FROM,
         LOOKBACK_WINDOW,
-        null
+        null,
+        REQUIRED_ATTRIBUTE_KEYS
       );
 
       assertThat(result)
@@ -294,17 +298,60 @@ class InfluxDBTelemetryServiceImplUnitTest {
             assertThat(data1.spanId()).isEqualTo(spanId1);
             assertThat(data1.traceId()).isEqualTo(traceId1);
             assertThat(data1.attributes()).isEqualTo(
-              JsonMapper.shared().readTree(attributesValue1)
+              JsonMapper.shared().readTree(
+                // language=json
+                """
+                {"http.request.method":"GET","url.path":"/api/v1/test"}
+                """
+              )
             );
           },
           data2 -> {
             assertThat(data2.spanId()).isEqualTo(spanId2);
             assertThat(data2.traceId()).isEqualTo(traceId2);
             assertThat(data2.attributes()).isEqualTo(
-              JsonMapper.shared().readTree(attributesValue2)
+              JsonMapper.shared().readTree(
+                // language=json
+                """
+                {"http.request.method":"POST","url.path":"/api/v1/create"}
+                """
+              )
             );
           }
         );
+    }
+
+    @Test
+    void withAbsentAttribute_shouldOmitItsKeyEntirely()
+      throws TelemetryBackendUnavailableException {
+      var fluxRecord1 = mock(FluxRecord.class);
+      doReturn("3f1a2c9e7d4b8a61").when(fluxRecord1).getValueByKey(SPAN_ID_KEY);
+      doReturn("f2c79a8d4bce407aa65c1e7289f6febb")
+        .when(fluxRecord1)
+        .getValueByKey(TRACE_ID_KEY);
+      doReturn("GET").when(fluxRecord1).getValueByKey("attr_0");
+      // The span carried no `url.path`, so its column came back empty.
+      doReturn("").when(fluxRecord1).getValueByKey("attr_1");
+
+      doReturn(List.of(fluxRecord1)).when(fluxTable).getRecords();
+      doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
+
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        null,
+        REQUIRED_ATTRIBUTE_KEYS
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(data -> {
+          assertThat(data.attributes().has("url.path")).isFalse();
+          assertThat(
+            data.attributes().get("http.request.method").asString()
+          ).isEqualTo("GET");
+        });
     }
   }
 
@@ -333,7 +380,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
           API_INFORMATION,
           1234L,
           "1h",
-          emptySet()
+          emptySet(),
+          REQUIRED_ATTRIBUTE_KEYS
         )
       )
         .isInstanceOf(TelemetryBackendUnavailableException.class)
@@ -351,7 +399,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
           API_INFORMATION,
           1234L,
           "1h",
-          emptySet()
+          emptySet(),
+          REQUIRED_ATTRIBUTE_KEYS
         )
       )
         .isInstanceOf(TelemetryBackendUnavailableException.class)
@@ -369,7 +418,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
           API_INFORMATION,
           1234L,
           "1h",
-          emptySet()
+          emptySet(),
+          REQUIRED_ATTRIBUTE_KEYS
         )
       ).isSameAs(influxException);
     }

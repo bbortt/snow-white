@@ -43,7 +43,7 @@ public class ContentTypeCoverageCalculator
   extends AbstractOpenApiCoverageCalculator
 {
 
-  static final String CONTENT_TYPE_HEADER_KEY =
+  public static final String CONTENT_TYPE_HEADER_KEY =
     "http.request.header.content-type";
 
   @Override

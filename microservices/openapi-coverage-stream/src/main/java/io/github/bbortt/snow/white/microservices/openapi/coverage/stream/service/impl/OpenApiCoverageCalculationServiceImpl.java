@@ -8,12 +8,15 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static java.util.Objects.requireNonNull;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.RequiredAttributeKeyService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
@@ -36,6 +39,7 @@ public class OpenApiCoverageCalculationServiceImpl
   private final OpenApiService openApiService;
   private final OpenTelemetryService openTelemetryService;
   private final OpenApiCoverageService openApiCoverageService;
+  private final RequiredAttributeKeyService requiredAttributeKeyService;
 
   @Override
   @WithSpan
@@ -56,6 +60,9 @@ public class OpenApiCoverageCalculationServiceImpl
   }
 
   @Override
+  @RealizesArch(
+    ArchTraceables.ARCH_007_REQUIRED_ATTRIBUTE_KEYS_COMPUTED_ONCE_BY_CALLER
+  )
   public @NonNull OpenApiTestContext enrichWithOpenTelemetryData(
     @NonNull OpenApiTestContext openApiTestContext,
     long timestamp
@@ -65,7 +72,10 @@ public class OpenApiCoverageCalculationServiceImpl
         openApiTestContext.apiInformation(),
         timestamp,
         openApiTestContext.lookbackWindow(),
-        openApiTestContext.attributeFilters()
+        openApiTestContext.attributeFilters(),
+        requiredAttributeKeyService.requiredAttributeKeys(
+          openApiTestContext.openAPI()
+        )
       )
     );
   }

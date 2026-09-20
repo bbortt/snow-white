@@ -7,7 +7,7 @@ InfluxDB telemetry query narrows each span's returned attributes to the required
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `InfluxDBTelemetryServiceImpl.findOpenTelemetryTracingData` builds its Flux query so the `_value`
@@ -52,3 +52,7 @@ the values for keys within the set are unchanged from what was seeded.
 - [NF-006](NF-006-bounded-telemetry-fetch-footprint.md) — bounds fetch _count_ for this backend
   (currently unaddressed for InfluxDB); this spec narrows fetch _width_ instead, a distinct axis
   that does not close that gap
+
+## Changes
+
+- **2026-09-19** — Set active: implementation of STR-013 began.

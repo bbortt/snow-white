@@ -7,7 +7,7 @@ Tempo's per-query trace-match limit is an operator-set property, defaulting to t
 
 **Lens**: NF
 
-**Status**: planned
+**Status**: active
 
 **Description**
 The maximum number of traces a single Tempo `search()` call may match (`tempo.search-limit`) is
@@ -38,7 +38,13 @@ negative value and asserts context startup fails.
 
 - [NF-006](NF-006-bounded-telemetry-fetch-footprint.md) — the bounded-fetch constraint this
   configurable value continues to satisfy
+- [NF-008](NF-008-tempo-search-returns-every-matched-span-per-trace.md) — the per-trace
+  matched-span bound this trace-count bound complements; the two together bound one search
 - [NF-003](NF-003-scalability-without-redesign.md) — the varied-deployment-size target this
   configurability serves
 - [ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md) — the fail-fast-at-startup
   precedent this spec's misconfiguration handling follows
+
+## Changes
+
+- **2026-09-19** — Set active: implementation of STR-014 began.

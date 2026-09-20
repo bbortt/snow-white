@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import clew.traceables.clew.NfTraceables;
 import clew.traceables.clew.annotation.RealizesNf;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.TempoProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.condition.TempoConfiguredCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,10 +26,15 @@ import tools.jackson.databind.JsonNode;
 public class TempoQueryClient {
 
   private static final String SEARCH_PATH = "/api/search";
-  private static final String TRACE_BY_ID_PATH = "/api/v2/traces/{traceId}";
-  private static final int SEARCH_LIMIT = 1_000;
+
+  private TempoProperties tempoProperties;
 
   private RestClient tempoRestClient;
+
+  @Autowired
+  public void setTempoProperties(TempoProperties tempoProperties) {
+    this.tempoProperties = tempoProperties;
+  }
 
   @Autowired
   public void setTempoRestClient(
@@ -44,7 +50,11 @@ public class TempoQueryClient {
     },
     backoff = @Backoff(delay = 200, multiplier = 2)
   )
-  @RealizesNf(NfTraceables.NF_006_BOUNDED_TELEMETRY_FETCH_FOOTPRINT)
+  @RealizesNf({
+    NfTraceables.NF_006_BOUNDED_TELEMETRY_FETCH_FOOTPRINT,
+    NfTraceables.NF_007_TEMPO_SEARCH_LIMIT_IS_OPERATOR_CONFIGURABLE,
+    NfTraceables.NF_008_TEMPO_SEARCH_RETURNS_EVERY_MATCHED_SPAN_PER_TRACE,
+  })
   public JsonNode search(
     String traceQLQuery,
     long startEpochSeconds,
@@ -55,27 +65,14 @@ public class TempoQueryClient {
     return tempoRestClient
       .get()
       .uri(
-        SEARCH_PATH + "?q={q}&start={start}&end={end}&limit={limit}",
+        SEARCH_PATH +
+          "?q={q}&start={start}&end={end}&limit={limit}&spss={spss}",
         traceQLQuery,
         startEpochSeconds,
         endEpochSeconds,
-        SEARCH_LIMIT
+        tempoProperties.getSearchLimit(),
+        tempoProperties.getSpansPerTraceLimit()
       )
-      .retrieve()
-      .body(JsonNode.class);
-  }
-
-  @Retryable(
-    retryFor = {
-      HttpServerErrorException.class,
-      ResourceAccessException.class,
-    },
-    backoff = @Backoff(delay = 200, multiplier = 2)
-  )
-  public JsonNode getTraceById(String traceId) {
-    return tempoRestClient
-      .get()
-      .uri(TRACE_BY_ID_PATH, traceId)
       .retrieve()
       .body(JsonNode.class);
   }
