@@ -113,7 +113,25 @@ Setup and platform caveats: `DEVELOPMENT.md#development-container`.
 ./mvnw verify -T 1C                  # full unit/integration test + coverage aggregation
 ./mvnw -pl :<artifactId> -am -P apptest verify   # black-box Citrus tests for one service (needs Docker)
 ./mvnw -pl :api-gateway -am -P e2e test          # black-box Playwright UI tests (no Docker needed)
+.github/scripts/pitest-changed-classes.sh        # PIT mutation testing, changed classes only
 ```
+
+Mutation testing is a CI gate (`Mutation Testing (PIT)`, 80% mutation score _and_ 80% test
+strength per module) — don't push Java changes and let CI tell you about it twenty minutes later.
+Run `.github/scripts/pitest-changed-classes.sh [base-ref]` locally instead (base defaults to
+`main`).
+It diffs the branch against the base — uncommitted and untracked files included — and
+re-invokes the `mutation` profile once per affected module with `-DtargetClasses` set to just
+those classes, which is the difference between minutes and mutating the whole reactor.
+Survivors
+are listed in each module's `target/pit-reports/index.html`.
+
+Three things to know about a scoped run: the 80/80 thresholds then apply to the changed classes
+alone, so a failure there is sharper than the module-wide CI gate and doesn't always mean CI would
+go red; a changed test file only scopes in its subject when the naming convention derives it
+(`FooUnitTest`/`FooTest` → `Foo`), so a changed fixture or helper needs a manual `-DtargetClasses`
+run; and the base ref is resolved locally — pass `origin/main` when the local `main` is behind, or
+every class merged since scopes in as "changed".
 
 Frontend-only (from `microservices/api-gateway`): `npx jest --config jest.conf.cjs`,
 `npx eslint <files>`, `npx webpack --config webpack/webpack.dev.cjs` to compile-check the webapp,

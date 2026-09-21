@@ -30,6 +30,12 @@ listed in their own technology contracts (`004-technology-contract-webapp.md`,
   Each microservice starts only its own `src/apptest/resources/docker-compose-apptest.yaml`
   services, not a shared set — see the resource-usage guidance in `CLAUDE.md`.
 - Coverage is aggregated via JaCoCo into `target/jacoco-aggregate/jacoco.xml`, read by SonarCloud.
+- `.github/scripts/pitest-changed-classes.sh [base-ref]` — PIT mutation testing scoped to the
+  classes changed against `base-ref` (default `main`), rather than the full-reactor run CI does.
+  Run it locally before pushing Java changes; CI enforces 80% mutation score and 80% test strength
+  per module, and waiting for that feedback costs ~20 minutes per attempt.
+  See the "Build & test"
+  section in `CLAUDE.md` for the scoping caveats.
 
 ## 3. Test design
 
