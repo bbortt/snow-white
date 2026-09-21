@@ -11,7 +11,9 @@
 # the unscoped, all-classes variant. Usage:
 #   .github/scripts/pitest-changed-classes.sh [base-ref]
 # base-ref defaults to 'main'. Committed changes since branching off base-ref are considered,
-# plus anything still uncommitted or untracked locally.
+# plus anything still uncommitted or untracked locally. That default is the *local* ref - pass
+# 'origin/main' (or fetch first) when it lags behind the remote, or every class merged in the
+# meantime scopes in as "changed".
 #
 # A changed src/test/java file only contributes a target when its own class-under-test can be
 # derived by naming convention (Foo{UnitTest,Test} -> Foo); a test-only change that doesn't fit
@@ -88,5 +90,13 @@ fi
 
 for module in "${!targets_by_module[@]}"; do
   echo "Mutation testing changed classes in $module ..."
-  ./mvnw -pl "$module" -am -P mutation verify -DtargetClasses="${targets_by_module[$module]}"
+  # -am pulls the upstream reactor modules in, and they run mutationCoverage too - with
+  # -DtargetClasses (a global system property) matching none of their classes, PIT fails them
+  # outright, so the build dies before it ever reaches $module. failWhenNoMutations downgrades
+  # that to a warning. ITs are skipped because PIT's excludedTestClasses drops *IT anyway: they
+  # cannot kill a mutant here, they'd only cost Docker and minutes.
+  ./mvnw -pl "$module" -am -P mutation verify \
+    -DtargetClasses="${targets_by_module[$module]}" \
+    -DfailWhenNoMutations=false \
+    -DskipITs
 done
