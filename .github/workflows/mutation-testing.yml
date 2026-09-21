@@ -1,0 +1,133 @@
+name: Mutation Testing
+
+on:
+  push:
+    branches:
+      - '**'
+  # A label is not a push, so 'Application CI' could never react to one: asking for mutation
+  # testing on an open pull request meant pushing an empty commit to re-evaluate the gate. Its own
+  # workflow can listen to both, which is why PIT lives here rather than next to the build.
+  pull_request:
+    types:
+      - labeled
+
+concurrency:
+  group: pit-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  triggers:
+    name: Detect Mutation Testing Triggers
+    # Every label added to a pull request fires this event; exactly one of them means anything
+    # here, and the push that carried the commits has already had its own say.
+    if: github.event_name == 'push' || github.event.label.name == 'include:mutation'
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.detect.outputs.run }}
+    steps:
+      # Both steps are for the push path only: a labelled pull request has already said what it
+      # wants, so it needs neither a diff nor a lookup and gets out in seconds.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: github.event_name == 'push'
+        with:
+          # `git merge-base` needs shared history, which a shallow clone does not have.
+          fetch-depth: 0
+          persist-credentials: false
+      # A 'push' payload carries neither labels nor title, both of which decide this workflow.
+      # Draft pull requests are not filtered out: a draft carrying the label asked for mutation
+      # testing just as much as a ready one.
+      - name: Check if PR exists
+        uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9
+        id: check
+        if: github.event_name == 'push'
+        with:
+          filterOutClosed: true
+      - name: Look for Mutation Testing Triggers
+        id: detect
+        env:
+          # A branch creation or a force-push reports all-zeroes as the previous SHA.
+          PUSHED_BEFORE: ${{ github.event.before }}
+          PR_LABELS: ${{ steps.check.outputs.pr_labels }}
+          PR_TITLE: ${{ steps.check.outputs.pr_title }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+            # Which label arrived is already settled by this job's condition.
+            echo "Pull request was labelled 'include:mutation'."
+            echo 'run=true' >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          run=false
+          if [ "$GITHUB_REF_NAME" = 'main' ]; then
+            base="$PUSHED_BEFORE"
+            case "$base" in '' | 0000000000000000000000000000000000000000) base='HEAD~1' ;; esac
+          else
+            # Comparing against the branch point, not against the previous push: a branch that
+            # changed Java first and docs second still has Java changes to mutate. `actions/checkout`
+            # only ever fetches the pushed ref, hence 'main' has to be fetched explicitly here.
+            git fetch --no-tags --no-recurse-submodules origin '+refs/heads/main:refs/remotes/origin/main'
+            base="$(git merge-base refs/remotes/origin/main HEAD)"
+          fi
+          # Deletions count too: dropping a test lowers the mutation score of the class it covered.
+          changed="$(git diff --name-only "$base" HEAD -- '*.java')"
+          if [ -n "$changed" ]; then
+            run=true
+            echo "Java sources changed since ${base}:"
+            echo "$changed"
+          else
+            echo "No Java sources changed since ${base}."
+          fi
+          # PIT is the one dependency whose bump moves the verdict without touching a single Java
+          # file, so 'org.pitest:pitest-maven' and 'org.pitest:pitest-junit5-plugin' get mutation
+          # tested on their own update. Dependabot names both the branch and the pull request after
+          # the artifact; the branch is all a push carries before the pull request exists.
+          case "$GITHUB_REF_NAME" in *pitest*) run=true; echo 'Branch updates PIT itself.' ;; esac
+          case "$PR_TITLE" in *pitest*) run=true; echo 'Pull request updates PIT itself.' ;; esac
+          # Manual override, the same contract 'include:apptests' has on the application tests.
+          case ",$PR_LABELS," in
+            *,include:mutation,*) run=true; echo "Pull request is labelled 'include:mutation'." ;;
+          esac
+          echo "run=${run}" >>"$GITHUB_OUTPUT"
+          [ "$run" = 'true' ] || echo 'Skipping mutation testing.'
+  # PIT mutates compiled classes and kills the mutants with the JUnit suites, so its verdict can
+  # only ever move when Java (or PIT itself) does. Documentation, Helm charts, workflows and
+  # TypeScript specs would buy the exact same result for ~20 minutes of runner time - skipped
+  # instead, unless 'include:mutation' asks for the run anyway. Not a required status check, so a
+  # skipped run leaves nothing pending on a pull request.
+  mutation-testing:
+    name: Mutation Testing (PIT)
+    runs-on: ubuntu-24.04
+    needs: triggers
+    if: needs.triggers.outputs.run == 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      # 'helm' holds no Java: there is nothing to mutate, but its `verify` shells out to
+      # `helm template` and would need the chart dependencies fetched first. Excluded from
+      # the reactor instead of set up, since mutation testing never touches it.
+      - name: Run PIT Mutation Coverage
+        run: ./mvnw -B -P mutation verify -pl '!helm'
+      - name: Upload PIT Reports
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pit-reports
+          path: '**/target/pit-reports/'
+          if-no-files-found: error
