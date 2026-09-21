@@ -1080,6 +1080,53 @@ describe('OpenAPI Coverage Stream', () => {
           });
         });
 
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            expect(openapiCoverageStream.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '1Gi',
+              },
+              requests: {
+                cpu: '0.5',
+                'ephemeral-storage': '50Mi',
+                memory: '1Gi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      openapiCoverageStream: { resources },
+                    },
+                  },
+                }),
+              );
+
+            expect(openapiCoverageStream.resources).toStrictEqual(resources);
+          });
+        });
+
         describe('volumeMounts', () => {
           it('should mount temporary directory only by default', async () => {
             const openapiCoverageStream =

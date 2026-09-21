@@ -101,6 +101,19 @@ Removing the fetch that hid this required
 making the limit explicit — `tempo.spans-per-trace-limit` (default 100) joins the existing
 `tempo.search-limit` as an operator-configurable, validated-at-startup setting.
 
+## Configurable pod resources
+
+Every microservice's CPU/memory request and limit was hardcoded in the Helm chart's templates —
+the only one an operator could already tune was `api-sync-job`'s CronJob.
+They're all set under
+`snowWhite.<service>.resources` now, in the same shape as that CronJob already used, so sizing a
+deployment for real traffic no longer means forking the chart.
+
+Defaults also moved: `api-index-api` and `quality-gate-api` from 128Mi to 192Mi,
+`otel-event-filter-stream` from 128Mi to 160Mi, `report-coordinator-api` from 128Mi to 256Mi,
+`api-gateway` from 512Mi to 768Mi, and `openapi-coverage-stream` from 512Mi to 1Gi.
+`api-sync-job` is unchanged.
+
 ## Behind the scenes: a hardened pipeline
 
 None of this is something you'll see as an operator, but it's worth knowing about: alongside the

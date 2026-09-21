@@ -750,6 +750,51 @@ describe('API Index API', () => {
             );
           });
         });
+
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const apiIndexApi = await renderAndGetApiIndexApiContainer();
+
+            expect(apiIndexApi.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '192Mi',
+              },
+              requests: {
+                cpu: '0.1',
+                'ephemeral-storage': '50Mi',
+                memory: '192Mi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const apiIndexApi = await renderAndGetApiIndexApiContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    apiIndexApi: { resources },
+                  },
+                },
+              }),
+            );
+
+            expect(apiIndexApi.resources).toStrictEqual(resources);
+          });
+        });
       });
     });
   });
