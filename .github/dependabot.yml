@@ -83,6 +83,7 @@ updates:
     assignees:
       - bbortt
     labels:
+      - 'module:cli'
       - 'severity:low'
       - 'status:ready-for-review'
     groups:
