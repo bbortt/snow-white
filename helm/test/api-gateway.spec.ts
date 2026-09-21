@@ -617,6 +617,51 @@ describe('API Gateway', () => {
             expect(fooEnv.value).toBe('bar');
           });
         });
+
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            expect(apiGateway.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '768Mi',
+              },
+              requests: {
+                cpu: '0.5',
+                'ephemeral-storage': '50Mi',
+                memory: '768Mi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    apiGateway: { resources },
+                  },
+                },
+              }),
+            );
+
+            expect(apiGateway.resources).toStrictEqual(resources);
+          });
+        });
       });
     });
   });

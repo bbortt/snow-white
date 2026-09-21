@@ -805,6 +805,53 @@ describe('Report Coordinator API', () => {
             );
           });
         });
+
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer();
+
+            expect(reportCoordinatorApi.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '256Mi',
+              },
+              requests: {
+                cpu: '0.1',
+                'ephemeral-storage': '50Mi',
+                memory: '256Mi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const reportCoordinatorApi =
+              await renderAndGetReportCoordinatorApiContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      reportCoordinatorApi: { resources },
+                    },
+                  },
+                }),
+              );
+
+            expect(reportCoordinatorApi.resources).toStrictEqual(resources);
+          });
+        });
       });
     });
   });

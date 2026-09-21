@@ -631,6 +631,53 @@ describe('OTEL Event Filter Stream', () => {
             expect(fooEnv.value).toBe('bar');
           });
         });
+
+        describe('resources', () => {
+          it('should be deployed default resource quota', async () => {
+            const otelEventFilterStream =
+              await renderAndGetOtelEventFilterStreamContainer();
+
+            expect(otelEventFilterStream.resources).toStrictEqual({
+              limits: {
+                'ephemeral-storage': '2Gi',
+                memory: '160Mi',
+              },
+              requests: {
+                cpu: '0.1',
+                'ephemeral-storage': '50Mi',
+                memory: '160Mi',
+              },
+            });
+          });
+
+          it('should adjust resource request and limit based on values', async () => {
+            const resources = {
+              limits: {
+                'ephemeral-storage': '1Gi',
+                memory: '2Gi',
+              },
+              requests: {
+                cpu: '3',
+                'ephemeral-storage': '4Mi',
+                memory: '5Gi',
+              },
+            };
+
+            const otelEventFilterStream =
+              await renderAndGetOtelEventFilterStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      otelEventFilterStream: { resources },
+                    },
+                  },
+                }),
+              );
+
+            expect(otelEventFilterStream.resources).toStrictEqual(resources);
+          });
+        });
       });
     });
   });
