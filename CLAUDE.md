@@ -118,6 +118,14 @@ Setup and platform caveats: `DEVELOPMENT.md#development-container`.
 
 Mutation testing is a CI gate (`Mutation Testing (PIT)`, 80% mutation score _and_ 80% test
 strength per module) — don't push Java changes and let CI tell you about it twenty minutes later.
+That job is skipped entirely when a branch changes no `*.java` file against its branch point, so a
+docs, Helm or TypeScript change never waits for it.
+Two things still pull it in without Java: a branch or pull-request name containing `pitest` (a
+bump of the engine moves the verdict on its own), and the `include:mutation` label, which forces
+the run the way `include:apptests` forces the application tests.
+The label needs no push behind it — its own workflow (`.github/workflows/mutation-testing.yml`,
+hence a `Mutation Testing` run rather than an `Application CI` one) also triggers on a labelled
+pull request, so sticking it on an open one starts mutation testing right there.
 Run `.github/scripts/pitest-changed-classes.sh [base-ref]` locally instead (base defaults to
 `main`).
 It diffs the branch against the base — uncommitted and untracked files included — and
