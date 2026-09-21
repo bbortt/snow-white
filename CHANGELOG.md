@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.11.0](https://github.com/bbortt/snow-white/compare/v1.10.1...v1.11.0) (2026-09-21)
+
+
+### Features
+
+* **#2010:** cleanup of parent-child criteria relationships ([8861a6c](https://github.com/bbortt/snow-white/commit/8861a6cc1e67cbb5b817e932776c001da2dffeeb))
+* **cli:** cross-compile cli for windows arm targets ([db33a95](https://github.com/bbortt/snow-white/commit/db33a957a55ad31dfe5a246dab6d522bdb4f3fde))
+* **helm:** customizable resources for all microservices ([a73927d](https://github.com/bbortt/snow-white/commit/a73927dfcce782e9fc4163b6199856845407754c))
+* **openapi-coverage-stream:** bound telemetry fetch by required keys and spans ([79f2eeb](https://github.com/bbortt/snow-white/commit/79f2eebcf650cce2672009483fafc135aea69c60))
+* **report-coordinator-api:** judge the JUnit export by the gate's own threshold ([74dd8e4](https://github.com/bbortt/snow-white/commit/74dd8e417a313d25471512d19d8f7e83dbc12d8e))
+
+
+### Bug Fixes
+
+* **api-gateway:** now requires api-index-api-url ([0ac9013](https://github.com/bbortt/snow-white/commit/0ac90130baf7cdfad68132a5e74734433bdb2961))
+* **quality-gate-api:** reseed removes stale predefined-gate criteria ([b87f7a4](https://github.com/bbortt/snow-white/commit/b87f7a49fb6ef76913dbfaad1eab1c43380bd972))
+* **report-coordinator-api:** redelivery of messages is an upsert operation ([305906a](https://github.com/bbortt/snow-white/commit/305906a07eebf71b914986a59e0ecbf8839f0e64))
+
+
+### Documentation
+
+* add premise-check skill to verify a request's factual premises ([873c5b3](https://github.com/bbortt/snow-white/commit/873c5b36a27e063c4de96e7496b83a781ce44406))
+* draft improvements for the openapi-coverage-stream under load ([4ac6795](https://github.com/bbortt/snow-white/commit/4ac67959d8d1a0b8c7f8f2aaaaa97278ec434373))
+* point agents at scoped local mutation testing ([9f4576b](https://github.com/bbortt/snow-white/commit/9f4576bc83945b8e49313143d1edd1efa10e64d4))
+* **release:** add news for release version 1.11.0 ([6930a1e](https://github.com/bbortt/snow-white/commit/6930a1ef424e1709522d4b0b3e14a09e40109492))
+
 ## [1.10.1](https://github.com/bbortt/snow-white/compare/v1.10.0...v1.10.1) (2026-09-16)
 
 ### Bug Fixes
