@@ -2,10 +2,9 @@
 
 ## [1.11.1](https://github.com/bbortt/snow-white/compare/v1.11.0...v1.11.1) (2026-09-22)
 
-
 ### Bug Fixes
 
-* release workflow without jacoco coverage ([dd88957](https://github.com/bbortt/snow-white/commit/dd889573178d5ea1a1f5893dccce050fb36da5a0))
+- release workflow without jacoco coverage ([dd88957](https://github.com/bbortt/snow-white/commit/dd889573178d5ea1a1f5893dccce050fb36da5a0))
 
 ## [1.11.0](https://github.com/bbortt/snow-white/compare/v1.10.1...v1.11.0) (2026-09-21)
 
