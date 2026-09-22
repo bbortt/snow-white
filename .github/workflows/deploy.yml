@@ -26,12 +26,19 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :commons,:annotation-api,:openapi-generator,:spring-web-autoconfiguration -am clean deploy
+        run: |
+          ./mvnw -B clean deploy \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -pl :commons,:annotation-api,:openapi-generator,:spring-web-autoconfiguration -am
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish-cli:
     name: Publish CLI
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       packages: write
@@ -49,7 +56,14 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :cli -am clean install
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -pl :cli -am
       - name: Upload CLI Artifacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,7 +93,7 @@ jobs:
             --push \
             "toolkit/cli"
   publish-helm-chart:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
@@ -123,7 +137,7 @@ jobs:
           charts_dir: 'helm/charts'
   publish-images:
     name: Publish JDK-based Images
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -148,6 +162,8 @@ jobs:
             -b smart -T4C \
             -Pprod \
             -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
             -Dfrontend.test.skip=true \
             -pl :api-gateway,:api-sync-job,:openapi-coverage-stream -am
       - name: Login to GitHub Container Registry
@@ -162,7 +178,7 @@ jobs:
         run: .github/scripts/build-oci-images.sh "$VERSION" "ghcr.io" "--push"
   publish-native-images:
     name: Publish Native Image
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -191,7 +207,14 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Build with Maven
-        run: ./mvnw -B -b smart -T4C -DskipTests -Pprod -pl :${{ matrix.service }} -am clean install
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -pl :${{ matrix.service }} -am
       - name: Login to GitHub Container Registry
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
         with:
@@ -204,8 +227,11 @@ jobs:
         run: |
           ./mvnw -B spring-boot:build-image \
             -b smart -T4C \
+            -Pnative,prod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
             -Dimage.tag="$VERSION" \
-            -DskipTests -Pnative,prod \
             -pl :${{ matrix.service }}
       - name: Push Native Image
         env:

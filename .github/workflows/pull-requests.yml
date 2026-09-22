@@ -165,6 +165,7 @@ jobs:
             -b smart -T4C \
             -Pprod \
             -DskipTests \
+            -DskipITs \
             -Djacoco.skip=true \
             -Dfrontend.test.skip=true \
             -pl :${{ matrix.service }} -am
@@ -277,9 +278,12 @@ jobs:
       - name: Build Native ${{ matrix.service }} Image
         run: |
           ./mvnw -B spring-boot:build-image \
-            -Pnative \
-            -Dimage.tag=${{ github.sha }} \
+            -b smart -T4C \
+            -Pnative,prod \
             -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
       - name: Start Required Services
         run: |
