@@ -24,6 +24,14 @@ This
 holds equally whether the incoming results are the first ever received for that `ApiTest` or a
 later, redelivered set for criteria already scored.
 
+Replacement is wholesale, and reaches the result's children.
+A replaced `ApiTestResult` takes its findings (`ARCH-012`) with it: after the fold, no finding
+belonging to a superseded delivery of that criterion remains, and the surviving result's findings
+are exactly those the incoming result carried.
+A partial merge — keeping a finding whose target the new delivery no longer judges — would leave
+the enumerated target space of `SW-030` describing two different calculations at once and break
+`CON-009` for that result.
+
 **Rationale**
 `OpenApiCoverageResponseEvent` delivery is at-least-once: `openapi-coverage-stream`'s Kafka
 Streams consumer can be fenced out of its group mid-calculation (confirmed via a production
@@ -54,6 +62,9 @@ event is present.
 A unit test on `ApiTestResult` asserts two instances built with the same
 `apiTestCriteria` and `apiTest` are equal and hash identically, and that changing either field
 breaks equality.
+The same integration test asserts, for the overlapping criterion, that the persisted findings are
+exactly the second event's — none of the first event's findings survives, including one whose
+target the second delivery no longer judges.
 
 ## Relations
 
@@ -70,7 +81,15 @@ breaks equality.
 - [CON-002](CON-002-tolerate-dependency-outages.md) — the outage-tolerance invariant this spec
   is the concrete instance of for `report-coordinator-api`'s own inbound response processing,
   mirroring `SW-008`'s role for `openapi-coverage-stream`
+- [ARCH-012](ARCH-012-findings-on-the-event-coverage-as-cache.md) — the child collection the
+  replace guarantee now has to reach
+- [CON-009](CON-009-coverage-agrees-with-findings.md) — the invariant a partial child merge would
+  break
 
 ## Changes
 
 - **2026-09-19** — Set active: implementation of STR-012 began.
+- **2026-09-22** — Extended replace-by-identity to the result's findings: a superseded delivery
+  leaves none behind. `STR-017` gives `ApiTestResult` a child collection (`ARCH-012`), and the
+  guarantee as written only spoke of the result row; a surviving orphan finding would contradict
+  `SW-030`'s complete-enumeration reading and `CON-009`'s cache invariant.
