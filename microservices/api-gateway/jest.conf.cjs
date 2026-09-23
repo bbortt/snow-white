@@ -20,7 +20,7 @@ module.exports = {
     '^.+\\.m?jsx?$': ['<rootDir>/jest-import-meta-transform.cjs'],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(\\.pnpm/(react-router|cookie-es|sanitize-html|htmlparser2|entities|domhandler|domutils|domelementtype|dom-serializer)|react-router/|cookie-es/|sanitize-html/|htmlparser2/|entities/|domhandler/|domutils/|domelementtype/|dom-serializer/))',
+    'node_modules/(?!(\\.pnpm/(react-router|@remix-run\\+route-pattern|cookie-es|sanitize-html|htmlparser2|entities|domhandler|domutils|domelementtype|dom-serializer)|react-router/|@remix-run/route-pattern/|cookie-es/|sanitize-html/|htmlparser2/|entities/|domhandler/|domutils/|domelementtype/|dom-serializer/))',
   ],
   testEnvironmentOptions: {
     url: 'http://localhost/',
