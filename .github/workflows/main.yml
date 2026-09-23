@@ -26,7 +26,9 @@ jobs:
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
   zizmor:
-    runs-on: ubuntu-slim
+    # zizmor-action runs from a container image, so it needs a runner that ships a
+    # Docker daemon. `ubuntu-slim` has none - keep this in step with pull-requests.yml.
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
     steps:
