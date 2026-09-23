@@ -8,17 +8,14 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
 import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
-import static java.util.regex.Pattern.compile;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,47 +39,15 @@ public class ErrorResponseCodeCoverageCalculator
     return ERROR_RESPONSE_CODE_COVERAGE;
   }
 
-  @Override
-  protected Set<ResponseCode> extractResponseCodes(Operation operation) {
-    Set<ResponseCode> errorResponseCodes = new HashSet<>();
-
-    if (isNull(operation.getResponses())) {
-      return errorResponseCodes;
-    }
-
-    for (Map.Entry<String, ApiResponse> responseEntry : operation
-      .getResponses()
-      .entrySet()) {
-      String statusCode = responseEntry.getKey();
-
-      var isErrorResponseCode = includeObservedResponseCodeInCalculation(
-        statusCode
-      );
-      if (isErrorResponseCode && isResponseCodePattern(statusCode)) {
-        errorResponseCodes.add(
-          new ResponseCode(
-            statusCode,
-            compile(format("^%s\\d\\d$", statusCode.charAt(0)))
-          )
-        );
-      } else if (isErrorResponseCode) {
-        errorResponseCodes.add(
-          new ResponseCode(statusCode, compile(format("^%s$", statusCode)))
-        );
-      }
-    }
-
-    return errorResponseCodes;
-  }
-
   /**
    * Determines if a status code represents an error response (4xx or 5xx).
    * Also handles OpenAPI patterns like "4XX", "5XX", "default".
+   * A documented positive entry is therefore a target this criterion does not judge, rather than
+   * one it never saw.
    */
+  @RealizesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
   @Override
-  protected boolean includeObservedResponseCodeInCalculation(
-    @Nullable String statusCode
-  ) {
+  protected boolean judgesResponseCode(@Nullable String statusCode) {
     if (isNull(statusCode)) {
       return false;
     }
@@ -106,11 +71,11 @@ public class ErrorResponseCodeCoverageCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredErrorCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
     return super.getAdditionalInformationOrNull(
       "The following error codes in paths are uncovered: `%s`",
-      uncoveredErrorCodes
+      findings
     );
   }
 }

@@ -8,7 +8,7 @@ findings
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A criterion's finding list enumerates its whole target space, not only the part it passes judgement
@@ -21,7 +21,7 @@ It is never silently dropped.
 The excluding rules are the criteria's own, already in the code:
 
 - `ERROR_RESPONSE_CODE_COVERAGE` judges only `4xx`/`5xx`/`default` entries
-  (`ErrorResponseCodeCoverageCalculator.includeObservedResponseCodeInCalculation`).
+  (`ErrorResponseCodeCoverageCalculator.judgesResponseCode`).
   A documented `200` is a `NOT_APPLICABLE` finding under that criterion, and a judged finding under
   `RESPONSE_CODE_COVERAGE`.
 - The positive-response counterpart excludes the error entries symmetrically.
@@ -83,3 +83,21 @@ identical with and without inapplicable findings present in the list.
   convention an all-inapplicable criterion lands on
 - [ARCH-002](ARCH-002-criteria-metadata-owned-by-enum.md) — where a criterion's own scope is
   declared
+
+## Changes
+
+- **2026-09-23** — Replaced "carries no trace ids" with "carries no evidence", in both the
+  description and the verification description.
+  The same review that made an evidence entry a `(traceId, testCaseName)` pair rather than a bare
+  trace id (`ADR-0002`) left this spec asserting the absence of a shape that no longer exists; the
+  claim itself — an inapplicable target is evidenced by nothing — is unchanged.
+  Recorded retroactively: the edit shipped in `33cb806d` without an entry.
+- **2026-09-23** — Set active: the response-code family is the first criterion group with an
+  inapplicable target space, so this is the step that gives the spec something to be Covered by.
+  The excluding rule is now named `judgesResponseCode` rather than
+  `includeObservedResponseCodeInCalculation`: one predicate decides both which documented entries a
+  criterion judges and which observed codes it will match them against, and the old name described
+  only the second use.
+  The rename does not alter this spec's meaning.
+  The parameter criteria's symmetric case, named in the verification description, arrives with the
+  step that migrates them.

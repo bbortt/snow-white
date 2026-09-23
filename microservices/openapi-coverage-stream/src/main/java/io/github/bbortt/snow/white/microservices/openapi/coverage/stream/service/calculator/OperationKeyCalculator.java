@@ -27,6 +27,10 @@ public final class OperationKeyCalculator {
     return operationKey.substring(operationKey.indexOf("_") + 1);
   }
 
+  public static String toMethod(@NonNull String operationKey) {
+    return operationKey.substring(0, operationKey.indexOf("_"));
+  }
+
   /**
    * Converts an operation key that may contain path-parameter templates (e.g. {@code "GET_/pung/{message}"}) into a {@link Pattern} that matches concrete operation keys with resolved values (e.g. {@code "GET_/pung/hello"}).
    */

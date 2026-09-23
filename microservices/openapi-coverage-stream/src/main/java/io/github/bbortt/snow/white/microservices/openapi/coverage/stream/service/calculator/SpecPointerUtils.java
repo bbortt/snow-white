@@ -6,6 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
+import static java.util.Locale.ROOT;
 import static lombok.AccessLevel.PRIVATE;
 
 import clew.traceables.clew.SwTraceables;
@@ -21,6 +24,33 @@ final class SpecPointerUtils {
   @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
   static @NonNull String toPathItemPointer(@NonNull String path) {
     return PATHS_POINTER_PREFIX + escape(path);
+  }
+
+  /**
+   * The operation node itself, addressed the way the document spells it: OpenAPI keys an
+   * operation by its lowercased HTTP method, while an operation key carries it uppercased.
+   */
+  @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+  static @NonNull String toOperationPointer(@NonNull String operationKey) {
+    return (
+      toPathItemPointer(toPath(operationKey)) +
+      "/" +
+      escape(toMethod(operationKey).toLowerCase(ROOT))
+    );
+  }
+
+  /**
+   * The response entry a response-code criterion judges, one level below the operation's
+   * {@code responses} map.
+   */
+  @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+  static @NonNull String toResponseEntryPointer(
+    @NonNull String operationKey,
+    @NonNull String responseCode
+  ) {
+    return (
+      toOperationPointer(operationKey) + "/responses/" + escape(responseCode)
+    );
   }
 
   /**

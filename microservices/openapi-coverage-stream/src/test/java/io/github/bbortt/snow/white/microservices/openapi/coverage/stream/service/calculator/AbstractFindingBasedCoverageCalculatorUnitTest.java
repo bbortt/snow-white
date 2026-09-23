@@ -16,7 +16,9 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
@@ -64,6 +66,7 @@ class AbstractFindingBasedCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
     void shouldLeaveNotApplicableFindingsOutOfBothSidesOfTheFraction() {
       var withInapplicable = deriveCoverageOf(
         COVERED,
