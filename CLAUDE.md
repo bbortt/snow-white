@@ -149,11 +149,11 @@ backend call at the network layer (`page.route`) — it does **not** use `webpac
 run webapp:dev` (see the comment atop `webpack/e2e-server.cjs` for why: a worker pool and a
 browser-auto-open path both throw when spawned non-interactively, e.g. by Playwright or CI).
 
-This checkout's Java sources use **CRLF** line endings and Prettier enforces it — prefer the
-`Edit`/`Write` tools over scripted/piped rewrites (e.g. Python `open(..., 'w')`) for `.ts`/`.tsx`
-files, which have corrupted line endings into stray `\r` in this session before.
-If you do use a
-script, verify with `npx eslint --fix <file>` afterward.
+Every source file in this checkout uses **LF** line endings — Prettier enforces it
+(`endOfLine: 'lf'`), and the only CRLF file is `mvnw.cmd`, pinned that way by `.gitattributes`.
+Prefer the `Edit`/`Write` tools over scripted/piped rewrites (e.g. Python `open(..., 'w')`) for
+`.ts`/`.tsx` files, which have corrupted line endings into stray `\r` in this session before.
+If you do use a script, verify with `npx eslint --fix <file>` afterward.
 
 Offline builds (`-o`) work for the default profile since dependencies are cached, but `-Pprod`
 pulls in additional plugin transitives (e.g. `maven-jar-plugin`'s archiver deps) that may not be
