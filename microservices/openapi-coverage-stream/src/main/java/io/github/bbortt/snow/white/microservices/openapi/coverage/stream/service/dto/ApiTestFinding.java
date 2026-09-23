@@ -6,9 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto;
 
-import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import java.util.List;
@@ -29,6 +26,6 @@ public record ApiTestFinding(
   @NonNull List<FindingEvidence> evidence
 ) {
   public ApiTestFinding {
-    evidence = isNull(evidence) ? emptyList() : List.copyOf(evidence);
+    evidence = List.copyOf(evidence);
   }
 }
