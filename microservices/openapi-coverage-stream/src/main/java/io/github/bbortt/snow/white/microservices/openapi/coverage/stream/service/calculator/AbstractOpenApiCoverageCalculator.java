@@ -7,10 +7,12 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getStartedStopWatch;
+import static java.util.Collections.emptyList;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculator;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
@@ -57,6 +59,14 @@ abstract class AbstractOpenApiCoverageCalculator
 
   public record CoverageCalculationResult(
     BigDecimal coverage,
-    @Nullable String additionalInformation
-  ) {}
+    @Nullable String additionalInformation,
+    List<ApiTestFinding> findings
+  ) {
+    public CoverageCalculationResult(
+      BigDecimal coverage,
+      @Nullable String additionalInformation
+    ) {
+      this(coverage, additionalInformation, emptyList());
+    }
+  }
 }
