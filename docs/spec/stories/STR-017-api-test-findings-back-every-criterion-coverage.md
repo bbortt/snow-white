@@ -104,8 +104,12 @@ pass (`ARCH-011`).
 
 A finding names its target by an RFC 6901 pointer into the indexed OpenAPI document
 (`SW-029`), carries the denormalized `httpPath` / `httpMethod` / `responseCode` /
-`parameterName` / `contentType` discriminators the issue specifies, and holds the trace ids of the
-spans that satisfied it.
+`parameterName` / `contentType` discriminators the issue specifies, and holds its evidence: one
+entry per distinct `(traceId, testCaseName)` pair among the spans that satisfied it, where
+`testCaseName` is the test identity the span carried and is null until `SW-032`'s convention is in
+use (`ARCH-011`).
+The pair, rather than a bare trace id, is what makes issue AC 3's "test name, else truncated trace
+id" reachable without reopening the published report contract later.
 A target the criterion structurally does not judge — a `2xx` response under
 `ERROR_RESPONSE_CODE_COVERAGE`, for instance — is recorded `NOT_APPLICABLE` rather than omitted
 (`SW-030`), so the finding list is the complete enumeration of the criterion's target space.
@@ -126,13 +130,19 @@ unchanged for identical input telemetry.
   telemetry set produces exactly one finding per target in that criterion's target space, and the
   coverage ratio derived from those findings equals the ratio that criterion produced before this
   change for the same input.
-- For each of the eleven forward criteria, a `COVERED` finding carries at least one trace id, every
-  trace id it carries belongs to a span the criterion's own matching rule accepted as satisfying
-  that target — not merely a span observed on the same operation — and an `UNCOVERED` finding
-  carries none.
+- For each of the eleven forward criteria, a `COVERED` finding carries at least one evidence entry,
+  every trace id it carries belongs to a span the criterion's own matching rule accepted as
+  satisfying that target — not merely a span observed on the same operation — and an `UNCOVERED`
+  finding carries none.
 - For each of the three inverted criteria (`SW-003`), an `UNCOVERED` finding carries exactly the
   traces of the spans that exhibited the undocumented status code.
-- A `NOT_APPLICABLE` finding carries no trace ids, under any criterion.
+- A `NOT_APPLICABLE` finding carries no evidence, under any criterion.
+- An evidence entry is a `(traceId, testCaseName)` pair end to end — in the calculator's output, on
+  the Kafka event, in the evidence table and in the `v1-report-api.yml` response — with
+  `testCaseName` null, and serialised as `null` rather than omitted, where the evidencing span
+  carried no test identity.
+  Over telemetry carrying no test identity at all, a finding's entry count equals its distinct
+  trace count.
 - A `default` response entry covered under `SW-002`'s wildcard rule carries, as its evidence,
   exactly the spans whose observed status code matched no other documented entry of the same
   operation.
@@ -155,12 +165,17 @@ unchanged for identical input telemetry.
   This story deliberately ships the three-value status `COVERED | UNCOVERED | NOT_APPLICABLE`
   without a `WAIVED` member; the waiver work adds the fourth value and the matching rules on top,
   once the target it exempts exists.
-- **Resolving test identity from a span.**
+- **Producing a test identity on the span, and rendering one.**
   Issue AC 3 prefers a test name where the span carried a test identifier and falls back to a
   truncated trace id.
-  This story persists trace ids only; deriving a display name from span attributes is a rendering
-  concern that belongs with the UI phase, and `#2011` is the more likely home for a first-class
-  test identifier on the span.
+  The half of that this story owns is the _shape_: a finding's evidence is a list of
+  `{ traceId, testCaseName? }` entries rather than a `Set<String>` of trace ids, so the slot exists
+  in the persisted model and in `v1-report-api.yml` from the first release that has findings at all
+  (`SW-029`, `ARCH-012`, `SW-031`).
+  What stays out of scope is the producing end — the attribute convention a test harness writes and
+  how it reaches the server span, specified separately (`ARCH-013`, `SW-032`) — and the rendering
+  end: truncation, grouping by trace, and the trace link template, which belong to phase 2.
+  `#2011` consumes that convention from a whitebox test harness; it does not own it.
 - **The criteria-per-endpoint transpose and any Swagger-UI-style rendering**, explicitly excluded
   by the issue.
 - **Replacing `additionalInformation`.**
@@ -184,6 +199,10 @@ unchanged for identical input telemetry.
   cross the Kafka and persistence boundaries
 - [SW-029](../specs/SW-029-finding-identified-by-spec-pointer.md) — what names a finding's
   target
+- [ARCH-013](../specs/ARCH-013-test-identity-travels-as-baggage.md) — how a test identity reaches
+  the span whose match this story evidences
+- [SW-032](../specs/SW-032-test-identity-on-the-span.md) — the attribute an evidence entry's
+  `testCaseName` is read from
 - [SW-031](../specs/SW-031-findings-served-with-the-report.md) — how a consumer reads
   findings
 - [SW-030](../specs/SW-030-unjudged-target-is-not-applicable.md) — why the target space is

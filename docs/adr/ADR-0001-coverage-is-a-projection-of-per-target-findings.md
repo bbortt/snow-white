@@ -60,7 +60,9 @@ removed rather than kept in parallel.
 
 **D2 — Evidence is captured by the match that proves it.**
 Matching predicates that answer `boolean` today answer with the attributed `OpenTelemetryData`
-instead, and the finding's trace ids are that subset's distinct trace ids.
+instead, and the finding's evidence is one entry per distinct `(traceId, testCaseName)` pair among
+that subset — a pair rather than a bare trace id, so the test name issue AC 3 asks for has a slot in
+the published contract from the first release it exists in (`ADR-0002`).
 The flattening helpers between telemetry and the match are removed.
 A span is attributed to a target only where the criterion's own rule accepted it — never by
 proximity on the same path, operation or trace.
@@ -134,11 +136,12 @@ It was found by auditing the criteria enum against the draft, not anticipated �
 had already been written down before it surfaced.
 
 Findings are the highest-cardinality rows the system writes — one per target, per criterion, per
-API test — with a grandchild table for trace ids.
+API test — with a grandchild evidence table.
 The storage cost is real and is the reason status is a numeric code rather than a name.
 
-Two amendments fall out: `SW-020`'s replace-not-accumulate guarantee has to extend to a child
-collection, and `ARCH-006` has to cover finding status.
+Three amendments fall out: `SW-020`'s replace-not-accumulate guarantee has to extend to a child
+collection, `ARCH-006` has to cover finding status, and `SW-021`'s required-key enumeration gains
+the test-identity attribute an evidence entry's name is read from (`ADR-0002`).
 
 **Rejected alternatives.**
 
