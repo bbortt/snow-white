@@ -8,15 +8,13 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isPositiveHttpStatusCode;
-import static java.lang.String.format;
-import static java.util.regex.Pattern.compile;
+import static java.util.Objects.nonNull;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -40,54 +38,28 @@ public class PositiveResponseCodeCoverageCalculator
     return POSITIVE_RESPONSE_CODE_COVERAGE;
   }
 
+  /**
+   * Determines if a status code represents a positive response (1xx to 3xx), which excludes
+   * {@code default} — never in that range. A documented error entry, and a documented
+   * {@code default}, are therefore targets this criterion does not judge, rather than ones it
+   * never saw.
+   */
+  @RealizesSw(
+    SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+  )
+  @RealizesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
   @Override
-  protected Set<ResponseCode> extractResponseCodes(Operation operation) {
-    Set<ResponseCode> positiveResponseCodes = new HashSet<>();
-
-    if (operation.getResponses() == null) {
-      return positiveResponseCodes;
-    }
-
-    for (Map.Entry<String, ApiResponse> responseEntry : operation
-      .getResponses()
-      .entrySet()) {
-      String statusCode = responseEntry.getKey();
-
-      if (!isPositiveHttpStatusCode(statusCode)) {
-        continue;
-      }
-
-      if (isResponseCodePattern(statusCode)) {
-        positiveResponseCodes.add(
-          new ResponseCode(
-            statusCode,
-            compile(format("^%s\\d\\d$", statusCode.charAt(0)))
-          )
-        );
-      } else {
-        positiveResponseCodes.add(
-          new ResponseCode(statusCode, compile(format("^%s$", statusCode)))
-        );
-      }
-    }
-
-    return positiveResponseCodes;
-  }
-
-  @Override
-  protected boolean includeObservedResponseCodeInCalculation(
-    @Nullable String statusCode
-  ) {
-    return statusCode != null && isPositiveHttpStatusCode(statusCode);
+  protected boolean judgesResponseCode(@Nullable String statusCode) {
+    return nonNull(statusCode) && isPositiveHttpStatusCode(statusCode);
   }
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredPositiveCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
     return super.getAdditionalInformationOrNull(
       "The following positive response codes in paths are uncovered: `%s`",
-      uncoveredPositiveCodes
+      findings
     );
   }
 }

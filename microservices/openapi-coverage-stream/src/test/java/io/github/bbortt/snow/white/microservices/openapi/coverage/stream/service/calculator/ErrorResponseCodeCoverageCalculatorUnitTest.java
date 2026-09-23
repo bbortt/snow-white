@@ -7,14 +7,19 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -70,27 +75,25 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
   }
 
   @Nested
-  class IncludeObservedResponseCodeInCalculationTest {
+  class JudgesResponseCodeTest {
 
     @Test
     void shouldReturnTrue_whenNonStandardCodeStartsWithFour() {
-      boolean result = fixture.includeObservedResponseCodeInCalculation("4YY");
+      boolean result = fixture.judgesResponseCode("4YY");
 
       assertThat(result).isTrue();
     }
 
     @Test
     void shouldReturnTrue_whenNonStandardCodeStartsWithFive() {
-      boolean result = fixture.includeObservedResponseCodeInCalculation("5ZZ");
+      boolean result = fixture.judgesResponseCode("5ZZ");
 
       assertThat(result).isTrue();
     }
 
     @Test
     void shouldReturnFalse_whenNonStandardCodeMatchesNoErrorPrefix() {
-      boolean result = fixture.includeObservedResponseCodeInCalculation(
-        "unknown"
-      );
+      boolean result = fixture.judgesResponseCode("unknown");
 
       assertThat(result).isFalse();
     }
@@ -570,6 +573,130 @@ class ErrorResponseCodeCoverageCalculatorUnitTest {
 
     private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+
+  @Nested
+  class CalculateFindingsTest {
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldRecordADocumentedPositiveEntryAsNotApplicableRatherThanDropIt() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "404", "500"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(createTelemetryDataWithStatusCode("404", "notFoundTraceId"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::responseCode, ApiTestFinding::status)
+        .containsExactly(
+          tuple("200", NOT_APPLICABLE),
+          tuple("404", COVERED),
+          tuple("500", UNCOVERED)
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldCarryNoEvidenceOnANotApplicableFindingEvenWhenItsCodeWasObserved() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "500"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(createTelemetryDataWithStatusCode("200", "okTraceId"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "200".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(NOT_APPLICABLE),
+          finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldEvidenceTheDefaultEntryWithOnlyTheErrorSpanNoSiblingMatched() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "404", "default"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          createTelemetryDataWithStatusCode("200", "okTraceId"),
+          createTelemetryDataWithStatusCode("404", "notFoundTraceId"),
+          createTelemetryDataWithStatusCode("500", "serverErrorTraceId")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "default".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(COVERED),
+          finding ->
+            assertThat(finding.evidence())
+              .extracting("traceId")
+              .containsExactly("serverErrorTraceId")
+        );
+    }
+
+    private Map<String, Operation> createOperationsWithCodes(
+      Map<String, List<String>> operationKeyToCodes
+    ) {
+      Map<String, Operation> result = new HashMap<>();
+
+      for (Map.Entry<
+        String,
+        List<String>
+      > entry : operationKeyToCodes.entrySet()) {
+        Operation operation = new Operation();
+        ApiResponses responses = new ApiResponses();
+
+        for (String code : entry.getValue()) {
+          responses.addApiResponse(code, new ApiResponse().description("Test"));
+        }
+
+        operation.setResponses(responses);
+        result.put(entry.getKey(), operation);
+      }
+
+      return result;
+    }
+
+    private OpenTelemetryData createTelemetryDataWithStatusCode(
+      String statusCode,
+      String traceId
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("http.response.status_code", statusCode);
+
+      return new OpenTelemetryData("span-" + traceId, traceId, attributes);
     }
   }
 }
