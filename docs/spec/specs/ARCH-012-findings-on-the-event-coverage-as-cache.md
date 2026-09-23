@@ -18,8 +18,12 @@ Findings cross the service boundary on the result event they belong to.
 There is no second topic, no separate producer, and no lookup back into the stream service.
 
 On the receiving side, `ApiTestResult` gains a `findings` child collection, each row carrying its
-status, spec pointer, discriminators and trace ids; trace ids are an `@ElementCollection` in their
-own table, indexed on the trace id.
+status, spec pointer, discriminators and evidence; evidence is an `@ElementCollection` in its own
+table, one row per `(traceId, testCaseName)` pair (`ARCH-011`), indexed on the trace id.
+`test_case_name` is nullable and stays null until `SW-032`'s convention is both emitted by a
+consumer's test harness and requested in the narrowed attribute set — the column ships with the
+table rather than as a later migration, because a nullable column on an empty table is free and the
+same change to a published `v1-report-api.yml` component is not (`SW-031`).
 The finding status persists as a stable numeric code, exactly as `ARCH-006` requires of report and
 API-test status, with the same total decoding: a stored code matching no constant must not raise.
 
@@ -50,7 +54,7 @@ extend to the collection instead of needing their own ordering rules.
 Keeping `coverage` as a stored column is the deliberate denormalization the issue's own sketch
 calls for.
 The report list view reads one ratio per criterion across every result in a report; deriving that
-by aggregating a child collection — and its grandchild trace-id table — would trade a column read
+by aggregating a child collection — and its grandchild evidence table — would trade a column read
 for a join per row to recompute a number the producer already knew.
 `SW-016`'s gate-scoped verdict and `SW-017`'s JUnit export both read that ratio and are unchanged
 by this story.
@@ -68,8 +72,10 @@ older reader decodes it rather than failing.
 
 **Verification Description**
 An integration test in `report-coordinator-api` consumes a result event carrying findings and
-asserts they persist with their status codes, spec pointers, discriminators and trace ids, and that
-the trace-id table is populated and indexed.
+asserts they persist with their status codes, spec pointers, discriminators and evidence, and that
+the evidence table is populated and indexed on the trace id.
+A finding whose evidence entries carry no test identity is asserted to persist with
+`test_case_name` null rather than absent rows.
 A second delivery of the same `(apiTest, apiTestCriteria)` with different findings is asserted to
 leave only the new ones — no orphan row from the superseded delivery, in either table.
 A test asserts each finding-status constant round-trips through its documented numeric code and

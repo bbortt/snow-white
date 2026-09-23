@@ -17,7 +17,13 @@ findings appear.
 
 Each finding carries its `status` (`COVERED`, `UNCOVERED`, `NOT_APPLICABLE`), its `specPointer`
 (`SW-029`), its nullable discriminators (`httpPath`, `httpMethod`, `responseCode`,
-`parameterName`, `contentType`), and its `traceIds`.
+`parameterName`, `contentType`), and its `evidence`.
+
+`evidence` is an array of objects, not of strings: each entry carries a required `traceId` and a
+nullable `testCaseName` (`ARCH-011`).
+`testCaseName` is serialised as `null` — not omitted — where the evidencing span carried no test
+identity, which is every span until `SW-032`'s convention is in use, so a consumer's
+name-or-fall-back-to-trace-id branch is exercisable from the first release.
 The status is serialised as its name, not the numeric code `ARCH-012` persists — the code is a
 storage contract, the API is a read contract, and a consumer reading JSON should not need a
 codebook.
@@ -51,6 +57,15 @@ None of them apply to a JSON field read by a browser, where an opaque `2` would 
 unreadable without the enum to hand, and where the eventual `WAIVED` member is more useful as a
 word than as a number.
 
+Publishing `evidence` as an array of objects rather than `traceIds` as an array of strings is the
+one place this contract pays a small cost now to avoid a breaking change later.
+`v1-report-api.yml` is a versioned contract that consumers generate clients from — the same
+generator this repo ships in `toolkit/openapi-generator` — so widening a component with a new field
+is additive and safe, while changing a `string[]` into an object array is not.
+Issue AC 3 already states that a trace entry should read as a test name where one exists; shipping
+the array of strings first would mean either a `v2` component or a parallel `testNames` array
+positionally zipped against `traceIds`, which is the kind of shape that only ever gets misread.
+
 The empty-array-not-absent rule exists because the migration guarantees a population of reports
 with no findings at all (`ARCH-012`).
 A consumer that has to tell "this report predates findings" from "this criterion had none" would be
@@ -59,7 +74,9 @@ asking a question with no stable answer; making both empty removes the question.
 **Verification Description**
 A contract test fetches a report whose results carry findings and asserts each result's `findings`
 array is present, with status serialised as its name, the spec pointer intact, discriminators
-populated exactly where applicable, and trace ids present on covered findings only.
+populated exactly where applicable, and evidence present on covered findings only.
+A test asserts an evidence entry serialises as an object with `traceId` set and `testCaseName`
+explicitly `null` where the span carried no test identity.
 A test asserts a report persisted before the findings migration serialises `findings` as `[]` and
 leaves `coverage` and `additionalInformation` byte-identical to the pre-change response.
 A test asserts no additional request is required to obtain findings — the report response alone
@@ -75,6 +92,9 @@ widened component, confirming the change is additive.
   this read contract projects, and the pre-migration reports it must serve
 - [SW-029](SW-029-finding-identified-by-spec-pointer.md) — the pointer served as
   `specPointer`
+- [ARCH-011](ARCH-011-evidence-captured-at-the-match.md) — the evidence entry this contract
+  publishes, and why it is a pair rather than a trace id
+- [SW-032](SW-032-test-identity-on-the-span.md) — the convention that fills `testCaseName`
 - [SW-030](SW-030-unjudged-target-is-not-applicable.md) — the inapplicable findings this
   response carries for the consumer to collapse
 - [SW-014](SW-014-in-progress-report-answers-accepted.md) — the in-progress read path, which

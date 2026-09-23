@@ -28,7 +28,7 @@ The excluding rules are the criteria's own, already in the code:
 - The required- and optional-parameter criteria each exclude the parameters of the other's
   `required` flag.
 
-A `NOT_APPLICABLE` finding carries no trace ids, and enters neither side of the coverage fraction
+A `NOT_APPLICABLE` finding carries no evidence, and enters neither side of the coverage fraction
 (`ARCH-010`) — a criterion whose every target is inapplicable derives `required == 0` and
 reports `1` under `CON-004`'s vacuous-truth convention, which is what it reports today.
 
@@ -63,7 +63,7 @@ The same fixture under `ResponseCodeCoverageCalculator` is asserted to judge all
 inapplicable.
 The required/optional parameter pair is asserted symmetrically over an operation declaring one of
 each.
-A test asserts that a `NOT_APPLICABLE` finding carries no trace ids and that the derived ratio is
+A test asserts that a `NOT_APPLICABLE` finding carries no evidence and that the derived ratio is
 identical with and without inapplicable findings present in the list.
 
 ## Relations
