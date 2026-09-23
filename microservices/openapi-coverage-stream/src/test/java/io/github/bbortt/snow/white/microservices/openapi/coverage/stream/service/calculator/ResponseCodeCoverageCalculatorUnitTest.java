@@ -7,14 +7,23 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static java.math.RoundingMode.HALF_UP;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
+import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -540,6 +549,264 @@ class ResponseCodeCoverageCalculatorUnitTest {
 
     private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+
+  @Nested
+  class CalculateFindingsTest {
+
+    @Test
+    void shouldReturnOneFindingPerDocumentedEntryOrderedByOperationThenCode() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of(
+          "POST_/api/v1/users",
+          List.of("500", "201"),
+          "GET_/api/v1/users",
+          List.of("404", "200")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        new HashMap<>()
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::httpMethod, ApiTestFinding::responseCode)
+        .containsExactly(
+          tuple("GET", "200"),
+          tuple("GET", "404"),
+          tuple("POST", "201"),
+          tuple("POST", "500")
+        );
+    }
+
+    @Test
+    void shouldNameTheResponseEntryAndDenormalizeItsDiscriminators() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/pung/{message}", List.of("404"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        new HashMap<>()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding ->
+            assertThat(finding.specPointer()).isEqualTo(
+              "/paths/~1pung~1{message}/get/responses/404"
+            ),
+          finding ->
+            assertThat(finding.httpPath()).isEqualTo("/pung/{message}"),
+          finding -> assertThat(finding.httpMethod()).isEqualTo("GET"),
+          finding -> assertThat(finding.responseCode()).isEqualTo("404"),
+          finding -> assertThat(finding.parameterName()).isNull(),
+          finding -> assertThat(finding.contentType()).isNull()
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldJudgeEveryDocumentedEntryWithNoneInapplicable() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "404", "500"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        new HashMap<>()
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::responseCode, ApiTestFinding::status)
+        .containsExactly(
+          tuple("200", UNCOVERED),
+          tuple("404", UNCOVERED),
+          tuple("500", UNCOVERED)
+        );
+    }
+
+    @Test
+    @VerifiesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+    void shouldEvidenceOnlyTheSpansWhoseStatusCodeMatchedTheEntry() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "404"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          createTelemetryDataWithStatusCode("200", "okTraceId"),
+          createTelemetryDataWithStatusCode("404", "notFoundTraceId")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "404".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(COVERED),
+          finding ->
+            assertThat(finding.evidence()).containsExactly(
+              new FindingEvidence("notFoundTraceId", null)
+            )
+        );
+    }
+
+    @Test
+    void shouldCarryNoEvidenceOnAnUncoveredFinding() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "500"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(createTelemetryDataWithStatusCode("200", "okTraceId"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "500".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(UNCOVERED),
+          finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldEvidenceTheDefaultEntryWithExactlyTheSpansNoSiblingMatched() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "4XX", "default"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          createTelemetryDataWithStatusCode("200", "okTraceId"),
+          createTelemetryDataWithStatusCode("404", "notFoundTraceId"),
+          createTelemetryDataWithStatusCode("500", "serverErrorTraceId"),
+          createTelemetryDataWithStatusCode("503", "unavailableTraceId")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "default".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(COVERED),
+          finding ->
+            assertThat(finding.evidence()).containsExactly(
+              new FindingEvidence("serverErrorTraceId", null),
+              new FindingEvidence("unavailableTraceId", null)
+            )
+        );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
+    )
+    void shouldLeaveTheDefaultEntryUnevidencedWhenEverySpanMatchedASibling() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200", "default"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(createTelemetryDataWithStatusCode("200", "okTraceId"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .filteredOn(finding -> "default".equals(finding.responseCode()))
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(UNCOVERED),
+          finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    @Test
+    void shouldCollapseSpansOfOneTraceIntoASingleEvidenceEntry() {
+      var pathToOpenAPIOperationMap = createOperationsWithCodes(
+        Map.of("GET_/api/v1/users", List.of("200"))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          createTelemetryDataWithStatusCode("200", "traceId"),
+          createTelemetryDataWithStatusCode("200", "traceId")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .extracting(ApiTestFinding::evidence, as(list(FindingEvidence.class)))
+        .containsExactly(new FindingEvidence("traceId", null));
+    }
+
+    private Map<String, Operation> createOperationsWithCodes(
+      Map<String, List<String>> operationKeyToCodes
+    ) {
+      Map<String, Operation> result = new HashMap<>();
+
+      for (Map.Entry<
+        String,
+        List<String>
+      > entry : operationKeyToCodes.entrySet()) {
+        Operation operation = new Operation();
+        ApiResponses responses = new ApiResponses();
+
+        for (String code : entry.getValue()) {
+          responses.addApiResponse(code, new ApiResponse().description("Test"));
+        }
+
+        operation.setResponses(responses);
+        result.put(entry.getKey(), operation);
+      }
+
+      return result;
+    }
+
+    private OpenTelemetryData createTelemetryDataWithStatusCode(
+      String statusCode,
+      String traceId
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("http.response.status_code", statusCode);
+
+      return new OpenTelemetryData("span-" + traceId, traceId, attributes);
     }
   }
 }

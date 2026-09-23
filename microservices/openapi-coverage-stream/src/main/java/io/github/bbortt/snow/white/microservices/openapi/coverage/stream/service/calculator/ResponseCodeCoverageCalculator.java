@@ -8,28 +8,41 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toResponseEntryPointer;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.System.lineSeparator;
+import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.regex.Pattern.compile;
 import static org.springframework.data.util.Predicates.negate;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -45,7 +58,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ResponseCodeCoverageCalculator
-  extends AbstractOpenApiCoverageCalculator
+  extends AbstractFindingBasedCoverageCalculator
 {
 
   public static final Pattern SINGLE_DIGIT_PATTERN = compile("^\\dXX$");
@@ -56,99 +69,157 @@ public class ResponseCodeCoverageCalculator
   }
 
   @Override
-  public @NonNull CoverageCalculationResult calculateCoverage(
+  protected @NonNull List<ApiTestFinding> calculateFindings(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
-    var coveredErrorCodes = new AtomicInteger(0);
-    var totalErrorCodes = new AtomicInteger(0);
-
-    var uncoveredErrorCodes = new HashSet<String>();
-
-    for (Map.Entry<
-      String,
-      Operation
-    > entry : pathToOpenAPIOperationMap.entrySet()) {
-      String path = entry.getKey();
-      Operation operation = entry.getValue();
-
-      var responseCodes = extractResponseCodes(operation);
-      Set<String> observedErrorCodes = extractObservedErrorCodes(
-        getTelemetryForTemplate(pathToTelemetryMap, path)
-      );
-
-      for (ResponseCode responseCode : responseCodes) {
-        var errorCode = responseCode.errorCode();
-        if (isCovered(responseCode, responseCodes, observedErrorCodes)) {
-          coveredErrorCodes.incrementAndGet();
-          logger.trace("Error code {} is covered for path {}", errorCode, path);
-        } else {
-          var pathErrorCodeKey = format("%s [%s]", path, errorCode);
-          uncoveredErrorCodes.add(pathErrorCodeKey);
-
-          logger.trace(
-            "Error code {} is NOT covered for path {}",
-            errorCode,
-            path
-          );
-        }
-      }
-
-      totalErrorCodes.getAndAdd(responseCodes.size());
-    }
-
-    var errorCodesCoverage = calculatePercentage(
-      coveredErrorCodes.get(),
-      totalErrorCodes.get()
-    );
-
-    return new CoverageCalculationResult(
-      errorCodesCoverage,
-      getAdditionalInformationOrNull(uncoveredErrorCodes)
-    );
+    return pathToOpenAPIOperationMap
+      .entrySet()
+      .stream()
+      .sorted(Map.Entry.comparingByKey())
+      .flatMap(entry ->
+        toFindings(
+          entry.getKey(),
+          entry.getValue(),
+          pathToTelemetryMap
+        ).stream()
+      )
+      .toList();
   }
 
   /**
-   * A documented {@code default} entry is a catch-all, not a literal value that can appear on
-   * the wire: it is covered by any observed status code that no other, more specific entry of
-   * the same operation already matches. Every other entry is matched as before, by its own
-   * pattern.
+   * One finding per documented response entry of the operation — including the entries this
+   * criterion does not judge, which are recorded {@code NOT_APPLICABLE} rather than dropped.
+   */
+  @RealizesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+  private @NonNull List<ApiTestFinding> toFindings(
+    @NonNull String operationKey,
+    @NonNull Operation operation,
+    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    var documentedResponseCodes = extractResponseCodes(operation);
+
+    var judgedResponseCodes = documentedResponseCodes
+      .stream()
+      .filter(responseCode -> judgesResponseCode(responseCode.errorCode()))
+      .toList();
+
+    var observedResponseCodes = extractObservedResponseCodes(
+      getTelemetryForTemplate(pathToTelemetryMap, operationKey)
+    );
+
+    return documentedResponseCodes
+      .stream()
+      .sorted(comparing(ResponseCode::errorCode))
+      .map(responseCode ->
+        toFinding(
+          operationKey,
+          responseCode,
+          judgedResponseCodes,
+          observedResponseCodes
+        )
+      )
+      .toList();
+  }
+
+  private @NonNull ApiTestFinding toFinding(
+    @NonNull String operationKey,
+    @NonNull ResponseCode responseCode,
+    @NonNull List<ResponseCode> judgedResponseCodes,
+    @NonNull List<ObservedResponseCode> observedResponseCodes
+  ) {
+    var errorCode = responseCode.errorCode();
+    var isJudged = judgesResponseCode(errorCode);
+
+    List<FindingEvidence> evidence = isJudged
+      ? toEvidence(
+          getSatisfyingTelemetry(
+            responseCode,
+            judgedResponseCodes,
+            observedResponseCodes
+          )
+        )
+      : emptyList();
+
+    FindingStatus status;
+    if (!isJudged) {
+      status = NOT_APPLICABLE;
+    } else if (evidence.isEmpty()) {
+      status = UNCOVERED;
+    } else {
+      status = COVERED;
+    }
+
+    logger.trace(
+      "Response code {} is {} for operation {}",
+      errorCode,
+      status,
+      operationKey
+    );
+
+    return ApiTestFinding.builder()
+      .specPointer(toResponseEntryPointer(operationKey, errorCode))
+      .status(status)
+      .httpPath(toPath(operationKey))
+      .httpMethod(toMethod(operationKey))
+      .responseCode(errorCode)
+      .evidence(evidence)
+      .build();
+  }
+
+  /**
+   * The telemetry that satisfied this response entry under this criterion's own rule.
+   *
+   * <p>A documented {@code default} entry is a catch-all, not a literal value that can appear on
+   * the wire: it is satisfied by every observed status code that no other, more specific entry of
+   * the same operation already matches. Every other entry is matched by its own pattern.</p>
    */
   @RealizesSw(
     SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
   )
-  private boolean isCovered(
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  private List<OpenTelemetryData> getSatisfyingTelemetry(
     ResponseCode responseCode,
-    Set<ResponseCode> responseCodes,
-    Set<String> observedErrorCodes
+    List<ResponseCode> judgedResponseCodes,
+    List<ObservedResponseCode> observedResponseCodes
   ) {
     if (!isDefaultResponseCode(responseCode.errorCode())) {
-      return observedErrorCodes
+      var isMatch = responseCode.errorCodePattern().asPredicate();
+      return observedResponseCodes
         .stream()
-        .anyMatch(responseCode.errorCodePattern().asPredicate());
+        .filter(observed -> isMatch.test(observed.statusCode()))
+        .map(ObservedResponseCode::telemetryData)
+        .toList();
     }
 
-    var otherPatterns = responseCodes
+    var otherPatterns = judgedResponseCodes
       .stream()
       .filter(other -> other != responseCode)
       .map(ResponseCode::errorCodePattern)
       .toList();
 
-    return observedErrorCodes
+    return observedResponseCodes
       .stream()
-      .anyMatch(observedCode ->
+      .filter(observed ->
         otherPatterns
           .stream()
-          .noneMatch(pattern -> pattern.matcher(observedCode).matches())
-      );
+          .noneMatch(pattern ->
+            pattern.matcher(observed.statusCode()).matches()
+          )
+      )
+      .map(ObservedResponseCode::telemetryData)
+      .toList();
   }
 
   private static boolean isDefaultResponseCode(String errorCode) {
     return "default".equalsIgnoreCase(errorCode);
   }
 
-  protected Set<ResponseCode> extractResponseCodes(Operation operation) {
-    Set<ResponseCode> responseCodes = new HashSet<>();
+  /**
+   * Every response entry the operation documents, in the order the document states them.
+   */
+  protected List<ResponseCode> extractResponseCodes(Operation operation) {
+    List<ResponseCode> responseCodes = new ArrayList<>();
 
     if (isNull(operation.getResponses())) {
       return responseCodes;
@@ -176,10 +247,10 @@ public class ResponseCodeCoverageCalculator
     return responseCodes;
   }
 
-  private Set<String> extractObservedErrorCodes(
+  private List<ObservedResponseCode> extractObservedResponseCodes(
     @Nullable List<OpenTelemetryData> telemetryDataList
   ) {
-    Set<String> observedCodes = new HashSet<>();
+    List<ObservedResponseCode> observedCodes = new ArrayList<>();
 
     if (isEmpty(telemetryDataList)) {
       return observedCodes;
@@ -187,17 +258,21 @@ public class ResponseCodeCoverageCalculator
 
     for (OpenTelemetryData telemetryData : telemetryDataList) {
       var statusCode = extractStatusCodeFromAttributes(telemetryData);
-      if (includeObservedResponseCodeInCalculation(statusCode)) {
-        observedCodes.add(statusCode);
+      if (judgesResponseCode(statusCode)) {
+        observedCodes.add(new ObservedResponseCode(statusCode, telemetryData));
       }
     }
 
     return observedCodes;
   }
 
-  protected boolean includeObservedResponseCodeInCalculation(
-    @Nullable String statusCode
-  ) {
+  /**
+   * Whether this criterion has anything to say about the given response code — asked of a
+   * documented entry to decide whether it is a target at all, and of an observed status code to
+   * decide whether it can satisfy one. This criterion judges every documented entry; the narrower
+   * subsets are drawn by the subclasses.
+   */
+  protected boolean judgesResponseCode(@Nullable String statusCode) {
     return nonNull(statusCode);
   }
 
@@ -232,19 +307,26 @@ public class ResponseCodeCoverageCalculator
     );
   }
 
+  @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredResponseCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
     return getAdditionalInformationOrNull(
       "The following response codes in paths are uncovered: `%s`",
-      uncoveredResponseCodes
+      findings
     );
   }
 
   protected @Nullable String getAdditionalInformationOrNull(
     String infoMessagePattern,
-    @NonNull Set<String> uncoveredResponseCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
+    var uncoveredResponseCodes = findings
+      .stream()
+      .filter(finding -> UNCOVERED.equals(finding.status()))
+      .map(ResponseCodeCoverageCalculator::toUncoveredResponseCodeKey)
+      .toList();
+
     if (uncoveredResponseCodes.isEmpty()) {
       return null;
     }
@@ -286,9 +368,30 @@ public class ResponseCodeCoverageCalculator
     return additionalInformationBuilder.toString();
   }
 
+  private static String toUncoveredResponseCodeKey(ApiTestFinding finding) {
+    return format(
+      "%s [%s]",
+      toOperationKey(
+        requireNonNull(finding.httpPath()),
+        requireNonNull(finding.httpMethod())
+      ),
+      finding.responseCode()
+    );
+  }
+
   private static boolean isDefaultCodePattern(String errorCode) {
     return errorCode.endsWith("[default]");
   }
 
   protected record ResponseCode(String errorCode, Pattern errorCodePattern) {}
+
+  /**
+   * An observed status code carried together with the span it came from, rather than instead of
+   * it — what lets the match that proves a target also name its evidence.
+   */
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  private record ObservedResponseCode(
+    String statusCode,
+    OpenTelemetryData telemetryData
+  ) {}
 }
