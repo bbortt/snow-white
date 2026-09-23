@@ -6,7 +6,7 @@
 Every criterion's coverage is backed by per-target findings carrying the traces that satisfied
 them
 
-**Status**: planned
+**Status**: active
 
 **Business Value**
 A quality gate that reports `RESPONSE_CODE_COVERAGE: 0.67` tells a developer that something is

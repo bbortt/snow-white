@@ -8,6 +8,9 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;
@@ -43,6 +46,37 @@ final class CalculatorUtils {
       .stream()
       .filter(e -> pattern.matcher(e.getKey()).matches())
       .flatMap(e -> e.getValue().stream())
+      .toList();
+  }
+
+  /**
+   * Template → concrete direction, ignoring the request method.
+   * Returns all telemetry entries whose operation keys resolve to a path matching the given
+   * template path (which may contain {@code {param}} segments), under any method.
+   */
+  static @NonNull List<OpenTelemetryData> getTelemetryForPathTemplate(
+    @NonNull Map<String, List<OpenTelemetryData>> telemetryMap,
+    @NonNull String templatePath
+  ) {
+    var pattern = OperationKeyCalculator.toOperationKeyPattern(templatePath);
+    return telemetryMap
+      .entrySet()
+      .stream()
+      .filter(e ->
+        pattern.matcher(OperationKeyCalculator.toPath(e.getKey())).matches()
+      )
+      .flatMap(e -> e.getValue().stream())
+      .toList();
+  }
+
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  static @NonNull List<FindingEvidence> toEvidence(
+    @NonNull List<OpenTelemetryData> satisfyingTelemetry
+  ) {
+    return satisfyingTelemetry
+      .stream()
+      .map(telemetry -> new FindingEvidence(telemetry.traceId(), null))
+      .distinct()
       .toList();
   }
 

@@ -8,7 +8,7 @@ beside them
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `AbstractOpenApiCoverageCalculator.CoverageCalculationResult` stops carrying a
@@ -75,3 +75,14 @@ A review check confirms no calculator subclass constructs a `BigDecimal` ratio.
   decision centralises rather than changes
 - [ARCH-002](ARCH-002-criteria-metadata-owned-by-enum.md) — the existing
   metadata-in-one-place shape this decision follows for the reduction
+
+## Changes
+
+- **2026-09-23** — Set active: implementation of `STR-017` began, with the shared derivation and
+  the first criterion behind it.
+  The remaining thirteen calculators are migrated in later steps of
+  the same story; until the last one lands, the legacy `CoverageCalculationResult` path still
+  exists beside the findings contract, and a calculator that has not migrated still computes its
+  own ratio.
+  Migrated calculators cannot: the derivation is `final` on the base class they extend,
+  which is what makes the transition one-way rather than a convention.
