@@ -8,7 +8,7 @@ afterwards
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every calculator's matching step answers with the telemetry that satisfied the target, not with a
@@ -134,3 +134,17 @@ values before the verdict is taken.
   recovering a test identity by re-querying each evidencing trace
 - [STR-007](../stories/STR-007-coverage-criteria-calculator-correctness.md) — the correctness
   suites that make a 14-calculator migration safe
+
+## Changes
+
+- **2026-09-23** — Made an evidence entry a `(traceId, testCaseName)` pair rather than a bare trace
+  id, and corrected the claim that this decision adds no key to `SW-021`'s narrowed attribute set —
+  a test identity is an attribute, so it has to be requested.
+  Review established that the
+  calculator is the only place holding a span beside the target it satisfied, and that `SW-031`
+  publishes the evidence shape in a versioned contract, so the slot has to exist before that
+  contract ships rather than after.
+  Recorded as `ADR-0002`.
+- **2026-09-23** — Set active: implementation of `STR-017` began. `PATH_COVERAGE` is the first
+  criterion to capture evidence at the match; the `SW-002` and `SW-007` exclusion cases and the
+  inverted criteria of `SW-003` arrive with the steps that migrate those calculators.

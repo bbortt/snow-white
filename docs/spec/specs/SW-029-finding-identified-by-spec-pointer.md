@@ -8,7 +8,7 @@ beside it
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every finding names its target by a `specPointer`: an RFC 6901 JSON Pointer into the OpenAPI
@@ -119,3 +119,11 @@ dimension and null otherwise, and that each agrees with the corresponding segmen
   at
 - [CON-007](CON-007-stable-api-reference-is-immutable-once-indexed.md) — the immutability of an
   indexed spec, which is what makes a pointer stable across recalculations of the same reference
+
+## Changes
+
+- **2026-09-23** — Set active: implementation of `STR-017` began.
+  The first criterion behind the
+  contract is `PATH_COVERAGE`, whose target is a path item, so the pointer depths this spec
+  describes for response, parameter and media-type targets are exercised by the later steps that
+  migrate those criteria.
