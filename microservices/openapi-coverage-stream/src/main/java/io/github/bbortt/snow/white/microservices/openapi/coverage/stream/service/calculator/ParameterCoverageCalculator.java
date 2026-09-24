@@ -8,26 +8,37 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toParameterPointer;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -50,130 +61,180 @@ public class ParameterCoverageCalculator
     return PARAMETER_COVERAGE;
   }
 
+  /**
+   * One finding per parameter the operation declares — including the parameters this criterion
+   * does not judge, which are recorded {@code NOT_APPLICABLE} rather than dropped.
+   */
+  @RealizesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
   @Override
-  protected @NonNull CoverageCalculationResult calculateCoverage(
+  protected @NonNull List<ApiTestFinding> calculateFindings(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
-    var coveredParameters = new AtomicInteger(0);
-    var totalParameters = new AtomicInteger(0);
-
-    var uncoveredParameters = new HashSet<String>();
-
-    for (Map.Entry<
-      String,
-      Operation
-    > entry : pathToOpenAPIOperationMap.entrySet()) {
-      evaluateOperationParameters(
-        entry.getKey(),
-        entry.getValue(),
-        pathToTelemetryMap,
-        coveredParameters,
-        totalParameters,
-        uncoveredParameters
-      );
-    }
-
-    var parameterCoverage = calculatePercentage(
-      coveredParameters.get(),
-      totalParameters.get()
-    );
-
-    return new CoverageCalculationResult(
-      parameterCoverage,
-      getAdditionalInformationOrNull(uncoveredParameters)
-    );
+    return toParameterTargets(pathToOpenAPIOperationMap)
+      .stream()
+      .map(target -> toFinding(target, pathToTelemetryMap))
+      .toList();
   }
 
-  private void evaluateOperationParameters(
-    String operationKey,
-    Operation operation,
-    Map<String, List<OpenTelemetryData>> pathToTelemetryMap,
-    AtomicInteger coveredParameters,
-    AtomicInteger totalParameters,
-    Set<String> uncoveredParameters
+  @Override
+  protected @Nullable String getAdditionalInformationOrNull(
+    @NonNull Calculation calculation
   ) {
-    if (isEmpty(operation.getParameters())) {
-      logger.trace("Operation '{}' has no defined parameters", operationKey);
-      return;
-    }
-
-    var parameters = extractParameters(operation);
-    if (parameters.isEmpty()) {
-      return;
-    }
-
-    totalParameters.addAndGet(parameters.size());
-
-    var telemetryDataList = getTelemetryForTemplate(
-      pathToTelemetryMap,
-      operationKey
+    return getAdditionalInformationOrNull(
+      "The following parameters are uncovered: `%s`",
+      calculation
     );
-    if (telemetryDataList.isEmpty()) {
-      logger.trace("No telemetry data for operation: {}", operationKey);
-      for (Parameter param : parameters) {
-        uncoveredParameters.add(uncoveredParameterLabel(operationKey, param));
-      }
-      return;
-    }
-
-    for (Parameter param : parameters) {
-      if (isParameterCovered(telemetryDataList, param, operationKey)) {
-        logger.trace(
-          "Parameter '{}' ({}) covered in operation '{}'",
-          param.getName(),
-          param.getIn(),
-          operationKey
-        );
-        coveredParameters.incrementAndGet();
-      } else {
-        logger.trace(
-          "Parameter '{}' ({}) NOT covered in operation '{}'",
-          param.getName(),
-          param.getIn(),
-          operationKey
-        );
-        uncoveredParameters.add(uncoveredParameterLabel(operationKey, param));
-      }
-    }
-  }
-
-  private static String uncoveredParameterLabel(
-    String operationKey,
-    Parameter param
-  ) {
-    return format("%s [%s: %s]", operationKey, param.getIn(), param.getName());
   }
 
   /**
-   * Extracts parameters to consider for coverage calculation.
-   * Override this method in subclasses to filter parameters.
+   * The parameter's location belongs in the message but is not one of the finding's
+   * discriminators, so the label is built by re-walking the same enumeration the findings came
+   * from and matching each target on the pointer it produced — never by parsing a pointer back
+   * apart.
    */
-  protected List<Parameter> extractParameters(Operation operation) {
-    return operation.getParameters();
-  }
-
-  protected boolean isParameterCovered(
-    List<OpenTelemetryData> telemetryDataList,
-    Parameter param,
-    String operationKey
+  protected @Nullable String getAdditionalInformationOrNull(
+    String infoMessagePattern,
+    @NonNull Calculation calculation
   ) {
-    String paramName = param.getName();
-    String paramIn = param.getIn();
+    var uncoveredPointers = calculation
+      .findings()
+      .stream()
+      .filter(finding -> UNCOVERED.equals(finding.status()))
+      .map(ApiTestFinding::specPointer)
+      .collect(toSet());
 
-    for (OpenTelemetryData telemetryData : telemetryDataList) {
-      if (isParameterPresent(telemetryData, paramName, paramIn, operationKey)) {
-        return true;
-      }
+    if (uncoveredPointers.isEmpty()) {
+      return null;
     }
 
-    return false;
+    var uncoveredParameters = toParameterTargets(
+      calculation.pathToOpenAPIOperationMap()
+    )
+      .stream()
+      .filter(target -> uncoveredPointers.contains(target.specPointer()))
+      .map(ParameterCoverageCalculator::toUncoveredParameterLabel)
+      .distinct()
+      .sorted()
+      .toList();
+
+    return format(infoMessagePattern, join("`, `", uncoveredParameters));
+  }
+
+  /**
+   * Every parameter of every operation, in document order, each carrying the operation it belongs
+   * to and the position that names it. OpenAPI keys parameters by position rather than by name,
+   * so the index is what the pointer is built from.
+   */
+  private static @NonNull List<ParameterTarget> toParameterTargets(
+    @NonNull Map<String, Operation> pathToOpenAPIOperationMap
+  ) {
+    var targets = new ArrayList<ParameterTarget>();
+
+    pathToOpenAPIOperationMap
+      .entrySet()
+      .stream()
+      .sorted(Map.Entry.comparingByKey())
+      .forEach(entry -> {
+        var parameters = entry.getValue().getParameters();
+
+        if (isEmpty(parameters)) {
+          logger.trace(
+            "Operation '{}' has no defined parameters",
+            entry.getKey()
+          );
+          return;
+        }
+
+        for (var index = 0; index < parameters.size(); index++) {
+          targets.add(
+            new ParameterTarget(entry.getKey(), index, parameters.get(index))
+          );
+        }
+      });
+
+    return targets;
+  }
+
+  private @NonNull ApiTestFinding toFinding(
+    @NonNull ParameterTarget target,
+    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    var parameter = target.parameter();
+    var isJudged = judgesParameter(parameter);
+
+    List<FindingEvidence> evidence = isJudged
+      ? toEvidence(
+          getSatisfyingTelemetry(
+            getTelemetryForTemplate(pathToTelemetryMap, target.operationKey()),
+            parameter,
+            target.operationKey()
+          )
+        )
+      : emptyList();
+
+    FindingStatus status;
+    if (!isJudged) {
+      status = NOT_APPLICABLE;
+    } else if (evidence.isEmpty()) {
+      status = UNCOVERED;
+    } else {
+      status = COVERED;
+    }
+
+    logger.trace(
+      "Parameter '{}' ({}) is {} in operation '{}'",
+      parameter.getName(),
+      parameter.getIn(),
+      status,
+      target.operationKey()
+    );
+
+    return ApiTestFinding.builder()
+      .specPointer(target.specPointer())
+      .status(status)
+      .httpPath(toPath(target.operationKey()))
+      .httpMethod(toMethod(target.operationKey()))
+      .parameterName(parameter.getName())
+      .evidence(evidence)
+      .build();
+  }
+
+  /**
+   * Whether this criterion has anything to say about the given parameter.
+   * This criterion judges every declared parameter; the narrower subsets are drawn by the
+   * subclasses.
+   */
+  protected boolean judgesParameter(@NonNull Parameter parameter) {
+    return true;
+  }
+
+  /**
+   * The spans that exercised this parameter, rather than the first of them reduced to a boolean.
+   */
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  private @NonNull List<OpenTelemetryData> getSatisfyingTelemetry(
+    @NonNull List<OpenTelemetryData> telemetryDataList,
+    @NonNull Parameter parameter,
+    @NonNull String operationKey
+  ) {
+    return telemetryDataList
+      .stream()
+      .filter(telemetryData ->
+        isParameterPresent(
+          telemetryData,
+          parameter.getName(),
+          parameter.getIn(),
+          operationKey
+        )
+      )
+      .toList();
   }
 
   private boolean isParameterPresent(
     OpenTelemetryData data,
     String paramName,
-    String paramIn,
+    @Nullable String paramIn,
     String operationKey
   ) {
     if (isNull(data.attributes()) || isNull(paramIn)) {
@@ -246,18 +307,26 @@ public class ParameterCoverageCalculator
     return data.attributes().has(headerKey);
   }
 
-  protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredParameters
-  ) {
-    if (uncoveredParameters.isEmpty()) {
-      return null;
-    }
-
-    var sortedParameters = uncoveredParameters.stream().sorted().toList();
-
+  private static String toUncoveredParameterLabel(ParameterTarget target) {
     return format(
-      "The following parameters are uncovered: `%s`",
-      join("`, `", sortedParameters)
+      "%s [%s: %s]",
+      target.operationKey(),
+      target.parameter().getIn(),
+      target.parameter().getName()
     );
+  }
+
+  /**
+   * A declared parameter together with what names it: the operation it belongs to and its
+   * position in that operation's parameter array.
+   */
+  private record ParameterTarget(
+    String operationKey,
+    int index,
+    Parameter parameter
+  ) {
+    String specPointer() {
+      return toParameterPointer(operationKey, index);
+    }
   }
 }

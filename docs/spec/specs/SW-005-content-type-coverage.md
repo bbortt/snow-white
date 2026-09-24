@@ -20,6 +20,9 @@ charset or boundary parameter (`application/json; charset=utf-8`) does not preve
 An operation with no request body, or a request body with no content map, contributes nothing to
 required or covered — it is excluded from the calculation entirely, not counted as a covered or
 uncovered zero.
+It contributes no finding either: exclusion here is an empty target space rather than an
+inapplicable target, because there is no media-type node in the document for a finding to name
+(`SW-030`).
 
 This criterion depends on the `content-type` request header being present on the span in the first
 place, which is not on by default: the OTel Java agent only captures it once
@@ -68,3 +71,18 @@ capture may not be enabled, in addition to reporting zero coverage.
 
 - [CON-004](CON-004-coverage-ratio-is-always-bounded-and-well-defined.md) — the shared
   formula this criterion uses
+- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — the inapplicable-target rule a bodyless
+  operation is deliberately not an instance of
+- [SW-029](SW-029-finding-identified-by-spec-pointer.md) — the media-type pointer a finding of this
+  criterion names its target by
+
+## Changes
+
+- **2026-09-24** — Recorded that a bodyless operation contributes no finding, not an inapplicable
+  one.
+  Migrating this criterion onto the findings contract forced the question the old
+  ratio-only shape never had to answer: `SW-030` requires an unjudged target to be recorded rather
+  than dropped, and a reader could have taken "excluded from the calculation entirely" to mean this
+  criterion owes a `NOT_APPLICABLE` finding per bodyless operation.
+  It does not — there is no node to point at, and the exclusion was already the absence of a target
+  rather than a verdict about one.

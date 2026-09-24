@@ -7,12 +7,20 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPTIONAL_PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -288,6 +296,94 @@ class OptionalParameterCoverageCalculatorUnitTest {
 
     private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+
+  @Nested
+  class CalculateFindingsTest {
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldRecordTheRequiredSiblingAsNotApplicableRatherThanDropIt() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(
+          parameter("tenant", "query", true),
+          parameter("page", "query", false)
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        Map.of()
+      );
+
+      assertThat(result)
+        .extracting(
+          ApiTestFinding::specPointer,
+          ApiTestFinding::status,
+          ApiTestFinding::parameterName
+        )
+        .containsExactly(
+          tuple(
+            "/paths/~1api~1v1~1users/get/parameters/0",
+            NOT_APPLICABLE,
+            "tenant"
+          ),
+          tuple("/paths/~1api~1v1~1users/get/parameters/1", UNCOVERED, "page")
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldCarryNoEvidenceOnTheRequiredSiblingEvenWhenItWasExercised() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(
+          parameter("tenant", "query", true),
+          parameter("page", "query", false)
+        )
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(telemetryWithQuery("trace-1", "tenant=acme&page=1"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::status, ApiTestFinding::evidence)
+        .containsExactly(
+          tuple(NOT_APPLICABLE, List.of()),
+          tuple(COVERED, List.of(new FindingEvidence("trace-1", null)))
+        );
+    }
+
+    private Operation operationWith(Parameter... parameters) {
+      var operation = new Operation();
+      operation.setParameters(new ArrayList<>(List.of(parameters)));
+      return operation;
+    }
+
+    private Parameter parameter(String name, String in, boolean required) {
+      var parameter = new Parameter();
+      parameter.setName(name);
+      parameter.setIn(in);
+      parameter.setRequired(required);
+      return parameter;
+    }
+
+    private OpenTelemetryData telemetryWithQuery(
+      String traceId,
+      String queryString
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("url.query", queryString);
+      return new OpenTelemetryData("span-1", traceId, attributes);
     }
   }
 }

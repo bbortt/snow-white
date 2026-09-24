@@ -27,6 +27,17 @@ The excluding rules are the criteria's own, already in the code:
 - The positive-response counterpart excludes the error entries symmetrically.
 - The required- and optional-parameter criteria each exclude the parameters of the other's
   `required` flag.
+- `REQUIRED_ERROR_FIELDS_COVERAGE` judges only documented error entries whose schema declares at
+  least one required field.
+  A positive entry is outside its subject, and an error entry that declares no required field has
+  no requirement to be covered against — both are `NOT_APPLICABLE` findings, not absences.
+
+This is about targets the spec has and the criterion passes over, not about targets the spec does
+not have.
+Where the document contains no node — an operation with no `requestBody` under
+`CONTENT_TYPE_COVERAGE`, an operation declaring no parameters — the criterion contributes no
+finding at all, because there is nothing for a pointer to address (`SW-029`).
+An empty target space is not an inapplicable one.
 
 A `NOT_APPLICABLE` finding carries no evidence, and enters neither side of the coverage fraction
 (`ARCH-010`) — a criterion whose every target is inapplicable derives `required == 0` and
@@ -86,6 +97,14 @@ identical with and without inapplicable findings present in the list.
 
 ## Changes
 
+- **2026-09-24** — The parameter criteria's symmetric case, promised by the previous entry, arrived
+  with the step that migrated them: each records the other's parameters inapplicable, with empty
+  evidence even where the sibling's parameter was exercised.
+  Added `REQUIRED_ERROR_FIELDS_COVERAGE`'s excluding rule to the list, which migrating it made
+  explicit — it passes over positive entries and over error entries whose schema declares no
+  required field, and both were previously just missing from its output.
+  Also drew the boundary the same step kept running into: a target the document does not contain is
+  not an inapplicable target but no target, because there is no node to point at.
 - **2026-09-23** — Replaced "carries no trace ids" with "carries no evidence", in both the
   description and the verification description.
   The same review that made an evidence entry a `(traceId, testCaseName)` pair rather than a bare

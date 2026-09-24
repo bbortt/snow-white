@@ -11,9 +11,9 @@ beside them
 **Status**: active
 
 **Description**
-`AbstractOpenApiCoverageCalculator.CoverageCalculationResult` stops carrying a
-`BigDecimal coverage` that a subclass computed for itself.
-A calculator's `calculateCoverage` returns the ordered list of targets it judged — one finding per
+No result record carries a `BigDecimal coverage` that a subclass computed for itself;
+`AbstractOpenApiCoverageCalculator.CoverageCalculationResult` is gone rather than emptied.
+A calculator's `calculateFindings` returns the ordered list of targets it judged — one finding per
 target, each with its status and evidence — and the abstract base derives the ratio from that list
 in one place, as `COVERED` over `COVERED + UNCOVERED`, before assembling the `OpenApiTestResult`.
 
@@ -50,7 +50,7 @@ cheaper to guarantee at the source than to reconstruct per consumer; identity fo
 replace-on-redelivery comes from the spec pointer (`SW-029`), not from list position.
 
 **Verification Description**
-A unit test per calculator asserts that `calculateCoverage` returns one finding per target in that
+A unit test per calculator asserts that `calculateFindings` returns one finding per target in that
 criterion's target space and that the derived ratio equals the ratio the same calculator produced
 before this change, for identical fixtures — `STR-007`'s existing correctness suites pinned
 against the new contract.
@@ -86,3 +86,11 @@ A review check confirms no calculator subclass constructs a `BigDecimal` ratio.
   own ratio.
   Migrated calculators cannot: the derivation is `final` on the base class they extend,
   which is what makes the transition one-way rather than a convention.
+- **2026-09-24** — The last three criteria — parameter, content-type, required-error-fields — moved
+  behind the findings contract, so all fourteen now derive their ratio here.
+  With no legacy caller left, the transitional base class that held the two paths side by side was
+  deleted and its derivation folded into `AbstractOpenApiCoverageCalculator`; `calculate` is `final`
+  there and `CoverageCalculationResult` no longer exists, so a subclass has no type through which to
+  return a ratio of its own.
+  Description and Verification Description are corrected to name what is now there rather than the
+  shape the transition passed through.

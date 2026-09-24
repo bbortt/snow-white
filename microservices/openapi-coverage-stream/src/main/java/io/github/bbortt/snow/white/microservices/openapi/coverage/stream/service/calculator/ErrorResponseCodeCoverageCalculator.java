@@ -71,11 +71,11 @@ public class ErrorResponseCodeCoverageCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
     return super.getAdditionalInformationOrNull(
       "The following error codes in paths are uncovered: `%s`",
-      findings
+      calculation.findings()
     );
   }
 }

@@ -46,11 +46,11 @@ public class NoUndocumentedErrorResponseCodesCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
     return super.getAdditionalInformationOrNull(
       "The following observed error response codes are not documented in the OpenAPI specification: `%s`",
-      findings
+      calculation.findings()
     );
   }
 }

@@ -8,14 +8,11 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_PARAMETER_COVERAGE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
-import static java.lang.String.join;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -39,28 +36,23 @@ public class RequiredParameterCoverageCalculator
     return REQUIRED_PARAMETER_COVERAGE;
   }
 
+  /**
+   * A declared optional parameter is therefore a target this criterion does not judge, rather than
+   * one it never saw.
+   */
+  @RealizesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
   @Override
-  protected List<Parameter> extractParameters(Operation operation) {
-    return operation
-      .getParameters()
-      .stream()
-      .filter(param -> TRUE.equals(param.getRequired()))
-      .toList();
+  protected boolean judgesParameter(@NonNull Parameter parameter) {
+    return TRUE.equals(parameter.getRequired());
   }
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> uncoveredParameters
+    @NonNull Calculation calculation
   ) {
-    if (uncoveredParameters.isEmpty()) {
-      return null;
-    }
-
-    var sortedParameters = uncoveredParameters.stream().sorted().toList();
-
-    return format(
+    return super.getAdditionalInformationOrNull(
       "The following required parameters are uncovered: `%s`",
-      join("`, `", sortedParameters)
+      calculation
     );
   }
 }
