@@ -18,6 +18,9 @@ Required is every error status-code entry (per
 on an operation whose response schema declares at least one required field; covered is such an
 entry matched by an observed status code — an exact match for a literal code, a shared leading
 digit for a wildcard pattern (`4XX`), or any observed error code at all for a `default` entry.
+Observed means observed on the operation: a span evidences an entry when its concrete operation key
+matches the operation's template, the same correlation every other criterion uses, so an entry on
+`GET /pung/{message}` is covered by a span that arrived on `GET /pung/hello`.
 An error response with no declared required fields contributes nothing to required or covered, and
 neither does a positive entry.
 Both are targets this criterion looks at and has nothing to say about, so both are recorded as
@@ -65,6 +68,13 @@ adding a `400` response to the telemetry and rerunning asserts it is now reporte
   whose `default` handling this one deliberately does not share
 
 ## Changes
+
+- **2026-09-24** — Stated that an entry is evidenced by the spans matching its operation's
+  template, and fixed the implementation to do so.
+  It had looked telemetry up by exact operation key, which silently found nothing for a templated
+  operation whose spans carry a concrete path — reporting a documented error response as uncovered
+  when it had been exercised.
+  Ratios rise for specifications with path parameters.
 
 - **2026-09-24** — Recorded what happens to the entries this criterion passes over — a positive
   entry, and an error entry declaring no required field — now that migrating it onto the findings
