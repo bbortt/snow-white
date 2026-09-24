@@ -11,8 +11,8 @@ import static java.lang.Integer.parseInt;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;

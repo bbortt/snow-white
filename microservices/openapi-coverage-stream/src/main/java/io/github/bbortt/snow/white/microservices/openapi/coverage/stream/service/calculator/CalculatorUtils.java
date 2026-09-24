@@ -12,7 +12,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;

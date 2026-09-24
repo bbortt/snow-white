@@ -10,7 +10,7 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;

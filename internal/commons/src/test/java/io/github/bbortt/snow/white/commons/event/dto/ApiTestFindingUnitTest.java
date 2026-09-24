@@ -4,9 +4,9 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto;
+package io.github.bbortt.snow.white.commons.event.dto;
 
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.COVERED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

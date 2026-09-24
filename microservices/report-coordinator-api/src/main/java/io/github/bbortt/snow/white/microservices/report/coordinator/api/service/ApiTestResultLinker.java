@@ -11,7 +11,9 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static java.util.Objects.nonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
@@ -38,11 +40,15 @@ final class ApiTestResultLinker {
    * A redelivered result for a criterion already present on the {@code ApiTest} replaces it rather
    * than accumulating beside it: the incoming results are removed from the set by identity before
    * being re-added, so a redelivery never leaves two entries for the same criterion.
+   * The replacement carries the findings it explains with it. Removing the superseded result takes
+   * its findings and their evidence along, so a redelivery never leaves a target the newer delivery
+   * no longer judges sitting in the drilldown.
    */
   @RealizesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
   @RealizesSw(
     SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
   )
+  @RealizesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
   void addApiTestResultsToApiTest(
     Set<ApiTestResult> apiTestResults,
     ApiTest apiTest,
@@ -56,8 +62,10 @@ final class ApiTestResultLinker {
     var incomingResults = apiTestResults
       .stream()
       .map(apiTestResult ->
-        apiTestResult.withIncludedInReport(
-          isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
+        withFindingsPointingBackAtIt(
+          apiTestResult.withIncludedInReport(
+            isIncludedInReport(apiTestResult, includedOpenApiCoverageCriteria)
+          )
         )
       )
       .toList();
@@ -76,6 +84,32 @@ final class ApiTestResultLinker {
         deriveApiTestStatus(apiTest, minCoveragePercentage)
       )
     );
+  }
+
+  /**
+   * Flagging a result not-included hands back a copy, and the findings still point at the original.
+   * Re-pointing them keeps the foreign key each finding writes derived from the instance that is
+   * actually persisted, rather than from an equal one nothing else references.
+   */
+  @RealizesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
+  private static ApiTestResult withFindingsPointingBackAtIt(
+    ApiTestResult apiTestResult
+  ) {
+    var findings = apiTestResult.getFindings();
+
+    if (findings.isEmpty()) {
+      return apiTestResult;
+    }
+
+    var pointingBackAtIt = findings
+      .stream()
+      .map(finding -> finding.withApiTestResult(apiTestResult))
+      .toList();
+
+    findings.clear();
+    findings.addAll(pointingBackAtIt);
+
+    return apiTestResult;
   }
 
   private boolean isIncludedInReport(

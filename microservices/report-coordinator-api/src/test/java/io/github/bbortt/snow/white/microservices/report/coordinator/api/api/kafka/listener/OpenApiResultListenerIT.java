@@ -11,10 +11,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.UNCOVERED;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.CoverageImpliedByFindings.ratioImpliedBy;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiInformation;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
@@ -24,16 +27,29 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.HALF_UP;
+import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingStatus;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
@@ -48,6 +64,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -56,6 +73,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -69,6 +87,9 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
 
   @Autowired
   private JsonMapper jsonMapper;
+
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
 
   @Autowired
   private ApiTestRepository apiTestRepository;
@@ -300,6 +321,206 @@ class OpenApiResultListenerIT extends AbstractReportCoordinationServiceIT {
             .containsExactly(ONE.setScale(2, HALF_UP), secondDuration);
         }
       );
+  }
+
+  @Test
+  @VerifiesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
+  @VerifiesSw(
+    SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
+  )
+  @VerifiesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
+  void kafkaEvent_redeliveredWithFindings_shouldReplaceThemWholesale() {
+    var calculationId = UUID.fromString("7b5c4d3e-2f1a-4b8c-9d0e-1f2a3b4c5d6e");
+    var qualityGateReport = persistInitialQualityGateReport(calculationId);
+
+    createQualityGateApiWiremockStub(
+      qualityGateReport.getQualityGateConfigName(),
+      PATH_COVERAGE,
+      HTTP_METHOD_COVERAGE,
+      ERROR_RESPONSE_CODE_COVERAGE
+    );
+
+    var topic = reportCoordinationServiceProperties
+      .getOpenapiCalculationResponse()
+      .getTopic();
+
+    kafkaTemplate.send(
+      topic,
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        defaultApiInformation(),
+        Set.of(
+          new OpenApiTestResult(
+            PATH_COVERAGE,
+            new BigDecimal("0.50"),
+            Duration.ofMillis(1000),
+            null,
+            List.of(
+              finding("/paths/~1kept", COVERED, "aaaa1"),
+              finding("/paths/~1superseded", UNCOVERED)
+            )
+          ),
+          new OpenApiTestResult(
+            HTTP_METHOD_COVERAGE,
+            ONE.setScale(2, HALF_UP),
+            Duration.ofMillis(1000),
+            null,
+            List.of(finding("/paths/~1untouched/get", COVERED, "aaaa2"))
+          )
+        )
+      )
+    );
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(
+        () -> persistedFindings(calculationId),
+        findings -> assertThat(findings).hasSize(3)
+      );
+    assertCoverageAgreesWithItsPersistedFindings(calculationId);
+
+    kafkaTemplate.send(
+      topic,
+      calculationId.toString(),
+      new OpenApiCoverageResponseEvent(
+        defaultApiInformation(),
+        Set.of(
+          new OpenApiTestResult(
+            PATH_COVERAGE,
+            new BigDecimal("0.33"),
+            Duration.ofMillis(2000),
+            null,
+            List.of(
+              finding("/paths/~1kept", COVERED, "bbbb1"),
+              finding("/paths/~1added", UNCOVERED),
+              finding("/paths/~1alsoAdded", UNCOVERED)
+            )
+          ),
+          new OpenApiTestResult(
+            ERROR_RESPONSE_CODE_COVERAGE,
+            ZERO.setScale(2, HALF_UP),
+            Duration.ofMillis(2000),
+            null,
+            List.of(finding("/paths/~1kept/get/responses/500", UNCOVERED))
+          )
+        )
+      )
+    );
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(
+        () -> persistedFindings(calculationId),
+        findings ->
+          assertThat(findings)
+            .extracting(
+              row -> row.get("api_test_criteria"),
+              row -> row.get("spec_pointer")
+            )
+            .containsExactlyInAnyOrder(
+              // The superseded delivery's own target is gone rather than sitting beside the new
+              // ones, and the target both deliveries judged is present exactly once.
+              tuple(PATH_COVERAGE.name(), "/paths/~1kept"),
+              tuple(PATH_COVERAGE.name(), "/paths/~1added"),
+              tuple(PATH_COVERAGE.name(), "/paths/~1alsoAdded"),
+              tuple(HTTP_METHOD_COVERAGE.name(), "/paths/~1untouched/get"),
+              tuple(
+                ERROR_RESPONSE_CODE_COVERAGE.name(),
+                "/paths/~1kept/get/responses/500"
+              )
+            )
+      );
+
+    assertThat(persistedEvidence(calculationId))
+      .extracting(row -> row.get("spec_pointer"), row -> row.get("trace_id"))
+      .containsExactlyInAnyOrder(
+        // The replaced finding's evidence went with it: the trace the superseded delivery matched
+        // on is not what the drilldown would show.
+        tuple("/paths/~1kept", "bbbb1"),
+        tuple("/paths/~1untouched/get", "aaaa2")
+      );
+
+    assertCoverageAgreesWithItsPersistedFindings(calculationId);
+  }
+
+  private static ApiTestFinding finding(
+    String specPointer,
+    FindingStatus status,
+    String... traceIds
+  ) {
+    return ApiTestFinding.builder()
+      .specPointer(specPointer)
+      .status(status)
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .evidence(
+        stream(traceIds)
+          .map(traceId -> new FindingEvidence(traceId, null))
+          .toList()
+      )
+      .build();
+  }
+
+  private List<Map<String, Object>> persistedFindings(UUID calculationId) {
+    return jdbcTemplate.queryForList(
+      """
+      SELECT f.api_test_criteria, f.spec_pointer, f.status
+        FROM api_test_finding f
+        JOIN api_test t ON t.id = f.api_test
+       WHERE t.calculation_id = ?
+      """,
+      calculationId
+    );
+  }
+
+  private List<Map<String, Object>> persistedEvidence(UUID calculationId) {
+    return jdbcTemplate.queryForList(
+      """
+      SELECT f.spec_pointer, e.trace_id, e.test_case_name
+        FROM finding_evidence e
+        JOIN api_test_finding f ON f.id = e.api_test_finding
+        JOIN api_test t ON t.id = f.api_test
+       WHERE t.calculation_id = ?
+      """,
+      calculationId
+    );
+  }
+
+  /**
+   * The stored ratio recomputed from the rows that are supposed to explain it. A result carrying no
+   * findings is exempt rather than in violation: a report written before the migration keeps the
+   * ratio it was calculated with and has no evidence to disagree with.
+   */
+  private void assertCoverageAgreesWithItsPersistedFindings(
+    UUID calculationId
+  ) {
+    var findingsByCriteria = persistedFindings(calculationId)
+      .stream()
+      .collect(groupingBy(row -> row.get("api_test_criteria")));
+
+    var results = jdbcTemplate.queryForList(
+      """
+      SELECT r.api_test_criteria, r.coverage
+        FROM api_test_result r
+        JOIN api_test t ON t.id = r.api_test
+       WHERE t.calculation_id = ?
+      """,
+      calculationId
+    );
+
+    assertThat(results)
+      .isNotEmpty()
+      .allSatisfy(result -> {
+        var findings = findingsByCriteria.get(result.get("api_test_criteria"));
+
+        if (isEmpty(findings)) {
+          return;
+        }
+
+        assertThat((BigDecimal) result.get("coverage"))
+          .as("coverage of %s", result.get("api_test_criteria"))
+          .isEqualByComparingTo(ratioImpliedBy(findings));
+      });
   }
 
   private Map<String, ApiTestResult> apiTestResultsOf(

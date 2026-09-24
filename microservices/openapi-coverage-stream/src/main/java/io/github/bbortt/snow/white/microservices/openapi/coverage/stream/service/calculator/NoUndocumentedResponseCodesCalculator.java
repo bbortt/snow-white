@@ -6,6 +6,9 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.UNCOVERED;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationEntryForConcreteKey;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
@@ -16,9 +19,6 @@ import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.PATHS_POINTER;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toOperationPointer;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toResponsesPointer;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -35,10 +35,10 @@ import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesCon;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingStatus;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.util.ArrayList;

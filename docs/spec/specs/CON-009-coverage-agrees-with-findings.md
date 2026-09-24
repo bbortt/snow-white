@@ -7,7 +7,7 @@ A stored coverage ratio always equals the ratio its own findings imply
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 For every criterion result that carries findings, the stored `coverage` equals the ratio derived
@@ -84,3 +84,14 @@ of the report or the event recomputes it.
 - [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — the verdict that reads the cached side and
   would silently diverge without this
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the export with the same exposure
+
+## Changes
+
+- **2026-09-24** — Set active: findings now persist beside the ratio, so the pair this constraint
+  binds exists for the first time.
+  Anchored on the single derivation rather than on a check: there is one place a ratio is produced
+  and no consumer recomputes it, which is what makes a disagreement structurally unavailable instead
+  of merely untested.
+  The findings-free exemption is asserted rather than assumed — a pre-migration result keeps the
+  ratio it was calculated with, and the integration test that recomputes every other ratio from its
+  persisted rows skips that one by design.

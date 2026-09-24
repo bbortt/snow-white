@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto;
+package io.github.bbortt.snow.white.commons.event.dto;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
