@@ -146,6 +146,28 @@ class RequiredErrorFieldsCoverageCalculatorUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_006_REQUIRED_ERROR_FIELDS_COVERAGE)
+    void shouldReturn100Percent_whenTelemetryUsesConcretePathForTemplate() {
+      var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
+        Map.of("GET_/pung/{message}", Map.of("400", List.of("message")))
+      );
+
+      var pathToTelemetryMap = createTelemetryWithStatusCodes(
+        Map.of("GET_/pung/hello", List.of("400"))
+      );
+
+      OpenApiTestResult result = fixture.calculate(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result).satisfies(
+        r -> assertThat(r.coverage()).isEqualTo(getBigDecimal(1.0)),
+        r -> assertThat(r.additionalInformation()).isNull()
+      );
+    }
+
+    @Test
     void shouldReturn50Percent_whenHalfErrorResponsesAreCovered() {
       var pathToOpenAPIOperationMap = createOperationsWithErrorSchemas(
         Map.of(
@@ -812,6 +834,70 @@ class RequiredErrorFieldsCoverageCalculatorUnitTest {
         .satisfies(
           finding -> assertThat(finding.status()).isEqualTo(UNCOVERED),
           finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    @Test
+    void shouldEvidenceATemplatedOperationFromTelemetryOnItsConcretePath() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/pung/{message}",
+        operationWithResponses(response("404", List.of("code")))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/pung/hello",
+        List.of(telemetry("trace-404", "404"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(COVERED),
+          finding ->
+            assertThat(finding.evidence()).containsExactly(
+              new FindingEvidence("trace-404", null)
+            )
+        );
+    }
+
+    @Test
+    void shouldEvidenceOneTemplatedTargetFromEveryConcretePathItTemplates() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/pung/{message}",
+        operationWithResponses(response("404", List.of("code")))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/pung/hello",
+        List.of(telemetry("trace-hello", "404")),
+        "GET_/pung/world",
+        List.of(telemetry("trace-world", "404"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding ->
+            assertThat(finding.specPointer()).isEqualTo(
+              "/paths/~1pung~1{message}/get/responses/404"
+            ),
+          finding ->
+            assertThat(finding.evidence())
+              .asInstanceOf(list(FindingEvidence.class))
+              .containsExactlyInAnyOrder(
+                new FindingEvidence("trace-hello", null),
+                new FindingEvidence("trace-world", null)
+              )
         );
     }
 
