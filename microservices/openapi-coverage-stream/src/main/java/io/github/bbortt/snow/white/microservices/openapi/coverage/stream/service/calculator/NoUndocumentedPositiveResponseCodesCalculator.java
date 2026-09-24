@@ -62,11 +62,11 @@ public class NoUndocumentedPositiveResponseCodesCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
     return super.getAdditionalInformationOrNull(
       "The following observed non-erroneous response codes are not documented in the OpenAPI specification: `%s`",
-      findings
+      calculation.findings()
     );
   }
 }

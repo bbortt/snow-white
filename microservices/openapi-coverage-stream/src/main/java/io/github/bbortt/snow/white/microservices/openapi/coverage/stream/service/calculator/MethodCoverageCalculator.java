@@ -8,20 +8,28 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toOperationPointer;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static java.lang.String.format;
 import static java.lang.String.join;
-import static java.util.Collections.sort;
+import static java.util.Objects.requireNonNull;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -45,49 +53,71 @@ public class MethodCoverageCalculator
   }
 
   @RealizesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
   @Override
-  public @NonNull CoverageCalculationResult calculateCoverage(
+  protected @NonNull List<ApiTestFinding> calculateFindings(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
-    var coveredPaths = new AtomicInteger(0);
-    var uncoveredPaths = new ArrayList<String>();
-
-    for (String operationKey : pathToOpenAPIOperationMap.keySet()) {
-      if (
-        !getTelemetryForTemplate(pathToTelemetryMap, operationKey).isEmpty()
-      ) {
-        logger.trace("Path covered: {}", operationKey);
-        coveredPaths.incrementAndGet();
-      } else {
-        logger.trace("Path not covered: {}", operationKey);
-        uncoveredPaths.add(operationKey);
-      }
-    }
-
-    var pathCoverage = calculatePercentage(
-      coveredPaths.get(),
-      pathToOpenAPIOperationMap.size()
-    );
-
-    return new CoverageCalculationResult(
-      pathCoverage,
-      getAdditionalInformationOrNull(uncoveredPaths)
-    );
+    return pathToOpenAPIOperationMap
+      .keySet()
+      .stream()
+      .sorted()
+      .map(operationKey -> toFinding(operationKey, pathToTelemetryMap))
+      .toList();
   }
 
-  private static @Nullable String getAdditionalInformationOrNull(
-    @NonNull ArrayList<String> uncoveredPaths
+  @Override
+  protected @Nullable String getAdditionalInformationOrNull(
+    @NonNull Calculation calculation
   ) {
-    if (uncoveredPaths.isEmpty()) {
+    var uncoveredOperations = calculation
+      .findings()
+      .stream()
+      .filter(finding -> UNCOVERED.equals(finding.status()))
+      .map(MethodCoverageCalculator::toUncoveredOperationKey)
+      .sorted()
+      .toList();
+
+    if (uncoveredOperations.isEmpty()) {
       return null;
     }
 
-    sort(uncoveredPaths);
-
     return format(
       "The following paths are uncovered: `%s`",
-      join("`, `", uncoveredPaths)
+      join("`, `", uncoveredOperations)
+    );
+  }
+
+  private static @NonNull ApiTestFinding toFinding(
+    @NonNull String operationKey,
+    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    List<FindingEvidence> evidence = toEvidence(
+      getTelemetryForTemplate(pathToTelemetryMap, operationKey)
+    );
+
+    if (evidence.isEmpty()) {
+      logger.trace("Path not covered: {}", operationKey);
+    } else {
+      logger.trace("Path covered: {}", operationKey);
+    }
+
+    return ApiTestFinding.builder()
+      .specPointer(toOperationPointer(operationKey))
+      .status(evidence.isEmpty() ? UNCOVERED : COVERED)
+      .httpPath(toPath(operationKey))
+      .httpMethod(toMethod(operationKey))
+      .evidence(evidence)
+      .build();
+  }
+
+  private static @NonNull String toUncoveredOperationKey(
+    @NonNull ApiTestFinding finding
+  ) {
+    return toOperationKey(
+      requireNonNull(finding.httpPath()),
+      requireNonNull(finding.httpMethod())
     );
   }
 }

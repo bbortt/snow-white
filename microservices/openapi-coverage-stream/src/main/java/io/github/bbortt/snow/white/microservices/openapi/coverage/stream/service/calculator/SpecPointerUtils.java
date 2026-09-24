@@ -44,6 +44,35 @@ final class SpecPointerUtils {
   }
 
   /**
+   * The parameter entry a parameter criterion judges. OpenAPI keys an operation's parameters by
+   * list position rather than by name, so this pointer is positional by necessity — the
+   * {@code parameterName} discriminator is what still names the target if the array is reordered.
+   */
+  @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+  static @NonNull String toParameterPointer(
+    @NonNull String operationKey,
+    int parameterIndex
+  ) {
+    return toOperationPointer(operationKey) + "/parameters/" + parameterIndex;
+  }
+
+  /**
+   * The media-type entry a content-type criterion judges, under the operation's request-body
+   * {@code content} map.
+   */
+  @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+  static @NonNull String toRequestBodyContentPointer(
+    @NonNull String operationKey,
+    @NonNull String contentType
+  ) {
+    return (
+      toOperationPointer(operationKey) +
+      "/requestBody/content/" +
+      escape(contentType)
+    );
+  }
+
+  /**
    * The response entry a response-code criterion judges, one level below the operation's
    * {@code responses} map.
    */

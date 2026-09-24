@@ -58,7 +58,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ResponseCodeCoverageCalculator
-  extends AbstractFindingBasedCoverageCalculator
+  extends AbstractOpenApiCoverageCalculator
 {
 
   public static final Pattern SINGLE_DIGIT_PATTERN = compile("^\\dXX$");
@@ -309,11 +309,11 @@ public class ResponseCodeCoverageCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
     return getAdditionalInformationOrNull(
       "The following response codes in paths are uncovered: `%s`",
-      findings
+      calculation.findings()
     );
   }
 

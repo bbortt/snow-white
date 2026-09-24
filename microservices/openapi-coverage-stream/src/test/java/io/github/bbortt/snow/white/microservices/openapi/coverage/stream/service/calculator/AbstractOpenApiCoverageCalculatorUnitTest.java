@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class AbstractFindingBasedCoverageCalculatorUnitTest {
+class AbstractOpenApiCoverageCalculatorUnitTest {
 
   private static final Map<String, Operation> NO_OPERATIONS = emptyMap();
   private static final Map<String, List<OpenTelemetryData>> NO_TELEMETRY =
@@ -46,7 +46,7 @@ class AbstractFindingBasedCoverageCalculatorUnitTest {
 
   private static BigDecimal deriveCoverageOf(List<ApiTestFinding> findings) {
     return new Fixture(findings)
-      .calculateCoverage(NO_OPERATIONS, NO_TELEMETRY)
+      .calculate(NO_OPERATIONS, NO_TELEMETRY)
       .coverage();
   }
 
@@ -55,7 +55,7 @@ class AbstractFindingBasedCoverageCalculatorUnitTest {
   }
 
   @Nested
-  class CalculateCoverageTest {
+  class CalculateTest {
 
     @Test
     @VerifiesArch(ArchTraceables.ARCH_010_COVERAGE_DERIVED_FROM_FINDINGS)
@@ -120,35 +120,52 @@ class AbstractFindingBasedCoverageCalculatorUnitTest {
     }
 
     @Test
-    void shouldCarryTheJudgedFindingsOnTheResult() {
-      var findings = List.of(
-        Fixture.finding(COVERED),
-        Fixture.finding(NOT_APPLICABLE)
-      );
-
-      var result = new Fixture(findings).calculateCoverage(
+    void shouldReportTheSupportedCriterionAndAMeasuredDuration() {
+      var result = new Fixture(List.of(Fixture.finding(COVERED))).calculate(
         NO_OPERATIONS,
         NO_TELEMETRY
       );
 
-      assertThat(result.findings()).isEqualTo(findings);
+      assertThat(result.openApiCriteria()).isEqualTo(PATH_COVERAGE);
+      assertThat(result.duration()).isNotNull();
+    }
+
+    @Test
+    @VerifiesArch(ArchTraceables.ARCH_010_COVERAGE_DERIVED_FROM_FINDINGS)
+    void shouldHandTheWholeCalculationToTheMessageHook() {
+      var findings = List.of(
+        Fixture.finding(COVERED),
+        Fixture.finding(NOT_APPLICABLE)
+      );
+      var fixture = new Fixture(findings);
+
+      fixture.calculate(NO_OPERATIONS, NO_TELEMETRY);
+
+      assertThat(fixture.lastCalculation).isEqualTo(
+        new AbstractOpenApiCoverageCalculator.Calculation(
+          NO_OPERATIONS,
+          NO_TELEMETRY,
+          findings
+        )
+      );
     }
 
     @Test
     void shouldDelegateAdditionalInformationToTheCalculator() {
-      var result = new Fixture(
-        List.of(Fixture.finding(UNCOVERED))
-      ).calculateCoverage(NO_OPERATIONS, NO_TELEMETRY);
+      var result = new Fixture(List.of(Fixture.finding(UNCOVERED))).calculate(
+        NO_OPERATIONS,
+        NO_TELEMETRY
+      );
 
       assertThat(result.additionalInformation()).isEqualTo("1 finding");
     }
   }
 
-  private static final class Fixture
-    extends AbstractFindingBasedCoverageCalculator
-  {
+  private static final class Fixture extends AbstractOpenApiCoverageCalculator {
 
     private final List<ApiTestFinding> findings;
+
+    private @Nullable Calculation lastCalculation;
 
     private Fixture(List<ApiTestFinding> findings) {
       this.findings = findings;
@@ -181,9 +198,10 @@ class AbstractFindingBasedCoverageCalculatorUnitTest {
 
     @Override
     protected @Nullable String getAdditionalInformationOrNull(
-      @NonNull List<ApiTestFinding> findings
+      @NonNull Calculation calculation
     ) {
-      return findings.size() + " finding";
+      this.lastCalculation = calculation;
+      return calculation.findings().size() + " finding";
     }
   }
 }

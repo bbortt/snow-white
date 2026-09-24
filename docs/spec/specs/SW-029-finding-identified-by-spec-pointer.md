@@ -25,6 +25,13 @@ It points at the deepest node the criterion actually judges: a response code ent
 response-code criteria, a parameter entry for the parameter criteria, a content-type entry under
 its media-type map for content-type coverage, and the operation node itself for the
 operation-level criteria.
+An operation's `parameters` is a JSON array, so that rung of the pointer is the parameter's
+position in it — `/parameters/0`, not `/parameters/page`.
+The name is not lost: it is on the `parameterName` discriminator, which is what a consumer reads it
+from.
+Position is the only thing RFC 6901 can address in an array, and `CON-007` is what makes it stable
+— an indexed reference never changes underneath a pointer, so the index cannot come to mean a
+different parameter than the one judged.
 
 Three criteria invert this direction (`SW-003`): `NO_UNDOCUMENTED_RESPONSE_CODES` and its positive
 and error variants judge observed status codes against the spec, so their target is an observed
@@ -106,7 +113,9 @@ criteria's, which is what would fail if a pointer were ever built toward an undo
 A test asserts no two findings of one criterion result share a pointer _and_ discriminator set, and
 that a redelivered result matches its predecessor's findings on that pair.
 A test asserts each discriminator is populated exactly where the criterion's target carries that
-dimension and null otherwise, and that each agrees with the corresponding segment of the pointer.
+dimension and null otherwise, and that each agrees with the corresponding segment of the pointer —
+except `parameterName`, which has no segment to agree with: there the test resolves the pointer and
+asserts the node it lands on declares that name.
 
 ## Relations
 
@@ -132,6 +141,15 @@ dimension and null otherwise, and that each agrees with the corresponding segmen
 
 ## Changes
 
+- **2026-09-24** — Recorded that a parameter pointer addresses the parameter's position in the
+  operation's `parameters` array rather than its name, and qualified the discriminator agreement
+  accordingly.
+  Migrating the parameter criteria was what surfaced it: an array is the one
+  place RFC 6901 cannot address by name, so `parameterName` is the single discriminator that has no
+  pointer segment to be checked against and must be verified by resolving the pointer instead.
+  The last three criteria — parameter, content-type, required-error-fields — moved behind the
+  contract in the same step, so the response, parameter and media-type pointer depths this spec
+  describes are now all exercised.
 - **2026-09-24** — Made the inverted criteria's "nearest container" an explicit ladder, adding the
   operation node and `/paths` as the rungs below the `responses` map.
   Implementing `SW-003` established that

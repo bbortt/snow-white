@@ -40,9 +40,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class PathCoverageCalculator
-  extends AbstractFindingBasedCoverageCalculator
-{
+public class PathCoverageCalculator extends AbstractOpenApiCoverageCalculator {
 
   @Override
   protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
@@ -68,9 +66,10 @@ public class PathCoverageCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
-    var uncoveredPaths = findings
+    var uncoveredPaths = calculation
+      .findings()
       .stream()
       .filter(finding -> UNCOVERED.equals(finding.status()))
       .map(ApiTestFinding::httpPath)
