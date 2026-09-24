@@ -18,7 +18,16 @@ Required is every error status-code entry (per
 on an operation whose response schema declares at least one required field; covered is such an
 entry matched by an observed status code — an exact match for a literal code, a shared leading
 digit for a wildcard pattern (`4XX`), or any observed error code at all for a `default` entry.
-An error response with no declared required fields contributes nothing to required or covered.
+An error response with no declared required fields contributes nothing to required or covered, and
+neither does a positive entry.
+Both are targets this criterion looks at and has nothing to say about, so both are recorded as
+`NOT_APPLICABLE` findings rather than dropped (`SW-030`) — the document contains the entry, and a
+reader of the list is entitled to see that this criterion passed over it.
+
+A `default` entry is covered by any observed error code, including one that a more specific
+documented sibling already matched.
+It is not evidenced by exclusion: unlike the response-code family's treatment of the same key
+(`SW-002`), nothing is subtracted from what may evidence it.
 
 This criterion validates that the response was observed, not that its body actually carried every
 required field — OpenTelemetry spans do not capture response bodies, so field-level content cannot
@@ -50,3 +59,18 @@ adding a `400` response to the telemetry and rerunning asserts it is now reporte
   formula this criterion uses
 - [SW-007](SW-007-default-response-key-is-the-error-fallback-case.md) — the error
   classification and `default` handling this criterion reuses
+- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — why the entries this criterion passes over
+  are recorded rather than omitted
+- [SW-002](SW-002-response-code-coverage-treats-default-as-wildcard.md) — the sibling criterion
+  whose `default` handling this one deliberately does not share
+
+## Changes
+
+- **2026-09-24** — Recorded what happens to the entries this criterion passes over — a positive
+  entry, and an error entry declaring no required field — now that migrating it onto the findings
+  contract means its output enumerates targets rather than only counting them: both are
+  `NOT_APPLICABLE` findings.
+  The ratio is unchanged; what was an invisible absence is now a visible verdict.
+  Also stated the `default` rule's consequence explicitly, because the neighbouring criterion reads
+  the same key differently: here any observed error code covers a `default` entry, with nothing
+  subtracted for the siblings that matched it too.

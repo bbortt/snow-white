@@ -62,7 +62,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class NoUndocumentedResponseCodesCalculator
-  extends AbstractFindingBasedCoverageCalculator
+  extends AbstractOpenApiCoverageCalculator
 {
 
   @Override
@@ -364,11 +364,11 @@ public class NoUndocumentedResponseCodesCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<ApiTestFinding> findings
+    @NonNull Calculation calculation
   ) {
     return getAdditionalInformationOrNull(
       "The following response codes are not documented in the OpenAPI specification: `%s`",
-      findings
+      calculation.findings()
     );
   }
 

@@ -7,15 +7,24 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static java.math.RoundingMode.HALF_UP;
 import static java.util.Locale.ROOT;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
+import static org.assertj.core.api.InstanceOfAssertFactories.list;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -616,6 +625,217 @@ class ParameterCoverageCalculatorUnitTest {
 
     private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+
+  @Nested
+  class CalculateFindingsTest {
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+    void shouldReturnOneFindingPerDeclaredParameterInDocumentOrder() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(
+          parameter("page", "query", false),
+          parameter("size", "query", false)
+        )
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(telemetryWithQuery("trace-1", "page=1"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .extracting(
+          ApiTestFinding::specPointer,
+          ApiTestFinding::status,
+          ApiTestFinding::httpPath,
+          ApiTestFinding::httpMethod,
+          ApiTestFinding::parameterName
+        )
+        .containsExactly(
+          tuple(
+            "/paths/~1api~1v1~1users/get/parameters/0",
+            COVERED,
+            "/api/v1/users",
+            "GET",
+            "page"
+          ),
+          tuple(
+            "/paths/~1api~1v1~1users/get/parameters/1",
+            UNCOVERED,
+            "/api/v1/users",
+            "GET",
+            "size"
+          )
+        );
+    }
+
+    @Test
+    void shouldOrderTheFindingsOfSeveralOperationsByOperationKey() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "POST_/api/v1/users",
+        operationWith(parameter("dryRun", "query", false)),
+        "GET_/api/v1/users",
+        operationWith(parameter("page", "query", false))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        Map.of()
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::specPointer)
+        .containsExactly(
+          "/paths/~1api~1v1~1users/get/parameters/0",
+          "/paths/~1api~1v1~1users/post/parameters/0"
+        );
+    }
+
+    @Test
+    void shouldContributeNoTargetForAnOperationWithoutParameters() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/health",
+        new Operation(),
+        "GET_/api/v1/users",
+        operationWith(parameter("page", "query", false))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        Map.of()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .extracting(ApiTestFinding::parameterName)
+        .isEqualTo("page");
+    }
+
+    @Test
+    void shouldJudgeEveryDeclaredParameterRegardlessOfWhetherItIsRequired() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(
+          parameter("page", "query", false),
+          parameter("tenant", "query", true)
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        Map.of()
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::status)
+        .containsExactly(UNCOVERED, UNCOVERED);
+    }
+
+    @Test
+    @VerifiesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+    void shouldEvidenceOnlyTheSpansThatCarriedTheParameter() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(parameter("page", "query", false))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          telemetryWithQuery("trace-without", "size=10"),
+          telemetryWithQuery("trace-with", "page=1&size=10")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .extracting(ApiTestFinding::evidence, as(list(FindingEvidence.class)))
+        .containsExactly(new FindingEvidence("trace-with", null));
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_004_PARAMETER_COVERAGE_MATCHES_BY_TOKEN_NOT_SUBSTRING
+    )
+    void shouldNotEvidenceAParameterNameThatOnlyAppearsInsideAnotherToken() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(parameter("page", "query", false))
+      );
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(telemetryWithQuery("trace-1", "pageSize=10&sort=page"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(UNCOVERED),
+          finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    @Test
+    void shouldLeaveTheResponseCodeAndContentTypeUnset() {
+      var pathToOpenAPIOperationMap = Map.of(
+        "GET_/api/v1/users",
+        operationWith(parameter("page", "query", false))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        pathToOpenAPIOperationMap,
+        Map.of()
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.responseCode()).isNull(),
+          finding -> assertThat(finding.contentType()).isNull()
+        );
+    }
+
+    private Operation operationWith(Parameter... parameters) {
+      var operation = new Operation();
+      operation.setParameters(new ArrayList<>(List.of(parameters)));
+      return operation;
+    }
+
+    private Parameter parameter(String name, String in, boolean required) {
+      var parameter = new Parameter();
+      parameter.setName(name);
+      parameter.setIn(in);
+      parameter.setRequired(required);
+      return parameter;
+    }
+
+    private OpenTelemetryData telemetryWithQuery(
+      String traceId,
+      String queryString
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("url.query", queryString);
+      return new OpenTelemetryData("span-1", traceId, attributes);
     }
   }
 }

@@ -8,22 +8,31 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toOperationPointer;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -54,86 +63,110 @@ public class OperationSuccessCoverageCalculator
 
   @RealizesSw(SwTraceables.SW_001_STRUCTURAL_CALL_COVERAGE)
   @Override
-  protected @NonNull CoverageCalculationResult calculateCoverage(
+  protected @NonNull List<ApiTestFinding> calculateFindings(
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
-    var successfulOperations = new AtomicInteger(0);
-    var unsuccessfulOperations = new ArrayList<String>();
-
-    for (String operationKey : pathToOpenAPIOperationMap.keySet()) {
-      var telemetryList = getTelemetryForTemplate(
-        pathToTelemetryMap,
-        operationKey
-      );
-
-      if (hasSuccessfulResponse(telemetryList)) {
-        logger.trace(
-          "Operation '{}' has at least one 2xx response",
-          operationKey
-        );
-        successfulOperations.incrementAndGet();
-      } else {
-        logger.trace(
-          "Operation '{}' has no 2xx response observed",
-          operationKey
-        );
-        unsuccessfulOperations.add(operationKey);
-      }
-    }
-
-    var coverage = calculatePercentage(
-      successfulOperations.get(),
-      pathToOpenAPIOperationMap.size()
-    );
-
-    return new CoverageCalculationResult(
-      coverage,
-      getAdditionalInformationOrNull(unsuccessfulOperations)
-    );
+    return pathToOpenAPIOperationMap
+      .keySet()
+      .stream()
+      .sorted()
+      .map(operationKey -> toFinding(operationKey, pathToTelemetryMap))
+      .toList();
   }
 
-  private boolean hasSuccessfulResponse(List<OpenTelemetryData> telemetryList) {
-    for (OpenTelemetryData data : telemetryList) {
-      if (
-        isNull(data.attributes()) ||
-        !data.attributes().has(HTTP_RESPONSE_STATUS_CODE.getKey())
-      ) {
-        continue;
-      }
-
-      String statusCode = data
-        .attributes()
-        .get(HTTP_RESPONSE_STATUS_CODE.getKey())
-        .asString();
-
-      try {
-        if (HttpStatusCode.valueOf(parseInt(statusCode)).is2xxSuccessful()) {
-          return true;
-        }
-      } catch (NumberFormatException _) {
-        logger.trace(
-          "Skipping non-numeric status code '{}' in success check",
-          statusCode
-        );
-      }
-    }
-
-    return false;
-  }
-
-  private @Nullable String getAdditionalInformationOrNull(
-    @NonNull List<String> unsuccessfulOperations
+  @Override
+  protected @Nullable String getAdditionalInformationOrNull(
+    @NonNull Calculation calculation
   ) {
+    var unsuccessfulOperations = calculation
+      .findings()
+      .stream()
+      .filter(finding -> UNCOVERED.equals(finding.status()))
+      .map(OperationSuccessCoverageCalculator::toOperationKeyOf)
+      .sorted()
+      .toList();
+
     if (unsuccessfulOperations.isEmpty()) {
       return null;
     }
 
-    var sorted = unsuccessfulOperations.stream().sorted().toList();
-
     return format(
       "The following operations have no successful (2xx) response observed: `%s`",
-      join("`, `", sorted)
+      join("`, `", unsuccessfulOperations)
+    );
+  }
+
+  private @NonNull ApiTestFinding toFinding(
+    @NonNull String operationKey,
+    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    List<FindingEvidence> evidence = toEvidence(
+      getSuccessfulTelemetry(
+        getTelemetryForTemplate(pathToTelemetryMap, operationKey)
+      )
+    );
+
+    if (evidence.isEmpty()) {
+      logger.trace("Operation '{}' has no 2xx response observed", operationKey);
+    } else {
+      logger.trace(
+        "Operation '{}' has at least one 2xx response",
+        operationKey
+      );
+    }
+
+    return ApiTestFinding.builder()
+      .specPointer(toOperationPointer(operationKey))
+      .status(evidence.isEmpty() ? UNCOVERED : COVERED)
+      .httpPath(toPath(operationKey))
+      .httpMethod(toMethod(operationKey))
+      .evidence(evidence)
+      .build();
+  }
+
+  /**
+   * The spans that satisfied the operation under this criterion's own rule — every one carrying a
+   * {@code 2xx} status code, rather than the first of them reduced to a boolean.
+   * A non-numeric observed status code is skipped rather than treated as a failure to match.
+   */
+  @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  private @NonNull List<OpenTelemetryData> getSuccessfulTelemetry(
+    @NonNull List<OpenTelemetryData> telemetryList
+  ) {
+    return telemetryList.stream().filter(this::isSuccessfulResponse).toList();
+  }
+
+  private boolean isSuccessfulResponse(OpenTelemetryData data) {
+    if (
+      isNull(data.attributes()) ||
+      !data.attributes().has(HTTP_RESPONSE_STATUS_CODE.getKey())
+    ) {
+      return false;
+    }
+
+    String statusCode = data
+      .attributes()
+      .get(HTTP_RESPONSE_STATUS_CODE.getKey())
+      .asString();
+
+    try {
+      return HttpStatusCode.valueOf(parseInt(statusCode)).is2xxSuccessful();
+    } catch (NumberFormatException _) {
+      logger.trace(
+        "Skipping non-numeric status code '{}' in success check",
+        statusCode
+      );
+      return false;
+    }
+  }
+
+  private static @NonNull String toOperationKeyOf(
+    @NonNull ApiTestFinding finding
+  ) {
+    return toOperationKey(
+      requireNonNull(finding.httpPath()),
+      requireNonNull(finding.httpMethod())
     );
   }
 }
