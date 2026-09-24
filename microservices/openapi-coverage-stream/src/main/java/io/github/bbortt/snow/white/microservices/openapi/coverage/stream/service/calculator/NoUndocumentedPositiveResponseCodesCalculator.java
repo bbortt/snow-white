@@ -8,12 +8,12 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
 import static java.lang.Integer.parseInt;
-import static java.util.stream.Collectors.toSet;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -40,13 +40,10 @@ public class NoUndocumentedPositiveResponseCodesCalculator
 
   @RealizesSw(SwTraceables.SW_003_UNDOCUMENTED_RESPONSE_CODE_DETECTION)
   @Override
-  protected Set<String> filterObservedResponseCodes(
-    Set<String> observedResponseCodes
+  protected boolean judgesObservedResponseCode(
+    @NonNull String observedResponseCode
   ) {
-    return observedResponseCodes
-      .stream()
-      .filter(this::isPositiveResponseCode)
-      .collect(toSet());
+    return isPositiveResponseCode(observedResponseCode);
   }
 
   private boolean isPositiveResponseCode(String statusCode) {
@@ -65,11 +62,11 @@ public class NoUndocumentedPositiveResponseCodesCalculator
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> undocumentedCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
     return super.getAdditionalInformationOrNull(
       "The following observed non-erroneous response codes are not documented in the OpenAPI specification: `%s`",
-      undocumentedCodes
+      findings
     );
   }
 }

@@ -32,6 +32,16 @@ code that may have no node in the document at all.
 For them the pointer addresses the **nearest container the document does contain** — the
 operation's `responses` map, `/paths/~1pung~1{message}/get/responses` — and the `responseCode`
 discriminator carries which code was judged.
+"Nearest container" is a ladder rather than a single depth, because the document can stop short at
+either level above that map: the operation's `responses` map where the operation documents one,
+else the operation node itself, else `/paths` where the telemetry resolved to no documented
+operation at all.
+The last rung is reached by telemetry for an endpoint the document never describes, which is the
+most severe undocumented-response finding there is — dropping it for want of a pointer would lose
+exactly the case the criterion exists to catch.
+On that rung alone `httpPath` and `httpMethod` carry the observed concrete path and method rather
+than a template, because there is no template to name; nothing in the pointer contradicts them, as
+it has no path or method segment to disagree with.
 A pointer is therefore always present and always resolvable; it is never null, and never invented
 for a node that does not exist.
 
@@ -122,6 +132,15 @@ dimension and null otherwise, and that each agrees with the corresponding segmen
 
 ## Changes
 
+- **2026-09-24** — Made the inverted criteria's "nearest container" an explicit ladder, adding the
+  operation node and `/paths` as the rungs below the `responses` map.
+  Implementing `SW-003` established that
+  the `responses` map is not always there to point at: an operation may document no responses, and
+  telemetry may resolve to no documented operation at all — the latter being the most severe
+  finding the criterion produces, so it cannot be dropped for want of a pointer.
+  Also recorded that on the `/paths` rung the path and method discriminators carry observed
+  concrete values, which is not an exception to their agreeing with the pointer because that
+  pointer has no path or method segment.
 - **2026-09-23** — Set active: implementation of `STR-017` began.
   The first criterion behind the
   contract is `PATH_COVERAGE`, whose target is a path item, so the pointer depths this spec

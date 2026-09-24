@@ -19,11 +19,15 @@ import org.jspecify.annotations.NonNull;
 @NoArgsConstructor(access = PRIVATE)
 final class SpecPointerUtils {
 
-  private static final String PATHS_POINTER_PREFIX = "/paths/";
+  /**
+   * The {@code paths} map itself — the shallowest container, and the only node still guaranteed to
+   * exist for telemetry the document describes nowhere.
+   */
+  static final String PATHS_POINTER = "/paths";
 
   @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
   static @NonNull String toPathItemPointer(@NonNull String path) {
-    return PATHS_POINTER_PREFIX + escape(path);
+    return PATHS_POINTER + "/" + escape(path);
   }
 
   /**
@@ -48,9 +52,17 @@ final class SpecPointerUtils {
     @NonNull String operationKey,
     @NonNull String responseCode
   ) {
-    return (
-      toOperationPointer(operationKey) + "/responses/" + escape(responseCode)
-    );
+    return toResponsesPointer(operationKey) + "/" + escape(responseCode);
+  }
+
+  /**
+   * The operation's {@code responses} map, one level above the individual entries — the deepest
+   * node an inverted criterion can honestly name, since the code it judges was observed on the
+   * wire and may have no entry of its own.
+   */
+  @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+  static @NonNull String toResponsesPointer(@NonNull String operationKey) {
+    return toOperationPointer(operationKey) + "/responses";
   }
 
   /**
