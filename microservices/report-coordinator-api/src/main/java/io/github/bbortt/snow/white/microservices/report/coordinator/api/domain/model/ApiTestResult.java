@@ -6,9 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,11 +20,14 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -73,6 +79,22 @@ public class ApiTestResult {
   @Nullable
   @Column(columnDefinition = "TEXT")
   private String additionalInformation;
+
+  /**
+   * The evidence behind {@link #coverage}, which is a cache of what these findings imply rather
+   * than a value of its own.
+   * A redelivery replaces them wholesale with the result that carried them: nothing from a
+   * superseded delivery outlives it.
+   */
+  @NonNull
+  @Builder.Default
+  @OneToMany(
+    mappedBy = "apiTestResult",
+    cascade = { ALL },
+    orphanRemoval = true
+  )
+  @RealizesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
+  private final Set<ApiTestFinding> findings = new HashSet<>();
 
   @Id
   @NonNull

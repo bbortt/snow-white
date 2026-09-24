@@ -6,17 +6,19 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.NOT_APPLICABLE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getStartedStopWatch;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.MathUtils.calculatePercentage;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesCon;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculator;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
@@ -58,7 +60,8 @@ abstract class AbstractOpenApiCoverageCalculator
       stopWatch.getDuration(),
       getAdditionalInformationOrNull(
         new Calculation(pathToOpenAPIOperationMap, pathToTelemetryMap, findings)
-      )
+      ),
+      findings
     );
   }
 
@@ -97,8 +100,11 @@ abstract class AbstractOpenApiCoverageCalculator
   /**
    * The covered share of the targets the criterion judged. A {@code NOT_APPLICABLE} finding enters
    * neither side of the fraction.
+   * This is the only place a coverage ratio is produced, which is what keeps the stored ratio and
+   * the findings beside it from ever disagreeing: there is no second implementation to drift.
    */
   @RealizesArch(ArchTraceables.ARCH_010_COVERAGE_DERIVED_FROM_FINDINGS)
+  @RealizesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
   private static BigDecimal deriveCoverage(
     @NonNull List<ApiTestFinding> findings
   ) {

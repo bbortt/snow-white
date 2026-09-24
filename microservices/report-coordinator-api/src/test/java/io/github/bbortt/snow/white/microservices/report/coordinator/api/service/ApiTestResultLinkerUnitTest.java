@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.COVERED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.FAILED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.PASSED;
 import static java.lang.Boolean.FALSE;
@@ -23,9 +24,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import java.math.BigDecimal;
@@ -286,6 +290,9 @@ class ApiTestResultLinkerUnitTest {
         100
       );
 
+      // Nothing was superseded yet, so there is no insert-before-delete collision to flush around.
+      verify(apiTestRepositoryMock, never()).saveAndFlush(any());
+
       var redeliveredDuration = Duration.ofSeconds(5);
 
       assertThatCode(() ->
@@ -305,6 +312,10 @@ class ApiTestResultLinkerUnitTest {
         )
       ).doesNotThrowAnyException();
 
+      // The superseded result is gone from the set; its delete has to reach the database before the
+      // replacement's insert claims the same composite key.
+      verify(apiTestRepositoryMock).saveAndFlush(apiTest);
+
       assertThat(apiTest.getApiTestResults())
         .hasSize(2)
         .filteredOn(result ->
@@ -323,6 +334,113 @@ class ApiTestResultLinkerUnitTest {
         )
         .singleElement()
         .satisfies(result -> assertThat(result.getCoverage()).isEqualTo(ONE));
+    }
+
+    @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE
+    )
+    void shouldPointEveryFindingAtTheResultThatIsLinked() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      var apiTestResult = ApiTestResult.builder()
+        .apiTestCriteria(PATH_COVERAGE.name())
+        .coverage(ONE)
+        .includedInReport(FALSE)
+        .duration(Duration.ofSeconds(1))
+        .apiTest(apiTest)
+        .build();
+      apiTestResult
+        .getFindings()
+        .add(
+          ApiTestFinding.builder()
+            .specPointer("/paths/~1api")
+            .status(COVERED.getVal())
+            .apiTestResult(apiTestResult)
+            .build()
+        );
+
+      fixture.addApiTestResultsToApiTest(
+        Set.of(apiTestResult),
+        apiTest,
+        Set.of(PATH_COVERAGE.name()),
+        100
+      );
+
+      // Flagging the result included hands back a copy: a finding still pointing at the original
+      // would write its foreign key from an instance that never reaches the session.
+      assertThat(apiTest.getApiTestResults())
+        .singleElement()
+        .satisfies(linked ->
+          assertThat(linked.getFindings())
+            .singleElement()
+            .satisfies(finding ->
+              assertThat(finding.getApiTestResult()).isSameAs(linked)
+            )
+        );
+    }
+
+    @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE
+    )
+    @VerifiesSw(
+      SwTraceables.SW_020_REDELIVERED_CRITERION_RESULT_REPLACES_EXISTING_ONE
+    )
+    void shouldReplaceTheFindingsAlongWithTheResultTheyExplain() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+      var includedCriteria = Set.of(PATH_COVERAGE.name());
+
+      fixture.addApiTestResultsToApiTest(
+        Set.of(resultWithFinding(apiTest, "/paths/~1superseded")),
+        apiTest,
+        includedCriteria,
+        100
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        Set.of(resultWithFinding(apiTest, "/paths/~1redelivered")),
+        apiTest,
+        includedCriteria,
+        100
+      );
+
+      assertThat(apiTest.getApiTestResults())
+        .singleElement()
+        .satisfies(linked ->
+          assertThat(linked.getFindings())
+            .singleElement()
+            .satisfies(finding ->
+              assertThat(finding.getSpecPointer()).isEqualTo(
+                "/paths/~1redelivered"
+              )
+            )
+        );
+    }
+
+    private static ApiTestResult resultWithFinding(
+      ApiTest apiTest,
+      String specPointer
+    ) {
+      var apiTestResult = ApiTestResult.builder()
+        .apiTestCriteria(PATH_COVERAGE.name())
+        .coverage(ONE)
+        .includedInReport(FALSE)
+        .duration(Duration.ofSeconds(1))
+        .apiTest(apiTest)
+        .build();
+
+      apiTestResult
+        .getFindings()
+        .add(
+          ApiTestFinding.builder()
+            .specPointer(specPointer)
+            .status(COVERED.getVal())
+            .apiTestResult(apiTestResult)
+            .build()
+        );
+
+      return apiTestResult;
     }
   }
 }
