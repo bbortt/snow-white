@@ -7,12 +7,12 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
-import static java.util.stream.Collectors.toSet;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import java.util.Set;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -38,22 +38,19 @@ public class NoUndocumentedErrorResponseCodesCalculator
 
   @RealizesSw(SwTraceables.SW_003_UNDOCUMENTED_RESPONSE_CODE_DETECTION)
   @Override
-  protected Set<String> filterObservedResponseCodes(
-    Set<String> observedResponseCodes
+  protected boolean judgesObservedResponseCode(
+    @NonNull String observedResponseCode
   ) {
-    return observedResponseCodes
-      .stream()
-      .filter(HttpStatusCodeUtils::isErrorHttpStatusCode)
-      .collect(toSet());
+    return HttpStatusCodeUtils.isErrorHttpStatusCode(observedResponseCode);
   }
 
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
-    @NonNull Set<String> undocumentedCodes
+    @NonNull List<ApiTestFinding> findings
   ) {
     return super.getAdditionalInformationOrNull(
       "The following observed error response codes are not documented in the OpenAPI specification: `%s`",
-      undocumentedCodes
+      findings
     );
   }
 }

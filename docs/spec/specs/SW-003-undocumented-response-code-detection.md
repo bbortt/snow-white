@@ -18,6 +18,9 @@ Three criteria invert the direction of the response-code family
 - `NO_UNDOCUMENTED_RESPONSE_CODES`: required is every distinct status code actually observed for an
   operation; covered is an observed code matched by an exact entry, a wildcard entry (`4XX`) sharing
   its leading digit, or a `default` entry in the operation's specification.
+  "An operation" is the one the document describes, not the request path a span arrived on: a code
+  observed under two concrete paths of one templated operation is one target between them, and
+  enters the fraction once.
 - `NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES`: the same, restricted to observed codes in the `1xx`–
   `3xx` range.
 - `NO_UNDOCUMENTED_ERROR_RESPONSE_CODES`: the same, restricted to observed codes in the `4xx`–`5xx`
@@ -27,6 +30,13 @@ An operation with no telemetry contributes nothing to required or covered for th
 untested operation is neither documented nor undocumented, it is simply absent from this
 calculation (it is covered instead by
 [SW-001](SW-001-structural-call-coverage.md)'s `HTTP_METHOD_COVERAGE`).
+The converse is not symmetric: telemetry that resolves to no documented operation is judged, and
+every code observed on it is undocumented, because an endpoint the specification omits entirely is
+the strongest form of the drift these criteria exist to catch.
+
+An observed code the restricted variants leave outside their range is a target they do not judge
+rather than one that disappears ([SW-030](SW-030-unjudged-target-is-not-applicable.md)), so a
+report on error codes still shows the successful ones it has nothing to say about.
 
 **Rationale**
 A specification can under-document its API just as easily as an API can under-implement its
@@ -57,3 +67,21 @@ to the same operation's specification and rerunning asserts both now report 100%
   formula this criterion family uses
 - [SW-002](SW-002-response-code-coverage-treats-default-as-wildcard.md) — the forward
   direction of the same concept
+- [SW-029](SW-029-finding-identified-by-spec-pointer.md) — the pointer ladder these criteria use,
+  their target being a code the document may not contain
+- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — what becomes of an observed code the
+  restricted variants do not judge
+
+## Changes
+
+- **2026-09-24** — Stated the target as one distinct status code per _documented operation_ rather
+  than per concrete request path.
+  The implementation counted observed codes per telemetry group, so a code observed under two
+  concrete paths of one templated operation entered the fraction twice and produced two findings
+  identical in every field.
+  The findings model ([SW-029](SW-029-finding-identified-by-spec-pointer.md)) made that a
+  contradiction rather than a rounding difference, since a finding is identified by its pointer and
+  discriminators.
+  Also recorded two things the prose left implicit: telemetry resolving to no documented operation
+  is still judged, and a code outside a restricted variant's range is inapplicable rather than
+  absent.

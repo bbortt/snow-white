@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static java.util.Map.entry;
+import static java.util.Objects.isNull;
 import static lombok.AccessLevel.PRIVATE;
 
 import clew.traceables.clew.ArchTraceables;
@@ -15,6 +17,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jspecify.annotations.NonNull;
@@ -90,15 +93,35 @@ final class CalculatorUtils {
     @NonNull Map<String, Operation> operationMap,
     @NonNull String concreteOperationKey
   ) {
+    var entry = findOperationEntryForConcreteKey(
+      operationMap,
+      concreteOperationKey
+    );
+    return isNull(entry) ? null : entry.getValue();
+  }
+
+  /**
+   * Concrete → template direction, keeping the template key rather than only the
+   * {@link Operation} behind it.
+   * A finding has to name its target the way the document spells it, so a caller that resolves
+   * telemetry back to the spec needs the key that matched, not just what it matched.
+   */
+  static @Nullable Entry<String, Operation> findOperationEntryForConcreteKey(
+    @NonNull Map<String, Operation> operationMap,
+    @NonNull String concreteOperationKey
+  ) {
     if (operationMap.containsKey(concreteOperationKey)) {
-      return operationMap.get(concreteOperationKey);
+      return entry(
+        concreteOperationKey,
+        operationMap.get(concreteOperationKey)
+      );
     }
     for (Map.Entry<String, Operation> entry : operationMap.entrySet()) {
       var pattern = OperationKeyCalculator.toOperationKeyPattern(
         entry.getKey()
       );
       if (pattern.matcher(concreteOperationKey).matches()) {
-        return entry.getValue();
+        return entry;
       }
     }
     return null;

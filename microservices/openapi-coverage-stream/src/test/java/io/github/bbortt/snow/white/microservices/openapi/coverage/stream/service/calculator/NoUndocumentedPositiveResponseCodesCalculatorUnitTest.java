@@ -7,14 +7,18 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
 import static java.math.RoundingMode.HALF_UP;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.InstanceOfAssertFactories.INTEGER;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -348,6 +352,79 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
     private static @NonNull BigDecimal getBigDecimal(double value) {
       return BigDecimal.valueOf(value).setScale(2, HALF_UP);
+    }
+  }
+
+  @Nested
+  class CalculateFindingsTest {
+
+    /**
+     * An observed code outside this criterion's range is a target it does not judge, not a target
+     * that vanishes.
+     * A report on non-erroneous codes still shows the error ones, as something it has nothing
+     * to say about.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldRecordAnObservedCodeOutsideItsRangeAsNotApplicable() {
+      var operation = new Operation();
+      var responses = new ApiResponses();
+      responses.addApiResponse("200", new ApiResponse().description("Test"));
+      operation.setResponses(responses);
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(
+          createTelemetryDataWithStatusCode("200", "judgedTraceId"),
+          createTelemetryDataWithStatusCode("503", "unjudgedTraceId")
+        )
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        Map.of("GET_/api/v1/users", operation),
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .extracting(ApiTestFinding::responseCode, ApiTestFinding::status)
+        .containsExactlyInAnyOrder(
+          tuple("200", COVERED),
+          tuple("503", NOT_APPLICABLE)
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
+    void shouldAttributeNoEvidenceToATargetItDoesNotJudge() {
+      var operation = new Operation();
+      operation.setResponses(new ApiResponses());
+
+      var pathToTelemetryMap = Map.of(
+        "GET_/api/v1/users",
+        List.of(createTelemetryDataWithStatusCode("503", "unjudgedTraceId"))
+      );
+
+      List<ApiTestFinding> result = fixture.calculateFindings(
+        Map.of("GET_/api/v1/users", operation),
+        pathToTelemetryMap
+      );
+
+      assertThat(result)
+        .singleElement()
+        .satisfies(
+          finding -> assertThat(finding.status()).isEqualTo(NOT_APPLICABLE),
+          finding -> assertThat(finding.evidence()).isEmpty()
+        );
+    }
+
+    private OpenTelemetryData createTelemetryDataWithStatusCode(
+      String statusCode,
+      String traceId
+    ) {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put("http.response.status_code", statusCode);
+
+      return new OpenTelemetryData("span-123", traceId, attributes);
     }
   }
 }
