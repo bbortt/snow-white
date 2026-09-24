@@ -6,15 +6,15 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.COVERED;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.NOT_APPLICABLE;
+import static io.github.bbortt.snow.white.commons.event.dto.FindingStatus.UNCOVERED;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toPath;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toParameterPointer;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.COVERED;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.NOT_APPLICABLE;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus.UNCOVERED;
 import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -29,10 +29,10 @@ import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingStatus;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ApiTestFinding;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingEvidence;
-import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.FindingStatus;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;

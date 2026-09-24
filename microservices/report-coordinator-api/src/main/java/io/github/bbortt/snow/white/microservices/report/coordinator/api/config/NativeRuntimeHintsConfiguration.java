@@ -13,6 +13,9 @@ import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
+import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
+import io.github.bbortt.snow.white.commons.event.dto.FindingStatus;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Failure;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.Property;
@@ -40,6 +43,9 @@ import org.springframework.core.io.ClassPathResource;
   // For Coverage Responses
   OpenApiCoverageResponseEvent.class,
   OpenApiTestResult.class,
+  ApiTestFinding.class,
+  FindingEvidence.class,
+  FindingStatus.class,
   // For JUnit Report Generation
   Failure.class,
   Property.class,

@@ -8,7 +8,7 @@ denormalized cache
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `OpenApiTestResult` — the `internal/commons` DTO that carries a criterion's outcome from
@@ -104,3 +104,22 @@ collections and unchanged `coverage` values.
 - [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — a cached-ratio consumer this story leaves
   untouched
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the other cached-ratio consumer
+
+## Changes
+
+- **2026-09-23** — Made an evidence entry a `(traceId, testCaseName)` pair rather than a bare trace
+  id, and gave the evidence table its nullable `test_case_name` column from the start.
+  Recorded in `ADR-0002`: the column ships with the table because a nullable column on an empty
+  table is free, and the same change to a published `v1-report-api.yml` component (`SW-031`) is not.
+- **2026-09-24** — Set active: the findings now travel on `OpenApiTestResult` and persist beside the
+  result they explain.
+  The finding DTOs moved from the stream service into `commons`, because a shape crossing the
+  boundary on the event cannot live on one side of it.
+  A result event serialized before the field existed deserializes to an empty list rather than
+  failing — the tolerance the pre-migration record needs — while a programmatic `null` still throws.
+  A finding status this version does not know decodes to `NOT_APPLICABLE` rather than `UNCOVERED`,
+  which keeps a future constant such as `WAIVED` out of both sides of the fraction and so out of
+  disagreement with the ratio stored beside it (`CON-009`).
+  Both `findings` and `evidence` are lazy, so no list-shaped read drags the grandchild table in —
+  the whole point of keeping `coverage` denormalized.
+  `SW-031` still owes the API surface; until then the findings are persisted but not served.
