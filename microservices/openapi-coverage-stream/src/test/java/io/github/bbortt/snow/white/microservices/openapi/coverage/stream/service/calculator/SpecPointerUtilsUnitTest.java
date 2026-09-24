@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toOperationPointer;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toPathItemPointer;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toResponseEntryPointer;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.SpecPointerUtils.toResponsesPointer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import clew.traceables.clew.SwTraceables;
@@ -131,6 +132,62 @@ class SpecPointerUtilsUnitTest {
           .at("/paths/~1pung~1{message}/GET/responses/200")
           .isMissingNode()
       ).isTrue();
+    }
+  }
+
+  @Nested
+  class ToResponsesPointerTest {
+
+    @Test
+    void shouldStopAtTheResponsesMap() {
+      var result = toResponsesPointer("GET_/pung/{message}");
+
+      assertThat(result).isEqualTo("/paths/~1pung~1{message}/get/responses");
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+    void shouldResolveAgainstTheDocumentItAddresses() {
+      JsonNode document = JsonMapper.shared().readTree(OPENAPI_DOCUMENT);
+
+      assertThat(
+        document.at(toResponsesPointer("GET_/pung/{message}"))
+      ).isSameAs(
+        document.get("paths").get("/pung/{message}").get("get").get("responses")
+      );
+    }
+
+    /**
+     * The container is what an inverted criterion can name for a code the document never lists —
+     * so it has to resolve where the entry below it would not.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+    void shouldResolveWhereAnUndocumentedEntryBelowItWouldNot() {
+      JsonNode document = JsonMapper.shared().readTree(OPENAPI_DOCUMENT);
+
+      assertThat(
+        document.at(toResponsesPointer("GET_/pung/{message}")).isMissingNode()
+      ).isFalse();
+      assertThat(
+        document
+          .at(toResponseEntryPointer("GET_/pung/{message}", "418"))
+          .isMissingNode()
+      ).isTrue();
+    }
+  }
+
+  @Nested
+  class PathsPointerTest {
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+    void shouldResolveAgainstTheDocumentItAddresses() {
+      JsonNode document = JsonMapper.shared().readTree(OPENAPI_DOCUMENT);
+
+      assertThat(document.at(SpecPointerUtils.PATHS_POINTER)).isSameAs(
+        document.get("paths")
+      );
     }
   }
 }

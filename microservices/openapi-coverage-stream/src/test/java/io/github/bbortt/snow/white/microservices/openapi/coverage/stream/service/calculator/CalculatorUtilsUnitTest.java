@@ -186,4 +186,60 @@ class CalculatorUtilsUnitTest {
       assertThat(result).isNull();
     }
   }
+
+  @Nested
+  class FindOperationEntryForConcreteKeyTest {
+
+    @Test
+    void shouldReturnTheExactKeyItMatched() {
+      var operation = mock(Operation.class);
+      var operationMap = Map.of("GET_/ping", operation);
+
+      var result = CalculatorUtils.findOperationEntryForConcreteKey(
+        operationMap,
+        "GET_/ping"
+      );
+
+      assertThat(result)
+        .isNotNull()
+        .satisfies(
+          entry -> assertThat(entry.getKey()).isEqualTo("GET_/ping"),
+          entry -> assertThat(entry.getValue()).isSameAs(operation)
+        );
+    }
+
+    /**
+     * The template key, not the concrete one the caller asked with — a finding has to name its
+     * target the way the document spells it.
+     */
+    @Test
+    void shouldReturnTheTemplateKeyWhenAConcretePathMatchedIt() {
+      var operation = mock(Operation.class);
+      var operationMap = Map.of("GET_/pung/{message}", operation);
+
+      var result = CalculatorUtils.findOperationEntryForConcreteKey(
+        operationMap,
+        "GET_/pung/hello"
+      );
+
+      assertThat(result)
+        .isNotNull()
+        .satisfies(
+          entry -> assertThat(entry.getKey()).isEqualTo("GET_/pung/{message}"),
+          entry -> assertThat(entry.getValue()).isSameAs(operation)
+        );
+    }
+
+    @Test
+    void shouldReturnNullWhenNoMatch() {
+      var operationMap = Map.of("GET_/ping", mock(Operation.class));
+
+      var result = CalculatorUtils.findOperationEntryForConcreteKey(
+        operationMap,
+        "GET_/pung/hello"
+      );
+
+      assertThat(result).isNull();
+    }
+  }
 }
