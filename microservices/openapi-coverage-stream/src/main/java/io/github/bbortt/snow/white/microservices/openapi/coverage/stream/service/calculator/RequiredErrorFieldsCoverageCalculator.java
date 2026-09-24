@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isErrorHttpStatusCode;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toMethod;
@@ -168,7 +169,7 @@ public class RequiredErrorFieldsCoverageCalculator
       ? toEvidence(
           getSatisfyingTelemetry(
             target.responseCode(),
-            pathToTelemetryMap.get(target.operationKey())
+            getTelemetryForTemplate(pathToTelemetryMap, target.operationKey())
           )
         )
       : emptyList();
@@ -207,17 +208,17 @@ public class RequiredErrorFieldsCoverageCalculator
    *
    * <p>A {@code default} entry is not evidenced by exclusion here: any observed error code covers
    * it, including one a more specific sibling entry already matched.</p>
+   *
+   * <p>The telemetry is resolved through {@link CalculatorUtils#getTelemetryForTemplate}, so a
+   * documented operation is evidenced by the spans that arrived on any concrete path it
+   * templates.</p>
    */
   @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
   @RealizesSw(SwTraceables.SW_006_REQUIRED_ERROR_FIELDS_COVERAGE)
   private @NonNull List<OpenTelemetryData> getSatisfyingTelemetry(
     @NonNull String specifiedErrorCode,
-    @Nullable List<OpenTelemetryData> telemetryDataList
+    @NonNull List<OpenTelemetryData> telemetryDataList
   ) {
-    if (isNull(telemetryDataList)) {
-      return emptyList();
-    }
-
     return telemetryDataList
       .stream()
       .filter(telemetryData -> {
