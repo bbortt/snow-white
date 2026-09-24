@@ -31,13 +31,24 @@ public final class CoverageImpliedByFindings {
   );
 
   /**
+   * The driver decides what a {@code SMALLINT} reads back as - PostgreSQL hands out an
+   * {@link Integer} - so the column is narrowed through {@link Number} rather than cast to the type
+   * the enum happens to store it in.
+   *
+   * @param row a row of {@code api_test_finding}, carrying its {@code status} column.
+   */
+  public static short statusCodeOf(Map<String, Object> row) {
+    return ((Number) row.get("status")).shortValue();
+  }
+
+  /**
    * @param findings rows of {@code api_test_finding}, each carrying at least its {@code status}
    *                 column.
    */
   public static BigDecimal ratioImpliedBy(List<Map<String, Object>> findings) {
     var judged = findings
       .stream()
-      .map(finding -> findingStatus((Short) finding.get("status")))
+      .map(finding -> findingStatus(statusCodeOf(finding)))
       .filter(status -> !NOT_APPLICABLE.equals(status))
       .toList();
 

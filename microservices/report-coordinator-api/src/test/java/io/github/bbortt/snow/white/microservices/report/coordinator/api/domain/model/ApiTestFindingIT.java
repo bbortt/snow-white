@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.CoverageImpliedByFindings;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import java.time.Duration;
@@ -73,7 +74,7 @@ class ApiTestFindingIT extends AbstractReportCoordinationServiceIT {
     )
       .extracting(
         row -> row.get("spec_pointer"),
-        row -> row.get("status"),
+        CoverageImpliedByFindings::statusCodeOf,
         row -> row.get("api_test_criteria")
       )
       .containsExactlyInAnyOrder(
