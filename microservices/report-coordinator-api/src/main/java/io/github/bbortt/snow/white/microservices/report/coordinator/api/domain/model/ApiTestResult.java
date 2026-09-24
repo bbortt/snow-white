@@ -57,10 +57,17 @@ import org.jspecify.annotations.Nullable;
 )
 public class ApiTestResult {
 
+  /**
+   * The column name is stated rather than left to the naming strategy: {@code ApiTestFinding}
+   * points its composite foreign key here by {@code referencedColumnName}, which Hibernate resolves
+   * against the <em>logical</em> name. An implicit name would read {@code apiTestCriteria} there and
+   * the mapping would not resolve.
+   */
   @Id
   @NonNull
   @With(PRIVATE)
   @Size(min = 1, max = 64)
+  @Column(name = "api_test_criteria")
   private String apiTestCriteria;
 
   @NonNull
