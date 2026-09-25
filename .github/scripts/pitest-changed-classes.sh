@@ -83,7 +83,9 @@ while IFS= read -r file; do
   esac
 done <<<"$changed_files"
 
-if [[ ${#targets_by_module[@]} -eq 0 ]]; then
+# Tested for "has any key" rather than by count: under `set -u`, bash reads ${#arr[@]} on an
+# associative array that never got an entry as an unbound variable and aborts the script.
+if [[ -z "${targets_by_module[*]+set}" ]]; then
   echo "No changed .java files map to a mutable module - nothing to mutation-test." 1>&2
   exit 0
 fi
