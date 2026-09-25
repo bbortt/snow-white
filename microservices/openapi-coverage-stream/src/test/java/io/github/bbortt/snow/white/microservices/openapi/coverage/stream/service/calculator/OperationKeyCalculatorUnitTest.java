@@ -93,5 +93,25 @@ class OperationKeyCalculatorUnitTest {
       assertThat(pattern.matcher("GET_/ping").matches()).isTrue();
       assertThat(pattern.matcher("GET_/pong").matches()).isFalse();
     }
+
+    @Test
+    void shouldTreatLiteralDotAsALiteralCharacter() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/reports/{id}.json"
+      );
+
+      assertThat(pattern.matcher("GET_/reports/42.json").matches()).isTrue();
+      assertThat(pattern.matcher("GET_/reports/42Xjson").matches()).isFalse();
+    }
+
+    @Test
+    void shouldTreatOtherRegexMetacharactersAsLiteral() {
+      Pattern pattern = OperationKeyCalculator.toOperationKeyPattern(
+        "GET_/pung(1)/{message}"
+      );
+
+      assertThat(pattern.matcher("GET_/pung(1)/hello").matches()).isTrue();
+      assertThat(pattern.matcher("GET_/pung1/hello").matches()).isFalse();
+    }
   }
 }

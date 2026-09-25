@@ -16,6 +16,8 @@ import org.jspecify.annotations.NonNull;
 @NoArgsConstructor(access = PRIVATE)
 public final class OperationKeyCalculator {
 
+  private static final Pattern PARAMETER_SEGMENT = Pattern.compile("\\{[^/]+}");
+
   public static String toOperationKey(
     @NonNull String path,
     @NonNull String method
@@ -33,11 +35,27 @@ public final class OperationKeyCalculator {
 
   /**
    * Converts an operation key that may contain path-parameter templates (e.g. {@code "GET_/pung/{message}"}) into a {@link Pattern} that matches concrete operation keys with resolved values (e.g. {@code "GET_/pung/hello"}).
+   * The literal segments between placeholders are quoted rather than spliced into the regex
+   * verbatim, so a path carrying a regex metacharacter (e.g. {@code "GET_/reports/{id}.json"})
+   * matches only that literal character, never "any character".
    */
   public static Pattern toOperationKeyPattern(
     @NonNull String templateOperationKey
   ) {
-    String regex = templateOperationKey.replaceAll("\\{[^/]+}", "[^/]+");
-    return Pattern.compile("^" + regex + "$");
+    var matcher = PARAMETER_SEGMENT.matcher(templateOperationKey);
+    var regex = new StringBuilder("^");
+    var lastEnd = 0;
+
+    while (matcher.find()) {
+      regex.append(
+        Pattern.quote(templateOperationKey.substring(lastEnd, matcher.start()))
+      );
+      regex.append("[^/]+");
+      lastEnd = matcher.end();
+    }
+    regex.append(Pattern.quote(templateOperationKey.substring(lastEnd)));
+    regex.append("$");
+
+    return Pattern.compile(regex.toString());
   }
 }
