@@ -36,13 +36,11 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
-    <citrus.version>5.0.1</citrus.version>
     <io.opentelemetry.version>2.31.1</io.opentelemetry.version>
     <kafka-streams.version>4.3.1</kafka-streams.version>
     <org.flywaydb.version>13.7.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.1.1</org.springdoc.version>
-    <org.wiremock.version>3.13.2</org.wiremock.version>
     <wiremock-spring-boot.version>4.2.3</wiremock-spring-boot.version>
 
     <container.registry>ghcr.io</container.registry>
@@ -76,14 +74,6 @@
         <version>2.0.5</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
-
-      <dependency>
-        <groupId>org.citrusframework</groupId>
-        <artifactId>citrus-bom</artifactId>
-        <version>${citrus.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -232,12 +222,6 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>io.fabric8</groupId>
-          <artifactId>docker-maven-plugin</artifactId>
-          <version>0.49.0</version>
-        </plugin>
-
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
