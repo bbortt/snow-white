@@ -1,0 +1,36 @@
+name: 'example-spring-boot: apptest'
+
+networks:
+  default:
+    name: ${COMPOSE_NETWORK_NAME:-github_actions}
+    external: true
+    driver: bridge
+
+services:
+  # Re-encodes what the example application exports as OTLP/JSON and forwards it to WireMock,
+  # so the test can read the exported spans without a protobuf decoder of its own.
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.161.0
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    restart: on-failure
+    networks:
+      - default
+
+  # Stands in for a telemetry backend: it accepts the collector's OTLP/HTTP export and keeps every
+  # request in its journal, which is where the test reads the exported span from.
+  wiremock:
+    image: wiremock/wiremock:3.13.2-alpine
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default
