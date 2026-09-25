@@ -161,7 +161,7 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"http.request.method":"GET","url.path":"/unknown/path" }
+        { "http.request.method": "GET", "url.path": "/unknown/path" }
         """
       );
 
@@ -246,7 +246,11 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"openapi.operation.id":"getPung","http.request.method":"GET","url.path":"/pung/hello"}
+        {
+          "openapi.operation.id": "getPung",
+          "http.request.method": "GET",
+          "url.path": "/pung/hello"
+        }
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
@@ -281,7 +285,11 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"openapi.operation.id":"unknownOp","http.request.method":"GET","url.path":"/pung/hello"}
+        {
+          "openapi.operation.id": "unknownOp",
+          "http.request.method": "GET",
+          "url.path": "/pung/hello"
+        }
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
@@ -314,7 +322,11 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"openapi.operation.id":" ","http.request.method":"GET","url.path":"/pung/hello"}
+        {
+          "openapi.operation.id": " ",
+          "http.request.method": "GET",
+          "url.path": "/pung/hello"
+        }
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
@@ -343,7 +355,7 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"openapi.operation.id":"unknownOp"}
+        { "openapi.operation.id": "unknownOp" }
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
@@ -370,7 +382,7 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"http.request.method":"GET"}
+        { "http.request.method": "GET" }
         """
       );
       openApiTestContext = openApiTestContext.withOpenTelemetryData(

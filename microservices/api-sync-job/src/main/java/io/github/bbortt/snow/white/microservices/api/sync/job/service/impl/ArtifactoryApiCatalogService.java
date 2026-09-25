@@ -126,7 +126,7 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
           """
           {
             "files": [
-             {
+              {
                 "pattern": "%s/*.json"
               },
               {

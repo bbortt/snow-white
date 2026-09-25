@@ -301,7 +301,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
               JsonMapper.shared().readTree(
                 // language=json
                 """
-                {"http.request.method":"GET","url.path":"/api/v1/test"}
+                { "http.request.method": "GET", "url.path": "/api/v1/test" }
                 """
               )
             );
@@ -313,7 +313,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
               JsonMapper.shared().readTree(
                 // language=json
                 """
-                {"http.request.method":"POST","url.path":"/api/v1/create"}
+                { "http.request.method": "POST", "url.path": "/api/v1/create" }
                 """
               )
             );
