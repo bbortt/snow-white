@@ -67,7 +67,7 @@ public class ApiTestResult {
   @NonNull
   @With(PRIVATE)
   @Size(min = 1, max = 64)
-  @Column(name = "api_test_criteria")
+  @Column(name = "api_test_criteria", length = 64)
   private String apiTestCriteria;
 
   @NonNull
