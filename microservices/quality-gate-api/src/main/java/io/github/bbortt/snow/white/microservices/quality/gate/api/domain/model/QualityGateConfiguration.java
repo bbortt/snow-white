@@ -19,6 +19,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
@@ -77,6 +79,8 @@ public class QualityGateConfiguration {
 
   @NonNull
   @Builder.Default
+  @Min(80)
+  @Max(100)
   @Column(nullable = false)
   private Integer minCoveragePercentage = 100;
 
