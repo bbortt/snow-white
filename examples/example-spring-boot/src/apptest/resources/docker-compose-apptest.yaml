@@ -27,8 +27,11 @@ services:
 
   # Stands in for a telemetry backend: it accepts the collector's OTLP/HTTP export and keeps every
   # request in its journal, which is where the test reads the exported span from.
+  #
+  # Not the `-alpine` variant the other modules use: that one publishes amd64 only, which makes this
+  # test unrunnable on an arm64 developer machine. The plain tag is multi-arch, same WireMock.
   wiremock:
-    image: wiremock/wiremock:3.13.2-alpine
+    image: wiremock/wiremock:3.13.2
     ports:
       - '9000:8080'
     restart: on-failure
