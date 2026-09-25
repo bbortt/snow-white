@@ -19,6 +19,7 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
 
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -253,23 +255,52 @@ public class ContentTypeCoverageCalculator
   private boolean noContentTypeHeaderObserved(
     @NonNull Calculation calculation
   ) {
-    var evaluatedTelemetry = calculation
-      .pathToOpenAPIOperationMap()
-      .entrySet()
-      .stream()
-      .filter(entry -> !extractSpecContentTypes(entry.getValue()).isEmpty())
-      .flatMap(entry ->
-        getTelemetryForTemplate(
-          calculation.pathToTelemetryMap(),
-          entry.getKey()
-        ).stream()
-      )
-      .toList();
+    var evaluatedTelemetry = getTelemetryForOperationsWithContentTypes(
+      calculation.pathToOpenAPIOperationMap(),
+      calculation.pathToTelemetryMap()
+    );
 
     return (
       !evaluatedTelemetry.isEmpty() &&
       extractObservedContentTypes(evaluatedTelemetry).isEmpty()
     );
+  }
+
+  /**
+   * A single combined pattern over every operation with a declared content type, matched in one
+   * pass over {@code pathToTelemetryMap} — {@code calculateFindings} already paid for one
+   * {@code getTelemetryForTemplate} call per such operation building {@code toFindings}'
+   * per-operation results; this hint has no target list to attach its own findings to, so it
+   * would otherwise repeat that per-operation scan from scratch.
+   */
+  private @NonNull List<OpenTelemetryData> getTelemetryForOperationsWithContentTypes(
+    @NonNull Map<String, Operation> pathToOpenAPIOperationMap,
+    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    var operationKeysWithContentTypes = pathToOpenAPIOperationMap
+      .entrySet()
+      .stream()
+      .filter(entry -> !extractSpecContentTypes(entry.getValue()).isEmpty())
+      .map(Map.Entry::getKey)
+      .toList();
+
+    if (operationKeysWithContentTypes.isEmpty()) {
+      return List.of();
+    }
+
+    var combinedPattern = Pattern.compile(
+      operationKeysWithContentTypes
+        .stream()
+        .map(key -> OperationKeyCalculator.toOperationKeyPattern(key).pattern())
+        .collect(joining("|"))
+    );
+
+    return pathToTelemetryMap
+      .entrySet()
+      .stream()
+      .filter(entry -> combinedPattern.matcher(entry.getKey()).matches())
+      .flatMap(entry -> entry.getValue().stream())
+      .toList();
   }
 
   private static @NonNull String toUncoveredContentTypeKey(
