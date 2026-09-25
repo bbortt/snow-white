@@ -8,7 +8,7 @@ networks:
 
 services:
   wiremock:
-    image: wiremock/wiremock:3.13.2-alpine
+    image: wiremock/wiremock:3.13.2
     ports:
       - '9000:8080'
     restart: on-failure

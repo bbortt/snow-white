@@ -178,7 +178,7 @@ services:
       - internal
 
   artifactory:
-    image: wiremock/wiremock:3.13.2-alpine
+    image: wiremock/wiremock:3.13.2
     volumes:
       - ./artifactory:/home/wiremock
     ports:
