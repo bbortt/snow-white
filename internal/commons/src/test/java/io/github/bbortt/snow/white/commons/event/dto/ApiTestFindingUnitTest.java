@@ -43,10 +43,12 @@ class ApiTestFindingUnitTest {
       var result = finding()
         .evidence(List.of(new FindingEvidence("traceId", null)))
         .build();
+      var evidence = result.evidence();
+      var otherEvidence = new FindingEvidence("otherTraceId", null);
 
-      assertThatThrownBy(() ->
-        result.evidence().add(new FindingEvidence("otherTraceId", null))
-      ).isInstanceOf(UnsupportedOperationException.class);
+      assertThatThrownBy(() -> evidence.add(otherEvidence)).isInstanceOf(
+        UnsupportedOperationException.class
+      );
     }
 
     @Test

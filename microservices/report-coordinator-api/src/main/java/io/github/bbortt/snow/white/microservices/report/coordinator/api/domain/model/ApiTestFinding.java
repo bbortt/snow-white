@@ -20,7 +20,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -108,20 +107,18 @@ public class ApiTestFinding {
 
   @NonNull
   @ManyToOne(optional = false)
-  @JoinColumns({
-    @JoinColumn(
-      name = "api_test_criteria",
-      referencedColumnName = "api_test_criteria",
-      nullable = false,
-      updatable = false
-    ),
-    @JoinColumn(
-      name = "api_test",
-      referencedColumnName = "api_test",
-      nullable = false,
-      updatable = false
-    ),
-  })
+  @JoinColumn(
+    name = "api_test_criteria",
+    referencedColumnName = "api_test_criteria",
+    nullable = false,
+    updatable = false
+  )
+  @JoinColumn(
+    name = "api_test",
+    referencedColumnName = "api_test",
+    nullable = false,
+    updatable = false
+  )
   private ApiTestResult apiTestResult;
 
   public @NonNull FindingStatus getStatus() {
