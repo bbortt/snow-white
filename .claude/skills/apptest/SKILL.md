@@ -13,7 +13,7 @@ Kafka topics and real (WireMock-stubbed) downstream HTTP calls — never mocked 
 ## Where things live
 
 ```text
-microservices/<service>/
+<module>/                           # microservices/<service>, or examples/example-spring-boot
 ├── pom.xml                         # `apptest` Maven profile: docker-maven-plugin
 │                                    # (start/stop containers) + maven-failsafe-plugin
 │                                    # including **/*AppTest.java; surefire is skipped
@@ -25,19 +25,25 @@ microservices/<service>/
         └── citrus-application.properties
 ```
 
-`citrus.version` is pinned centrally in `microservices/pom.xml` (currently `5.0.0-M2`);
+`citrus.version` is pinned centrally in the root `pom.xml` (currently `5.0.1`), together with the
+`citrus-bom` import, `org.wiremock.version` and the `docker-maven-plugin` version: not every module
+with an `apptest` profile inherits from `microservices/pom.xml` (`examples/example-spring-boot` does
+not), and two pins would drift the moment one of them is bumped.
 `citrus-junit-jupiter` + `citrus-kafka` are added as test-scope deps only inside the `apptest`
 profile, so they don't leak into the default `test` phase.
 
-To run: `./mvnw -pl :<service> -am -P apptest verify` from the repo root (requires Docker/Podman).
+To run: `./mvnw -pl :<module> -am -P apptest verify` from the repo root (requires Docker/Podman).
 CI triggers apptests when a PR carries the `include:apptests` label (see `DEVELOPMENT.md`).
 In
-`.github/workflows/pull-requests.yml`, each matrix entry starts only its _own_
+`.github/workflows/pull-requests.yml`, the `app-tests` matrix carries a `service` and the
+`directory` it lives in, and each entry starts only its _own_
 `docker-compose-apptest.yaml` (via `docker compose config --services`, filtering out
 dev-convenience-only containers like `kafka.ui`) instead of a shared services block for every
-matrix entry — keep `docker-compose-apptest.yaml` scoped to what that microservice's tests
+matrix entry — keep `docker-compose-apptest.yaml` scoped to what that module's tests
 actually need (see "Resource usage" in `CLAUDE.md`), and add a `healthcheck` to any new service
 so `docker compose up --wait` can tell it's actually ready.
+Some images cannot have one: `otel/opentelemetry-collector-contrib` ships no shell and no HTTP
+client, so its readiness has to be waited on from the test side instead.
 
 ## Anatomy of an AppTest class
 

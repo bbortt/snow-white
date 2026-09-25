@@ -7,7 +7,7 @@ A span's test identity is the OpenTelemetry `test.case.name` attribute, read as 
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 The attribute a span carries its test identity in is `test.case.name`, as defined by the
@@ -94,3 +94,17 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   deliberately does not enter, since no criterion judges it
 - [CON-001](CON-001-deterministic-analysis-results.md) — the determinism this stays clear of by
   never being a correlation key
+
+## Changes
+
+- **2026-09-25** — Set active with the convention written down and nothing reading it yet:
+  `semantic-convention/test.md` lists `test.case.name`, states that Snow-White adopts the upstream
+  registry rather than defining it, records the opaque-label rules and the three sibling attributes
+  that are deliberately not read, and documents how the attribute gets onto a span (`ARCH-013`).
+  The document deliberately stops short of claiming the value reaches a finding, because no code
+  reads it yet.
+  Everything else in the verification description — `testCaseNameAttribute` and its default, blank
+  and whitespace-only yielding null, byte-for-byte evidence values, identical findings with and
+  without the attribute — waits on the calculators, and so does the automated documentation check:
+  the repository has no docs-assertion pattern today, and inventing one for a single file ahead of
+  the behaviour it describes buys nothing.

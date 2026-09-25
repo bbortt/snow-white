@@ -7,7 +7,7 @@ A test's identity reaches the server span as OpenTelemetry baggage, never by a s
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 The test that exercised an API and the span Snow-White correlates against are produced by two
@@ -106,3 +106,19 @@ projection, for every calculation.
   runner and the span sit in different processes at all
 - [SYS-004](SYS-004-telemetry-ingestion-and-correlation.md) — the ingestion path the attribute
   travels with the rest of a span's attributes
+
+## Changes
+
+- **2026-09-25** — Set active with the producing half of the decision: the published
+  `examples/example-spring-boot` image sets
+  `otel.java.experimental.span-attributes.copy-from-baggage.include=test.case.name`,
+  `semantic-convention/test.md` fixes the convention, and an application test drives the container
+  with a `baggage: test.case.name=<name>` header and asserts the exported server span carries the
+  attribute with that value — with no application code added to the example, which is the
+  `STK-003` claim this decision rests on.
+  The pinned agent (2.31.1) was verified to still honour the experimental property and to copy only
+  the included key, so `ADR-0002`'s open question is closed and its `BaggageSpanProcessor` fallback
+  is not needed.
+  The consuming half is untouched and still unverified: the required-key clause (`SW-021`) and the
+  clause about a calculation yielding evidence with `testCaseName` null both wait on the calculators
+  reading the attribute, and land with `SW-032`'s remaining verification rather than here.
