@@ -95,6 +95,13 @@
               <artifactId>lombok</artifactId>
             </path>
           </annotationProcessorPaths>
+          <!--
+            Spring MVC resolves `@RequestParam`/`@PathVariable` names from the compiled
+            parameter names when the annotation does not state one - without this every
+            request to `/ping` and `/pung/{message}` fails with
+            "parameter name information not available via reflection".
+          -->
+          <parameters>true</parameters>
         </configuration>
       </plugin>
 
