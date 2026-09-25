@@ -329,8 +329,10 @@ public class NoUndocumentedResponseCodesCalculator
 
   /**
    * Whether this criterion has anything to say about the given observed status code. This
-   * criterion judges every one of them; the narrower ranges are drawn by the subclasses.
+   * criterion judges every one of them; the narrower ranges are drawn by the subclasses, which is
+   * why the parameter stays part of the signature even though this base implementation ignores it.
    */
+  @SuppressWarnings("java:S1172")
   protected boolean judgesObservedResponseCode(
     @NonNull String observedResponseCode
   ) {

@@ -107,11 +107,11 @@ class ApiTestFindingIT extends AbstractReportCoordinationServiceIT {
     )
       .singleElement()
       .satisfies(
-        row -> assertThat(row.get("http_path")).isEqualTo("/api/v1/users"),
-        row -> assertThat(row.get("http_method")).isEqualTo("GET"),
-        row -> assertThat(row.get("response_code")).isEqualTo("404"),
+        row -> assertThat(row).containsEntry("http_path", "/api/v1/users"),
+        row -> assertThat(row).containsEntry("http_method", "GET"),
+        row -> assertThat(row).containsEntry("response_code", "404"),
         row -> assertThat(row.get("parameter_name")).isNull(),
-        row -> assertThat(row.get("content_type")).isEqualTo("application/json")
+        row -> assertThat(row).containsEntry("content_type", "application/json")
       );
   }
 

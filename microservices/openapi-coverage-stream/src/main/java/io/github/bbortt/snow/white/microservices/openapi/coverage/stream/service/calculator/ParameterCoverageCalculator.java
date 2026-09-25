@@ -220,8 +220,10 @@ public class ParameterCoverageCalculator
   /**
    * Whether this criterion has anything to say about the given parameter.
    * This criterion judges every declared parameter; the narrower subsets are drawn by the
-   * subclasses.
+   * subclasses, which is why the parameter stays part of the signature even though this base
+   * implementation ignores it.
    */
+  @SuppressWarnings("java:S1172")
   protected boolean judgesParameter(@NonNull Parameter parameter) {
     return true;
   }

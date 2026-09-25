@@ -121,22 +121,19 @@ class OpenApiTestResultUnitTest {
         null,
         List.of(FINDING)
       );
+      var findings = result.findings();
 
-      assertThatThrownBy(() -> result.findings().add(FINDING)).isInstanceOf(
+      assertThatThrownBy(() -> findings.add(FINDING)).isInstanceOf(
         UnsupportedOperationException.class
       );
     }
 
     @Test
     void shouldRejectBeingNull() {
+      var duration = Duration.ofSeconds(1);
+
       assertThatThrownBy(() ->
-        new OpenApiTestResult(
-          PATH_COVERAGE,
-          ONE,
-          Duration.ofSeconds(1),
-          null,
-          null
-        )
+        new OpenApiTestResult(PATH_COVERAGE, ONE, duration, null, null)
       ).isInstanceOf(NullPointerException.class);
     }
 
