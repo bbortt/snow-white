@@ -7,8 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
-import static java.lang.Integer.parseInt;
-import static java.util.Locale.ROOT;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isErrorHttpStatusCode;
 import static java.util.Objects.isNull;
 
 import clew.traceables.clew.SwTraceables;
@@ -52,21 +51,7 @@ public class ErrorResponseCodeCoverageCalculator
       return false;
     }
 
-    // Handle exact numeric codes
-    try {
-      int code = parseInt(statusCode);
-      return code >= 400 && code <= 599;
-    } catch (NumberFormatException _) {
-      // Handle pattern codes like "4XX", "5XX", "default"
-      String upperCode = statusCode.toUpperCase(ROOT);
-      return (
-        upperCode.equals("4XX") ||
-        upperCode.equals("5XX") ||
-        upperCode.equals("DEFAULT") ||
-        upperCode.startsWith("4") ||
-        upperCode.startsWith("5")
-      );
-    }
+    return isErrorHttpStatusCode(statusCode);
   }
 
   @Override

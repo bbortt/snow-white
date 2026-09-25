@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_ERROR_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.HttpStatusCodeUtils.isErrorHttpStatusCode;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
@@ -41,7 +42,7 @@ public class NoUndocumentedErrorResponseCodesCalculator
   protected boolean judgesObservedResponseCode(
     @NonNull String observedResponseCode
   ) {
-    return HttpStatusCodeUtils.isErrorHttpStatusCode(observedResponseCode);
+    return isErrorHttpStatusCode(observedResponseCode);
   }
 
   @Override

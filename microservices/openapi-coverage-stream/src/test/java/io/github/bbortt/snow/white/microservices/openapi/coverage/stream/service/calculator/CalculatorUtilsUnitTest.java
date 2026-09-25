@@ -6,6 +6,12 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationEntryForConcreteKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationForConcreteKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getStartedStopWatch;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForPathTemplate;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getTelemetryForTemplate;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.toEvidence;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -26,7 +32,7 @@ class CalculatorUtilsUnitTest {
 
     @Test
     void shouldReturnStartedStopWatch() {
-      var startedStopWatch = CalculatorUtils.getStartedStopWatch();
+      var startedStopWatch = getStartedStopWatch();
 
       assertThat(startedStopWatch)
         .isNotNull()
@@ -43,10 +49,7 @@ class CalculatorUtilsUnitTest {
       var telemetry = mock(OpenTelemetryData.class);
       var telemetryMap = Map.of("GET_/ping", List.of(telemetry));
 
-      var result = CalculatorUtils.getTelemetryForTemplate(
-        telemetryMap,
-        "GET_/ping"
-      );
+      var result = getTelemetryForTemplate(telemetryMap, "GET_/ping");
 
       assertThat(result).containsExactly(telemetry);
     }
@@ -56,10 +59,7 @@ class CalculatorUtilsUnitTest {
       var telemetry = mock(OpenTelemetryData.class);
       var telemetryMap = Map.of("GET_/pung/hello", List.of(telemetry));
 
-      var result = CalculatorUtils.getTelemetryForTemplate(
-        telemetryMap,
-        "GET_/pung/{message}"
-      );
+      var result = getTelemetryForTemplate(telemetryMap, "GET_/pung/{message}");
 
       assertThat(result).containsExactly(telemetry);
     }
@@ -71,10 +71,7 @@ class CalculatorUtilsUnitTest {
         List.of(mock(OpenTelemetryData.class))
       );
 
-      var result = CalculatorUtils.getTelemetryForTemplate(
-        telemetryMap,
-        "GET_/pung/{message}"
-      );
+      var result = getTelemetryForTemplate(telemetryMap, "GET_/pung/{message}");
 
       assertThat(result).isEmpty();
     }
@@ -94,10 +91,7 @@ class CalculatorUtilsUnitTest {
         List.of(postTelemetry)
       );
 
-      var result = CalculatorUtils.getTelemetryForPathTemplate(
-        telemetryMap,
-        "/pung/{message}"
-      );
+      var result = getTelemetryForPathTemplate(telemetryMap, "/pung/{message}");
 
       assertThat(result).containsExactlyInAnyOrder(getTelemetry, postTelemetry);
     }
@@ -109,10 +103,7 @@ class CalculatorUtilsUnitTest {
         List.of(mock(OpenTelemetryData.class))
       );
 
-      var result = CalculatorUtils.getTelemetryForPathTemplate(
-        telemetryMap,
-        "/pung/{message}"
-      );
+      var result = getTelemetryForPathTemplate(telemetryMap, "/pung/{message}");
 
       assertThat(result).isEmpty();
     }
@@ -123,7 +114,7 @@ class CalculatorUtilsUnitTest {
 
     @Test
     void shouldReturnOneEntryPerDistinctTraceWithoutTestCaseName() {
-      var result = CalculatorUtils.toEvidence(
+      var result = toEvidence(
         List.of(
           new OpenTelemetryData("spanId1", "traceId1", null),
           new OpenTelemetryData("spanId2", "traceId1", null),
@@ -139,7 +130,7 @@ class CalculatorUtilsUnitTest {
 
     @Test
     void shouldReturnEmptyListWhenNothingSatisfiedTheTarget() {
-      var result = CalculatorUtils.toEvidence(emptyList());
+      var result = toEvidence(emptyList());
 
       assertThat(result).isEmpty();
     }
@@ -153,10 +144,7 @@ class CalculatorUtilsUnitTest {
       var operation = mock(Operation.class);
       var operationMap = Map.of("GET_/ping", operation);
 
-      var result = CalculatorUtils.findOperationForConcreteKey(
-        operationMap,
-        "GET_/ping"
-      );
+      var result = findOperationForConcreteKey(operationMap, "GET_/ping");
 
       assertThat(result).isSameAs(operation);
     }
@@ -166,10 +154,7 @@ class CalculatorUtilsUnitTest {
       var operation = mock(Operation.class);
       var operationMap = Map.of("GET_/pung/{message}", operation);
 
-      var result = CalculatorUtils.findOperationForConcreteKey(
-        operationMap,
-        "GET_/pung/hello"
-      );
+      var result = findOperationForConcreteKey(operationMap, "GET_/pung/hello");
 
       assertThat(result).isSameAs(operation);
     }
@@ -178,10 +163,7 @@ class CalculatorUtilsUnitTest {
     void shouldReturnNullWhenNoMatch() {
       var operationMap = Map.of("GET_/ping", mock(Operation.class));
 
-      var result = CalculatorUtils.findOperationForConcreteKey(
-        operationMap,
-        "GET_/pung/hello"
-      );
+      var result = findOperationForConcreteKey(operationMap, "GET_/pung/hello");
 
       assertThat(result).isNull();
     }
@@ -195,10 +177,7 @@ class CalculatorUtilsUnitTest {
       var operation = mock(Operation.class);
       var operationMap = Map.of("GET_/ping", operation);
 
-      var result = CalculatorUtils.findOperationEntryForConcreteKey(
-        operationMap,
-        "GET_/ping"
-      );
+      var result = findOperationEntryForConcreteKey(operationMap, "GET_/ping");
 
       assertThat(result)
         .isNotNull()
@@ -217,7 +196,7 @@ class CalculatorUtilsUnitTest {
       var operation = mock(Operation.class);
       var operationMap = Map.of("GET_/pung/{message}", operation);
 
-      var result = CalculatorUtils.findOperationEntryForConcreteKey(
+      var result = findOperationEntryForConcreteKey(
         operationMap,
         "GET_/pung/hello"
       );
@@ -234,7 +213,7 @@ class CalculatorUtilsUnitTest {
     void shouldReturnNullWhenNoMatch() {
       var operationMap = Map.of("GET_/ping", mock(Operation.class));
 
-      var result = CalculatorUtils.findOperationEntryForConcreteKey(
+      var result = findOperationEntryForConcreteKey(
         operationMap,
         "GET_/pung/hello"
       );
