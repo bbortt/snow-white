@@ -46,10 +46,10 @@ public abstract class AbstractReportCoordinationServiceIT {
     new PostgreSQLContainer("postgres:18.6-alpine").withExposedPorts(5432);
 
   private static final WireMockContainer API_INDEX_API_WIREMOCK_CONTAINER =
-    new WireMockContainer("wiremock/wiremock:3.13.2-alpine");
+    new WireMockContainer("wiremock/wiremock:3.13.2");
 
   private static final WireMockContainer QUALITY_GATE_API_WIREMOCK_CONTAINER =
-    new WireMockContainer("wiremock/wiremock:3.13.2-alpine");
+    new WireMockContainer("wiremock/wiremock:3.13.2");
 
   static {
     KAFKA_CONTAINER.start();
