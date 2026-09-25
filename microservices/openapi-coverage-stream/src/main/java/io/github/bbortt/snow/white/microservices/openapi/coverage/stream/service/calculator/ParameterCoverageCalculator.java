@@ -37,6 +37,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +72,25 @@ public class ParameterCoverageCalculator
     Map<String, Operation> pathToOpenAPIOperationMap,
     Map<String, List<OpenTelemetryData>> pathToTelemetryMap
   ) {
+    // Resolved once per operation, not once per parameter — the pattern match behind
+    // getTelemetryForTemplate is the same for every parameter of a given operation.
+    var telemetryByOperationKey = new HashMap<
+      String,
+      List<OpenTelemetryData>
+    >();
+
     return toParameterTargets(pathToOpenAPIOperationMap)
       .stream()
-      .map(target -> toFinding(target, pathToTelemetryMap))
+      .map(target ->
+        toFinding(
+          target,
+          telemetryByOperationKey.computeIfAbsent(
+            target.operationKey(),
+            operationKey ->
+              getTelemetryForTemplate(pathToTelemetryMap, operationKey)
+          )
+        )
+      )
       .toList();
   }
 
@@ -158,7 +175,7 @@ public class ParameterCoverageCalculator
 
   private @NonNull ApiTestFinding toFinding(
     @NonNull ParameterTarget target,
-    @NonNull Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+    @NonNull List<OpenTelemetryData> telemetryDataList
   ) {
     var parameter = target.parameter();
     var isJudged = judgesParameter(parameter);
@@ -166,7 +183,7 @@ public class ParameterCoverageCalculator
     List<FindingEvidence> evidence = isJudged
       ? toEvidence(
           getSatisfyingTelemetry(
-            getTelemetryForTemplate(pathToTelemetryMap, target.operationKey()),
+            telemetryDataList,
             parameter,
             target.operationKey()
           )
