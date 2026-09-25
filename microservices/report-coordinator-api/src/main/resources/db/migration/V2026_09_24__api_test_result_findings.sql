@@ -37,14 +37,18 @@ CREATE TABLE finding_evidence
     CONSTRAINT fk_api_test_finding_finding_evidence
         FOREIGN KEY (api_test_finding)
             REFERENCES api_test_finding (id)
-            ON DELETE CASCADE
+            ON DELETE CASCADE,
+    -- A trace is captured against a target at most once (ARCH-011): the same span is read once,
+    -- so test_case_name is functionally dependent on this pair, never a second dimension of identity.
+    CONSTRAINT uk_finding_evidence_trace_per_finding
+        UNIQUE (api_test_finding, trace_id)
 );
 
 CREATE INDEX idx_api_test_finding_api_test_result
     ON api_test_finding (api_test_criteria, api_test);
 
-CREATE INDEX idx_finding_evidence_api_test_finding
-    ON finding_evidence (api_test_finding);
+-- No separate index on finding_evidence(api_test_finding) alone: uk_finding_evidence_trace_per_finding's
+-- backing index already leads with that column.
 
 -- "Which targets did this trace cover?" is the drilldown's reverse question, and the only one that
 -- reaches this table without a finding in hand.
