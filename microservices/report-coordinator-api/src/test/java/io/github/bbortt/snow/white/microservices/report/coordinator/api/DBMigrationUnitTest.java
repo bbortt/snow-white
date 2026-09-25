@@ -28,7 +28,7 @@ class DBMigrationUnitTest {
     "V2026_09_18__quality_gate_report_min_coverage_percentage.sql",
     "708f97a2aa148279c4ef15d6373bcfbad87aad6ff7a95a924b28d62ee8d8969e",
     "V2026_09_24__api_test_result_findings.sql",
-    "c8ae9f8a40444351abf4766471b583c0dcd0a6cb22a8eba3b5d17acc1e7ec5c2"
+    "a6a0cb2deaa238d63f6428ad044350670c483f5c43eee610bfa884a55d470f7b"
   );
 
   @Test
