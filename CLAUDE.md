@@ -111,10 +111,13 @@ Setup and platform caveats: `DEVELOPMENT.md#development-container`.
 ./mvnw -b smart package              # build everything
 ./mvnw -pl :<artifactId> -am test    # test one module (+ its dependencies)
 ./mvnw verify -T 1C                  # full unit/integration test + coverage aggregation
-./mvnw -pl :<artifactId> -am -P apptest verify   # black-box Citrus tests for one service (needs Docker)
 ./mvnw -pl :api-gateway -am -P e2e test          # black-box Playwright UI tests (no Docker needed)
 .github/scripts/pitest-changed-classes.sh        # PIT mutation testing, changed classes only
 ```
+
+Black-box Citrus application tests are not a one-liner: the `apptest` profile only _starts_ a
+container image, so the image has to be built and the compose stack brought up first.
+`.claude/skills/apptest/SKILL.md` carries the sequence CI performs.
 
 Mutation testing is a CI gate (`Mutation Testing (PIT)`, 80% mutation score _and_ 80% test
 strength per module) — don't push Java changes and let CI tell you about it twenty minutes later.
