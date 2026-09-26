@@ -4,6 +4,20 @@ on:
   pull_request:
     branches:
       - main
+    # The gates below read the payload's label list, which is frozen when the run is created, and
+    # 'labeled' is not one of the default types: labelling an open pull request left them judging
+    # the labels it had beforehand, so asking for application tests meant pushing an empty commit.
+    # Labels the 'labeler' job applies never arrive here, since events raised by GITHUB_TOKEN start
+    # no workflow run - only a human or Dependabot labelling a pull request re-evaluates the gates.
+    # A labelled run repeats the whole board, deliberately: skipping the jobs no label can change
+    # would post them as skipped check runs on a commit that already has real ones, and GitHub
+    # keeps the most recent run of a check name - so labelling a red pull request would bury the
+    # red, and satisfy a required check that had genuinely failed.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
 
 concurrency:
   group: mr-${{ github.ref }}
@@ -119,13 +133,14 @@ jobs:
         run: git fetch --unshallow origin
       - name: Cache SonarQube Packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: '!steps.check.outputs.number'
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Sonar Analysis
-        if: "!steps.check.outputs.number && !contains(github.actor, 'dependabot')"
+        # The pull request's author, not 'github.actor': on a labelled run the actor is whoever
+        # applied the label, which would put a Dependabot branch through Sonar after all.
+        if: "!contains(github.event.pull_request.user.login, 'dependabot')"
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
