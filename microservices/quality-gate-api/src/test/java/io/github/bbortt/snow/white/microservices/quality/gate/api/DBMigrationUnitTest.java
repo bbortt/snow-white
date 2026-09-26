@@ -26,7 +26,9 @@ class DBMigrationUnitTest {
     "V2025_06_29__init.sql",
     "ad82fcdafade0aafec345f6edc8b7467ea2938e408de4c3abfdef5b293306bda",
     "V2026_09_25__min_coverage_percentage_bounds.sql",
-    "18e22f0f89492f80a295aaad21bba75f9fba3f75b27b86fc29e1f829c76fe349"
+    "18e22f0f89492f80a295aaad21bba75f9fba3f75b27b86fc29e1f829c76fe349",
+    "V2026_09_25_1__drop_redundant_quality_gate_configuration_index.sql",
+    "4c11aaa75dfe20033dc09d33b77ec1347a1209081896ed9cc258810b02e11d3c"
   );
 
   @Test
