@@ -34,6 +34,11 @@
     <sonar.test.inclusions />
 
     <openapi-generator.version>7.25.0</openapi-generator.version>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <docker.network>bridge</docker.network>
+    <image.tag>${project.version}</image.tag>
   </properties>
 
   <dependencies>
@@ -139,8 +144,9 @@
       </plugin>
 
       <!--
-        This module has no tests by design (see sonar.coverage.exclusions above): it is
-        and example application for others to explore how Snow-White works.
+        Coverage and mutation gates stay off for this module (see sonar.coverage.exclusions above):
+        it is an example application for others to explore how Snow-White works, and its tests
+        assert the documented behaviour rather than aiming at a coverage figure.
       -->
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -219,4 +225,176 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>apptest</id>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.awaitility</groupId>
+          <artifactId>awaitility</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-http</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.citrusframework</groupId>
+          <artifactId>citrus-junit-jupiter</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.wiremock</groupId>
+          <artifactId>wiremock</artifactId>
+          <version>${org.wiremock.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+
+      <build>
+        <testResources>
+          <testResource>
+            <directory>src/apptest/resources</directory>
+          </testResource>
+        </testResources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>src/apptest/java</source>
+                    <!--
+                      The clew traceable constants the app tests anchor on, compiled straight from
+                      the generated sources rather than pulled in through `commons` (which is how
+                      internal/commons gets them, see its add-clew-traceables-source execution):
+                      the whole point of ARCH-013 is that adopting the convention costs a service no
+                      Snow-White dependency at all (STK-003), and this module is the demonstration
+                      of that.
+                    -->
+                    <source>${project.basedir}/../../src/main/java</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <name>
+                    ${container.registry}/bbortt/snow-white/example-snow-white-openapi-generator:${image.tag}
+                  </name>
+                  <alias>example-snow-white-openapi-generator</alias>
+                  <run>
+                    <env>
+                      <!--
+                        Only the export destination is test-specific. The baggage-to-attribute copy
+                        under test is configured in the Dockerfile, so the test proves what the
+                        published image does - not what this profile sets up for it.
+                      -->
+                      <OTEL_EXPORTER_OTLP_PROTOCOL>
+                        http/protobuf
+                      </OTEL_EXPORTER_OTLP_PROTOCOL>
+                      <OTEL_EXPORTER_OTLP_ENDPOINT>
+                        http://otel-collector:4318
+                      </OTEL_EXPORTER_OTLP_ENDPOINT>
+                      <OTEL_METRICS_EXPORTER>none</OTEL_METRICS_EXPORTER>
+                      <OTEL_LOGS_EXPORTER>none</OTEL_LOGS_EXPORTER>
+                      <!--
+                        The default batch delay is 5s; a shorter one only makes the assertion arrive
+                        sooner, it has no bearing on which attributes a span carries.
+                      -->
+                      <OTEL_BSP_SCHEDULE_DELAY>1000</OTEL_BSP_SCHEDULE_DELAY>
+                    </env>
+                    <log>
+                      <prefix>example-snow-white-openapi-generator</prefix>
+                      <date>default</date>
+                    </log>
+                    <network>
+                      <name>${docker.network}</name>
+                    </network>
+                    <ports>
+                      <port>18080:8080</port>
+                    </ports>
+                    <wait>
+                      <!--
+                        The example ships no management endpoint, so its own /ping is the readiness
+                        signal - which also means the container is only declared started once it
+                        answers a request, i.e. once the agent is attached and exporting.
+                      -->
+                      <http>
+                        <url>http://localhost:18080/ping?message=readiness</url>
+                        <method>GET</method>
+                        <status>200</status>
+                      </http>
+                      <time>60000</time>
+                    </wait>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>start-containers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>stop-containers</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*AppTest.java</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

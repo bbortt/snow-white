@@ -13,7 +13,7 @@ Kafka topics and real (WireMock-stubbed) downstream HTTP calls — never mocked 
 ## Where things live
 
 ```text
-<module>/                           # microservices/<service>, or examples/example-spring-boot
+<module>/                           # microservices/<service>, or examples/<example>
 ├── pom.xml                         # `apptest` Maven profile: docker-maven-plugin
 │                                    # (start/stop containers) + maven-failsafe-plugin
 │                                    # including **/*AppTest.java; surefire is skipped
@@ -27,8 +27,8 @@ Kafka topics and real (WireMock-stubbed) downstream HTTP calls — never mocked 
 
 `citrus.version` is pinned centrally in the root `pom.xml` (currently `5.0.1`), together with the
 `citrus-bom` import, `org.wiremock.version` and the `docker-maven-plugin` version: not every module
-with an `apptest` profile inherits from `microservices/pom.xml` (`examples/example-spring-boot` does
-not), and two pins would drift the moment one of them is bumped.
+with an `apptest` profile inherits from `microservices/pom.xml` (neither example under `examples/`
+does), and two pins would drift the moment one of them is bumped.
 `citrus-junit-jupiter` + `citrus-kafka` are added as test-scope deps only inside the `apptest`
 profile, so they don't leak into the default `test` phase.
 
