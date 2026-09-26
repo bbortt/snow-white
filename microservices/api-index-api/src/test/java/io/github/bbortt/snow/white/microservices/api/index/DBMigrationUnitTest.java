@@ -26,7 +26,9 @@ class DBMigrationUnitTest {
     "V20251220__init.sql",
     "21d696ad4724dab8e36e837cb7250e2281220f6315c844d22929f0dd953f6358",
     "V20260925__narrow_api_version_column.sql",
-    "53c3ebb5decaae3f4f1d406440b6dad87ce2e1adaf83f38cd16f6138acda76e3"
+    "53c3ebb5decaae3f4f1d406440b6dad87ce2e1adaf83f38cd16f6138acda76e3",
+    "V20260925_1__drop_redundant_api_reference_unique_index.sql",
+    "26a7ded2dd04e98b4ddfdd9c8943fbdd8576c27068e4fbe1614f191ff1d6f161"
   );
 
   @Test
