@@ -111,10 +111,13 @@ Setup and platform caveats: `DEVELOPMENT.md#development-container`.
 ./mvnw -b smart package              # build everything
 ./mvnw -pl :<artifactId> -am test    # test one module (+ its dependencies)
 ./mvnw verify -T 1C                  # full unit/integration test + coverage aggregation
-./mvnw -pl :<artifactId> -am -P apptest verify   # black-box Citrus tests for one service (needs Docker)
 ./mvnw -pl :api-gateway -am -P e2e test          # black-box Playwright UI tests (no Docker needed)
 .github/scripts/pitest-changed-classes.sh        # PIT mutation testing, changed classes only
 ```
+
+Black-box Citrus application tests are not a one-liner: the `apptest` profile only _starts_ a
+container image, so the image has to be built and the compose stack brought up first.
+`.claude/skills/apptest/SKILL.md` carries the sequence CI performs.
 
 Mutation testing is a CI gate (`Mutation Testing (PIT)`, 80% mutation score _and_ 80% test
 strength per module) — don't push Java changes and let CI tell you about it twenty minutes later.
@@ -123,9 +126,14 @@ docs, Helm or TypeScript change never waits for it.
 Two things still pull it in without Java: a branch or pull-request name containing `pitest` (a
 bump of the engine moves the verdict on its own), and the `include:mutation` label, which forces
 the run the way `include:apptests` forces the application tests.
-The label needs no push behind it — its own workflow (`.github/workflows/mutation-testing.yml`,
-hence a `Mutation Testing` run rather than an `Application CI` one) also triggers on a labelled
-pull request, so sticking it on an open one starts mutation testing right there.
+Neither label needs a push behind it — `.github/workflows/mutation-testing.yml` and
+`pull-requests.yml` both trigger on a labelled pull request, so sticking either on an open one by
+hand starts the run right there.
+The same label applied by the `labeler` job does not: events raised by GITHUB_TOKEN start no
+workflow run, so an `include:apptests` that `.github/labeler.yml` added for you still waits for the
+next push.
+Mutation testing keeps a workflow of its own (hence a `Mutation Testing` run rather than an
+`Application CI` one) because `Application CI` reacts to pushes only, and a label is not a push.
 Run `.github/scripts/pitest-changed-classes.sh [base-ref]` locally instead (base defaults to
 `main`).
 It diffs the branch against the base — uncommitted and untracked files included — and

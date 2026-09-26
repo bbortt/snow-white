@@ -43,4 +43,4 @@ OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE=test.case.name
 ```
 
 Only the listed baggage keys are copied, so unrelated baggage a request happens to carry never reaches the span.
-See [`examples/example-spring-boot`](../examples/example-spring-boot) for a working setup.
+See [`examples/example-spring-boot`](../examples/example-spring-boot) for a working setup, and [`examples/example-snow-white-openapi-generator`](../examples/example-snow-white-openapi-generator) for the same setup on a service whose API is generated - the configuration is identical, because nothing about it is application code.
