@@ -69,9 +69,9 @@
 
     <!-- Dependency Management -->
     <!--
-      Application testing: pinned here rather than in microservices/pom.xml because
-      examples/example-spring-boot carries an `apptest` profile of its own (see ARCH-013) and does
-      not inherit from that pom - two independent pins would drift the moment one of them is bumped.
+      Application testing: pinned here rather than in microservices/pom.xml because the examples
+      under examples/ carry an `apptest` profile of their own (see ARCH-013) and do not inherit
+      from that pom - two independent pins would drift the moment one of them is bumped.
     -->
     <citrus.version>5.0.1</citrus.version>
     <docker-maven-plugin.version>0.49.0</docker-maven-plugin.version>
