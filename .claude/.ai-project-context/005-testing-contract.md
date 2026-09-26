@@ -25,8 +25,10 @@ listed in their own technology contracts (`004-technology-contract-webapp.md`,
 
 - `./mvnw -pl :<artifactId> -am test` — unit tests for one module (+ its dependencies).
 - `./mvnw verify -T 1C` — full unit/integration test run with coverage aggregation (JaCoCo).
-- `./mvnw -pl :<artifactId> -am -P apptest verify` — black-box Citrus tests for one service (needs
-  Docker).
+- Black-box Citrus tests for one service (needs Docker) are not a one-liner: the `apptest` profile
+  only starts a container image that must already exist, so the jar and image have to be built and
+  the compose stack brought up first — `.claude/skills/apptest/SKILL.md` carries the sequence CI
+  performs.
   Each microservice starts only its own `src/apptest/resources/docker-compose-apptest.yaml`
   services, not a shared set — see the resource-usage guidance in `CLAUDE.md`.
 - Coverage is aggregated via JaCoCo into `target/jacoco-aggregate/jacoco.xml`, read by SonarCloud.

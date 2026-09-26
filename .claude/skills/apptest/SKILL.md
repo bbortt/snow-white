@@ -32,7 +32,36 @@ does), and two pins would drift the moment one of them is bumped.
 `citrus-junit-jupiter` + `citrus-kafka` are added as test-scope deps only inside the `apptest`
 profile, so they don't leak into the default `test` phase.
 
-To run: `./mvnw -pl :<module> -am -P apptest verify` from the repo root (requires Docker/Podman).
+To run (requires Docker/Podman), from the repo root - no `apptest` module's `docker-maven-plugin`
+carries a `<build>` section, so `docker:start` only ever _starts_ a tag that must already exist;
+building that image and starting the compose stack are part of running the tests, not something
+the profile does for you:
+
+```shell
+# once - the apptest stack joins an external network, the same one CI creates
+docker network create github_actions
+
+./mvnw -Pprod -DskipTests -Dfrontend.test.skip=true -pl :<module> -am clean install
+docker build -f <directory>/Dockerfile \
+  -t ghcr.io/bbortt/snow-white/<module>:local <directory>
+
+docker compose -f <directory>/src/apptest/resources/docker-compose-apptest.yaml \
+  up -d --wait
+
+./mvnw -Papptest -Ddocker.network=github_actions -Dimage.tag=local -pl :<module> verify
+```
+
+The tag is arbitrary as long as the image `docker build` produces is the one `image.tag` names;
+CI uses the commit SHA for both.
+`-Dfrontend.test.skip=true` matters only when `-am` drags `api-gateway` in, but it is free
+otherwise.
+Two deviations from the plain form above: the separate `native-tests` job builds its image with
+`spring-boot:build-image` rather than `docker build`, and the `app-tests` job starts the stack as
+`up -d --no-deps --wait $(docker compose -f <file> config --services | grep -v '^kafka\.ui$')` for
+every entry, not just the Kafka ones - `kafka.ui` is a dev-convenience dashboard no test needs, and
+`--no-deps` keeps it from being pulled back in.
+The filter is a no-op for a stack without it, so
+it is the safer form to copy.
 CI triggers apptests when a PR carries the `include:apptests` label (see `DEVELOPMENT.md`).
 In
 `.github/workflows/pull-requests.yml`, the `app-tests` matrix carries a `service` and the
@@ -217,5 +246,7 @@ You can `test-compile` the `apptest` sources without Docker to catch API-usage m
 ```
 
 Actually executing the tests requires the Docker Compose stack from
-`src/apptest/resources/docker-compose-apptest.yaml`, which the `apptest` profile's
-`docker-maven-plugin` binding starts/stops automatically around `verify`.
+`src/apptest/resources/docker-compose-apptest.yaml`, which you bring up yourself - the `apptest`
+profile's `docker-maven-plugin` binding only starts and stops the module's own image, and only a
+tag that already exists.
+See "To run" above for the full sequence.
