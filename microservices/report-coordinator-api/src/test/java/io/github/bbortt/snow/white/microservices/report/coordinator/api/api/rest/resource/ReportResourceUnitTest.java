@@ -129,6 +129,7 @@ class ReportResourceUnitTest {
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
         .findReportByCalculationId(calculationId);
+      doReturn(IN_PROGRESS).when(qualityGateReport).getReportStatus();
 
       var responseDto = mock(ListQualityGateReports200ResponseInner.class);
       doReturn(responseDto)
@@ -212,6 +213,41 @@ class ReportResourceUnitTest {
 
       assertThatResponseIsNotFound(response, calculationId);
       verifyNoInteractions(qualityGateReportMapperMock);
+    }
+
+    /**
+     * The projection selected the in-progress branch, but the report read after it has already
+     * completed: answering {@code 202} here would ship an {@code Accepted} whose body says
+     * {@code PASSED}, so the report that is about to be serialized settles the status.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+    @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+    void shouldReturnFindings_whenTheReportCompletesBetweenTheStatusAndTheBody() {
+      var calculationId = UUID.fromString(
+        "1d7f4a90-3b62-4c8e-9f15-8a2c6e0b4d73"
+      );
+      doReturn(Optional.of(IN_PROGRESS))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+      doReturn(PASSED).when(qualityGateReport).getReportStatus();
+
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportWithFindingsByCalculationId(calculationId);
+      var responseDto = mock(GetReportByCalculationId200Response.class);
+      doReturn(responseDto)
+        .when(qualityGateReportMapperMock)
+        .toReportDto(qualityGateReport);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThatResponseHasBody(response, OK, responseDto);
+
+      verify(qualityGateReportMapperMock, never()).toListDto(any());
     }
 
     @Test

@@ -51,7 +51,11 @@ public class ReportResource implements ReportApi {
    * otherwise make is the one this endpoint exists to avoid.
    * <p>
    * The status decides before either report is read, and a still-running report answers the
-   * findings-free shape. This endpoint is also the calculation's poll - {@code toolkit/cli} reads
+   * findings-free shape. The projection and the read are two statements, so the report that is
+   * about to be serialized settles the {@code 202} rather than the projection that selected the
+   * branch: a report that completes between them answers the findings shape instead of an
+   * {@code Accepted} whose body already says {@code PASSED}. This endpoint is also the
+   * calculation's poll - {@code toolkit/cli} reads
    * nothing but {@code status} from it every two seconds - and a poll that dragged the evidence
    * table through a four-level join for a field it never reads is the cost the denormalized
    * {@code coverage} column exists to avoid. Deciding on the projected status rather than on a whole
@@ -75,9 +79,15 @@ public class ReportResource implements ReportApi {
         calculationId
       );
 
-      return optionalReport.isPresent()
-        ? reportStillInProgress(optionalReport.get())
-        : reportNotFound(calculationId);
+      if (optionalReport.isEmpty()) {
+        return reportNotFound(calculationId);
+      }
+
+      var report = optionalReport.get();
+
+      if (IN_PROGRESS.equals(report.getReportStatus())) {
+        return reportStillInProgress(report);
+      }
     }
 
     var optionalReportWithFindings =
