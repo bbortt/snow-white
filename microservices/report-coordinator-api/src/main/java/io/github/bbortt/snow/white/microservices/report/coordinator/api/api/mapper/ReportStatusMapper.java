@@ -10,6 +10,8 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200ResponseInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
@@ -39,6 +41,18 @@ public interface ReportStatusMapper {
   @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
   @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
   ListQualityGateReports200ResponseInnerInterfacesInner.StatusEnum toResponseInnerInterfacesInnerStatusEnum(
+    ReportStatus reportStatus
+  );
+
+  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
+  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
+  GetReportByCalculationId200Response.StatusEnum toReportResponseStatusEnum(
+    ReportStatus reportStatus
+  );
+
+  @ValueMapping(target = "IN_PROGRESS", source = "NOT_STARTED")
+  @ValueMapping(target = "IN_PROGRESS", source = "IN_PROGRESS")
+  GetReportByCalculationId200ResponseInterfacesInner.StatusEnum toReportResponseInterfacesInnerStatusEnum(
     ReportStatus reportStatus
   );
 }

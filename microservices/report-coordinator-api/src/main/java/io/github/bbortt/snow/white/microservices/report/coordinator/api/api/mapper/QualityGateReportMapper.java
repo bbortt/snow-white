@@ -8,8 +8,11 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.map
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerCalculationRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -70,6 +73,24 @@ public interface QualityGateReportMapper {
     source = "reportParameter.attributeFilters"
   )
   ListQualityGateReports200ResponseInnerCalculationRequest toListIncludeApis(
+    QualityGateReport qualityGateReport
+  );
+
+  /**
+   * The single-report shape, which differs from {@link #toListDto(QualityGateReport)} in the
+   * findings hanging off every criterion result and nothing else. The calculation request is
+   * shared: the generator deduplicated it, so there is one DTO for both reads.
+   */
+  @RealizesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @Mapping(
+    target = "calculationRequest",
+    source = ".",
+    qualifiedByName = "toListIncludeApis"
+  )
+  @Mapping(target = "initiatedAt", source = "createdAt")
+  @Mapping(target = "interfaces", source = "apiTests")
+  @Mapping(target = "status", source = "reportStatus")
+  GetReportByCalculationId200Response toReportDto(
     QualityGateReport qualityGateReport
   );
 

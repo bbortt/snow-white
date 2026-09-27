@@ -28,7 +28,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.util.StreamUtils.copyToString;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.*;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
@@ -36,6 +39,10 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
@@ -46,10 +53,22 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @AutoConfigureMockMvc
 class ReportResourceIT extends AbstractReportCoordinationServiceIT {
+
+  private static final String COVERED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/404";
+  private static final String UNCOVERED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/500";
+
+  private static final String TRACE_ID_WITHOUT_TEST_IDENTITY =
+    "1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e";
+  private static final String TRACE_ID_WITH_TEST_IDENTITY =
+    "2e3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c";
 
   @Autowired
   private JsonMapper jsonMapper;
@@ -185,14 +204,14 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
     var resultingQualityGateReport = jsonMapper.readValue(
       responseAsString,
-      ListQualityGateReports200ResponseInner.class
+      GetReportByCalculationId200Response.class
     );
 
     assertThat(resultingQualityGateReport).satisfies(
       report -> assertThat(report.getCalculationId()).isEqualTo(calculationId),
       report ->
         assertThat(report.getStatus()).isEqualTo(
-          ListQualityGateReports200ResponseInner.StatusEnum.FAILED
+          GetReportByCalculationId200Response.StatusEnum.FAILED
         ),
       report ->
         assertThat(report.getCalculationRequest())
@@ -250,6 +269,146 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
                   )
             )
           )
+    );
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  void findReport_servesTheFindingsBehindEveryCriterionResult()
+    throws Exception {
+    var calculationId = UUID.fromString("52ad2f1b-2a9e-4d42-9e2f-9c2a0f9f7a21");
+
+    persistReportWithFindings(calculationId);
+
+    var findingsArray = readSingleTestResult(calculationId).get("findings");
+
+    // Ordered by spec pointer, and asserted in order: the entity's identity hashCode would
+    // otherwise let two identical requests hand the same findings over in two different orders.
+    assertThat(valuesOf(findingsArray, "specPointer")).containsExactly(
+      COVERED_SPEC_POINTER,
+      UNCOVERED_SPEC_POINTER
+    );
+
+    var findings = indexBy(findingsArray, "specPointer");
+
+    var covered = findings.get(COVERED_SPEC_POINTER);
+    // The status reads as its name; the stored code says nothing to whoever opens the drilldown.
+    assertThat(covered.get("status").asString()).isEqualTo("COVERED");
+    assertThat(covered.get("httpPath").asString()).isEqualTo("/api/v1/users");
+    assertThat(covered.get("httpMethod").asString()).isEqualTo("GET");
+    assertThat(covered.get("responseCode").asString()).isEqualTo("404");
+    assertThat(covered.get("parameterName").isNull()).isTrue();
+    assertThat(covered.get("contentType").asString()).isEqualTo(
+      "application/json"
+    );
+    assertThat(covered.get("evidence").size()).isEqualTo(2);
+
+    var uncovered = findings.get(UNCOVERED_SPEC_POINTER);
+    assertThat(uncovered.get("status").asString()).isEqualTo("UNCOVERED");
+    // Empty never means "not loaded" - it means this finding has no evidence.
+    assertThat(uncovered.get("evidence").isEmpty()).isTrue();
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  void findReport_servesEvidenceAsObjectsWithAnExplicitlyNullTestCaseName()
+    throws Exception {
+    var calculationId = UUID.fromString("7b3f0c58-0a6b-4f95-8d4e-2f5c4a1b6d33");
+
+    persistReportWithFindings(calculationId);
+
+    var evidence = indexBy(
+      indexBy(
+        readSingleTestResult(calculationId).get("findings"),
+        "specPointer"
+      )
+        .get(COVERED_SPEC_POINTER)
+        .get("evidence"),
+      "traceId"
+    );
+
+    assertThat(evidence).containsOnlyKeys(
+      TRACE_ID_WITHOUT_TEST_IDENTITY,
+      TRACE_ID_WITH_TEST_IDENTITY
+    );
+
+    assertThat(
+      evidence.get(TRACE_ID_WITH_TEST_IDENTITY).get("testCaseName").asString()
+    ).isEqualTo("shouldReturnNotFound");
+
+    // A trace whose span carried no test identity says so: the key is present and null, so a
+    // client can tell "no test name" apart from a field this version does not know about.
+    var withoutTestIdentity = evidence.get(TRACE_ID_WITHOUT_TEST_IDENTITY);
+    assertThat(withoutTestIdentity.has("testCaseName")).isTrue();
+    assertThat(withoutTestIdentity.get("testCaseName").isNull()).isTrue();
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  void findReport_servesAnEmptyFindingsArray_leavingEveryOtherFieldUntouched()
+    throws Exception {
+    var calculationId = UUID.fromString("c1f4a6d8-5e2b-4a70-9f13-8b6c0d2e4a55");
+
+    var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
+    var additionalInformation = "some additional information";
+
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    );
+
+    // A report written before findings existed: its results carry none, and nothing about the
+    // coverage they already reported may move.
+    qualityGateReportRepository.save(
+      qualityGateReport.withApiTests(
+        qualityGateReport
+          .getApiTests()
+          .stream()
+          .map(apiTest ->
+            apiTest.withApiTestResults(
+              Set.of(
+                ApiTestResult.builder()
+                  .apiTestCriteria(PATH_COVERAGE.name())
+                  .coverage(coverage)
+                  .includedInReport(TRUE)
+                  .duration(Duration.ofSeconds(1))
+                  .additionalInformation(additionalInformation)
+                  .apiTest(apiTest)
+                  .build()
+              )
+            )
+          )
+          .collect(toSet())
+      )
+    );
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.has("findings")).isTrue();
+    assertThat(testResult.get("findings").isEmpty()).isTrue();
+
+    var listedReport = jsonMapper
+      .readTree(
+        mockMvc
+          .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+          .andExpect(status().isOk())
+          .andReturn()
+          .getResponse()
+          .getContentAsString()
+      )
+      .get(0);
+
+    // The findings are the only thing the widened shape adds; everything the list read already
+    // served must render identically here. Asserted over the whole report rather than the one
+    // criterion result, because three components are forked - the report, the interface and the
+    // result - and a field added to any narrow one would otherwise vanish from this read with a
+    // green build.
+    assertThat(withoutFindings(readSingleReport(calculationId))).isEqualTo(
+      listedReport
     );
   }
 
@@ -419,6 +578,133 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     );
 
     return persistedQualityGateReport.withApiTests(Set.of(persistedApiTests));
+  }
+
+  /**
+   * One report, one criterion result, two findings: a covered one carrying every discriminator the
+   * target has plus two traces - one of them named, one not - and an uncovered one with no evidence
+   * at all.
+   */
+  private void persistReportWithFindings(UUID calculationId) {
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    var apiTestResult = ApiTestResult.builder()
+      .apiTestCriteria(PATH_COVERAGE.name())
+      .coverage(BigDecimal.valueOf(0.5).setScale(2, HALF_UP))
+      .includedInReport(TRUE)
+      .duration(Duration.ofSeconds(1))
+      .additionalInformation("some additional information")
+      .apiTest(apiTest)
+      .build();
+
+    var covered = ApiTestFinding.builder()
+      .specPointer(COVERED_SPEC_POINTER)
+      .status(FindingStatus.COVERED.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode("404")
+      .contentType("application/json")
+      .apiTestResult(apiTestResult)
+      .build();
+
+    covered
+      .getEvidence()
+      .addAll(
+        Set.of(
+          FindingEvidence.builder()
+            .traceId(TRACE_ID_WITHOUT_TEST_IDENTITY)
+            .build(),
+          FindingEvidence.builder()
+            .traceId(TRACE_ID_WITH_TEST_IDENTITY)
+            .testCaseName("shouldReturnNotFound")
+            .build()
+        )
+      );
+
+    var uncovered = ApiTestFinding.builder()
+      .specPointer(UNCOVERED_SPEC_POINTER)
+      .status(FindingStatus.UNCOVERED.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode("500")
+      .contentType("application/json")
+      .apiTestResult(apiTestResult)
+      .build();
+
+    apiTestResult.getFindings().addAll(Set.of(covered, uncovered));
+
+    apiTestRepository.save(apiTest.withApiTestResults(Set.of(apiTestResult)));
+  }
+
+  /**
+   * The report read as a tree rather than through the generated DTO: these tests assert on what is
+   * on the wire - a key present and null is not the same as an absent one, and a DTO cannot tell
+   * them apart.
+   */
+  private JsonNode readSingleReport(UUID calculationId) throws Exception {
+    return jsonMapper.readTree(
+      mockMvc
+        .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+        .andExpect(status().isOk())
+        .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+        .andReturn()
+        .getResponse()
+        .getContentAsString()
+    );
+  }
+
+  private JsonNode readSingleTestResult(UUID calculationId) throws Exception {
+    return readSingleReport(calculationId)
+      .get("interfaces")
+      .get(0)
+      .get("testResults")
+      .get(0);
+  }
+
+  /** The report with {@code findings} stripped from every criterion result it carries. */
+  private static JsonNode withoutFindings(JsonNode report) {
+    var stripped = report.deepCopy();
+
+    for (var api : stripped.get("interfaces")) {
+      for (var testResult : api.get("testResults")) {
+        ((ObjectNode) testResult).without("findings");
+      }
+    }
+
+    return stripped;
+  }
+
+  private static Map<String, JsonNode> indexBy(
+    JsonNode array,
+    String keyField
+  ) {
+    var byKey = new HashMap<String, JsonNode>();
+
+    for (var element : array) {
+      byKey.put(element.get(keyField).asString(), element);
+    }
+
+    return byKey;
+  }
+
+  private static List<String> valuesOf(JsonNode array, String field) {
+    var values = new ArrayList<String>();
+
+    for (var element : array) {
+      values.add(element.get(field).asString());
+    }
+
+    return values;
   }
 
   @Test

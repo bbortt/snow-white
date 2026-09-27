@@ -8,11 +8,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.res
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource.ReportResource.ReportOrErrorResponse.errorResponse;
-import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource.ReportResource.ReportOrErrorResponse.qualityGateReport;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
-import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -48,28 +45,76 @@ public class ReportResource implements ReportApi {
   private final ReportService reportService;
   private final QualityGateReportMapper qualityGateReportMapper;
 
+  /**
+   * The only read that serves findings, and therefore the only one that fetches them: a drilldown
+   * expands beside a coverage bar that is already on screen, so the second request the UI would
+   * otherwise make is the one this endpoint exists to avoid.
+   * <p>
+   * The status decides before either report is read, and a still-running report answers the
+   * findings-free shape. This endpoint is also the calculation's poll - {@code toolkit/cli} reads
+   * nothing but {@code status} from it every two seconds - and a poll that dragged the evidence
+   * table through a four-level join for a field it never reads is the cost the denormalized
+   * {@code coverage} column exists to avoid. Deciding on the projected status rather than on a whole
+   * report is what keeps that decision from loading the graph twice; see
+   * {@code QualityGateReportRepository#findReportStatusByCalculationId(UUID)}.
+   */
   @Override
+  @RealizesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @RealizesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
   public ResponseEntity getReportByCalculationId(UUID calculationId) {
-    var reportOrError = getReportByCalculationIdOrErrorResponse(calculationId);
-    if (nonNull(reportOrError.errorResponse())) {
-      return reportOrError.errorResponse();
+    var optionalStatus = reportService.findReportStatusByCalculationId(
+      calculationId
+    );
+
+    if (optionalStatus.isEmpty()) {
+      return reportNotFound(calculationId);
+    }
+
+    if (IN_PROGRESS.equals(optionalStatus.get())) {
+      var optionalReport = reportService.findReportByCalculationId(
+        calculationId
+      );
+
+      return optionalReport.isPresent()
+        ? reportStillInProgress(optionalReport.get())
+        : reportNotFound(calculationId);
+    }
+
+    var optionalReportWithFindings =
+      reportService.findReportWithFindingsByCalculationId(calculationId);
+
+    if (optionalReportWithFindings.isEmpty()) {
+      return reportNotFound(calculationId);
     }
 
     return ResponseEntity.ok(
-      qualityGateReportMapper.toListDto(reportOrError.qualityGateReport())
+      qualityGateReportMapper.toReportDto(optionalReportWithFindings.get())
     );
   }
 
+  /**
+   * A still-running report answers {@code 202} with the partial report as JSON rather than XML,
+   * because a half-populated JUnit document would read as a genuine passing test run.
+   * <p>
+   * It reads the report without its findings: the {@code 202} body is a courtesy for a CI consumer
+   * waiting on XML, and no poll should pay for evidence nobody renders.
+   */
   @Override
+  @RealizesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
   public ResponseEntity getReportByCalculationIdAsJUnit(UUID calculationId) {
-    var reportOrError = getReportByCalculationIdOrErrorResponse(calculationId);
-    if (nonNull(reportOrError.errorResponse())) {
-      return reportOrError.errorResponse();
+    var optionalReport = reportService.findReportByCalculationId(calculationId);
+
+    if (optionalReport.isEmpty()) {
+      return reportNotFound(calculationId);
     }
 
-    var jUnitReport = jUnitReporter.transformToJUnitTestSuites(
-      reportOrError.qualityGateReport()
-    );
+    var report = optionalReport.get();
+
+    if (IN_PROGRESS.equals(report.getReportStatus())) {
+      return reportStillInProgress(report);
+    }
+
+    var jUnitReport = jUnitReporter.transformToJUnitTestSuites(report);
 
     return ResponseEntity.ok()
       .header(
@@ -109,54 +154,24 @@ public class ReportResource implements ReportApi {
   }
 
   /**
-   * A report that does not exist is a {@code 404}; one still running is a {@code 202} carrying the
-   * partial report as JSON — including on the JUnit endpoint, where a half-populated document
-   * would read as a genuine passing test run.
+   * The one {@code 202} both reads answer, so the two cannot drift: the findings-free shape as JSON,
+   * whatever the endpoint's completed response would have been.
    */
   @RealizesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
-  private ReportOrErrorResponse getReportByCalculationIdOrErrorResponse(
-    UUID calculationId
-  ) {
-    var optionalReport = reportService.findReportByCalculationId(calculationId);
-
-    if (optionalReport.isEmpty()) {
-      return errorResponse(
-        ResponseEntity.status(NOT_FOUND)
-          .contentType(APPLICATION_JSON)
-          .body(
-            ListQualityGateReports500Response.builder()
-              .code(NOT_FOUND.getReasonPhrase())
-              .message(format("No report by id '%s' exists!", calculationId))
-              .build()
-          )
-      );
-    }
-
-    var report = optionalReport.get();
-
-    if (IN_PROGRESS.equals(report.getReportStatus())) {
-      return errorResponse(
-        ResponseEntity.status(ACCEPTED)
-          .contentType(APPLICATION_JSON)
-          .body(qualityGateReportMapper.toListDto(report))
-      );
-    }
-
-    return qualityGateReport(report);
+  private ResponseEntity reportStillInProgress(QualityGateReport report) {
+    return ResponseEntity.status(ACCEPTED)
+      .contentType(APPLICATION_JSON)
+      .body(qualityGateReportMapper.toListDto(report));
   }
 
-  record ReportOrErrorResponse(
-    @Nullable QualityGateReport qualityGateReport,
-    @Nullable ResponseEntity errorResponse
-  ) {
-    static ReportOrErrorResponse errorResponse(ResponseEntity errorResponse) {
-      return new ReportOrErrorResponse(null, errorResponse);
-    }
-
-    static ReportOrErrorResponse qualityGateReport(
-      QualityGateReport qualityGateReport
-    ) {
-      return new ReportOrErrorResponse(qualityGateReport, null);
-    }
+  private ResponseEntity reportNotFound(UUID calculationId) {
+    return ResponseEntity.status(NOT_FOUND)
+      .contentType(APPLICATION_JSON)
+      .body(
+        ListQualityGateReports500Response.builder()
+          .code(NOT_FOUND.getReasonPhrase())
+          .message(format("No report by id '%s' exists!", calculationId))
+          .build()
+      );
   }
 }
