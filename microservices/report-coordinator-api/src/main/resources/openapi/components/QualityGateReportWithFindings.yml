@@ -1,0 +1,37 @@
+# './QualityGateReport.yml' with findings on every criterion result; the two differ in
+# 'interfaces' alone. Served by the single-report read, where a drilldown expands beside a coverage
+# bar already on screen.
+type: object
+required:
+  - calculationId
+  - qualityGateConfigName
+  - status
+  - calculationRequest
+  - initiatedAt
+properties:
+  calculationId:
+    type: string
+    format: uuid
+    description: 'UUID for the calculation job'
+  qualityGateConfigName:
+    type: string
+    description: 'The name of the Quality-Gate'
+    minLength: 1
+    maxLength: 64
+  status:
+    type: string
+    enum: [IN_PROGRESS, FAILED, PASSED, FINISHED_EXCEPTIONALLY, TIMED_OUT]
+    default: 'IN_PROGRESS'
+    description: 'Current status of the calculation'
+    minLength: 1
+    maxLength: 32
+  calculationRequest:
+    $ref: './QualityGateCalculationRequest.yml'
+  interfaces:
+    type: array
+    items:
+      $ref: './TestedApiWithFindings.yml'
+  initiatedAt:
+    type: string
+    format: date-time
+    description: 'When the calculation was initiated'

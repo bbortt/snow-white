@@ -19,8 +19,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.ACCEPTED;
@@ -29,9 +31,12 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
@@ -78,17 +83,26 @@ class ReportResourceUnitTest {
     @Mock
     private QualityGateReport qualityGateReport;
 
-    ListQualityGateReports200ResponseInner configureServiceMock(
-      UUID calculationId
+    /**
+     * The status is projected first and decides which report gets read, so a completed path stubs
+     * the status and the findings-carrying read - see
+     * {@code ReportResource#getReportByCalculationId(UUID)}.
+     */
+    GetReportByCalculationId200Response configureServiceMock(
+      UUID calculationId,
+      ReportStatus reportStatus
     ) {
+      doReturn(Optional.of(reportStatus))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
-        .findReportByCalculationId(calculationId);
+        .findReportWithFindingsByCalculationId(calculationId);
 
-      var responseDto = mock(ListQualityGateReports200ResponseInner.class);
+      var responseDto = mock(GetReportByCalculationId200Response.class);
       doReturn(responseDto)
         .when(qualityGateReportMapperMock)
-        .toListDto(qualityGateReport);
+        .toReportDto(qualityGateReport);
 
       return responseDto;
     }
@@ -98,24 +112,38 @@ class ReportResourceUnitTest {
       var calculationId = UUID.fromString(
         "35e9b4bf-6d9b-46d8-993c-feff1371c1fa"
       );
-      var responseDto = configureServiceMock(calculationId);
 
-      assertThatResponseIsStatusOkWithDto(PASSED, calculationId, responseDto);
+      assertThatResponseIsStatusOkWithDto(PASSED, calculationId);
     }
 
     @Test
     @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+    @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
     void shouldReturnReport_inStatusProgress() {
       var calculationId = UUID.fromString(
         "6edca9e1-6a3a-426a-a32a-7e970b52886e"
       );
-      var responseDto = configureServiceMock(calculationId);
+      doReturn(Optional.of(IN_PROGRESS))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
 
-      doReturn(IN_PROGRESS).when(qualityGateReport).getReportStatus();
+      var responseDto = mock(ListQualityGateReports200ResponseInner.class);
+      doReturn(responseDto)
+        .when(qualityGateReportMapperMock)
+        .toListDto(qualityGateReport);
 
       var response = fixture.getReportByCalculationId(calculationId);
 
       assertThatResponseHasBody(response, ACCEPTED, responseDto);
+
+      // This endpoint is also the calculation's poll, and a poll reads nothing but 'status': the
+      // findings-free shape is what keeps it off the evidence table.
+      verify(reportServiceMock, never()).findReportWithFindingsByCalculationId(
+        any()
+      );
     }
 
     @Test
@@ -123,9 +151,8 @@ class ReportResourceUnitTest {
       var calculationId = UUID.fromString(
         "8c0fb130-1005-4b9a-a8dc-bce77a8f121e"
       );
-      var responseDto = configureServiceMock(calculationId);
 
-      assertThatResponseIsStatusOkWithDto(FAILED, calculationId, responseDto);
+      assertThatResponseIsStatusOkWithDto(FAILED, calculationId);
     }
 
     @Test
@@ -136,10 +163,103 @@ class ReportResourceUnitTest {
       );
       doReturn(Optional.empty())
         .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThatResponseIsNotFound(response, calculationId);
+      verifyNoInteractions(qualityGateReportMapperMock);
+    }
+
+    /**
+     * The status and the report are not one atomic look: a report deleted between them would
+     * otherwise map a missing report into a {@code 200}.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+    void shouldReturnHttpNotFound_whenTheReportVanishesBeforeItsFindingsAreRead() {
+      var calculationId = UUID.fromString(
+        "9b6e2f41-5c7d-4a08-8e3b-0d1a7c2f4b95"
+      );
+      doReturn(Optional.of(PASSED))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
+        .findReportWithFindingsByCalculationId(calculationId);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThatResponseIsNotFound(response, calculationId);
+      verifyNoInteractions(qualityGateReportMapperMock);
+    }
+
+    /** The same race on the in-progress side, where the {@code 202} body is read separately. */
+    @Test
+    @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+    void shouldReturnHttpNotFound_whenTheReportVanishesBeforeTheAcceptedBodyIsRead() {
+      var calculationId = UUID.fromString(
+        "4c8b1d3e-7a52-4e19-b0d6-2f9e5a1c7b38"
+      );
+      doReturn(Optional.of(IN_PROGRESS))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
+      doReturn(Optional.empty())
+        .when(reportServiceMock)
         .findReportByCalculationId(calculationId);
 
       var response = fixture.getReportByCalculationId(calculationId);
 
+      assertThatResponseIsNotFound(response, calculationId);
+      verifyNoInteractions(qualityGateReportMapperMock);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+    void shouldServeFindingsWithoutASecondRequest() {
+      var calculationId = UUID.fromString(
+        "f0a3c6d2-0c29-4a1e-9a1b-63f8e6d6a9b1"
+      );
+      var responseDto = configureServiceMock(calculationId, PASSED);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThatResponseHasBody(response, OK, responseDto);
+
+      // The findings ride along in the body the drilldown already asked for: a completed report is
+      // mapped by 'toReportDto', so nothing the client does next has to fetch them.
+      verify(qualityGateReportMapperMock).toReportDto(qualityGateReport);
+      verifyNoMoreInteractions(qualityGateReportMapperMock);
+    }
+
+    private void assertThatResponseIsStatusOkWithDto(
+      ReportStatus reportStatus,
+      UUID calculationId
+    ) {
+      var responseDto = configureServiceMock(calculationId, reportStatus);
+
+      var response = fixture.getReportByCalculationId(calculationId);
+
+      assertThatResponseHasBody(response, OK, responseDto);
+    }
+
+    private static void assertThatResponseHasBody(
+      ResponseEntity response,
+      HttpStatus ok,
+      Object responseDto
+    ) {
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(ok),
+          r -> assertThat(r.getBody()).isEqualTo(responseDto)
+        );
+    }
+
+    private static void assertThatResponseIsNotFound(
+      ResponseEntity response,
+      UUID calculationId
+    ) {
       assertThat(response)
         .isNotNull()
         .satisfies(
@@ -159,31 +279,6 @@ class ReportResourceUnitTest {
               )
         );
     }
-
-    private void assertThatResponseIsStatusOkWithDto(
-      ReportStatus failed,
-      UUID calculationId,
-      ListQualityGateReports200ResponseInner responseDto
-    ) {
-      doReturn(failed).when(qualityGateReport).getReportStatus();
-
-      var response = fixture.getReportByCalculationId(calculationId);
-
-      assertThatResponseHasBody(response, OK, responseDto);
-    }
-
-    private static void assertThatResponseHasBody(
-      ResponseEntity response,
-      HttpStatus ok,
-      ListQualityGateReports200ResponseInner responseDto
-    ) {
-      assertThat(response)
-        .isNotNull()
-        .satisfies(
-          r -> assertThat(r.getStatusCode()).isEqualTo(ok),
-          r -> assertThat(r.getBody()).isEqualTo(responseDto)
-        );
-    }
   }
 
   @Nested
@@ -191,6 +286,30 @@ class ReportResourceUnitTest {
 
     @Mock
     private QualityGateReport qualityGateReport;
+
+    @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE
+    )
+    void shouldReadTheReportWithoutItsFindings() {
+      var calculationId = UUID.fromString(
+        "3d8a1c77-3b0f-4a27-9f2e-1c9d0b5a7e42"
+      );
+      doReturn(Optional.of(qualityGateReport))
+        .when(reportServiceMock)
+        .findReportByCalculationId(calculationId);
+      doReturn(mock(TestSuites.class))
+        .when(jUnitReporterMock)
+        .transformToJUnitTestSuites(qualityGateReport);
+
+      fixture.getReportByCalculationIdAsJUnit(calculationId);
+
+      // A CI poll renders XML and never renders evidence; loading the grandchild table for it
+      // would spend a join per result on a body nobody reads.
+      verify(reportServiceMock, never()).findReportWithFindingsByCalculationId(
+        any()
+      );
+    }
 
     @Test
     void shouldReturnJUnitReport() {

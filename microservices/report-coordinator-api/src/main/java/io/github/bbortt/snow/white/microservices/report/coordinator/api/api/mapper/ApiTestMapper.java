@@ -13,6 +13,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.clie
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202ResponseInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequestIncludeApisInner;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200ResponseInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerInterfacesInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import java.util.List;
@@ -72,6 +73,12 @@ public interface ApiTestMapper {
   @Mapping(target = "testResults", source = "apiTestResults")
   @Mapping(target = "status", source = "reportStatus")
   ListQualityGateReports200ResponseInnerInterfacesInner toListInterfaces(
+    ApiTest apiTest
+  );
+
+  @Mapping(target = "testResults", source = "apiTestResults")
+  @Mapping(target = "status", source = "reportStatus")
+  GetReportByCalculationId200ResponseInterfacesInner toReportInterfaces(
     ApiTest apiTest
   );
 }

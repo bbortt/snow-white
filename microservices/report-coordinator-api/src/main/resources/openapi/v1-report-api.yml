@@ -98,7 +98,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './components/QualityGateReport.yml'
+                $ref: './components/QualityGateReportWithFindings.yml'
+        # The 202 keeps './components/QualityGateReport.yml' for the same reason the JUnit
+        # endpoint's does: this is the calculation's poll, and an empty 'findings' on a result that
+        # has reported would claim the criterion found nothing where it only has not been loaded.
         '202':
           description: 'Calculation is still in progress'
           content:
@@ -117,6 +120,9 @@ paths:
             application/json:
               schema:
                 $ref: './components/Error.yml'
+  # The JUnit endpoint keeps './components/QualityGateReport.yml' on its 202: it is a CI poll
+  # awaiting XML, and findings would make every poll load the evidence table for a body nobody
+  # reads.
   /api/rest/v1/reports/{calculationId}/junit:
     get:
       operationId: getReportByCalculationIdAsJUnit

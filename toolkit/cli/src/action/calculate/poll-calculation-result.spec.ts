@@ -7,9 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { exit } from 'node:process';
 
-import type { ReportApi } from '../../clients/report-api';
-
-import { ListQualityGateReports200ResponseInnerStatusEnum } from '../../clients/report-api';
+import { Configuration, ListQualityGateReports200ResponseInnerStatusEnum, ReportApi } from '../../clients/report-api';
 import { QUALITY_GATE_FAILED } from '../../common/exit-codes';
 import { pollCalculationResult } from './poll-calculation-result';
 
@@ -177,5 +175,80 @@ describe('pollCalculationResult', () => {
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('"calculationId":"calc-agentic-passed"'));
 
     consoleInfoSpy.mockRestore();
+  });
+
+  // The generated client decodes every 2xx of an operation with its 200 deserializer, and this
+  // endpoint's 202 is the findings-free shape. These go through the real client rather than a mock,
+  // because what is being asserted is the deserializer the contract generates.
+  describe('against the generated report deserializer', () => {
+    const reportApiRespondingWith = (status: number, body: unknown): ReportApi =>
+      new ReportApi(
+        new Configuration({
+          basePath: API_BASE_URL,
+          fetchApi: () =>
+            Promise.resolve(
+              new Response(JSON.stringify(body), {
+                headers: { 'Content-Type': 'application/json' },
+                status,
+              }),
+            ),
+        }),
+      );
+
+    const reportWithOneCriterionResult = (findings?: unknown[]): unknown => ({
+      calculationId: '3c1f8a90-6b2d-4e57-9a1c-8d0e2f4b6a71',
+      calculationRequest: { includeApis: [{ apiName: 'user-api', apiVersion: '1.0.0', serviceName: 'user-service' }] },
+      initiatedAt: '2026-01-01T00:00:00.000Z',
+      interfaces: [
+        {
+          apiName: 'user-api',
+          serviceName: 'user-service',
+          testResults: [{ coverage: 0.5, ...(findings ? { findings } : {}), id: 'PATH_COVERAGE' }],
+        },
+      ],
+      qualityGateConfigName: 'test-gate',
+      status: ListQualityGateReports200ResponseInnerStatusEnum.InProgress,
+    });
+
+    it('should read a 202 whose criterion results carry no findings at all', async () => {
+      const reportApi = reportApiRespondingWith(202, reportWithOneCriterionResult());
+
+      const report = await reportApi.getReportByCalculationId({
+        calculationId: '3c1f8a90-6b2d-4e57-9a1c-8d0e2f4b6a71',
+      });
+
+      expect(report.status).toBe(ListQualityGateReports200ResponseInnerStatusEnum.InProgress);
+      expect(report.interfaces?.[0]?.testResults?.[0]?.findings).toBeUndefined();
+    });
+
+    it('should read the findings of a 200', async () => {
+      const reportApi = reportApiRespondingWith(
+        200,
+        reportWithOneCriterionResult([
+          {
+            evidence: [{ testCaseName: null, traceId: '1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e' }],
+            specPointer: '/paths/~1api~1v1~1users/get/responses/404',
+            status: 'COVERED',
+          },
+        ]),
+      );
+
+      const report = await reportApi.getReportByCalculationId({
+        calculationId: '3c1f8a90-6b2d-4e57-9a1c-8d0e2f4b6a71',
+      });
+
+      expect(report.interfaces?.[0]?.testResults?.[0]?.findings).toEqual([
+        {
+          contentType: undefined,
+          evidence: [{ testCaseName: undefined, traceId: '1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e' }],
+          httpMethod: undefined,
+          httpPath: undefined,
+          parameterName: undefined,
+          responseCode: undefined,
+          specPointer: '/paths/~1api~1v1~1users/get/responses/404',
+          status: 'COVERED',
+        },
+      ]);
+    });
   });
 });

@@ -1,0 +1,15 @@
+type: object
+required:
+  - traceId
+properties:
+  traceId:
+    type: string
+    description: "The trace that exercised the finding's target"
+    example: 4bf92f3577b34da6a3ce929d0e0e4736
+    minLength: 1
+    maxLength: 64
+  testCaseName:
+    type: string
+    description: 'The test that produced the trace, or null where the evidencing span carried no test identity'
+    example: shouldAnswerNotFoundForUnknownMessage
+    maxLength: 256

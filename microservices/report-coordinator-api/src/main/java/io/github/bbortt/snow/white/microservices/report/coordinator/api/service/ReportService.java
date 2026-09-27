@@ -24,6 +24,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapp
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportSpecification;
@@ -69,6 +70,48 @@ public class ReportService {
     tagCurrentSpanWithCalculationId(calculationId);
 
     return qualityGateReportRepository.findById(calculationId);
+  }
+
+  /**
+   * The report's status without the report, for the read that decides between the findings-free and
+   * the findings-carrying shape before it pays for either.
+   */
+  @WithSpan
+  @RealizesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  public Optional<ReportStatus> findReportStatusByCalculationId(
+    UUID calculationId
+  ) {
+    tagCurrentSpanWithCalculationId(calculationId);
+
+    return qualityGateReportRepository
+      .findReportStatusByCalculationId(calculationId)
+      .map(ReportStatus::reportStatus);
+  }
+
+  /**
+   * The same report as {@link #findReportByCalculationId(UUID)}, but with its findings and their
+   * evidence already loaded. Kept apart from that method on purpose: the write path and the JUnit
+   * poll have no use for the grandchild table, and paying for it there would be a regression
+   * nobody asked for.
+   * <p>
+   * Transactional where {@link #findReportByCalculationId(UUID)} needs not to be: that one is
+   * {@code findById}, which {@code SimpleJpaRepository} already runs read-only-transactionally, and
+   * a derived query declared on the repository interface gets no such boundary of its own. What the
+   * boundary protects is hydration, not the mapping that follows it: the report's
+   * {@code stackTrace} is a LOB, read as the row is materialized, and without a transaction the
+   * statement's connection is already gone by then.
+   */
+  @WithSpan
+  @Transactional(readOnly = true)
+  @RealizesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  public Optional<QualityGateReport> findReportWithFindingsByCalculationId(
+    UUID calculationId
+  ) {
+    tagCurrentSpanWithCalculationId(calculationId);
+
+    return qualityGateReportRepository.findWithFindingsByCalculationId(
+      calculationId
+    );
   }
 
   @WithSpan
