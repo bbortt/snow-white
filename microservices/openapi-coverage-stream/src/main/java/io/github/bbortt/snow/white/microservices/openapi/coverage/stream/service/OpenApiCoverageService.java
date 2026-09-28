@@ -19,9 +19,13 @@ import static io.swagger.v3.oas.models.PathItem.HttpMethod.PUT;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
@@ -129,20 +133,39 @@ public class OpenApiCoverageService {
     );
   }
 
+  /**
+   * Groups the telemetry by the operation it belongs to, and hoists each span's test identity on
+   * the way past.
+   * <p>
+   * This is the one place that knows which attribute the operator configured for a test identity,
+   * so it is the one place that reads it: a calculator is handed spans that already name their
+   * test, and stays free of configuration it would only pass on. Hoisting here also keeps the
+   * identity out of the grouping key - the attribute never influences which operation a span is
+   * attributed to.
+   */
+  @RealizesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   private Map<String, List<OpenTelemetryData>> groupTelemetryByPath(
     Set<OpenTelemetryData> telemetryData,
     Map<String, String> operationIdToOperationKey
   ) {
     var operationIdAttr =
       openApiCoverageStreamProperties.getOperationIdAttribute();
+    var testCaseNameAttr =
+      openApiCoverageStreamProperties.getTestCaseNameAttribute();
     return telemetryData
       .stream()
       .filter(data ->
         isRoutable(data, operationIdAttr, operationIdToOperationKey)
       )
       .collect(
-        groupingBy(data ->
-          resolveOperationKey(data, operationIdAttr, operationIdToOperationKey)
+        groupingBy(
+          data ->
+            resolveOperationKey(
+              data,
+              operationIdAttr,
+              operationIdToOperationKey
+            ),
+          mapping(data -> data.withTestIdentityFrom(testCaseNameAttr), toList())
         )
       );
   }

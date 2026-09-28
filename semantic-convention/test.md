@@ -15,7 +15,8 @@ The value is read as an opaque label: never parsed into suite and case, never tr
 A span carrying it and a span without it are matched identically, so enabling the convention changes what a report _says_ and never what it _scores_.
 Absent, blank and whitespace-only all mean the same thing - no test identity - and consumers fall back to the trace id.
 
-Emitting the attribute is worthwhile before Snow-White reports it: the convention is fixed here so that a suite adopting it now needs no change once findings carry the name.
+A finding's evidence is captured with the test the satisfying span named, so a suite emitting the attribute needs no further configuration for its own case names to land beside the targets they covered.
+Reading a different key is possible - `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_TEST-CASE-NAME-ATTRIBUTE` on the [`openapi-coverage-stream`](../microservices/openapi-coverage-stream) - but the convention is the default.
 
 `test.case.result.status`, `test.suite.name` and `test.suite.run.status` - the rest of the upstream group - are deliberately not read.
 

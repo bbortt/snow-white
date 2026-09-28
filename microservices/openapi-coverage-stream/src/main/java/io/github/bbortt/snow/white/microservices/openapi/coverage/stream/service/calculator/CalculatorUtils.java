@@ -11,7 +11,9 @@ import static java.util.Objects.isNull;
 import static lombok.AccessLevel.PRIVATE;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -72,13 +74,24 @@ final class CalculatorUtils {
       .toList();
   }
 
+  /**
+   * One entry per distinct {@code (traceId, testCaseName)} pair among the spans the caller's own
+   * matching rule attributed to its target.
+   * <p>
+   * The test identity is whatever the span carried, verbatim, and null on a span that carried
+   * none - so telemetry without it reduces to exactly the distinct trace ids and adds no
+   * cardinality.
+   */
   @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  @RealizesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   static @NonNull List<FindingEvidence> toEvidence(
     @NonNull List<OpenTelemetryData> satisfyingTelemetry
   ) {
     return satisfyingTelemetry
       .stream()
-      .map(telemetry -> new FindingEvidence(telemetry.traceId(), null))
+      .map(telemetry ->
+        new FindingEvidence(telemetry.traceId(), telemetry.testCaseName())
+      )
       .distinct()
       .toList();
   }

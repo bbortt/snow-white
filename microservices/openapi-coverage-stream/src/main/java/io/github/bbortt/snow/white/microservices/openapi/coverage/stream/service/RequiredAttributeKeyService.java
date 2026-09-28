@@ -55,6 +55,11 @@ public class RequiredAttributeKeyService {
    * {@code url.query} carries every query parameter as one value and
    * {@code url.path} carries the matched path, so neither query nor path parameters contribute a
    * key of their own - only header parameters do.
+   * <p>
+   * The set is what a calculation <em>reads</em>, not what a criterion judges: the configured
+   * test-identity attribute is requested for every spec so that an evidence entry can name the
+   * test that satisfied a target, though no verdict and no ratio depends on it. Omitting it here
+   * would leave the one component that could attach it to a finding unable to see it.
    */
   @RealizesSw(SwTraceables.SW_021_REQUIRED_ATTRIBUTE_KEY_SET_DERIVATION)
   public Set<String> requiredAttributeKeys(OpenAPI openAPI) {
@@ -66,6 +71,9 @@ public class RequiredAttributeKeyService {
     requiredKeys.add(URL_QUERY.getKey());
     requiredKeys.add(CONTENT_TYPE_HEADER_KEY);
     requiredKeys.add(openApiCoverageStreamProperties.getOperationIdAttribute());
+    requiredKeys.add(
+      openApiCoverageStreamProperties.getTestCaseNameAttribute()
+    );
 
     requiredKeys.addAll(headerParameterKeys(openAPI));
 

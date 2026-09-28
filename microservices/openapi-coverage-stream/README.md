@@ -54,9 +54,11 @@ The service fails to start if neither, or both, are configured.
 
 ### Optional Configuration
 
-| Property                                         | Description                                              | Default Value |
-| ------------------------------------------------ | -------------------------------------------------------- | ------------- |
-| `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS` | Whether to auto-create Kafka topics if they don’t exist. | `false`       |
+| Property                                                      | Description                                                                                                                                                            | Default Value          |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_INIT-TOPICS`              | Whether to auto-create Kafka topics if they don’t exist.                                                                                                               | `false`                |
+| `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_OPERATION-ID-ATTRIBUTE`   | Span attribute naming the OpenAPI operation a span exercised; a span without it is matched by its HTTP method and URL path instead.                                    | `openapi.operation.id` |
+| `SNOW_WHITE_OPENAPI_COVERAGE_STREAM_TEST-CASE-NAME-ATTRIBUTE` | Span attribute naming the test case that exercised the API, reported as a finding's evidence - see [`semantic-convention/test.md`](../../semantic-convention/test.md). | `test.case.name`       |
 
 ## Usage Notes
 

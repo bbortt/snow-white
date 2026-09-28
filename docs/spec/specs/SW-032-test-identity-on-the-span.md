@@ -108,3 +108,22 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   without the attribute — waits on the calculators, and so does the automated documentation check:
   the repository has no docs-assertion pattern today, and inventing one for a single file ahead of
   the behaviour it describes buys nothing.
+- **2026-09-28** — Implemented: the value now reaches a finding.
+  `OpenApiCoverageStreamProperties.testCaseNameAttribute` defaults to `test.case.name`, joins
+  `SW-021`'s required key set, and is resolved in exactly one place —
+  `OpenApiCoverageService.groupTelemetryByPath` hoists the attribute onto each
+  `OpenTelemetryData` as it groups, so the 8 calculators that build evidence read a plain field and
+  none of them learns what the operator configured.
+  Hoisting at the grouping step also keeps the identity out of the grouping key, which is what makes
+  the invariance claim structural rather than a property of each calculator: an integration test
+  compares every autowired calculator's result over telemetry differing only by the attribute,
+  ignoring `testCaseName`, and a second test guards it against passing vacuously by requiring that
+  the same telemetry yields evidence naming a test and evidence naming none.
+  Filling the value made `ARCH-011`'s pair model reachable for the first time, and the schema written
+  a day after that amendment still encoded "one trace per finding": `finding_evidence`'s unique
+  constraint now spans the pair with `NULLS NOT DISTINCT`, and `test_case_name` widened to 1024 so a
+  long name cannot fail the insert and lose a whole report.
+  Serving it is still `SW-031`'s work — the value is persisted, not yet on a published API component.
+  The documentation check remains deferred for the reason recorded above; `semantic-convention/test.md`
+  no longer hedges that nothing reads the attribute, and the coverage-stream README documents the
+  property.
