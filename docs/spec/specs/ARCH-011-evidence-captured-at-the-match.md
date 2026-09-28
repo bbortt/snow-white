@@ -137,6 +137,14 @@ values before the verdict is taken.
 
 ## Changes
 
+- **2026-09-28** — Corrected `finding_evidence`'s unique constraint, which had read this spec's
+  amended pair model as "a trace is captured against a target at most once" and so held at most one
+  row per `(finding, trace_id)`.
+  `SW-032` made the second dimension real, and two shapes reach it: a suite reusing a trace context
+  across cases, and a span that named no test beside one that did — each was a constraint violation
+  that failed the insert and drove the whole report to a terminal error status.
+  The constraint now spans the pair, with `NULLS NOT DISTINCT` so the unnamed case keeps the
+  duplicate backstop rather than being exempted from it by NULL semantics.
 - **2026-09-23** — Made an evidence entry a `(traceId, testCaseName)` pair rather than a bare trace
   id, and corrected the claim that this decision adds no key to `SW-021`'s narrowed attribute set —
   a test identity is an attribute, so it has to be requested.

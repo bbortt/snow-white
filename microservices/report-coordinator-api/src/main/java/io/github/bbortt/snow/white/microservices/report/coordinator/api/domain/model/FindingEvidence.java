@@ -24,9 +24,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One captured match between a finding's target and a trace that exercised it.
- * The pair is the identity — a trace observed twice against one target is one row, not two.
- * {@code testCaseName} stays null until a consumer's test harness emits the convention and the
- * narrowed attribute set requests it.
+ * The {@code (traceId, testCaseName)} pair is the identity — the same pair observed twice against
+ * one target is one row, while one trace naming two tests is two.
+ * {@code testCaseName} is null where the evidencing span carried no test identity, which is every
+ * span until a consumer's test harness emits the convention.
  */
 @Getter
 @Builder
@@ -43,7 +44,7 @@ public class FindingEvidence {
   private String traceId;
 
   @Nullable
-  @Size(min = 1, max = 256)
-  @Column(updatable = false, length = 256)
+  @Size(min = 1, max = 1024)
+  @Column(updatable = false, length = 1024)
   private String testCaseName;
 }
