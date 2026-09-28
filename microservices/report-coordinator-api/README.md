@@ -13,6 +13,13 @@ The service acts as an orchestrator for report-related workflows:
 - **Persists** results into a PostgreSQL database.
 - **Serves** data to the frontend for display and analysis.
 
+## Requirements
+
+**PostgreSQL 15 or newer.**
+The migrations use `UNIQUE NULLS NOT DISTINCT`, which earlier versions reject with a syntax error at
+startup, so an older instance fails the service's first migration rather than degrading.
+Every image this repository ships and tests against is pinned well above that floor.
+
 ## Configuration
 
 ### Required Configuration
