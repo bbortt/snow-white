@@ -136,6 +136,40 @@ class ApiTestFindingIT extends AbstractReportCoordinationServiceIT {
       );
   }
 
+  /**
+   * The pair is the identity, so the database has to hold what a calculator can produce: one trace
+   * naming two tests against one target, and a span of that trace that named none.
+   */
+  @Test
+  @VerifiesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
+  void shouldPersistEveryTestNamedByOneTraceAgainstTheSameTarget() {
+    var traceId = "4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d";
+    persistApiTestResultWithFindings(
+      List.of(
+        evidence(traceId, "shouldReturnNotFound"),
+        evidence(traceId, "shouldReturnNotFoundForADeletedPet"),
+        evidence(traceId, null)
+      )
+    );
+
+    assertThat(
+      jdbcTemplate.queryForList(
+        """
+        SELECT e.trace_id, e.test_case_name
+          FROM finding_evidence e
+         WHERE e.trace_id = ?
+        """,
+        traceId
+      )
+    )
+      .extracting(row -> row.get("test_case_name"))
+      .containsExactlyInAnyOrder(
+        "shouldReturnNotFound",
+        "shouldReturnNotFoundForADeletedPet",
+        null
+      );
+  }
+
   @Test
   @VerifiesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
   void shouldLeaveNoFindingBehindWhenTheReportIsDeleted() {
@@ -158,6 +192,17 @@ class ApiTestFindingIT extends AbstractReportCoordinationServiceIT {
   }
 
   private void persistApiTestResultWithFindings() {
+    persistApiTestResultWithFindings(
+      List.of(
+        evidence("1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e", null),
+        evidence("2e3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c", "shouldReturnNotFound")
+      )
+    );
+  }
+
+  private void persistApiTestResultWithFindings(
+    List<FindingEvidence> coveredEvidence
+  ) {
     var qualityGateReport = qualityGateReportRepository.save(
       QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
@@ -196,13 +241,7 @@ class ApiTestFindingIT extends AbstractReportCoordinationServiceIT {
             "/paths/~1api~1v1~1users/get/responses/404",
             COVERED,
             "404",
-            List.of(
-              evidence("1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e", null),
-              evidence(
-                "2e3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c",
-                "shouldReturnNotFound"
-              )
-            )
+            coveredEvidence
           ),
           finding(
             apiTestResult,

@@ -25,30 +25,33 @@ CREATE TABLE api_test_finding
             ON DELETE CASCADE
 );
 
--- One row per (trace_id, test_case_name) pair a finding was matched by. test_case_name ships
--- nullable and stays null until a consumer's test harness emits the convention and the narrowed
--- attribute set requests it: a nullable column on an empty table costs nothing now, and the same
--- change to a published API component later does not.
+-- One row per (trace_id, test_case_name) pair a finding was matched by. test_case_name is the test
+-- identity the evidencing span carried (SW-032) and stays null where it carried none, which is every
+-- span until a consumer's test harness emits the convention.
+-- Its length is a storage bound Snow-White chooses: the upstream convention bounds the value not at
+-- all, and SW-032 forbids truncating it, so the column is wide enough for any real test name.
 CREATE TABLE finding_evidence
 (
     api_test_finding BIGINT      NOT NULL,
     trace_id         VARCHAR(64) NOT NULL,
-    test_case_name   VARCHAR(256),
+    test_case_name   VARCHAR(1024),
     CONSTRAINT fk_api_test_finding_finding_evidence
         FOREIGN KEY (api_test_finding)
             REFERENCES api_test_finding (id)
             ON DELETE CASCADE,
-    -- A trace is captured against a target at most once (ARCH-011): the same span is read once,
-    -- so test_case_name is functionally dependent on this pair, never a second dimension of identity.
-    CONSTRAINT uk_finding_evidence_trace_per_finding
-        UNIQUE (api_test_finding, trace_id)
+    -- The pair is the identity (ARCH-011), so the same trace naming two tests against one target is
+    -- two rows: a suite reusing a trace context across cases, or a span that named no test beside
+    -- one that did, are both reachable. NULLS NOT DISTINCT keeps the duplicate backstop covering the
+    -- unnamed case, which default NULL semantics would exempt from it.
+    CONSTRAINT uk_finding_evidence_test_per_trace_per_finding
+        UNIQUE NULLS NOT DISTINCT (api_test_finding, trace_id, test_case_name)
 );
 
 CREATE INDEX idx_api_test_finding_api_test_result
     ON api_test_finding (api_test_criteria, api_test);
 
--- No separate index on finding_evidence(api_test_finding) alone: uk_finding_evidence_trace_per_finding's
--- backing index already leads with that column.
+-- No separate index on finding_evidence(api_test_finding) alone: the unique constraint's backing
+-- index already leads with that column.
 
 -- "Which targets did this trace cover?" is the drilldown's reverse question, and the only one that
 -- reaches this table without a finding in hand.
