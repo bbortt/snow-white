@@ -29,7 +29,9 @@ CREATE TABLE api_test_finding
 -- identity the evidencing span carried (SW-032) and stays null where it carried none, which is every
 -- span until a consumer's test harness emits the convention.
 -- Its length is a storage bound Snow-White chooses: the upstream convention bounds the value not at
--- all, and SW-032 forbids truncating it, so the column is wide enough for any real test name.
+-- all, and SW-032 forbids truncating it, so the column is wide enough for any real test name. The
+-- coverage stream drops a name past 1024 UTF-8 bytes rather than truncate it, which is what keeps
+-- both this column and the constraint's btree row limit out of reach.
 CREATE TABLE finding_evidence
 (
     api_test_finding BIGINT      NOT NULL,
@@ -42,7 +44,8 @@ CREATE TABLE finding_evidence
     -- The pair is the identity (ARCH-011), so the same trace naming two tests against one target is
     -- two rows: a suite reusing a trace context across cases, or a span that named no test beside
     -- one that did, are both reachable. NULLS NOT DISTINCT keeps the duplicate backstop covering the
-    -- unnamed case, which default NULL semantics would exempt from it.
+    -- unnamed case, which default NULL semantics would exempt from it. NULLS NOT DISTINCT needs
+    -- PostgreSQL 15 or newer; every image this repository runs is pinned to 18.6.
     CONSTRAINT uk_finding_evidence_test_per_trace_per_finding
         UNIQUE NULLS NOT DISTINCT (api_test_finding, trace_id, test_case_name)
 );

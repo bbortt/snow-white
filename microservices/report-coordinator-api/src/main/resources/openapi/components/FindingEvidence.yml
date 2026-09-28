@@ -12,4 +12,5 @@ properties:
     type: string
     description: 'The test that produced the trace, or null where the evidencing span carried no test identity'
     example: shouldAnswerNotFoundForUnknownMessage
-    maxLength: 256
+    minLength: 1
+    maxLength: 1024

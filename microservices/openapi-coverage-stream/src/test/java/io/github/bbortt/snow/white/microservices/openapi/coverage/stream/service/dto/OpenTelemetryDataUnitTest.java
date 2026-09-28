@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto;
 
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import clew.traceables.clew.SwTraceables;
@@ -128,6 +129,66 @@ class OpenTelemetryDataUnitTest {
         attributes
       ).withTestIdentityFrom(TEST_CASE_NAME_ATTRIBUTE);
 
+      assertThat(result.testCaseName()).isNull();
+    }
+
+    /**
+     * The bound is a storage limit, not a convention one, so the longest name that fits is still a
+     * name: nothing is dropped until it genuinely cannot be persisted.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldKeepTheTestIdentity_whenItIsExactlyAtTheStorageBound() {
+      var testCaseName = "a".repeat(MAX_TEST_CASE_NAME_BYTES);
+      var attributes = attributes().put(TEST_CASE_NAME_ATTRIBUTE, testCaseName);
+
+      var result = new OpenTelemetryData(
+        SPAN_ID,
+        TRACE_ID,
+        attributes
+      ).withTestIdentityFrom(TEST_CASE_NAME_ATTRIBUTE);
+
+      assertThat(result.testCaseName()).isEqualTo(testCaseName);
+    }
+
+    /**
+     * Never truncated (SW-032): one pathological name costs its own identity, and the trace id it
+     * was read from still evidences the match, so the report is not lost with it.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldReturnNoTestIdentity_whenValueExceedsTheStorageBound() {
+      var attributes = attributes().put(
+        TEST_CASE_NAME_ATTRIBUTE,
+        "a".repeat(MAX_TEST_CASE_NAME_BYTES + 1)
+      );
+
+      var result = new OpenTelemetryData(
+        SPAN_ID,
+        TRACE_ID,
+        attributes
+      ).withTestIdentityFrom(TEST_CASE_NAME_ATTRIBUTE);
+
+      assertThat(result.testCaseName()).isNull();
+    }
+
+    /**
+     * Characters would be the wrong unit: 400 of these encode to 1200 bytes, which the column would
+     * hold but the unique constraint's btree row limit is measured against.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldMeasureTheStorageBoundInBytesRatherThanCharacters() {
+      var testCaseName = "測".repeat(400);
+      var attributes = attributes().put(TEST_CASE_NAME_ATTRIBUTE, testCaseName);
+
+      var result = new OpenTelemetryData(
+        SPAN_ID,
+        TRACE_ID,
+        attributes
+      ).withTestIdentityFrom(TEST_CASE_NAME_ATTRIBUTE);
+
+      assertThat(testCaseName.length()).isLessThan(MAX_TEST_CASE_NAME_BYTES);
       assertThat(result.testCaseName()).isNull();
     }
 
