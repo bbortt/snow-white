@@ -11,9 +11,11 @@ import static java.util.Objects.isNull;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
+@Slf4j
 public record OpenTelemetryData(
   String spanId,
   String traceId,
@@ -34,10 +36,10 @@ public record OpenTelemetryData(
    * <p>
    * The bound is in bytes rather than characters because it has to satisfy two limits at once: the
    * column's 1024 <em>characters</em>, and the 2704-byte row limit of the constraint's btree, which
-   * 1024 characters of CJK or emoji would exceed at 4 bytes each. Since no character encodes to
-   * less than one byte, 1024 bytes is inside both. That makes it deliberately strict for multi-byte
-   * names - a 600-character CJK name the column would hold is still dropped - which is the trade
-   * for one rule that cannot fail an insert.
+   * 1024 characters would exceed at CJK's 3 bytes each, let alone an emoji's 4. Since no character
+   * encodes to less than one byte, 1024 bytes is inside both. That makes it deliberately strict for
+   * multi-byte names - a 600-character CJK name the column would hold is still dropped - which is
+   * the trade for one rule that cannot fail an insert.
    * <p>
    * SW-032 forbids truncating the value, so a name past this bound is no identity at all rather
    * than a shortened one: the evidence keeps its trace id and the report survives.
@@ -82,14 +84,27 @@ public record OpenTelemetryData(
 
     var testIdentity = attribute.asString();
 
-    if (testIdentity.isBlank() || isTooLongToStore(testIdentity)) {
+    if (testIdentity.isBlank()) {
+      return null;
+    }
+
+    var bytes = testIdentity.getBytes(UTF_8).length;
+
+    if (bytes > MAX_TEST_CASE_NAME_BYTES) {
+      // Loud rather than silent: from the outside a dropped name and an absent one look identical,
+      // and an operator debugging "why is every finding unnamed?" has no other way to tell the two
+      // apart. The name itself is not logged - it is the thing that is too long.
+      logger.warn(
+        "Dropping the test identity of span '{}': attribute '{}' holds {} UTF-8 bytes, more than the {} Snow-White stores. Its evidence keeps the trace id, but names no test.",
+        spanId,
+        testCaseNameAttribute,
+        bytes,
+        MAX_TEST_CASE_NAME_BYTES
+      );
+
       return null;
     }
 
     return testIdentity;
-  }
-
-  private boolean isTooLongToStore(String testIdentity) {
-    return testIdentity.getBytes(UTF_8).length > MAX_TEST_CASE_NAME_BYTES;
   }
 }

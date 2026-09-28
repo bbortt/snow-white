@@ -35,6 +35,12 @@ Snow-White treats the value as an opaque label:
 
 Absent, blank, or whitespace-only is the same thing as absent: the evidence entry's `testCaseName`
 is null (`SW-031`), and every consumer falls back to the trace id.
+So is a name Snow-White cannot store — one past `OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES` (1024
+UTF-8 bytes).
+Truncating it is forbidden above, so it is dropped whole and the span's evidence keeps only its
+trace id; the report itself survives, which an insert failing on an over-long name would not allow.
+Because a dropped name and an absent one are indistinguishable downstream, the drop is logged at
+`WARN` with the span id, the attribute key and the byte count — never the value.
 `test.suite.name`, `test.case.result.status` and `test.suite.run.status` — the rest of the upstream
 group — are deliberately not read.
 
@@ -120,12 +126,19 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   ignoring `testCaseName`, and a second test guards it against passing vacuously by requiring that
   the same telemetry yields evidence naming a test and evidence naming none.
   Filling the value made `ARCH-011`'s pair model reachable for the first time, and the schema written
-  a day after that amendment still encoded "one trace per finding": `finding_evidence`'s unique
-  constraint now spans the pair with `NULLS NOT DISTINCT`, and `test_case_name` widened to 1024.
+  a day after that amendment still encoded "one trace per finding".
+  `V2026_09_28__finding_evidence_test_identity.sql` supersedes it: the unique constraint now spans
+  the pair with `NULLS NOT DISTINCT`, and `test_case_name` is widened to 1024.
+  It is a second migration rather than an edit of `V2026_09_24`, which had already merged — a
+  developer whose bind-mounted database applied the original would meet a Flyway checksum mismatch
+  and a service that will not boot, and `DBMigrationUnitTest.databaseMigrationsAreImmutable` exists
+  to forbid exactly that.
+  `NULLS NOT DISTINCT` puts a PostgreSQL 15 floor under the service, now stated in its README.
   Width alone cannot make the insert safe, though, because the upstream convention bounds the value
   not at all: `OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES` does, at capture, dropping a name past
   1024 UTF-8 bytes rather than truncating it — forbidden above — so it costs its own identity and
   not the report it was found in.
+  The drop is logged at `WARN`, because downstream it is indistinguishable from an absent attribute.
   The bound is in bytes because it has to clear the column's 1024
   characters and the constraint btree's 2704-byte row limit at once, which 1024 characters of CJK
   would not.
