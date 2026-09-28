@@ -332,6 +332,13 @@ jobs:
             -Ddocker.network=github_actions \
             -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
+      - name: Extract OTel Telemetry Data
+        if: matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          if-no-files-found: error
+          name: traces-${{ matrix.service }}.json
+          path: microservices/${{ matrix.service }}/target/otel-collector/traces.json
   cli-binary-verification:
     name: Verify CLI Binary
     if: contains(github.event.pull_request.labels.*.name, 'module:cli')
