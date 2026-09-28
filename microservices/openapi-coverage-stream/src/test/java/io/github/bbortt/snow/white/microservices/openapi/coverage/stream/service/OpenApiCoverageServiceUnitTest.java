@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.GET;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.HEAD;
@@ -242,6 +243,59 @@ class OpenApiCoverageServiceUnitTest {
             .singleElement()
             .extracting(OpenTelemetryData::testCaseName)
             .isEqualTo("org.example.PetstoreIT.shouldRejectUnknownPet")
+      );
+    }
+
+    /**
+     * A name too long to store costs its own identity and nothing else: the span still reaches the
+     * calculators, still evidences the match by its trace id, and the report it belongs to is
+     * calculated as if the attribute had never been there.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldHandOnASpanWhoseTestIdentityIsTooLongToStore() {
+      doReturn("snow.white.test.case.name")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getTestCaseNameAttribute();
+
+      var attributes = JsonMapper.shared()
+        .createObjectNode()
+        .put("http.request.method", "GET")
+        .put("url.path", "/api/rest/v1/foo")
+        .put(
+          "snow.white.test.case.name",
+          "a".repeat(MAX_TEST_CASE_NAME_BYTES + 1)
+        );
+
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem(
+        "/api/rest/v1/foo",
+        new PathItem().get(new Operation())
+      );
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<
+        Map<String, List<OpenTelemetryData>>
+      > pathToTelemetryMapCaptor = captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), pathToTelemetryMapCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(pathToTelemetryMapCaptor.getValue()).hasEntrySatisfying(
+        "GET_/api/rest/v1/foo",
+        telemetry ->
+          assertThat(telemetry)
+            .singleElement()
+            .satisfies(
+              data -> assertThat(data.testCaseName()).isNull(),
+              data -> assertThat(data.traceId()).isEqualTo("traceId")
+            )
       );
     }
 
