@@ -16,6 +16,8 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -125,6 +127,45 @@ class CalculatorUtilsUnitTest {
       assertThat(result).containsExactly(
         new FindingEvidence("traceId1", null),
         new FindingEvidence("traceId2", null)
+      );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldNameTheTestEachSatisfyingSpanCarried() {
+      var result = toEvidence(
+        List.of(
+          new OpenTelemetryData("spanId1", "traceId1", null, "aTestCase"),
+          new OpenTelemetryData("spanId2", "traceId2", null, "anotherTestCase")
+        )
+      );
+
+      assertThat(result).containsExactly(
+        new FindingEvidence("traceId1", "aTestCase"),
+        new FindingEvidence("traceId2", "anotherTestCase")
+      );
+    }
+
+    /**
+     * One trace can carry more than one test - a suite that reuses a trace context across cases -
+     * and each is its own entry. Two spans of the same trace naming the same test are one.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldReturnOneEntryPerDistinctTraceAndTestCaseNamePair() {
+      var result = toEvidence(
+        List.of(
+          new OpenTelemetryData("spanId1", "traceId1", null, "aTestCase"),
+          new OpenTelemetryData("spanId2", "traceId1", null, "aTestCase"),
+          new OpenTelemetryData("spanId3", "traceId1", null, "anotherTestCase"),
+          new OpenTelemetryData("spanId4", "traceId1", null, null)
+        )
+      );
+
+      assertThat(result).containsExactly(
+        new FindingEvidence("traceId1", "aTestCase"),
+        new FindingEvidence("traceId1", "anotherTestCase"),
+        new FindingEvidence("traceId1", null)
       );
     }
 

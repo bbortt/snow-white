@@ -30,6 +30,8 @@ public class OpenApiCoverageStreamProperties {
 
   private String operationIdAttribute = "openapi.operation.id";
 
+  private String testCaseNameAttribute = "test.case.name";
+
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final FilteringProperties filtering = new FilteringProperties();
 

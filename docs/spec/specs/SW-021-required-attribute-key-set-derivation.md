@@ -78,3 +78,8 @@ parameters at all, and that overriding the property changes the key requested.
   This is the first key in the enumeration that exists for evidence rather than for a verdict, so
   the description now states the set as "what a calculation reads" rather than "what a criterion
   judges"; `ARCH-007`'s staleness trade-off is unchanged, and this is its first real exercise.
+- **2026-09-28** — Implemented alongside `SW-032`: `RequiredAttributeKeyService` now requests the
+  configured test-identity key for every spec, next to the operation-id key and independent of the
+  document, since it is a property of the telemetry rather than of the API.
+  A unit test pins it for every spec shape, including one with no parameters, and asserts a
+  non-default key is what gets requested.

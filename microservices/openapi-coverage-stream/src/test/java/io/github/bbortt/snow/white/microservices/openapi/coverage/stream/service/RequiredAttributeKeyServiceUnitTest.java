@@ -34,13 +34,17 @@ class RequiredAttributeKeyServiceUnitTest {
   private static final String OPERATION_ID_ATTRIBUTE =
     "snow.white.operation.id";
 
+  private static final String TEST_CASE_NAME_ATTRIBUTE =
+    "snow.white.test.case.name";
+
   private static final List<String> FIXED_KEYS = List.of(
     "http.request.method",
     "url.path",
     "http.response.status_code",
     "url.query",
     HEADER_KEY_PREFIX + "content-type",
-    OPERATION_ID_ATTRIBUTE
+    OPERATION_ID_ATTRIBUTE,
+    TEST_CASE_NAME_ATTRIBUTE
   );
 
   @Mock
@@ -53,6 +57,9 @@ class RequiredAttributeKeyServiceUnitTest {
     doReturn(OPERATION_ID_ATTRIBUTE)
       .when(openApiCoverageStreamPropertiesMock)
       .getOperationIdAttribute();
+    doReturn(TEST_CASE_NAME_ATTRIBUTE)
+      .when(openApiCoverageStreamPropertiesMock)
+      .getTestCaseNameAttribute();
 
     fixture = new RequiredAttributeKeyService(
       openApiCoverageStreamPropertiesMock
@@ -142,6 +149,30 @@ class RequiredAttributeKeyServiceUnitTest {
       assertThat(
         fixture.requiredAttributeKeys(new OpenAPI().paths(paths))
       ).containsExactlyElementsOf(FIXED_KEYS);
+    }
+
+    /**
+     * The one key in the set that no criterion judges. It is requested for every spec, whether or
+     * not the spec declares a parameter, because an evidence entry can only name the test that
+     * satisfied a target if the attribute carrying that name was fetched - and the key it is
+     * fetched under is the operator's to choose.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void requestsTheConfiguredTestIdentityKey_forEverySpec() {
+      var specs = List.of(
+        new OpenAPI(),
+        openApiWithOperation(new Operation()),
+        openApiWithOperation(
+          new Operation().parameters(List.of(parameter("header", "X-Api-Key")))
+        )
+      );
+
+      assertThat(specs).allSatisfy(openAPI ->
+        assertThat(fixture.requiredAttributeKeys(openAPI)).contains(
+          TEST_CASE_NAME_ATTRIBUTE
+        )
+      );
     }
 
     private static List<String> concat(

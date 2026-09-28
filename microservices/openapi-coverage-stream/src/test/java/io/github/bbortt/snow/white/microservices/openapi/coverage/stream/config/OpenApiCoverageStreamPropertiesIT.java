@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractOpenApiCoverageServiceIT;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,18 @@ class OpenApiCoverageStreamPropertiesIT
 
   @Autowired
   private OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
+
+  /**
+   * The upstream convention is the default, so a suite already emitting {@code test.case.name}
+   * needs no configuration at all.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+  void shouldDefaultTheTestIdentityAttributeToTheUpstreamConvention() {
+    assertThat(
+      openApiCoverageStreamProperties.getTestCaseNameAttribute()
+    ).isEqualTo("test.case.name");
+  }
 
   @Nested
   @TestPropertySource(

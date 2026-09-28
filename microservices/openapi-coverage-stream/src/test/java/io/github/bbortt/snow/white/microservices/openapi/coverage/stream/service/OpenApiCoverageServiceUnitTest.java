@@ -23,6 +23,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
@@ -188,6 +190,58 @@ class OpenApiCoverageServiceUnitTest {
       assertThat(pathToOpenAPIOperationMapCaptor.getValue()).isEmpty();
       assertThat(pathToTelemetryMapCaptor.getValue()).containsKey(
         "GET_/unknown/path"
+      );
+    }
+
+    /**
+     * A calculator names the test that satisfied a target without ever reading configuration: the
+     * identity is hoisted out of the operator-configured attribute here, once, on the way in.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+    void shouldHoistTheTestIdentityOntoEverySpanHandedToTheCalculators() {
+      doReturn("snow.white.test.case.name")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getTestCaseNameAttribute();
+
+      var attributes = JsonMapper.shared().readTree(
+        // language=json
+        """
+        {
+          "http.request.method": "GET",
+          "url.path": "/api/rest/v1/foo",
+          "snow.white.test.case.name": "org.example.PetstoreIT.shouldRejectUnknownPet"
+        }
+        """
+      );
+
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(new OpenTelemetryData("spanId", "traceId", attributes))
+      );
+
+      var paths = new Paths();
+      paths.addPathItem(
+        "/api/rest/v1/foo",
+        new PathItem().get(new Operation())
+      );
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      ArgumentCaptor<
+        Map<String, List<OpenTelemetryData>>
+      > pathToTelemetryMapCaptor = captor();
+      doReturn(emptySet())
+        .when(openApiCoverageCalculationCoordinatorMock)
+        .calculate(any(), pathToTelemetryMapCaptor.capture());
+
+      fixture.calculateCoverage(openApiTestContext);
+
+      assertThat(pathToTelemetryMapCaptor.getValue()).hasEntrySatisfying(
+        "GET_/api/rest/v1/foo",
+        telemetry ->
+          assertThat(telemetry)
+            .singleElement()
+            .extracting(OpenTelemetryData::testCaseName)
+            .isEqualTo("org.example.PetstoreIT.shouldRejectUnknownPet")
       );
     }
 
