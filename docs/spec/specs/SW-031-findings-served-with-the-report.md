@@ -148,3 +148,11 @@ no findings, confirming the change is additive and that the operation's other 2x
   Fetching them is a separate read-only transactional repository
   method with a `LOAD` entity graph, kept apart from the status read so a poll pays for neither the
   four-level join nor the evidence table.
+- **2026-09-28** — `FindingEvidence.testCaseName`'s `maxLength` went from 256 to 1024, tracking the
+  column `SW-032` widened in the same change.
+  The two had disagreed: storage accepted a
+  400-character name that the generated client's `@Size(max = 256)` then rejected, so a name in that
+  range would have been persisted and then served in violation of the contract clients generate
+  from.
+  `minLength: 1` joins it, because the coverage stream resolves blank to absent and so never
+  produces the empty string.

@@ -121,9 +121,16 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   the same telemetry yields evidence naming a test and evidence naming none.
   Filling the value made `ARCH-011`'s pair model reachable for the first time, and the schema written
   a day after that amendment still encoded "one trace per finding": `finding_evidence`'s unique
-  constraint now spans the pair with `NULLS NOT DISTINCT`, and `test_case_name` widened to 1024 so a
-  long name cannot fail the insert and lose a whole report.
-  Serving it is still `SW-031`'s work — the value is persisted, not yet on a published API component.
+  constraint now spans the pair with `NULLS NOT DISTINCT`, and `test_case_name` widened to 1024.
+  Width alone cannot make the insert safe, though, because the upstream convention bounds the value
+  not at all: `OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES` does, at capture, dropping a name past
+  1024 UTF-8 bytes rather than truncating it — forbidden above — so it costs its own identity and
+  not the report it was found in.
+  The bound is in bytes because it has to clear the column's 1024
+  characters and the constraint btree's 2704-byte row limit at once, which 1024 characters of CJK
+  would not.
+  `SW-031` already published `testCaseName` on `FindingEvidence`; its `maxLength` moved from 256 to
+  1024 with the column, so the contract and what can be stored agree again.
   The documentation check remains deferred for the reason recorded above; `semantic-convention/test.md`
   no longer hedges that nothing reads the attribute, and the coverage-stream README documents the
   property.
