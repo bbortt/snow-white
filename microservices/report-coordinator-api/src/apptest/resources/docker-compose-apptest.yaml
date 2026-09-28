@@ -66,3 +66,15 @@ services:
     restart: on-failure
     networks:
       - default
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.161.0
+    user: '0:0'
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+      - ../../../target/otel-collector:/data
+    ports:
+      - '4318:4318' # OTLP http receiver
+    restart: on-failure
+    networks:
+      - default

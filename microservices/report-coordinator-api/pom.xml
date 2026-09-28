@@ -734,6 +734,9 @@
                       <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
                         false
                       </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                      <OTEL_EXPORTER_OTLP_ENDPOINT>
+                        http://otel-collector:4318
+                      </OTEL_EXPORTER_OTLP_ENDPOINT>
                       <SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL>
                         http://wiremock:8080
                       </SNOW_WHITE_REPORT_COORDINATOR_API_API-INDEX_BASE-URL>
