@@ -117,6 +117,52 @@ class OpenApiCoverageStreamPropertiesValidatorUnitTest {
           );
       }
     }
+
+    @Nested
+    class AttributeKeyPropertiesTest {
+
+      @BeforeEach
+      void beforeEachSetup() {
+        fixture.getApiIndex().setBaseUrl("baseUrl");
+        fixture.setCalculationRequestTopic("calculationRequestTopic");
+        fixture.setOpenapiCalculationResponseTopic(
+          "openapiCalculationResponseTopic"
+        );
+      }
+
+      @Test
+      void shouldPassOnTheDefaults() {
+        assertThatNoException().isThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        );
+      }
+
+      @Test
+      void throwsExceptionWithBlankOperationIdAttribute() {
+        fixture.setOperationIdAttribute(" ");
+
+        assertThatThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        )
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "All properties must be configured - missing: [snow.white.openapi.coverage.stream.operation-id-attribute]."
+          );
+      }
+
+      @Test
+      void throwsExceptionWithBlankTestCaseNameAttribute() {
+        fixture.setTestCaseNameAttribute(" ");
+
+        assertThatThrownBy(() ->
+          new OpenApiCoverageStreamPropertiesValidator(fixture)
+        )
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "All properties must be configured - missing: [snow.white.openapi.coverage.stream.test-case-name-attribute]."
+          );
+      }
+    }
   }
 
   @Nested

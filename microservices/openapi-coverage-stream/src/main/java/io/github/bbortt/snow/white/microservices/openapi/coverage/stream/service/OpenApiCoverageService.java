@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD;
 import static io.opentelemetry.semconv.UrlAttributes.URL_PATH;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
@@ -17,6 +18,7 @@ import static io.swagger.v3.oas.models.PathItem.HttpMethod.PATCH;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.POST;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.PUT;
 import static java.util.Collections.emptySet;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -34,6 +36,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +155,13 @@ public class OpenApiCoverageService {
       openApiCoverageStreamProperties.getOperationIdAttribute();
     var testCaseNameAttr =
       openApiCoverageStreamProperties.getTestCaseNameAttribute();
-    return telemetryData
+
+    // One pathological test name is carried by every span of that case, so warning per span would
+    // bury the calculation's own log under thousands of identical lines. Collected here and
+    // reported once instead - the sequential stream below is the only writer.
+    List<String> spansWithUnstorableTestIdentity = new ArrayList<>();
+
+    var pathToTelemetryMap = telemetryData
       .stream()
       .filter(data ->
         isRoutable(data, operationIdAttr, operationIdToOperationKey)
@@ -165,9 +174,70 @@ public class OpenApiCoverageService {
               operationIdAttr,
               operationIdToOperationKey
             ),
-          mapping(data -> data.withTestIdentityFrom(testCaseNameAttr), toList())
+          mapping(
+            data ->
+              hoistTestIdentity(
+                data,
+                testCaseNameAttr,
+                spansWithUnstorableTestIdentity
+              ),
+            toList()
+          )
         )
       );
+
+    warnAboutUnstorableTestIdentities(
+      spansWithUnstorableTestIdentity,
+      testCaseNameAttr
+    );
+
+    return pathToTelemetryMap;
+  }
+
+  private OpenTelemetryData hoistTestIdentity(
+    OpenTelemetryData data,
+    String testCaseNameAttr,
+    List<String> spansWithUnstorableTestIdentity
+  ) {
+    var withTestIdentity = data.withTestIdentityFrom(testCaseNameAttr);
+
+    // A span that named a test yet holds no identity afterwards named one too long to store: the
+    // only reason the hoist discards a value it was given.
+    if (
+      isNull(withTestIdentity.testCaseName()) &&
+      namesATest(data, testCaseNameAttr)
+    ) {
+      spansWithUnstorableTestIdentity.add(data.spanId());
+    }
+
+    return withTestIdentity;
+  }
+
+  private boolean namesATest(OpenTelemetryData data, String testCaseNameAttr) {
+    var attribute = data.attributes().get(testCaseNameAttr);
+    return (
+      !isNull(attribute) && !attribute.isNull() && hasText(attribute.asString())
+    );
+  }
+
+  private void warnAboutUnstorableTestIdentities(
+    List<String> spanIds,
+    String testCaseNameAttr
+  ) {
+    if (spanIds.isEmpty()) {
+      return;
+    }
+
+    // Loud rather than silent: from the outside a dropped identity and an absent one look
+    // identical, and an operator debugging "why is every finding unnamed?" has no other way to
+    // tell them apart. The names themselves are not logged - they are the thing that is too long.
+    logger.warn(
+      "Dropped the test identity of {} span(s), '{}' among them: attribute '{}' held more than the {} UTF-8 bytes Snow-White stores. Their evidence keeps the trace id, but names no test.",
+      spanIds.size(),
+      spanIds.getFirst(),
+      testCaseNameAttr,
+      MAX_TEST_CASE_NAME_BYTES
+    );
   }
 
   private boolean isRoutable(

@@ -37,6 +37,19 @@ public class OpenApiCoverageStreamPropertiesValidator {
       openApiCoverageStreamProperties.getOpenapiCalculationResponseTopic()
     );
 
+    // Both default to a real key, so only an operator blanking one on purpose reaches here - and a
+    // blank one is worse than a wrong one. It joins the required attribute key set as an empty
+    // selector, which the telemetry backend rejects as a malformed query, so every calculation
+    // fails far from the setting that caused it. Failing at startup keeps cause next to effect.
+    fields.put(
+      PREFIX + ".operation-id-attribute",
+      openApiCoverageStreamProperties.getOperationIdAttribute()
+    );
+    fields.put(
+      PREFIX + ".test-case-name-attribute",
+      openApiCoverageStreamProperties.getTestCaseNameAttribute()
+    );
+
     assertRequiredProperties(fields);
 
     logger.info(

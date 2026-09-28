@@ -152,8 +152,8 @@ class OpenTelemetryDataUnitTest {
     }
 
     /**
-     * Never truncated (SW-032): one pathological name costs its own identity, and the trace id it
-     * was read from still evidences the match, so the report is not lost with it.
+     * Never truncated: one pathological name costs its own identity, and the trace id it was read
+     * from still evidences the match, so the report is not lost with it.
      */
     @Test
     @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)

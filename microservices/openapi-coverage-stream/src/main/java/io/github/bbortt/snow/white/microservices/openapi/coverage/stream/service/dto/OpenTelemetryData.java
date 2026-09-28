@@ -11,11 +11,9 @@ import static java.util.Objects.isNull;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
-@Slf4j
 public record OpenTelemetryData(
   String spanId,
   String traceId,
@@ -41,8 +39,8 @@ public record OpenTelemetryData(
    * multi-byte names - a 600-character CJK name the column would hold is still dropped - which is
    * the trade for one rule that cannot fail an insert.
    * <p>
-   * SW-032 forbids truncating the value, so a name past this bound is no identity at all rather
-   * than a shortened one: the evidence keeps its trace id and the report survives.
+   * Truncating the value is forbidden, so a name past this bound is no identity at all rather than
+   * a shortened one: the evidence keeps its trace id and the report survives.
    */
   public static final int MAX_TEST_CASE_NAME_BYTES = 1024;
 
@@ -88,23 +86,14 @@ public record OpenTelemetryData(
       return null;
     }
 
-    var bytes = testIdentity.getBytes(UTF_8).length;
-
-    if (bytes > MAX_TEST_CASE_NAME_BYTES) {
-      // Loud rather than silent: from the outside a dropped name and an absent one look identical,
-      // and an operator debugging "why is every finding unnamed?" has no other way to tell the two
-      // apart. The name itself is not logged - it is the thing that is too long.
-      logger.warn(
-        "Dropping the test identity of span '{}': attribute '{}' holds {} UTF-8 bytes, more than the {} Snow-White stores. Its evidence keeps the trace id, but names no test.",
-        spanId,
-        testCaseNameAttribute,
-        bytes,
-        MAX_TEST_CASE_NAME_BYTES
-      );
-
+    if (isTooLongToStore(testIdentity)) {
       return null;
     }
 
     return testIdentity;
+  }
+
+  private boolean isTooLongToStore(String testIdentity) {
+    return testIdentity.getBytes(UTF_8).length > MAX_TEST_CASE_NAME_BYTES;
   }
 }
