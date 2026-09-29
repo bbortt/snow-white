@@ -231,8 +231,21 @@ jobs:
           name: playwright-report-container
           path: microservices/api-gateway/target/playwright-report
           retention-days: 7
-  ui-e2e-tests:
-    name: UI End-to-End Tests
+      - name: Export Docker Image
+        run: |
+          mkdir -p image-artifacts
+          docker save \
+            -o image-artifacts/${{ matrix.service }}.tar \
+            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: image-${{ matrix.service }}
+          path: image-artifacts/${{ matrix.service }}.tar
+          if-no-files-found: error
+          retention-days: 1
+  ui-app-tests:
+    name: UI Application Tests
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -256,7 +269,7 @@ jobs:
         with:
           cache: 'pnpm'
           node-version: 24
-      - name: Run UI End-to-End Tests
+      - name: Run UI Application Tests
         run: ./mvnw -B -pl :api-gateway -am -Pe2e test
       - name: Upload Playwright Report
         if: failure()
@@ -332,13 +345,26 @@ jobs:
             -Ddocker.network=github_actions \
             -Dimage.tag=${{ github.sha }} \
             -pl :${{ matrix.service }}
-      - name: Extract OTel Telemetry Data
+      - name: Upload OTel Telemetry Data
         if: matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           if-no-files-found: error
-          name: traces-${{ matrix.service }}.json
+          name: traces-${{ matrix.service }}
           path: microservices/${{ matrix.service }}/target/otel-collector/traces.json
+      - name: Export Docker Image
+        run: |
+          mkdir -p image-artifacts
+          docker save \
+            -o image-artifacts/${{ matrix.service }}.tar \
+            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: image-${{ matrix.service }}
+          path: image-artifacts/${{ matrix.service }}.tar
+          if-no-files-found: error
+          retention-days: 1
   cli-binary-verification:
     name: Verify CLI Binary
     if: contains(github.event.pull_request.labels.*.name, 'module:cli')
@@ -376,6 +402,41 @@ jobs:
         run: |
           toolkit/cli/target/${{ matrix.binary }} --version
           toolkit/cli/target/${{ matrix.binary }} info
+  e2e-tests:
+    name: End-to-End Tests
+    if: contains(github.event.pull_request.labels.*.name, 'include:e2e')
+    runs-on: ubuntu-24.04
+    needs:
+      - app-tests
+      - native-tests
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Download Docker Images
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: image-*
+          path: /tmp/images
+          merge-multiple: true
+      - name: Download Trace Files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: traces-*
+          path: /tmp/traces
+          merge-multiple: true
+      - name: Load Docker Images
+        run: |
+          find /tmp/images -name '*.tar' -print0 |
+            xargs -0 -r -n1 docker load -i
+      - name: Verify Trace Files
+        run: |
+          find /tmp/traces -type f -name '*.json' -print
+          test -n "$(find /tmp/traces -type f -name '*.json')"
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-slim
