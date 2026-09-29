@@ -7,9 +7,13 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,10 +65,13 @@ class SyncJobApplicationRunnerUnitTest {
   class RunTest {
 
     @Test
-    void shouldInvokeSyncCatalog() throws InterruptedException {
+    @VerifiesArch(ArchTraceables.ARCH_014_SYNC_CADENCE_OWNED_BY_THE_SCHEDULER)
+    void shouldInvokeSyncCatalogExactlyOncePerRun()
+      throws InterruptedException {
       fixture.run(new DefaultApplicationArguments());
 
-      verify(syncJobMock).syncCatalog();
+      verify(syncJobMock, times(1)).syncCatalog();
+      verifyNoMoreInteractions(syncJobMock);
     }
   }
 }

@@ -12,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import clew.traceables.clew.NfTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesNf;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
@@ -20,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -91,6 +96,65 @@ class ApiSyncProcessorUnitTest {
       Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api -> true);
 
       assertThat(result).containsEntry(PUBLISHED, 2L);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
+    void shouldNotCountApisWhichTheIndexDidNotAcceptAsPublished()
+      throws InterruptedException {
+      List<Supplier<ApiInformation>> suppliers = List.of(
+        () -> new ApiInformation().withLoadStatus(LOADED),
+        () -> new ApiInformation().withLoadStatus(LOADED)
+      );
+
+      Map<ApiLoadStatus, Long> result = fixture.process(
+        suppliers,
+        api -> false
+      );
+
+      assertThat(result).doesNotContainKey(PUBLISHED).containsEntry(LOADED, 2L);
+    }
+
+    @Test
+    @VerifiesNf(NfTraceables.NF_009_BOUNDED_SYNC_FAN_OUT_WITH_BACKPRESSURE)
+    void shouldNeverExceedTheConfiguredNumberOfInFlightSpecifications()
+      throws InterruptedException {
+      // Ten times the worker count, and three times the queue capacity: the
+      // listing side has to wait on the queue rather than the queue growing.
+      var specificationCount = 30;
+
+      AtomicInteger inFlight = new AtomicInteger();
+      AtomicInteger peakInFlight = new AtomicInteger();
+
+      List<Supplier<ApiInformation>> suppliers = IntStream.range(
+        0,
+        specificationCount
+      )
+        .mapToObj(
+          i ->
+            (Supplier<ApiInformation>) () -> {
+              peakInFlight.accumulateAndGet(
+                inFlight.incrementAndGet(),
+                Math::max
+              );
+
+              try {
+                Thread.sleep(5);
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              } finally {
+                inFlight.decrementAndGet();
+              }
+
+              return new ApiInformation().withLoadStatus(LOADED);
+            }
+        )
+        .toList();
+
+      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api -> true);
+
+      assertThat(peakInFlight.get()).isPositive().isLessThanOrEqualTo(3);
+      assertThat(result).containsEntry(PUBLISHED, (long) specificationCount);
     }
 
     @Test

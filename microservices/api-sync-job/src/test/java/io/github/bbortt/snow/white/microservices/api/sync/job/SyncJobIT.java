@@ -24,6 +24,8 @@ import static io.github.bbortt.snow.white.microservices.api.sync.job.SyncJobIT.A
 import static io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -241,6 +243,7 @@ class SyncJobIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_033_SYNC_SKIPS_STABLE_SUPERSEDES_PRERELEASE)
   void shouldSkipSync_whenApiIsAlreadyIndexed() {
     createStubsForArtifactory();
 
@@ -259,5 +262,35 @@ class SyncJobIT {
     assertDoesNotThrow(() -> fixture.syncCatalog());
 
     verify(0, postRequestedFor(urlEqualTo("/api/rest/v1/apis")));
+  }
+
+  /**
+   * The index holds both identities as prereleases only. Asked with prereleases
+   * excluded it answers "absent", so the cycle publishes the stable
+   * specification over them; asked with prereleases included it would answer
+   * "present" and the prerelease would shadow the real specification forever.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_033_SYNC_SKIPS_STABLE_SUPERSEDES_PRERELEASE)
+  void shouldSupersedePrerelease_whenStableSpecificationAppears() {
+    createStubsForArtifactory();
+
+    stubForPrereleaseOnlyIdentity("example-application/Petstore%20API/1.0.0");
+    stubForPrereleaseOnlyIdentity("example-application/Users%20API/2.0.0");
+
+    stubFor(post("/api/rest/v1/apis").willReturn(created()));
+
+    assertDoesNotThrow(() -> fixture.syncCatalog());
+
+    verify(2, postRequestedFor(urlEqualTo("/api/rest/v1/apis")));
+  }
+
+  private static void stubForPrereleaseOnlyIdentity(String identity) {
+    var existsPath = "/api/rest/v1/apis/" + identity + "/exists";
+
+    stubFor(
+      get(existsPath + "?includePrereleases=false").willReturn(notFound())
+    );
+    stubFor(get(existsPath + "?includePrereleases=true").willReturn(ok()));
   }
 }

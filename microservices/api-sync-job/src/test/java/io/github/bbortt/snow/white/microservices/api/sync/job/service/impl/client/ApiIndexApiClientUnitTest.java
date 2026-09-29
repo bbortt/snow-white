@@ -11,8 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
@@ -74,6 +76,7 @@ class ApiIndexApiClientUnitTest {
     private ApiInformation apiInformationMock;
 
     @Test
+    @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
     void shouldAlwaysReturnNotFound() {
       assertThat(
         fixture.recoverCheckApiExistsWithHttpInfo(
@@ -112,10 +115,11 @@ class ApiIndexApiClientUnitTest {
     private GetAllApis200ResponseInner dtoMock;
 
     @Test
-    void shouldAlwaysReturnOk() {
+    @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
+    void shouldAlwaysReturnServiceUnavailable() {
       assertThat(fixture.recoverIngestApiWithHttpInfo(exceptionMock, dtoMock))
         .extracting(ResponseEntity::getStatusCode)
-        .isEqualTo(OK);
+        .isEqualTo(SERVICE_UNAVAILABLE);
     }
   }
 }

@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
 import io.github.bbortt.snow.white.microservices.api.sync.job.processing.ApiSyncProcessor;
@@ -58,6 +60,14 @@ public class SyncJob {
     );
   }
 
+  /**
+   * Answers whether the specification reached the index, which is what the
+   * processor tallies as {@code PUBLISHED}. A publish the index could not
+   * accept - deferred to the next cycle, or refused outright - answers
+   * {@code false}, leaving the specification counted under the status it
+   * actually reached.
+   */
+  @RealizesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
   private boolean publishLoadedApi(@Nullable ApiInformation apiInformation) {
     if (
       Objects.nonNull(apiInformation) &&
@@ -65,13 +75,11 @@ public class SyncJob {
       !cachingService.apiInformationIndexed(apiInformation)
     ) {
       try {
-        cachingService.publishApiInformation(apiInformation);
+        return cachingService.publishApiInformation(apiInformation);
       } catch (Exception e) {
         logger.warn("Failed to publish API information!", e);
         return false;
       }
-
-      return true;
     }
 
     return false;

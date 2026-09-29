@@ -12,6 +12,12 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.isNull;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.NfTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesNf;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
@@ -43,23 +49,28 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class ArtifactoryApiCatalogService implements ApiCatalogService {
 
-  /**
-   * Only the literal `info` fields are read from parsed specs, which cannot
-   * contain `$ref` per the OpenAPI spec, so resolving is disabled to avoid
-   * the parser reaching out to the filesystem/network for every `$ref`.
-   */
-  private static final ParseOptions PARSE_OPTIONS = new ParseOptions();
-
-  static {
-    PARSE_OPTIONS.setResolve(false);
-  }
-
   private final Artifactory artifactory;
   private final ApiSyncJobProperties.ArtifactoryProperties artifactoryProperties;
   private final OpenApiValidationService openApiValidationService;
 
+  /**
+   * Reads the identity triple out of the document itself, at three JSON paths
+   * the operator may override - the same extraction the CLI applies to a
+   * prerelease upload, so one specification resolves one identity whichever way
+   * it enters Snow-White.
+   */
+  @RealizesArch(ArchTraceables.ARCH_015_IDENTITY_DECLARED_IN_THE_SPECIFICATION)
   private final InformationExtractor informationExtractor;
+
   private final OpenAPIV3Parser openAPIV3Parser;
+
+  /**
+   * Only the literal `info` fields are read from a parsed spec, and a
+   * conforming document cannot reach them through a `$ref`, so resolution stays
+   * off unless an operator asks for it - resolving reaches out to the
+   * filesystem or the network once per pointer, for every candidate file.
+   */
+  private final ParseOptions parseOptions;
 
   @Autowired
   public ArtifactoryApiCatalogService(
@@ -93,6 +104,9 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     this.openApiValidationService = openApiValidationService;
     this.informationExtractor = informationExtractor;
     this.openAPIV3Parser = openAPIV3Parser;
+
+    this.parseOptions = new ParseOptions();
+    this.parseOptions.setResolve(artifactoryProperties.getResolveReferences());
   }
 
   public List<Supplier<@Nullable ApiInformation>> getApiSpecificationLoaders() {
@@ -151,6 +165,8 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     }
   }
 
+  @RealizesArch(ArchTraceables.ARCH_015_IDENTITY_DECLARED_IN_THE_SPECIFICATION)
+  @RealizesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
   private @Nullable ApiInformation fetchItemAndExtractApiInformation(
     String repository,
     AqlItem repoPath
@@ -211,6 +227,8 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     );
   }
 
+  @RealizesNf(NfTraceables.NF_010_REFERENCE_RESOLUTION_IS_OFF_BY_DEFAULT)
+  @RealizesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
   private @Nullable SwaggerParseResult downloadAndParseFile(
     String repository,
     String filePath
@@ -228,7 +246,7 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
       return openAPIV3Parser.readContents(
         content.toString(),
         null,
-        PARSE_OPTIONS
+        parseOptions
       );
     } catch (Exception e) {
       var errorMessage = format("Failed to parse OpenAPI from '%s'", filePath);

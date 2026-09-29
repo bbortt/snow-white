@@ -50,6 +50,22 @@ spec:
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
               {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.parsingMode }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE'
+                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.parsingMode }}'
+              {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.artifactory.resolveReferences }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES'
+                  value: 'true'
+              {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS'
+                  value: '{{ .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}'
+              {{- end }}
+              {{- if .Values.snowWhite.apiSyncJob.workQueueCapacity }}
+                - name: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY'
+                  value: '{{ .Values.snowWhite.apiSyncJob.workQueueCapacity }}'
+              {{- end }}
               {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
               {{- range $additionalEnvs }}
                 - name: {{ .name }}

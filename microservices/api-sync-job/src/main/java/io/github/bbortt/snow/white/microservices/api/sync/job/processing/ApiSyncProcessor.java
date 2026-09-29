@@ -13,6 +13,8 @@ import static java.util.Map.entry;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toMap;
 
+import clew.traceables.clew.NfTraceables;
+import clew.traceables.clew.annotation.RealizesNf;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
@@ -41,6 +43,14 @@ public class ApiSyncProcessor {
     this.queueCapacity = apiSyncJobProperties.getWorkQueueCapacity();
   }
 
+  /**
+   * At most {@code workerCount} specifications are in flight at once, handed
+   * over through a queue of {@code queueCapacity}. The listing side blocks on a
+   * full queue rather than the queue growing, so the footprint is a property of
+   * the configuration rather than of the repository's size - and every listed
+   * specification is still processed, only later.
+   */
+  @RealizesNf(NfTraceables.NF_009_BOUNDED_SYNC_FAN_OUT_WITH_BACKPRESSURE)
   public Map<ApiLoadStatus, Long> process(
     Collection<Supplier<@Nullable ApiInformation>> suppliers,
     Predicate<ApiInformation> apiInformationPublisher
