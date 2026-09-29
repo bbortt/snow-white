@@ -16,7 +16,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_YAML;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesCon;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi;
@@ -39,6 +41,10 @@ public class ApiIndexResource implements ApiIndexApi {
   private final ApiReferenceMapper apiReferenceMapper;
 
   @Override
+  @RealizesCon({
+    ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED,
+    ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT,
+  })
   public ResponseEntity ingestApi(GetAllApis200ResponseInner apiInformation) {
     try {
       apiIndexService.persist(apiReferenceMapper.fromDto(apiInformation));

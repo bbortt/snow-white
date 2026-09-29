@@ -41,4 +41,15 @@ The second attempt is rejected with `409` and the stored entry is unchanged.
 ## Changes
 
 - **2026-09-19** — Set active: implementation of `STR-016` began.
-</content>
+- **2026-09-29** — Anchored where the rejection is actually decided, and the "stored entry
+  unchanged" half of the verification description given a test that can observe it.
+  `ApiIndexService.persist` only throws `ApiAlreadyIndexedException`; the `409` this constraint
+  names is produced in `ApiIndexResource.ingestApi`, which carried no anchor, and the unit test
+  asserting that mapping carried none either — so the status code appeared in exactly one anchored
+  place, the Citrus application test.
+  "Unchanged" was asserted only as `verify(repository, never()).save(…)` on a mock, which cannot
+  see whether the existing row survived; `never()).deleteById(…)` was not asserted at all, and
+  `deleteById` is the call that would destroy it.
+  `ApiIndexResourceIT` now re-reads the entry after a rejected resubmission and holds its
+  `sourceUrl`, prerelease flag and content against the originals, and the three service-level
+  tests assert the delete is skipped too.

@@ -104,6 +104,7 @@ class ApiIndexServiceUnitTest {
         ApiAlreadyIndexedException.class
       );
 
+      verify(apiReferenceRepositoryMock, never()).deleteById(any());
       verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
     }
 
@@ -130,6 +131,7 @@ class ApiIndexServiceUnitTest {
         fixture.persist(incomingPrerelease)
       ).isInstanceOf(ApiAlreadyIndexedException.class);
 
+      verify(apiReferenceRepositoryMock, never()).deleteById(any());
       verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
     }
 
@@ -157,6 +159,7 @@ class ApiIndexServiceUnitTest {
         fixture.persist(invalidStableReference)
       ).isInstanceOf(ApiAlreadyIndexedException.class);
 
+      verify(apiReferenceRepositoryMock, never()).deleteById(any());
       verify(apiReferenceRepositoryMock, never()).save(any(ApiReference.class));
     }
 
