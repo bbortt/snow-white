@@ -49,4 +49,10 @@ precedence.
 ## Changes
 
 - **2026-09-19** — Set active: implementation of `STR-016` began.
-</content>
+- **2026-09-29** — Anchored where the rejection is actually decided, mirroring the same gap found
+  in [CON-007](CON-007-stable-api-reference-is-immutable-once-indexed.md): the `400` and its
+  `{code, message}` body come from `ApiIndexResource.ingestApi`, not from the anchored
+  `ApiIndexService.persist`, which only throws `InvalidReleaseWithContentException`.
+  Both the method and the unit test asserting that mapping now carry the anchor.
+  The three cases this spec enumerates were already verified at the service level; what was
+  missing was the layer that turns the exception into the status code the spec states.
