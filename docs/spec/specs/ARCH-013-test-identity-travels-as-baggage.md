@@ -24,6 +24,11 @@ For a service instrumented by the OpenTelemetry Java agent, that copy is configu
 otel.java.experimental.span-attributes.copy-from-baggage.include=test.case.name
 ```
 
+Because that copy is the one step no Snow-White component can perform on a consumer's behalf, it is
+documented where an integrator meets it rather than only in the convention: the onboarding guide
+lists it as an optional instrumentation step beside the `content-type` header capture `SW-005`
+depends on, in `pages/_pages/onboarding.md`.
+
 Snow-White then reads the attribute from the very span it already fetched, inside the calculator,
 at the match (`ARCH-011`).
 The attribute key is operator-configurable on `openapi-coverage-stream`, following the existing
@@ -135,3 +140,12 @@ projection, for every calculation.
   lands — which is the `STK-003` claim stated about the agent rather than about one integration
   story.
   Nothing about the decision changed, and the consuming half remains unverified as above.
+- **2026-09-29** — Documented for integrators rather than only for the convention: the onboarding
+  guide's Spring Boot path now carries the baggage copy as an optional step beside the
+  `content-type` capture `SW-005` needs, with the `baggage` header a runner has to send, the
+  manual-enrichment equivalent, and the explicit statement that leaving it off changes no verdict.
+  Both halves of the mechanism sit outside Snow-White — the runner sets the entry, the service
+  copies it — so an integrator who never reads `semantic-convention/test.md` would otherwise meet a
+  permanently null `testCaseName` with nothing in the integration guide explaining it.
+  This changes no decision; it closes the gap between the decision and the page an integrator
+  actually follows.

@@ -152,6 +152,31 @@ OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS=content-type
 
 See [OpenTelemetry — Capturing HTTP request and response headers](https://opentelemetry.io/docs/zero-code/java/agent/instrumentation/http/#capturing-http-request-and-response-headers) for the client-side and response-header equivalents.
 
+**6.
+(Optional) Name the test behind each trace**
+
+Snow-White records the test case that exercised an endpoint alongside the endpoint itself, read from the span's `test.case.name` attribute.
+Nothing puts that attribute on a server span by default: your test runner propagates the name as [baggage](https://www.w3.org/TR/baggage/), and the agent copies it onto the span it already creates.
+
+```shell
+OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE=test.case.name
+```
+
+Then have each test send one header per request:
+
+```http
+baggage: test.case.name=org.example.PetstoreIT.shouldRejectUnknownPet
+```
+
+Only the listed baggage keys are copied, so unrelated baggage a request happens to carry never reaches the span.
+No application code takes part — this is agent configuration only.
+
+Leaving it off costs you nothing but the name: matching, coverage and quality gate verdicts are identical either way, and a span without a test identity is reported against its trace id instead.
+{: .notice--info}
+
+See the [`test.case.name` semantic convention](https://github.com/bbortt/snow-white/blob/main/semantic-convention/test.md) for what the value means, how Snow-White reads it, and how to point it at a different attribute key if your instrumentation already emits one.
+Both example applications ship with this configured — see [`example-spring-boot/Dockerfile`](https://github.com/bbortt/snow-white/blob/main/examples/example-spring-boot/Dockerfile) for a working reference.
+
 ### Option B: Manual OTel Enrichment
 
 Attach these three attributes to your HTTP spans manually:
@@ -165,6 +190,7 @@ api.version   = <value of info.version in your spec>
 Refer to the [Snow-White semantic convention](https://github.com/bbortt/snow-white/blob/main/semantic-convention/openapi.md) for the full attribute specification.
 
 You are also responsible for exporting these spans to an OTLP collector (see the exporter note under Option A) and, if you plan to use the `full-feature` quality gate, for attaching `http.request.header.content-type` yourself — manual enrichment has no header-capture default to opt into.
+The same goes for `test.case.name` if you want findings to name their test: there is no baggage-copy switch to flip, so read the baggage entry (or your runner's own test name) and set the attribute on the span yourself.
 
 ## Step 3 — Publish Your Specification
 
@@ -205,6 +231,13 @@ Quick smoke test:
 
 ```shell
 curl http://localhost:8080/your-endpoint
+```
+
+If you enabled the baggage copy in [Step 2](#option-a-spring-boot-recommended), send the test name along with the request to see it land on the span:
+
+```shell
+curl -H 'baggage: test.case.name=org.example.PetstoreIT.shouldRejectUnknownPet' \
+  http://localhost:8080/your-endpoint
 ```
 
 ## Step 5 — Calculate Coverage
@@ -257,6 +290,7 @@ See [Quality Gate Criteria](./quality-gate-criteria.md) for the full list of ava
 - [ ] Traces exported to an OTLP collector reachable by Snow-White
 - [ ] `spring-web-autoconfiguration` dependency added (Spring Boot only)
 - [ ] HTTP request header capture enabled for `content-type` (only if using the `full-feature` quality gate)
+- [ ] Baggage-to-span copy enabled for `test.case.name`, and the test runner sending it (optional — names the test behind each finding)
 - [ ] Specification published to the API index
 - [ ] CLI config file created and coverage calculation runs successfully
 
