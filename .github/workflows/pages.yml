@@ -7,6 +7,15 @@ on:
     paths:
       - '.github/workflows/pages.yml'
       - 'pages/**'
+  # chart-releaser pushes index.yaml to gh-pages from "Deployments". That push can't trigger this
+  # workflow itself: it's made with GITHUB_TOKEN, and gh-pages carries no workflow files anyway.
+  # workflow_run always runs on the default branch, which is where pages/ lives. "Deployments" only
+  # fires on tag pushes, so no untrusted pull-request code ever reaches this run.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows:
+      - Deployments
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -60,7 +69,7 @@ jobs:
           path: pages/_site
   deploy:
     name: Deploy to GitHub Pages
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/gh-pages'
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
