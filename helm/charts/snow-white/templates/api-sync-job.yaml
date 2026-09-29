@@ -62,13 +62,17 @@ spec:
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES'
                   value: '{{ $resolveReferences }}'
               {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}
+              {{- /* `if` alone is falsy on 0, which would swallow the one value the
+                     application is meant to reject loudly instead of defaulting. */}}
+              {{- $maxParallelSyncTasks := .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}
+              {{- if and (not (kindIs "invalid" $maxParallelSyncTasks)) (ne (toString $maxParallelSyncTasks) "") }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS'
-                  value: '{{ .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}'
+                  value: '{{ $maxParallelSyncTasks }}'
               {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.workQueueCapacity }}
+              {{- $workQueueCapacity := .Values.snowWhite.apiSyncJob.workQueueCapacity }}
+              {{- if and (not (kindIs "invalid" $workQueueCapacity)) (ne (toString $workQueueCapacity) "") }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY'
-                  value: '{{ .Values.snowWhite.apiSyncJob.workQueueCapacity }}'
+                  value: '{{ $workQueueCapacity }}'
               {{- end }}
               {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
               {{- range $additionalEnvs }}
