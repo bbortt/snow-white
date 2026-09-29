@@ -7,6 +7,8 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISHED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISH_DEFERRED;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,8 +29,8 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalog
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,7 +62,7 @@ class SyncJobUnitTest {
   private ArgumentCaptor<List<Supplier<ApiInformation>>> suppliersCaptor;
 
   @Captor
-  private ArgumentCaptor<Predicate<ApiInformation>> predicateCaptor;
+  private ArgumentCaptor<UnaryOperator<ApiInformation>> publisherCaptor;
 
   @BeforeEach
   void setup() {
@@ -116,7 +118,7 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
       assertThat(suppliersCaptor.getValue()).containsExactly(s1, s2, s3);
@@ -142,14 +144,14 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+      UnaryOperator<ApiInformation> callback = publisherCaptor.getValue();
 
-      boolean result = callback.test(api);
-
-      assertThat(result).isTrue();
+      assertThat(callback.apply(api))
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PUBLISHED);
 
       verify(cachingService).apiInformationIndexed(api);
       verify(cachingService).publishApiInformation(api);
@@ -176,12 +178,14 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+      UnaryOperator<ApiInformation> callback = publisherCaptor.getValue();
 
-      assertThat(callback.test(api)).isFalse();
+      assertThat(callback.apply(api))
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PUBLISH_DEFERRED);
 
       verify(cachingService).publishApiInformation(api);
     }
@@ -200,14 +204,14 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+      UnaryOperator<ApiInformation> callback = publisherCaptor.getValue();
 
-      boolean result = callback.test(api);
-
-      assertThat(result).isFalse();
+      assertThat(callback.apply(api))
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(LOADED);
 
       verify(cachingService).apiInformationIndexed(api);
       verify(cachingService, never()).publishApiInformation(any());
@@ -227,36 +231,14 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+      UnaryOperator<ApiInformation> callback = publisherCaptor.getValue();
 
-      boolean result = callback.test(api);
-
-      assertThat(result).isFalse();
-
-      verifyNoInteractions(cachingService);
-    }
-
-    @Test
-    void shouldHandleNullApiInformation() throws InterruptedException {
-      when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(
-        List.of(() -> null)
-      );
-
-      fixture.syncCatalog();
-
-      verify(apiSyncProcessor).process(
-        suppliersCaptor.capture(),
-        predicateCaptor.capture()
-      );
-
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
-
-      boolean result = callback.test(null);
-
-      assertThat(result).isFalse();
+      assertThat(callback.apply(api))
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(ApiLoadStatus.LOAD_FAILED);
 
       verifyNoInteractions(cachingService);
     }
@@ -292,14 +274,14 @@ class SyncJobUnitTest {
 
       verify(apiSyncProcessor).process(
         suppliersCaptor.capture(),
-        predicateCaptor.capture()
+        publisherCaptor.capture()
       );
 
-      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+      UnaryOperator<ApiInformation> callback = publisherCaptor.getValue();
 
-      boolean result = callback.test(api);
-
-      assertThat(result).isFalse();
+      assertThat(callback.apply(api))
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PUBLISH_DEFERRED);
 
       verify(cachingService).apiInformationIndexed(api);
       verify(cachingService).publishApiInformation(api);

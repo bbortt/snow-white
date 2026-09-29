@@ -26,6 +26,11 @@ public class ApiSyncJobProperties {
 
   public static final String PREFIX = "snow.white.api.sync.job";
 
+  public static final String MAX_PARALLEL_SYNC_TASKS_PROPERTY_NAME =
+    PREFIX + ".max-parallel-sync-tasks";
+  public static final String WORK_QUEUE_CAPACITY_PROPERTY_NAME =
+    PREFIX + ".work-queue-capacity";
+
   private @NonNull Integer maxParallelSyncTasks = 3;
   private @NonNull Integer workQueueCapacity = 30;
 

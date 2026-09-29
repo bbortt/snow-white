@@ -8,6 +8,9 @@ metadata:
     {{- $labels | nindent 4 }}
 spec:
   schedule: '{{ .Values.snowWhite.apiSyncJob.schedule }}'
+  # A cycle publishes what its own existence check just reported as absent, so two
+  # overlapping cycles would both publish the same identity and one would collide.
+  concurrencyPolicy: Forbid
   startingDeadlineSeconds: 60
   failedJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ .Values.snowWhite.apiSyncJob.successfulJobsHistoryLimit }}
@@ -54,9 +57,10 @@ spec:
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.parsingMode }}'
               {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.artifactory.resolveReferences }}
+              {{- $resolveReferences := toString (.Values.snowWhite.apiSyncJob.artifactory.resolveReferences | default "") }}
+              {{- if ne $resolveReferences "" }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES'
-                  value: 'true'
+                  value: '{{ $resolveReferences }}'
               {{- end }}
               {{- if .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}
                 - name: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS'
