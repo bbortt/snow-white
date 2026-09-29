@@ -17,8 +17,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.IntegrationTest;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ class ApiIndexCachingServiceRetryIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
   void shouldRetryAndRecoverApiInformationIndexed() {
     stubFor(get(urlPathEqualTo(EXISTS_PATH)).willReturn(serverError()));
 
@@ -59,12 +61,13 @@ class ApiIndexCachingServiceRetryIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
   void shouldRetryAndRecoverPublishApiInformation() {
     stubFor(post(urlEqualTo(INGEST_PATH)).willReturn(serverError()));
 
-    assertThatCode(() ->
+    assertThat(
       apiIndexCachingService.publishApiInformation(API_INFORMATION)
-    ).doesNotThrowAnyException();
+    ).isFalse();
 
     verify(3, postRequestedFor(urlEqualTo(INGEST_PATH)));
   }

@@ -18,6 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
 import io.github.bbortt.snow.white.microservices.api.sync.job.processing.ApiSyncProcessor;
@@ -134,6 +136,7 @@ class SyncJobUnitTest {
       );
 
       when(cachingService.apiInformationIndexed(api)).thenReturn(false);
+      when(cachingService.publishApiInformation(api)).thenReturn(true);
 
       fixture.syncCatalog();
 
@@ -149,6 +152,37 @@ class SyncJobUnitTest {
       assertThat(result).isTrue();
 
       verify(cachingService).apiInformationIndexed(api);
+      verify(cachingService).publishApiInformation(api);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
+    void shouldNotReportPublishWhichTheIndexDidNotAccept()
+      throws InterruptedException {
+      ApiInformation api = new ApiInformation().withLoadStatus(LOADED);
+
+      when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(
+        List.of(() -> api)
+      );
+
+      when(apiCatalogService2.getApiSpecificationLoaders()).thenReturn(
+        emptyList()
+      );
+
+      when(cachingService.apiInformationIndexed(api)).thenReturn(false);
+      when(cachingService.publishApiInformation(api)).thenReturn(false);
+
+      fixture.syncCatalog();
+
+      verify(apiSyncProcessor).process(
+        suppliersCaptor.capture(),
+        predicateCaptor.capture()
+      );
+
+      Predicate<ApiInformation> callback = predicateCaptor.getValue();
+
+      assertThat(callback.test(api)).isFalse();
+
       verify(cachingService).publishApiInformation(api);
     }
 

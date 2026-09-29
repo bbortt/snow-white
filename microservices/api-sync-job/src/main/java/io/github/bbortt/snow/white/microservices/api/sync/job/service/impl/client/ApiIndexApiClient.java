@@ -8,9 +8,12 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl.clie
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.requireNonNullElse;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.ResponseEntity.notFound;
-import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.api.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +60,14 @@ public class ApiIndexApiClient {
     );
   }
 
+  /**
+   * An exhausted existence check resolves as "not indexed" on purpose: the two
+   * mistakes are not symmetric. Answering "indexed" would skip an API that may
+   * never have been indexed at all, while answering "not indexed" costs at most
+   * one submission the index itself rejects.
+   */
   @Recover
+  @RealizesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
   ResponseEntity<Void> recoverCheckApiExistsWithHttpInfo(
     Exception e,
     @NonNull String otelServiceName,
@@ -82,12 +92,19 @@ public class ApiIndexApiClient {
     return apiIndexApi.ingestApiWithHttpInfo(getAllApis200ResponseInner);
   }
 
+  /**
+   * An exhausted ingestion is absorbed rather than propagated - the next cycle
+   * re-derives the work - but it resolves as a failed publish, not a successful
+   * one, so the cycle's tally counts the specification under the status it
+   * actually reached instead of reporting a publish that never landed.
+   */
   @Recover
+  @RealizesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
   ResponseEntity<Void> recoverIngestApiWithHttpInfo(
     Exception e,
     GetAllApis200ResponseInner getAllApis200ResponseInner
   ) {
     logger.error("Failed to publish API information!", e);
-    return ok().build();
+    return status(SERVICE_UNAVAILABLE).build();
   }
 }

@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.NfTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesNf;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.openapi.OpenApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
@@ -34,6 +41,7 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,6 +60,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.json.JsonMapper;
@@ -107,6 +116,9 @@ class ArtifactoryApiCatalogServiceUnitTest {
   class GetApiSpecificationLoadersTest {
 
     @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_015_IDENTITY_DECLARED_IN_THE_SPECIFICATION
+    )
     void shouldReturnApiInformationForValidOpenApiSpecs() throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "petstore.yml");
       doReturn(searches).when(artifactoryMock).searches();
@@ -199,6 +211,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
     void shouldSkipInvalidOpenApiSpecs_inGracefulParsingMode()
       throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
@@ -219,6 +232,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
     void shouldThrowOnInvalidOpenApiSpecs_inStrictParsingMode()
       throws IOException {
       doReturn(STRICT).when(artifactoryProperties).getParsingMode();
@@ -439,6 +453,55 @@ class ArtifactoryApiCatalogServiceUnitTest {
       assertThatThrownBy(apiInformationStream::toList)
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Encountered OpenAPI specification which is not a file!");
+    }
+
+    @Test
+    @VerifiesNf(NfTraceables.NF_010_REFERENCE_RESOLUTION_IS_OFF_BY_DEFAULT)
+    void shouldNotResolveReferences_byDefault() throws IOException {
+      assertThat(parseOptionsUsedWhenParsing())
+        .extracting(ParseOptions::isResolve)
+        .isEqualTo(false);
+    }
+
+    @Test
+    @VerifiesNf(NfTraceables.NF_010_REFERENCE_RESOLUTION_IS_OFF_BY_DEFAULT)
+    void shouldResolveReferences_whenTheOperatorAsksForIt() throws IOException {
+      doReturn(TRUE).when(artifactoryProperties).getResolveReferences();
+
+      // The property is read once, when the service is constructed.
+      fixture = new ArtifactoryApiCatalogService(
+        artifactoryMock,
+        apiSyncJobProperties,
+        openApiValidationServiceMock,
+        informationExtractorMock,
+        openAPIV3ParserMock
+      );
+
+      assertThat(parseOptionsUsedWhenParsing())
+        .extracting(ParseOptions::isResolve)
+        .isEqualTo(true);
+    }
+
+    /**
+     * Drives one specification through the loader and hands back the options the
+     * parser was actually called with - the only place the setting becomes
+     * observable, because resolution happens inside the parser.
+     */
+    private ParseOptions parseOptionsUsedWhenParsing() throws IOException {
+      doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
+
+      prepareInvalidOpenApiSpecificationWhenDownloading();
+
+      fixture.getApiSpecificationLoaders().stream().map(Supplier::get).toList();
+
+      var parseOptionsCaptor = ArgumentCaptor.forClass(ParseOptions.class);
+      verify(openAPIV3ParserMock).readContents(
+        anyString(),
+        any(),
+        parseOptionsCaptor.capture()
+      );
+
+      return parseOptionsCaptor.getValue();
     }
 
     private AqlItem createAqlItem(String path, String name) {

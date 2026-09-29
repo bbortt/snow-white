@@ -511,6 +511,83 @@ describe('API Sync Job', () => {
           },
         );
 
+        it.each([
+          {
+            apiSyncJob: { artifactory: { parsingMode: 'STRICT' } },
+            envVarName: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE',
+            envVarValue: 'STRICT',
+          },
+          {
+            apiSyncJob: { artifactory: { resolveReferences: true } },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
+            envVarValue: 'true',
+          },
+          {
+            apiSyncJob: { maxParallelSyncTasks: 8 },
+            envVarName: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS',
+            envVarValue: '8',
+          },
+          {
+            apiSyncJob: { workQueueCapacity: 80 },
+            envVarName: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY',
+            envVarValue: '80',
+          },
+        ])(
+          'should accept operator setting from values: $envVarName',
+          async ({
+            apiSyncJob: apiSyncJobValues,
+            envVarName,
+            envVarValue,
+          }: {
+            apiSyncJob: any;
+            envVarName: string;
+            envVarValue: string;
+          }) => {
+            const apiSyncJob = await renderAndGetApiSyncJobContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    apiSyncJob: {
+                      enabled: true,
+                      ...apiSyncJobValues,
+                      additionalEnvs:
+                        valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob
+                          .additionalEnvs,
+                    },
+                  },
+                },
+              }),
+            );
+
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 1 operator setting
+            expect(apiSyncJob.env).toHaveLength(9);
+
+            const operatorSetting = apiSyncJob.env.find(
+              (env) => env.name === envVarName,
+            );
+            expect(operatorSetting).toBeDefined();
+            expect(operatorSetting.value).toBe(envVarValue);
+          },
+        );
+
+        it.each([
+          'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE',
+          'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
+          'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS',
+          'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY',
+        ])(
+          'should leave %s to the application default when unset',
+          async (envVarName: string) => {
+            const apiSyncJob = await renderAndGetApiSyncJobContainer();
+
+            expect(
+              apiSyncJob.env.find((env) => env.name === envVarName),
+            ).toBeUndefined();
+          },
+        );
+
         it('should accept additional environment variables', async () => {
           const additionalEnvs = [
             ...valuesWithEnabledApiSyncJob.snowWhite.apiSyncJob.additionalEnvs,

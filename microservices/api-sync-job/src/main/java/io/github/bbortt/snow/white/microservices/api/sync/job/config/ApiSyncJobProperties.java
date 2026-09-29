@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.config;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties.PREFIX;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
+import static java.lang.Boolean.FALSE;
 
 import io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode;
 import lombok.Getter;
@@ -66,5 +67,13 @@ public class ApiSyncJobProperties {
     private String customServiceNameJsonPath = "info.extensions.x-service-name";
 
     private ParsingMode parsingMode = GRACEFUL;
+
+    /**
+     * Whether the parser dereferences a specification's {@code $ref} pointers.
+     * Off by default: a conforming document holds the identity fields literally,
+     * and resolving reaches out to the filesystem or the network once per
+     * pointer, for every candidate file in the repository.
+     */
+    private @NonNull Boolean resolveReferences = FALSE;
   }
 }

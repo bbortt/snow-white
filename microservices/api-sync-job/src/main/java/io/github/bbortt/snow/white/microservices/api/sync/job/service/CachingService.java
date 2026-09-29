@@ -11,5 +11,11 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiIn
 public interface CachingService {
   boolean apiInformationIndexed(ApiInformation apiInformation);
 
-  void publishApiInformation(ApiInformation apiInformation);
+  /**
+   * @return whether the index holds the API information afterwards. A deferred
+   *   publish - one the index could not accept before the retries ran out -
+   *   answers {@code false} rather than raising, so the caller can count it
+   *   truthfully without having to fail the cycle over it.
+   */
+  boolean publishApiInformation(ApiInformation apiInformation);
 }

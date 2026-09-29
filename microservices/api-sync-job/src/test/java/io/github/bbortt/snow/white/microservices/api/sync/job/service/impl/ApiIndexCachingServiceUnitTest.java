@@ -9,14 +9,16 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 import static java.lang.Boolean.FALSE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.api.client.apiindexapi.dto.GetAllApis200ResponseInner;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
@@ -64,6 +66,7 @@ class ApiIndexCachingServiceUnitTest {
   class ApiInformationIndexedTest {
 
     @Test
+    @VerifiesSw(SwTraceables.SW_033_SYNC_SKIPS_STABLE_SUPERSEDES_PRERELEASE)
     void shouldReturnTrue_whenApiHasBeenIndexedBefore() {
       doReturn(ResponseEntity.ok().build())
         .when(apiIndexApiClientMock)
@@ -80,6 +83,7 @@ class ApiIndexCachingServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_033_SYNC_SKIPS_STABLE_SUPERSEDES_PRERELEASE)
     void shouldReturnFalse_whenApiHasNotBeenIndexedBefore() {
       doReturn(ResponseEntity.notFound().build())
         .when(apiIndexApiClientMock)
@@ -137,9 +141,34 @@ class ApiIndexCachingServiceUnitTest {
         .when(apiIndexApiClientMock)
         .ingestApiWithHttpInfo(dto);
 
-      assertThatCode(() ->
+      assertThat(fixture.publishApiInformation(defaultApiInformation)).isTrue();
+    }
+
+    @Test
+    void shouldReturnTrue_whenTheIndexAlreadyHoldsTheApiInformation() {
+      var dto = mock(GetAllApis200ResponseInner.class);
+      doReturn(dto).when(apiInformationMapperMock).toDto(defaultApiInformation);
+
+      doReturn(ResponseEntity.status(CONFLICT).build())
+        .when(apiIndexApiClientMock)
+        .ingestApiWithHttpInfo(dto);
+
+      assertThat(fixture.publishApiInformation(defaultApiInformation)).isTrue();
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
+    void shouldReturnFalse_whenTheIndexCouldNotAcceptTheApiInformation() {
+      var dto = mock(GetAllApis200ResponseInner.class);
+      doReturn(dto).when(apiInformationMapperMock).toDto(defaultApiInformation);
+
+      doReturn(ResponseEntity.status(SERVICE_UNAVAILABLE).build())
+        .when(apiIndexApiClientMock)
+        .ingestApiWithHttpInfo(dto);
+
+      assertThat(
         fixture.publishApiInformation(defaultApiInformation)
-      ).doesNotThrowAnyException();
+      ).isFalse();
     }
   }
 }

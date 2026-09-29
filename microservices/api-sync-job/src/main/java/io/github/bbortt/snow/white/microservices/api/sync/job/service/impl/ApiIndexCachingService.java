@@ -10,6 +10,8 @@ import static java.lang.Boolean.FALSE;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.OK;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformationMapper;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingService;
@@ -26,7 +28,13 @@ public class ApiIndexCachingService implements CachingService {
   private final ApiIndexApiClient apiIndexApiClient;
   private final ApiInformationMapper apiInformationMapper;
 
+  /**
+   * The existence check is asked with prereleases excluded, so an identity held
+   * only by a prerelease reads as absent and the stable specification takes it
+   * over on the first cycle after publication.
+   */
   @Override
+  @RealizesSw(SwTraceables.SW_033_SYNC_SKIPS_STABLE_SUPERSEDES_PRERELEASE)
   public boolean apiInformationIndexed(ApiInformation apiInformation) {
     return apiIndexApiClient
       .checkApiExistsWithHttpInfo(
@@ -40,17 +48,22 @@ public class ApiIndexCachingService implements CachingService {
   }
 
   @Override
-  public void publishApiInformation(ApiInformation apiInformation) {
-    if (
-      apiIndexApiClient
-        .ingestApiWithHttpInfo(apiInformationMapper.toDto(apiInformation))
-        .getStatusCode()
-        .equals(CONFLICT)
-    ) {
+  @RealizesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
+  public boolean publishApiInformation(ApiInformation apiInformation) {
+    var statusCode = apiIndexApiClient
+      .ingestApiWithHttpInfo(apiInformationMapper.toDto(apiInformation))
+      .getStatusCode();
+
+    if (statusCode.equals(CONFLICT)) {
       logger.warn(
         "API information '{}' already indexed - this should have been checked beforehand!",
         apiInformation
       );
+
+      // The index holds it, which is all the caller asked about.
+      return true;
     }
+
+    return statusCode.is2xxSuccessful();
   }
 }

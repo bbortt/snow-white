@@ -244,6 +244,15 @@ snowWhite:
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White API Sync Job
     additionalEnvs: []
+    # -- Number of API specifications downloaded and parsed in parallel by one sync cycle.
+    # @default -- `3`
+    # @section -- Snow-White API Sync Job
+    maxParallelSyncTasks: ''
+    # -- Capacity of the queue handing listed specifications to the sync workers.
+    # A full queue makes the listing side wait rather than growing the queue.
+    # @default -- `30`
+    # @section -- Snow-White API Sync Job
+    workQueueCapacity: ''
     artifactory:
       # -- Artifactory Base URL (e.g. http://localhost:8092/artifactory).
       # @section -- Snow-White API Sync Job
@@ -263,6 +272,17 @@ snowWhite:
       # @default -- `info.extensions.x-service-name`
       # @section -- Snow-White API Sync Job
       customServiceNameJsonPath: ''
+      # -- How a specification that cannot be read is handled. `GRACEFUL` skips it, counts it under its
+      # own reason and lets the rest of the cycle proceed; `STRICT` aborts the cycle on the first one.
+      # @default -- `GRACEFUL`
+      # @section -- Snow-White API Sync Job
+      parsingMode: ''
+      # -- Follow `$ref` pointers while parsing a specification. Costs one filesystem or network read
+      # per pointer, per candidate file; only needed when a specification's identity fields sit behind
+      # a `$ref`.
+      # @default -- `false`
+      # @section -- Snow-White API Sync Job
+      resolveReferences: ''
     # -- Cron schedule for API synchronization.
     # @section -- Snow-White API Sync Job
     schedule: '0 * * * *'
