@@ -35,7 +35,7 @@ Snow-White treats the value as an opaque label:
 
 Absent, blank, or whitespace-only is the same thing as absent: the evidence entry's `testCaseName`
 is null (`SW-031`), and every consumer falls back to the trace id.
-So is a name Snow-White cannot store — one past `OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES` (1024
+So is a name Snow-White cannot store — one past `FindingEvidence.MAX_TEST_CASE_NAME_BYTES` (1024
 UTF-8 bytes).
 Truncating it is forbidden above, so it is dropped whole and the span's evidence keeps only its
 trace id; the report itself survives, which an insert failing on an over-long name would not allow.
@@ -135,13 +135,17 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   to forbid exactly that.
   `NULLS NOT DISTINCT` puts a PostgreSQL 15 floor under the service, now stated in its README.
   Width alone cannot make the insert safe, though, because the upstream convention bounds the value
-  not at all: `OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES` does, at capture, dropping a name past
+  not at all: `FindingEvidence.MAX_TEST_CASE_NAME_BYTES` does, at capture, dropping a name past
   1024 UTF-8 bytes rather than truncating it — forbidden above — so it costs its own identity and
   not the report it was found in.
   The drop is logged at `WARN`, because downstream it is indistinguishable from an absent attribute.
   The bound is in bytes because it has to clear the column's 1024
   characters and the constraint btree's 2704-byte row limit at once, which 1024 characters of CJK
   would not.
+  It is declared on the `FindingEvidence` event contract rather than in either service, because the
+  one that applies it and the one that has to hold what it admits are deployed separately;
+  `FindingEvidenceTestIdentityBoundUnitTest` holds the storing side's column and published schema
+  against it, so narrowing either fails the build rather than a report.
   `SW-031` already published `testCaseName` on `FindingEvidence`; its `maxLength` moved from 256 to
   1024 with the column, so the contract and what can be stored agree again.
   The documentation check remains deferred for the reason recorded above; `semantic-convention/test.md`
