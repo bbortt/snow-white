@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.FindingEvidence.MAX_TEST_CASE_NAME_BYTES;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.GET;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.HEAD;
