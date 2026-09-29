@@ -121,5 +121,4 @@ No code changes — this documents the existing, already-tested behavior and anc
 - [STR-009](../stories/STR-009-quality-gate-configuration-and-criteria-management-api.md) — a
   sibling retrace that likewise left its `*PropertiesValidator` and `SYS` anchoring out of scope
 - [STR-015](../stories/STR-015-api-gateway-ingress-routing-security-and-spa-fallback.md) — a
-sibling retrace with the same shape (undocumented existing behavior, no code changes)
-</content>
+  sibling retrace with the same shape (undocumented existing behavior, no code changes)

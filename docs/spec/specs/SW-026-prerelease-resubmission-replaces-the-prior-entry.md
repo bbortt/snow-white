@@ -48,4 +48,3 @@ submission's content.
 ## Changes
 
 - **2026-09-19** — Set active: implementation of `STR-016` began.
-</content>
