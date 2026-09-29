@@ -1,5 +1,5 @@
 ---
-title: 'Release 1.10.2: retracing requirements with clew, and Tempo queries that stop scaling with trace count'
+title: 'Release 1.11.0: retracing requirements with clew, and Tempo queries that stop scaling with trace count'
 excerpt: >
   We used @ariadne-thread/clew to retrace requirements against the actual
   implementation across our most important microservices, turning up real
