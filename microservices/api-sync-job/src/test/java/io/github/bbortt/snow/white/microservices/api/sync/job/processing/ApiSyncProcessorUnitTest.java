@@ -8,7 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.sync.job.processing;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,9 +22,10 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLo
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -76,9 +77,9 @@ class ApiSyncProcessorUnitTest {
         () -> new ApiInformation().withLoadStatus(LOADED)
       );
 
-      Predicate<ApiInformation> consumer = api -> {
+      UnaryOperator<ApiInformation> consumer = api -> {
         counter.incrementAndGet();
-        return true;
+        return api.withLoadStatus(PUBLISHED);
       };
 
       fixture.process(suppliers, consumer);
@@ -93,7 +94,7 @@ class ApiSyncProcessorUnitTest {
         () -> new ApiInformation().withLoadStatus(LOADED)
       );
 
-      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api -> true);
+      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, publish());
 
       assertThat(result).containsEntry(PUBLISHED, 2L);
     }
@@ -107,12 +108,13 @@ class ApiSyncProcessorUnitTest {
         () -> new ApiInformation().withLoadStatus(LOADED)
       );
 
-      Map<ApiLoadStatus, Long> result = fixture.process(
-        suppliers,
-        api -> false
+      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api ->
+        api.withLoadStatus(PUBLISH_DEFERRED)
       );
 
-      assertThat(result).doesNotContainKey(PUBLISHED).containsEntry(LOADED, 2L);
+      assertThat(result)
+        .doesNotContainKey(PUBLISHED)
+        .containsEntry(PUBLISH_DEFERRED, 2L);
     }
 
     @Test
@@ -151,7 +153,7 @@ class ApiSyncProcessorUnitTest {
         )
         .toList();
 
-      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, api -> true);
+      Map<ApiLoadStatus, Long> result = fixture.process(suppliers, publish());
 
       assertThat(peakInFlight.get()).isPositive().isLessThanOrEqualTo(3);
       assertThat(result).containsEntry(PUBLISHED, (long) specificationCount);
@@ -168,7 +170,7 @@ class ApiSyncProcessorUnitTest {
 
       Map<ApiLoadStatus, Long> result = fixture.process(
         suppliers,
-        api -> false
+        UnaryOperator.identity()
       );
 
       assertThat(result)
@@ -183,40 +185,43 @@ class ApiSyncProcessorUnitTest {
 
       Map<ApiLoadStatus, Long> result = fixture.process(
         suppliers,
-        api -> false
+        UnaryOperator.identity()
       );
 
       assertThat(result).containsEntry(UNLOADED, 1L);
     }
 
+    /**
+     * Only a strict parsing mode makes a supplier raise, and then the cycle is
+     * meant to abort - but the raise must not take its worker with it, or the
+     * listing side would block on a queue nobody drains any more.
+     */
     @Test
-    void shouldContinueWhenSupplierThrows() {
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldAbortTheCycleWhenASupplierThrows() {
+      var failure = new IllegalStateException("boom");
+
       Supplier<ApiInformation> failing = () -> {
-        throw new RuntimeException("boom");
+        throw failure;
       };
 
-      Supplier<ApiInformation> succeeding = () ->
-        new ApiInformation().withLoadStatus(LOADED);
+      // Ten times the worker count, and three times the queue capacity: were the
+      // raise to end its worker, the listing side would never get this far.
+      List<Supplier<ApiInformation>> suppliers = Stream.concat(
+        Stream.of(failing),
+        IntStream.range(0, 30).mapToObj(
+          i -> (Supplier<ApiInformation>) () -> new ApiInformation()
+        )
+      ).toList();
 
-      AtomicInteger consumed = new AtomicInteger();
-
-      Predicate<ApiInformation> consumer = api -> {
-        if (api != null) {
-          consumed.incrementAndGet();
-        }
-        return true;
-      };
-
-      assertDoesNotThrow(() ->
-        fixture.process(List.of(failing, succeeding), consumer)
+      assertThatThrownBy(() -> fixture.process(suppliers, publish())).isEqualTo(
+        failure
       );
-
-      assertThat(consumed.get()).isEqualTo(1);
     }
 
     @Test
     void shouldHandleEmptySupplierList() throws InterruptedException {
-      Map<ApiLoadStatus, Long> result = fixture.process(List.of(), api -> true);
+      Map<ApiLoadStatus, Long> result = fixture.process(List.of(), publish());
 
       assertThat(result).isEmpty();
     }
@@ -235,10 +240,14 @@ class ApiSyncProcessorUnitTest {
 
       fixture.process(suppliers, api -> {
         calls.incrementAndGet();
-        return true;
+        return api.withLoadStatus(PUBLISHED);
       });
 
       assertThat(calls.get()).isEqualTo(4);
+    }
+
+    private static UnaryOperator<ApiInformation> publish() {
+      return api -> api.withLoadStatus(PUBLISHED);
     }
   }
 }

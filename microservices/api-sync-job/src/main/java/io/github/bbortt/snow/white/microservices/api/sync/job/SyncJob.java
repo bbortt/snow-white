@@ -7,6 +7,8 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISHED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PUBLISH_DEFERRED;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
@@ -18,7 +20,6 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.service.CachingSer
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -61,27 +62,34 @@ public class SyncJob {
   }
 
   /**
-   * Answers whether the specification reached the index, which is what the
-   * processor tallies as {@code PUBLISHED}. A publish the index could not
-   * accept - deferred to the next cycle, or refused outright - answers
-   * {@code false}, leaving the specification counted under the status it
-   * actually reached.
+   * Answers with the status the specification actually reached, which is what
+   * the processor tallies. Only a specification the index accepted counts as
+   * {@code PUBLISHED}; one whose ingestion the index could not accept - refused
+   * outright, or exhausted against an outage - counts as
+   * {@code PUBLISH_DEFERRED}, which is distinct from the {@code LOADED} of a
+   * specification the index already held. A cycle that published nothing
+   * because the index was down therefore does not read like a cycle that had
+   * nothing to publish.
    */
   @RealizesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
-  private boolean publishLoadedApi(@Nullable ApiInformation apiInformation) {
-    if (
-      Objects.nonNull(apiInformation) &&
-      LOADED.equals(apiInformation.getLoadStatus()) &&
-      !cachingService.apiInformationIndexed(apiInformation)
-    ) {
-      try {
-        return cachingService.publishApiInformation(apiInformation);
-      } catch (Exception e) {
-        logger.warn("Failed to publish API information!", e);
-        return false;
-      }
+  private ApiInformation publishLoadedApi(ApiInformation apiInformation) {
+    if (!LOADED.equals(apiInformation.getLoadStatus())) {
+      return apiInformation;
     }
 
-    return false;
+    try {
+      if (cachingService.apiInformationIndexed(apiInformation)) {
+        return apiInformation;
+      }
+
+      return apiInformation.withLoadStatus(
+        cachingService.publishApiInformation(apiInformation)
+          ? PUBLISHED
+          : PUBLISH_DEFERRED
+      );
+    } catch (Exception e) {
+      logger.warn("Failed to publish API information!", e);
+      return apiInformation.withLoadStatus(PUBLISH_DEFERRED);
+    }
   }
 }

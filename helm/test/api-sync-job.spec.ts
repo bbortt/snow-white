@@ -123,6 +123,14 @@ describe('API Sync Job', () => {
     expect(cronJob.metadata.name).toHaveLength(63);
   });
 
+  // A cycle publishes what its own existence check just reported as absent, so
+  // two overlapping cycles would both publish the same identity.
+  it('should not allow two cycles to overlap', async () => {
+    const cronJob = await renderAndGetCronJob();
+
+    expect(cronJob.spec.concurrencyPolicy).toBe('Forbid');
+  });
+
   const getJobTemplateSpec = (cronJob: any): any => {
     const { spec } = cronJob;
     expect(spec).toBeDefined();
@@ -524,6 +532,14 @@ describe('API Sync Job', () => {
             envVarValue: 'true',
           },
           {
+            // The value is documented as a string, and the string 'false' must
+            // not arrive at the container as 'true'.
+            apiSyncJob: { artifactory: { resolveReferences: 'false' } },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
+            envVarValue: 'false',
+          },
+          {
             apiSyncJob: { maxParallelSyncTasks: 8 },
             envVarName: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS',
             envVarValue: '8',
@@ -587,6 +603,30 @@ describe('API Sync Job', () => {
             ).toBeUndefined();
           },
         );
+
+        it('should leave reference resolution to the application default when switched off as a boolean', async () => {
+          const apiSyncJob = await renderAndGetApiSyncJobContainer(
+            await renderHelmChart({
+              chartPath: 'charts/snow-white',
+              values: {
+                snowWhite: {
+                  apiSyncJob: {
+                    enabled: true,
+                    artifactory: { resolveReferences: false },
+                  },
+                },
+              },
+            }),
+          );
+
+          expect(
+            apiSyncJob.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
+            ),
+          ).toBeUndefined();
+        });
 
         it('should accept additional environment variables', async () => {
           const additionalEnvs = [

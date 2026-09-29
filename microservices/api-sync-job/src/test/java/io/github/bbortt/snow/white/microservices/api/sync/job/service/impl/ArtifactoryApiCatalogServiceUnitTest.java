@@ -7,6 +7,10 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.DOWNLOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOADED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PARSE_FAILED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.Boolean.TRUE;
@@ -224,7 +228,44 @@ class ArtifactoryApiCatalogServiceUnitTest {
         .map(Supplier::get)
         .toList();
 
-      assertThat(results).containsExactly(new ApiInformation[] { null });
+      assertThat(results)
+        .singleElement()
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PARSE_FAILED);
+      verify(
+        openApiValidationServiceMock,
+        never()
+      ).validateApiInformationFromIndex(any(), any());
+    }
+
+    /**
+     * A document can parse into an {@code OpenAPI} without an {@code info}
+     * object - the identity fields live there, so it is no more indexable than
+     * one that did not parse at all, and reaching for them must not raise out of
+     * the graceful path.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldSkipSpecsWithoutInformationObject_inGracefulParsingMode()
+      throws IOException {
+      doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
+
+      var parseResult = new SwaggerParseResult();
+      parseResult.setOpenAPI(new OpenAPI());
+      parseResult.setMessages(List.of("attribute info is missing"));
+
+      prepareOpenApiSpecificationWhenDownloading(parseResult);
+
+      var results = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get)
+        .toList();
+
+      assertThat(results)
+        .singleElement()
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PARSE_FAILED);
       verify(
         openApiValidationServiceMock,
         never()
@@ -258,14 +299,20 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
     private void prepareInvalidOpenApiSpecificationWhenDownloading()
       throws IOException {
+      SwaggerParseResult parseResult = new SwaggerParseResult();
+      parseResult.setOpenAPI(null);
+      parseResult.setMessages(List.of("Invalid OpenAPI format"));
+
+      prepareOpenApiSpecificationWhenDownloading(parseResult);
+    }
+
+    private void prepareOpenApiSpecificationWhenDownloading(
+      SwaggerParseResult parseResult
+    ) throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "invalid.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
       doReturn(List.of(aqlItem)).when(searches).artifactsByFileSpec(any());
-
-      SwaggerParseResult parseResult = new SwaggerParseResult();
-      parseResult.setOpenAPI(null);
-      parseResult.setMessages(List.of("Invalid OpenAPI format"));
 
       doReturn(parseResult)
         .when(openAPIV3ParserMock)
@@ -282,7 +329,13 @@ class ArtifactoryApiCatalogServiceUnitTest {
         .doDownload();
     }
 
+    /**
+     * A file that cannot be read is counted apart from one that was read but
+     * would not parse: the operator's summary distinguishes an unreachable
+     * repository from a repository full of unparseable documents.
+     */
     @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
     void shouldHandleDownloadErrors_gracefully() throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
 
@@ -294,7 +347,10 @@ class ArtifactoryApiCatalogServiceUnitTest {
         .map(Supplier::get)
         .toList();
 
-      assertThat(results).containsExactly(new ApiInformation[] { null });
+      assertThat(results)
+        .singleElement()
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(DOWNLOAD_FAILED);
       verify(
         openApiValidationServiceMock,
         never()
@@ -302,6 +358,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
     void shouldHandleDownloadErrors_strict() throws IOException {
       doReturn(STRICT).when(artifactoryProperties).getParsingMode();
 
@@ -315,7 +372,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
       assertThatThrownBy(openapiInformationStream::toList)
         .isInstanceOf(ApiCatalogException.class)
-        .hasMessageContaining("Failed to parse OpenAPI from 'apis/error.yml'")
+        .hasMessageContaining("Failed to download 'apis/error.yml'")
         .hasMessageContaining("at [No location information]")
         .rootCause()
         .isEqualTo(downloadException);
@@ -342,6 +399,74 @@ class ArtifactoryApiCatalogServiceUnitTest {
       var downloadException = new RuntimeException("Download failed");
       doThrow(downloadException).when(downloadableArtifact).doDownload();
       return downloadException;
+    }
+
+    /**
+     * One cycle over a source holding a valid specification next to a file that
+     * fails at each stage: the valid one still loads, and each unreadable file
+     * is counted apart rather than taking the cycle down with it.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldCountEachUnreadableFileUnderItsOwnReason_inGracefulParsingMode()
+      throws IOException {
+      doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
+
+      doReturn(searches).when(artifactoryMock).searches();
+      doReturn(searches).when(searches).repositories("api-specs");
+      doReturn(
+        List.of(
+          createAqlItem("apis", "petstore.yml"),
+          createAqlItem("apis", "undownloadable.yml"),
+          createAqlItem("apis", "unparseable.yml")
+        )
+      )
+        .when(searches)
+        .artifactsByFileSpec(any());
+
+      doReturn(repositoryHandle).when(artifactoryMock).repository("api-specs");
+
+      setupValidOpenApiMock("apis/petstore.yml", "Petstore API", "1.0.0");
+      doAnswer(invocation ->
+        invocation.<ApiInformation>getArgument(0).withLoadStatus(LOADED)
+      )
+        .when(openApiValidationServiceMock)
+        .validateApiInformationFromIndex(
+          any(ApiInformation.class),
+          eq(GRACEFUL)
+        );
+
+      var undownloadable = mock(DownloadableArtifact.class);
+      doReturn(undownloadable)
+        .when(repositoryHandle)
+        .download("apis/undownloadable.yml");
+      doThrow(new RuntimeException("Download failed"))
+        .when(undownloadable)
+        .doDownload();
+
+      var unparseable = mock(DownloadableArtifact.class);
+      doReturn(unparseable)
+        .when(repositoryHandle)
+        .download("apis/unparseable.yml");
+      doReturn(new ByteArrayInputStream("not a specification".getBytes()))
+        .when(unparseable)
+        .doDownload();
+
+      var parseResult = new SwaggerParseResult();
+      parseResult.setMessages(List.of("Invalid OpenAPI format"));
+      doReturn(parseResult)
+        .when(openAPIV3ParserMock)
+        .readContents(eq("not a specification"), any(), any());
+
+      var results = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get)
+        .toList();
+
+      assertThat(results)
+        .extracting(ApiInformation::getLoadStatus)
+        .containsExactlyInAnyOrder(LOADED, DOWNLOAD_FAILED, PARSE_FAILED);
     }
 
     @Test
@@ -392,8 +517,55 @@ class ArtifactoryApiCatalogServiceUnitTest {
       assertThat(results).isEmpty();
     }
 
+    /**
+     * Anything that goes wrong between a parsed document and an indexable
+     * identity is the third stage, and it fails the same way the first two do -
+     * gracefully by default, so one unusable repository entry cannot take the
+     * worker that found it down with it.
+     */
     @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldCountFileInfoWhichIsNotAFile_asLoadFailed() throws IOException {
+      doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
+
+      prepareFolderInfoWhenReadingTheDownloadUrl();
+
+      var results = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get)
+        .toList();
+
+      assertThat(results)
+        .singleElement()
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(LOAD_FAILED);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
     void shouldThrowWhenFileInfoItNotAFile() throws IOException {
+      doReturn(STRICT).when(artifactoryProperties).getParsingMode();
+
+      prepareFolderInfoWhenReadingTheDownloadUrl();
+
+      var apiInformationStream = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get);
+
+      assertThatThrownBy(apiInformationStream::toList)
+        .isInstanceOf(ApiCatalogException.class)
+        .hasMessageContaining(
+          "Failed to extract API information from 'apis/petstore.yml'"
+        )
+        .rootCause()
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Encountered OpenAPI specification which is not a file!");
+    }
+
+    private void prepareFolderInfoWhenReadingTheDownloadUrl()
+      throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "petstore.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
@@ -444,15 +616,6 @@ class ArtifactoryApiCatalogServiceUnitTest {
       // Return a Folder instead of File
       var folderImpl = mock(FolderImpl.class);
       doReturn(folderImpl).when(itemHandle).info();
-
-      var apiInformationStream = fixture
-        .getApiSpecificationLoaders()
-        .stream()
-        .map(Supplier::get);
-
-      assertThatThrownBy(apiInformationStream::toList)
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Encountered OpenAPI specification which is not a file!");
     }
 
     @Test

@@ -117,5 +117,52 @@ class ApiSyncJobPropertiesValidatorUnitTest {
         );
       }
     }
+
+    @Nested
+    class FanOutPropertiesTest {
+
+      static Stream<Integer> nonPositiveValues() {
+        return Stream.of(0, -1);
+      }
+
+      @BeforeEach
+      void beforeEachSetup() {
+        fixture.getApiIndex().setBaseUrl("api-index");
+        fixture.getArtifactory().setBaseUrl("baseUrl");
+        fixture.getArtifactory().setRepository("repository");
+      }
+
+      @ParameterizedTest
+      @MethodSource("nonPositiveValues")
+      void shouldThrowException_whenMaxParallelSyncTasksIsNotPositive(
+        Integer maxParallelSyncTasks
+      ) {
+        fixture.setMaxParallelSyncTasks(maxParallelSyncTasks);
+
+        assertThatThrownBy(() -> new ApiSyncJobPropertiesValidator(fixture))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "Property 'snow.white.api.sync.job.max-parallel-sync-tasks' must be greater than 0, but was: %s!".formatted(
+              maxParallelSyncTasks
+            )
+          );
+      }
+
+      @ParameterizedTest
+      @MethodSource("nonPositiveValues")
+      void shouldThrowException_whenWorkQueueCapacityIsNotPositive(
+        Integer workQueueCapacity
+      ) {
+        fixture.setWorkQueueCapacity(workQueueCapacity);
+
+        assertThatThrownBy(() -> new ApiSyncJobPropertiesValidator(fixture))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage(
+            "Property 'snow.white.api.sync.job.work-queue-capacity' must be greater than 0, but was: %s!".formatted(
+              workQueueCapacity
+            )
+          );
+      }
+    }
   }
 }

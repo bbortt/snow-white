@@ -7,6 +7,9 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.service.impl;
 
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.DOWNLOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.PARSE_FAILED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -22,6 +25,7 @@ import io.github.bbortt.snow.white.commons.openapi.InformationExtractor;
 import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.api.sync.job.config.ApiSyncJobProperties;
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiInformation;
+import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.ApiCatalogService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.OpenApiValidationService;
 import io.github.bbortt.snow.white.microservices.api.sync.job.service.exception.ApiCatalogException;
@@ -29,6 +33,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.List;
@@ -165,9 +170,15 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     }
   }
 
+  /**
+   * Each stage a candidate file can fail at - reading it, parsing it as
+   * OpenAPI, reading an identity out of it - answers with its own status, so
+   * the cycle's summary says how many files it could not index and why rather
+   * than collapsing every miss into one bucket.
+   */
   @RealizesArch(ArchTraceables.ARCH_015_IDENTITY_DECLARED_IN_THE_SPECIFICATION)
   @RealizesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-  private @Nullable ApiInformation fetchItemAndExtractApiInformation(
+  private ApiInformation fetchItemAndExtractApiInformation(
     String repository,
     AqlItem repoPath
   ) {
@@ -179,28 +190,61 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
 
     logger.debug("Downloading item: {}", filePath);
 
-    var swaggerParseResult = downloadAndParseFile(repository, filePath);
-    if (isNull(swaggerParseResult)) {
-      return null;
+    String content;
+    try {
+      content = downloadFile(repository, filePath);
+    } catch (Exception e) {
+      return skipOrAbort(
+        DOWNLOAD_FAILED,
+        format("Failed to download '%s'", filePath),
+        e
+      );
+    }
+
+    SwaggerParseResult swaggerParseResult;
+    try {
+      swaggerParseResult = parseFile(content);
+    } catch (Exception e) {
+      return skipOrAbort(
+        PARSE_FAILED,
+        format("Failed to parse OpenAPI from '%s'", filePath),
+        e
+      );
     }
 
     var openAPI = swaggerParseResult.getOpenAPI();
 
-    if (openAPI == null) {
-      var errorMessage = format(
-        "Failed to parse OpenAPI from '%s': %s",
-        filePath,
-        swaggerParseResult.getMessages()
+    // A document can parse into an `OpenAPI` without an `info` object - the
+    // identity fields live there, so it is no more indexable than one that did
+    // not parse at all.
+    if (isNull(openAPI) || isNull(openAPI.getInfo())) {
+      return skipOrAbort(
+        PARSE_FAILED,
+        format(
+          "Failed to parse OpenAPI from '%s': %s",
+          filePath,
+          swaggerParseResult.getMessages()
+        ),
+        null
       );
-
-      if (STRICT.equals(artifactoryProperties.getParsingMode())) {
-        throw new ApiCatalogException(errorMessage);
-      } else {
-        logger.warn(errorMessage);
-        return null;
-      }
     }
 
+    try {
+      return extractApiInformation(repository, filePath, openAPI);
+    } catch (Exception e) {
+      return skipOrAbort(
+        LOAD_FAILED,
+        format("Failed to extract API information from '%s'", filePath),
+        e
+      );
+    }
+  }
+
+  private ApiInformation extractApiInformation(
+    String repository,
+    String filePath,
+    OpenAPI openAPI
+  ) {
     var openApiInformation = informationExtractor.extractFromOpenApi(
       openApiAsJson(openAPI)
     );
@@ -227,12 +271,30 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     );
   }
 
-  @RealizesNf(NfTraceables.NF_010_REFERENCE_RESOLUTION_IS_OFF_BY_DEFAULT)
+  /**
+   * Graceful is the default: the file is skipped, counted under the reason it
+   * failed, and the rest of the cycle still publishes. Strict turns the same
+   * failure into a raise, which aborts the cycle.
+   */
   @RealizesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-  private @Nullable SwaggerParseResult downloadAndParseFile(
-    String repository,
-    String filePath
+  private ApiInformation skipOrAbort(
+    ApiLoadStatus reason,
+    String errorMessage,
+    @Nullable Exception cause
   ) {
+    if (STRICT.equals(artifactoryProperties.getParsingMode())) {
+      throw isNull(cause)
+        ? new ApiCatalogException(errorMessage)
+        : new ApiCatalogException(errorMessage, cause);
+    }
+
+    logger.warn(errorMessage, cause);
+
+    return ApiInformation.builder().build().withLoadStatus(reason);
+  }
+
+  private String downloadFile(String repository, String filePath)
+    throws IOException {
     try (
       var inputStream = artifactory
         .repository(repository)
@@ -242,22 +304,13 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     ) {
       var content = new StringWriter();
       reader.transferTo(content);
-
-      return openAPIV3Parser.readContents(
-        content.toString(),
-        null,
-        parseOptions
-      );
-    } catch (Exception e) {
-      var errorMessage = format("Failed to parse OpenAPI from '%s'", filePath);
-
-      if (STRICT.equals(artifactoryProperties.getParsingMode())) {
-        throw new ApiCatalogException(errorMessage, e);
-      } else {
-        logger.warn(errorMessage, e);
-        return null;
-      }
+      return content.toString();
     }
+  }
+
+  @RealizesNf(NfTraceables.NF_010_REFERENCE_RESOLUTION_IS_OFF_BY_DEFAULT)
+  private SwaggerParseResult parseFile(String content) {
+    return openAPIV3Parser.readContents(content, null, parseOptions);
   }
 
   private String openApiAsJson(OpenAPI openAPI) {
