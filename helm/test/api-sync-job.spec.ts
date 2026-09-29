@@ -549,6 +549,18 @@ describe('API Sync Job', () => {
             envVarName: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY',
             envVarValue: '80',
           },
+          {
+            // 0 is falsy in a bare `if`, which would drop the one value the
+            // application is meant to reject at startup instead of defaulting.
+            apiSyncJob: { maxParallelSyncTasks: 0 },
+            envVarName: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS',
+            envVarValue: '0',
+          },
+          {
+            apiSyncJob: { workQueueCapacity: 0 },
+            envVarName: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY',
+            envVarValue: '0',
+          },
         ])(
           'should accept operator setting from values: $envVarName',
           async ({
