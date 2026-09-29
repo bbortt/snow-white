@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.FindingEvidence.MAX_TEST_CASE_NAME_BYTES;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
-import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.MAX_TEST_CASE_NAME_BYTES;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD;
 import static io.opentelemetry.semconv.UrlAttributes.URL_PATH;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.DELETE;
@@ -205,19 +205,12 @@ public class OpenApiCoverageService {
     // only reason the hoist discards a value it was given.
     if (
       isNull(withTestIdentity.testCaseName()) &&
-      namesATest(data, testCaseNameAttr)
+      data.namesATestIn(testCaseNameAttr)
     ) {
       spansWithUnstorableTestIdentity.add(data.spanId());
     }
 
     return withTestIdentity;
-  }
-
-  private boolean namesATest(OpenTelemetryData data, String testCaseNameAttr) {
-    var attribute = data.attributes().get(testCaseNameAttr);
-    return (
-      !isNull(attribute) && !attribute.isNull() && hasText(attribute.asString())
-    );
   }
 
   private void warnAboutUnstorableTestIdentities(
