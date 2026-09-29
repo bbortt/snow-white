@@ -168,11 +168,15 @@ class RequiredAttributeKeyServiceUnitTest {
         )
       );
 
-      assertThat(specs).allSatisfy(openAPI ->
-        assertThat(fixture.requiredAttributeKeys(openAPI)).contains(
-          TEST_CASE_NAME_ATTRIBUTE
-        )
-      );
+      // The size is asserted so that the per-spec assertion cannot pass vacuously: allSatisfy holds
+      // trivially on an empty list, which would make this test green while checking nothing.
+      assertThat(specs)
+        .hasSize(3)
+        .allSatisfy(openAPI ->
+          assertThat(fixture.requiredAttributeKeys(openAPI)).contains(
+            TEST_CASE_NAME_ATTRIBUTE
+          )
+        );
     }
 
     private static List<String> concat(
