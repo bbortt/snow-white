@@ -18,7 +18,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.AbstractApiIndexApiIT;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
@@ -131,6 +133,61 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
       .hasValueSatisfying(r ->
         assertThat(r.getPrereleaseContent()).isEqualTo("spec: updated")
       );
+  }
+
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
+  )
+  void postRequest_forIdentityHoldingStableEntry_shouldRejectAndLeaveItUnchanged()
+    throws Exception {
+    var stableReference = GetAllApis200ResponseInner.builder()
+      .serviceName("serviceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("http://original/spec.yml")
+      .apiType(OPENAPI)
+      .build();
+
+    mockMvc
+      .perform(
+        post(PATH_GET_ALL_APIS)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(stableReference))
+      )
+      .andExpect(status().isCreated());
+
+    var resubmission = GetAllApis200ResponseInner.builder()
+      .serviceName("serviceName")
+      .apiName("apiName")
+      .apiVersion("apiVersion")
+      .sourceUrl("http://replacement/spec.yml")
+      .apiType(OPENAPI)
+      .prerelease(true)
+      .content("spec: replacement")
+      .build();
+
+    mockMvc
+      .perform(
+        post(PATH_GET_ALL_APIS)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(resubmission))
+      )
+      .andExpect(status().isConflict());
+
+    assertThat(
+      apiReferenceRepository.findByOtelServiceNameEqualsAndApiNameEqualsAndApiVersionEquals(
+        "serviceName",
+        "apiName",
+        "apiVersion"
+      )
+    )
+      .isPresent()
+      .hasValueSatisfying(r -> {
+        assertThat(r.getSourceUrl()).isEqualTo("http://original/spec.yml");
+        assertThat(r.isPrerelease()).isFalse();
+        assertThat(r.getPrereleaseContent()).isNull();
+      });
   }
 
   @Test
@@ -339,7 +396,8 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_withServiceNameFilter_shouldMatchServiceNameContainingFilter()
+  @VerifiesSw(SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX)
+  void getRequest_withServiceNameFilter_shouldMatchServiceNamePrefixButNotSubstring()
     throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
@@ -347,6 +405,15 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
         .apiName("api-1")
         .apiVersion("1.0")
         .sourceUrl("http://a/1")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("legacy-prefix-ingesting-service")
+        .apiName("api-3")
+        .apiVersion("1.0")
+        .sourceUrl("http://c/3")
         .apiType(OPENAPI)
         .build()
     );
@@ -381,7 +448,8 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_withApiNameFilter_shouldMatchApiNameContainingFilter()
+  @VerifiesSw(SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX)
+  void getRequest_withApiNameFilter_shouldMatchApiNamePrefixButNotSubstring()
     throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
@@ -389,6 +457,15 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
         .apiName("prefix-ingesting-api")
         .apiVersion("1.0")
         .sourceUrl("http://a/1")
+        .apiType(OPENAPI)
+        .build()
+    );
+    apiReferenceRepository.save(
+      ApiReference.builder()
+        .otelServiceName("service-c")
+        .apiName("legacy-prefix-ingesting-api")
+        .apiVersion("1.0")
+        .sourceUrl("http://c/3")
         .apiType(OPENAPI)
         .build()
     );

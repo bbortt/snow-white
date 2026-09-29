@@ -38,4 +38,16 @@ returned.
 ## Changes
 
 - **2026-09-19** — Set active: implementation of `STR-016` began.
-</content>
+- **2026-09-29** — Verification brought in line with the description above.
+  The three anchored unit tests assert the pattern string `ApiReferenceSpecification` hands
+  `CriteriaBuilder.like` (`"my-service%"`) against mocks, which pins the shape of the query but
+  never executes it; the two integration tests that do run against the index only indexed an entry
+  matching by prefix and an unrelated one, so both passed unchanged under `%value%` semantics, and
+  were even named `shouldMatch…ContainingFilter` — the reading this spec exists to reject.
+  They now also index an entry holding the filter value as a substring but not a prefix
+  (`legacy-prefix-ingesting-service` against filter `Prefix`), which is what the verification
+  description asked for all along, and they carry the anchor they were missing.
+  Confirmed by temporarily widening the pattern to `%value%`: exactly those two integration tests
+  fail, and only those two.
+  `clew` reported this spec `covered` throughout, because coverage counts anchors and cannot read
+  what an assertion is worth.

@@ -28,7 +28,9 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_YAML;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
@@ -102,6 +104,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesCon(
+      ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
+    )
     void shouldNotPersistApi_whenItHasAlreadyBeenIngested()
       throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var domain = mock(ApiReference.class);
@@ -118,6 +123,9 @@ class ApiIndexResourceUnitTest {
     }
 
     @Test
+    @VerifiesCon(
+      ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT
+    )
     void shouldNotPersistApi_whenTheReceivedApiInformationIsInvalid()
       throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
       var domain = mock(ApiReference.class);
