@@ -10,6 +10,8 @@ import static io.github.bbortt.snow.white.commons.event.dto.FindingEvidence.MAX_
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -24,9 +26,8 @@ import org.junit.jupiter.api.Test;
  * <p>
  * {@code FindingEvidence#MAX_TEST_CASE_NAME_BYTES} is enforced in openapi-coverage-stream, one
  * deployable away, while the column and the published schema that have to hold what it admits live
- * here. Nothing but this test keeps the two in step, and the failure it guards against is the one
- * SW-032 was written to prevent: a name the stream lets through, failing the insert and discarding
- * a whole report.
+ * here. Nothing but this test keeps the two in step, and the failure it guards against is a name
+ * the stream lets through, failing the insert and discarding a whole report.
  * <p>
  * Both assertions are {@code >=} rather than {@code ==} deliberately - widening storage alone is
  * always safe, and only narrowing it below the bound is the bug.
@@ -44,6 +45,7 @@ class FindingEvidenceTestIdentityBoundUnitTest {
   );
 
   @Test
+  @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   void columnHoldsEveryNameTheCoverageStreamAdmits()
     throws IOException, URISyntaxException {
     var width = lastDeclaredColumnWidth();
@@ -58,6 +60,7 @@ class FindingEvidenceTestIdentityBoundUnitTest {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   void publishedSchemaHoldsEveryNameTheCoverageStreamAdmits()
     throws IOException {
     var schema = readClasspathResource(
