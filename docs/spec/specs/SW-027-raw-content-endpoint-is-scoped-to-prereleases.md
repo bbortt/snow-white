@@ -44,4 +44,3 @@ asserts `application/yaml`; and for one that does not, asserting `text/plain`.
 ## Changes
 
 - **2026-09-19** — Set active: implementation of `STR-016` began.
-</content>
