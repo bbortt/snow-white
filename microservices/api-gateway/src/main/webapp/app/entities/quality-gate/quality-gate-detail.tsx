@@ -4,13 +4,14 @@
  * See LICENSE file for full details.
  */
 
-import type { IApiTest } from 'app/shared/model/api-test.model';
+import type { ServiceGroup } from 'app/entities/quality-gate/quality-gate.utils';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
-import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
+import { ApiTestServiceGroup } from 'app/entities/quality-gate/api-test-service-group';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
+import { groupByService } from 'app/entities/quality-gate/quality-gate.utils';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
@@ -18,10 +19,6 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
-
-const compareNullable = (a?: string, b?: string): number => {
-  return (a ?? '').localeCompare(b ?? '');
-};
 
 export const QualityGateDetail = () => {
   const dispatch = useAppDispatch();
@@ -38,16 +35,7 @@ export const QualityGateDetail = () => {
 
   const [showOnlyIncluded, setShowOnlyIncluded] = useState(true);
 
-  const sortedApiTests: IApiTest[] = useMemo(
-    () =>
-      [...(qualityGateEntity.apiTests ?? [])].sort(
-        (a, b) =>
-          compareNullable(a.serviceName, b.serviceName) ||
-          compareNullable(a.apiName, b.apiName) ||
-          compareNullable(a.apiVersion, b.apiVersion),
-      ),
-    [qualityGateEntity],
-  );
+  const serviceGroups: ServiceGroup[] = useMemo(() => groupByService(qualityGateEntity.apiTests ?? []), [qualityGateEntity]);
 
   return (
     <Row>
@@ -91,14 +79,15 @@ export const QualityGateDetail = () => {
             </Button>
           </a>
         </div>
-        {qualityGateEntity.apiTests && qualityGateEntity.apiTests.length > 0
-          ? sortedApiTests.map((apiTest: IApiTest) => (
-              <ApiTestCard
-                apiTest={apiTest}
+        {serviceGroups.length > 0
+          ? serviceGroups.map((serviceGroup: ServiceGroup) => (
+              <ApiTestServiceGroup
+                serviceName={serviceGroup.serviceName}
+                apiTests={serviceGroup.apiTests}
                 showOnlyIncluded={showOnlyIncluded}
                 minCoveragePercentage={qualityGateEntity.qualityGateConfig?.minCoveragePercentage}
                 qualityGateTimedOut={qualityGateEntity.status === ReportStatus.TIMED_OUT}
-                key={`api-test-${apiTest.serviceName}-${apiTest.apiName}-${apiTest.apiVersion}`}
+                key={`api-test-service-${serviceGroup.serviceName}`}
               />
             ))
           : !loading && (

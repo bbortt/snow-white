@@ -7,7 +7,7 @@
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import type { IApiTest } from 'app/shared/model/api-test.model';
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ApiTestCard } from 'app/entities/quality-gate/api-test-card';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React from 'react';
@@ -116,6 +116,27 @@ describe('ApiTestCard', () => {
       );
 
       expect(screen.getByTestId('api-test-result-table')).toHaveTextContent('1 results');
+    });
+  });
+
+  describe('header', () => {
+    it('should leave the service name to the surrounding service group', () => {
+      render(<ApiTestCard apiTest={apiTest()} showOnlyIncluded={false} qualityGateTimedOut={false} />);
+
+      expect(screen.getByRole('button', { name: /my-api/ })).toBeInTheDocument();
+      expect(screen.queryByText(/my-service/)).not.toBeInTheDocument();
+    });
+
+    it('should expose the expanded state on a keyboard-operable toggle', () => {
+      render(<ApiTestCard apiTest={apiTest()} showOnlyIncluded={false} qualityGateTimedOut={false} />);
+
+      const toggle = screen.getByRole('button', { name: /my-api/ });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle).toHaveAttribute('aria-controls', 'ApiTestContent-test-uuid');
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
     });
   });
 });

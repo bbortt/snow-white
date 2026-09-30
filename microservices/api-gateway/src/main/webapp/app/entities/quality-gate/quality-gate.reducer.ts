@@ -54,19 +54,9 @@ const fromDto = ({
   createdAt: initiatedAt,
   calculationRequest: {
     lookbackWindow: calculationRequest.lookbackWindow,
-    attributeFilters: joinAttributeFilters(calculationRequest.attributeFilters),
+    attributeFilters: calculationRequest.attributeFilters,
   },
 });
-
-export const joinAttributeFilters = (attributeFilters?: Record<string, string>): string => {
-  if (!attributeFilters || Object.keys(attributeFilters).length === 0) {
-    return '';
-  }
-
-  return Object.entries(attributeFilters)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(', ');
-};
 
 // Actions
 

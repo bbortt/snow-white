@@ -67,7 +67,7 @@ const COLORS: Record<ResultType, string> = {
   FAILED: '#a91320',
   // $success-green
   PASSED: '#245c45',
-};
+} as const;
 
 type ShapePieChartProps = {
   apiTestResults?: IApiTestResult[];
@@ -87,7 +87,7 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: 
   // Passed/Failed are encoded by color, so a percentage label and legend keep the chart
   // readable without relying on color alone (e.g. for colorblind users).
   return (
-    <ResponsiveContainer>
+    <ResponsiveContainer className="pb-4">
       <PieChart>
         <Pie
           data={data as unknown as Record<string, unknown>[]}
