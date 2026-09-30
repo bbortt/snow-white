@@ -12,7 +12,15 @@ on:
       - labeled
 
 concurrency:
-  group: pit-${{ github.event.pull_request.head.ref || github.ref_name }}
+  # Any other label gets a group of its own: Dependabot labels every pull request it opens, and
+  # sharing the branch's group let those runs cancel the push run's PIT verdict, leaving the pull
+  # request with cancelled checks.
+  group: >-
+    pit-${{
+      github.event_name == 'pull_request' && github.event.label.name != 'include:mutation'
+        && github.run_id
+        || github.event.pull_request.head.ref || github.ref_name
+    }}
   cancel-in-progress: true
 
 permissions:
