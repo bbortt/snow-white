@@ -81,7 +81,7 @@
     <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
     <maven-failsafe-plugin.version>3.6.0</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
-    <mockito.version>5.23.0</mockito.version>
+    <mockito.version>5.24.0</mockito.version>
     <org.projectlombok.version>1.18.48</org.projectlombok.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
     <pitest-junit5.version>1.2.3</pitest-junit5.version>
