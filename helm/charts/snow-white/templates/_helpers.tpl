@@ -115,13 +115,17 @@ values set deliberately - a bound the application is meant to reject loudly
 rather than default, or a flag switched off on purpose. Absent and empty are the
 only two cases that mean "unset", so those are the two this tests for.
 
-Usage: {{ include "snow-white.optionalEnv" (dict "name" "MY_VAR" "value" $v) | nindent 16 }}
+An unset value renders nothing at all, so call sites guard the include with
+`with`: an unconditional `nindent` on the empty string would still emit an
+indented blank line.
+
+Usage: {{- with include "snow-white.optionalEnv" (dict "name" "MY_VAR" "value" $v) }}{{- . | nindent 16 }}{{- end }}
 */}}
 {{- define "snow-white.optionalEnv" -}}
-{{- if and (not (kindIs "invalid" .value)) (ne (toString .value) "") }}
+{{- if and (not (kindIs "invalid" .value)) (ne (toString .value) "") -}}
 - name: '{{ .name }}'
   value: '{{ .value }}'
-{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*
