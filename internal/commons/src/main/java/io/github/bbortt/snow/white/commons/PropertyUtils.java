@@ -39,4 +39,26 @@ public final class PropertyUtils {
       );
     }
   }
+
+  /**
+   * Asserts that a bound property is at least {@code 1}.
+   *
+   * <p>Knobs sizing an executor or a queue are rejected below one deep inside
+   * the constructor they are handed to, with an exception naming neither the
+   * value nor the property it came from. Refusing them here names both.
+   */
+  public static void assertPositiveProperty(
+    String propertyName,
+    Integer value
+  ) {
+    if (value < 1) {
+      throw new IllegalArgumentException(
+        format(
+          "Property '%s' must be greater than 0, but was: %s!",
+          propertyName,
+          value
+        )
+      );
+    }
+  }
 }

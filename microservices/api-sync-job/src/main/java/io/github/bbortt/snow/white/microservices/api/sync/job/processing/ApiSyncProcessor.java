@@ -126,23 +126,40 @@ public class ApiSyncProcessor {
           continue;
         }
 
-        try {
-          trackSuppliedApiInformation(
-            supplier,
-            apiInformationPublisher,
-            statusTracker
-          );
-        } catch (RuntimeException e) {
-          // Only the first failure is rethrown. A second worker raising for a
-          // different reason at the same moment would otherwise vanish, leaving
-          // an operator debugging the aborted cycle with one of two causes.
-          if (!firstFailure.compareAndSet(null, e)) {
-            logger.warn("Further failure while aborting the cycle:", e);
-          }
-        }
+        trackOrRecordFailure(
+          supplier,
+          apiInformationPublisher,
+          statusTracker,
+          firstFailure
+        );
       }
     } catch (InterruptedException _) {
       currentThread().interrupt();
+    }
+  }
+
+  /**
+   * Only the first failure is remembered, and it is the one {@link #process}
+   * rethrows. A second worker raising for a different reason at the same moment
+   * would otherwise vanish, leaving an operator debugging the aborted cycle with
+   * one of two causes.
+   */
+  private void trackOrRecordFailure(
+    Supplier<ApiInformation> supplier,
+    UnaryOperator<ApiInformation> apiInformationPublisher,
+    Map<ApiLoadStatus, AtomicLong> statusTracker,
+    AtomicReference<RuntimeException> firstFailure
+  ) {
+    try {
+      trackSuppliedApiInformation(
+        supplier,
+        apiInformationPublisher,
+        statusTracker
+      );
+    } catch (RuntimeException e) {
+      if (!firstFailure.compareAndSet(null, e)) {
+        logger.warn("Further failure while aborting the cycle:", e);
+      }
     }
   }
 

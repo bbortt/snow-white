@@ -293,16 +293,17 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     @Nullable Throwable cause
   ) {
     if (STRICT.equals(artifactoryProperties.getParsingMode())) {
-      var causeMessage = isNull(cause) ? null : cause.getMessage();
+      if (isNull(cause)) {
+        throw new ApiCatalogException(errorMessage);
+      }
 
-      throw isNull(cause)
-        ? new ApiCatalogException(errorMessage)
-        : new ApiCatalogException(
-            isNull(causeMessage)
-              ? errorMessage
-              : format("%s: %s", errorMessage, causeMessage),
-            cause
-          );
+      var causeMessage = cause.getMessage();
+
+      if (isNull(causeMessage)) {
+        throw new ApiCatalogException(errorMessage, cause);
+      }
+
+      throw new ApiCatalogException(errorMessage + ": " + causeMessage, cause);
     }
 
     logger.warn(errorMessage, cause);
