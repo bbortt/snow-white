@@ -12,7 +12,7 @@ module:core:
 module:example-application:
   - changed-files:
       - any-glob-to-any-file:
-          - 'example-application/**/*'
+          - 'examples/**/*'
 
 module:snow-white:
   - changed-files:
