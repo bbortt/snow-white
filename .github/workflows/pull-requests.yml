@@ -27,6 +27,41 @@ permissions:
   contents: read
 
 jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-slim
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+  kube-score:
+    name: Score Helm Chart
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Score Helm Chart
+        run: |
+          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+            docker run --rm -i zegl/kube-score:latest score \
+            --ignore-container-cpu-limit \
+            --ignore-test pod-networkpolicy \
+            -
   labeler:
     name: Pull-Request Labels
     runs-on: ubuntu-slim
@@ -71,383 +106,6 @@ jobs:
           DISABLE_ERROR_REPORTING: '1'
           DISABLE_TELEMETRY: '1'
         run: npx --yes @anthropic-ai/claude-code@2.1.268 plugin validate .apm/skills --strict
-  kube-score:
-    name: Score Helm Chart
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - name: Fetch Helm Dependencies
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com
-          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
-          helm dependency build
-        working-directory: 'helm/charts/snow-white'
-      - name: Score Helm Chart
-        run: |
-          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
-            docker run --rm -i zegl/kube-score:latest score \
-            --ignore-container-cpu-limit \
-            --ignore-test pod-networkpolicy \
-            -
-  ci:
-    name: Build and Test
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          submodules: true
-      - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        with:
-          cache: maven
-          distribution: 'temurin'
-          java-version: 25
-      - name: Fetch Helm Dependencies
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com
-          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
-          helm dependency build
-        working-directory: 'helm/charts/snow-white'
-      - name: Build with Maven
-        run: ./mvnw -B -Pprod verify
-      - name: Upload CLI Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: cli
-          path: toolkit/cli/target/snow-white-*
-          if-no-files-found: error
-      - name: Fetch References
-        run: git fetch --unshallow origin
-      - name: Cache SonarQube Packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Sonar Analysis
-        # The pull request's author, not 'github.actor': on a labelled run the actor is whoever
-        # applied the label, which would put a Dependabot branch through Sonar after all.
-        if: "!contains(github.event.pull_request.user.login, 'dependabot')"
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          ./mvnw -B sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=bbortt-github \
-            -Dsonar.projectKey=bbortt_snow-white
-  app-tests:
-    name: Application Tests
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version')
-    runs-on: ubuntu-24.04
-    needs: ci
-    strategy:
-      matrix:
-        # `directory` is where the module's Dockerfile and apptest compose file live - the
-        # microservices under microservices/, the example applications under examples/.
-        include:
-          - service: api-gateway
-            directory: microservices/api-gateway
-          - service: api-sync-job
-            directory: microservices/api-sync-job
-          - service: openapi-coverage-stream
-            directory: microservices/openapi-coverage-stream
-          # Not microservices: these two prove a consuming service needs no Snow-White code to put
-          # a test identity on its spans (ARCH-013), which only a test against the built image can
-          # show. Both integration stories carry the proof - hand-written, and generated by the
-          # Snow-White OpenAPI generator - because the claim is about agent configuration, not
-          # about how the controllers came to be.
-          - service: example-spring-boot
-            directory: examples/example-spring-boot
-          - service: example-snow-white-openapi-generator
-            directory: examples/example-snow-white-openapi-generator
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          lfs: true
-          persist-credentials: false
-          submodules: true
-      - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        with:
-          cache: maven
-          distribution: 'temurin'
-          java-version: 25
-      - name: Create Docker Network
-        run: docker network create github_actions
-      - name: Rebuild JAR
-        run: |
-          ./mvnw -B clean install \
-            -b smart -T4C \
-            -Pprod \
-            -DskipTests \
-            -DskipITs \
-            -Djacoco.skip=true \
-            -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
-      - name: Build ${{ matrix.service }} Image
-        run: |
-          docker build \
-            -f ${{ matrix.directory }}/Dockerfile \
-            -t ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }} \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg PROJECT_VERSION="${{ github.sha }}" \
-            ${{ matrix.directory }}
-      - name: Start Required Services
-        run: |
-          compose_file=${{ matrix.directory }}/src/apptest/resources/docker-compose-apptest.yaml
-          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
-          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
-          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
-        env:
-          COMPOSE_NETWORK_NAME: github_actions
-      - name: Test ${{ matrix.service }} Image
-        run: |
-          ./mvnw -B verify \
-            -Papptest \
-            -Ddocker.network=github_actions \
-            -Dimage.tag=${{ github.sha }} \
-            -pl :${{ matrix.service }}
-      - name: Upload Playwright Report
-        if: failure() && matrix.service == 'api-gateway'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: playwright-report-container
-          path: microservices/api-gateway/target/playwright-report
-          retention-days: 7
-      - name: Export Docker Image
-        run: |
-          mkdir -p image-artifacts
-          docker save \
-            -o image-artifacts/${{ matrix.service }}.tar \
-            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
-      - name: Upload Docker Image
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: image-${{ matrix.service }}
-          path: image-artifacts/${{ matrix.service }}.tar
-          if-no-files-found: error
-          retention-days: 1
-  ui-app-tests:
-    name: UI Application Tests
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        with:
-          cache: maven
-          distribution: 'temurin'
-          java-version: 25
-      - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-        with:
-          run_install: false
-      - name: Install Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          cache: 'pnpm'
-          node-version: 24
-      - name: Run UI Application Tests
-        run: ./mvnw -B -pl :api-gateway -am -Pe2e test
-      - name: Upload Playwright Report
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: playwright-report
-          path: microservices/api-gateway/target/playwright-report
-          retention-days: 7
-  native-tests:
-    name: Native Application Tests
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version') ||
-      contains(github.event.pull_request.title, 'native-maven-plugin')
-    runs-on: ubuntu-24.04
-    needs: ci
-    strategy:
-      matrix:
-        service:
-          [
-            api-index-api,
-            otel-event-filter-stream,
-            quality-gate-api,
-            report-coordinator-api,
-          ]
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          submodules: true
-      - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        with:
-          cache: maven
-          distribution: 'temurin'
-          java-version: 25
-      - name: Create Docker Network
-        run: docker network create github_actions
-      - name: Rebuild JAR
-        run: |
-          ./mvnw -B clean install \
-            -b smart -T4C \
-            -Pprod \
-            -DskipTests \
-            -Djacoco.skip=true \
-            -Dfrontend.build.skip=true \
-            -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
-      - name: Build Native ${{ matrix.service }} Image
-        run: |
-          ./mvnw -B spring-boot:build-image \
-            -b smart -T4C \
-            -Pnative,prod \
-            -DskipTests \
-            -DskipITs \
-            -Djacoco.skip=true \
-            -Dimage.tag=${{ github.sha }} \
-            -pl :${{ matrix.service }}
-      - name: Start Required Services
-        run: |
-          compose_file=microservices/${{ matrix.service }}/src/apptest/resources/docker-compose-apptest.yaml
-          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
-          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
-          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
-        env:
-          COMPOSE_NETWORK_NAME: github_actions
-      - name: Test Native ${{ matrix.service }} Image
-        run: |
-          ./mvnw -B verify \
-            -Papptest \
-            -Ddocker.network=github_actions \
-            -Dimage.tag=${{ github.sha }} \
-            -pl :${{ matrix.service }}
-      - name: Upload OTel Telemetry Data
-        if: matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          if-no-files-found: error
-          name: traces-${{ matrix.service }}
-          path: microservices/${{ matrix.service }}/target/otel-collector/traces.json
-      - name: Export Docker Image
-        run: |
-          mkdir -p image-artifacts
-          docker save \
-            -o image-artifacts/${{ matrix.service }}.tar \
-            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
-      - name: Upload Docker Image
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: image-${{ matrix.service }}
-          path: image-artifacts/${{ matrix.service }}.tar
-          if-no-files-found: error
-          retention-days: 1
-  cli-binary-verification:
-    name: Verify CLI Binary
-    if: contains(github.event.pull_request.labels.*.name, 'module:cli')
-    runs-on: ${{ matrix.os }}
-    needs: ci
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-slim
-            binary: snow-white-linux-x64
-          - os: ubuntu-24.04-arm
-            binary: snow-white-linux-arm64
-          - os: macos-26-intel
-            binary: snow-white-macos-x64
-          - os: macos-26
-            binary: snow-white-macos-arm64
-          - os: windows-2025
-            binary: snow-white-windows-x64.exe
-          - os: windows-11-arm
-            binary: snow-white-windows-arm64.exe
-      fail-fast: false
-    permissions:
-      contents: read
-    steps:
-      - name: Download CLI Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: cli
-          path: toolkit/cli/target
-      - name: Make Binary Executable
-        if: runner.os != 'Windows'
-        run: chmod +x toolkit/cli/target/${{ matrix.binary }}
-      - name: Verify Binary Runs
-        shell: bash
-        run: |
-          toolkit/cli/target/${{ matrix.binary }} --version
-          toolkit/cli/target/${{ matrix.binary }} info
-  e2e-tests:
-    name: End-to-End Tests
-    if: contains(github.event.pull_request.labels.*.name, 'include:e2e')
-    runs-on: ubuntu-24.04
-    needs:
-      - app-tests
-      - native-tests
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          submodules: true
-      - name: Download Docker Images
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          pattern: image-*
-          path: /tmp/images
-          merge-multiple: true
-      - name: Download Trace Files
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          pattern: traces-*
-          path: /tmp/traces
-          merge-multiple: true
-      - name: Load Docker Images
-        run: |
-          find /tmp/images -name '*.tar' -print0 |
-            xargs -0 -r -n1 docker load -i
-      - name: Verify Trace Files
-        run: |
-          find /tmp/traces -type f -name '*.json' -print
-          test -n "$(find /tmp/traces -type f -name '*.json')"
-  dependency-review:
-    name: Dependency Review
-    runs-on: ubuntu-slim
-    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - name: Dependency Review
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
   zizmor:
     name: Zizmor
     runs-on: ubuntu-24.04
