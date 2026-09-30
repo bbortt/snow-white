@@ -53,27 +53,11 @@ spec:
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
               {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.artifactory.parsingMode }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE'
-                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.parsingMode }}'
-              {{- end }}
-              {{- $resolveReferences := toString (.Values.snowWhite.apiSyncJob.artifactory.resolveReferences | default "") }}
-              {{- if ne $resolveReferences "" }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES'
-                  value: '{{ $resolveReferences }}'
-              {{- end }}
-              {{- /* `if` alone is falsy on 0, which would swallow the one value the
-                     application is meant to reject loudly instead of defaulting. */}}
-              {{- $maxParallelSyncTasks := .Values.snowWhite.apiSyncJob.maxParallelSyncTasks }}
-              {{- if and (not (kindIs "invalid" $maxParallelSyncTasks)) (ne (toString $maxParallelSyncTasks) "") }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS'
-                  value: '{{ $maxParallelSyncTasks }}'
-              {{- end }}
-              {{- $workQueueCapacity := .Values.snowWhite.apiSyncJob.workQueueCapacity }}
-              {{- if and (not (kindIs "invalid" $workQueueCapacity)) (ne (toString $workQueueCapacity) "") }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY'
-                  value: '{{ $workQueueCapacity }}'
-              {{- end }}
+              {{- $artifactory := .Values.snowWhite.apiSyncJob.artifactory }}
+              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE" "value" $artifactory.parsingMode) | nindent 16 }}
+              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES" "value" $artifactory.resolveReferences) | nindent 16 }}
+              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS" "value" .Values.snowWhite.apiSyncJob.maxParallelSyncTasks) | nindent 16 }}
+              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY" "value" .Values.snowWhite.apiSyncJob.workQueueCapacity) | nindent 16 }}
               {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
               {{- range $additionalEnvs }}
                 - name: {{ .name }}
