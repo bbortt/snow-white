@@ -7,6 +7,8 @@
 package io.github.bbortt.snow.white.microservices.api.sync.job.processing;
 
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.*;
+import static java.lang.Thread.currentThread;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -21,6 +23,9 @@ import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiIn
 import io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -128,12 +133,19 @@ class ApiSyncProcessorUnitTest {
       AtomicInteger inFlight = new AtomicInteger();
       AtomicInteger peakInFlight = new AtomicInteger();
 
+      // One party per configured worker: every task holds its worker until all
+      // three are in flight at once. That pins the peak to the bound instead of
+      // leaving a sleep to make the overlap merely likely - and a fourth worker
+      // would be counted before the barrier ever trips.
+      var workerCount = 3;
+      var allWorkersInFlight = new CyclicBarrier(workerCount);
+
       List<Supplier<ApiInformation>> suppliers = IntStream.range(
         0,
         specificationCount
       )
         .mapToObj(
-          i ->
+          _ ->
             (Supplier<ApiInformation>) () -> {
               peakInFlight.accumulateAndGet(
                 inFlight.incrementAndGet(),
@@ -141,9 +153,17 @@ class ApiSyncProcessorUnitTest {
               );
 
               try {
-                Thread.sleep(5);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                allWorkersInFlight.await(10, SECONDS);
+              } catch (InterruptedException _) {
+                currentThread().interrupt();
+              } catch (BrokenBarrierException | TimeoutException e) {
+                // Fewer workers than configured: the group never completes.
+                throw new IllegalStateException(
+                  "Waited for %d specifications in flight, never got there!".formatted(
+                    workerCount
+                  ),
+                  e
+                );
               } finally {
                 inFlight.decrementAndGet();
               }
@@ -155,7 +175,7 @@ class ApiSyncProcessorUnitTest {
 
       Map<ApiLoadStatus, Long> result = fixture.process(suppliers, publish());
 
-      assertThat(peakInFlight.get()).isPositive().isLessThanOrEqualTo(3);
+      assertThat(peakInFlight.get()).isEqualTo(workerCount);
       assertThat(result).containsEntry(PUBLISHED, (long) specificationCount);
     }
 
@@ -210,7 +230,7 @@ class ApiSyncProcessorUnitTest {
       List<Supplier<ApiInformation>> suppliers = Stream.concat(
         Stream.of(failing),
         IntStream.range(0, 30).mapToObj(
-          i -> (Supplier<ApiInformation>) () -> new ApiInformation()
+          _ -> (Supplier<ApiInformation>) ApiInformation::new
         )
       ).toList();
 

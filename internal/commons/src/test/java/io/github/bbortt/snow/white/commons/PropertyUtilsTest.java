@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class PropertyUtilsTest {
 
@@ -66,6 +67,32 @@ class PropertyUtilsTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("All properties must be configured")
         .hasMessageContaining("property2");
+    }
+  }
+
+  @Nested
+  class AssertPositivePropertyTest {
+
+    @ValueSource(ints = { 1, 2, Integer.MAX_VALUE })
+    @ParameterizedTest
+    void shouldNotThrowException_whenValueIsPositive(int value) {
+      assertThatNoException().isThrownBy(() ->
+        PropertyUtils.assertPositiveProperty("property1", value)
+      );
+    }
+
+    @ValueSource(ints = { 0, -1, Integer.MIN_VALUE })
+    @ParameterizedTest
+    void shouldThrowException_whenValueIsNotPositive(int value) {
+      assertThatThrownBy(() ->
+        PropertyUtils.assertPositiveProperty("property1", value)
+      )
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "Property 'property1' must be greater than 0, but was: %s!".formatted(
+            value
+          )
+        );
     }
   }
 }
