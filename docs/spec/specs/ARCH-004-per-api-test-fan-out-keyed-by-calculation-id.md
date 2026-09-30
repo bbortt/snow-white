@@ -20,7 +20,7 @@ side extracts it again, so the asynchronous hop stays inside one trace.
 
 **Rationale**
 Per-API-test records are what make the calculation parallelisable: each is independently
-consumable, so a report covering ten APIs occupies ten consumers rather than serialising behind
+consumable, so a report covering ten APIs occupies ten consumers rather than serializing behind
 one, which is the scaling property `NF-003` asks for.
 Keying every record of a calculation with the same calculation id keeps that parallelism from
 costing ordering — a shared key lands the whole fan-out on one partition, so the responses for one

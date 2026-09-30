@@ -10,7 +10,7 @@ properties:
     maxLength: 64
   testCaseName:
     type: string
-    description: 'The test that produced the trace, or null where the evidencing span carried no test identity'
+    description: 'The test that produced the trace, absent where the evidencing span carried no test identity'
     example: shouldAnswerNotFoundForUnknownMessage
     minLength: 1
     maxLength: 1024

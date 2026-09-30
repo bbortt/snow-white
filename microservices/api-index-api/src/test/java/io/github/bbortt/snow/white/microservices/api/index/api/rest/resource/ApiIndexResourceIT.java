@@ -639,6 +639,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
   void getRequest_forEntityDetails_shouldListSingleEntity() throws Exception {
     var apiReference = ApiReference.builder()
       .otelServiceName("otelServiceName")
@@ -686,7 +687,9 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
           assertThat(r.get("sourceUrl").asString()).isEqualTo(
             apiReference.getSourceUrl()
           ),
-        r -> assertThat(r.get("apiType").asString()).isEqualTo(OPENAPI.name())
+        r -> assertThat(r.get("apiType").asString()).isEqualTo(OPENAPI.name()),
+        // A stable entry carries no content, and an unset property is omitted rather than null
+        r -> assertThat(r.has("content")).isFalse()
       );
   }
 

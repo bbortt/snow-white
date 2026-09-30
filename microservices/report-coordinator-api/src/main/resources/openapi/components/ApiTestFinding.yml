@@ -20,27 +20,27 @@ properties:
     maxLength: 512
   httpPath:
     type: string
-    description: 'The path of the judged target, as the specification spells it - null where the target has no path dimension'
+    description: 'The path of the judged target, as the specification spells it - absent where the target has no path dimension'
     example: '/pung/{message}'
     maxLength: 256
   httpMethod:
     type: string
-    description: 'The method of the judged target - null where the target has no method dimension'
+    description: 'The method of the judged target - absent where the target has no method dimension'
     example: GET
     maxLength: 16
   responseCode:
     type: string
-    description: 'The response code judged - null where the target has no response-code dimension'
+    description: 'The response code judged - absent where the target has no response-code dimension'
     example: '404'
     maxLength: 16
   parameterName:
     type: string
-    description: 'The name of the judged parameter - null where the target is not a parameter'
+    description: 'The name of the judged parameter - absent where the target is not a parameter'
     example: page
     maxLength: 256
   contentType:
     type: string
-    description: 'The judged content type - null where the target has no content-type dimension'
+    description: 'The judged content type - absent where the target has no content-type dimension'
     example: application/json
     maxLength: 128
   evidence:

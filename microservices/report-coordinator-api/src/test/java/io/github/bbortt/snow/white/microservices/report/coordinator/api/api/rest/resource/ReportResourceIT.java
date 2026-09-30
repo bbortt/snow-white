@@ -28,7 +28,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.util.StreamUtils.copyToString;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
@@ -274,6 +276,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
   void findReport_servesTheFindingsBehindEveryCriterionResult()
     throws Exception {
     var calculationId = UUID.fromString("52ad2f1b-2a9e-4d42-9e2f-9c2a0f9f7a21");
@@ -297,7 +300,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     assertThat(covered.get("httpPath").asString()).isEqualTo("/api/v1/users");
     assertThat(covered.get("httpMethod").asString()).isEqualTo("GET");
     assertThat(covered.get("responseCode").asString()).isEqualTo("404");
-    assertThat(covered.get("parameterName").isNull()).isTrue();
+    assertThat(covered.has("parameterName")).isFalse();
     assertThat(covered.get("contentType").asString()).isEqualTo(
       "application/json"
     );
@@ -305,13 +308,16 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
     var uncovered = findings.get(UNCOVERED_SPEC_POINTER);
     assertThat(uncovered.get("status").asString()).isEqualTo("UNCOVERED");
-    // Empty never means "not loaded" - it means this finding has no evidence.
+    // Empty never means "not loaded" - it means this finding has no evidence. Only null is
+    // omitted, so the empty array stays on the wire.
+    assertThat(uncovered.has("evidence")).isTrue();
     assertThat(uncovered.get("evidence").isEmpty()).isTrue();
   }
 
   @Test
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
-  void findReport_servesEvidenceAsObjectsWithAnExplicitlyNullTestCaseName()
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesEvidenceAsObjectsOmittingAnUnsetTestCaseName()
     throws Exception {
     var calculationId = UUID.fromString("7b3f0c58-0a6b-4f95-8d4e-2f5c4a1b6d33");
 
@@ -336,11 +342,11 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       evidence.get(TRACE_ID_WITH_TEST_IDENTITY).get("testCaseName").asString()
     ).isEqualTo("shouldReturnNotFound");
 
-    // A trace whose span carried no test identity says so: the key is present and null, so a
-    // client can tell "no test name" apart from a field this version does not know about.
+    // A trace whose span carried no test identity carries no key at all: an unset property is
+    // omitted rather than served as null.
     var withoutTestIdentity = evidence.get(TRACE_ID_WITHOUT_TEST_IDENTITY);
-    assertThat(withoutTestIdentity.has("testCaseName")).isTrue();
-    assertThat(withoutTestIdentity.get("testCaseName").isNull()).isTrue();
+    assertThat(withoutTestIdentity.has("traceId")).isTrue();
+    assertThat(withoutTestIdentity.has("testCaseName")).isFalse();
   }
 
   @Test
