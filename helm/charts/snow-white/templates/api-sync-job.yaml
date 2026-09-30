@@ -41,23 +41,14 @@ spec:
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.baseUrl }}'
                 - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_REPOSITORY'
                   value: '{{ .Values.snowWhite.apiSyncJob.artifactory.repository }}'
-              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH'
-                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiNameJsonPath }}'
-              {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_VERSION_JSON_PATH'
-                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customApiVersionJsonPath }}'
-              {{- end }}
-              {{- if .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}
-                - name: 'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH'
-                  value: '{{ .Values.snowWhite.apiSyncJob.artifactory.customServiceNameJsonPath }}'
-              {{- end }}
               {{- $artifactory := .Values.snowWhite.apiSyncJob.artifactory }}
-              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE" "value" $artifactory.parsingMode) | nindent 16 }}
-              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES" "value" $artifactory.resolveReferences) | nindent 16 }}
-              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS" "value" .Values.snowWhite.apiSyncJob.maxParallelSyncTasks) | nindent 16 }}
-              {{- include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY" "value" .Values.snowWhite.apiSyncJob.workQueueCapacity) | nindent 16 }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_NAME_JSON_PATH" "value" $artifactory.customApiNameJsonPath) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_API_VERSION_JSON_PATH" "value" $artifactory.customApiVersionJsonPath) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_CUSTOM_SERVICE_NAME_JSON_PATH" "value" $artifactory.customServiceNameJsonPath) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_PARSING_MODE" "value" $artifactory.parsingMode) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES" "value" $artifactory.resolveReferences) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS" "value" .Values.snowWhite.apiSyncJob.maxParallelSyncTasks) }}{{- . | nindent 16 }}{{- end }}
+              {{- with include "snow-white.optionalEnv" (dict "name" "SNOW_WHITE_API_SYNC_JOB_WORK_QUEUE_CAPACITY" "value" .Values.snowWhite.apiSyncJob.workQueueCapacity) }}{{- . | nindent 16 }}{{- end }}
               {{- $additionalEnvs := .Values.snowWhite.apiSyncJob.additionalEnvs | default list }}
               {{- range $additionalEnvs }}
                 - name: {{ .name }}
