@@ -309,14 +309,24 @@ class ArtifactoryApiCatalogServiceUnitTest {
     private void prepareOpenApiSpecificationWhenDownloading(
       SwaggerParseResult parseResult
     ) throws IOException {
-      AqlItem aqlItem = createAqlItem("apis", "invalid.yml");
-      doReturn(searches).when(artifactoryMock).searches();
-      doReturn(searches).when(searches).repositories("api-specs");
-      doReturn(List.of(aqlItem)).when(searches).artifactsByFileSpec(any());
+      prepareOpenApiSpecificationWhenDownloading();
 
       doReturn(parseResult)
         .when(openAPIV3ParserMock)
         .readContents(anyString(), any(), any());
+    }
+
+    /**
+     * Everything up to the parse, so a test that wants the parser to fail
+     * instead of answering can stub that itself rather than leaving the
+     * answering stub behind unused.
+     */
+    private void prepareOpenApiSpecificationWhenDownloading()
+      throws IOException {
+      AqlItem aqlItem = createAqlItem("apis", "invalid.yml");
+      doReturn(searches).when(artifactoryMock).searches();
+      doReturn(searches).when(searches).repositories("api-specs");
+      doReturn(List.of(aqlItem)).when(searches).artifactsByFileSpec(any());
 
       doReturn(repositoryHandle).when(artifactoryMock).repository("api-specs");
 
@@ -373,6 +383,9 @@ class ArtifactoryApiCatalogServiceUnitTest {
       assertThatThrownBy(openapiInformationStream::toList)
         .isInstanceOf(ApiCatalogException.class)
         .hasMessageContaining("Failed to download 'apis/error.yml'")
+        // An abort is read from a log line, so the reason belongs in the line
+        // rather than a `getCause()` away.
+        .hasMessageContaining(downloadException.getMessage())
         .hasMessageContaining("at [No location information]")
         .rootCause()
         .isEqualTo(downloadException);
@@ -643,6 +656,57 @@ class ArtifactoryApiCatalogServiceUnitTest {
       assertThat(parseOptionsUsedWhenParsing())
         .extracting(ParseOptions::isResolve)
         .isEqualTo(true);
+    }
+
+    /**
+     * Resolving {@code $ref} pointers walks them, so a circular chain exhausts
+     * the stack rather than raising. That is an {@link Error}, not an exception:
+     * letting it escape would kill the worker and drop the file from the summary
+     * it belongs in.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldCountASpecificationWhoseReferencesRecurse_asParseFailed()
+      throws IOException {
+      doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
+
+      prepareOpenApiSpecificationWhenDownloading();
+      doThrow(new StackOverflowError())
+        .when(openAPIV3ParserMock)
+        .readContents(anyString(), any(), any());
+
+      var results = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get)
+        .toList();
+
+      assertThat(results)
+        .singleElement()
+        .extracting(ApiInformation::getLoadStatus)
+        .isEqualTo(PARSE_FAILED);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
+    void shouldAbortOnASpecificationWhoseReferencesRecurse_inStrictParsingMode()
+      throws IOException {
+      doReturn(STRICT).when(artifactoryProperties).getParsingMode();
+
+      prepareOpenApiSpecificationWhenDownloading();
+      doThrow(new StackOverflowError())
+        .when(openAPIV3ParserMock)
+        .readContents(anyString(), any(), any());
+
+      var openapiInformationStream = fixture
+        .getApiSpecificationLoaders()
+        .stream()
+        .map(Supplier::get);
+
+      assertThatThrownBy(openapiInformationStream::toList)
+        .isInstanceOf(ApiCatalogException.class)
+        .hasMessageContaining("Failed to parse OpenAPI from 'apis/invalid.yml'")
+        .hasCauseInstanceOf(StackOverflowError.class);
     }
 
     /**

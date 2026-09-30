@@ -133,7 +133,12 @@ public class ApiSyncProcessor {
             statusTracker
           );
         } catch (RuntimeException e) {
-          firstFailure.compareAndSet(null, e);
+          // Only the first failure is rethrown. A second worker raising for a
+          // different reason at the same moment would otherwise vanish, leaving
+          // an operator debugging the aborted cycle with one of two causes.
+          if (!firstFailure.compareAndSet(null, e)) {
+            logger.warn("Further failure while aborting the cycle:", e);
+          }
         }
       }
     } catch (InterruptedException _) {

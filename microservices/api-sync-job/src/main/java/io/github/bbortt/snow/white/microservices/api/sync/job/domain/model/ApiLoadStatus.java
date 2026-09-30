@@ -21,6 +21,8 @@ public enum ApiLoadStatus {
   MANDATORY_INFORMATION_MISSING,
   // No source url provided
   NO_SOURCE,
+  // No API type could be determined
+  NO_API_TYPE,
   // The index could not accept it - deferred to the next cycle
   PUBLISH_DEFERRED,
   // Published to API index service
