@@ -540,6 +540,15 @@ describe('API Sync Job', () => {
             envVarValue: 'false',
           },
           {
+            // Switching the flag off in YAML is a setting the operator made, not
+            // an absent one, so it reaches the container the same way the string
+            // spelling of it does.
+            apiSyncJob: { artifactory: { resolveReferences: false } },
+            envVarName:
+              'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
+            envVarValue: 'false',
+          },
+          {
             apiSyncJob: { maxParallelSyncTasks: 8 },
             envVarName: 'SNOW_WHITE_API_SYNC_JOB_MAX_PARALLEL_SYNC_TASKS',
             envVarValue: '8',
@@ -615,30 +624,6 @@ describe('API Sync Job', () => {
             ).toBeUndefined();
           },
         );
-
-        it('should leave reference resolution to the application default when switched off as a boolean', async () => {
-          const apiSyncJob = await renderAndGetApiSyncJobContainer(
-            await renderHelmChart({
-              chartPath: 'charts/snow-white',
-              values: {
-                snowWhite: {
-                  apiSyncJob: {
-                    enabled: true,
-                    artifactory: { resolveReferences: false },
-                  },
-                },
-              },
-            }),
-          );
-
-          expect(
-            apiSyncJob.env.find(
-              (env) =>
-                env.name ===
-                'SNOW_WHITE_API_SYNC_JOB_ARTIFACTORY_RESOLVE_REFERENCES',
-            ),
-          ).toBeUndefined();
-        });
 
         it('should accept additional environment variables', async () => {
           const additionalEnvs = [
