@@ -142,6 +142,65 @@ test('opens and closes an API test card', async ({ page }) => {
   await expect(page.getByText('Path')).not.toBeVisible();
 });
 
+test('drills into the findings behind a criterion, uncovered ones first', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    interfaces: [
+      {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '1.0.0',
+        status: 'FAILED',
+        testResults: [
+          {
+            id: 'PATH_COVERAGE',
+            coverage: 0.5,
+            isIncludedInQualityGate: true,
+            findings: [
+              { status: 'NOT_APPLICABLE', specPointer: '#/paths/~1health', httpPath: '/health', evidence: [] },
+              {
+                status: 'COVERED',
+                specPointer: '#/paths/~1orders',
+                httpPath: '/orders',
+                evidence: [{ traceId: '4bf92f3577b34da6a3ce929d0e0e4736', testCaseName: 'OrderApiIT#listsOrders' }],
+              },
+              { status: 'UNCOVERED', specPointer: '#/paths/~1orders~1{id}', httpPath: '/orders/{id}', evidence: [] },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  await page.getByRole('button', { name: /orders-api/ }).click();
+  const toggle = page.getByRole('button', { name: 'Show findings for Path' });
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+  await toggle.click();
+  const findings = dataCy(page, 'apiTestFindings');
+  await expect(page.getByRole('button', { name: 'Hide findings for Path' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(findings.locator('[data-cy^="findings-"]')).toHaveCount(3);
+  await expect(findings.locator('[data-cy^="findings-"]').first()).toHaveAttribute('data-cy', 'findings-UNCOVERED');
+  await expect(findings.getByText('/orders/{id}')).toBeVisible();
+  await expect(dataCy(page, 'findingEvidence')).toHaveText('OrderApiIT#listsOrders');
+  await expect(findings.getByText('/health')).not.toBeVisible();
+
+  await findings.getByRole('button', { name: /Not applicable/ }).click();
+  await expect(findings.getByText('/health')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Hide findings for Path' }).click();
+  await expect(findings).toHaveCount(0);
+});
+
+test('offers no drilldown for a result without findings', async ({ page }) => {
+  await page.getByRole('button', { name: /orders-api/ }).click();
+
+  await expect(page.getByText('Path')).toBeVisible();
+  await expect(page.getByRole('button', { name: /findings for/ })).toHaveCount(0);
+});
+
 test('links to the JUnit report download', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Download JUnit Report' })).toHaveAttribute(
     'href',

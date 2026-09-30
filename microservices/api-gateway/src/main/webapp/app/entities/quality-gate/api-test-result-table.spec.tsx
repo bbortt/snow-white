@@ -7,9 +7,10 @@
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { ApiTestResultTable } from 'app/entities/quality-gate/api-test-result-table';
+import { FindingStatus } from 'app/shared/model/enumerations/finding-status.model';
 import React from 'react';
 
 jest.mock('app/config/store', () => ({
@@ -24,6 +25,11 @@ jest.mock('app/entities/open-api-criterion/open-api-criterion.reducer', () => ({
 jest.mock('app/entities/quality-gate/api-criterion-info', () => ({
   __esModule: true,
   default: ({ apiCriterion }: { apiCriterion: IOpenApiCriterion }) => <div data-testid="api-criterion-info">{apiCriterion.name}</div>,
+}));
+
+jest.mock('app/entities/quality-gate/api-test-findings', () => ({
+  __esModule: true,
+  default: ({ findings }: { findings: unknown[] }) => <div data-testid="api-test-findings">{findings.length}</div>,
 }));
 
 jest.mock('react-jhipster', () => ({
@@ -142,5 +148,39 @@ describe('ApiTestResultTable', () => {
 
     const infoCells = screen.getAllByTestId('api-criterion-info');
     expect(infoCells.map(cell => cell.textContent)).toEqual(['CRITERION_A', 'CRITERION_B']);
+  });
+
+  describe('findings', () => {
+    const finding = { status: FindingStatus.UNCOVERED, specPointer: '#/paths/~1orders/get', evidence: [] };
+
+    it('should offer no drilldown without findings', () => {
+      returnOpenApiCriterionList([openApiCriterion('CRITERION_A')]);
+
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ findings: [] }), apiTestResult({ id: 'CRITERION_B' })]} />);
+
+      expect(screen.queryByRole('button', { name: 'snowWhiteApp.apiTestResult.findings.show' })).not.toBeInTheDocument();
+    });
+
+    it('should open the findings below the criterion and close them again', async () => {
+      returnOpenApiCriterionList([openApiCriterion('CRITERION_A')]);
+
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ findings: [finding] })]} />);
+
+      const toggle = screen.getByRole('button', { name: 'snowWhiteApp.apiTestResult.findings.show' });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByTestId('api-test-findings')).not.toBeInTheDocument();
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(toggle).toHaveAccessibleName('snowWhiteApp.apiTestResult.findings.hide');
+      expect(screen.getByTestId('api-test-findings')).toHaveTextContent('1');
+      expect(screen.getByTestId('api-test-findings').closest('tr')).toHaveAttribute('id', toggle.getAttribute('aria-controls'));
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await waitFor(() => expect(screen.queryByTestId('api-test-findings')).not.toBeInTheDocument());
+    });
   });
 });

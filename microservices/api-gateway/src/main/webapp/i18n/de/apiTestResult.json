@@ -16,7 +16,25 @@
       "notIncluded": "Nicht in Quality-Gate inkludiert",
       "showOnlyIncluded": "Nur inkludierte anzeigen",
       "additionalInformation": "Details",
-      "qualityGate": "Quality-Gate"
+      "qualityGate": "Quality-Gate",
+      "findings": {
+        "show": "Befunde für {{ criterion }} anzeigen",
+        "hide": "Befunde für {{ criterion }} ausblenden",
+        "status": {
+          "UNCOVERED": "Nicht abgedeckt",
+          "COVERED": "Abgedeckt",
+          "NOT_APPLICABLE": "Nicht anwendbar"
+        },
+        "showAll": "Alle {{ count }} anzeigen",
+        "responseCode": "Antwort",
+        "parameter": "Parameter",
+        "contentType": "Inhaltstyp",
+        "traces": "{{ count }} Traces",
+        "moreTraces": "+{{ count }} Traces",
+        "trace": "Trace {{ traceId }}",
+        "copy": "In die Zwischenablage kopieren",
+        "copied": "Kopiert"
+      }
     }
   }
 }

@@ -11,12 +11,13 @@ import { CSS_TRANSITION_TIMEOUT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
 import ApiCriterionInfo from 'app/entities/quality-gate/api-criterion-info';
+import ApiTestFindings from 'app/entities/quality-gate/api-test-findings';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { TextWithCode } from 'app/shared/TextWithCode';
-import React, { createRef, useEffect, useMemo, useRef } from 'react';
+import React, { createRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { translate, Translate } from 'react-jhipster';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Progress, Table, UncontrolledTooltip } from 'reactstrap';
+import { Button, Progress, Table, UncontrolledTooltip } from 'reactstrap';
 
 interface ApiTestResultTableProps {
   apiTestResults: IApiTestResult[];
@@ -28,6 +29,17 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
   const openApiCriterionList: IOpenApiCriterion[] | undefined = useAppSelector(state => state.snowwhite.openApiCriterion.entities);
 
   const nodeRefs = useRef<Map<string, React.RefObject<HTMLTableRowElement | null>>>(new Map());
+  const nodeRef = (key: string): React.RefObject<HTMLTableRowElement | null> => {
+    if (!nodeRefs.current.has(key)) {
+      nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
+    }
+    return nodeRefs.current.get(key)!;
+  };
+
+  const tableId = useId();
+  const [openFindings, setOpenFindings] = useState<string[]>([]);
+  const toggleFindings = (apiTestResultId: string) =>
+    setOpenFindings(open => (open.includes(apiTestResultId) ? open.filter(id => id !== apiTestResultId) : [...open, apiTestResultId]));
 
   useEffect(() => {
     dispatch(getEntities());
@@ -51,10 +63,13 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
         }
 
         const key = `entity-${apiTestResult.id}`;
-        if (!nodeRefs.current.has(key)) {
-          nodeRefs.current.set(key, createRef<HTMLTableRowElement>());
-        }
-        const nodeRef = nodeRefs.current.get(key)!;
+        const rowRef = nodeRef(key);
+        const findingsKey = `findings-${apiTestResult.id}`;
+        const findingsRef = nodeRef(findingsKey);
+        const findingsId = `${tableId}-${findingsKey}`;
+        const findings = apiTestResult.findings ?? [];
+        const hasFindings = findings.length > 0;
+        const findingsOpen = hasFindings && openFindings.includes(apiTestResult.id!);
 
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
@@ -67,21 +82,39 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
         const includedTargetId = `included-${apiTestResult.id}`;
 
         return [
-          <CSSTransition key={key} timeout={CSS_TRANSITION_TIMEOUT} classNames="row-fade" nodeRef={nodeRef}>
-            <tr ref={nodeRef} data-cy="apiTestResultTable">
+          <CSSTransition key={key} timeout={CSS_TRANSITION_TIMEOUT} classNames="row-fade" nodeRef={rowRef}>
+            <tr ref={rowRef} data-cy="apiTestResultTable">
               <td>{nameText}</td>
               <td className="text-center">
                 <ApiCriterionInfo apiCriterion={apiCriterion} />
               </td>
               <td>
-                <Progress multi>
-                  <Progress bar color="success" value={passedPercentage}>
-                    {passedPercentage} %
+                <div className="d-flex align-items-center gap-2">
+                  {hasFindings ? (
+                    <Button
+                      color="link"
+                      size="sm"
+                      className="p-0"
+                      onClick={() => toggleFindings(apiTestResult.id!)}
+                      aria-expanded={findingsOpen}
+                      aria-controls={findingsId}
+                      aria-label={translate(
+                        findingsOpen ? 'snowWhiteApp.apiTestResult.findings.hide' : 'snowWhiteApp.apiTestResult.findings.show',
+                        { criterion: nameText },
+                      )}
+                    >
+                      <FontAwesomeIcon icon="search" aria-hidden="true" />
+                    </Button>
+                  ) : null}
+                  <Progress multi className="flex-grow-1">
+                    <Progress bar color="success" value={passedPercentage}>
+                      {passedPercentage} %
+                    </Progress>
+                    <Progress bar color="danger" value={failedPercentage}>
+                      {failedPercentage} %
+                    </Progress>
                   </Progress>
-                  <Progress bar color="danger" value={failedPercentage}>
-                    {failedPercentage} %
-                  </Progress>
-                </Progress>
+                </div>
               </td>
               <td className="text-center">
                 <span id={includedTargetId} aria-label={includedLabel}>
@@ -98,9 +131,20 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
               </td>
             </tr>
           </CSSTransition>,
+          ...(findingsOpen
+            ? [
+                <CSSTransition key={findingsKey} timeout={CSS_TRANSITION_TIMEOUT} classNames="row-fade" nodeRef={findingsRef}>
+                  <tr ref={findingsRef} id={findingsId} data-cy="apiTestFindingsRow">
+                    <td colSpan={5}>
+                      <ApiTestFindings findings={findings} />
+                    </td>
+                  </tr>
+                </CSSTransition>,
+              ]
+            : []),
         ];
       });
-  }, [openApiCriterionList, apiTestResults]);
+  }, [openApiCriterionList, apiTestResults, openFindings]);
 
   return (
     <div>

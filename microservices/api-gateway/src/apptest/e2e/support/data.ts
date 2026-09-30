@@ -14,9 +14,21 @@
 export type ApiType = 'ASYNCAPI' | 'GRAPHQL' | 'OPENAPI' | 'UNSPECIFIED';
 export type CalculationStatus = 'FAILED' | 'FINISHED_EXCEPTIONALLY' | 'IN_PROGRESS' | 'PASSED' | 'TIMED_OUT';
 
+export interface FindingDto {
+  contentType?: string;
+  evidence: Array<{ testCaseName?: string; traceId: string }>;
+  httpMethod?: string;
+  httpPath?: string;
+  parameterName?: string;
+  responseCode?: string;
+  specPointer: string;
+  status: 'COVERED' | 'NOT_APPLICABLE' | 'UNCOVERED';
+}
+
 export interface ApiTestResultDto {
   additionalInformation?: string;
   coverage: number;
+  findings?: FindingDto[];
   id: string;
   isIncludedInQualityGate?: boolean;
 }
