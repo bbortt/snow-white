@@ -204,7 +204,11 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     SwaggerParseResult swaggerParseResult;
     try {
       swaggerParseResult = parseFile(content);
-    } catch (Exception e) {
+    } catch (Exception | StackOverflowError e) {
+      // Resolving `$ref` pointers walks them, so a circular chain exhausts the
+      // stack rather than raising. Letting that escape kills the worker and
+      // drops the file from the summary it belongs in - counted as unparseable
+      // is what it is.
       return skipOrAbort(
         PARSE_FAILED,
         format("Failed to parse OpenAPI from '%s'", filePath),
@@ -275,17 +279,30 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
    * Graceful is the default: the file is skipped, counted under the reason it
    * failed, and the rest of the cycle still publishes. Strict turns the same
    * failure into a raise, which aborts the cycle.
+   *
+   * <p>The raise carries the cause's own message, not just the cause: what
+   * names the candidate file is this message, and what says why it could not be
+   * indexed is the one underneath - naming which of a specification's mandatory
+   * fields is missing, for instance. An abort is read from a log line, so both
+   * belong in the line rather than one of them a {@code getCause()} away.
    */
   @RealizesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
   private ApiInformation skipOrAbort(
     ApiLoadStatus reason,
     String errorMessage,
-    @Nullable Exception cause
+    @Nullable Throwable cause
   ) {
     if (STRICT.equals(artifactoryProperties.getParsingMode())) {
+      var causeMessage = isNull(cause) ? null : cause.getMessage();
+
       throw isNull(cause)
         ? new ApiCatalogException(errorMessage)
-        : new ApiCatalogException(errorMessage, cause);
+        : new ApiCatalogException(
+            isNull(causeMessage)
+              ? errorMessage
+              : format("%s: %s", errorMessage, causeMessage),
+            cause
+          );
     }
 
     logger.warn(errorMessage, cause);

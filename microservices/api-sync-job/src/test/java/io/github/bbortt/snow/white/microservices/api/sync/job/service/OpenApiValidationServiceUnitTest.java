@@ -6,8 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.api.sync.job.service;
 
-import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.LOAD_FAILED;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.MANDATORY_INFORMATION_MISSING;
+import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.NO_API_TYPE;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.domain.model.ApiLoadStatus.NO_SOURCE;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.GRACEFUL;
 import static io.github.bbortt.snow.white.microservices.api.sync.job.parser.ParsingMode.STRICT;
@@ -119,7 +119,7 @@ class OpenApiValidationServiceUnitTest {
 
       var resultingApi = fixture.validateApiInformationFromIndex(api, GRACEFUL);
 
-      assertThat(resultingApi.getLoadStatus()).isEqualTo(LOAD_FAILED);
+      assertThat(resultingApi.getLoadStatus()).isEqualTo(NO_API_TYPE);
     }
 
     @Test
