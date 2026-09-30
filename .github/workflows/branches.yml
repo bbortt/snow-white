@@ -26,20 +26,17 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Check if PR exists
-        uses: 8BitJonny/gh-get-current-pr@4056877062a1f3b624d5d4c2bedefa9cf51435c9
-        id: check
-        with:
-          filterOutClosed: true
-          filterOutDraft: true
+        uses: jwalton/gh-find-current-pr@8adf30db44cd0384087fcff3a04664ad46798646
+        id: findPr
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         with:
           cache: maven
           distribution: 'temurin'
           java-version: 25
       - name: Fetch Helm Dependencies
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add influxdata https://helm.influxdata.com
@@ -47,27 +44,27 @@ jobs:
           helm dependency build
         working-directory: 'helm/charts/snow-white'
       - name: Build with Maven
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         run: ./mvnw -B -Pprod verify
       - name: Upload CLI Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         with:
           name: cli
           path: toolkit/cli/target/snow-white-*
           if-no-files-found: error
       - name: Fetch References
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         run: git fetch --unshallow origin
       - name: Cache SonarQube Packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Sonar Analysis
-        if: github.ref == 'refs/heads/main' || steps.check.outputs.pr_found == 'false'
+        if: github.ref == 'refs/heads/main' || !steps.findPr.outputs.number
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
