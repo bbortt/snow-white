@@ -4,7 +4,7 @@
  * See LICENSE file for full details.
  */
 
-import type { ListQualityGateReports200ResponseInner } from 'app/clients/report-api';
+import type { GetReportByCalculationId200Response } from 'app/clients/report-api';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState, IQueryParams } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
@@ -12,6 +12,7 @@ import type { AxiosResponse } from 'axios';
 import { createAsyncThunk, isFulfilled, isPending } from '@reduxjs/toolkit';
 import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { reportApi } from 'app/entities/quality-gate/report-api';
+import { FindingStatus } from 'app/shared/model/enumerations/finding-status.model';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
@@ -33,7 +34,7 @@ const fromDto = ({
   calculationRequest,
   interfaces,
   initiatedAt,
-}: ListQualityGateReports200ResponseInner): IQualityGate => ({
+}: GetReportByCalculationId200Response): IQualityGate => ({
   calculationId,
   qualityGateConfig: { name: qualityGateConfigName },
   apiTests: interfaces?.map(apiTest => ({
@@ -46,6 +47,7 @@ const fromDto = ({
       coverage: testResult.coverage,
       additionalInformation: testResult.additionalInformation,
       isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,
+      findings: testResult.findings?.map(finding => ({ ...finding, status: FindingStatus[finding.status] })),
     })),
     status: apiTest.status ? ReportStatus[apiTest.status] : ReportStatus.IN_PROGRESS,
     stackTrace: apiTest.stackTrace,

@@ -11,6 +11,7 @@ import type { AxiosResponse } from 'axios';
 
 import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { reportApi } from 'app/entities/quality-gate/report-api';
+import { FindingStatus } from 'app/shared/model/enumerations/finding-status.model';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
@@ -354,6 +355,59 @@ describe('Quality-Gate reducer tests', () => {
 
       const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
       expect(fulfilledAction.payload.data.apiTests[0].testResults[0].isIncludedInQualityGate).toBe(false);
+    });
+
+    it('carries the findings of a test result, with their evidence, into the entity', async () => {
+      const finding = {
+        status: 'COVERED',
+        specPointer: '#/paths/~1orders/get',
+        httpPath: '/orders',
+        httpMethod: 'GET',
+        evidence: [{ traceId: '4bf92f3577b34da6a3ce929d0e0e4736', testCaseName: 'OrderApiIT#listsOrders' }],
+      };
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              testResults: [{ id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true, findings: [finding] }],
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toEqual([{ ...finding, status: FindingStatus.COVERED }]);
+    });
+
+    it('leaves findings undefined when a test result carries none', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              testResults: [{ id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true }],
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toBeUndefined();
     });
 
     it('does not fetch the quality-gate config when the report has no config name', async () => {
