@@ -15,7 +15,12 @@
       "status": "Status",
       "createdAt": "Initiated At",
       "testedAPIs": "Tested APIs",
-      "calculationRequest": "Calculation Request Parameters",
+      "trigger": {
+        "lookbackWindowDefault": "Default Lookback Window",
+        "noAttributeFilters": "None",
+        "showRawRequest": "Show raw request",
+        "hideRawRequest": "Hide raw request"
+      },
       "shapes": {
         "qualityGateResults": "Quality-Gate Coverage"
       },

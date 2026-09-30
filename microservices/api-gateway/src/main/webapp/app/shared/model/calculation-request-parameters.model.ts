@@ -6,7 +6,7 @@
 
 export interface ICalculationRequestParameters {
   lookbackWindow?: string;
-  attributeFilters?: string;
+  attributeFilters?: Record<string, string>;
 }
 
 export const defaultValue: Readonly<ICalculationRequestParameters> = {};

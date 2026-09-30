@@ -15,7 +15,12 @@
       "status": "Status",
       "createdAt": "Erstellt am",
       "testedAPIs": "Getestete Schnittstellen",
-      "calculationRequest": "Anfrage-Details",
+      "trigger": {
+        "lookbackWindowDefault": "Standard Zeitraum",
+        "noAttributeFilters": "Keine",
+        "showRawRequest": "Rohe Anfrage anzeigen",
+        "hideRawRequest": "Rohe Anfrage ausblenden"
+      },
       "shapes": {
         "qualityGateResults": "Abdeckung des Quality-Gate"
       },

@@ -15,7 +15,7 @@ import { defaultValue } from 'app/shared/model/quality-gate.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
 
-import reducer, { getEntities, getEntity, joinAttributeFilters, reset } from './quality-gate.reducer';
+import reducer, { getEntities, getEntity, reset } from './quality-gate.reducer';
 
 jest.mock('app/entities/quality-gate-config/quality-gate-api', () => ({
   qualityGateApi: {
@@ -212,7 +212,7 @@ describe('Quality-Gate reducer tests', () => {
       createdAt: '2025-05-07T18:00:00.00Z',
       calculationRequest: {
         lookbackWindow: '1234',
-        attributeFilters: 'foo=bar, traceparent=00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        attributeFilters: { foo: 'bar', traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' },
       },
     };
 
@@ -366,20 +366,6 @@ describe('Quality-Gate reducer tests', () => {
       await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
 
       expect(qualityGateApi.getQualityGateByName).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('joinAttributeFilters', () => {
-    it('should join attribute filters as key=value pairs', () => {
-      expect(joinAttributeFilters({ foo: 'bar', baz: 'qux' })).toEqual('foo=bar, baz=qux');
-    });
-
-    it('should return an empty string when attributeFilters is undefined', () => {
-      expect(joinAttributeFilters(undefined)).toEqual('');
-    });
-
-    it('should return an empty string when attributeFilters is empty', () => {
-      expect(joinAttributeFilters({})).toEqual('');
     });
   });
 });

@@ -13,11 +13,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ApiTestResultTable from 'app/entities/quality-gate/api-test-result-table';
 import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-block';
 import { CoverageProgressBar } from 'app/entities/quality-gate/coverage-progress-bar';
+import { calculateApiTestStatus } from 'app/entities/quality-gate/quality-gate.utils';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
-import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { ReactElement, useMemo, useState } from 'react';
 import { Translate } from 'react-jhipster';
-import { Card, CardBody, CardTitle, Col, Collapse, Row, Tooltip } from 'reactstrap';
+import { Col, Collapse, ListGroupItem, Row, Tooltip } from 'reactstrap';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ApiTestCardProps {
@@ -45,16 +45,6 @@ const renderCardContentConditionally = (
   }
 };
 
-function calculateApiTestStatus(apiTest: IApiTest, qualityGateTimedOut: boolean) {
-  if (apiTest.status && [ReportStatus.FAILED, ReportStatus.FINISHED_EXCEPTIONALLY, ReportStatus.PASSED].includes(apiTest.status)) {
-    return apiTest.status;
-  } else if (qualityGateTimedOut) {
-    return ReportStatus.TIMED_OUT;
-  } else {
-    return ReportStatus.NOT_STARTED;
-  }
-}
-
 export const ApiTestCard: React.FC<ApiTestCardProps> = ({
   apiTest,
   showOnlyIncluded,
@@ -62,7 +52,9 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({
   qualityGateTimedOut,
 }: ApiTestCardProps) => {
   const containsTestResults = useMemo(() => (apiTest.testResults && apiTest.testResults.length > 0) || false, [apiTest.testResults]);
-  const tooltipId = useMemo(() => `Tooltip-${uuidv4()}`, []);
+  const uuid = useMemo(() => uuidv4(), []);
+  const tooltipId = `Tooltip-${uuid}`;
+  const contentId = `ApiTestContent-${uuid}`;
 
   const [isOpen, setIsOpen] = useState(false);
   const toggleCard = () => setIsOpen(!isOpen);
@@ -76,48 +68,50 @@ export const ApiTestCard: React.FC<ApiTestCardProps> = ({
   );
 
   return (
-    <Card>
-      <CardTitle onClick={toggleCard}>
-        <Row className="align-items-center mouse-hover-pointer">
-          <Col md={6}>
-            <h4 className="mb-0">
-              {apiTest.serviceName}: <i>{apiTest.apiName}</i>{' '}
-              <small className="fs-6">
+    <ListGroupItem>
+      <Row className="align-items-center">
+        <Col md={7}>
+          <h5 className="mb-0">
+            <button
+              type="button"
+              className="btn btn-link text-reset text-decoration-none p-0 text-start"
+              onClick={toggleCard}
+              aria-expanded={isOpen}
+              aria-controls={contentId}
+            >
+              <FontAwesomeIcon icon={isOpen ? 'chevron-up' : 'chevron-down'} className="me-2" />
+              <i>{apiTest.apiName}</i>{' '}
+              <small className="fs-6 text-muted">
                 <Translate contentKey="snowWhiteApp.apiTest.apiVersion">Version</Translate>: {apiTest.apiVersion}
               </small>
-            </h4>
-          </Col>
-          <Col md={2}>
-            <h4 className="mb-0">
-              <StatusBadge status={calculateApiTestStatus(apiTest, qualityGateTimedOut)} />
-            </h4>
-          </Col>
-          <Col md={3}>
-            {containsTestResults ? (
-              <>
-                <div id={tooltipId}>
-                  <CoverageProgressBar
-                    apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)}
-                    minCoveragePercentage={minCoveragePercentage}
-                  />
-                </div>
-                <Tooltip isOpen={tooltipOpen} target={tooltipId} toggle={toggleTooltip}>
-                  <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>
-                </Tooltip>
-              </>
-            ) : (
-              <></>
-            )}
-          </Col>
-          <Col md={1} className="d-flex justify-content-end">
-            <FontAwesomeIcon icon={isOpen ? 'chevron-up' : 'chevron-down'} />
-          </Col>
-        </Row>
-      </CardTitle>
-      <CardBody>
-        <Collapse isOpen={isOpen}>{renderCardContentConditionally(apiTest, containsTestResults, visibleTestResults)}</Collapse>
-      </CardBody>
-    </Card>
+            </button>
+          </h5>
+        </Col>
+        <Col md={2}>
+          <StatusBadge status={calculateApiTestStatus(apiTest, qualityGateTimedOut)} />
+        </Col>
+        <Col md={3}>
+          {containsTestResults ? (
+            <>
+              <div id={tooltipId}>
+                <CoverageProgressBar
+                  apiTestResults={apiTest.testResults!.filter(apiTestResult => apiTestResult.isIncludedInQualityGate)}
+                  minCoveragePercentage={minCoveragePercentage}
+                />
+              </div>
+              <Tooltip isOpen={tooltipOpen} target={tooltipId} toggle={toggleTooltip}>
+                <Translate contentKey="snowWhiteApp.apiTestResult.coverage">Coverage</Translate>
+              </Tooltip>
+            </>
+          ) : (
+            <></>
+          )}
+        </Col>
+      </Row>
+      <Collapse isOpen={isOpen} id={contentId}>
+        <div className="pt-3">{renderCardContentConditionally(apiTest, containsTestResults, visibleTestResults)}</div>
+      </Collapse>
+    </ListGroupItem>
   );
 };
 

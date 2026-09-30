@@ -14,7 +14,10 @@
       "apiVersion": "API Version",
       "apiType": "API Type",
       "testResults": "Test Results",
-      "stackTrace": "Stack Trace"
+      "stackTrace": "Stack Trace",
+      "serviceGroup": {
+        "apiCount": "APIs: {{ count }}"
+      }
     }
   }
 }

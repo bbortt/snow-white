@@ -14,7 +14,10 @@
       "apiVersion": "API Version",
       "apiType": "API Typ",
       "testResults": "Test Resultate",
-      "stackTrace": "Fehlermeldung"
+      "stackTrace": "Fehlermeldung",
+      "serviceGroup": {
+        "apiCount": "Schnittstellen: {{ count }}"
+      }
     }
   }
 }

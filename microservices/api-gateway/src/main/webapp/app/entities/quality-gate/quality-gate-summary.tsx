@@ -13,10 +13,10 @@ import { CodeHighlightBlock } from 'app/entities/quality-gate/code-highlight-blo
 import { ShapePieChart } from 'app/entities/quality-gate/shape-pie-chart';
 import { StatusBadge } from 'app/entities/quality-gate/status-badge';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
-import React from 'react';
-import { TextFormat, Translate } from 'react-jhipster';
+import React, { useId, useState } from 'react';
+import { TextFormat, translate, Translate } from 'react-jhipster';
 import { Link } from 'react-router';
-import { Button, Col, Row } from 'reactstrap';
+import { Badge, Button, Col, Collapse, Row } from 'reactstrap';
 
 interface QualityGateSummaryProps {
   qualityGate: IQualityGate;
@@ -24,6 +24,11 @@ interface QualityGateSummaryProps {
 
 export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityGate }) => {
   const allResults: IApiTestResult[] = qualityGate.apiTests?.flatMap((apiTest: IApiTest) => apiTest.testResults ?? []) ?? [];
+  const attributeFilters: [string, string][] = Object.entries(qualityGate.calculationRequest?.attributeFilters ?? {});
+
+  const rawRequestId = useId();
+  const [rawRequestOpen, setRawRequestOpen] = useState(false);
+  const toggleRawRequest = () => setRawRequestOpen(!rawRequestOpen);
 
   return (
     <Row>
@@ -66,15 +71,43 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
           </dt>
           <dd>{qualityGate.createdAt ? <TextFormat value={qualityGate.createdAt} type="date" format={APP_DATE_FORMAT} /> : null}</dd>
           <dt>
-            <Translate contentKey="snowWhiteApp.qualityGate.calculationRequest">Calculation Request</Translate>
+            <span id="lookbackWindow">
+              <Translate contentKey="snowWhiteApp.calculationRequestParameters.lookbackWindow">Lookback Window</Translate>
+            </span>
           </dt>
-          <dd>
-            {qualityGate.calculationRequest ? (
-              <CodeHighlightBlock code={JSON.stringify(qualityGate.calculationRequest)} language="json" />
+          <dd data-cy="lookbackWindow">
+            {qualityGate.calculationRequest?.lookbackWindow ? (
+              <code>{qualityGate.calculationRequest.lookbackWindow}</code>
             ) : (
-              ''
+              <span className="text-muted">
+                <Translate contentKey="snowWhiteApp.qualityGate.trigger.lookbackWindowDefault">Service default</Translate>
+              </span>
             )}
           </dd>
+          <dt>
+            <span id="attributeFilters">
+              <Translate contentKey="snowWhiteApp.calculationRequestParameters.attributeFilters">Attribute Filters</Translate>
+            </span>
+          </dt>
+          <dd data-cy="attributeFilters">
+            {attributeFilters.length > 0 ? (
+              attributeFilters.map(([key, value]) => (
+                <Badge key={key} color="light" className="text-dark border font-monospace text-wrap text-break text-start me-1 mb-1">
+                  {key} = {value}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted">
+                <Translate contentKey="snowWhiteApp.qualityGate.trigger.noAttributeFilters">None</Translate>
+              </span>
+            )}
+          </dd>
+          <dt>
+            <span id="testedAPIs">
+              <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
+            </span>
+          </dt>
+          <dd data-cy="testedAPIs">{qualityGate.apiTests?.length ?? 0}</dd>
         </dl>
       </Col>
       <Col md={6}>
@@ -83,6 +116,27 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
         </h3>
         <ShapePieChart apiTestResults={allResults.filter((r: IApiTestResult) => r.isIncludedInQualityGate)} />
       </Col>
+      {/* Outside the chart's row on purpose: the chart fills its column, so the column must not grow with the raw request. */}
+      {qualityGate.calculationRequest ? (
+        <Col xs={12}>
+          <Button
+            color="link"
+            size="sm"
+            className="p-0"
+            onClick={toggleRawRequest}
+            aria-expanded={rawRequestOpen}
+            aria-controls={rawRequestId}
+          >
+            {/* translate(), not <Translate>: its shouldComponentUpdate ignores a changed contentKey (react-jhipster 1.1.0). */}
+            {translate(
+              rawRequestOpen ? 'snowWhiteApp.qualityGate.trigger.hideRawRequest' : 'snowWhiteApp.qualityGate.trigger.showRawRequest',
+            )}
+          </Button>
+          <Collapse isOpen={rawRequestOpen} id={rawRequestId}>
+            <CodeHighlightBlock code={JSON.stringify(qualityGate.calculationRequest, null, 2)} language="json" />
+          </Collapse>
+        </Col>
+      ) : null}
     </Row>
   );
 };

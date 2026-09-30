@@ -44,7 +44,7 @@ test('renders the summary and, once expanded, the API test results', async ({ pa
   await expect(dataCy(page, 'qualityGateResultsHeading')).toBeVisible();
 
   // Only the included result is shown until "show only included" is switched off.
-  await page.getByRole('heading', { level: 4, name: /order-service/ }).click();
+  await page.getByRole('button', { name: /orders-api/ }).click();
   await expect(page.getByText('Path')).toBeVisible();
   await expect(page.getByText('HTTP Method')).not.toBeVisible();
 
@@ -52,6 +52,94 @@ test('renders the summary and, once expanded, the API test results', async ({ pa
 
   await expect(page.getByText('Path')).toBeVisible();
   await expect(page.getByText('HTTP Method')).toBeVisible();
+});
+
+test('names each service once, above the APIs it contributed', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    interfaces: [
+      { serviceName: 'order-service', apiName: 'orders-api', apiVersion: '1.0.0', status: 'PASSED' },
+      { serviceName: 'order-service', apiName: 'payments-api', apiVersion: '2.0.0', status: 'FAILED' },
+      { serviceName: 'inventory-service', apiName: 'stock-api', apiVersion: '1.0.0', status: 'PASSED' },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  const orderService = page.getByRole('region', { name: 'order-service' });
+  await expect(orderService.getByRole('button', { name: /orders-api/ })).toBeVisible();
+  await expect(orderService.getByRole('button', { name: /payments-api/ })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'inventory-service' }).getByRole('button', { name: /stock-api/ })).toBeVisible();
+  await expect(page.getByText('order-service', { exact: true })).toHaveCount(1);
+});
+
+test('spells out the parameters the calculation was triggered with', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    calculationRequest: {
+      includeApis: [{ serviceName: 'order-service', apiName: 'orders-api', apiVersion: '1.0.0' }],
+      lookbackWindow: '24h',
+      attributeFilters: { environment: 'production' },
+    },
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  await expect(dataCy(page, 'lookbackWindow')).toHaveText('24h');
+  await expect(dataCy(page, 'attributeFilters')).toHaveText('environment = production');
+
+  await page.getByRole('button', { name: 'Show raw request' }).click();
+  await expect(page.locator('pre.code-highlight-block')).toContainText('"environment": "production"');
+});
+
+test('toggles the raw request open and closed again without resizing the chart', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    calculationRequest: { lookbackWindow: '24h', attributeFilters: { environment: 'production' } },
+    interfaces: [
+      {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '1.0.0',
+        status: 'PASSED',
+        testResults: [{ id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true }],
+      },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  const chart = page.locator('.recharts-responsive-container').first();
+  await expect(chart).toBeVisible();
+  const chartHeight = (await chart.boundingBox())?.height;
+
+  const toggle = page.getByRole('button', { name: /raw request/ });
+  const rawRequest = page.locator('pre.code-highlight-block');
+
+  await toggle.click();
+  await expect(toggle).toHaveText('Hide raw request');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(rawRequest).toBeVisible();
+  await expect.poll(async () => (await chart.boundingBox())?.height).toBe(chartHeight);
+
+  await toggle.click();
+  await expect(toggle).toHaveText('Show raw request');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(rawRequest).not.toBeVisible();
+});
+
+test('opens and closes an API test card', async ({ page }) => {
+  const card = page.getByRole('button', { name: /orders-api/ });
+  await expect(card).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByText('Path')).not.toBeVisible();
+
+  await card.click();
+  await expect(card).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByText('Path')).toBeVisible();
+
+  await card.click();
+  await expect(card).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByText('Path')).not.toBeVisible();
 });
 
 test('links to the JUnit report download', async ({ page }) => {
