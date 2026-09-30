@@ -174,7 +174,7 @@ importers:
         version: 21.2.3
       '@prettier/plugin-xml':
         specifier: 3.4.2
-        version: 3.4.2(prettier@3.9.8)
+        version: 3.4.2(prettier@3.9.9)
       commitlint:
         specifier: 21.2.3
         version: 21.2.3(@types/node@26.6.2)(conventional-commits-parser@7.1.2)(typescript@6.0.3)
@@ -191,14 +191,14 @@ importers:
         specifier: 0.1.7
         version: 0.1.7(markdownlint@0.41.1(supports-color@8.1.1))
       prettier:
-        specifier: 3.9.8
-        version: 3.9.8
+        specifier: 3.9.9
+        version: 3.9.9
       prettier-plugin-java:
         specifier: 2.10.4
-        version: 2.10.4(prettier@3.9.8)
+        version: 2.10.4(prettier@3.9.9)
       prettier-plugin-packagejson:
         specifier: 3.0.2
-        version: 3.0.2(prettier@3.9.8)
+        version: 3.0.2(prettier@3.9.9)
       rimraf:
         specifier: 6.1.3
         version: 6.1.3
@@ -239,7 +239,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 5.0.1
-        version: 5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1))
+        version: 5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
     optionalDependencies:
       npm-check-updates:
         specifier: 23.1.0
@@ -340,7 +340,7 @@ importers:
         version: 1.63.0
       '@prettier/plugin-xml':
         specifier: 3.4.2
-        version: 3.4.2(prettier@3.9.8)
+        version: 3.4.2(prettier@3.9.9)
       '@testing-library/dom':
         specifier: 10.4.2
         version: 10.4.2
@@ -403,7 +403,7 @@ importers:
         version: 5.12.0(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       eslint-plugin-prettier:
         specifier: 5.5.6
-        version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.8)
+        version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.9)
       eslint-plugin-react:
         specifier: 7.37.5
         version: 7.37.5(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
@@ -465,14 +465,14 @@ importers:
         specifier: 8.2.1
         version: 8.2.1(postcss@8.5.28)(typescript@6.0.3)(webpack@5.111.1)
       prettier:
-        specifier: 3.9.8
-        version: 3.9.8
+        specifier: 3.9.9
+        version: 3.9.9
       prettier-plugin-java:
         specifier: 2.10.4
-        version: 2.10.4(prettier@3.9.8)
+        version: 2.10.4(prettier@3.9.9)
       prettier-plugin-packagejson:
         specifier: 3.0.2
-        version: 3.0.2(prettier@3.9.8)
+        version: 3.0.2(prettier@3.9.9)
       redux-mock-store:
         specifier: 1.5.5
         version: 1.5.5(redux@5.0.1)
@@ -483,11 +483,11 @@ importers:
         specifier: 6.1.3
         version: 6.1.3
       sass:
-        specifier: 1.104.1
-        version: 1.104.1
+        specifier: 1.105.0
+        version: 1.105.0
       sass-loader:
         specifier: 17.0.1
-        version: 17.0.1(sass@1.104.1)(webpack@5.111.1)
+        version: 17.0.1(sass@1.105.0)(webpack@5.111.1)
       simple-progress-webpack-plugin:
         specifier: 2.0.0
         version: 2.0.0(webpack@5.111.1)
@@ -504,8 +504,8 @@ importers:
         specifier: 4.0.4
         version: 4.0.4(webpack@5.111.1)
       ts-jest:
-        specifier: 29.4.12
-        version: 29.4.12(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.5.1(supports-color@8.1.1))(@jest/types@30.5.1)(babel-jest@30.5.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(jest-util@30.4.1)(jest@30.5.2(@types/node@26.6.2)(node-notifier@9.0.1)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@26.6.2)(typescript@6.0.3)))(typescript@6.0.3)
+        specifier: 29.4.13
+        version: 29.4.13(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.5.1(supports-color@8.1.1))(@jest/types@30.5.1)(babel-jest@30.5.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(jest-util@30.4.1)(jest@30.5.2(@types/node@26.6.2)(node-notifier@9.0.1)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@26.6.2)(typescript@6.0.3)))(typescript@6.0.3)
       ts-loader:
         specifier: 9.6.2
         version: 9.6.2(typescript@6.0.3)(webpack@5.111.1)
@@ -560,7 +560,7 @@ importers:
         version: 9.0.3
       vitest:
         specifier: 5.0.1
-        version: 5.0.1(@types/node@26.5.1)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0))
+        version: 5.0.1(@types/node@26.5.1)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0))
       wait-on:
         specifier: 9.1.0
         version: 9.1.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
@@ -6359,8 +6359,8 @@ packages:
       prettier:
         optional: true
 
-  prettier@3.9.8:
-    resolution: {integrity: sha512-WRFq3Wn3WId7LLROfMLdH7xaFr2jR62wU8nLO6rQUOLOxNZUviyJQs1M0iIhLexSFy+L+w0ch66wtoO2jRjG0A==}
+  prettier@3.9.9:
+    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -6798,13 +6798,8 @@ packages:
       webpack:
         optional: true
 
-  sass@1.104.0:
-    resolution: {integrity: sha512-btHMApW2bgolvClhRW8AlQJzgI9lUB3pPSofBQQT+E46GWvf9o0TVQ13SYv5riWZVFyPN+JNz3TKW9XhBlc10w==}
-    engines: {node: '>=20.19.0'}
-    hasBin: true
-
-  sass@1.104.1:
-    resolution: {integrity: sha512-yDA+1aIG3EHgN4V/BvuhCvu61FF6hEd4e+9DxikUm9U0CAGuvdIZ/UYy7qbOxjhbbWQraoyLlMuzdRGOSV5Bmw==}
+  sass@1.105.0:
+    resolution: {integrity: sha512-4EjSuRTyG8M4yRXXY1PT9OUV5zz23xBxJkbIAprohKHqf6HOU4MCpE3U3vAC+iO1gxobBjESNbcj8rYAQZWnyA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -7320,12 +7315,12 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
-  ts-jest@29.4.12:
-    resolution: {integrity: sha512-Ov6ClY53Fflh6BGAnY2DlTq1hYDrTycz2PVTXBWFW2CU+9zrEqAp9fWdGXl42EXO5RLSFAcAZ2JFKbP+zBTFfw==}
+  ts-jest@29.4.13:
+    resolution: {integrity: sha512-rUQG+Ar95cNQf//KvsSjvabLpCTbwk+vKGWkAgiKFugqVwmOpGR7n7xa3S68/AB21Wn0KNhIAVxmxrUsz0L1AQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
-      '@babel/core': '>=7.0.0-beta.0 <8'
+      '@babel/core': '>=7.0.0-beta.0 <9'
       '@jest/transform': ^29.0.0 || ^30.0.0
       '@jest/types': ^29.0.0 || ^30.0.0
       babel-jest: ^29.0.0 || ^30.0.0
@@ -9712,10 +9707,10 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@prettier/plugin-xml@3.4.2(prettier@3.9.8)':
+  '@prettier/plugin-xml@3.4.2(prettier@3.9.9)':
     dependencies:
       '@xml-tools/parser': 1.0.11
-      prettier: 3.9.8
+      prettier: 3.9.9
 
   '@react-aria/ssr@3.10.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
@@ -9994,7 +9989,7 @@ snapshots:
       picocolors: 1.1.1
       redent: 3.0.0
     optionalDependencies:
-      vitest: 5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1))
+      vitest: 5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
 
   '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
@@ -10304,8 +10299,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.70.0(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.70.0(typescript@6.0.3)
-      '@typescript-eslint/types': 8.70.0
+      '@typescript-eslint/tsconfig-utils': 8.70.1(typescript@6.0.3)
+      '@typescript-eslint/types': 8.70.1
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -10555,7 +10550,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1))
+      vitest: 5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
     optional: true
 
   '@vitest/coverage-v8@5.0.1(vitest@5.0.1)':
@@ -10568,7 +10563,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1))
+      vitest: 5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
 
   '@vitest/istanbul-lib-coverage@1.0.1': {}
 
@@ -10576,33 +10571,33 @@ snapshots:
     dependencies:
       '@vitest/istanbul-lib-coverage': 1.0.1
 
-  '@vitest/mocker@5.0.0(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1))':
+  '@vitest/mocker@5.0.0(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.0
       estree-walker: 3.0.3
       magic-string: 1.2.3
     optionalDependencies:
-      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1)
+      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)
     optional: true
 
-  '@vitest/mocker@5.0.1(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0))':
+  '@vitest/mocker@5.0.1(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.1
       estree-walker: 3.0.3
       magic-string: 1.2.3
     optionalDependencies:
-      vite: 8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0)
+      vite: 8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0)
 
-  '@vitest/mocker@5.0.1(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1))':
+  '@vitest/mocker@5.0.1(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.1
       estree-walker: 3.0.3
       magic-string: 1.2.3
     optionalDependencies:
-      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1)
+      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)
 
   '@vitest/spy@5.0.0':
     optional: true
@@ -12107,10 +12102,10 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.8):
+  eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       eslint: 10.11.0(jiti@2.7.0)(supports-color@8.1.1)
-      prettier: 3.9.8
+      prettier: 3.9.9
       prettier-linter-helpers: 1.0.1
       synckit: 0.11.13
     optionalDependencies:
@@ -14843,18 +14838,18 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-java@2.10.4(prettier@3.9.8):
+  prettier-plugin-java@2.10.4(prettier@3.9.9):
     dependencies:
-      prettier: 3.9.8
+      prettier: 3.9.9
       web-tree-sitter: 0.27.0
 
-  prettier-plugin-packagejson@3.0.2(prettier@3.9.8):
+  prettier-plugin-packagejson@3.0.2(prettier@3.9.9):
     dependencies:
       sort-package-json: 3.7.1
     optionalDependencies:
-      prettier: 3.9.8
+      prettier: 3.9.9
 
-  prettier@3.9.8: {}
+  prettier@3.9.9: {}
 
   pretty-bytes@5.6.0: {}
 
@@ -15378,21 +15373,12 @@ snapshots:
       parse-srcset: 1.0.2
       postcss: 8.5.28
 
-  sass-loader@17.0.1(sass@1.104.1)(webpack@5.111.1):
+  sass-loader@17.0.1(sass@1.105.0)(webpack@5.111.1):
     optionalDependencies:
-      sass: 1.104.1
+      sass: 1.105.0
       webpack: 5.111.1(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.28))(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.28)(uglify-js@3.19.3)(webpack-cli@7.2.3)
 
-  sass@1.104.0:
-    dependencies:
-      chokidar: 5.0.0
-      immutable: 5.1.9
-      source-map-js: 1.2.1
-    optionalDependencies:
-      '@parcel/watcher': 2.6.0
-    optional: true
-
-  sass@1.104.1:
+  sass@1.105.0:
     dependencies:
       chokidar: 5.0.0
       immutable: 5.1.9
@@ -15972,7 +15958,7 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  ts-jest@29.4.12(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.5.1(supports-color@8.1.1))(@jest/types@30.5.1)(babel-jest@30.5.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(jest-util@30.4.1)(jest@30.5.2(@types/node@26.6.2)(node-notifier@9.0.1)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@26.6.2)(typescript@6.0.3)))(typescript@6.0.3):
+  ts-jest@29.4.13(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.5.1(supports-color@8.1.1))(@jest/types@30.5.1)(babel-jest@30.5.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(jest-util@30.4.1)(jest@30.5.2(@types/node@26.6.2)(node-notifier@9.0.1)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@26.6.2)(typescript@6.0.3)))(typescript@6.0.3):
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
@@ -16223,7 +16209,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0):
+  vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -16234,11 +16220,11 @@ snapshots:
       '@types/node': 26.5.1
       fsevents: 2.3.3
       jiti: 2.7.0
-      sass: 1.104.0
+      sass: 1.105.0
       terser: 5.51.2
       yaml: 2.9.0
 
-  vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1):
+  vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -16249,30 +16235,14 @@ snapshots:
       '@types/node': 26.6.2
       fsevents: 2.3.3
       jiti: 2.7.0
-      sass: 1.104.0
+      sass: 1.105.0
       terser: 5.51.2
       yaml: 2.9.1
 
-  vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1):
-    dependencies:
-      lightningcss: 1.33.0
-      picomatch: 4.0.7
-      postcss: 8.5.28
-      rolldown: 1.1.5
-      tinyglobby: 0.2.17
-    optionalDependencies:
-      '@types/node': 26.6.2
-      fsevents: 2.3.3
-      jiti: 2.7.0
-      sass: 1.104.1
-      terser: 5.51.2
-      yaml: 2.9.1
-    optional: true
-
-  vitest@5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1)):
+  vitest@5.0.0(@types/node@26.6.2)(@vitest/coverage-v8@5.0.0)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.0(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1))
+      '@vitest/mocker': 5.0.0(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -16283,7 +16253,7 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.1)(terser@5.51.2)(yaml@2.9.1)
+      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.6.2
@@ -16293,10 +16263,10 @@ snapshots:
       - msw
     optional: true
 
-  vitest@5.0.1(@types/node@26.5.1)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0)):
+  vitest@5.0.1(@types/node@26.5.1)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.1(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0))
+      '@vitest/mocker': 5.0.1(vite@8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -16307,7 +16277,7 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.0)
+      vite: 8.1.5(@types/node@26.5.1)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.5.1
@@ -16316,10 +16286,10 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  vitest@5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1)):
+  vitest@5.0.1(@types/node@26.6.2)(@vitest/coverage-v8@5.0.1)(jsdom@26.1.0(supports-color@8.1.1))(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.1(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1))
+      '@vitest/mocker': 5.0.1(vite@8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -16330,7 +16300,7 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.104.0)(terser@5.51.2)(yaml@2.9.1)
+      vite: 8.1.5(@types/node@26.6.2)(jiti@2.7.0)(sass@1.105.0)(terser@5.51.2)(yaml@2.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.6.2
