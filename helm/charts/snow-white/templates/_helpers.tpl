@@ -108,6 +108,23 @@ Common environment variables connecting for native microservices
 {{- end -}}
 
 {{/*
+Emits one environment variable, but only for a value the operator actually set.
+
+A bare `if` is falsy on `0`, `false` and `""` alike, so it drops exactly the
+values set deliberately - a bound the application is meant to reject loudly
+rather than default, or a flag switched off on purpose. Absent and empty are the
+only two cases that mean "unset", so those are the two this tests for.
+
+Usage: {{ include "snow-white.optionalEnv" (dict "name" "MY_VAR" "value" $v) | nindent 16 }}
+*/}}
+{{- define "snow-white.optionalEnv" -}}
+{{- if and (not (kindIs "invalid" .value)) (ne (toString .value) "") }}
+- name: '{{ .name }}'
+  value: '{{ .value }}'
+{{- end }}
+{{- end -}}
+
+{{/*
 Verifies that database connection information is present in environment variables.
 Only applicable if `postgresql.enabled=false`.
 */}}
