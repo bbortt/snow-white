@@ -28,6 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
@@ -256,6 +258,31 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .andExpect(
         jsonPath("$.openApiCoverageCriteria[0]").value(is(PATH_COVERAGE.name()))
       );
+  }
+
+  @Test
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findSingleQualityGateConfigByName_withoutDescription_omitsIt()
+    throws Exception {
+    var qualityGateConfiguration = createAndSaveQualityGateConfig(
+      "withoutDescription"
+    );
+
+    var responseJson = jsonMapper.readTree(
+      mockMvc
+        .perform(get(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName()))
+        .andExpect(status().isOk())
+        .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+        .andReturn()
+        .getResponse()
+        .getContentAsString()
+    );
+
+    assertThat(responseJson.get("name").asString()).isEqualTo(
+      qualityGateConfiguration.getName()
+    );
+    // Read from the raw body: jsonPath's doesNotExist() would accept an explicit null as well
+    assertThat(responseJson.has("description")).isFalse();
   }
 
   @Test

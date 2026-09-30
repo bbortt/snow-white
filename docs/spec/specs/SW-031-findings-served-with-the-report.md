@@ -23,10 +23,11 @@ Each finding carries its `status` (`COVERED`, `UNCOVERED`, `NOT_APPLICABLE`), it
 (`SW-029`), its nullable discriminators (`httpPath`, `httpMethod`, `responseCode`,
 `parameterName`, `contentType`), and its `evidence`.
 
-`evidence` is an array of objects, not of strings: each entry carries a required `traceId` and a
-nullable `testCaseName` (`ARCH-011`).
-`testCaseName` is serialised as `null` — not omitted — where the evidencing span carried no test
-identity, which is every span until `SW-032`'s convention is in use, so a consumer's
+`evidence` is an array of objects, not of strings: each entry carries a required `traceId` and an
+optional `testCaseName` (`ARCH-011`).
+`testCaseName` is omitted where the evidencing span carried no test identity, as is every unset
+property (`CON-010`).
+That is every span until `SW-032`'s convention is in use, so a consumer's
 name-or-fall-back-to-trace-id branch is exercisable from the first release.
 The status is serialised as its name, not the numeric code `ARCH-012` persists — the code is a
 storage contract, the API is a read contract, and a consumer reading JSON should not need a
@@ -93,8 +94,8 @@ asking a question with no stable answer; making both empty removes the question.
 A contract test fetches a report whose results carry findings and asserts each result's `findings`
 array is present, with status serialised as its name, the spec pointer intact, discriminators
 populated exactly where applicable, and evidence present on covered findings only.
-A test asserts an evidence entry serialises as an object with `traceId` set and `testCaseName`
-explicitly `null` where the span carried no test identity.
+A test asserts an evidence entry serialises as an object with `traceId` set and no `testCaseName`
+key where the span carried no test identity.
 A test asserts a report persisted before the findings migration serialises `findings` as `[]` and
 leaves `coverage` and `additionalInformation` byte-identical to the pre-change response.
 A test asserts no additional request is required to obtain findings — the report response alone
@@ -127,6 +128,8 @@ no findings, confirming the change is additive and that the operation's other 2x
 - [SYS-012](SYS-012-result-consumption.md) — the result-consumption capability this widens
 - [ARCH-008](ARCH-008-backend-services-addressed-by-path-prefix-with-aggregated-openapi-docs.md) —
   the gateway routing the widened response travels, unchanged
+- [CON-010](CON-010-rest-responses-never-carry-null.md) — omits an unset `testCaseName` and
+  discriminator; bounded by this spec's empty-never-absent array rule
 
 ## Changes
 
@@ -156,3 +159,12 @@ no findings, confirming the change is additive and that the operation's other 2x
   from.
   `minLength: 1` joins it, because the coverage stream resolves blank to absent and so never
   produces the empty string.
+- **2026-09-30** — `testCaseName` is omitted, no longer serialised as `null`, where the span
+  carried no test identity (`STR-020`, `CON-010`).
+  The explicit `null` bought nothing: both generated clients read an absent property and a `null`
+  one alike, so the trace-id fallback stays exercisable.
+  It did cost bytes on every evidence entry of every report.
+  The empty-never-absent rule for `findings` and `evidence` is unchanged, and is why `CON-010`
+  omits `null` alone rather than empty values too.
+  `STR-017`'s acceptance criterion describing the explicit `null` records what was delivered then;
+  this entry supersedes it.
