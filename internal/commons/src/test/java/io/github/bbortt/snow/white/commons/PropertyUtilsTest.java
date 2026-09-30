@@ -94,5 +94,16 @@ class PropertyUtilsTest {
           )
         );
     }
+
+    @Test
+    void shouldThrowException_whenValueIsNull() {
+      assertThatThrownBy(() ->
+        PropertyUtils.assertPositiveProperty("property1", null)
+      )
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+          "Property 'property1' must be greater than 0, but was: null!"
+        );
+    }
   }
 }
