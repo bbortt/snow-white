@@ -119,6 +119,7 @@ snow-white calculate [options]
 | `--async`                        | Fire-and-forget: submit the calculation without polling for the result                            |
 | `--agentic`                      | Replace human-readable output with a single-line JSON summary (cannot be combined with `--async`) |
 | `--junit-output <path>`          | Write the JUnit XML report to the given file path (cannot be combined with `--async`)             |
+| `--report-output <path>`         | Write the full JSON report to the given file path (cannot be combined with `--async`)             |
 
 **Config file example (`snow-white.json`):**
 
@@ -160,6 +161,12 @@ snow-white calculate \
   --config-file snow-white.json \
   --junit-output report.xml
 
+# Archive both pipeline artifacts: the verdict a build server blocks on, and the evidence behind it
+snow-white calculate \
+  --config-file snow-white.json \
+  --junit-output snow-white-junit.xml \
+  --report-output snow-white-report.json
+
 # Agentic mode: emit a single-line JSON summary instead of human-readable logs
 snow-white calculate \
   --config-file snow-white.json \
@@ -199,6 +206,16 @@ It carries the same pass/fail result and exit codes as the default mode, plus a 
 ```
 
 `qualityGateFailures` on each interface lists only the criteria that are part of the quality gate and did not pass; `testResults` lists every evaluated criterion.
+
+**Report output (`--report-output`):**
+
+The two output flags write the two representations the API already publishes, and a pipeline that wants both should archive both.
+`--junit-output` writes the verdict a build server blocks on — pass, fail or skip per criterion, and nothing else.
+`--report-output` writes the report read's response body byte for byte, which is the full report including every finding and the evidence behind it.
+
+It is not the same artifact as `--agentic`, which prints a single-line summary to stdout for an automated consumer; `--report-output` writes a file for whoever reads the run afterwards.
+The file is as large as the analysed specification's target space across all criteria, and nothing truncates it — that is deliberate, because a truncated evidence file looks complete when it is not.
+If the size bites in CI, the lever is artifact retention rather than a smaller export.
 
 **Exit codes:**
 

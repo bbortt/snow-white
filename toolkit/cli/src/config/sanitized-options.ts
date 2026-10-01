@@ -15,6 +15,7 @@ export interface CalculateOptions {
   async?: boolean;
   agentic: boolean;
   junitOutput?: string;
+  reportOutput?: string;
   attributeFilters?: Record<string, string>;
   lookbackWindow?: string;
   globPattern: string;

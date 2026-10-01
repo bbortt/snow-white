@@ -29,7 +29,12 @@ per-API/per-criterion breakdown as the JUnit report.
 See `pages/_pages/cli.md` for the full
 flag reference and JSON schema.
 
-Don't combine `--agentic` with `--async` or `--junit-output`; the CLI rejects the combination.
+Don't combine `--async` with `--agentic`, `--junit-output` or `--report-output`; there is no
+result to report yet, and the CLI rejects each of those combinations.
+
+When the findings and the evidence behind them matter rather than just the verdict, add
+`--report-output <path>`: it writes the report read's response body to a file, which is the full
+report including every finding, untruncated.
 
 ## Report structure
 

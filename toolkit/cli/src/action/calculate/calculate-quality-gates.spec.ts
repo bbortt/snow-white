@@ -12,8 +12,13 @@ import type { CalculateOptions } from '../../config/sanitized-options';
 
 import { toDtos } from '../../entity/mapper/api-information.mapper';
 import { calculateQualityGates } from './calculate-quality-gates';
+import { persistJsonReport } from './persist-json-report';
 import { persistJUnitXmlReport } from './persist-junit-xml-report';
 import { pollCalculationResult } from './poll-calculation-result';
+
+void mock.module('./persist-json-report', () => ({
+  persistJsonReport: mock(() => undefined),
+}));
 
 void mock.module('./persist-junit-xml-report', () => ({
   persistJUnitXmlReport: mock(() => undefined),
@@ -36,6 +41,7 @@ describe('calculateQualityGates', () => {
 
     pollCalculationResult.mockClear();
     persistJUnitXmlReport.mockClear();
+    persistJsonReport.mockClear();
     toDtos.mockClear();
   });
 
@@ -53,6 +59,7 @@ describe('calculateQualityGates', () => {
       junitOutput: './report.xml',
       lookbackWindow: '30d',
       qualityGate: 'default',
+      reportOutput: './report.json',
       url: 'https://example.com',
     }) as unknown as CalculateOptions;
 
@@ -116,6 +123,59 @@ describe('calculateQualityGates', () => {
     expect(persistJUnitXmlReport).toHaveBeenCalledWith(reportApi, 'calc-789', './quality-report.xml');
   });
 
+  it('should persist the json report when reportOutput is set', async () => {
+    const apiResponse = {
+      raw: {
+        headers: {
+          get: mock(() => null),
+        },
+      },
+      value: mock(() => ({
+        calculationId: 'calc-json',
+      })),
+    };
+
+    const qualityGateApi: QualityGateApi = {
+      calculateQualityGateRaw: mock(() => apiResponse),
+    } as unknown as QualityGateApi;
+
+    const reportApi = {} as ReportApi;
+
+    const options = createOptions();
+    options.reportOutput = './quality-report.json';
+
+    await calculateQualityGates(qualityGateApi, reportApi, options);
+
+    expect(persistJsonReport).toHaveBeenCalledWith(reportApi, 'calc-json', './quality-report.json');
+  });
+
+  it('should not persist the json report when reportOutput is absent', async () => {
+    const apiResponse = {
+      raw: {
+        headers: {
+          get: mock(() => null),
+        },
+      },
+      value: mock(() => ({
+        calculationId: 'calc-no-json',
+      })),
+    };
+
+    const qualityGateApi: QualityGateApi = {
+      calculateQualityGateRaw: mock(() => apiResponse),
+    } as unknown as QualityGateApi;
+
+    const reportApi = {} as ReportApi;
+
+    const options = createOptions();
+    delete options.reportOutput;
+
+    await calculateQualityGates(qualityGateApi, reportApi, options);
+
+    expect(persistJsonReport).not.toHaveBeenCalled();
+    expect(persistJUnitXmlReport).toHaveBeenCalled();
+  });
+
   it('should not poll calculation result in async mode', async () => {
     const apiResponse = {
       raw: {
@@ -141,6 +201,7 @@ describe('calculateQualityGates', () => {
 
     expect(pollCalculationResult).not.toHaveBeenCalled();
     expect(persistJUnitXmlReport).not.toHaveBeenCalled();
+    expect(persistJsonReport).not.toHaveBeenCalled();
     expect(apiResponse.value).not.toHaveBeenCalled();
   });
 

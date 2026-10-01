@@ -755,4 +755,54 @@ info:
       ).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
     });
   });
+
+  describe('--report-output flag', () => {
+    it('should pass reportOutput through to sanitized options', () => {
+      expect(
+        sanitizeCalculateOptions({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          qualityGate: 'quality-gate',
+          reportOutput: 'report.json',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toEqual({
+        ...sanitizedOptions,
+        reportOutput: 'report.json',
+      });
+    });
+
+    it('should reject --report-output combined with --async', () => {
+      expect(() =>
+        sanitizeCalculateOptions({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          async: true,
+          qualityGate: 'quality-gate',
+          reportOutput: 'report.json',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toThrow(`Process exited with code ${INVALID_CONFIG_FORMAT}`);
+    });
+
+    it('should pass both output flags through together', () => {
+      expect(
+        sanitizeCalculateOptions({
+          apiName: 'test-api',
+          apiVersion: 'api-version',
+          junitOutput: 'report.xml',
+          qualityGate: 'quality-gate',
+          reportOutput: 'report.json',
+          serviceName: 'test-service',
+          url: 'url',
+        }),
+      ).toEqual({
+        ...sanitizedOptions,
+        junitOutput: 'report.xml',
+        reportOutput: 'report.json',
+      });
+    });
+  });
 });
