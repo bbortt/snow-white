@@ -14,7 +14,7 @@ import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summa
 import { groupByService } from 'app/entities/quality-gate/quality-gate.utils';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Translate } from 'react-jhipster';
+import { Translate, translate } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
 
@@ -75,24 +75,33 @@ export const QualityGateDetail = () => {
           {calculationId && (
             <>
               &nbsp;
-              <a href={`${reportUrl}/junit`}>
-                <Button color="primary">
-                  <FontAwesomeIcon icon="file-arrow-down" />{' '}
-                  <span className="d-none d-md-inline">
-                    <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
-                  </span>
-                </Button>
-              </a>
+              {/* Plain anchors, not `tag={Link}`: both targets are backend reads, not SPA routes.
+                  The label is hidden below `md`, so the name the button keeps there is the aria one. */}
+              <Button
+                tag="a"
+                color="primary"
+                href={`${reportUrl}/junit`}
+                aria-label={translate('snowWhiteApp.qualityGate.action.junitDownload')}
+              >
+                <FontAwesomeIcon icon="file-arrow-down" />{' '}
+                <span className="d-none d-md-inline">
+                  <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
+                </span>
+              </Button>
               &nbsp;
               {/* The report read's response body verbatim, so this file and the CLI's --report-output are the same bytes. */}
-              <a href={reportUrl} download={`snow-white-report-${calculationId}.json`}>
-                <Button color="secondary">
-                  <FontAwesomeIcon icon="file-code" />{' '}
-                  <span className="d-none d-md-inline">
-                    <Translate contentKey="snowWhiteApp.qualityGate.action.reportDownload">Report JSON Download</Translate>
-                  </span>
-                </Button>
-              </a>
+              <Button
+                tag="a"
+                color="secondary"
+                href={reportUrl}
+                download={`snow-white-report-${calculationId}.json`}
+                aria-label={translate('snowWhiteApp.qualityGate.action.reportDownload')}
+              >
+                <FontAwesomeIcon icon="file-code" />{' '}
+                <span className="d-none d-md-inline">
+                  <Translate contentKey="snowWhiteApp.qualityGate.action.reportDownload">Report JSON Download</Translate>
+                </span>
+              </Button>
             </>
           )}
         </div>
