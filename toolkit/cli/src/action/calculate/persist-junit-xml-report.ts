@@ -9,8 +9,16 @@ import { writeFileSync } from 'node:fs';
 
 import type { ReportApi } from '../../clients/report-api';
 
-export const persistJUnitXmlReport = async (reportApi: ReportApi, calculationId: string, junitOutput: string): Promise<void> => {
+export const persistJUnitXmlReport = async (
+  reportApi: ReportApi,
+  calculationId: string,
+  junitOutput: string,
+  agentic: boolean,
+): Promise<void> => {
   const blob = await reportApi.getReportByCalculationIdAsJUnit({ calculationId });
   writeFileSync(junitOutput, await blob.text(), 'utf8');
-  console.log(chalk.green(`📄 JUnit XML report written to: ${junitOutput}`));
+
+  if (!agentic) {
+    console.log(chalk.green(`📄 JUnit XML report written to: ${junitOutput}`));
+  }
 };
