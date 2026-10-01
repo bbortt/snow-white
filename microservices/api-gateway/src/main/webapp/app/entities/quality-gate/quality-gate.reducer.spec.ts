@@ -256,16 +256,16 @@ describe('Quality-Gate reducer tests', () => {
 
     it('passes filter params to listQualityGateReports', async () => {
       await store.dispatch(
-        getEntities({ page: 0, size: 10, sort: 'createdAt,desc', serviceName: 'my-service', apiName: 'my-api', apiVersion: '1.0.0' }),
+        getEntities({ page: 0, size: 10, sort: 'initiatedAt,desc', serviceName: 'my-service', apiName: 'my-api', apiVersion: '1.0.0' }),
       );
 
-      expect(reportApi.listQualityGateReports).toHaveBeenCalledWith(0, 10, 'createdAt,desc', 'my-service', 'my-api', '1.0.0');
+      expect(reportApi.listQualityGateReports).toHaveBeenCalledWith(0, 10, 'initiatedAt,desc', 'my-service', 'my-api', '1.0.0');
     });
 
     it('passes undefined for omitted filter params', async () => {
-      await store.dispatch(getEntities({ page: 0, size: 10, sort: 'createdAt,desc' }));
+      await store.dispatch(getEntities({ page: 0, size: 10, sort: 'initiatedAt,desc' }));
 
-      expect(reportApi.listQualityGateReports).toHaveBeenCalledWith(0, 10, 'createdAt,desc', undefined, undefined, undefined);
+      expect(reportApi.listQualityGateReports).toHaveBeenCalledWith(0, 10, 'initiatedAt,desc', undefined, undefined, undefined);
     });
 
     it('dispatches FETCH_QUALITYGATE actions', async () => {

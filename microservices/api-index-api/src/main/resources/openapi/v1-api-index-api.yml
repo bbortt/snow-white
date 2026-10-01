@@ -64,11 +64,15 @@ paths:
           in: query
           description: |
             Sorting criteria in the format: `property,(asc|desc)`.
-            Defaults to `initiatedAt,desc`.
+            One of `apiName`, `apiType`, `apiVersion`, `serviceName`; any other property or a
+            malformed value is rejected with `400`.
+            Defaults to `serviceName,asc`. Every order is completed by `serviceName`, `apiName`,
+            `apiVersion` — the key identifying an API — so paging is reproducible.
+            `apiVersion` orders as a string, so `1.10.0` precedes `1.9.0`.
           required: false
           schema:
             type: string
-            example: initiatedAt,desc
+            example: serviceName,asc
         - name: serviceName
           in: query
           required: false
@@ -92,6 +96,12 @@ paths:
                 type: array
                 items:
                   $ref: './components/ApiInformation.yml'
+        '400':
+          description: 'The sort parameter names a property this listing cannot order by, or does not parse'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
         '500':
           description: 'Internal server error'
           content:

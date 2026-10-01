@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.res
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource.ReportSortDefinition.REPORT_SORT;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -150,7 +151,7 @@ public class ReportResource implements ReportApi {
       serviceName,
       apiName,
       apiVersion,
-      toPageable(page, size, sort)
+      toPageable(page, size, sort, REPORT_SORT)
     );
 
     return ResponseEntity.ok()

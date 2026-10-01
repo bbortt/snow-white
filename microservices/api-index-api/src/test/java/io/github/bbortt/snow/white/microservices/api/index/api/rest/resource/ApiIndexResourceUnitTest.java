@@ -322,7 +322,12 @@ class ApiIndexResourceUnitTest {
           p -> assertThat(p.getPageSize()).isEqualTo(size),
           p ->
             assertThat(p.getSort()).isEqualTo(
-              Sort.by(Sort.Direction.ASC, "apiVersion")
+              Sort.by(Sort.Direction.ASC, "apiVersion").and(
+                Sort.by(
+                  Sort.Order.asc("otelServiceName"),
+                  Sort.Order.asc("apiName")
+                )
+              )
             )
         );
     }
@@ -368,7 +373,12 @@ class ApiIndexResourceUnitTest {
           p -> assertThat(p.getPageSize()).isEqualTo(size),
           p ->
             assertThat(p.getSort()).isEqualTo(
-              Sort.by(Sort.Direction.DESC, "apiVersion")
+              Sort.by(Sort.Direction.DESC, "apiVersion").and(
+                Sort.by(
+                  Sort.Order.asc("otelServiceName"),
+                  Sort.Order.asc("apiName")
+                )
+              )
             )
         );
     }

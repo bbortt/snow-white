@@ -11,11 +11,13 @@ import static io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIn
 import static io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import clew.traceables.clew.ConTraceables;
@@ -28,6 +30,8 @@ import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiRefer
 import io.github.bbortt.snow.white.microservices.api.index.domain.repository.ApiReferenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -207,6 +211,33 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
           .content(jsonMapper.writeValueAsString(newApiReference))
       )
       .andExpect(status().isBadRequest());
+  }
+
+  /**
+   * A property this listing does not publish — including the entity name behind a published one — is
+   * the caller's mistake. Unmapped it reached the default {@code 500}.
+   */
+  @ParameterizedTest
+  @ValueSource(
+    strings = {
+      "otelServiceName,asc",
+      "indexedAt,desc",
+      "serviceName",
+      "serviceName,sideways",
+    }
+  )
+  void getRequest_rejectsASortItDoesNotPublish(String sort) throws Exception {
+    mockMvc
+      .perform(
+        get(PATH_GET_ALL_APIS).param("sort", sort).accept(APPLICATION_JSON)
+      )
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value("Bad Request"))
+      .andExpect(
+        jsonPath("$.message").value(
+          containsString("one of: apiName, apiType, apiVersion, serviceName")
+        )
+      );
   }
 
   @Test

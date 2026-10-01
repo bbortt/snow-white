@@ -46,7 +46,8 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
     return !hidePagination && (!!totalItems || !!filterParams.serviceName || !!filterParams.apiName || !!filterParams.apiVersion);
   }, [hidePagination, totalItems, filterParams.serviceName, filterParams.apiName, filterParams.apiVersion]);
 
-  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'createdAt', 'desc');
+  // 'initiatedAt' is the sort property the report API publishes; its entity name 'createdAt' is not accepted.
+  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'initiatedAt', 'desc');
   const [paginationState, setPaginationState] = useState(
     paginationAndSortingEnabled ? overridePaginationStateWithQueryParams(paginationBaseState, pageLocation.search) : paginationBaseState,
   );
@@ -171,9 +172,13 @@ export const QualityGate = ({ hidePagination = false }: QualityGateProps) => {
           <thead>
             <tr>
               {getTableHeaderRow('snowWhiteApp.qualityGate.calculationId', 'Calculation Id', 'calculationId')}
-              {getTableHeaderRow('snowWhiteApp.qualityGate.status', 'Status', 'status')}
+              {/* Not sortable: status is published as a string but stored as a stable numeric code,
+                  so the report API refuses to order by a sequence the published values don't imply. */}
+              <th>
+                <Translate contentKey="snowWhiteApp.qualityGate.status">Status</Translate>
+              </th>
               {getTableHeaderRow('snowWhiteApp.qualityGate.qualityGateConfigName', 'Quality-Gate', 'qualityGateConfigName')}
-              {getTableHeaderRow('snowWhiteApp.qualityGate.createdAt', 'Initiated At', 'createdAt')}
+              {getTableHeaderRow('snowWhiteApp.qualityGate.createdAt', 'Initiated At', 'initiatedAt')}
               <th>
                 <Translate contentKey="snowWhiteApp.qualityGate.testedAPIs">Tested APIs</Translate>
               </th>

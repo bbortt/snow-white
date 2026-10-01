@@ -8,6 +8,7 @@ package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
+import static io.github.bbortt.snow.white.microservices.api.index.api.rest.resource.ApiIndexSortDefinition.API_INDEX_SORT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -113,7 +114,7 @@ public class ApiIndexResource implements ApiIndexApi {
     var ingestedApis = apiIndexService.findAllIngestedApis(
       serviceName,
       apiName,
-      toPageable(page, size, sort)
+      toPageable(page, size, sort, API_INDEX_SORT)
     );
 
     return ResponseEntity.ok()
