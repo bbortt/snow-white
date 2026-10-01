@@ -20,6 +20,35 @@ import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
 
 import { getEntity } from './quality-gate.reducer';
 
+interface DownloadButtonProps {
+  action: 'junitDownload' | 'reportDownload';
+  color: string;
+  /** Omitted for a target the browser already saves on its own, such as the JUnit XML. */
+  fileName?: string;
+  href: string;
+  icon: 'file-arrow-down' | 'file-code';
+}
+
+/**
+ * A plain anchor rather than `tag={Link}`: every target here is a backend read, not an SPA route.
+ * The label is hidden below the `md` breakpoint and the icon is `aria-hidden`, so without the
+ * `aria-label` the control would have no accessible name on a phone-width viewport. The anchor
+ * carries the button styling itself - a `<button>` nested in an `<a>` would be two focusable
+ * controls behind one action.
+ */
+const DownloadButton = ({ action, color, fileName, href, icon }: DownloadButtonProps) => {
+  const contentKey = `snowWhiteApp.qualityGate.action.${action}`;
+
+  return (
+    <Button tag="a" color={color} href={href} download={fileName} aria-label={translate(contentKey)}>
+      <FontAwesomeIcon icon={icon} />{' '}
+      <span className="d-none d-md-inline">
+        <Translate contentKey={contentKey} />
+      </span>
+    </Button>
+  );
+};
+
 export const QualityGateDetail = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -75,33 +104,16 @@ export const QualityGateDetail = () => {
           {calculationId && (
             <>
               &nbsp;
-              {/* Plain anchors, not `tag={Link}`: both targets are backend reads, not SPA routes.
-                  The label is hidden below `md`, so the name the button keeps there is the aria one. */}
-              <Button
-                tag="a"
-                color="primary"
-                href={`${reportUrl}/junit`}
-                aria-label={translate('snowWhiteApp.qualityGate.action.junitDownload')}
-              >
-                <FontAwesomeIcon icon="file-arrow-down" />{' '}
-                <span className="d-none d-md-inline">
-                  <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
-                </span>
-              </Button>
+              <DownloadButton action="junitDownload" color="primary" icon="file-arrow-down" href={`${reportUrl}/junit`} />
               &nbsp;
               {/* The report read's response body verbatim, so this file and the CLI's --report-output are the same bytes. */}
-              <Button
-                tag="a"
+              <DownloadButton
+                action="reportDownload"
                 color="secondary"
+                icon="file-code"
                 href={reportUrl}
-                download={`snow-white-report-${calculationId}.json`}
-                aria-label={translate('snowWhiteApp.qualityGate.action.reportDownload')}
-              >
-                <FontAwesomeIcon icon="file-code" />{' '}
-                <span className="d-none d-md-inline">
-                  <Translate contentKey="snowWhiteApp.qualityGate.action.reportDownload">Report JSON Download</Translate>
-                </span>
-              </Button>
+                fileName={`snow-white-report-${calculationId}.json`}
+              />
             </>
           )}
         </div>
