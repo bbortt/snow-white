@@ -2,33 +2,30 @@
 
 ## [1.13.0](https://github.com/bbortt/snow-white/compare/v1.12.0...v1.13.0) (2026-10-01)
 
-
 ### Features
 
-* **#1642:** drilldown UI ([3ae3e5e](https://github.com/bbortt/snow-white/commit/3ae3e5ec40126d241fa896c3425d3159a57b5c14))
-* **api-gateway:** download the report read as a file ([c629eb0](https://github.com/bbortt/snow-white/commit/c629eb042a4182f0cc02e6677103ecb176ee79f5))
-* **api-sync-job:** count every cycle outcome under the status it reached ([ec01eae](https://github.com/bbortt/snow-white/commit/ec01eae99de2b48f2820b9ffa64b7317e5d5ece8))
-* **api-sync-job:** specify the cadence, identity and resilience contract ([d856608](https://github.com/bbortt/snow-white/commit/d856608c3742ee4b023e99809e8684ce1240fc9d))
-* **cli:** persist the full JSON report alongside the JUnit one ([3658b04](https://github.com/bbortt/snow-white/commit/3658b042f8cec880a849d2e66a1797b344ec1dbf))
-* **STR-020:** rest responses omit null properties ([c837137](https://github.com/bbortt/snow-white/commit/c837137a2c4d352a4dfbbd77500523282ac3aa54))
-
+- **#1642:** drilldown UI ([3ae3e5e](https://github.com/bbortt/snow-white/commit/3ae3e5ec40126d241fa896c3425d3159a57b5c14))
+- **api-gateway:** download the report read as a file ([c629eb0](https://github.com/bbortt/snow-white/commit/c629eb042a4182f0cc02e6677103ecb176ee79f5))
+- **api-sync-job:** count every cycle outcome under the status it reached ([ec01eae](https://github.com/bbortt/snow-white/commit/ec01eae99de2b48f2820b9ffa64b7317e5d5ece8))
+- **api-sync-job:** specify the cadence, identity and resilience contract ([d856608](https://github.com/bbortt/snow-white/commit/d856608c3742ee4b023e99809e8684ce1240fc9d))
+- **cli:** persist the full JSON report alongside the JUnit one ([3658b04](https://github.com/bbortt/snow-white/commit/3658b042f8cec880a849d2e66a1797b344ec1dbf))
+- **STR-020:** rest responses omit null properties ([c837137](https://github.com/bbortt/snow-white/commit/c837137a2c4d352a4dfbbd77500523282ac3aa54))
 
 ### Bug Fixes
 
-* **api-gateway:** keep the fallback label the extraction dropped ([169b761](https://github.com/bbortt/snow-white/commit/169b761981d12453ab4f8cad31665f50970a8353))
-* **api-gateway:** name the download buttons where their label is hidden ([50348a0](https://github.com/bbortt/snow-white/commit/50348a0e588f15d5b50a30ecc1f009a50fbef0ce))
-* **api-sync-job:** name every reason a candidate file could not be indexed ([7fb59d2](https://github.com/bbortt/snow-white/commit/7fb59d21cd32bec11d157fbc502e1999eebd76b7))
-* **cli:** keep both output flags silent in agentic mode ([1be841f](https://github.com/bbortt/snow-white/commit/1be841f34d73c2a0f79a79773fab3d431df69b2f))
-* **cli:** settle the rejection assertions and split the artifact dispatch ([b3cc127](https://github.com/bbortt/snow-white/commit/b3cc127978a4bcda4eced07a143ae8b66ba560bc))
-* **commons:** name the property when a positive bound binds as null ([949ab57](https://github.com/bbortt/snow-white/commit/949ab571d832677b0cf0737ae1c3a81a7fcd55a8))
-* **helm:** render a zero fan-out bound instead of dropping it ([8194332](https://github.com/bbortt/snow-white/commit/819433240c1708c15785f47070fbc8d33bdc8e4d))
-
+- **api-gateway:** keep the fallback label the extraction dropped ([169b761](https://github.com/bbortt/snow-white/commit/169b761981d12453ab4f8cad31665f50970a8353))
+- **api-gateway:** name the download buttons where their label is hidden ([50348a0](https://github.com/bbortt/snow-white/commit/50348a0e588f15d5b50a30ecc1f009a50fbef0ce))
+- **api-sync-job:** name every reason a candidate file could not be indexed ([7fb59d2](https://github.com/bbortt/snow-white/commit/7fb59d21cd32bec11d157fbc502e1999eebd76b7))
+- **cli:** keep both output flags silent in agentic mode ([1be841f](https://github.com/bbortt/snow-white/commit/1be841f34d73c2a0f79a79773fab3d431df69b2f))
+- **cli:** settle the rejection assertions and split the artifact dispatch ([b3cc127](https://github.com/bbortt/snow-white/commit/b3cc127978a4bcda4eced07a143ae8b66ba560bc))
+- **commons:** name the property when a positive bound binds as null ([949ab57](https://github.com/bbortt/snow-white/commit/949ab571d832677b0cf0737ae1c3a81a7fcd55a8))
+- **helm:** render a zero fan-out bound instead of dropping it ([8194332](https://github.com/bbortt/snow-white/commit/819433240c1708c15785f47070fbc8d33bdc8e4d))
 
 ### Documentation
 
-* **adr:** accept ADR-0003 ([613a12d](https://github.com/bbortt/snow-white/commit/613a12dc45e7fc6a1e580c899fc3f3a451579ff6))
-* **adr:** decide how evidence leaves the system ([d5774f8](https://github.com/bbortt/snow-white/commit/d5774f81a616ddad649673b1f454bfdcab93fdeb))
-* release 1.12.0 post ([f50bde2](https://github.com/bbortt/snow-white/commit/f50bde2d35e6bd718a836bf507ab644aceb2a87f))
+- **adr:** accept ADR-0003 ([613a12d](https://github.com/bbortt/snow-white/commit/613a12dc45e7fc6a1e580c899fc3f3a451579ff6))
+- **adr:** decide how evidence leaves the system ([d5774f8](https://github.com/bbortt/snow-white/commit/d5774f81a616ddad649673b1f454bfdcab93fdeb))
+- release 1.12.0 post ([f50bde2](https://github.com/bbortt/snow-white/commit/f50bde2d35e6bd718a836bf507ab644aceb2a87f))
 
 ## [1.12.0](https://github.com/bbortt/snow-white/compare/v1.11.1...v1.12.0) (2026-09-29)
 
