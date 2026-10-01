@@ -40,7 +40,7 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
     } as unknown as ReportApi;
 
-    await persistJsonReport(reportApi, 'calc-123', './report.json');
+    await persistJsonReport(reportApi, 'calc-123', './report.json', false);
 
     expect(reportApi.getReportByCalculationIdRaw).toHaveBeenCalledWith({
       calculationId: 'calc-123',
@@ -63,7 +63,7 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
     } as unknown as ReportApi;
 
-    await persistJsonReport(reportApi, 'calc-verbatim', './report.json');
+    await persistJsonReport(reportApi, 'calc-verbatim', './report.json', false);
 
     expect(apiResponse.value).not.toHaveBeenCalled();
 
@@ -81,9 +81,26 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
     } as unknown as ReportApi;
 
-    await persistJsonReport(reportApi, 'calc-log', './quality.json');
+    await persistJsonReport(reportApi, 'calc-log', './quality.json', false);
 
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('./quality.json'));
+  });
+
+  it('should still write the file but log nothing in agentic mode', async () => {
+    const apiResponse = {
+      raw: {
+        text: mock(() => '{}'),
+      },
+    };
+
+    const reportApi: ReportApi = {
+      getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
+    } as unknown as ReportApi;
+
+    await persistJsonReport(reportApi, 'calc-agentic', './quality.json', true);
+
+    expect(writeFileSyncMock).toHaveBeenCalledWith('./quality.json', '{}', 'utf8');
+    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   it('should propagate errors from report api', () => {
@@ -91,7 +108,7 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockRejectedValueOnce(new Error('API failure')),
     } as unknown as ReportApi;
 
-    expect(persistJsonReport(reportApi, 'calc-error', './report.json')).rejects.toThrow('API failure');
+    expect(persistJsonReport(reportApi, 'calc-error', './report.json', false)).rejects.toThrow('API failure');
 
     expect(writeFileSyncMock).not.toHaveBeenCalled();
   });
@@ -111,6 +128,6 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
     } as unknown as ReportApi;
 
-    expect(persistJsonReport(reportApi, 'calc-write-error', './report.json')).rejects.toThrow('Disk full');
+    expect(persistJsonReport(reportApi, 'calc-write-error', './report.json', false)).rejects.toThrow('Disk full');
   });
 });

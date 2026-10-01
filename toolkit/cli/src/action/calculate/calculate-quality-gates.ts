@@ -73,11 +73,11 @@ export const calculateQualityGates = async (
     const passed = await pollCalculationResult(reportApi, calculationId, options.agentic);
 
     if (options.junitOutput) {
-      await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput);
+      await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput, options.agentic);
     }
 
     if (options.reportOutput) {
-      await persistJsonReport(reportApi, calculationId, options.reportOutput);
+      await persistJsonReport(reportApi, calculationId, options.reportOutput, options.agentic);
     }
 
     if (!passed) {

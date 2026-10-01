@@ -51,6 +51,7 @@ describe('calculateQualityGates', () => {
 
   const createOptions = (): CalculateOptions =>
     ({
+      agentic: false,
       apiInformation: [{ id: 'api-1' }],
       async: false,
       attributeFilters: {
@@ -120,7 +121,7 @@ describe('calculateQualityGates', () => {
 
     await calculateQualityGates(qualityGateApi, reportApi, options);
 
-    expect(persistJUnitXmlReport).toHaveBeenCalledWith(reportApi, 'calc-789', './quality-report.xml');
+    expect(persistJUnitXmlReport).toHaveBeenCalledWith(reportApi, 'calc-789', './quality-report.xml', false);
   });
 
   it('should persist the json report when reportOutput is set', async () => {
@@ -146,7 +147,34 @@ describe('calculateQualityGates', () => {
 
     await calculateQualityGates(qualityGateApi, reportApi, options);
 
-    expect(persistJsonReport).toHaveBeenCalledWith(reportApi, 'calc-json', './quality-report.json');
+    expect(persistJsonReport).toHaveBeenCalledWith(reportApi, 'calc-json', './quality-report.json', false);
+  });
+
+  it('should tell the persisters to stay quiet in agentic mode', async () => {
+    const apiResponse = {
+      raw: {
+        headers: {
+          get: mock(() => null),
+        },
+      },
+      value: mock(() => ({
+        calculationId: 'calc-agentic',
+      })),
+    };
+
+    const qualityGateApi: QualityGateApi = {
+      calculateQualityGateRaw: mock(() => apiResponse),
+    } as unknown as QualityGateApi;
+
+    const reportApi = {} as ReportApi;
+
+    const options = createOptions();
+    options.agentic = true;
+
+    await calculateQualityGates(qualityGateApi, reportApi, options);
+
+    expect(persistJUnitXmlReport).toHaveBeenCalledWith(reportApi, 'calc-agentic', './report.xml', true);
+    expect(persistJsonReport).toHaveBeenCalledWith(reportApi, 'calc-agentic', './report.json', true);
   });
 
   it('should not persist the json report when reportOutput is absent', async () => {
