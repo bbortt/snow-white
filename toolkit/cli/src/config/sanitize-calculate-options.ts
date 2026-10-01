@@ -85,7 +85,7 @@ const mergeWithCliOverrides = (fileConfig: Partial<CalculateOptions>, cliOptions
   }
 
   // these options are CLI-only - never read from config file
-  for (const key of ['async', 'agentic', 'junitOutput']) {
+  for (const key of ['async', 'agentic', 'junitOutput', 'reportOutput']) {
     if (cliOptions[key] !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       result[key] = cliOptions[key];
@@ -191,7 +191,7 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
     exitInvalidConfig();
   }
 
-  const { agentic, apiName, apiVersion, async, junitOutput, lookbackWindow, qualityGate, serviceName, url } = options;
+  const { agentic, apiName, apiVersion, async, junitOutput, lookbackWindow, qualityGate, reportOutput, serviceName, url } = options;
 
   return {
     agentic,
@@ -201,6 +201,7 @@ const buildExactConfig = (options: CliOptions): Partial<CalculateOptions> => {
     junitOutput,
     lookbackWindow,
     qualityGate,
+    reportOutput,
     url,
   };
 };
@@ -297,6 +298,10 @@ const invalidConfigurationCombinations = [
   {
     configIsInvalid: (config: CalculateOptions): boolean => (config.async && config.junitOutput) as boolean,
     errorMessage: '❌ --junit-output cannot be used with --async (no result to report).',
+  },
+  {
+    configIsInvalid: (config: CalculateOptions): boolean => (config.async && config.reportOutput) as boolean,
+    errorMessage: '❌ --report-output cannot be used with --async (no result to report).',
   },
 ];
 

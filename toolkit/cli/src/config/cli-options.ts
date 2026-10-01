@@ -22,6 +22,7 @@ export interface CliOptions {
   async?: boolean;
   agentic?: boolean;
   junitOutput?: string;
+  reportOutput?: string;
 
   apiNamePath?: string;
   apiVersionPath?: string;

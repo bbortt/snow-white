@@ -47,6 +47,10 @@ export const calculate = (program: Command): void => {
       false,
     )
     .option('--junit-output <path>', 'Write the JUnit XML report to the given file path (cannot be combined with --async)')
+    .option(
+      '--report-output <path>',
+      'Write the full JSON report, findings and evidence included, to the given file path (cannot be combined with --async)',
+    )
     .action(async (options: CliOptions) => {
       const sanitizedOptions = sanitizeCalculateOptions(options);
       const qualityGateApi = getQualityGateApi(sanitizedOptions.url);
