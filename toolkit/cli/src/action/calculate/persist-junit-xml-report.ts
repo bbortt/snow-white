@@ -4,10 +4,9 @@
  * See LICENSE file for full details.
  */
 
-import chalk from 'chalk';
-import { writeFileSync } from 'node:fs';
-
 import type { ReportApi } from '../../clients/report-api';
+
+import { persistReportArtifact } from './persist-report-artifact';
 
 export const persistJUnitXmlReport = async (
   reportApi: ReportApi,
@@ -16,9 +15,5 @@ export const persistJUnitXmlReport = async (
   agentic: boolean,
 ): Promise<void> => {
   const blob = await reportApi.getReportByCalculationIdAsJUnit({ calculationId });
-  writeFileSync(junitOutput, await blob.text(), 'utf8');
-
-  if (!agentic) {
-    console.log(chalk.green(`📄 JUnit XML report written to: ${junitOutput}`));
-  }
+  persistReportArtifact(junitOutput, await blob.text(), 'JUnit XML report', agentic);
 };
