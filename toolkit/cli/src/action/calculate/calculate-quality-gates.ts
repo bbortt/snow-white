@@ -13,6 +13,7 @@ import type { CalculateOptions } from '../../config/sanitized-options';
 
 import { QUALITY_GATE_FAILED } from '../../common/exit-codes';
 import { toDtos } from '../../entity/mapper/api-information.mapper';
+import { persistJsonReport } from './persist-json-report';
 import { persistJUnitXmlReport } from './persist-junit-xml-report';
 import { pollCalculationResult } from './poll-calculation-result';
 
@@ -73,6 +74,10 @@ export const calculateQualityGates = async (
 
     if (options.junitOutput) {
       await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput);
+    }
+
+    if (options.reportOutput) {
+      await persistJsonReport(reportApi, calculationId, options.reportOutput);
     }
 
     if (!passed) {
