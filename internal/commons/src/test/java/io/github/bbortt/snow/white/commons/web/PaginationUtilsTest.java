@@ -7,80 +7,92 @@
 package io.github.bbortt.snow.white.commons.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 
 class PaginationUtilsTest {
 
+  private static final SortDefinition DEFINITION = SortDefinition.builder()
+    .sortable("initiatedAt", "createdAt")
+    .sortable("calculationId")
+    .defaultOrder(DESC, "initiatedAt")
+    .tiebreaker("calculationId")
+    .build();
+
   @Nested
-  class toPageableTest {
+  class ToPageableTest {
 
     @Test
-    void shouldReturnDefaultPageableForNullInputs() {
-      Pageable pageable = PaginationUtils.toPageable(null, null, null);
+    void shouldReturnDefaultPageAndSizeForNullInputs() {
+      Pageable pageable = PaginationUtils.toPageable(
+        null,
+        null,
+        null,
+        DEFINITION
+      );
 
-      Assertions.assertThat(pageable.getPageNumber()).isZero();
-      Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
-      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
+      assertThat(pageable.getPageNumber()).isZero();
+      assertThat(pageable.getPageSize()).isEqualTo(20);
     }
 
     @Test
     void shouldApplyPageAndSize() {
-      Pageable pageable = PaginationUtils.toPageable(2, 50, null);
+      Pageable pageable = PaginationUtils.toPageable(2, 50, null, DEFINITION);
 
-      Assertions.assertThat(pageable.getPageNumber()).isEqualTo(2);
-      Assertions.assertThat(pageable.getPageSize()).isEqualTo(50);
-      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
+      assertThat(pageable.getPageNumber()).isEqualTo(2);
+      assertThat(pageable.getPageSize()).isEqualTo(50);
     }
 
     @Test
     void shouldFallbackToDefaultsOnNegativeValues() {
-      Pageable pageable = PaginationUtils.toPageable(-5, -10, null);
+      Pageable pageable = PaginationUtils.toPageable(-5, -10, null, DEFINITION);
 
-      Assertions.assertThat(pageable.getPageNumber()).isZero();
-      Assertions.assertThat(pageable.getPageSize()).isEqualTo(20);
+      assertThat(pageable.getPageNumber()).isZero();
+      assertThat(pageable.getPageSize()).isEqualTo(20);
     }
 
     @Test
-    void shouldParseAscendingSort() {
-      Pageable pageable = PaginationUtils.toPageable(0, 10, "name,asc");
+    void shouldNeverReturnAnUnsortedPageable() {
+      Pageable pageable = PaginationUtils.toPageable(0, 10, null, DEFINITION);
 
-      Assertions.assertThat(pageable.getSort().getOrderFor("name"))
-        .isNotNull()
-        .extracting(Sort.Order::getDirection)
-        .isEqualTo(Sort.Direction.ASC);
+      assertThat(pageable.getSort().isSorted()).isTrue();
+      assertThat(pageable.getSort()).containsExactly(
+        new Sort.Order(DESC, "createdAt"),
+        new Sort.Order(ASC, "calculationId")
+      );
     }
 
     @Test
-    void shouldParseDescendingSort() {
-      Pageable pageable = PaginationUtils.toPageable(0, 10, "createdAt,desc");
+    void shouldResolveSortAgainstTheGivenDefinition() {
+      Pageable pageable = PaginationUtils.toPageable(
+        0,
+        10,
+        "initiatedAt,asc",
+        DEFINITION
+      );
 
-      Assertions.assertThat(pageable.getSort().getOrderFor("createdAt"))
-        .isNotNull()
-        .extracting(Sort.Order::getDirection)
-        .isEqualTo(Sort.Direction.DESC);
+      assertThat(pageable.getSort()).containsExactly(
+        new Sort.Order(ASC, "createdAt"),
+        new Sort.Order(ASC, "calculationId")
+      );
     }
 
     @Test
-    void shouldIgnoreMalformedSortString() {
-      Pageable pageable = PaginationUtils.toPageable(0, 10, "badformat");
-
-      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
-    }
-
-    @Test
-    void shouldIgnoreEmptySort() {
-      Pageable pageable = PaginationUtils.toPageable(0, 10, "   ");
-
-      Assertions.assertThat(pageable.getSort().isUnsorted()).isTrue();
+    void shouldPropagateRejectionOfAnUnusableSort() {
+      assertThatExceptionOfType(InvalidSortException.class).isThrownBy(() ->
+        PaginationUtils.toPageable(0, 10, "unknown,asc", DEFINITION)
+      );
     }
   }
 
@@ -93,7 +105,7 @@ class PaginationUtilsTest {
       long totalElements = 123;
       Page<String> page = new PageImpl<>(
         content,
-        org.springframework.data.domain.PageRequest.of(0, 10),
+        PageRequest.of(0, 10),
         totalElements
       );
 

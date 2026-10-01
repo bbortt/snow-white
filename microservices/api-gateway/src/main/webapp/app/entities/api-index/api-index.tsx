@@ -50,7 +50,8 @@ export const ApiIndex = () => {
     return filterServiceName !== '' || filterApiName !== '' || !!totalItems;
   }, [totalItems, filterServiceName, filterApiName]);
 
-  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'otelServiceName', 'asc');
+  // 'serviceName' is the sort property the api-index API publishes; its entity name 'otelServiceName' is not accepted.
+  const paginationBaseState = getPaginationState(pageLocation, ITEMS_PER_PAGE, 'serviceName', 'asc');
   const [paginationState, setPaginationState] = useState(
     paginationAndSortingEnabled ? overridePaginationStateWithQueryParams(paginationBaseState, pageLocation.search) : paginationBaseState,
   );
@@ -272,7 +273,7 @@ export const ApiIndex = () => {
               {getFilterableHeaderRow(
                 'snowWhiteApp.apiIndex.serviceName',
                 'Service Name',
-                'otelServiceName',
+                'serviceName',
                 inputServiceName,
                 setInputServiceName,
                 serviceNames,

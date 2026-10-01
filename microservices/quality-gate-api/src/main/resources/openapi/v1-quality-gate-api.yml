@@ -30,11 +30,15 @@ paths:
             minimum: 1
         - name: sort
           in: query
-          description: 'Sorting criteria in the format: property,(asc|desc). Defaults to initiatedAt,desc'
+          description: >-
+            Sorting criteria in the format: property,(asc|desc). One of isPredefined,
+            minCoveragePercentage, name; any other property or a malformed value is rejected with
+            400. Defaults to name,asc. Every order is completed by name, which is unique, so paging
+            is reproducible.
           required: false
           schema:
             type: string
-            example: initiatedAt,desc
+            example: name,asc
       responses:
         '200':
           description: A list of Quality-Gate Configurations
@@ -49,6 +53,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/QualityGateConfig'
+        '400':
+          description: 'The sort parameter names a property this listing cannot order by, or does not parse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:

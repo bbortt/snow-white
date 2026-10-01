@@ -55,7 +55,7 @@ test.describe('quality-gate list', () => {
     // starts from a URL that already carries one, rather than asserting on the default.
     await mockJson(page, reports(), [qualityGateReport()], { headers: totalCountHeaders(1) });
 
-    await page.goto('/quality-gate?page=1&sort=createdAt,desc');
+    await page.goto('/quality-gate?page=1&sort=initiatedAt,desc');
     await page.getByRole('button', { name: 'Calculation Id' }).click();
 
     await expect(page).toHaveURL(/sort=calculationId%2Casc/);

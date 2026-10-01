@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -39,6 +40,8 @@ import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.Q
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -226,6 +229,55 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .andExpect(jsonPath("$.length()").value(5))
       .andExpect(
         jsonPath("$[4].name").value(qualityGateConfiguration.getName())
+      );
+  }
+
+  /**
+   * Without a {@code sort} the listing still orders by name, so a caller that expresses no
+   * preference gets the documented default rather than whatever the database returns.
+   *
+   * <p>Asserted on the relative position of two configurations sharing a name prefix, so the
+   * expectation does not depend on where the database's collation puts the predefined gates.
+   */
+  @Test
+  void findAllQualityGateConfigsWithoutSortOrdersByName() throws Exception {
+    var last = createAndSaveQualityGateConfig("zzz-sorts-last");
+    var first = createAndSaveQualityGateConfig("aaa-sorts-first");
+
+    var names = jsonMapper
+      .readTree(
+        mockMvc
+          .perform(get(ENTITY_API_URL))
+          .andExpect(status().isOk())
+          .andReturn()
+          .getResponse()
+          .getContentAsString()
+      )
+      .valueStream()
+      .map(node -> node.get("name").asString())
+      .toList();
+
+    assertThat(names).containsSubsequence(first.getName(), last.getName());
+  }
+
+  /**
+   * A property this listing does not publish — or a value that does not parse — is the caller's
+   * mistake. Unmapped it reached the default {@code 500}.
+   */
+  @ParameterizedTest
+  @ValueSource(
+    strings = { "description,asc", "createdAt,desc", "name", "name,sideways" }
+  )
+  void findAllQualityGateConfigsRejectsASortItDoesNotPublish(String sort)
+    throws Exception {
+    mockMvc
+      .perform(get(ENTITY_API_URL).param("sort", sort))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value("Bad Request"))
+      .andExpect(
+        jsonPath("$.message").value(
+          containsString("one of: isPredefined, minCoveragePercentage, name")
+        )
       );
   }
 

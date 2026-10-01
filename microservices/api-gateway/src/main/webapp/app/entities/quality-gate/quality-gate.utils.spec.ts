@@ -20,7 +20,7 @@ describe('extractQualityGateFilterParams', () => {
   });
 
   it('returns empty strings when no filter params are present', () => {
-    expect(extractQualityGateFilterParams('?page=1&sort=createdAt%2Cdesc')).toEqual({
+    expect(extractQualityGateFilterParams('?page=1&sort=initiatedAt%2Cdesc')).toEqual({
       serviceName: '',
       apiName: '',
       apiVersion: '',
@@ -60,7 +60,7 @@ describe('extractQualityGateFilterParams', () => {
   });
 
   it('ignores non-filter params like page and sort', () => {
-    expect(extractQualityGateFilterParams('?page=2&sort=createdAt%2Cdesc&serviceName=svc')).toEqual({
+    expect(extractQualityGateFilterParams('?page=2&sort=initiatedAt%2Cdesc&serviceName=svc')).toEqual({
       serviceName: 'svc',
       apiName: '',
       apiVersion: '',

@@ -18,6 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
@@ -49,9 +50,11 @@ import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
@@ -90,6 +93,16 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     return NOT_STARTED.equals(reportStatus)
       ? "IN_PROGRESS"
       : reportStatus.toString();
+  }
+
+  /**
+   * The database outlives the test class, and the listener ITs leave their reports behind. A list
+   * read asserting on the whole page needs an empty table regardless of which class ran before it,
+   * so the teardown is mirrored here rather than relied on.
+   */
+  @BeforeEach
+  void beforeEachCleanSlate() {
+    qualityGateReportRepository.deleteAll();
   }
 
   @AfterEach
@@ -498,6 +511,78 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @EnumSource
   @ParameterizedTest
   void findAllReports(ReportStatus reportStatus) throws Exception {
+    persistTwoReportsOrderedByCreationTime(reportStatus);
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam(
+          "sort",
+          "initiatedAt,desc"
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
+      .andExpect(
+        jsonPath("$[0].status").value(reportStatusAsString(reportStatus))
+      )
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"))
+      .andExpect(
+        jsonPath("$[1].status").value(reportStatusAsString(reportStatus))
+      );
+  }
+
+  /**
+   * Without a {@code sort} the listing still orders newest first, so a caller that expresses no
+   * preference gets the documented default rather than whatever the database returns.
+   */
+  @Test
+  void findAllReportsWithoutSortAppliesTheDocumentedDefaultOrder()
+    throws Exception {
+    persistTwoReportsOrderedByCreationTime(PASSED);
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"));
+  }
+
+  /**
+   * {@code createdAt} is the entity attribute behind the published {@code initiatedAt}. It is not a
+   * second spelling of it, and asking for it is a request this listing refuses rather than a 500.
+   */
+  @ParameterizedTest
+  @ValueSource(
+    strings = {
+      "createdAt,desc",
+      "status,asc",
+      "initiatedAt",
+      "initiatedAt,sideways",
+    }
+  )
+  void findAllReportsRejectsASortItDoesNotPublish(String sort)
+    throws Exception {
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("sort", sort))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value("Bad Request"))
+      .andExpect(
+        jsonPath("$.message").value(
+          containsString(
+            "one of: calculationId, initiatedAt, qualityGateConfigName"
+          )
+        )
+      );
+  }
+
+  /** Two reports a known five minutes apart, so any assertion on order has something to order. */
+  private void persistTwoReportsOrderedByCreationTime(
+    ReportStatus reportStatus
+  ) {
     var calculationId1 = UUID.fromString(
       "b30bb84b-7bf6-4744-8bfc-ac05b8a85991"
     );
@@ -530,23 +615,6 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
     createSimpleApiTestSet(qualityGateReport1);
     createSimpleApiTestSet(qualityGateReport2);
-
-    mockMvc
-      .perform(
-        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("sort", "createdAt,desc")
-      )
-      .andExpect(status().isOk())
-      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
-      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
-      .andExpect(jsonPath("$.length()").value(2))
-      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
-      .andExpect(
-        jsonPath("$[0].status").value(reportStatusAsString(reportStatus))
-      )
-      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"))
-      .andExpect(
-        jsonPath("$[1].status").value(reportStatusAsString(reportStatus))
-      );
   }
 
   private QualityGateReport createAndPersistQualityGateReport(

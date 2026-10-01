@@ -454,7 +454,7 @@ class ReportResourceUnitTest {
     void shouldReturnListOfQualityGateReports() {
       var page = 0;
       var size = 10;
-      var sort = "createdAt,asc";
+      var sort = "initiatedAt,asc";
 
       var report1 = mock(QualityGateReport.class);
       var report2 = mock(QualityGateReport.class);
@@ -512,7 +512,9 @@ class ReportResourceUnitTest {
           p -> assertThat(p.getPageSize()).isEqualTo(size),
           p ->
             assertThat(p.getSort()).isEqualTo(
-              Sort.by(Sort.Direction.ASC, "createdAt")
+              Sort.by(Sort.Direction.ASC, "createdAt").and(
+                Sort.by(Sort.Direction.ASC, "calculationId")
+              )
             )
         );
     }
@@ -521,7 +523,7 @@ class ReportResourceUnitTest {
     void shouldHandleEmptyListOfQualityGateReports() {
       var page = 1;
       var size = 10;
-      var sort = "createdAt,desc";
+      var sort = "initiatedAt,desc";
 
       Page<@NonNull QualityGateReport> qualityGateReportsPage = mock();
 
@@ -569,7 +571,9 @@ class ReportResourceUnitTest {
           p -> assertThat(p.getPageSize()).isEqualTo(size),
           p ->
             assertThat(p.getSort()).isEqualTo(
-              Sort.by(Sort.Direction.DESC, "createdAt")
+              Sort.by(Sort.Direction.DESC, "createdAt").and(
+                Sort.by(Sort.Direction.ASC, "calculationId")
+              )
             )
         );
     }
@@ -592,7 +596,7 @@ class ReportResourceUnitTest {
       fixture.listQualityGateReports(
         0,
         10,
-        "createdAt,asc",
+        "initiatedAt,asc",
         "my-service",
         "my-api",
         "v1"

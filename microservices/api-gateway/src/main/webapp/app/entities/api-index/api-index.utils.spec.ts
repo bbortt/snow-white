@@ -10,7 +10,7 @@ import { getSortIconByFieldName, uniqueSortedVersions } from './api-index.utils'
 
 describe('getSortIconByFieldName', () => {
   it('returns faSort when the field is not the current sort field', () => {
-    expect(getSortIconByFieldName('apiName', 'otelServiceName', 'asc')).toBe(faSort);
+    expect(getSortIconByFieldName('apiName', 'serviceName', 'asc')).toBe(faSort);
   });
 
   it('returns faSortUp when the field matches and order is ascending', () => {

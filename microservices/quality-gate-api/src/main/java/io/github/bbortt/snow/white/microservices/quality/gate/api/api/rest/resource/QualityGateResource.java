@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.generatePaginationHttpHeaders;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.toPageable;
 import static io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.ObjectUtils.copyNonNullFields;
+import static io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource.QualityGateSortDefinition.QUALITY_GATE_SORT;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -131,7 +132,7 @@ public class QualityGateResource implements QualityGateApi {
   ) {
     var qualityGateConfigurations =
       qualityGateService.findAllQualityGateConfigurations(
-        toPageable(page, size, sort)
+        toPageable(page, size, sort, QUALITY_GATE_SORT)
       );
 
     return ResponseEntity.ok()

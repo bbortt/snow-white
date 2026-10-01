@@ -30,7 +30,12 @@ paths:
             minimum: 1
         - name: sort
           in: query
-          description: 'Sorting criteria in the format: property,(asc|desc). Defaults to initiatedAt,desc'
+          description: >-
+            Sorting criteria in the format: property,(asc|desc). One of calculationId, initiatedAt,
+            qualityGateConfigName; any other property or a malformed value is rejected with 400.
+            Defaults to initiatedAt,desc. Every order is completed by calculationId, so paging is
+            reproducible. Reports cannot be sorted by status: it is published as a name but stored
+            as a stable code, and that code's order is not a sequence these names imply.
           required: false
           schema:
             type: string
@@ -70,6 +75,12 @@ paths:
                 type: array
                 items:
                   $ref: './components/QualityGateReport.yml'
+        '400':
+          description: 'The sort parameter names a property this listing cannot order by, or does not parse'
+          content:
+            application/json:
+              schema:
+                $ref: './components/Error.yml'
         '500':
           description: 'Internal server error'
           content:
