@@ -17,6 +17,7 @@ import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import io.github.bbortt.snow.white.commons.web.InvalidSortException;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate400Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -155,6 +156,34 @@ class ApiExceptionHandlerUnitTest {
         )
         .asInstanceOf(BOOLEAN)
         .isTrue();
+    }
+  }
+
+  @Nested
+  class HandleInvalidSortTest {
+
+    @Test
+    void shouldAnswerBadRequestNamingTheAcceptedProperties() {
+      var exception = new InvalidSortException(
+        "createdAt,desc",
+        "calculationId, initiatedAt, qualityGateConfigName"
+      );
+      var request = mock(WebRequest.class);
+
+      var response = fixture.handleInvalidSort(exception, request);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(r -> assertThat(r.getStatusCode()).isEqualTo(BAD_REQUEST))
+        .extracting(HttpEntity::getBody)
+        .asInstanceOf(type(CalculateQualityGate400Response.class))
+        .satisfies(
+          e -> assertThat(e.getCode()).isEqualTo("Bad Request"),
+          e ->
+            assertThat(e.getMessage()).isEqualTo(
+              "Cannot sort by 'createdAt,desc'. Expected 'property,(asc|desc)' with property one of: calculationId, initiatedAt, qualityGateConfigName."
+            )
+        );
     }
   }
 }
