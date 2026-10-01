@@ -40,6 +40,7 @@ const reportApiMock = {
   configuration: { configuration: { basePath: 'http://localhost:8080' } },
   getReportByCalculationId: mock(),
   getReportByCalculationIdAsJUnit: mock(),
+  getReportByCalculationIdRaw: mock(),
 };
 
 const defaultOptions: CalculateOptions = {
@@ -59,6 +60,7 @@ describe('calculate action', () => {
 
     reportApiMock.getReportByCalculationIdAsJUnit.mockReset();
     reportApiMock.getReportByCalculationId.mockReset();
+    reportApiMock.getReportByCalculationIdRaw.mockReset();
 
     (exit as any).mockReset();
 
@@ -328,6 +330,67 @@ describe('calculate action', () => {
 
         expect(reportApiMock.getReportByCalculationIdAsJUnit).not.toHaveBeenCalled();
         expect(writeFileSync).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('--report-output', () => {
+      const reportOptions: CalculateOptions = { ...syncOptions, reportOutput: 'report.json' };
+      const jsonContent = '{"calculationId":"123-456-789","status":"PASSED"}';
+
+      const makeMockRawResponse = (body: string): { raw: { text: () => Promise<string> } } => ({
+        // eslint-disable-next-line @typescript-eslint/require-await
+        raw: { text: async () => body },
+      });
+
+      it('should fetch and write the JSON report when --report-output is set and gate passes', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+        reportApiMock.getReportByCalculationIdRaw.mockResolvedValueOnce(makeMockRawResponse(jsonContent));
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), reportOptions);
+
+        expect(reportApiMock.getReportByCalculationIdRaw).toHaveBeenCalledWith({ calculationId: '123-456-789' });
+        expect(writeFileSync).toHaveBeenCalledWith('report.json', jsonContent, 'utf8');
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📄 JSON report written to: report.json'));
+
+        expect(exit).not.toHaveBeenCalled();
+      });
+
+      it('should fetch and write the JSON report when --report-output is set and gate fails', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'FAILED' });
+        reportApiMock.getReportByCalculationIdRaw.mockResolvedValueOnce(makeMockRawResponse(jsonContent));
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), reportOptions);
+
+        expect(reportApiMock.getReportByCalculationIdRaw).toHaveBeenCalledWith({ calculationId: '123-456-789' });
+        expect(writeFileSync).toHaveBeenCalledWith('report.json', jsonContent, 'utf8');
+
+        expect(exit).toHaveBeenCalledWith(QUALITY_GATE_FAILED);
+      });
+
+      it('should not fetch the JSON report when --report-output is not set', async () => {
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), syncOptions);
+
+        expect(reportApiMock.getReportByCalculationIdRaw).not.toHaveBeenCalled();
+        expect(writeFileSync).not.toHaveBeenCalled();
+      });
+
+      it('should write both artifacts when both output flags are set', async () => {
+        const bothOptions: CalculateOptions = { ...reportOptions, junitOutput: 'report.xml' };
+
+        qualityGateApiMock.calculateQualityGateRaw.mockResolvedValue(makeMockApiResponse());
+        reportApiMock.getReportByCalculationId.mockResolvedValueOnce({ calculationId: '123-456-789', status: 'PASSED' });
+        reportApiMock.getReportByCalculationIdAsJUnit.mockResolvedValueOnce(new Blob(['<testsuites />'], { type: 'application/xml' }));
+        reportApiMock.getReportByCalculationIdRaw.mockResolvedValueOnce(makeMockRawResponse(jsonContent));
+
+        await calculate(getQualityGateApi(qualityGateApiMock), getReportApi(reportApiMock), bothOptions);
+
+        expect(writeFileSync).toHaveBeenCalledWith('report.xml', '<testsuites />', 'utf8');
+        expect(writeFileSync).toHaveBeenCalledWith('report.json', jsonContent, 'utf8');
       });
     });
   });

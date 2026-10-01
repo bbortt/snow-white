@@ -206,6 +206,7 @@ It carries the same pass/fail result and exit codes as the default mode, plus a 
 ```
 
 `qualityGateFailures` on each interface lists only the criteria that are part of the quality gate and did not pass; `testResults` lists every evaluated criterion.
+`--junit-output` and `--report-output` can be combined with `--agentic`: they still write their files, silently, so the single line of JSON stays the only thing on stdout.
 
 **Report output (`--report-output`):**
 

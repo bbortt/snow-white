@@ -9,9 +9,17 @@ import { writeFileSync } from 'node:fs';
 
 import type { ReportApi } from '../../clients/report-api';
 
-export const persistJsonReport = async (reportApi: ReportApi, calculationId: string, reportOutput: string): Promise<void> => {
+export const persistJsonReport = async (
+  reportApi: ReportApi,
+  calculationId: string,
+  reportOutput: string,
+  agentic: boolean,
+): Promise<void> => {
   // the raw response body is the artifact - a deserialized model would drop what the generated client does not know
   const apiResponse = await reportApi.getReportByCalculationIdRaw({ calculationId });
   writeFileSync(reportOutput, await apiResponse.raw.text(), 'utf8');
-  console.log(chalk.green(`📄 JSON report written to: ${reportOutput}`));
+
+  if (!agentic) {
+    console.log(chalk.green(`📄 JSON report written to: ${reportOutput}`));
+  }
 };

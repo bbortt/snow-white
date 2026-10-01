@@ -37,7 +37,7 @@ describe('persistJUnitXmlReport', () => {
       getReportByCalculationIdAsJUnit: mock().mockResolvedValueOnce(blob),
     };
 
-    await persistJUnitXmlReport(reportApi, 'calc-123', './report.xml');
+    await persistJUnitXmlReport(reportApi, 'calc-123', './report.xml', false);
 
     expect(reportApi.getReportByCalculationIdAsJUnit).toHaveBeenCalledWith({
       calculationId: 'calc-123',
@@ -57,9 +57,24 @@ describe('persistJUnitXmlReport', () => {
       getReportByCalculationIdAsJUnit: mock().mockResolvedValueOnce(blob),
     } as unknown as ReportApi;
 
-    await persistJUnitXmlReport(reportApi, 'calc-log', './quality.xml');
+    await persistJUnitXmlReport(reportApi, 'calc-log', './quality.xml', false);
 
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('./quality.xml'));
+  });
+
+  it('should still write the file but log nothing in agentic mode', async () => {
+    const blob = {
+      text: mock(() => '<xml />'),
+    };
+
+    const reportApi: ReportApi = {
+      getReportByCalculationIdAsJUnit: mock().mockResolvedValueOnce(blob),
+    } as unknown as ReportApi;
+
+    await persistJUnitXmlReport(reportApi, 'calc-agentic', './quality.xml', true);
+
+    expect(writeFileSyncMock).toHaveBeenCalledWith('./quality.xml', '<xml />', 'utf8');
+    expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
   it('should propagate errors from report api', () => {
@@ -67,7 +82,7 @@ describe('persistJUnitXmlReport', () => {
       getReportByCalculationIdAsJUnit: mock().mockRejectedValueOnce(new Error('API failure')),
     } as unknown as ReportApi;
 
-    expect(persistJUnitXmlReport(reportApi, 'calc-error', './report.xml')).rejects.toThrow('API failure');
+    expect(persistJUnitXmlReport(reportApi, 'calc-error', './report.xml', false)).rejects.toThrow('API failure');
 
     expect(writeFileSyncMock).not.toHaveBeenCalled();
   });
@@ -85,6 +100,6 @@ describe('persistJUnitXmlReport', () => {
       getReportByCalculationIdAsJUnit: mock().mockResolvedValueOnce(blob),
     } as unknown as ReportApi;
 
-    expect(persistJUnitXmlReport(reportApi, 'calc-write-error', './report.xml')).rejects.toThrow('Disk full');
+    expect(persistJUnitXmlReport(reportApi, 'calc-write-error', './report.xml', false)).rejects.toThrow('Disk full');
   });
 });
