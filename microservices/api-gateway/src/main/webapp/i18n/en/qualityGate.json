@@ -15,6 +15,7 @@
       "status": "Status",
       "createdAt": "Initiated At",
       "testedAPIs": "Tested APIs",
+      "contributingTraces": "Traces that contributed to the coverage",
       "trigger": {
         "lookbackWindowDefault": "Default Lookback Window",
         "noAttributeFilters": "None",

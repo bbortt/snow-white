@@ -15,6 +15,7 @@
       "status": "Status",
       "createdAt": "Erstellt am",
       "testedAPIs": "Getestete Schnittstellen",
+      "contributingTraces": "Traces, die zur Abdeckung beigetragen haben",
       "trigger": {
         "lookbackWindowDefault": "Standard Zeitraum",
         "noAttributeFilters": "Keine",
