@@ -34,6 +34,7 @@ jest.mock('app/entities/quality-gate/api-test-service-group', () => ({
 
 jest.mock('react-jhipster', () => ({
   Translate: ({ contentKey }: { contentKey: string }) => <span>{contentKey}</span>,
+  translate: (key: string) => key,
 }));
 
 describe('QualityGateDetail', () => {
@@ -50,7 +51,9 @@ describe('QualityGateDetail', () => {
     );
   };
 
-  const reportLink = () => screen.getByText('snowWhiteApp.qualityGate.action.reportDownload').closest('a');
+  // Named by `aria-label`, because the visible label is hidden below the `md` breakpoint.
+  const downloadLink = (action: 'junitDownload' | 'reportDownload') =>
+    screen.getByRole('link', { name: `snowWhiteApp.qualityGate.action.${action}` });
 
   beforeEach(() => {
     dispatch.mockClear();
@@ -61,15 +64,22 @@ describe('QualityGateDetail', () => {
 
     // The endpoint the page already read, so the saved file is that response body rather than the
     // Redux entity the drilldown renders from - see ADR-0003.
-    expect(reportLink()).toHaveAttribute('href', `/api/rest/v1/reports/${CALCULATION_ID}`);
-    expect(reportLink()).toHaveAttribute('download', `snow-white-report-${CALCULATION_ID}.json`);
+    expect(downloadLink('reportDownload')).toHaveAttribute('href', `/api/rest/v1/reports/${CALCULATION_ID}`);
+    expect(downloadLink('reportDownload')).toHaveAttribute('download', `snow-white-report-${CALCULATION_ID}.json`);
   });
 
   it('should keep the JUnit download beside it', () => {
     renderDetail({ calculationId: CALCULATION_ID, status: ReportStatus.PASSED });
 
-    const junitLink = screen.getByText('snowWhiteApp.qualityGate.action.junitDownload').closest('a');
-    expect(junitLink).toHaveAttribute('href', `/api/rest/v1/reports/${CALCULATION_ID}/junit`);
+    expect(downloadLink('junitDownload')).toHaveAttribute('href', `/api/rest/v1/reports/${CALCULATION_ID}/junit`);
+  });
+
+  it('should name each download where the label is hidden, leaving one tab stop per control', () => {
+    renderDetail({ calculationId: CALCULATION_ID });
+
+    // A `<button>` nested in an `<a>` would be two focusable controls for one action.
+    expect(downloadLink('reportDownload').querySelector('button')).toBeNull();
+    expect(downloadLink('junitDownload').querySelector('button')).toBeNull();
   });
 
   it('should offer neither download before the report has been read', () => {
