@@ -103,17 +103,20 @@ describe('persistJsonReport', () => {
     expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
-  it('should propagate errors from report api', () => {
+  it('should propagate errors from report api', async () => {
     const reportApi: ReportApi = {
       getReportByCalculationIdRaw: mock().mockRejectedValueOnce(new Error('API failure')),
     } as unknown as ReportApi;
 
-    expect(persistJsonReport(reportApi, 'calc-error', './report.json', false)).rejects.toThrow('API failure');
+    const caught = await persistJsonReport(reportApi, 'calc-error', './report.json', false).catch((error: unknown) => error);
+
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toBe('API failure');
 
     expect(writeFileSyncMock).not.toHaveBeenCalled();
   });
 
-  it('should propagate file system write errors', () => {
+  it('should propagate file system write errors', async () => {
     writeFileSyncMock.mockImplementationOnce(() => {
       throw new Error('Disk full');
     });
@@ -128,6 +131,9 @@ describe('persistJsonReport', () => {
       getReportByCalculationIdRaw: mock().mockResolvedValueOnce(apiResponse),
     } as unknown as ReportApi;
 
-    expect(persistJsonReport(reportApi, 'calc-write-error', './report.json', false)).rejects.toThrow('Disk full');
+    const caught = await persistJsonReport(reportApi, 'calc-write-error', './report.json', false).catch((error: unknown) => error);
+
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toBe('Disk full');
   });
 });
