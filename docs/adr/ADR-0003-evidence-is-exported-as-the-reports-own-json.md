@@ -1,7 +1,7 @@
 # ADR-0003: Evidence is exported as the report's own JSON, never as JUnit properties
 
-- Status: Proposed
-- Date: 2026-09-30
+- Status: Accepted
+- Date: 2026-10-01
 - Deciders: @bbortt
 
 ## Context
