@@ -32,7 +32,9 @@ class DBMigrationUnitTest {
     "V2026_09_25__quality_gate_report_min_coverage_percentage_bounds.sql",
     "d1036e7ad0f737388b5e1c403cd9acf60281cded0458e9d6e59fab59349f93c1",
     "V2026_09_28__finding_evidence_test_identity.sql",
-    "30e52ecdfe1f674fc49c66fa7339bf6dd75957816f209aceba752378ed60b164"
+    "30e52ecdfe1f674fc49c66fa7339bf6dd75957816f209aceba752378ed60b164",
+    "V2026_10_01__api_test_lookup_indexes.sql",
+    "677b7440eaaf76d2dab1d9c1e52fa1414538f6eb22904ec5495784c9f67198de"
   );
 
   @Test
