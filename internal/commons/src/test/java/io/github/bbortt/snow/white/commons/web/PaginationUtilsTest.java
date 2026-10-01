@@ -62,6 +62,19 @@ class PaginationUtilsTest {
       assertThat(pageable.getPageSize()).isEqualTo(20);
     }
 
+    /**
+     * Page zero is the first page, but a page of zero rows is not a page: it has to fall back to
+     * the default size rather than reach {@link org.springframework.data.domain.PageRequest}, which
+     * rejects it.
+     */
+    @Test
+    void shouldKeepPageZeroButReplaceSizeZero() {
+      Pageable pageable = PaginationUtils.toPageable(0, 0, null, DEFINITION);
+
+      assertThat(pageable.getPageNumber()).isZero();
+      assertThat(pageable.getPageSize()).isEqualTo(20);
+    }
+
     @Test
     void shouldNeverReturnAnUnsortedPageable() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, null, DEFINITION);
