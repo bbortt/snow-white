@@ -25,7 +25,8 @@
         "qualityGateResults": "Abdeckung des Quality-Gate"
       },
       "action": {
-        "junitDownload": "JUnit Report Herunterladen"
+        "junitDownload": "JUnit Report Herunterladen",
+        "reportDownload": "Report JSON Herunterladen"
       },
       "filter": {
         "title": "Filters",

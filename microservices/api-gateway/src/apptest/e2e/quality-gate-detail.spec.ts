@@ -207,3 +207,12 @@ test('links to the JUnit report download', async ({ page }) => {
     `/api/rest/v1/reports/${CALCULATION_ID}/junit`,
   );
 });
+
+test('downloads the report read, not a rendering of it', async ({ page }) => {
+  const link = page.getByRole('link', { name: 'Download Report JSON' });
+
+  // The href is the report endpoint itself, so the saved file is that response body rather than a
+  // re-serialisation of the Redux entity the drilldown renders from - see ADR-0003.
+  await expect(link).toHaveAttribute('href', `/api/rest/v1/reports/${CALCULATION_ID}`);
+  await expect(link).toHaveAttribute('download', `snow-white-report-${CALCULATION_ID}.json`);
+});
