@@ -27,6 +27,8 @@ interface DownloadButtonProps {
   fileName?: string;
   href: string;
   icon: 'file-arrow-down' | 'file-code';
+  /** Fallback for a missing translation, so neither the label nor the accessible name degrades to a key. */
+  label: string;
 }
 
 /**
@@ -36,14 +38,14 @@ interface DownloadButtonProps {
  * carries the button styling itself - a `<button>` nested in an `<a>` would be two focusable
  * controls behind one action.
  */
-const DownloadButton = ({ action, color, fileName, href, icon }: DownloadButtonProps) => {
+const DownloadButton = ({ action, color, fileName, href, icon, label }: DownloadButtonProps) => {
   const contentKey = `snowWhiteApp.qualityGate.action.${action}`;
 
   return (
-    <Button tag="a" color={color} href={href} download={fileName} aria-label={translate(contentKey)}>
+    <Button tag="a" color={color} href={href} download={fileName} aria-label={translate(contentKey, {}, label)}>
       <FontAwesomeIcon icon={icon} />{' '}
       <span className="d-none d-md-inline">
-        <Translate contentKey={contentKey} />
+        <Translate contentKey={contentKey}>{label}</Translate>
       </span>
     </Button>
   );
@@ -104,7 +106,13 @@ export const QualityGateDetail = () => {
           {calculationId && (
             <>
               &nbsp;
-              <DownloadButton action="junitDownload" color="primary" icon="file-arrow-down" href={`${reportUrl}/junit`} />
+              <DownloadButton
+                action="junitDownload"
+                color="primary"
+                icon="file-arrow-down"
+                href={`${reportUrl}/junit`}
+                label="Download JUnit Report"
+              />
               &nbsp;
               {/* The report read's response body verbatim, so this file and the CLI's --report-output are the same bytes. */}
               <DownloadButton
@@ -113,6 +121,7 @@ export const QualityGateDetail = () => {
                 icon="file-code"
                 href={reportUrl}
                 fileName={`snow-white-report-${calculationId}.json`}
+                label="Download Report JSON"
               />
             </>
           )}
