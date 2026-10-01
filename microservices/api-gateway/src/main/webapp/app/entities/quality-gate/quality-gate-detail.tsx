@@ -37,6 +37,9 @@ export const QualityGateDetail = () => {
 
   const serviceGroups: ServiceGroup[] = useMemo(() => groupByService(qualityGateEntity.apiTests ?? []), [qualityGateEntity]);
 
+  const { calculationId } = qualityGateEntity;
+  const reportUrl = `/api/rest/v1/reports/${calculationId}`;
+
   return (
     <Row>
       <Col>
@@ -69,15 +72,29 @@ export const QualityGateDetail = () => {
               <Translate contentKey="entity.action.back">Back</Translate>
             </span>
           </Button>
-          &nbsp;
-          <a href={`/api/rest/v1/reports/${qualityGateEntity.calculationId}/junit`}>
-            <Button replace color="primary">
-              <FontAwesomeIcon icon="file-arrow-down" />{' '}
-              <span className="d-none d-md-inline">
-                <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
-              </span>
-            </Button>
-          </a>
+          {calculationId && (
+            <>
+              &nbsp;
+              <a href={`${reportUrl}/junit`}>
+                <Button color="primary">
+                  <FontAwesomeIcon icon="file-arrow-down" />{' '}
+                  <span className="d-none d-md-inline">
+                    <Translate contentKey="snowWhiteApp.qualityGate.action.junitDownload">JUnit Report Download</Translate>
+                  </span>
+                </Button>
+              </a>
+              &nbsp;
+              {/* The report read's response body verbatim, so this file and the CLI's --report-output are the same bytes. */}
+              <a href={reportUrl} download={`snow-white-report-${calculationId}.json`}>
+                <Button color="secondary">
+                  <FontAwesomeIcon icon="file-code" />{' '}
+                  <span className="d-none d-md-inline">
+                    <Translate contentKey="snowWhiteApp.qualityGate.action.reportDownload">Report JSON Download</Translate>
+                  </span>
+                </Button>
+              </a>
+            </>
+          )}
         </div>
         {serviceGroups.length > 0
           ? serviceGroups.map((serviceGroup: ServiceGroup) => (
