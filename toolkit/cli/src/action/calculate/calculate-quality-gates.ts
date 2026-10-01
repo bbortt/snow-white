@@ -17,6 +17,16 @@ import { persistJsonReport } from './persist-json-report';
 import { persistJUnitXmlReport } from './persist-junit-xml-report';
 import { pollCalculationResult } from './poll-calculation-result';
 
+const persistRequestedArtifacts = async (reportApi: ReportApi, calculationId: string, options: CalculateOptions): Promise<void> => {
+  if (options.junitOutput) {
+    await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput, options.agentic);
+  }
+
+  if (options.reportOutput) {
+    await persistJsonReport(reportApi, calculationId, options.reportOutput, options.agentic);
+  }
+};
+
 export const calculateQualityGates = async (
   qualityGateApi: QualityGateApi,
   reportApi: ReportApi,
@@ -72,13 +82,7 @@ export const calculateQualityGates = async (
 
     const passed = await pollCalculationResult(reportApi, calculationId, options.agentic);
 
-    if (options.junitOutput) {
-      await persistJUnitXmlReport(reportApi, calculationId, options.junitOutput, options.agentic);
-    }
-
-    if (options.reportOutput) {
-      await persistJsonReport(reportApi, calculationId, options.reportOutput, options.agentic);
-    }
+    await persistRequestedArtifacts(reportApi, calculationId, options);
 
     if (!passed) {
       exit(QUALITY_GATE_FAILED);
