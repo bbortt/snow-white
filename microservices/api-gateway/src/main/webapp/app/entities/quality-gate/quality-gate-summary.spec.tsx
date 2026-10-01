@@ -8,6 +8,7 @@ import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { QualityGateSummary } from 'app/entities/quality-gate/quality-gate-summary';
+import { FindingStatus } from 'app/shared/model/enumerations/finding-status.model';
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
@@ -79,6 +80,53 @@ describe('QualityGateSummary', () => {
     const { container } = renderSummary(qualityGate({}));
 
     expect(container.querySelector('[data-cy="testedAPIs"]')).toHaveTextContent('2');
+  });
+
+  it('should count each trace that contributed to the coverage once', () => {
+    const covered = (specPointer: string, ...traceIds: string[]) => ({
+      status: FindingStatus.COVERED,
+      specPointer,
+      evidence: traceIds.map(traceId => ({ traceId })),
+    });
+    const { container } = renderSummary({
+      ...qualityGate(),
+      apiTests: [
+        {
+          testResults: [
+            { isIncludedInQualityGate: true, findings: [covered('/paths/~1orders/get', 'trace-a', 'trace-b')] },
+            { isIncludedInQualityGate: false, findings: [covered('/paths/~1orders/post', 'trace-b')] },
+          ],
+        },
+        {
+          testResults: [
+            {
+              isIncludedInQualityGate: true,
+              findings: [covered('/paths/~1payments/get', 'trace-c'), { status: FindingStatus.UNCOVERED, specPointer: '/x', evidence: [] }],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(container.querySelector('[data-cy="contributingTraces"]')).toHaveTextContent('3');
+  });
+
+  it('should count no traces when findings carry no evidence', () => {
+    const { container } = renderSummary({
+      ...qualityGate(),
+      apiTests: [{ testResults: [{ isIncludedInQualityGate: true, findings: [] }] }],
+    });
+
+    expect(container.querySelector('[data-cy="contributingTraces"]')).toHaveTextContent('0');
+  });
+
+  it('should leave out the trace count where the report carries no findings', () => {
+    const { container } = renderSummary({
+      ...qualityGate(),
+      apiTests: [{ testResults: [{ isIncludedInQualityGate: true }] }],
+    });
+
+    expect(container.querySelector('[data-cy="contributingTraces"]')).not.toBeInTheDocument();
   });
 
   it('should keep the raw request behind a toggle', () => {

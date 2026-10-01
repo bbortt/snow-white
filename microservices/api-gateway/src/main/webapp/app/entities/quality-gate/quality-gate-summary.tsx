@@ -25,6 +25,11 @@ interface QualityGateSummaryProps {
 export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityGate }) => {
   const allResults: IApiTestResult[] = qualityGate.apiTests?.flatMap((apiTest: IApiTest) => apiTest.testResults ?? []) ?? [];
   const attributeFilters: [string, string][] = Object.entries(qualityGate.calculationRequest?.attributeFilters ?? {});
+  // Only the finished report by id carries findings: anywhere else a count would read as zero traces rather than unknown.
+  const hasFindings = allResults.some((result: IApiTestResult) => result.findings !== undefined);
+  const contributingTraces = new Set(
+    allResults.flatMap(result => result.findings ?? []).flatMap(finding => finding.evidence.map(evidence => evidence.traceId)),
+  );
 
   const rawRequestId = useId();
   const [rawRequestOpen, setRawRequestOpen] = useState(false);
@@ -108,6 +113,16 @@ export const QualityGateSummary: React.FC<QualityGateSummaryProps> = ({ qualityG
             </span>
           </dt>
           <dd data-cy="testedAPIs">{qualityGate.apiTests?.length ?? 0}</dd>
+          {hasFindings ? (
+            <>
+              <dt>
+                <span id="contributingTraces">
+                  <Translate contentKey="snowWhiteApp.qualityGate.contributingTraces">Traces that contributed to the coverage</Translate>
+                </span>
+              </dt>
+              <dd data-cy="contributingTraces">{contributingTraces.size}</dd>
+            </>
+          ) : null}
         </dl>
       </Col>
       <Col md={6}>

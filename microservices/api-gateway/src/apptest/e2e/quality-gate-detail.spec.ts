@@ -174,6 +174,8 @@ test('drills into the findings behind a criterion, uncovered ones first', async 
   await mockJson(page, reportById(CALCULATION_ID), report);
   await page.reload();
 
+  await expect(dataCy(page, 'contributingTraces')).toHaveText('1');
+
   await page.getByRole('button', { name: /orders-api/ }).click();
   const toggle = page.getByRole('button', { name: 'Show findings for Path' });
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
