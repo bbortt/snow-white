@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.commons.web;
 
 import static java.util.Locale.ROOT;
+import static java.util.Objects.isNull;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -77,7 +78,7 @@ public final class SortDefinition {
    */
   @RealizesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
   public Sort toSort(@Nullable String sort) {
-    if (sort == null || sort.isBlank()) {
+    if (isNull(sort) || sort.isBlank()) {
       return defaultSort;
     }
 
@@ -87,7 +88,7 @@ public final class SortDefinition {
     }
 
     String entityPath = publishedToEntityPath.get(parts[0].trim());
-    if (entityPath == null) {
+    if (isNull(entityPath)) {
       throw new InvalidSortException(sort, publishedProperties);
     }
 
@@ -184,7 +185,7 @@ public final class SortDefinition {
      */
     private String requireSortable(String publishedName) {
       String entityPath = publishedToEntityPath.get(publishedName);
-      if (entityPath == null) {
+      if (isNull(entityPath)) {
         throw new IllegalStateException(
           "'%s' is not a sortable property of this definition.".formatted(
             publishedName
