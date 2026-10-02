@@ -23,7 +23,7 @@ import io.github.bbortt.snow.white.commons.testing.VisibleForTesting;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports400Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
@@ -179,7 +179,7 @@ public class ReportResource implements ReportApi {
     return ResponseEntity.status(NOT_FOUND)
       .contentType(APPLICATION_JSON)
       .body(
-        ListQualityGateReports500Response.builder()
+        ListQualityGateReports400Response.builder()
           .code(NOT_FOUND.getReasonPhrase())
           .message(format("No report by id '%s' exists!", calculationId))
           .build()
