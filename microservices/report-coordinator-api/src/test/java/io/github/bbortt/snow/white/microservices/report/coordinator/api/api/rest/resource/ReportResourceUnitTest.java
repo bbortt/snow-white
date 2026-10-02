@@ -38,7 +38,7 @@ import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.mapper.QualityGateReportMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
-import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports500Response;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports400Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.junit.JUnitReporter;
@@ -302,7 +302,7 @@ class ReportResourceUnitTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(ListQualityGateReports500Response.class))
+              .asInstanceOf(type(ListQualityGateReports400Response.class))
               .satisfies(
                 e ->
                   assertThat(e.getCode()).isEqualTo(
@@ -432,7 +432,7 @@ class ReportResourceUnitTest {
           r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
           r ->
             assertThat(r.getBody())
-              .asInstanceOf(type(ListQualityGateReports500Response.class))
+              .asInstanceOf(type(ListQualityGateReports400Response.class))
               .satisfies(
                 e ->
                   assertThat(e.getCode()).isEqualTo(
