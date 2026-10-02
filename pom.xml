@@ -73,7 +73,7 @@
       under examples/ carry an `apptest` profile of their own (see ARCH-013) and do not inherit
       from that pom - two independent pins would drift the moment one of them is bumped.
     -->
-    <citrus.version>5.0.1</citrus.version>
+    <citrus.version>5.0.2</citrus.version>
     <docker-maven-plugin.version>0.49.0</docker-maven-plugin.version>
     <jackson.version>3.2.3</jackson.version>
     <jackson-v2.version>2.22</jackson-v2.version>
