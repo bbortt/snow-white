@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.res
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.web.SortDefinition;
 import lombok.NoArgsConstructor;
 
@@ -24,6 +26,10 @@ import lombok.NoArgsConstructor;
  * stable numeric code whose order is neither alphabetical nor a severity ranking, so sorting by the
  * column would claim to order by the published string while ordering by an internal code.
  */
+@RealizesSw({
+  SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES,
+  SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT,
+})
 @NoArgsConstructor(access = PRIVATE)
 final class ReportSortDefinition {
 

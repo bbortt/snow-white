@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.commons.web;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import lombok.Getter;
 
 /**
@@ -17,6 +19,7 @@ import lombok.Getter;
  * unpublished property against the entity used to produce.
  */
 @Getter
+@RealizesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
 public class InvalidSortException extends RuntimeException {
 
   private final String sort;

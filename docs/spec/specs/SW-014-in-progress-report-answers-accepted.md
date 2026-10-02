@@ -21,8 +21,11 @@ apply to both the JSON and the JUnit XML representation:
   requested representation, the JUnit XML variant additionally carrying a
   `Content-Disposition: attachment` header with a fixed file name.
 
-Listing reports is a separate, always-`200` surface: it is paginated, filterable by service name,
-API name, and API version, and carries the pagination totals in headers.
+Listing reports is a separate surface: it is paginated, filterable by service name, API name, and
+API version, and carries the pagination totals in headers.
+It answers `200` for every request it can serve, and `400` only when the `sort` parameter names a
+property it cannot order by or does not parse (`SW-038`) — never a status that reflects the state
+of a report.
 
 **Rationale**
 A calculation is asynchronous, so a caller polls.
@@ -57,8 +60,18 @@ a running service.
   contract branches on
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the JUnit document
   returned once the report is complete
+- [SW-038](SW-038-unusable-sort-is-rejected-not-ignored.md) — the only `400` the report
+  listing answers, and why it is about the request rather than the report
+- [SW-037](SW-037-list-order-is-stable-by-default.md) — the order the report listing
+  applies when the caller asks for none
 
 ## Changes
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-10-02** — Amended by `STR-021`: the report listing is no longer described as an
+  always-`200` surface.
+  It gains a single `400`, for a `sort` value it cannot honour (`SW-038`), because silently
+  ignoring one and answering `200` with an arbitrarily ordered page was indistinguishable from an
+  honoured request.
+  The three report-by-id outcomes are unchanged.

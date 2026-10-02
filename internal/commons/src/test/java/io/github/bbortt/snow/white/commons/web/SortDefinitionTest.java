@@ -12,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,6 +37,7 @@ class SortDefinitionTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = { " ", "   " })
+    @VerifiesSw(SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT)
     void shouldReturnTheDefaultOrderWhenNoPreferenceIsExpressed(String sort) {
       assertThat(DEFINITION.toSort(sort)).containsExactly(
         new Sort.Order(DESC, "createdAt"),
@@ -43,6 +46,7 @@ class SortDefinitionTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES)
     void shouldTranslateThePublishedNameToItsEntityAttribute() {
       assertThat(DEFINITION.toSort("initiatedAt,asc")).containsExactly(
         new Sort.Order(ASC, "createdAt"),
@@ -55,6 +59,7 @@ class SortDefinitionTest {
      * not a second spelling of it, and the rejection does not offer it as one.
      */
     @Test
+    @VerifiesSw(SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES)
     void shouldRejectTheEntityNameBehindAPublishedProperty() {
       assertThatExceptionOfType(InvalidSortException.class)
         .isThrownBy(() -> DEFINITION.toSort("createdAt,asc"))
@@ -65,6 +70,7 @@ class SortDefinitionTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "ASC", "Asc", " asc " })
+    @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
     void shouldAcceptADirectionInAnyCaseOrPadding(String direction) {
       assertThat(DEFINITION.toSort("initiatedAt," + direction)).startsWith(
         new Sort.Order(ASC, "createdAt")
@@ -81,6 +87,7 @@ class SortDefinitionTest {
         ",asc",
       }
     )
+    @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
     void shouldRejectASortItCannotHonour(String sort) {
       assertThatExceptionOfType(InvalidSortException.class)
         .isThrownBy(() -> DEFINITION.toSort(sort))
@@ -88,6 +95,7 @@ class SortDefinitionTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
     void shouldNameThePublishedPropertiesAlphabeticallyInTheRejection() {
       assertThatExceptionOfType(InvalidSortException.class)
         .isThrownBy(() -> DEFINITION.toSort("unknown,asc"))
@@ -97,6 +105,7 @@ class SortDefinitionTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT)
     void shouldNotRepeatTheTiebreakerTheRequestedOrderAlreadyCovers() {
       assertThat(DEFINITION.toSort("calculationId,desc")).containsExactly(
         new Sort.Order(DESC, "calculationId")
@@ -104,6 +113,7 @@ class SortDefinitionTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT)
     void shouldAppendEveryTiebreakerProperty() {
       SortDefinition composite = SortDefinition.builder()
         .sortable("serviceName", "otelServiceName")

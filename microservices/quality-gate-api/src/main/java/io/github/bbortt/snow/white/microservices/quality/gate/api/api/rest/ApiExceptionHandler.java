@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.web.InvalidSortException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import org.jspecify.annotations.NullMarked;
@@ -59,6 +61,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
    * names the properties this endpoint accepts — as the {@code message}. Unmapped, this reached the
    * default {@code 500}.
    */
+  @RealizesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
   @ExceptionHandler(InvalidSortException.class)
   @Nullable
   ResponseEntity<Object> handleInvalidSort(

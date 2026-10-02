@@ -18,7 +18,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import io.github.bbortt.snow.white.commons.web.InvalidSortException;
-import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis400Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -62,7 +62,7 @@ class ApiExceptionHandlerUnitTest {
       assertThat(response)
         .isNotNull()
         .extracting(ResponseEntity::getBody)
-        .asInstanceOf(type(GetAllApis500Response.class))
+        .asInstanceOf(type(GetAllApis400Response.class))
         .satisfies(
           e -> assertThat(e.getCode()).isEqualTo("Unsupported Media Type"),
           e ->
@@ -89,8 +89,8 @@ class ApiExceptionHandlerUnitTest {
       assertThat(response)
         .isNotNull()
         .extracting(HttpEntity::getBody)
-        .asInstanceOf(type(GetAllApis500Response.class))
-        .extracting(GetAllApis500Response::getCode)
+        .asInstanceOf(type(GetAllApis400Response.class))
+        .extracting(GetAllApis400Response::getCode)
         .isEqualTo("499");
     }
 
@@ -110,7 +110,7 @@ class ApiExceptionHandlerUnitTest {
       assertThat(response)
         .isNotNull()
         .extracting(HttpEntity::getBody)
-        .isInstanceOf(GetAllApis500Response.class);
+        .isInstanceOf(GetAllApis400Response.class);
     }
 
     @Test
@@ -176,7 +176,7 @@ class ApiExceptionHandlerUnitTest {
         .isNotNull()
         .satisfies(r -> assertThat(r.getStatusCode()).isEqualTo(BAD_REQUEST))
         .extracting(HttpEntity::getBody)
-        .asInstanceOf(type(GetAllApis500Response.class))
+        .asInstanceOf(type(GetAllApis400Response.class))
         .satisfies(
           e -> assertThat(e.getCode()).isEqualTo("Bad Request"),
           e ->

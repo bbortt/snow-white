@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.commons.web;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ public final class PaginationUtils {
    * @throws InvalidSortException if {@code sort} names a property or direction {@code definition}
    *     does not accept, or does not parse at all
    */
+  @RealizesSw(SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT)
   public static Pageable toPageable(
     @Nullable Integer page,
     @Nullable Integer size,
