@@ -10,6 +10,8 @@ import static java.util.Locale.ROOT;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +38,10 @@ import org.springframework.data.domain.Sort;
  * and a caller paging through sees a row twice or not at all.
  */
 @NullMarked
+@RealizesSw({
+  SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES,
+  SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT,
+})
 public final class SortDefinition {
 
   private final Map<String, String> publishedToEntityPath;
@@ -69,6 +75,7 @@ public final class SortDefinition {
    * @throws InvalidSortException if the value does not parse, or names a property or direction this
    *     definition does not accept
    */
+  @RealizesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
   public Sort toSort(@Nullable String sort) {
     if (sort == null || sort.isBlank()) {
       return defaultSort;

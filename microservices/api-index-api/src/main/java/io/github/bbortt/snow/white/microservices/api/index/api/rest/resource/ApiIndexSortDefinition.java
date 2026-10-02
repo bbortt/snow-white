@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.api.index.api.rest.resource;
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.web.SortDefinition;
 import lombok.NoArgsConstructor;
 
@@ -28,6 +30,10 @@ import lombok.NoArgsConstructor;
  * has no parsed form, and a correct version order is a feature of its own rather than a property of
  * this sort contract.
  */
+@RealizesSw({
+  SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES,
+  SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT,
+})
 @NoArgsConstructor(access = PRIVATE)
 final class ApiIndexSortDefinition {
 

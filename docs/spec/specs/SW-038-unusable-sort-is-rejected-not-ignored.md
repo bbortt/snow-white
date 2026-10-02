@@ -7,7 +7,7 @@ A `sort` value a list read cannot honour is rejected with `400`, not ignored and
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A list read answers `400` with the services' `{code, message}` error body when its `sort` value
@@ -64,9 +64,9 @@ the rejection cannot be implemented by rejecting everything that is not a well-f
 
 **Related**
 
-- [SW-TMP-001](SW-TMP-001-list-order-is-stable-by-default.md) — the default order the blank case
+- [SW-037](SW-037-list-order-is-stable-by-default.md) — the default order the blank case
   falls back to
-- [SW-TMP-002](SW-TMP-002-sort-vocabulary-is-the-published-names.md) — the vocabulary whose
+- [SW-036](SW-036-sort-vocabulary-is-the-published-names.md) — the vocabulary whose
   complement this rejects
 - [SW-014](SW-014-in-progress-report-answers-accepted.md) — amended: the report listing is no
   longer an "always-`200`" surface
@@ -74,3 +74,8 @@ the rejection cannot be implemented by rejecting everything that is not a well-f
   `400`
 - [NF-005](NF-005-clear-failure-feedback.md) — the name-the-actual-cause principle the message
   follows
+
+## Changes
+
+- **2026-10-02** — Set active: anchored against `InvalidSortException` and the three
+  `ApiExceptionHandler`s that map it (`STR-021`).

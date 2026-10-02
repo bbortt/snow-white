@@ -6,7 +6,7 @@
 List reads honour their documented sort contract instead of leaking entity names and failing with
 500
 
-**Status**: planned
+**Status**: active
 
 **Business Value**
 Three published list endpoints document a `sort` parameter that does not work.
@@ -140,7 +140,7 @@ by it would order by an internal code while appearing to order by the published 
 - Sorting a quality-gate configuration by `description`.
   It is the only nullable sortable candidate
   across the three reads, and admitting it would force a null-ordering decision whose explicit
-  `NULLS` clause changes the order the existing indexes provide — see `SW-TMP-002`.
+  `NULLS` clause changes the order the existing indexes provide — see `SW-036`.
 - Semantic version ordering for `apiVersion`.
   It sorts as a string, so `1.10.0` precedes `1.9.0`;
   the specs say so rather than the code working around it.
@@ -155,11 +155,11 @@ by it would order by an internal code while appearing to order by the published 
 
 **Realizes**
 
-- [SW-TMP-001](../specs/SW-TMP-001-list-order-is-stable-by-default.md) — the default order and the
+- [SW-037](../specs/SW-037-list-order-is-stable-by-default.md) — the default order and the
   tiebreaker that makes pagination stable
-- [SW-TMP-002](../specs/SW-TMP-002-sort-vocabulary-is-the-published-names.md) — the published
+- [SW-036](../specs/SW-036-sort-vocabulary-is-the-published-names.md) — the published
   property names as the sort vocabulary
-- [SW-TMP-003](../specs/SW-TMP-003-unusable-sort-is-rejected-not-ignored.md) — the `400` that
+- [SW-038](../specs/SW-038-unusable-sort-is-rejected-not-ignored.md) — the `400` that
   replaces the `500` and the silent no-op
 
 **Related**

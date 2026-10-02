@@ -24,7 +24,7 @@ import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.ApiIndexApi;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
-import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis400Response;
 import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.InvalidReleaseWithContentException;
@@ -53,7 +53,7 @@ public class ApiIndexResource implements ApiIndexApi {
       return ResponseEntity.status(CONFLICT).build();
     } catch (InvalidReleaseWithContentException e) {
       return ResponseEntity.status(BAD_REQUEST).body(
-        GetAllApis500Response.builder()
+        GetAllApis400Response.builder()
           .code(BAD_REQUEST.getReasonPhrase())
           .message(e.getMessage())
           .build()
@@ -84,7 +84,7 @@ public class ApiIndexResource implements ApiIndexApi {
     return ResponseEntity.status(NOT_FOUND)
       .contentType(APPLICATION_JSON)
       .body(
-        GetAllApis500Response.builder()
+        GetAllApis400Response.builder()
           .code(NOT_FOUND.getReasonPhrase())
           .message(
             "No API specification exists for the given service name, API name, and version."
@@ -138,7 +138,7 @@ public class ApiIndexResource implements ApiIndexApi {
       return ResponseEntity.status(NOT_FOUND)
         .contentType(APPLICATION_JSON)
         .body(
-          GetAllApis500Response.builder()
+          GetAllApis400Response.builder()
             .code(NOT_FOUND.getReasonPhrase())
             .message(
               "No API specification exists for the given service name, API name, and version."
@@ -169,7 +169,7 @@ public class ApiIndexResource implements ApiIndexApi {
       return ResponseEntity.status(NOT_FOUND)
         .contentType(APPLICATION_JSON)
         .body(
-          GetAllApis500Response.builder()
+          GetAllApis400Response.builder()
             .code(NOT_FOUND.getReasonPhrase())
             .message("The API specification does not exist.")
             .build()
@@ -181,7 +181,7 @@ public class ApiIndexResource implements ApiIndexApi {
       return ResponseEntity.status(NOT_FOUND)
         .contentType(APPLICATION_JSON)
         .body(
-          GetAllApis500Response.builder()
+          GetAllApis400Response.builder()
             .code(NOT_FOUND.getReasonPhrase())
             .message("The API specification is not a prerelease.")
             .build()

@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.web.SortDefinition;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +25,10 @@ import lombok.NoArgsConstructor;
  * sorts. An explicit {@code NULLS} clause changes the order the existing index on {@code name}
  * provides, which is a real cost for ordering gates by prose nobody has asked to sort by.
  */
+@RealizesSw({
+  SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES,
+  SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT,
+})
 @NoArgsConstructor(access = PRIVATE)
 final class QualityGateSortDefinition {
 

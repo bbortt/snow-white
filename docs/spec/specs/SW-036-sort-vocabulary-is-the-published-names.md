@@ -7,7 +7,7 @@ A list read sorts by its published property names, never by the entity attribute
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 The vocabulary of a list read's `sort` parameter is the set of property names that endpoint
@@ -74,7 +74,7 @@ this sort contract.
 admitting it would force this contract to define where a row with no description sorts.
 Answering
 that with an explicit `NULLS` clause changes the order PostgreSQL's existing indexes provide, which
-would cost the index-backed defaults `SW-TMP-001` relies on — a real price for ordering
+would cost the index-backed defaults `SW-037` relies on — a real price for ordering
 quality gates by prose nobody has asked to sort by.
 
 **Verification Description**
@@ -94,9 +94,9 @@ OpenAPI document in the three services mentions `createdAt` or `otelServiceName`
 
 **Related**
 
-- [SW-TMP-001](SW-TMP-001-list-order-is-stable-by-default.md) — the default order and tiebreaker
+- [SW-037](SW-037-list-order-is-stable-by-default.md) — the default order and tiebreaker
   expressed in this same vocabulary
-- [SW-TMP-003](SW-TMP-003-unusable-sort-is-rejected-not-ignored.md) — what happens to a name
+- [SW-038](SW-038-unusable-sort-is-rejected-not-ignored.md) — what happens to a name
   outside this vocabulary
 - [ARCH-006](ARCH-006-report-status-persisted-as-stable-code.md) — the stable numeric code that
   makes `status` unsuitable to sort by
@@ -104,3 +104,8 @@ OpenAPI document in the three services mentions `createdAt` or `otelServiceName`
   contract on the API-index listing
 - [CON-010](CON-010-rest-responses-never-carry-null.md) — the other published-shape rule these
   reads follow
+
+## Changes
+
+- **2026-10-02** — Set active: anchored against the sort definitions the three list reads declare
+  (`STR-021`).

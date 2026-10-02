@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import java.util.List;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -76,6 +78,7 @@ class PaginationUtilsTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_037_LIST_ORDER_IS_STABLE_BY_DEFAULT)
     void shouldNeverReturnAnUnsortedPageable() {
       Pageable pageable = PaginationUtils.toPageable(0, 10, null, DEFINITION);
 
@@ -87,6 +90,7 @@ class PaginationUtilsTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES)
     void shouldResolveSortAgainstTheGivenDefinition() {
       Pageable pageable = PaginationUtils.toPageable(
         0,
@@ -102,6 +106,7 @@ class PaginationUtilsTest {
     }
 
     @Test
+    @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
     void shouldPropagateRejectionOfAnUnusableSort() {
       assertThatExceptionOfType(InvalidSortException.class).isThrownBy(() ->
         PaginationUtils.toPageable(0, 10, "unknown,asc", DEFINITION)

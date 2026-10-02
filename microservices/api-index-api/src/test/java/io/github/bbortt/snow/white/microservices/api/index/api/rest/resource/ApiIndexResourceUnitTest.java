@@ -34,7 +34,7 @@ import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.mapper.ApiReferenceMapper;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
-import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis400Response;
 import io.github.bbortt.snow.white.microservices.api.index.domain.model.ApiReference;
 import io.github.bbortt.snow.white.microservices.api.index.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.api.index.service.exception.ApiAlreadyIndexedException;
@@ -134,12 +134,12 @@ class ApiIndexResourceUnitTest {
       var exception = new InvalidReleaseWithContentException();
       doThrow(exception).when(apiIndexServiceMock).persist(domain);
 
-      ResponseEntity<@NonNull GetAllApis500Response> response =
+      ResponseEntity<@NonNull GetAllApis400Response> response =
         fixture.ingestApi(dto);
 
       assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
       assertThat(response.getBody()).isEqualTo(
-        GetAllApis500Response.builder()
+        GetAllApis400Response.builder()
           .code(BAD_REQUEST.getReasonPhrase())
           .message(exception.getMessage())
           .build()
@@ -191,7 +191,7 @@ class ApiIndexResourceUnitTest {
         r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
         r ->
           assertThat(r.getBody())
-            .asInstanceOf(type(GetAllApis500Response.class))
+            .asInstanceOf(type(GetAllApis400Response.class))
             .satisfies(
               body ->
                 assertThat(body.getCode()).isEqualTo(
@@ -423,7 +423,7 @@ class ApiIndexResourceUnitTest {
         r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
         r ->
           assertThat(r.getBody())
-            .asInstanceOf(type(GetAllApis500Response.class))
+            .asInstanceOf(type(GetAllApis400Response.class))
             .satisfies(
               e ->
                 assertThat(e.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
@@ -456,7 +456,7 @@ class ApiIndexResourceUnitTest {
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
       assertThat(response.getBody())
-        .asInstanceOf(type(GetAllApis500Response.class))
+        .asInstanceOf(type(GetAllApis400Response.class))
         .satisfies(
           body ->
             assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
@@ -486,7 +486,7 @@ class ApiIndexResourceUnitTest {
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
       assertThat(response.getBody())
-        .asInstanceOf(type(GetAllApis500Response.class))
+        .asInstanceOf(type(GetAllApis400Response.class))
         .satisfies(
           body ->
             assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),
@@ -517,7 +517,7 @@ class ApiIndexResourceUnitTest {
 
       assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
       assertThat(response.getBody())
-        .asInstanceOf(type(GetAllApis500Response.class))
+        .asInstanceOf(type(GetAllApis400Response.class))
         .satisfies(
           body ->
             assertThat(body.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase()),

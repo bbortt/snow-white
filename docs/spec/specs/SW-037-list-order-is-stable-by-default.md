@@ -7,7 +7,7 @@ A list read is ordered by default and every order it applies ends in a unique ti
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every paginated list read declares a default order and applies it when the request carries no
@@ -58,11 +58,16 @@ asserts both responses return the same rows in the same order.
 
 **Related**
 
-- [SW-TMP-002](SW-TMP-002-sort-vocabulary-is-the-published-names.md) — the vocabulary a requested
+- [SW-036](SW-036-sort-vocabulary-is-the-published-names.md) — the vocabulary a requested
   order is expressed in, to which the tiebreaker is appended
-- [SW-TMP-003](SW-TMP-003-unusable-sort-is-rejected-not-ignored.md) — why a blank value defaults
+- [SW-038](SW-038-unusable-sort-is-rejected-not-ignored.md) — why a blank value defaults
   rather than being rejected
 - [SW-014](SW-014-in-progress-report-answers-accepted.md) — the report listing this orders
 - [SW-009](SW-009-quality-gate-crud-contract.md) — the quality-gate listing this orders
 - [SW-028](SW-028-list-filters-match-by-case-insensitive-prefix.md) — the filters that narrow the
   API-index listing this orders
+
+## Changes
+
+- **2026-10-02** — Set active: anchored against the sort definitions the three list reads declare
+  (`STR-021`).

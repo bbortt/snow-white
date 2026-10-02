@@ -15,7 +15,8 @@ immutability errors
 
 - **Create** (`POST`) — `201` with a `Location` header on success; `409` if the name already
   exists.
-- **List** (`GET`) — paginated, with total count returned via an `X-Total-Count` header.
+- **List** (`GET`) — paginated, with total count returned via an `X-Total-Count` header; `400` if
+  the `sort` parameter names a property it cannot order by or does not parse (`SW-038`).
 - **Get by name** (`GET /{name}`) — `200`, or `404` if no gate with that name exists.
 - **Update** (`PUT /{name}`) — `200` on success; `404` if the gate does not exist; `400` if the
   target gate is predefined, or if the request references a criterion name that does not exist.
@@ -52,8 +53,18 @@ listed for each combination — matching `QualityGateApiAppTest`'s existing blac
   operation's field-level semantics
 - [CON-005](CON-005-api-created-gates-are-never-predefined.md) — why create can never
   produce a gate this contract's predefined-target rules would apply to
+- [SW-038](SW-038-unusable-sort-is-rejected-not-ignored.md) — the list operation's `400`,
+  the only one this contract does not own itself
+- [SW-037](SW-037-list-order-is-stable-by-default.md) — the order the list operation applies
+  when the caller asks for none
+- [SW-036](SW-036-sort-vocabulary-is-the-published-names.md) — the property names the list
+  operation accepts as a sort
 
 ## Changes
 
 - **2026-09-17** — Set active: anchored against `quality-gate-api`'s existing implementation
   (`STR-009`).
+- **2026-10-02** — Amended by `STR-021`: the list operation gains a `400` for a `sort` value it
+  cannot honour (`SW-038`).
+  Unlike this contract's other `400`s, it is about the request rather than the target gate, so the
+  rule itself lives in `SW-038`; recorded here so the list operation's statuses stay complete.

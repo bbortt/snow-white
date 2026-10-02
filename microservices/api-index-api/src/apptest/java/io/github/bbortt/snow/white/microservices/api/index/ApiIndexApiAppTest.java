@@ -21,7 +21,7 @@ import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis200ResponseInner;
-import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis400Response;
 import java.util.List;
 import org.citrusframework.TestCaseRunner;
 import org.citrusframework.annotations.CitrusResource;
@@ -146,7 +146,7 @@ class ApiIndexApiAppTest {
 
         var error = JsonMapper.shared().readValue(
           payload,
-          GetAllApis500Response.class
+          GetAllApis400Response.class
         );
         assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
         assertThat(error.getMessage()).isNotBlank();
@@ -198,7 +198,7 @@ class ApiIndexApiAppTest {
 
         var error = JsonMapper.shared().readValue(
           payload2,
-          GetAllApis500Response.class
+          GetAllApis400Response.class
         );
         assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
         assertThat(error.getMessage()).isNotBlank();
@@ -332,7 +332,7 @@ class ApiIndexApiAppTest {
 
           var error = JsonMapper.shared().readValue(
             payload,
-            GetAllApis500Response.class
+            GetAllApis400Response.class
           );
           assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
           assertThat(error.getMessage()).contains(
@@ -416,7 +416,7 @@ class ApiIndexApiAppTest {
 
           var error = JsonMapper.shared().readValue(
             payload,
-            GetAllApis500Response.class
+            GetAllApis400Response.class
           );
           assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());
           assertThat(error.getMessage()).contains(
@@ -509,7 +509,7 @@ class ApiIndexApiAppTest {
 
           var error = JsonMapper.shared().readValue(
             payload,
-            GetAllApis500Response.class
+            GetAllApis400Response.class
           );
 
           assertThat(error.getCode()).isEqualTo(NOT_FOUND.getReasonPhrase());

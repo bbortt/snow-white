@@ -8,8 +8,10 @@ package io.github.bbortt.snow.white.microservices.api.index.api.rest;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.web.InvalidSortException;
-import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis500Response;
+import io.github.bbortt.snow.white.microservices.api.index.api.rest.dto.GetAllApis400Response;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,7 +34,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     WebRequest request
   ) {
     var resolved = HttpStatus.resolve(statusCode.value());
-    var error = GetAllApis500Response.builder()
+    var error = GetAllApis400Response.builder()
       .code(
         resolved != null
           ? resolved.getReasonPhrase()
@@ -57,6 +59,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
    * names the properties this endpoint accepts — as the {@code message}. Unmapped, this reached the
    * default {@code 500}.
    */
+  @RealizesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
   @ExceptionHandler(InvalidSortException.class)
   @Nullable
   ResponseEntity<Object> handleInvalidSort(
