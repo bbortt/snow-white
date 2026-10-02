@@ -6,18 +6,18 @@
 
 import chalk from 'chalk';
 
-import type { GetAllApis500Response } from '../../clients/api-index-api';
+import type { GetAllApis400Response } from '../../clients/api-index-api';
 
-const parseResponseFromText = async (error: Error & { response: Response }): Promise<GetAllApis500Response | null> =>
+const parseResponseFromText = async (error: Error & { response: Response }): Promise<GetAllApis400Response | null> =>
   await error.response
     .text()
-    .then(text => (text ? (JSON.parse(text) as GetAllApis500Response) : null))
+    .then(text => (text ? (JSON.parse(text) as GetAllApis400Response) : null))
     .catch(() => null);
 
 export const logResponseError = async (error: Error & { response: Response }): Promise<void> => {
   console.debug(chalk.gray(`\t  Status: ${error.response.status}`));
 
-  const body = (await error.response.json().catch(async () => await parseResponseFromText(error))) as GetAllApis500Response | null;
+  const body = (await error.response.json().catch(async () => await parseResponseFromText(error))) as GetAllApis400Response | null;
 
   if (body) {
     console.error(chalk.red(`\t  Details: ${(body as { message: string }).message}`));
