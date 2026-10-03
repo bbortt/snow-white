@@ -438,6 +438,109 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .andExpect(status().isBadRequest());
   }
 
+  /**
+   * All four shapes that answer a report publish the threshold it was scored against. The report is
+   * pinned at {@code 85} rather than the domain default of {@code 100}, so a read that hardcoded the
+   * default, or dropped the property on one of the two components, fails here instead of passing by
+   * coincidence.
+   * <p>
+   * {@code IN_PROGRESS} is what makes one report reach all four: it answers {@code 202} on both
+   * report endpoints, and the completed {@code 200} shape is asserted by the sibling case below.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void everyReportReadPublishesTheThresholdTheReportWasScoredAgainst()
+    throws Exception {
+    var calculationId = UUID.fromString("5f0d4b1e-2c33-4a7e-9f61-6d0a8c2b4e17");
+
+    persistReportPinnedAt(calculationId, 85, IN_PROGRESS);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(jsonPath("$[0].minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The findings-carrying {@code 200} publishes the same pinned threshold as the narrow shapes. It
+   * is a forked component, so a property added to the shared one alone would vanish from exactly
+   * this read with a green build.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void theCompletedReportReadPublishesTheSamePinnedThreshold()
+    throws Exception {
+    var calculationId = UUID.fromString("9c1e7a46-8b52-4d0f-ae33-1b7c05d9e284");
+
+    persistReportPinnedAt(calculationId, 85, PASSED);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The read answers the number pinned on the report, not one the gate currently carries. The column
+   * is non-updatable, so an attempt to move the report's threshold after the fact - which is what a
+   * later edit to the gate would have to do to change this read - leaves the pinned value standing.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void theReadAnswersThePinnedThresholdAfterAnAttemptToMoveIt()
+    throws Exception {
+    var calculationId = UUID.fromString("2a6f9d08-4e71-4c5b-b3a2-7e8d1f046c93");
+
+    persistReportPinnedAt(calculationId, 85, PASSED);
+
+    qualityGateReportRepository.saveAndFlush(
+      qualityGateReportRepository
+        .findById(calculationId)
+        .orElseThrow()
+        .withMinCoveragePercentage(95)
+    );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+  }
+
+  /** One report pinned at a given threshold, with the one API test every read shape walks. */
+  private QualityGateReport persistReportPinnedAt(
+    UUID calculationId,
+    Integer minCoveragePercentage,
+    ReportStatus reportStatus
+  ) {
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .minCoveragePercentage(minCoveragePercentage)
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId).build()
+        )
+        .reportStatus(reportStatus.getVal())
+        .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
+        .build()
+    );
+
+    createSimpleApiTestSet(qualityGateReport);
+
+    return qualityGateReport;
+  }
+
   @Test
   void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
     throws Exception {

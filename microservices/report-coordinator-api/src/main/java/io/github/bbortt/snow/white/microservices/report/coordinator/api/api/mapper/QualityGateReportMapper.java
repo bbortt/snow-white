@@ -23,6 +23,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+/**
+ * Every read shape is projected here, which is what lets {@code minCoveragePercentage} reach all
+ * four of them at once: the three methods below cover the paginated list read, the single-report
+ * {@code 200}, the calculation trigger's {@code 202} and - through {@link #toListDto(QualityGateReport)},
+ * which both report endpoints answer a running report with - the two polls.
+ * <p>
+ * The property is mapped by name off the report entity, so no {@code @Mapping} is written for it.
+ * That is not left to trust: the module compiles with
+ * {@code -Amapstruct.unmappedTargetPolicy=ERROR}, so a name that stopped matching fails the build
+ * rather than silently serving a null threshold.
+ */
 @Mapper(
   componentModel = SPRING,
   uses = {
@@ -31,6 +42,7 @@ import org.mapstruct.Named;
     ReportStatusMapper.class,
   }
 )
+@RealizesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
 public interface QualityGateReportMapper {
   @Mapping(
     target = "calculationRequest",
