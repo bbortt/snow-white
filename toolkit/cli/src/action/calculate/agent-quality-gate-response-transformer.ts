@@ -58,6 +58,13 @@ export class AgenticQualityGateResponseTransformer {
    * gate excluded is never a failure whatever its coverage, and one that clears the bar without
    * reaching full coverage is not one either — the export passes it and explains the gap in
    * `system-out`.
+   *
+   * The predicate is written as "does not reach the bar" rather than "is below" so that it fails
+   * closed. Both numbers are `required` in the API, but the generated client assigns the JSON
+   * through unvalidated, so a server that omits one — an older deployment, a proxy that rewrites
+   * the body — would make the comparison `NaN`. `coverage < NaN` is false, which would report a
+   * failing gate as clean; `!(coverage >= NaN)` is true, which reports it as failing. A wrong
+   * answer that is visible beats one that looks like a pass.
    */
   private transformInterface(
     api: ListQualityGateReports200ResponseInnerInterfacesInner,

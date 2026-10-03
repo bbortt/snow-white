@@ -173,6 +173,23 @@ describe('AgenticQualityGateResponseTransformer', () => {
     expect(result.interfaces[0].qualityGateFailures.map(failure => failure.id)).toEqual(['nine-tenths']);
   });
 
+  /**
+   * `minCoveragePercentage` is `required`, but the generated client assigns the JSON through without
+   * validating it, so a server that omits it would leave the comparison against `NaN`. Reporting the
+   * criterion as a failure is wrong and visible; reporting a failing gate as clean would not be.
+   */
+  it('should not clear an included criterion when the response omits the threshold entirely', () => {
+    const result = transformer.transform(
+      response({
+        interfaces: [apiInterface({ testResults: [testResult({ coverage: 0.5, id: 'unmeasurable', isIncludedInQualityGate: true })] })],
+        minCoveragePercentage: undefined as unknown as number,
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures.map(failure => failure.id)).toEqual(['unmeasurable']);
+    expect(result.summary.qualityGateFailureCount).toBe(1);
+  });
+
   it('should count APIs with a FAILED status in the summary', () => {
     const result = transformer.transform(
       response({
