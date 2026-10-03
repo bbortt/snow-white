@@ -190,6 +190,23 @@ describe('AgenticQualityGateResponseTransformer', () => {
     expect(result.summary.qualityGateFailureCount).toBe(1);
   });
 
+  /**
+   * A `null` threshold is the other way the field arrives unusable, and it is the dangerous one: it
+   * divides to `0` rather than `NaN`, so every coverage clears it and the report would come back
+   * clean. The gate constrains the percentage to `[80, 100]`, so zero is never a bar to score against.
+   */
+  it('should not clear an included criterion when the response sends a null threshold', () => {
+    const result = transformer.transform(
+      response({
+        interfaces: [apiInterface({ testResults: [testResult({ coverage: 0.5, id: 'unmeasurable', isIncludedInQualityGate: true })] })],
+        minCoveragePercentage: null as unknown as number,
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures.map(failure => failure.id)).toEqual(['unmeasurable']);
+    expect(result.summary.qualityGateFailureCount).toBe(1);
+  });
+
   it('should count APIs with a FAILED status in the summary', () => {
     const result = transformer.transform(
       response({
