@@ -49,8 +49,25 @@ export class AgenticQualityGateResponseTransformer {
     return `${this.apiBaseUrl}/api/rest/v1/reports/${calculationId}`;
   }
 
-  private transformInterface(api: ListQualityGateReports200ResponseInnerInterfacesInner): AgenticQualityGateInterface {
-    const qualityGateFailures = (api.testResults ?? []).filter(testResult => testResult.isIncludedInQualityGate);
+  /**
+   * A criterion fails when the gate included it and its coverage is below the bar the report was
+   * scored against — the same comparison the JUnit export applies, so the failure set here names the
+   * criteria that export emits as `<failure>` elements.
+   *
+   * The bar arrives as a percentage and `coverage` is a ratio, hence the division. A criterion the
+   * gate excluded is never a failure whatever its coverage, and one that clears the bar without
+   * reaching full coverage is not one either — the export passes it and explains the gap in
+   * `system-out`.
+   */
+  private transformInterface(
+    api: ListQualityGateReports200ResponseInnerInterfacesInner,
+    minCoveragePercentage: number,
+  ): AgenticQualityGateInterface {
+    const threshold = minCoveragePercentage / 100;
+
+    const qualityGateFailures = (api.testResults ?? []).filter(
+      testResult => testResult.isIncludedInQualityGate && testResult.coverage < threshold,
+    );
 
     return {
       apiName: api.apiName,
@@ -64,7 +81,7 @@ export class AgenticQualityGateResponseTransformer {
   }
 
   transform(response: ListQualityGateReports200ResponseInner): AgenticQualityGateResponse {
-    const interfaces = (response.interfaces ?? []).map(api => this.transformInterface(api));
+    const interfaces = (response.interfaces ?? []).map(api => this.transformInterface(api, response.minCoveragePercentage));
 
     const qualityGateFailureCount = interfaces.reduce((count, api) => count + api.qualityGateFailures.length, 0);
 

@@ -43,6 +43,9 @@ const response = (overrides: Partial<ListQualityGateReports200ResponseInner> = {
   calculationId: 'calc-123',
   calculationRequest: {} as ListQualityGateReports200ResponseInner['calculationRequest'],
   initiatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  // The bar the report was scored against. 80 rather than the domain default of 100, so a case that
+  // relies on the threshold cannot pass by coincidence against a hardcoded 100.
+  minCoveragePercentage: 80,
   qualityGateConfigName: 'test-gate',
   status: ListQualityGateReports200ResponseInnerStatusEnum.Passed,
   ...overrides,
@@ -94,19 +97,80 @@ describe('AgenticQualityGateResponseTransformer', () => {
     ]);
   });
 
-  it('should only include test results marked as included in the quality gate as failures', () => {
-    const included = testResult({ id: 'included', isIncludedInQualityGate: true });
-    const excluded = testResult({ id: 'excluded', isIncludedInQualityGate: false });
-    const unspecified = testResult({ id: 'unspecified' });
+  it('should report an included test result below the pinned threshold as a failure', () => {
+    const belowTheBar = testResult({ coverage: 0.5, id: 'below', isIncludedInQualityGate: true });
+    const atTheBar = testResult({ coverage: 0.8, id: 'at-the-bar', isIncludedInQualityGate: true });
 
     const result = transformer.transform(
       response({
-        interfaces: [apiInterface({ testResults: [included, excluded, unspecified] })],
+        interfaces: [apiInterface({ testResults: [belowTheBar, atTheBar] })],
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures).toEqual([belowTheBar]);
+    expect(result.summary.qualityGateFailureCount).toBe(1);
+  });
+
+  it('should never report a test result the quality gate excluded, whatever its coverage', () => {
+    const excluded = testResult({ coverage: 0, id: 'excluded', isIncludedInQualityGate: false });
+    const unspecified = testResult({ coverage: 0, id: 'unspecified' });
+    const included = testResult({ coverage: 0, id: 'included', isIncludedInQualityGate: true });
+
+    const result = transformer.transform(
+      response({
+        interfaces: [apiInterface({ testResults: [excluded, unspecified, included] })],
       }),
     );
 
     expect(result.interfaces[0].qualityGateFailures).toEqual([included]);
-    expect(result.interfaces[0].testResults).toEqual([included, excluded, unspecified]);
+    expect(result.interfaces[0].testResults).toEqual([excluded, unspecified, included]);
+  });
+
+  /**
+   * The case the previous rule got wrong: the JUnit export passes this criterion and explains the gap
+   * in `system-out`, so the agentic failure set must not name it.
+   */
+  it('should not report a test result that clears the threshold without reaching full coverage', () => {
+    const inTheBand = testResult({ coverage: 0.9, id: 'in-the-band', isIncludedInQualityGate: true });
+
+    const result = transformer.transform(
+      response({
+        interfaces: [apiInterface({ testResults: [inTheBand] })],
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures).toEqual([]);
+    expect(result.interfaces[0].testResults).toEqual([inTheBand]);
+    expect(result.summary.qualityGateFailureCount).toBe(0);
+  });
+
+  it('should emit no failures for a report whose every included criterion clears the bar', () => {
+    const result = transformer.transform(
+      response({
+        interfaces: [
+          apiInterface({
+            testResults: [
+              testResult({ coverage: 1, id: 'full', isIncludedInQualityGate: true }),
+              testResult({ coverage: 0.8, id: 'exactly-at-the-bar', isIncludedInQualityGate: true }),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures).toEqual([]);
+    expect(result.summary.qualityGateFailureCount).toBe(0);
+  });
+
+  it('should apply the threshold the report was scored against rather than full coverage', () => {
+    const result = transformer.transform(
+      response({
+        interfaces: [apiInterface({ testResults: [testResult({ coverage: 0.9, id: 'nine-tenths', isIncludedInQualityGate: true })] })],
+        minCoveragePercentage: 95,
+      }),
+    );
+
+    expect(result.interfaces[0].qualityGateFailures.map(failure => failure.id)).toEqual(['nine-tenths']);
   });
 
   it('should count APIs with a FAILED status in the summary', () => {
@@ -129,21 +193,27 @@ describe('AgenticQualityGateResponseTransformer', () => {
           apiInterface({
             apiName: 'api-one',
             testResults: [
-              testResult({ id: 'one-a', isIncludedInQualityGate: true }),
-              testResult({ id: 'one-b', isIncludedInQualityGate: false }),
+              // Below the bar and included: a failure.
+              testResult({ coverage: 0.5, id: 'one-a', isIncludedInQualityGate: true }),
+              // Below the bar but excluded: not one.
+              testResult({ coverage: 0.5, id: 'one-b', isIncludedInQualityGate: false }),
             ],
           }),
           apiInterface({
             apiName: 'api-two',
             testResults: [
-              testResult({ id: 'two-a', isIncludedInQualityGate: true }),
-              testResult({ id: 'two-b', isIncludedInQualityGate: true }),
+              testResult({ coverage: 0, id: 'two-a', isIncludedInQualityGate: true }),
+              testResult({ coverage: 0.79, id: 'two-b', isIncludedInQualityGate: true }),
+              // Clears the bar, so it does not count.
+              testResult({ coverage: 1, id: 'two-c', isIncludedInQualityGate: true }),
             ],
           }),
         ],
       }),
     );
 
+    expect(result.interfaces[0].qualityGateFailures.map(failure => failure.id)).toEqual(['one-a']);
+    expect(result.interfaces[1].qualityGateFailures.map(failure => failure.id)).toEqual(['two-a', 'two-b']);
     expect(result.summary.qualityGateFailureCount).toBe(3);
   });
 });
