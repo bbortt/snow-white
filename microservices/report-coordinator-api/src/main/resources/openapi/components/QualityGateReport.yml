@@ -2,6 +2,7 @@ type: object
 required:
   - calculationId
   - qualityGateConfigName
+  - minCoveragePercentage
   - status
   - calculationRequest
   - initiatedAt
@@ -15,6 +16,15 @@ properties:
     description: 'The name of the Quality-Gate'
     minLength: 1
     maxLength: 64
+  minCoveragePercentage:
+    type: integer
+    description: >-
+      The coverage threshold this report was scored against, pinned from the Quality-Gate when the
+      calculation was triggered. A later edit to that Quality-Gate does not change it. A criterion
+      result passes when its coverage reaches this percentage, expressed as a ratio.
+    minimum: 80
+    maximum: 100
+    example: 100
   status:
     type: string
     enum: [IN_PROGRESS, FAILED, PASSED, FINISHED_EXCEPTIONALLY, TIMED_OUT]
