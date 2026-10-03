@@ -59,21 +59,24 @@ export class AgenticQualityGateResponseTransformer {
    * reaching full coverage is not one either — the export passes it and explains the gap in
    * `system-out`.
    *
-   * The predicate is written as "does not reach the bar" rather than "is below" so that it fails
-   * closed. Both numbers are `required` in the API, but the generated client assigns the JSON
-   * through unvalidated, so a server that omits one — an older deployment, a proxy that rewrites
-   * the body — would make the comparison `NaN`. `coverage < NaN` is false, which would report a
-   * failing gate as clean; `!(coverage >= NaN)` is true, which reports it as failing. A wrong
-   * answer that is visible beats one that looks like a pass.
+   * The predicate asks whether a criterion *clears* the bar and negates that, rather than asking
+   * whether it is below the bar, so that it fails closed. Both numbers are `required` in the API,
+   * but the generated client assigns the JSON through unvalidated, so a server that omits one — an
+   * older deployment, a proxy that rewrites the body — would leave the comparison against `NaN`.
+   * Every comparison against `NaN` is false: asked the first way the criterion does not clear the
+   * bar and is reported as failing, asked the second way it is not below the bar and a failing gate
+   * is reported as clean. A wrong answer that is visible beats one that looks like a pass. The two
+   * forms are therefore not interchangeable, however much they look it.
    */
   private transformInterface(
     api: ListQualityGateReports200ResponseInnerInterfacesInner,
     minCoveragePercentage: number,
   ): AgenticQualityGateInterface {
     const threshold = minCoveragePercentage / 100;
+    const clearsThreshold = (coverage: number) => coverage >= threshold;
 
     const qualityGateFailures = (api.testResults ?? []).filter(
-      testResult => testResult.isIncludedInQualityGate && testResult.coverage < threshold,
+      testResult => testResult.isIncludedInQualityGate && !clearsThreshold(testResult.coverage),
     );
 
     return {
