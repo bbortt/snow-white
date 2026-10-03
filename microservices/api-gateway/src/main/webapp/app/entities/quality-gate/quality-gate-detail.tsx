@@ -128,11 +128,12 @@ export const QualityGateDetail = () => {
         </div>
         {serviceGroups.length > 0
           ? serviceGroups.map((serviceGroup: ServiceGroup) => (
+              /* `minCoveragePercentage` is the bar the report was scored against, not the gate's current one. */
               <ApiTestServiceGroup
                 serviceName={serviceGroup.serviceName}
                 apiTests={serviceGroup.apiTests}
                 showOnlyIncluded={showOnlyIncluded}
-                minCoveragePercentage={qualityGateEntity.qualityGateConfig?.minCoveragePercentage}
+                minCoveragePercentage={qualityGateEntity.minCoveragePercentage}
                 qualityGateTimedOut={qualityGateEntity.status === ReportStatus.TIMED_OUT}
                 key={`api-test-service-${serviceGroup.serviceName}`}
               />

@@ -148,6 +148,9 @@ describe('Quality-Gate reducer tests', () => {
       data: {
         calculationId: '7769ae2f-cc7e-448d-ab07-0b4dc075744d',
         qualityGateConfigName: 'unit test',
+        // The bar this report was scored against. Deliberately not the 80 the gate now carries, so a
+        // read that falls back to the gate's current value is visible rather than coincidentally right.
+        minCoveragePercentage: 85,
         status: 'IN_PROGRESS',
         calculationRequest: {
           includeApis: [
@@ -193,6 +196,7 @@ describe('Quality-Gate reducer tests', () => {
     const expectedObject: IQualityGate = {
       calculationId: '7769ae2f-cc7e-448d-ab07-0b4dc075744d',
       qualityGateConfig: { name: 'unit test' },
+      minCoveragePercentage: 85,
       apiTests: [
         {
           serviceName: 'test service',
@@ -420,6 +424,29 @@ describe('Quality-Gate reducer tests', () => {
       await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
 
       expect(qualityGateApi.getQualityGateByName).not.toHaveBeenCalled();
+    });
+
+    it('keeps the threshold the report was scored against alongside the gate it names', async () => {
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.minCoveragePercentage).toBe(85);
+      expect(fulfilledAction.payload.data.qualityGateConfig.minCoveragePercentage).toBe(80);
+    });
+
+    it('still resolves the report when the quality-gate it was scored against has been deleted', async () => {
+      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>)
+        .mockReset()
+        .mockRejectedValueOnce(Object.assign(new Error('Request failed with status code 404'), { response: { status: 404 } }));
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      expect(store.getActions().map(action => action.type)).toEqual([getEntity.pending.type, getEntity.fulfilled.type]);
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.minCoveragePercentage).toBe(85);
+      expect(fulfilledAction.payload.data.qualityGateConfig).toEqual({ name: 'unit test' });
+      expect(fulfilledAction.payload.data.apiTests[0].testResults[0].id).toBe('test_openapi_criterion');
     });
   });
 });
