@@ -35,3 +35,15 @@ content matches what the web UI renders for the same analysis.
 
 - [SYS-009](SYS-009-machine-consumable-gate-result.md) — the gate-level subset of this
   consumption
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — the threshold both the programmatic
+  and the visual consumer need, served from the report itself
+
+## Changes
+
+- **2026-10-03** — Records `SW-039` (`STR-022`).
+  Both audiences this spec serves were reading the same report and disagreeing about the bar it was
+  scored against: the programmatic consumer substituted inclusion for failure, and the web UI
+  fetched the live gate — which also made a historical report's detail view fail to load once its
+  gate was deleted.
+  Serving the pinned number on the report read is what lets the two forms match, which is the
+  property this spec's verification already asserts.

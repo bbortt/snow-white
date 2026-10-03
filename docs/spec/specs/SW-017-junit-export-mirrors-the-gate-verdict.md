@@ -86,6 +86,8 @@ and the aggregated counts, durations and name-stable ordering.
   withholds this document while the report is running
 - [CON-001](CON-001-deterministic-analysis-results.md) — the determinism the fixed ordering
   extends to the serialised form
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — the JSON reads that now publish the
+  same pinned number this document carries as a suite property
 
 ## Changes
 
@@ -97,3 +99,9 @@ and the aggregated counts, durations and name-stable ordering.
   rather than a failure.
   The threshold is pinned onto the report at creation time and published as a property on the
   `testsuites` root.
+- **2026-10-03** — Records `SW-039` (`STR-022`) as the JSON counterpart of the suite property this
+  export already publishes.
+  Nothing about the document changes.
+  Until now this artifact was the only surface that stated the bar, which is why it could say
+  "failure" while the JSON reads could not — a consumer can now reproduce this `<failure>` set from
+  a report read, and the two surfaces answer from one source rather than two.

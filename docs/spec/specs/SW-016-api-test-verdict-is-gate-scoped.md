@@ -69,6 +69,8 @@ leaves the API test unchanged.
   per-API-test verdicts roll up
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the export that
   renders the same results under this same threshold
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — publishes the pinned threshold this
+  rule applies, so a consumer can reach the same verdict
 
 ## Changes
 
@@ -77,3 +79,8 @@ leaves the API test unchanged.
 - **2026-09-18** — The threshold is now read from the report, which pins it at trigger time,
   rather than from the live gate on every arriving response.
   Unchanged for a gate nobody edits mid-calculation, which is every gate in practice.
+- **2026-10-03** — Records `SW-039` (`STR-022`) as the read that publishes the pinned threshold.
+  The rule here is unchanged and is deliberately not restated there: both consumers that had to
+  reach this verdict — the CLI's agentic summary and the webapp's coverage bar — were inventing a
+  substitute because the number was pinned on the report and served nowhere, so making it
+  computable was a publishing gap rather than a defect in this comparison.

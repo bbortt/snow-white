@@ -34,3 +34,15 @@ against a passing gate, it asserts a zero exit code.
 
 - [SYS-008](SYS-008-quality-gate-definitions.md) — what is being evaluated
 - [SYS-012](SYS-012-result-consumption.md) — the broader set of ways a result is consumed
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — the published threshold that makes
+  the per-criterion detail here act-upon-able rather than merely present
+
+## Changes
+
+- **2026-10-03** — Records `SW-039` (`STR-022`) as what makes the "per-criterion detail" this
+  capability promises actually machine-actionable.
+  The detail was being served without the bar it is judged against, so the one consumer built on it
+  — `calculate --agentic` — reported every included criterion as a failure, including on a gate
+  that passed.
+  The pass/fail outcome and the exit-code contract this spec verifies are unchanged; the defect was
+  always in the detail, never in the verdict.
