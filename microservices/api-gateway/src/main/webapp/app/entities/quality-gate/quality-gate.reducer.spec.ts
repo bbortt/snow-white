@@ -31,6 +31,10 @@ jest.mock('app/entities/quality-gate/report-api', () => ({
   },
 }));
 
+/** Shaped so `isAxiosError` recognises it, which is how the thunk tells a missing gate from a fault. */
+const axiosErrorWithStatus = (status: number) =>
+  Object.assign(new Error(`Request failed with status code ${status}`), { isAxiosError: true, response: { status } });
+
 describe('Quality-Gate reducer tests', () => {
   function isEmpty(element): boolean {
     if (element instanceof Array) {
@@ -435,9 +439,7 @@ describe('Quality-Gate reducer tests', () => {
     });
 
     it('still resolves the report when the quality-gate it was scored against has been deleted', async () => {
-      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>)
-        .mockReset()
-        .mockRejectedValueOnce(Object.assign(new Error('Request failed with status code 404'), { response: { status: 404 } }));
+      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>).mockReset().mockRejectedValueOnce(axiosErrorWithStatus(404));
 
       await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
 
@@ -447,6 +449,14 @@ describe('Quality-Gate reducer tests', () => {
       expect(fulfilledAction.payload.data.minCoveragePercentage).toBe(85);
       expect(fulfilledAction.payload.data.qualityGateConfig).toEqual({ name: 'unit test' });
       expect(fulfilledAction.payload.data.apiTests[0].testResults[0].id).toBe('test_openapi_criterion');
+    });
+
+    it('still rejects when the quality-gate read fails for any reason other than a missing gate', async () => {
+      (qualityGateApi.getQualityGateByName as jest.MockedFn<any>).mockReset().mockRejectedValueOnce(axiosErrorWithStatus(500));
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      expect(store.getActions().map(action => action.type)).toEqual([getEntity.pending.type, getEntity.rejected.type]);
     });
   });
 });

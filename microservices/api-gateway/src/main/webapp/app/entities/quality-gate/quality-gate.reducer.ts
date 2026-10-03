@@ -16,6 +16,7 @@ import { FindingStatus } from 'app/shared/model/enumerations/finding-status.mode
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
 import { defaultValue } from 'app/shared/model/quality-gate.model';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
+import { isAxiosError } from 'axios';
 
 const initialState: EntityState<IQualityGate> = {
   loading: false,
@@ -85,9 +86,13 @@ export const getEntities = createAsyncThunk(
  * The report is the authority on the threshold it was scored against; the gate is read only for its
  * current definition — name, description and criteria set — which is not pinned anywhere.
  *
- * That read is therefore allowed to fail. A gate deleted or renamed after a calculation leaves the
- * report intact, so losing the gate must cost the detail view its gate description, not the whole
+ * That read is therefore allowed to come up empty. A gate deleted or renamed after a calculation
+ * leaves the report intact, so a `404` must cost the detail view its gate description, not the whole
  * page: the thunk keeps the report it already has rather than rejecting.
+ *
+ * Only a `404`. Anything else — unreachable, unauthorized, a server error — still rejects, because a
+ * view that quietly drops half its content on every backend fault is indistinguishable from one
+ * showing a gate that really is gone.
  */
 export const getEntity = createAsyncThunk(
   'qualityGate/fetch_entity',
@@ -105,9 +110,12 @@ export const getEntity = createAsyncThunk(
           minCoveragePercentage: configResponse.data.minCoveragePercentage,
           openApiCoverageCriteria: configResponse.data.openApiCoverageCriteria?.map(name => ({ name })),
         };
-      } catch {
-        // The gate is gone or unreachable. The report still carries its name and its pinned
-        // threshold, which is everything the coverage bars need.
+      } catch (error) {
+        if (!isAxiosError(error) || error.response?.status !== 404) {
+          throw error;
+        }
+        // The gate is gone. The report still carries its name and its pinned threshold, which is
+        // everything the coverage bars need.
       }
     }
 
