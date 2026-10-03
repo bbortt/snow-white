@@ -7,7 +7,7 @@ A report publishes the threshold it was scored against, pinned, on every read
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every read that answers a quality-gate report carries `minCoveragePercentage`: the paginated list
@@ -93,3 +93,7 @@ comparison to the published pair reproduces the `<failure>` set of the same repo
   value is never null, so it is never omitted
 - [ARCH-006](ARCH-006-report-status-persisted-as-stable-code.md) — the sibling storage-versus-read
   divergence this property deliberately does not need
+
+## Changes
+
+- **2026-10-03** — Set active: implementation of `STR-022` began.

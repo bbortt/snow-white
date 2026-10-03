@@ -52,9 +52,12 @@ A `testcase` with a `<failure>` child means that criterion was not met.
 The `testsuite`'s `tests` attribute is the total number of criteria evaluated for that API.
 
 `--agentic`'s JSON output carries the same information in a different shape: each entry in
-`interfaces` is one API (equivalent to a `testsuite`), `qualityGateFailures` lists the failing
-criteria for it (equivalent to `testcase` elements with a `<failure>`), and `testResults` lists
-every evaluated criterion (equivalent to the full set of `testcase` elements).
+`interfaces` is one API (equivalent to a `testsuite`), `qualityGateFailures` lists the criteria the
+quality gate included whose coverage is below the report's pinned `minCoveragePercentage`
+(equivalent to `testcase` elements with a `<failure>`), and `testResults` lists every evaluated
+criterion (equivalent to the full set of `testcase` elements).
+A criterion that clears that bar without reaching full coverage is not in the failure set, in either
+artifact: the JUnit export passes it and explains the gap in `system-out`.
 An `interfaces[].status` other than `"PASSED"` with an empty `testResults` is the JSON equivalent
 of a JUnit `testsuite` with `tests="0"` — see Step 2.
 

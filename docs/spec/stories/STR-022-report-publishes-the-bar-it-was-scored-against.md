@@ -5,7 +5,7 @@
 **Title**
 The report publishes the bar it was scored against, so its consumers stop inventing one
 
-**Status**: planned
+**Status**: active
 
 **Business Value**
 `snow-white calculate --agentic` exists to tell a coding agent what to fix.
