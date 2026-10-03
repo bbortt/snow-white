@@ -62,18 +62,23 @@ export class AgenticQualityGateResponseTransformer {
    * The predicate asks whether a criterion *clears* the bar and negates that, rather than asking
    * whether it is below the bar, so that it fails closed. Both numbers are `required` in the API,
    * but the generated client assigns the JSON through unvalidated, so a server that omits one — an
-   * older deployment, a proxy that rewrites the body — would leave the comparison against `NaN`.
-   * Every comparison against `NaN` is false: asked the first way the criterion does not clear the
-   * bar and is reported as failing, asked the second way it is not below the bar and a failing gate
-   * is reported as clean. A wrong answer that is visible beats one that looks like a pass. The two
-   * forms are therefore not interchangeable, however much they look it.
+   * older deployment, a proxy that rewrites the body — would leave the comparison against a bar that
+   * does not exist. Asked the first way the criterion does not clear that bar and is reported as
+   * failing; asked the second way it is not below it and a failing gate is reported as clean. A wrong
+   * answer that is visible beats one that looks like a pass, so the two forms are not interchangeable
+   * however much they look it.
+   *
+   * `threshold > 0` is what makes the bar count as existing, and it has to be asked explicitly: an
+   * absent percentage divides to `NaN`, which every comparison rejects, but a `null` one divides to
+   * `0`, which every coverage clears. The gate constrains the percentage to `[80, 100]`, so neither
+   * is a bar any report was scored against.
    */
   private transformInterface(
     api: ListQualityGateReports200ResponseInnerInterfacesInner,
     minCoveragePercentage: number,
   ): AgenticQualityGateInterface {
     const threshold = minCoveragePercentage / 100;
-    const clearsThreshold = (coverage: number) => coverage >= threshold;
+    const clearsThreshold = (coverage: number) => threshold > 0 && coverage >= threshold;
 
     const qualityGateFailures = (api.testResults ?? []).filter(
       testResult => testResult.isIncludedInQualityGate && !clearsThreshold(testResult.coverage),
