@@ -30,6 +30,7 @@ const initialState: EntityState<IQualityGate> = {
 const fromDto = ({
   calculationId,
   qualityGateConfigName,
+  minCoveragePercentage,
   status,
   calculationRequest,
   interfaces,
@@ -37,6 +38,7 @@ const fromDto = ({
 }: GetReportByCalculationId200Response): IQualityGate => ({
   calculationId,
   qualityGateConfig: { name: qualityGateConfigName },
+  minCoveragePercentage,
   apiTests: interfaces?.map(apiTest => ({
     serviceName: apiTest.serviceName,
     apiName: apiTest.apiName,
@@ -79,6 +81,14 @@ export const getEntities = createAsyncThunk(
   { serializeError: serializeAxiosError },
 );
 
+/**
+ * The report is the authority on the threshold it was scored against; the gate is read only for its
+ * current definition — name, description and criteria set — which is not pinned anywhere.
+ *
+ * That read is therefore allowed to fail. A gate deleted or renamed after a calculation leaves the
+ * report intact, so losing the gate must cost the detail view its gate description, not the whole
+ * page: the thunk keeps the report it already has rather than rejecting.
+ */
 export const getEntity = createAsyncThunk(
   'qualityGate/fetch_entity',
   async (calculationId: string): Promise<AxiosResponse<IQualityGate>> => {
@@ -86,14 +96,19 @@ export const getEntity = createAsyncThunk(
     const qualityGate = fromDto(reportResponse.data);
 
     if (qualityGate.qualityGateConfig?.name) {
-      const configResponse = await qualityGateApi.getQualityGateByName(qualityGate.qualityGateConfig.name);
-      qualityGate.qualityGateConfig = {
-        name: configResponse.data.name,
-        description: configResponse.data.description,
-        isPredefined: configResponse.data.isPredefined,
-        minCoveragePercentage: configResponse.data.minCoveragePercentage,
-        openApiCoverageCriteria: configResponse.data.openApiCoverageCriteria?.map(name => ({ name })),
-      };
+      try {
+        const configResponse = await qualityGateApi.getQualityGateByName(qualityGate.qualityGateConfig.name);
+        qualityGate.qualityGateConfig = {
+          name: configResponse.data.name,
+          description: configResponse.data.description,
+          isPredefined: configResponse.data.isPredefined,
+          minCoveragePercentage: configResponse.data.minCoveragePercentage,
+          openApiCoverageCriteria: configResponse.data.openApiCoverageCriteria?.map(name => ({ name })),
+        };
+      } catch {
+        // The gate is gone or unreachable. The report still carries its name and its pinned
+        // threshold, which is everything the coverage bars need.
+      }
     }
 
     return { ...reportResponse, data: qualityGate };

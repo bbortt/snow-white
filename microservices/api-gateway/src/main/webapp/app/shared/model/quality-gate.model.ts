@@ -13,6 +13,12 @@ import { IApiTest } from 'app/shared/model/api-test.model';
 export interface IQualityGate {
   calculationId?: string;
   qualityGateConfig?: IQualityGateConfig;
+  /**
+   * The threshold this report was scored against, pinned when the calculation was triggered. It is
+   * the report's own value, not `qualityGateConfig.minCoveragePercentage` — the latter is the gate's
+   * current definition, which a later edit moves and a deletion removes entirely.
+   */
+  minCoveragePercentage?: number;
   apiTests?: IApiTest[];
   status?: ReportStatus;
   createdAt?: string;

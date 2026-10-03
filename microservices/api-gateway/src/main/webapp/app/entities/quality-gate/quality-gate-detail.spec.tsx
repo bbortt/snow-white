@@ -29,7 +29,13 @@ jest.mock('app/entities/quality-gate/quality-gate-summary', () => ({
 }));
 
 jest.mock('app/entities/quality-gate/api-test-service-group', () => ({
-  ApiTestServiceGroup: ({ serviceName }: { serviceName: string }) => <div data-testid="api-test-service-group">{serviceName}</div>,
+  // The threshold is surfaced as an attribute rather than as text, so the group's content stays the
+  // service name the grouping tests read.
+  ApiTestServiceGroup: ({ serviceName, minCoveragePercentage }: { serviceName: string; minCoveragePercentage?: number }) => (
+    <div data-testid="api-test-service-group" data-min-coverage-percentage={minCoveragePercentage}>
+      {serviceName}
+    </div>
+  ),
 }));
 
 jest.mock('react-jhipster', () => ({
@@ -112,6 +118,31 @@ describe('QualityGateDetail', () => {
     renderDetail({ calculationId: CALCULATION_ID });
 
     expect(screen.getByText('snowWhiteApp.qualityGate.home.notFound')).toBeInTheDocument();
+  });
+
+  it('should mark the coverage bars at the threshold the report was scored against', () => {
+    renderDetail({
+      calculationId: CALCULATION_ID,
+      // The gate has since been moved to 50; the report was scored at 85 and keeps saying so.
+      minCoveragePercentage: 85,
+      qualityGateConfig: { name: 'nightly', minCoveragePercentage: 50 },
+      apiTests: [{ serviceName: 'order-service', apiName: 'orders-api' }],
+    });
+
+    expect(screen.getByTestId('api-test-service-group')).toHaveAttribute('data-min-coverage-percentage', '85');
+  });
+
+  it('should still render the drilldown for a report whose quality-gate has been deleted', () => {
+    // No gate definition survived the deletion, so only what the report itself pinned is left.
+    renderDetail({
+      calculationId: CALCULATION_ID,
+      minCoveragePercentage: 85,
+      qualityGateConfig: { name: 'deleted-gate' },
+      apiTests: [{ serviceName: 'order-service', apiName: 'orders-api' }],
+    });
+
+    expect(screen.getByTestId('api-test-service-group')).toHaveAttribute('data-min-coverage-percentage', '85');
+    expect(screen.queryByText('snowWhiteApp.qualityGate.home.notFound')).not.toBeInTheDocument();
   });
 
   it('should show the excluded results once the filter is switched off', () => {
