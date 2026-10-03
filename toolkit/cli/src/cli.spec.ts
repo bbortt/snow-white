@@ -336,6 +336,9 @@ describe('CLI', () => {
           includeApis: [{ apiName: 'user-api', apiVersion: '1.0.0', serviceName: 'user-service' }],
         },
         initiatedAt: '2026-01-01T00:00:00Z',
+        // The trigger's 202 carries the pinned threshold too, so the stub answers what the service
+        // answers.
+        minCoveragePercentage: 80,
         qualityGateConfigName,
         status: 'IN_PROGRESS',
       },
@@ -354,7 +357,7 @@ describe('CLI', () => {
       await wiremock.register(
         { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
         {
-          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'PASSED' },
+          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', minCoveragePercentage: 80, qualityGateConfigName, status: 'PASSED' },
           headers: { 'Content-Type': 'application/json' },
           status: 200,
         },
@@ -387,7 +390,7 @@ describe('CLI', () => {
       await wiremock.register(
         { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
         {
-          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'FAILED' },
+          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', minCoveragePercentage: 80, qualityGateConfigName, status: 'FAILED' },
           headers: { 'Content-Type': 'application/json' },
           status: 200,
         },
@@ -412,6 +415,12 @@ describe('CLI', () => {
       expect(cliResult.stderr).toContain('❌ Quality-Gate calculation FAILED!');
     });
 
+    /**
+     * Drives the generated client over the widened `200` and `202`, so the pinned threshold is read
+     * off the wire rather than from a hand-built object: the failure set must name only the included
+     * criterion below the bar, which is also the only one the same report's JUnit export would emit
+     * as a `<failure>`.
+     */
     it('should poll and print agentic JSON output, then exit with code 0', async () => {
       await wiremock.register(calculateWireMockRequest, makeCalculateMockResponse(), {
         requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo },
@@ -420,7 +429,26 @@ describe('CLI', () => {
       await wiremock.register(
         { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
         {
-          body: { calculationId, initiatedAt: '2026-01-01T00:00:00Z', qualityGateConfigName, status: 'PASSED' },
+          body: {
+            calculationId,
+            initiatedAt: '2026-01-01T00:00:00Z',
+            interfaces: [
+              {
+                apiName: 'user-api',
+                apiVersion: '1.0.0',
+                serviceName: 'user-service',
+                status: 'PASSED',
+                testResults: [
+                  { coverage: 0.5, id: 'below-the-bar', isIncludedInQualityGate: true },
+                  { coverage: 0.9, id: 'clears-the-bar', isIncludedInQualityGate: true },
+                  { coverage: 0.1, id: 'excluded', isIncludedInQualityGate: false },
+                ],
+              },
+            ],
+            minCoveragePercentage: 80,
+            qualityGateConfigName,
+            status: 'PASSED',
+          },
           headers: { 'Content-Type': 'application/json' },
           status: 200,
         },
@@ -450,6 +478,14 @@ describe('CLI', () => {
         qualityGateConfigName,
         status: 'PASSED',
       });
+
+      expect(agenticOutput.interfaces[0].qualityGateFailures.map((failure: { id: string }) => failure.id)).toEqual(['below-the-bar']);
+      expect(agenticOutput.interfaces[0].testResults.map((testResult: { id: string }) => testResult.id)).toEqual([
+        'below-the-bar',
+        'clears-the-bar',
+        'excluded',
+      ]);
+      expect(agenticOutput.summary.qualityGateFailureCount).toBe(1);
     });
   });
 
