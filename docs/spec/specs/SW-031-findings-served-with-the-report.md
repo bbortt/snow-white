@@ -130,6 +130,8 @@ no findings, confirming the change is additive and that the operation's other 2x
   the gateway routing the widened response travels, unchanged
 - [CON-010](CON-010-rest-responses-never-carry-null.md) — omits an unset `testCaseName` and
   discriminator; bounded by this spec's empty-never-absent array rule
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — a property added to the fork and the
+  shared component alike, so the two still differ in `findings` alone
 
 ## Changes
 
@@ -168,3 +170,10 @@ no findings, confirming the change is additive and that the operation's other 2x
   omits `null` alone rather than empty values too.
   `STR-017`'s acceptance criterion describing the explicit `null` records what was delivered then;
   this entry supersedes it.
+- **2026-10-03** — Records `SW-039` (`STR-022`): `minCoveragePercentage` joins
+  `QualityGateReportWithFindings.yml` and the shared `QualityGateReport.yml` together, so this fork
+  continues to differ from the shared component in `findings` alone.
+  The reason `findings` could not be `required` here — the `202` answers the narrow shape, and a
+  generated client decodes every 2xx with the `200` deserializer — does not reach the new property
+  for exactly that reason: it is on both components, so no 2xx body of either operation is ever
+  without it.

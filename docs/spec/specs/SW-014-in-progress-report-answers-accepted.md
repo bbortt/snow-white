@@ -64,6 +64,8 @@ a running service.
   listing answers, and why it is about the request rather than the report
 - [SW-037](SW-037-list-order-is-stable-by-default.md) — the order the report listing
   applies when the caller asks for none
+- [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — the pinned threshold both `202`
+  bodies and the listing now carry
 
 ## Changes
 
@@ -75,3 +77,8 @@ a running service.
   ignoring one and answering `200` with an arbitrarily ordered page was indistinguishable from an
   honoured request.
   The three report-by-id outcomes are unchanged.
+- **2026-10-03** — Records `SW-039` (`STR-022`): the partial body both `202` responses return now
+  carries the report's pinned `minCoveragePercentage`, as does the listing.
+  The status mapping is untouched.
+  It is noted here because a polling consumer is the one this matters to most — it can now score
+  the criteria that have already reported without a second call to the gate.
