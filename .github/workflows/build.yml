@@ -114,10 +114,13 @@ jobs:
             -Dsonar.projectKey=bbortt_snow-white
   app-tests:
     name: Application Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version')
+      )
     runs-on: ubuntu-24.04
     needs: ci
     strategy:
@@ -247,11 +250,14 @@ jobs:
           retention-days: 7
   native-tests:
     name: Native Application Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version') ||
-      contains(github.event.pull_request.title, 'native-maven-plugin')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
+      )
     runs-on: ubuntu-24.04
     needs: ci
     strategy:
@@ -335,9 +341,12 @@ jobs:
           retention-days: 1
   cli-binary-verification:
     name: Verify CLI Binary
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'module:cli')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'module:cli')
+      )
     runs-on: ${{ matrix.os }}
     needs: ci
     strategy:
@@ -374,9 +383,12 @@ jobs:
           toolkit/cli/target/${{ matrix.binary }} info
   e2e-tests:
     name: End-to-End Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:e2e')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:e2e')
+      )
     runs-on: ubuntu-24.04
     needs:
       - app-tests
