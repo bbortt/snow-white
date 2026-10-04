@@ -271,8 +271,8 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
+              <changeDetection>content</changeDetection>
               <outputDirectory>${project.basedir}/src/main/webapp/app/clients</outputDirectory>
-              <overwrite>true</overwrite>
               <resources>
                 <resource>
                   <directory>${project.build.directory}/generated-sources/openapi</directory>
