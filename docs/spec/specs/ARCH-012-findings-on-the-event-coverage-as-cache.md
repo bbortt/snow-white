@@ -104,6 +104,12 @@ collections and unchanged `coverage` values.
 - [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — a cached-ratio consumer this story leaves
   untouched
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the other cached-ratio consumer
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the two counts the cached
+  shape comes to hold beside the ratio
+- [ARCH-017](ARCH-017-waivers-applied-before-the-one-derivation.md) — the waiver pass that happens
+  upstream, so the coordinator still persists without recomputing
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the invariant the
+  cached counts carry to every read
 
 ## Changes
 
@@ -123,3 +129,14 @@ collections and unchanged `coverage` values.
   Both `findings` and `evidence` are lazy, so no list-shaped read drags the grandchild table in —
   the whole point of keeping `coverage` denormalized.
   `SW-031` still owes the API surface; until then the findings are persisted but not served.
+- **2026-10-04** — Records `WAIVED` as `(short) 3` and the two counts joining the cached shape, for
+  `SW-044`, `ARCH-017` and `CON-012` (`STR-023`).
+  The forward-tolerance written here on 2026-09-24 is what makes the status addition cheap, and it is
+  being collected rather than revised: a decoder that does not know `WAIVED` already resolves it to
+  `NOT_APPLICABLE`, which is the one fallback that keeps it out of both sides of the fraction and so
+  out of disagreement with the ratio stored beside it.
+  `judgedTargetCount` and `waivedTargetCount` are cached on the same terms as `coverage` — written
+  from the derivation, never recomputed by the coordinator — because the waiver pass runs upstream in
+  the calculator (`ARCH-017`), so nothing here has to learn what a waiver is.
+  Rows written before this change hold neither count, and a read of one serves neither rather than a
+  false `0`.

@@ -71,6 +71,12 @@ leaves the API test unchanged.
   renders the same results under this same threshold
 - [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — publishes the pinned threshold this
   rule applies, so a consumer can reach the same verdict
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — amends the share this
+  rule scores: a fully waived result leaves it rather than counting as passed
+- [CON-011](CON-011-waiver-matching-no-finding-fails-the-calculation.md) — the gate scoping that lets
+  a waiver name a criterion this calculation excluded
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the counts that identify a
+  verdict this rule reached over a waiver-thinned share
 
 ## Changes
 
@@ -84,3 +90,22 @@ leaves the API test unchanged.
   reach this verdict — the CLI's agentic summary and the webapp's coverage bar — were inventing a
   substitute because the number was pinned on the report and served nowhere, so making it
   computable was a publishing gap rather than a defect in this comparison.
+- **2026-10-04** — A result whose every target was waived leaves the share of included results that
+  passed — numerator and denominator alike — rather than counting as one that passed, for `CON-012`
+  (`STR-023`).
+  Neither comparison changes, and the bar does not move.
+  What changes is the population the second comparison is taken over, and the reason is that this rule
+  applies the threshold twice.
+  Waiving targets inside a criterion is meant to help that criterion, and it does: the waived targets
+  leave its fraction.
+  But a criterion emptied by waivers arrives at the second comparison as a `1.00`, and counting that
+  as a passing included result would add a yes vote about targets nothing judged — so it could carry a
+  _different_ criterion's genuine failure over the bar.
+  Five included criteria at an 80% bar, three genuinely passing and two genuinely failing: waiving one
+  of the failures away would score 4/5 and pass the API test with a real failure still in it, where
+  dropping it scores 3/4 and still fails.
+  Waiving therefore stops a criterion dragging the share down without ever voting in favour of one,
+  which is the difference between an exemption and an assertion of coverage.
+  Where the removal empties the share entirely, the existing empty-share rule stands and the API test
+  is `PASSED`; no seventh `ReportStatus` member is introduced for it, and the published counts are
+  what identify such a pass as waiver-derived.

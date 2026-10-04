@@ -132,6 +132,12 @@ no findings, confirming the change is additive and that the operation's other 2x
   discriminator; bounded by this spec's empty-never-absent array rule
 - [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — a property added to the fork and the
   shared component alike, so the two still differ in `findings` alone
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the counts and the waiver
+  justification this read serves
+- [SW-040](SW-040-waiver-enters-only-on-the-calculation-request.md) — the waivers this read answers
+  back under `calculationRequest`
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the invariant this
+  read has to carry
 
 ## Changes
 
@@ -177,3 +183,14 @@ no findings, confirming the change is additive and that the operation's other 2x
   generated client decodes every 2xx with the `200` deserializer — does not reach the new property
   for exactly that reason: it is on both components, so no 2xx body of either operation is ever
   without it.
+- **2026-10-04** — A served finding gains `WAIVED` in its status enum and, when waived, its
+  `waiverReason` and `waiverExpiresOn`; the criterion result gains `judgedTargetCount` and
+  `waivedTargetCount`, for `SW-044` and `CON-012` (`STR-023`).
+  The additions follow the rules this spec already settled rather than bending them.
+  `WAIVED` is additive on an enum whose published decoders already tolerate an unknown member, so no
+  client regenerates to keep reading.
+  The two counts are optional, unlike `SW-039`'s threshold and for the reason `SW-039` noted but did
+  not hit: rows persisted before this change hold neither number, and `required` would force a false
+  `0` onto a report for which the truth is "unknown" (`CON-010`).
+  The justification keys are omitted on a finding that is not waived, for the same reason an unset
+  `testCaseName` is omitted rather than nulled.

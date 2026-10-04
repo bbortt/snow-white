@@ -58,6 +58,17 @@ A dedicated case with `covered < required` chosen so the unclamped division woul
   `JUnitReporter.buildForApiTestResult` treats a coverage of exactly `1` as passing by comparing
   the persisted, already-rounded value, so the original half-up-only rule let 99.9%-covered
   criteria (e.g. `999/1000`) silently pass a quality gate as if fully covered.
+- **2026-10-04** — Records that the `required == 0` case now has two origins, for `CON-012` and
+  `SW-044` (`STR-023`).
+  The formula is unchanged, deliberately: waivers could empty a criterion's judged set, and changing
+  the arithmetic would have reached every criterion in the system for the sake of one new case, with
+  `CON-009`'s agreement obligation written against this exact rule.
+  What changes is that the vacuous `1` is no longer self-explanatory — an empty target space can now
+  be something a submitter produced rather than a property of the specification — so the two origins
+  are separated where they are published, by `judgedTargetCount` and `waivedTargetCount` riding
+  alongside the ratio.
+  The consequence for a reader of this spec: `coverage == 1.00` was never evidence that a criterion
+  was satisfied, and it is now routinely not.
 
 ## Relations
 
@@ -74,3 +85,7 @@ A dedicated case with `covered < required` chosen so the unclamped division woul
 - [SW-006](SW-006-required-error-fields-coverage.md) — a calculator this invariant governs
 - [CON-001](CON-001-deterministic-analysis-results.md) — determinism the same
   calculators must also honor
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the second origin of
+  the vacuous `1`, and why the ratio alone never establishes a coverage pass
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the counts that separate the
+  two origins where this ratio is published

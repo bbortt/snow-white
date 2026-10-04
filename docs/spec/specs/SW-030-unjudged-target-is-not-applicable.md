@@ -94,6 +94,12 @@ identical with and without inapplicable findings present in the list.
   convention an all-inapplicable criterion lands on
 - [ARCH-002](ARCH-002-criteria-metadata-owned-by-enum.md) — where a criterion's own scope is
   declared
+- [CON-011](CON-011-waiver-matching-no-finding-fails-the-calculation.md) — the complete enumeration
+  this guarantees, which is what makes an unmatched waiver meaningful
+- [SW-041](SW-041-waiver-resolves-against-the-emitted-findings.md) — the selection that can only
+  address a target because this spec emitted a finding for it
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the sibling status
+  treated alike inside the fraction and distinguished in publication
 
 ## Changes
 
@@ -120,3 +126,14 @@ identical with and without inapplicable findings present in the list.
   The rename does not alter this spec's meaning.
   The parameter criteria's symmetric case, named in the verification description, arrives with the
   step that migrates them.
+- **2026-10-04** — Records the load this spec takes on for `CON-011` and `CON-012` (`STR-023`).
+  Nothing here changes; what changes is that another rule now depends on it.
+  Because a criterion emits a finding for every target it enumerated, "no finding matched this waiver"
+  can only mean the target is not in the specification as written — never "the target exists but
+  produced nothing this run" — which is the guarantee that lets `CON-011` fail a calculation on an
+  unmatched waiver instead of warning.
+  Without the complete enumeration that rule would fail builds on exactly the APIs it was meant to
+  help.
+  `WAIVED` joins `NOT_APPLICABLE` outside both sides of the fraction, so the two are alike
+  arithmetically; they are deliberately not alike in publication, since one is a property of the
+  specification and the other is something a submitter asked for (`CON-012`).

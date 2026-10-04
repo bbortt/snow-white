@@ -32,7 +32,17 @@ never contradicts the verdict it accompanies:
 - An **included** result that **reaches the threshold but not full coverage** is a passing test
   case carrying a `system-out` comment: the coverage reached, the threshold it cleared, the gate
   that set it, and the result's additional information when it has any.
-- Everything else — an included result at full coverage — is a plain passing test case.
+- Everything else — an included result at full coverage, holding no waived target — is a plain
+  passing test case.
+
+An included result that holds waived targets adds to whichever of those shapes it takes: its
+`system-out` names each waived target with its reason and expiry, and the case carries
+`judgedTargetCount` and `waivedTargetCount` properties beside a `waivedTargets` property naming
+them, so this document states the same two numbers the JSON read does (`SW-044`).
+A result reaching full coverage only because targets were waived is therefore never a plain passing
+test case — it is a passing test case that says why — which is what `CON-012` requires of every
+published shape.
+The `testsuites` root carries the document's waived total beside the threshold.
 
 The threshold is read from the report, which pins the gate's `minCoveragePercentage` at creation
 time; a later edit to the gate therefore cannot change how an already calculated report exports.
@@ -70,6 +80,12 @@ holding a result in the band between that threshold and full coverage — assert
 the excluded case, `failure` for every included result under the threshold, a passing case with a
 `system-out` comment for every included result in the band, the threshold property on the root,
 and the aggregated counts, durations and name-stable ordering.
+Two further expected documents cover waived targets — one result reaching full coverage only by
+waiver, one holding both a coverage gap and a waiver — asserting that each is a passing test case
+whose `system-out` names every waived target with its reason and expiry, that each carries
+`judgedTargetCount`, `waivedTargetCount` and `waivedTargets` properties agreeing with the same
+report's JSON read, that the waived total appears on the root beside the threshold, and that
+`skipped` is still emitted for gate exclusion alone.
 `JUnitReporterUnitTest` compares against committed expected XML for each case, and
 `ReportCoordinatorApiAppTest` retrieves the document from a running service.
 
@@ -88,6 +104,10 @@ and the aggregated counts, durations and name-stable ordering.
   extends to the serialised form
 - [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — the JSON reads that now publish the
   same pinned number this document carries as a suite property
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the invariant this
+  export has to carry in its own vocabulary
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the counts this document
+  reports as properties, agreeing with the JSON reads
 
 ## Changes
 
@@ -105,3 +125,16 @@ and the aggregated counts, durations and name-stable ordering.
   Until now this artifact was the only surface that stated the bar, which is why it could say
   "failure" while the JSON reads could not — a consumer can now reproduce this `<failure>` set from
   a report read, and the two surfaces answer from one source rather than two.
+- **2026-10-04** — Reports waived targets, for `CON-012` and `SW-044` (`STR-023`).
+  `skipped` keeps meaning gate exclusion and nothing else, which is the decision that shapes the rest:
+  a waiver is not an exclusion, and overloading the one element JUnit has for "not run" would make the
+  two indistinguishable in the format most likely to be read by a machine that knows nothing about
+  Snow-White.
+  So a criterion with waived targets takes the shape this spec already uses for a verdict the format
+  lacks — a passing `testcase` whose `system-out` names each waived target with its reason and expiry
+  — plus `judgedTargetCount`, `waivedTargetCount` and `waivedTargets` properties for a reader that
+  parses rather than reads, the first two being the pair `SW-044` requires every surface to state,
+  and a waived total on the `testsuites` root beside the threshold.
+  The bar and the mapping are unchanged; what the export gains is the ability to distinguish a pass
+  that rests on waivers from one that rests on coverage, which `CON-012` requires of every published
+  shape and this document could not previously express.
