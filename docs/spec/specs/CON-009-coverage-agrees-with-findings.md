@@ -84,6 +84,14 @@ of the report or the event recomputes it.
 - [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — the verdict that reads the cached side and
   would silently diverge without this
 - [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) — the export with the same exposure
+- [CON-011](CON-011-waiver-matching-no-finding-fails-the-calculation.md) — the failed calculation
+  that reaches no verdict, and therefore owes no agreement
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the published counts
+  that join the ratio under this same obligation
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the two numbers the
+  agreement now also covers
+- [ARCH-017](ARCH-017-waivers-applied-before-the-one-derivation.md) — where the waiver pass sits so
+  that there is still exactly one derivation to agree with
 
 ## Changes
 
@@ -95,3 +103,13 @@ of the report or the event recomputes it.
   The findings-free exemption is asserted rather than assumed — a pre-migration result keeps the
   ratio it was calculated with, and the integration test that recomputes every other ratio from its
   persisted rows skips that one by design.
+- **2026-10-04** — Extends the agreement to `judgedTargetCount` and `waivedTargetCount`, for `SW-044`
+  and `CON-012` (`STR-023`).
+  The obligation is unchanged in kind: the counts are produced by the same reduction as the ratio, so
+  they are recomputable from the persisted findings exactly as it is, and the integration test that
+  recomputes every ratio recomputes them too.
+  Two boundaries worth stating.
+  `WAIVED` leaves both sides of the fraction, like `NOT_APPLICABLE`, so the agreement is between the
+  ratio and the _judged_ findings, not all of them (`ARCH-017` keeps that reduction the only one).
+  And a calculation holding a waiver it could not place publishes no ratio at all (`CON-011`), so it
+  is outside this constraint rather than a violation of it.

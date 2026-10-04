@@ -53,8 +53,23 @@ string-equality form, and trace-context headers present on each.
   preserves
 - [SW-008](SW-008-kafka-as-async-calculation-driver.md) — Kafka as the asynchronous calculation
   driver this dispatch feeds
+- [SW-040](SW-040-waiver-enters-only-on-the-calculation-request.md) — the waivers this dispatch
+  filters so each record carries only its own API's
+- [SW-043](SW-043-expiry-judged-against-the-triggering-instant.md) — the pinned calculation instant
+  each dispatched record also carries
 
 ## Changes
 
 - **2026-09-17** — Set active: anchored against `report-coordinator-api`'s existing
   implementation (`STR-011`).
+- **2026-10-04** — Records the two fields each dispatched record gains, for `SW-040` and `SW-043`
+  (`STR-023`).
+  The fan-out shape is unchanged — still one record per API test, keyed by calculation id — and both
+  additions follow from it rather than bending it.
+  Because a record already addresses exactly one API, the waiver array can be filtered at dispatch to
+  the entries matching that API, which is what keeps a waiver document off every other record and
+  bounds the payload without a cap.
+  A waiver whose `apiVersion` is `'*'` is matched on service and API name alone and so reaches every
+  version of that API in the report.
+  The pinned instant travels the same way, as its own field, rather than being read from the record
+  timestamp — whose meaning is a broker setting.

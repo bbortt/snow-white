@@ -75,6 +75,14 @@ A review check confirms no calculator subclass constructs a `BigDecimal` ratio.
   decision centralises rather than changes
 - [ARCH-002](ARCH-002-criteria-metadata-owned-by-enum.md) — the existing
   metadata-in-one-place shape this decision follows for the reduction
+- [ARCH-017](ARCH-017-waivers-applied-before-the-one-derivation.md) — where the waiver pass sits so
+  this stays the only derivation
+- [SW-041](SW-041-waiver-resolves-against-the-emitted-findings.md) — the finding set the waiver pass
+  rewrites before this reduction reads it
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the reduction's
+  treatment of `WAIVED`, and the counts it also publishes
+- [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the two numbers this
+  reduction already computes and now returns
 
 ## Changes
 
@@ -94,3 +102,15 @@ A review check confirms no calculator subclass constructs a `BigDecimal` ratio.
   return a ratio of its own.
   Description and Verification Description are corrected to name what is now there rather than the
   shape the transition passed through.
+- **2026-10-04** — Records the waiver pass and the two counts, for `ARCH-017`, `CON-012` and `SW-044`
+  (`STR-023`).
+  The one-derivation decision is what forces the waiver pass to be placed where it is: a waiver
+  applied after this reduction — in `report-coordinator-api`, or on the result event — would mean
+  recomputing the ratio there, which is the second derivation this spec and `CON-009` exist to
+  forbid.
+  So waivers rewrite the finding set before the reduction reads it, inside
+  `AbstractOpenApiCoverageCalculator.calculate` between `calculateFindings` and `deriveCoverage`, and
+  the reduction itself is unchanged except for excluding `WAIVED` from both sides exactly as it
+  excludes `NOT_APPLICABLE`.
+  It also returns `judgedTargetCount` and `waivedTargetCount` rather than only their quotient — not
+  new numbers, but ones it was already computing and discarding.
