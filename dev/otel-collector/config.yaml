@@ -97,7 +97,7 @@ exporters:
     bucket: raw-data
     token: ${INFLUXDB_TOKEN}
   otlp_grpc/grafana:
-    endpoint: 'grafana:4317'
+    endpoint: 'passthrough:///grafana:4317'
     tls:
       insecure: true
   otlp_grpc/jaeger:

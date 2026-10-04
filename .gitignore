@@ -42,6 +42,7 @@ out/
 !.claude/skills/
 .m2/
 .npm/
+postgres/
 
 # clew: regenerated tool output (state.json stays tracked)
 .clew/locations.json
