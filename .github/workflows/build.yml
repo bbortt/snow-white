@@ -465,3 +465,36 @@ jobs:
         with:
           name: cli
           path: toolkit/cli/target
+      - name: Make Binary Executable
+        run: chmod +x toolkit/cli/target/snow-white-linux-x64
+      - name: upload-prereleases
+        run: toolkit/cli/target/snow-white-linux-x64 upload-prereleases
+      - name: calculate
+        run: |
+          mkdir -p target
+          toolkit/cli/target/snow-white-linux-x64 calculate \
+            --junit-output target/junit.xml \
+            --report-output target/report.json
+      - name: Upload Snow-White Report
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: snow-white-reports
+          path: |
+            target/junit.xml
+            target/report.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Extract Snow-White Logs
+        if: failure()
+        run: |
+          mkdir -p target
+          docker compose logs > target/snow-white.log
+      - name: Upload Snow-White Logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: snow-white-logs
+          path: target/snow-white.log
+          if-no-files-found: error
+          retention-days: 7

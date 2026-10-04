@@ -1,0 +1,5 @@
+{
+  "apiSpecs": "microservices/*/src/main/resources/openapi/*.yml",
+  "qualityGate": "basic-coverage",
+  "url": "http://localhost"
+}
