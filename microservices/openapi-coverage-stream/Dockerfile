@@ -33,6 +33,8 @@ FROM alpine:3.22.1
 ARG BUILD_DATE
 ARG PROJECT_VERSION
 
+EXPOSE 8090
+
 WORKDIR /app
 
 LABEL org.opencontainers.image.title="snow-white OpenAPI Coverage Stream" \
