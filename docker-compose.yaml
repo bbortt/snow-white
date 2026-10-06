@@ -128,9 +128,10 @@ services:
         condition: service_started
     healthcheck:
       test: wget -O - http://localhost:8090/management/health | grep UP || exit 1
-      interval: 1s
+      interval: 5s
       timeout: 5s
       retries: 12
+      start_period: 60s
     restart: on-failure
     networks:
       - default
@@ -194,6 +195,12 @@ services:
         condition: service_started
       otel-collector:
         condition: service_started
+    healthcheck:
+      test: wget -O - http://localhost:8080/actuator/health | grep UP || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     restart: on-failure
     networks:
       - internal
