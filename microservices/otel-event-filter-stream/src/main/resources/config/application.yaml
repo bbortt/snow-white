@@ -1,0 +1,29 @@
+logging:
+  level:
+    org.apache.kafka.clients.admin.internals.AdminMetadataManager: WARN
+management:
+  opentelemetry:
+    resource-attributes:
+      'service.namespace': 'io.github.bbortt.snow.white'
+  otlp:
+    metrics:
+      export:
+        step: 10s
+snow:
+  white:
+    otel:
+      event:
+        filter:
+          consumer-mode: json
+spring:
+  application:
+    name: otel-event-filter-stream
+  kafka:
+    consumer:
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual
+    streams:
+      application-id: otel-event-filter-stream
+  profiles:
+    default: prod

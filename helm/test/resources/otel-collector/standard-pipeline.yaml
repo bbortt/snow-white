@@ -1,0 +1,54 @@
+logs/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - batch
+  exporters:
+    - debug/basic
+metrics/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - batch
+  exporters:
+    - debug/basic
+traces/otel-event-filter:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/snow-white-microservices
+    - filter/openapi-traces
+    - groupbytrace
+    - resource/cleanup
+    - batch
+  exporters:
+    - debug/basic
+    - kafka/snow-white
+traces/snow-white:
+  receivers:
+    - kafka/snow-white
+  processors:
+    - memory_limiter
+    - groupbytrace
+    - batch
+  exporters:
+    - debug/basic
+    - influxdb
+traces/infra:
+  receivers:
+    - otlp
+  processors:
+    - memory_limiter
+    - filter/all-external-services
+    - k8s_attributes
+    - groupbytrace
+    - batch
+  exporters:
+    - debug/basic
