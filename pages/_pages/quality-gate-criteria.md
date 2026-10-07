@@ -85,6 +85,9 @@ This is a subset of [All Response Codes must be Specified](#all-response-codes-m
 
 Several criteria form a hierarchy — satisfying a broader criterion implies narrower ones were also satisfied:
 
+<!-- This tree is a view of the containment declared on `OpenApiCoverageCriteria`, which is where
+the relation is edited; `OpenApiCoverageCriteriaUnitTest` fails when the two disagree. -->
+
 ```plaintext
 RESPONSE_CODE_COVERAGE
 ├── POSITIVE_RESPONSE_CODE_COVERAGE

@@ -17,6 +17,7 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCr
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_ERROR_FIELDS_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.REQUIRED_PARAMETER_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,9 +28,12 @@ import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.OpenApiCoverageConfigurationRepository;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -133,6 +137,60 @@ class DefaultOpenApiQualityGatesUnitTest {
               qualityGateConfiguration.getOpenApiCoverageConfigurations()
             ).isEmpty()
         );
+    }
+
+    /**
+     * Containment is a declared fact about target spaces, not a composition rule: every gate that
+     * requires a contained criterion goes on requiring it without its containers. A composition that
+     * applied containment would pull those containers in, and this test would find no gate to name.
+     */
+    @Test
+    @VerifiesArch(
+      ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
+    )
+    void containmentAddsNoCriterionToAPredefinedGate() {
+      doAnswer(invocation ->
+        Optional.of(
+          OpenApiCoverageConfiguration.builder()
+            .name(invocation.getArgument(0))
+            .build()
+        )
+      )
+        .when(openApiCoverageConfigurationRepositoryMock)
+        .findByName(anyString());
+
+      var gatesLeavingAContainerOut = fixture
+        .getDefaultOpenApiCoverageConfigurations()
+        .stream()
+        .filter(qualityGateConfiguration -> {
+          var criteria = criteriaOf(qualityGateConfiguration);
+
+          return criteria
+            .stream()
+            .flatMap(criterion -> criterion.getContainingCriteria().stream())
+            .anyMatch(container -> !criteria.contains(container));
+        })
+        .map(QualityGateConfiguration::getName)
+        .toList();
+
+      assertThat(gatesLeavingAContainerOut).contains(
+        "basic-coverage",
+        "minimal"
+      );
+    }
+
+    private Set<OpenApiCoverageCriteria> criteriaOf(
+      QualityGateConfiguration qualityGateConfiguration
+    ) {
+      return qualityGateConfiguration
+        .getOpenApiCoverageConfigurations()
+        .stream()
+        .map(mapping ->
+          OpenApiCoverageCriteria.valueOf(
+            mapping.getOpenApiCoverageConfiguration().getName()
+          )
+        )
+        .collect(toSet());
     }
 
     @Test

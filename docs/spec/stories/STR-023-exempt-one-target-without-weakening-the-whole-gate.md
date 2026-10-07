@@ -5,7 +5,7 @@
 **Title**
 A pipeline can exempt one target without weakening the gate for every other one
 
-**Status**: planned
+**Status**: active
 
 **Business Value**
 A team that wants the full criteria set has exactly one lever today when a single check is

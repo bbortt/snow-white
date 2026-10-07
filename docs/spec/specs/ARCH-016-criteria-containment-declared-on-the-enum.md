@@ -7,7 +7,7 @@ Criteria containment is declared on the criteria enum, not described in prose be
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `OpenApiCoverageCriteria` declares, per member, the criterion that contains it — a reference to
@@ -96,3 +96,9 @@ A test asserts containment changes no criterion's calculation, inclusion or cove
 - [SW-006](SW-006-required-error-fields-coverage.md) — a criterion that shares a pointer with
   another without being contained by it
 - [SYS-008](SYS-008-quality-gate-definitions.md) — unchanged: containment grants no inclusion
+
+## Changes
+
+- **2026-10-07** — Set active: implementation of `STR-023`'s first increment began.
+  The containment relation is the one part of the story nothing else depends on, so it lands before
+  the waiver intake that will read it.
