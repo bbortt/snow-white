@@ -33,8 +33,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * Calculator for the following criteria:
- * Every path defined in the OpenAPI specification has been called.
- * This is a subset of `.{@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE}.
+ * Every path defined in the OpenAPI specification has been called, by any HTTP method.
+ * Reports at the path item, where {@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE} reports at
+ * the operation.
  *
  * @see OpenApiCoverageCriteria#PATH_COVERAGE
  */

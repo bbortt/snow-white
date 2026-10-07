@@ -15,7 +15,7 @@
         "header": "Description",
         "PATH_COVERAGE": {
           "name": "Path",
-          "description": "Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+          "description": "Every path defined in the OpenAPI specification has been called, by any HTTP method. Judged per path, where `HTTP_METHOD_COVERAGE` is judged per operation."
         },
         "HTTP_METHOD_COVERAGE": {
           "name": "HTTP Method",

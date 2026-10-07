@@ -106,13 +106,17 @@ and fix the parent instead:
 
 | Failing child                                                                      | Fix the parent instead           |
 | ---------------------------------------------------------------------------------- | -------------------------------- |
-| `PATH_COVERAGE`                                                                    | `HTTP_METHOD_COVERAGE`           |
 | `POSITIVE_RESPONSE_CODE_COVERAGE` / `ERROR_RESPONSE_CODE_COVERAGE`                 | `RESPONSE_CODE_COVERAGE`         |
 | `REQUIRED_PARAMETER_COVERAGE` / `OPTIONAL_PARAMETER_COVERAGE`                      | `PARAMETER_COVERAGE`             |
 | `NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES` / `NO_UNDOCUMENTED_ERROR_RESPONSE_CODES` | `NO_UNDOCUMENTED_RESPONSE_CODES` |
 
 If only a leaf criterion is failing (its parent already passes), fix the leaf directly — don't
 over-engineer a broader fix that isn't needed.
+
+`PATH_COVERAGE` and `HTTP_METHOD_COVERAGE` are not in this table: they judge different targets, so
+neither is the other's parent.
+A test that calls an operation does cover its path, so a method-coverage fix raises path coverage
+too — but neither criterion substitutes for the other in a quality gate.
 
 ## Step 4 — Propose integration tests, not mocks
 

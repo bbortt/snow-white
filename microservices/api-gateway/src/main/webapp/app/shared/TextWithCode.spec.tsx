@@ -29,11 +29,11 @@ describe('TextWithCode', () => {
   });
 
   it('should render code inside backticks as <code>', () => {
-    const input = 'Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`.';
+    const input = 'Each documented error response code for each endpoint is tested. This is a subset of `RESPONSE_CODE_COVERAGE`.';
     render(<TextWithCode text={input} />);
 
-    expect(screen.getByText('Every path defined in the OpenAPI specification has been called. This is a subset of')).toBeInTheDocument();
-    expect(screen.getByText('HTTP_METHOD_COVERAGE').tagName).toBe('CODE');
+    expect(screen.getByText('Each documented error response code for each endpoint is tested. This is a subset of')).toBeInTheDocument();
+    expect(screen.getByText('RESPONSE_CODE_COVERAGE').tagName).toBe('CODE');
     expect(screen.getByText('.')).toBeInTheDocument();
   });
 

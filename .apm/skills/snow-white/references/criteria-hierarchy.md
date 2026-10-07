@@ -60,9 +60,6 @@ Several criteria are parents of others.
 Satisfying the parent automatically satisfies its children, but not the reverse:
 
 ```plaintext
-HTTP_METHOD_COVERAGE
-└── PATH_COVERAGE
-
 RESPONSE_CODE_COVERAGE
 ├── POSITIVE_RESPONSE_CODE_COVERAGE
 └── ERROR_RESPONSE_CODE_COVERAGE
@@ -76,14 +73,22 @@ NO_UNDOCUMENTED_RESPONSE_CODES
 └── NO_UNDOCUMENTED_ERROR_RESPONSE_CODES
 ```
 
-`OPERATION_SUCCESS_COVERAGE`, `CONTENT_TYPE_COVERAGE` and `REQUIRED_ERROR_FIELDS_COVERAGE` stand
-alone — they have neither parent nor children, so a failure there is always fixed directly.
+`PATH_COVERAGE`, `HTTP_METHOD_COVERAGE`, `OPERATION_SUCCESS_COVERAGE`, `CONTENT_TYPE_COVERAGE` and
+`REQUIRED_ERROR_FIELDS_COVERAGE` stand alone — they have neither parent nor children, so a failure
+there is always fixed directly.
+
+`PATH_COVERAGE` and `HTTP_METHOD_COVERAGE` are not a parent/child pair, although they are often
+read as one: a path item and one operation within it are different targets, so neither criterion's
+checks are a subset of the other's.
+Calling an operation does cover its path, so raising method coverage raises path coverage with it —
+but path coverage can fail while method coverage passes on the paths it did reach, and a quality
+gate requiring one does not check the other.
 
 ## Using the hierarchy to prioritize
 
 When several criteria fail for the same API, fix the highest-level failing parent first.
-A fix that satisfies `HTTP_METHOD_COVERAGE` also satisfies `PATH_COVERAGE`, so addressing the
-child separately duplicates work.
+A fix that satisfies `RESPONSE_CODE_COVERAGE` also satisfies `POSITIVE_RESPONSE_CODE_COVERAGE` and
+`ERROR_RESPONSE_CODE_COVERAGE`, so addressing a child separately duplicates work.
 
 Read the hierarchy in the other direction too: if a parent passes while a child fails, the parent
 cannot help you — fix the child directly rather than broadening the change.

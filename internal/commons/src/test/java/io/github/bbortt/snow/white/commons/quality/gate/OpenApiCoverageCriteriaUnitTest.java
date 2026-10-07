@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.commons.quality.gate;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.values;
 import static java.nio.file.Files.exists;
@@ -103,14 +104,35 @@ class OpenApiCoverageCriteriaUnitTest {
     ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
   )
   void containingCriteriaAnswersTheFullChainOfATwoLevelCriterion() {
-    assertThat(PATH_COVERAGE.getContainedBy()).isEqualTo(HTTP_METHOD_COVERAGE);
-    assertThat(PATH_COVERAGE.getContainingCriteria()).containsExactly(
-      HTTP_METHOD_COVERAGE
+    assertThat(POSITIVE_RESPONSE_CODE_COVERAGE.getContainedBy()).isEqualTo(
+      RESPONSE_CODE_COVERAGE
     );
+    assertThat(
+      POSITIVE_RESPONSE_CODE_COVERAGE.getContainingCriteria()
+    ).containsExactly(RESPONSE_CODE_COVERAGE);
 
     assertThat(
       ERROR_RESPONSE_CODE_COVERAGE.getContainingCriteria()
     ).containsExactly(RESPONSE_CODE_COVERAGE);
+  }
+
+  /**
+   * The one pair the published tree drew as containment before this relation had a definition:
+   * `HTTP_METHOD_COVERAGE` judges an operation and `PATH_COVERAGE` the path item around it, so
+   * neither judges the other's targets at the other's pointer. Full method coverage does imply full
+   * path coverage, but declaring that implication as containment would send an operation-scoped
+   * waiver up to a path item no container of it ever judged.
+   */
+  @Test
+  @VerifiesArch(
+    ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
+  )
+  void pathAndMethodCoverageContainNeitherEachOtherNorAnythingElse() {
+    assertThat(PATH_COVERAGE.getContainedBy()).isNull();
+    assertThat(PATH_COVERAGE.getContainingCriteria()).isEmpty();
+
+    assertThat(HTTP_METHOD_COVERAGE.getContainedBy()).isNull();
+    assertThat(HTTP_METHOD_COVERAGE.getContainingCriteria()).isEmpty();
   }
 
   /**
@@ -175,7 +197,8 @@ class OpenApiCoverageCriteriaUnitTest {
 
   @Test
   void containingCriteriaCannotBeModifiedByACaller() {
-    var containingCriteria = PATH_COVERAGE.getContainingCriteria();
+    var containingCriteria =
+      ERROR_RESPONSE_CODE_COVERAGE.getContainingCriteria();
 
     assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(
       () -> containingCriteria.add(RESPONSE_CODE_COVERAGE)
