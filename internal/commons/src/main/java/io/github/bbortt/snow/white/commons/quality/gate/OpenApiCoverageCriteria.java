@@ -6,9 +6,19 @@
 
 package io.github.bbortt.snow.white.commons.quality.gate;
 
+import static java.util.stream.Stream.iterate;
+
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.RealizesArch;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Getter
+@RealizesArch(ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM)
 public enum OpenApiCoverageCriteria {
   PATH_COVERAGE(
     "Path Coverage",
@@ -67,11 +77,76 @@ public enum OpenApiCoverageCriteria {
     "All response codes that occurred and are not being considered errors (0 - 399) must be documented in the OpenAPI specification. This is a subset of `NO_UNDOCUMENTED_RESPONSE_CODES`."
   );
 
+  /**
+   * The containment forest: every criterion that is contained by another one, mapped to its
+   * container. A criterion absent from this map is a root criterion. Containment means every target
+   * the contained criterion judges is also a target the container judges, at the same spec pointer
+   * — it carries no inheritance of calculation, of inclusion in a quality gate, or of coverage.
+   *
+   * <p>This declaration is the single source of the relation.
+   * {@code pages/_pages/quality-gate-criteria.md} publishes it as a tree, and
+   * {@code OpenApiCoverageCriteriaUnitTest} asserts the page and this map agree.
+   *
+   * <p>Filled from a static block rather than built around {@code Map.of}: an {@code EnumMap}
+   * constructed from an empty map cannot infer its key type and would make "no criterion is
+   * contained" a startup failure in every service instead of a plain, empty relation.
+   */
+  private static final Map<
+    OpenApiCoverageCriteria,
+    OpenApiCoverageCriteria
+  > CONTAINED_BY = new EnumMap<>(OpenApiCoverageCriteria.class);
+
+  static {
+    CONTAINED_BY.putAll(
+      Map.of(
+        POSITIVE_RESPONSE_CODE_COVERAGE,
+        RESPONSE_CODE_COVERAGE,
+        ERROR_RESPONSE_CODE_COVERAGE,
+        RESPONSE_CODE_COVERAGE,
+        NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES,
+        NO_UNDOCUMENTED_RESPONSE_CODES,
+        NO_UNDOCUMENTED_ERROR_RESPONSE_CODES,
+        NO_UNDOCUMENTED_RESPONSE_CODES,
+        REQUIRED_PARAMETER_COVERAGE,
+        PARAMETER_COVERAGE,
+        OPTIONAL_PARAMETER_COVERAGE,
+        PARAMETER_COVERAGE,
+        PATH_COVERAGE,
+        HTTP_METHOD_COVERAGE
+      )
+    );
+  }
+
   private final String label;
   private final String description;
 
   OpenApiCoverageCriteria(String label, String description) {
     this.label = label;
     this.description = description;
+  }
+
+  /**
+   * The criterion containing this one, or {@code null} if this is a root criterion.
+   */
+  public @Nullable OpenApiCoverageCriteria getContainedBy() {
+    return CONTAINED_BY.get(this);
+  }
+
+  /**
+   * Every criterion containing this one, nearest container first, up to its root. Empty for a root
+   * criterion.
+   *
+   * <p>Bounded by the number of declared containments, which no chain through a forest can exceed: a
+   * cycle edited into the declaration truncates the walk here rather than hanging the caller, and
+   * {@code OpenApiCoverageCriteriaUnitTest} is what reports it.
+   */
+  public List<OpenApiCoverageCriteria> getContainingCriteria() {
+    return iterate(
+      getContainedBy(),
+      Objects::nonNull,
+      OpenApiCoverageCriteria::getContainedBy
+    )
+      .limit(CONTAINED_BY.size())
+      .toList();
   }
 }

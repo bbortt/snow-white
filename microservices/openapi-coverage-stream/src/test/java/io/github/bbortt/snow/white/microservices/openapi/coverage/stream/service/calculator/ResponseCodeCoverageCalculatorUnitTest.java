@@ -63,9 +63,17 @@ class ResponseCodeCoverageCalculatorUnitTest {
       assertThat(result).isTrue();
     }
 
+    /**
+     * Every other criterion, which includes the two this one contains: containment carries no
+     * inheritance of calculation, so the containing criterion's calculator still answers for exactly
+     * one criterion.
+     */
     @EnumSource
     @ParameterizedTest
-    void shouldReturnFalse_whenNotPathCoverage(
+    @VerifiesArch(
+      ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
+    )
+    void shouldReturnFalse_whenNotResponseCodeCoverage(
       OpenApiCoverageCriteria openApiCriteria
     ) {
       if (RESPONSE_CODE_COVERAGE.equals(openApiCriteria)) {
