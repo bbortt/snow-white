@@ -15,7 +15,7 @@ minimum coverage threshold:
 
 | Name             | Threshold | Criteria                                                                                                                                                                                                                                                                            |
 | ---------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `basic-coverage` | 80%       | HTTP method, operation-success, positive-response-code, required-parameter coverage; no-undocumented-positive-response-codes                                                                                                                                                        |
+| `basic-coverage` | 80%       | Path, HTTP method, operation-success, positive-response-code, required-parameter coverage; no-undocumented-positive-response-codes                                                                                                                                                  |
 | `full-feature`   | 100%      | HTTP method, operation-success, response-code, parameter, content-type, required-error-fields coverage; no-undocumented-response-codes (7 of 14 — 6 of the others are contained by one of these, and path coverage follows from HTTP method coverage at this gate's 100% threshold) |
 | `minimal`        | 80%       | Path coverage only                                                                                                                                                                                                                                                                  |
 | `dry-run`        | 100%      | None — enforces no rules, for reports/tooling only                                                                                                                                                                                                                                  |
@@ -23,9 +23,15 @@ minimum coverage threshold:
 These are the values `DefaultOpenApiQualityGates` seeds; a caller sees them exactly this way
 through the same `GET`/list contract as any other gate — nothing in the API surface marks them as
 special beyond `isPredefined: true`.
-No gate lists a criterion alongside one it already implies (`pages/_pages/quality-gate-criteria.md`
-§ Criteria Relationships) — a parent's own coverage check subsumes its children's, so listing both
-adds no additional guarantee, only a longer, misleading criteria list.
+No gate lists a criterion alongside one that contains it, as `ARCH-016` declares containment — a
+container's own coverage check subsumes the contained criterion's at every threshold, so listing
+both adds no additional guarantee, only a longer, misleading criteria list.
+Implication short of containment is not grounds for leaving a criterion out: it holds only at a
+gate's own threshold, which is why `full-feature` can omit path coverage at 100% and
+`basic-coverage` cannot at 80%.
+
+The gates are also a ladder — `minimal` requires a subset of `basic-coverage`, which `full-feature`
+covers in turn through containment and, for path coverage, through that 100% implication.
 
 **Rationale**
 Each predefined gate targets a distinct use case a team should be able to reach for by name
@@ -39,6 +45,9 @@ recognized as a deliberate revision of this spec, not an accidental drift.
 **Verification Description**
 A test fetches all four predefined gates by name and asserts, for each, the exact criteria set
 and threshold listed above — matching `DefaultOpenApiQualityGates`'s current seeding logic.
+A second test asserts `minimal`'s criteria set is a non-empty subset of `basic-coverage`'s, which
+is the one rung of the ladder expressible as a subset; the rung above rests on containment and on
+the 100% implication, and is not asserted.
 
 ## Relations
 
@@ -76,3 +85,23 @@ and threshold listed above — matching `DefaultOpenApiQualityGates`'s current s
   sixths of the API was never reached at all.
   Whether `basic-coverage` should list path coverage again is a composition decision this entry
   does not take; the table above is still what the seeder produces.
+- **2026-10-07** — Took that decision: `basic-coverage` lists path coverage again, going from 5
+  criteria back to 6.
+  The deciding argument is not the one above but the ladder: `minimal` is path coverage alone, so
+  leaving it out left a gate named "minimal" requiring something the pragmatic baseline above it
+  never measured.
+  Restoring it also puts the 17%-path case on the report instead of out of scope, though it does
+  not by itself fail that case — `SW-016` passes a gate when the _share_ of criteria clearing the
+  bar clears it too, and at six criteria and 80% that tolerates one failure, which path coverage
+  would be.
+  What the gate gains is that the blind spot is measured and visible, and that its one tolerated
+  failure is now spent.
+  Whether a single criterion at zero should be able to pass a gate at all is an `SW-016` question,
+  untouched here.
+  This is a breaking change for existing installations: `initPredefinedQualityGates` upserts
+  predefined gates by name on every startup (`ARCH-003`), so an upgraded instance's
+  `basic-coverage` gains the criterion without anyone asking for it.
+  A pipeline that was green on exactly four of five criteria and has paths it never reaches now
+  scores four of six, which is 67% against an 80% bar, and fails.
+  `CON-003` forbids users mutating a predefined gate precisely so a pinned name keeps meaning one
+  thing; changing one across a release owes them the same warning in return.
