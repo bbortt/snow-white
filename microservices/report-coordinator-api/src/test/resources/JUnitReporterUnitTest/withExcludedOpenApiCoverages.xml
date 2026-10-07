@@ -46,7 +46,7 @@
       <properties>
         <property
           name="description"
-          value="Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+          value="Every path defined in the OpenAPI specification has been called, by any HTTP method. Judged per path, where `HTTP_METHOD_COVERAGE` is judged per operation."
         />
       </properties>
     </testcase>

@@ -141,8 +141,10 @@ class DefaultOpenApiQualityGatesUnitTest {
 
     /**
      * Containment is a declared fact about target spaces, not a composition rule: every gate that
-     * requires a contained criterion goes on requiring it without its containers. A composition that
-     * applied containment would pull those containers in, and this test would find no gate to name.
+     * requires a contained criterion goes on requiring it without its containers. {@code
+     * basic-coverage} requires three such criteria, and naming all three containers it leaves out is
+     * what makes a composition that started applying containment fail here - pulling in even one of
+     * them drops that container from this set.
      */
     @Test
     @VerifiesArch(
@@ -159,23 +161,27 @@ class DefaultOpenApiQualityGatesUnitTest {
         .when(openApiCoverageConfigurationRepositoryMock)
         .findByName(anyString());
 
-      var gatesLeavingAContainerOut = fixture
-        .getDefaultOpenApiCoverageConfigurations()
+      var criteria = criteriaOf(
+        fixture
+          .getDefaultOpenApiCoverageConfigurations()
+          .stream()
+          .filter(qualityGateConfiguration ->
+            "basic-coverage".equals(qualityGateConfiguration.getName())
+          )
+          .findFirst()
+          .orElseThrow()
+      );
+
+      var containersLeftOut = criteria
         .stream()
-        .filter(qualityGateConfiguration -> {
-          var criteria = criteriaOf(qualityGateConfiguration);
+        .flatMap(criterion -> criterion.getContainingCriteria().stream())
+        .filter(container -> !criteria.contains(container))
+        .collect(toSet());
 
-          return criteria
-            .stream()
-            .flatMap(criterion -> criterion.getContainingCriteria().stream())
-            .anyMatch(container -> !criteria.contains(container));
-        })
-        .map(QualityGateConfiguration::getName)
-        .toList();
-
-      assertThat(gatesLeavingAContainerOut).contains(
-        "basic-coverage",
-        "minimal"
+      assertThat(containersLeftOut).containsExactlyInAnyOrder(
+        RESPONSE_CODE_COVERAGE,
+        PARAMETER_COVERAGE,
+        NO_UNDOCUMENTED_RESPONSE_CODES
       );
     }
 

@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 public enum OpenApiCoverageCriteria {
   PATH_COVERAGE(
     "Path Coverage",
-    "Every path defined in the OpenAPI specification has been called. This is a subset of `HTTP_METHOD_COVERAGE`."
+    "Every path defined in the OpenAPI specification has been called, by any HTTP method. Judged per path, where `HTTP_METHOD_COVERAGE` is judged per operation."
   ),
   HTTP_METHOD_COVERAGE(
     "HTTP Method Coverage",
@@ -80,12 +80,20 @@ public enum OpenApiCoverageCriteria {
   /**
    * The containment forest: every criterion that is contained by another one, mapped to its
    * container. A criterion absent from this map is a root criterion. Containment means every target
-   * the contained criterion judges is also a target the container judges, at the same spec pointer
-   * — it carries no inheritance of calculation, of inclusion in a quality gate, or of coverage.
+   * the contained criterion judges is also a target the container judges, at the same spec pointer,
+   * and the container judging targets the contained one does not — the same check over a strictly
+   * smaller set of targets. It carries no inheritance of calculation, of inclusion in a quality
+   * gate, or of coverage.
    *
    * <p>This declaration is the single source of the relation.
    * {@code pages/_pages/quality-gate-criteria.md} publishes it as a tree, and
    * {@code OpenApiCoverageCriteriaUnitTest} asserts the page and this map agree.
+   *
+   * <p>{@code PATH_COVERAGE} is deliberately absent: full {@code HTTP_METHOD_COVERAGE} does imply
+   * full path coverage, but the two judge different targets — a path item and an operation within
+   * it — so neither contains the other under the definition above. That implication between their
+   * ratios is a separate, documented fact; it is not containment, and a waiver on an operation must
+   * not reach the path around it.
    *
    * <p>Filled from a static block rather than built around {@code Map.of}: an {@code EnumMap}
    * constructed from an empty map cannot infer its key type and would make "no criterion is
@@ -110,9 +118,7 @@ public enum OpenApiCoverageCriteria {
         REQUIRED_PARAMETER_COVERAGE,
         PARAMETER_COVERAGE,
         OPTIONAL_PARAMETER_COVERAGE,
-        PARAMETER_COVERAGE,
-        PATH_COVERAGE,
-        HTTP_METHOD_COVERAGE
+        PARAMETER_COVERAGE
       )
     );
   }

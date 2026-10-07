@@ -18,8 +18,8 @@ The criteria model itself is format-agnostic by design, so new formats slot in w
 
 ### Path Coverage
 
-Every path defined in the specification has been called.
-This is a subset of [HTTP Method Coverage](#http-method-coverage).
+Every path defined in the specification has been called, by any HTTP method.
+Judged per path, where [HTTP Method Coverage](#http-method-coverage) is judged per operation.
 
 ### HTTP Method Coverage
 
@@ -100,9 +100,12 @@ NO_UNDOCUMENTED_RESPONSE_CODES
 PARAMETER_COVERAGE
 ├── REQUIRED_PARAMETER_COVERAGE
 └── OPTIONAL_PARAMETER_COVERAGE
-
-HTTP_METHOD_COVERAGE
-└── PATH_COVERAGE
 ```
 
 Understanding these relationships helps when composing custom quality gates: requiring a parent criterion already implies its subsets.
+
+`PATH_COVERAGE` and `HTTP_METHOD_COVERAGE` are not in this hierarchy.
+Each judges a different thing — a path item, and one operation within a path item — so neither one's targets are a subset of the other's.
+Full method coverage does imply full path coverage, but never the reverse: a path whose `GET` was called and whose `POST` was not is fully covered for path coverage and half covered for method coverage.
+Below 100% even that one direction breaks down, so requiring either criterion at a threshold tells you nothing about the other.
+Require both if you want both reported.

@@ -15,7 +15,7 @@
         "header": "Beschreibung",
         "PATH_COVERAGE": {
           "name": "Pfad",
-          "description": "Jeder Pfad, der in der OpenAPI-Spezifikation definiert ist, wurde aufgerufen. Dies ist eine Teilmenge von `HTTP_METHOD_COVERAGE`."
+          "description": "Jeder Pfad, der in der OpenAPI-Spezifikation definiert ist, wurde mit irgendeiner HTTP-Methode aufgerufen. Wird pro Pfad bewertet, während `HTTP_METHOD_COVERAGE` pro Operation bewertet wird."
         },
         "HTTP_METHOD_COVERAGE": {
           "name": "HTTP Methode",
