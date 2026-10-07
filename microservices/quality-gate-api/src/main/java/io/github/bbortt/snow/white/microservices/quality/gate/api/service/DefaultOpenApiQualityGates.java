@@ -56,6 +56,13 @@ public final class DefaultOpenApiQualityGates {
     return gates;
   }
 
+  /**
+   * Lists {@code PATH_COVERAGE} alongside {@code HTTP_METHOD_COVERAGE} on purpose, and a
+   * containment sweep must not drop it again: full method coverage implies full path coverage, but
+   * this gate's bar is 80%, and below 100% the two ratios come apart because a path counts once
+   * against path coverage and once per operation against method coverage. The criteria enum
+   * declares no containment between the two for exactly that reason.
+   */
   private QualityGateConfiguration getBasicCoverage() {
     var qualityGateConfiguration = QualityGateConfiguration.builder()
       .name("basic-coverage")
@@ -69,6 +76,7 @@ public final class DefaultOpenApiQualityGates {
     addAllOpenApiCoverageCriteria(
       qualityGateConfiguration,
       Stream.of(
+        PATH_COVERAGE,
         HTTP_METHOD_COVERAGE,
         OPERATION_SUCCESS_COVERAGE,
         POSITIVE_RESPONSE_CODE_COVERAGE,

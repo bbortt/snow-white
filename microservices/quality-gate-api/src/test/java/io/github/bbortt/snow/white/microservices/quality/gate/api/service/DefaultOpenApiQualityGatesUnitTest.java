@@ -80,6 +80,7 @@ class DefaultOpenApiQualityGatesUnitTest {
                     mapping.getOpenApiCoverageConfiguration().getName()
                   )
                   .containsExactlyInAnyOrder(
+                    PATH_COVERAGE.name(),
                     HTTP_METHOD_COVERAGE.name(),
                     OPERATION_SUCCESS_COVERAGE.name(),
                     POSITIVE_RESPONSE_CODE_COVERAGE.name(),
@@ -162,14 +163,10 @@ class DefaultOpenApiQualityGatesUnitTest {
         .findByName(anyString());
 
       var criteria = criteriaOf(
-        fixture
-          .getDefaultOpenApiCoverageConfigurations()
-          .stream()
-          .filter(qualityGateConfiguration ->
-            "basic-coverage".equals(qualityGateConfiguration.getName())
-          )
-          .findFirst()
-          .orElseThrow()
+        gateNamed(
+          fixture.getDefaultOpenApiCoverageConfigurations(),
+          "basic-coverage"
+        )
       );
 
       var containersLeftOut = criteria
@@ -183,6 +180,51 @@ class DefaultOpenApiQualityGatesUnitTest {
         PARAMETER_COVERAGE,
         NO_UNDOCUMENTED_RESPONSE_CODES
       );
+    }
+
+    /**
+     * The predefined gates are a ladder, and this is the rung that is expressible as a subset:
+     * {@code minimal} is a reachability check, so every criterion it requires has to be required by
+     * the pragmatic baseline above it. Dropping path coverage from {@code basic-coverage} once left
+     * a gate named "minimal" demanding something the baseline never measured, and this fails if
+     * that inversion returns.
+     *
+     * <p>The rung above cannot be written the same way: {@code full-feature} covers
+     * {@code basic-coverage}'s response-code, parameter and no-undocumented criteria through
+     * containment, but reaches path coverage only through the implication that full method coverage
+     * is full path coverage — true at its 100% threshold, and not a subset relation.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_011_FOUR_PREDEFINED_GATES_FIXED_COMPOSITION)
+    void minimalIsASubsetOfBasicCoverage() {
+      doAnswer(invocation ->
+        Optional.of(
+          OpenApiCoverageConfiguration.builder()
+            .name(invocation.getArgument(0))
+            .build()
+        )
+      )
+        .when(openApiCoverageConfigurationRepositoryMock)
+        .findByName(anyString());
+
+      var gates = fixture.getDefaultOpenApiCoverageConfigurations();
+
+      assertThat(criteriaOf(gateNamed(gates, "minimal")))
+        .isNotEmpty()
+        .isSubsetOf(criteriaOf(gateNamed(gates, "basic-coverage")));
+    }
+
+    private QualityGateConfiguration gateNamed(
+      Set<QualityGateConfiguration> gates,
+      String name
+    ) {
+      return gates
+        .stream()
+        .filter(qualityGateConfiguration ->
+          name.equals(qualityGateConfiguration.getName())
+        )
+        .findFirst()
+        .orElseThrow();
     }
 
     private Set<OpenApiCoverageCriteria> criteriaOf(
