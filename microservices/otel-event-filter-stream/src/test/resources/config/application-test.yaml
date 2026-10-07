@@ -1,0 +1,15 @@
+logging:
+  level:
+    WireMock: WARN
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+snow:
+  white:
+    otel:
+      event:
+        filter:
+          inbound-topic-name: snow-white-all
+          outbound-topic-name: snow-white-filtered

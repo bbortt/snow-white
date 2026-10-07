@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "github-pages", group: :jekyll_plugins
+gem "jekyll-include-cache", group: :jekyll_plugins
+
+# liquid < 4.0.4 calls String#tainted?, removed in Ruby 3.2+ (see
+# https://github.com/Shopify/liquid/pull/1421); force a Ruby 3.3-compatible version regardless of
+# which github-pages release the resolver otherwise picks.
+gem "liquid", ">= 4.0.4"

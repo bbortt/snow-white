@@ -1,0 +1,93 @@
+{
+  "name": "Snow-White",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    // Temurin matches the distribution the CI workflows set up.
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "25",
+      "jdkDistro": "tem",
+      "installGradle": false,
+      "installMaven": false
+    },
+    // pnpm is installed by corepack in post-create.sh, which follows the
+    // `packageManager` pin in package.json instead of drifting from it.
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24",
+      "pnpmVersion": "none"
+    },
+    "ghcr.io/devcontainers-extra/features/bun:1": {},
+    // `helm template` is invoked by the `helm` module's tests; minikube is not
+    // used by any build step.
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "minikube": "none"
+    },
+    // A daemon inside the container, not the host's socket: see
+    // DEVELOPMENT.md#why-a-container for the trade-off.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "dockerDashComposeVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "64gb"
+  },
+  "mounts": [
+    "source=snow-white-m2,target=/home/vscode/.m2,type=volume",
+    "source=snow-white-pnpm-store,target=/home/vscode/.local/share/pnpm,type=volume",
+    "source=snow-white-bun-cache,target=/home/vscode/.bun/install/cache,type=volume"
+  ],
+  "remoteEnv": {
+    "MAVEN_OPTS": "-Xmx2g"
+  },
+  // The ports `dev/docker-compose.yaml` publishes, plus the docs site and Sonar.
+  "forwardPorts": [
+    80, 3000, 4000, 4317, 4318, 5432, 8080, 8081, 8084, 8085, 8086, 8090, 9000,
+    9092, 15000, 16686
+  ],
+  "portsAttributes": {
+    "80": { "label": "api-gateway" },
+    "3000": { "label": "Artifactory (mock)", "onAutoForward": "silent" },
+    "4000": { "label": "Docs site (Jekyll)", "onAutoForward": "silent" },
+    "4317": { "label": "OTLP gRPC", "onAutoForward": "silent" },
+    "4318": { "label": "OTLP HTTP", "onAutoForward": "silent" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "8080": { "label": "example-application" },
+    "8081": { "label": "quality-gate-api", "onAutoForward": "silent" },
+    "8084": { "label": "report-coordinator-api", "onAutoForward": "silent" },
+    "8085": { "label": "api-index-api", "onAutoForward": "silent" },
+    "8086": { "label": "InfluxDB" },
+    "8090": { "label": "Kafka UI" },
+    "9000": { "label": "SonarQube", "onAutoForward": "silent" },
+    "9092": { "label": "Kafka", "onAutoForward": "silent" },
+    "15000": { "label": "Grafana" },
+    "16686": { "label": "Jaeger" }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "waitFor": "postCreateCommand",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode",
+        "davidanson.vscode-markdownlint",
+        "oven.bun-vscode"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "files.eol": "\n",
+        "java.configuration.updateBuildConfiguration": "interactive",
+        "java.import.maven.offline.enabled": false,
+        "maven.executable.preferMavenWrapper": true
+      }
+    }
+  }
+}
