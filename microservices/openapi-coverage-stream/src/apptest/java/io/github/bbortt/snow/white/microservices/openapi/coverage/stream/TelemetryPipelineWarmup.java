@@ -70,7 +70,7 @@ final class TelemetryPipelineWarmup {
 
     try {
       Thread.sleep(Duration.ofSeconds(60).toMillis());
-    } catch (InterruptedException e) {
+    } catch (InterruptedException _) {
       Thread.currentThread().interrupt();
     }
   }

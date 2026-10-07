@@ -192,6 +192,11 @@
 
       <dependencies>
         <dependency>
+          <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+          <artifactId>citrus-junit-jupiter-extension</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
           <groupId>org.awaitility</groupId>
           <artifactId>awaitility</artifactId>
           <scope>test</scope>

@@ -431,6 +431,14 @@
         <frontend.test.skip>true</frontend.test.skip>
       </properties>
 
+      <dependencies>
+        <dependency>
+          <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+          <artifactId>citrus-junit-jupiter-extension</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+
       <build>
         <testResources>
           <testResource>
