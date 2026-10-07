@@ -32,3 +32,15 @@ that test run and that an insufficiently covered API fails the pipeline step.
 
 - [STK-001](STK-001-correlate-specs-with-telemetry.md) — the correlation this telemetry
   source feeds
+- [ARCH-020](ARCH-020-test-identity-published-not-propagated.md) — how a black-box suite names the
+  test behind each request it makes, which only matters because the runner and the span are in
+  different processes
+
+## Changes
+
+- **2026-10-07** — Related to `ARCH-020`, which realizes this need's harder half.
+  Treating a test run as a first-class telemetry source is what puts the test's identity in one
+  process and the span in another, so a finding could say a target was exercised without being able
+  to say by what.
+  `ARCH-020` closes that for a JUnit-driven suite.
+  Nothing about this need changed; it gained the spec that makes its evidence nameable.

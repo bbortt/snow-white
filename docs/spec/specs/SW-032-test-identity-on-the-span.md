@@ -100,6 +100,12 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   deliberately does not enter, since no criterion judges it
 - [CON-001](CON-001-deterministic-analysis-results.md) — the determinism this stays clear of by
   never being a correlation key
+- [SW-046](SW-046-test-case-name-is-the-qualified-invocation.md) — the value a JUnit-driven runner
+  produces for this attribute, bounded by the same constant this spec drops a name at
+- [SW-047](SW-047-one-current-span-per-test.md) — the runner's own span, which carries the
+  attribute too and which Snow-White deliberately does not read
+- [ARCH-020](ARCH-020-test-identity-published-not-propagated.md) — how that value reaches a request
+  at all when the runner is not instrumented
 
 ## Changes
 
@@ -151,3 +157,16 @@ A documentation check asserts `semantic-convention/` lists the attribute and att
   The documentation check remains deferred for the reason recorded above; `semantic-convention/test.md`
   no longer hedges that nothing reads the attribute, and the coverage-stream README documents the
   property.
+- **2026-10-07** — Gained a producer.
+  Nothing about the attribute, the opaque-label rules or the
+  byte bound changed; what changed is that a value now arrives from somewhere other than a
+  hand-written header.
+  `SW-046` fixes what a JUnit-driven runner emits — the fully qualified `<package>.<Class>#<method>`
+  name, with a `[<n>]` suffix where JUnit distinguishes a template invocation — and reads this
+  spec's bound from `FindingEvidence.MAX_TEST_CASE_NAME_BYTES` rather than restating it, so the
+  producing and storing sides cannot drift apart on the one number they share.
+  The producing side drops an over-long name for the same reason this spec does, which keeps "a
+  dropped name and an absent one are indistinguishable downstream" true at both ends.
+  `SW-047` puts the attribute on the runner's own test span as well, where the upstream registry
+  places it; Snow-White still reads only the server span, so the "deliberately not read" list is
+  unchanged and no correlation now depends on a runner's span existing.

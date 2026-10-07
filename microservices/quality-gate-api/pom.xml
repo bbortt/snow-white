@@ -412,6 +412,25 @@
 
       <dependencies>
         <dependency>
+          <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+          <artifactId>citrus-junit-jupiter-extension</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <!--
+          The extension takes the OpenTelemetry SDK as an optional dependency (CON-013), so a suite
+          that wants its test spans exported brings the SDK and an exporter itself.
+        -->
+        <dependency>
+          <groupId>io.opentelemetry</groupId>
+          <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.opentelemetry</groupId>
+          <artifactId>opentelemetry-exporter-otlp</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
           <groupId>org.citrusframework</groupId>
           <artifactId>citrus-junit-jupiter</artifactId>
           <scope>test</scope>
@@ -566,6 +585,10 @@
                       <OTEL_EXPORTER_OTLP_ENDPOINT>
                         http://otel-collector:4318
                       </OTEL_EXPORTER_OTLP_ENDPOINT>
+                      <OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE
+                      >
+                        test.case.name
+                      </OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE>
                       <SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
                         http://localhost
                       </SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL>
@@ -661,6 +684,20 @@
                   <includes>
                     <include>**/*AppTest.java</include>
                   </includes>
+                  <!-- Exports the extension's test spans to the stack's collector. -->
+                  <environmentVariables>
+                    <OTEL_EXPORTER_OTLP_ENDPOINT>
+                      http://localhost:4318
+                    </OTEL_EXPORTER_OTLP_ENDPOINT>
+                    <OTEL_EXPORTER_OTLP_PROTOCOL>
+                      http/protobuf
+                    </OTEL_EXPORTER_OTLP_PROTOCOL>
+                    <OTEL_LOGS_EXPORTER>none</OTEL_LOGS_EXPORTER>
+                    <OTEL_METRICS_EXPORTER>none</OTEL_METRICS_EXPORTER>
+                    <OTEL_SERVICE_NAME>
+                      quality-gate-api-apptest
+                    </OTEL_SERVICE_NAME>
+                  </environmentVariables>
                 </configuration>
                 <goals>
                   <goal>integration-test</goal>

@@ -75,6 +75,7 @@
     -->
     <citrus.version>5.0.2</citrus.version>
     <docker-maven-plugin.version>0.49.0</docker-maven-plugin.version>
+    <io.opentelemetry.version>1.66.0</io.opentelemetry.version>
     <jackson.version>3.2.3</jackson.version>
     <jackson-v2.version>2.22</jackson-v2.version>
     <junit.version>6.1.3</junit.version>
@@ -138,6 +139,11 @@
       <dependency>
         <groupId>io.github.bbortt.snow-white</groupId>
         <artifactId>commons</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.bbortt.snow-white.toolkit</groupId>
+        <artifactId>citrus-junit-jupiter-extension</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -212,6 +218,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <properties>
+              <configurationParameters>
+                junit.jupiter.execution.parallel.enabled = true
+              </configurationParameters>
+            </properties>
+          </configuration>
         </plugin>
 
         <plugin>

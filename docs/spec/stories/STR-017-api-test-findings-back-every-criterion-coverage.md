@@ -236,3 +236,5 @@ unchanged for identical input telemetry.
   `#2009` will later teach to emit `<skipped>` per waived finding
 - [SYS-012](../specs/SYS-012-result-consumption.md) — the result-consumption capability this story
   widens
+- [STR-026](STR-026-junit-suite-names-its-test-on-every-request.md) — the story that picks up the
+  producing end this one deferred, so the `testCaseName` slot built here is actually filled

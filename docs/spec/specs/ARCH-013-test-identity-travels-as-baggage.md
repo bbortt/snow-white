@@ -115,6 +115,12 @@ projection, for every calculation.
   runner and the span sit in different processes at all
 - [SYS-004](SYS-004-telemetry-ingestion-and-correlation.md) — the ingestion path the attribute
   travels with the rest of a span's attributes
+- [ARCH-020](ARCH-020-test-identity-published-not-propagated.md) — the runner-side half for a
+  runner that is not itself instrumented, which is every suite in this repository
+- [SW-046](SW-046-test-case-name-is-the-qualified-invocation.md) — the value such a runner puts in
+  the baggage entry
+- [SW-047](SW-047-one-current-span-per-test.md) — the runner's own span, distinct from the server
+  span the attribute is read off
 
 ## Changes
 
@@ -149,3 +155,19 @@ projection, for every calculation.
   permanently null `testCaseName` with nothing in the integration guide explaining it.
   This changes no decision; it closes the gap between the decision and the page an integrator
   actually follows.
+- **2026-10-07** — Qualified the runner-side half, which `STR-026` found to be under-stated rather
+  than wrong.
+  The rationale above says a test runner already speaking OTLP "needs to set an entry, not enable a
+  mechanism", and that is true only of a runner whose HTTP client is OpenTelemetry-instrumented.
+  Neither this repository's Citrus application tests nor a plain JUnit suite is: `citrus-http` over
+  `httpclient5` carries no instrumentation, there is no `micrometer-tracing-bridge-otel` on those
+  classpaths, and no `-javaagent` on any Failsafe JVM — verified by resolving
+  `examples/example-spring-boot`'s application-test classpath on this date.
+  Putting the entry into such a runner's `Context` therefore puts nothing on the wire, which is why
+  `TestIdentityBaggageAppTest` has always written the `baggage` header by hand.
+  The decision is unchanged — baggage is still how the identity travels, and the agent-side copy is
+  untouched — but the sentence "needs one HTTP header" now has an owner: `ARCH-020` publishes the
+  identity and ships the `ClientHttpRequestInterceptor` that attaches it, so a suite wires its
+  client once instead of every test writing a header.
+  Until then this decision had `verifies` anchors and no `realizes` anchor anywhere, which is the
+  shape an unimplemented producing half leaves in `clew coverage`.

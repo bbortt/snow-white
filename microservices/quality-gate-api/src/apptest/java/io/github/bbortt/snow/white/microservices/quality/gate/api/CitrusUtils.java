@@ -7,8 +7,10 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.PRIVATE;
 
+import io.github.bbortt.snow.white.toolkit.junit.jupiter.extension.TestIdentityBaggageInterceptor;
 import lombok.NoArgsConstructor;
 import org.citrusframework.endpoint.Endpoint;
 import org.citrusframework.http.client.HttpClient;
@@ -20,6 +22,10 @@ final class CitrusUtils {
   static Endpoint getHttpEndpoint(String host, int port) {
     var endpointConfiguration = new HttpEndpointConfiguration();
     endpointConfiguration.setRequestUrl(format("http://%s:%s", host, port));
+    // Names the running test on every request, so the service's spans carry it.
+    endpointConfiguration.setClientInterceptors(
+      singletonList(new TestIdentityBaggageInterceptor())
+    );
     return new HttpClient(endpointConfiguration);
   }
 }
