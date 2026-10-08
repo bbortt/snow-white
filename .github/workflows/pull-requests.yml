@@ -1,0 +1,145 @@
+name: Pull-Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    # The gates below read the payload's label list, which is frozen when the run is created, and
+    # 'labeled' is not one of the default types: labelling an open pull request left them judging
+    # the labels it had beforehand, so asking for application tests meant pushing an empty commit.
+    # Labels the 'labeler' job applies never arrive here, since events raised by GITHUB_TOKEN start
+    # no workflow run - only a human or Dependabot labelling a pull request re-evaluates the gates.
+    # A labelled run repeats the whole board, deliberately: skipping the jobs no label can change
+    # would post them as skipped check runs on a commit that already has real ones, and GitHub
+    # keeps the most recent run of a check name - so labelling a red pull request would bury the
+    # red, and satisfy a required check that had genuinely failed.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
+concurrency:
+  group: mr-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-slim
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+  helm-changes:
+    name: Detect Helm Chart Changes
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      changed: ${{ steps.detect.outputs.changed }}
+    steps:
+      - name: Look for Helm Chart Changes
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        # The scoring values and this workflow change the verdict as much as the chart itself does.
+        run: |
+          if gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only |
+            grep -qE '^(helm/|\.github/kubescore_values\.yml$|\.github/workflows/pull-requests\.yml$)'; then
+            echo 'changed=true' >>"$GITHUB_OUTPUT"
+          else
+            echo 'No Helm chart changes, skipping kube-score.'
+            echo 'changed=false' >>"$GITHUB_OUTPUT"
+          fi
+  kube-score:
+    name: Score Helm Chart
+    runs-on: ubuntu-24.04
+    needs: helm-changes
+    if: needs.helm-changes.outputs.changed == 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Score Helm Chart
+        run: |
+          helm template kubescore helm/charts/snow-white/ -f ".github/kubescore_values.yml" | \
+            docker run --rm -i zegl/kube-score:latest score \
+            --ignore-container-cpu-limit \
+            --ignore-test pod-networkpolicy \
+            -
+  labeler:
+    name: Pull-Request Labels
+    runs-on: ubuntu-slim
+    if: ${{ !startsWith(github.head_ref, 'release-please-') && !startsWith(github.ref, 'refs/heads/release-please-') }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13
+  skill:
+    name: Validate Agent Skill
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.13'
+      - name: Install APM CLI
+        run: pip install apm-cli==0.30.0
+      - name: Check Packaged Skill is in Sync
+        run: node .github/scripts/sync-skills.mjs --check
+      - name: Validate APM Manifest
+        run: apm pack --dry-run
+      # `apm audit --file` rejects a directory but still exits 0, so feed it real files.
+      - name: Scan Skill for Hidden Characters
+        run: find .apm/skills -type f -print0 | xargs -0 -I{} apm audit --file {}
+      # `apm pack` happily packages a SKILL.md with broken frontmatter; only the Agent
+      # Skills spec validator catches that. `--strict` promotes warnings to errors.
+      - name: Validate Agent Skill Specification
+        env:
+          DISABLE_AUTOUPDATER: '1'
+          DISABLE_ERROR_REPORTING: '1'
+          DISABLE_TELEMETRY: '1'
+        run: npx --yes @anthropic-ai/claude-code@2.1.268 plugin validate .apm/skills --strict
+  zizmor:
+    name: Zizmor
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482

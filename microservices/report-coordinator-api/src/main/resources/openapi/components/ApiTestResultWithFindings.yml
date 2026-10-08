@@ -1,0 +1,34 @@
+# The list-shaped read serves './ApiTestResult.yml' instead, which is this shape without the
+# findings: a finding list is bounded by the analyzed specification's size, not by the page size,
+# and 'findings' being present means loaded. Keep the two in step for everything but that array.
+type: object
+# 'findings' is served on every result of every 200 and is deliberately not listed 'required':
+# generated clients decode all of an operation's 2xx bodies with the 200 deserializer, and
+# 'getReportByCalculationId' answers a findings-free 202. Required there makes the generated
+# TypeScript map over an absent array - 'json.findings.map(...)' with no guard - and the first 202
+# carrying a criterion that has already reported would kill the poll reading it.
+required:
+  - id
+  - coverage
+properties:
+  id:
+    type: string
+    description: Unique ID of the criterion
+    example: PATH_COVERAGE
+  coverage:
+    type: number
+    format: decimal
+    description: The calculated coverage result for this criterion
+    example: 0.8
+  additionalInformation:
+    type: string
+    description: Additional information of a coverage of 1.0 has not been met
+    example: Path GET_/foo/bar not covered
+  isIncludedInQualityGate:
+    type: boolean
+    description: If this result was relevant for the final status, or not
+  findings:
+    type: array
+    description: 'What the criterion concluded about each target it enumerated - empty, never absent, for a result that has none'
+    items:
+      $ref: './ApiTestFinding.yml'

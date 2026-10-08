@@ -1,0 +1,52 @@
+receivers:
+  kafka/snow-white:
+    brokers:
+      - kafka:9094
+    protocol_version: 4.0.0
+    traces:
+      encoding: otlp_json
+      topics:
+        - snow-white_outbound
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+  batch:
+    send_batch_size: 512
+    send_batch_max_size: 1024
+  groupbytrace:
+    wait_duration: 5s
+    num_traces: 512
+extensions:
+  health_check:
+    endpoint: '0.0.0.0:13133'
+exporters:
+  debug/basic:
+    verbosity: basic
+    sampling_initial: 2
+    sampling_thereafter: 10
+  influxdb:
+    endpoint: http://influxdb:8086
+    org: snow-white
+    bucket: raw-data
+    token: ${INFLUXDB_TOKEN}
+  otlp_grpc/grafana:
+    endpoint: 'grafana:4317'
+    tls:
+      insecure: true
+service:
+  extensions: [health_check]
+  pipelines:
+    # Only inbound tracing data is relevant to this test suite -
+    # the calculation is derived exclusively from spans,
+    # so metrics/logs pipelines are dropped entirely rather than routed anywhere.
+    traces/snow-white:
+      receivers: [kafka/snow-white]
+      processors: [memory_limiter, groupbytrace, batch]
+      exporters: [debug/basic, influxdb, otlp_grpc/grafana]
+  telemetry:
+    logs:
+      level: INFO
+    resource:
+      'service.namespace': 'io.github.bbortt.snow.white'

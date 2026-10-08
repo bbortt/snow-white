@@ -1,0 +1,45 @@
+name: 'example-snow-white-openapi-generator: apptest'
+
+# Same service names, network and host ports as `example-spring-boot`'s apptest stack on purpose:
+# the two examples make the same claim and should read the same. They are meant to run one at a
+# time - both stacks join the same external network and would answer to the same `otel-collector`
+# and `wiremock` DNS names, so the clashing host ports are the loud failure that keeps a stale stack
+# from silently serving the other example's test.
+
+networks:
+  default:
+    name: ${COMPOSE_NETWORK_NAME:-github_actions}
+    external: true
+    driver: bridge
+
+services:
+  # Re-encodes what the example application exports as OTLP/JSON and forwards it to WireMock,
+  # so the test can read the exported spans without a protobuf decoder of its own.
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.161.0
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    restart: on-failure
+    networks:
+      - default
+
+  # Stands in for a telemetry backend: it accepts the collector's OTLP/HTTP export and keeps every
+  # request in its journal, which is where the test reads the exported span from.
+  #
+  # Not the `-alpine` variant the other modules use: that one publishes amd64 only, which makes this
+  # test unrunnable on an arm64 developer machine. The plain tag is multi-arch, same WireMock.
+  wiremock:
+    image: wiremock/wiremock:3.13.2
+    ports:
+      - '9000:8080'
+    restart: on-failure
+    networks:
+      - default
