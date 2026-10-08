@@ -27,8 +27,8 @@ Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been t
 
 ### Operation Success Coverage
 
-Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response.
-Complements [HTTP Method Coverage](#http-method-coverage), which only checks that an operation was called at all.
+Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response, not merely a call.
+This is a stricter check than [HTTP Method Coverage](#http-method-coverage).
 
 ### Error Response Code Coverage
 
@@ -83,12 +83,15 @@ This is a subset of [All Response Codes must be Specified](#all-response-codes-m
 
 ## Criteria Relationships
 
-Several criteria form a hierarchy — satisfying a broader criterion implies narrower ones were also satisfied:
+Several criteria form a hierarchy — a narrower criterion sits under the broader one it is a narrowing of:
 
 <!-- This tree is a view of the containment declared on `OpenApiCoverageCriteria`, which is where
 the relation is edited; `OpenApiCoverageCriteriaUnitTest` fails when the two disagree. -->
 
 ```plaintext
+HTTP_METHOD_COVERAGE
+└── OPERATION_SUCCESS_COVERAGE
+
 RESPONSE_CODE_COVERAGE
 ├── POSITIVE_RESPONSE_CODE_COVERAGE
 └── ERROR_RESPONSE_CODE_COVERAGE
@@ -102,10 +105,16 @@ PARAMETER_COVERAGE
 └── OPTIONAL_PARAMETER_COVERAGE
 ```
 
-Understanding these relationships helps when composing custom quality gates: requiring a parent criterion already implies its subsets.
+A criterion narrows the one above it in one of two ways, and which way decides what the tree tells you about coverage.
+Three of the four groups are **subsets**: the child applies the same check to fewer targets, so a parent at 100% means every child is at 100% too — full response-code coverage is full positive- and error-response-code coverage.
+`OPERATION_SUCCESS_COVERAGE` under `HTTP_METHOD_COVERAGE` is a **stricter check** instead: both judge exactly the same operations, and success is the harder bar.
+There the implication runs the other way — full operation-success coverage is full method coverage, while full method coverage only says every operation was called, not that any of them ever worked.
 
-`PATH_COVERAGE` and `HTTP_METHOD_COVERAGE` are not in this hierarchy.
-Each judges a different thing — a path item, and one operation within a path item — so neither one's targets are a subset of the other's.
+So when composing a custom quality gate, requiring a parent already covers its subsets, but requiring `HTTP_METHOD_COVERAGE` does not cover `OPERATION_SUCCESS_COVERAGE`.
+Require the stricter criterion if that is what you mean.
+
+`PATH_COVERAGE` is in neither group.
+It and `HTTP_METHOD_COVERAGE` judge different things — a path item, and one operation within a path item — so neither one's targets are a subset of the other's and neither is a stricter check on the same targets.
 Full method coverage does imply full path coverage, but never the reverse: a path whose `GET` was called and whose `POST` was not is fully covered for path coverage and half covered for method coverage.
 Below 100% even that one direction breaks down, so requiring either criterion at a threshold tells you nothing about the other.
 Require both if you want both reported.

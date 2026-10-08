@@ -43,10 +43,12 @@ import org.springframework.stereotype.Component;
  * Calculator for the following criteria:
  * Each operation has produced at least one successful (2xx) response.
  * <p>
- * This is distinct from {@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE}, which only checks that
- * an operation was called at all. This calculator additionally verifies that at least one call
- * resulted in a success response, distinguishing "untested" operations from "called but never
- * succeeded" ones.
+ * This is a stricter check than {@link OpenApiCoverageCriteria#HTTP_METHOD_COVERAGE}, which only
+ * checks that an operation was called at all. The two judge the same operations; this calculator
+ * additionally verifies that at least one call resulted in a success response, distinguishing
+ * "untested" operations from "called but never succeeded" ones. That is the containment the enum
+ * declares between them, and it is why this criterion at full coverage implies method coverage at
+ * full coverage while the reverse says nothing.
  *
  * @see OpenApiCoverageCriteria#OPERATION_SUCCESS_COVERAGE
  */

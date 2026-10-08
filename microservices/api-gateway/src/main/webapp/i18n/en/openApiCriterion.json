@@ -23,7 +23,7 @@
         },
         "OPERATION_SUCCESS_COVERAGE": {
           "name": "Operation Success",
-          "description": "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response. Complements `HTTP_METHOD_COVERAGE`, which only checks that an operation was called at all."
+          "description": "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response, not merely a call. This is a stricter check than `HTTP_METHOD_COVERAGE`."
         },
         "ERROR_RESPONSE_CODE_COVERAGE": {
           "name": "Error Response Code",
