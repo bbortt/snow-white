@@ -149,15 +149,12 @@ final class ApiTestResultLinker {
       .filter(r -> r.getCoverage().compareTo(threshold) >= 0)
       .count();
 
-    BigDecimal passRate = BigDecimal.valueOf(passedCount)
-      .divide(
-        BigDecimal.valueOf(includedResults.size()),
-        2,
-        RoundingMode.HALF_UP
-      )
-      .multiply(BigDecimal.valueOf(100));
-
-    return passRate.compareTo(BigDecimal.valueOf(minCoveragePercentage)) >= 0
+    // Cross-multiplied instead of dividing: passedCount / includedCount >= pct / 100.
+    // Dividing first quantised the share to whole percents, which could only ever round
+    // a share up over the bar, never down below it -- six of seven included results at a
+    // bar of 86 is a true share of 85.71% and scored 0.86 -> 86, passing a gate it misses.
+    return passedCount * 100L >=
+      (long) includedResults.size() * minCoveragePercentage
       ? PASSED
       : FAILED;
   }

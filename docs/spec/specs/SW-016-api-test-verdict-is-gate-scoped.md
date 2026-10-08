@@ -22,6 +22,8 @@ When those results are attached to an API test:
   ratio); the API test passes when the **share of included results that passed**, expressed as a
   percentage, reaches that same `minCoveragePercentage`.
   Otherwise the API test fails.
+  Both comparisons are **exact**: neither the ratio nor the share is rounded before being
+  compared, so a share that falls short of the bar by any margin fails it.
 - An API test whose included set is **empty** passes.
 - A response carrying no results at all leaves the API test untouched — neither its results nor
   its status change.
@@ -109,3 +111,19 @@ leaves the API test unchanged.
   Where the removal empties the share entirely, the existing empty-share rule stands and the API test
   is `PASSED`; no seventh `ReportStatus` member is introduced for it, and the published counts are
   what identify such a pass as waiver-derived.
+- **2026-10-08** — The share is now compared exactly, where it was previously rounded to whole
+  percents before meeting the bar.
+  The bar does not move and the population does not change; what changes is that a share can no
+  longer round its way over a bar it misses.
+  The rounding was half-up on the ratio at two decimal places, so it could only ever lift a share
+  _up_ across the bar, never drop a passing one below it — every correction is therefore a verdict
+  that flips `PASSED` to `FAILED`, and none goes the other way.
+  A gate's bar is bounded to 80–100 and it can select at most the fourteen criteria the coverage
+  enum declares, which together make the set of affected verdicts finite and small: bars of 82, 85,
+  86, 88, 89, 91, 92 and 93, each at one or two particular included-result counts.
+  The smallest is six of seven included results at a bar of 86 — a true share of 85.71% that scored
+  `0.86` and passed — and the lowest affected bar is 82, at nine of eleven.
+  Neither predefined gate was affected: `basic-coverage` sits at 80 and the default at 100, and
+  within fourteen criteria neither bar can be rounded over (80 would first need forty-four included
+  results and 100 two hundred), so only a custom gate at one of those eight bars was reading a
+  verdict it had not earned.
