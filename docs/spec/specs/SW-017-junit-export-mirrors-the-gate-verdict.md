@@ -138,3 +138,15 @@ report's JSON read, that the waived total appears on the root beside the thresho
   The bar and the mapping are unchanged; what the export gains is the ability to distinguish a pass
   that rests on waivers from one that rests on coverage, which `CON-012` requires of every published
   shape and this document could not previously express.
+- **2026-10-08** — The no-contradiction claim this spec has made since it was written is now
+  actually true, by a change in `SW-016` rather than one here.
+  Nothing about the document changes: `skipped` still means gate exclusion, and an included
+  criterion below the bar still emits a `failure` of type `AssertionError`.
+  What changes is that such a `failure` can no longer appear inside a suite the report calls
+  `PASSED`.
+  `SW-016` used to pass an API test when the _share_ of included criteria clearing the bar cleared
+  it too, so a tolerated failing criterion was written here as an explicit failure while the
+  verdict beside it said pass — a document no build server would honour, and precisely the
+  disagreement this spec's rationale claims an earlier revision had already left behind.
+  Now that every included criterion must clear the bar, a suite containing a `failure` is a suite
+  whose API test is `FAILED`.

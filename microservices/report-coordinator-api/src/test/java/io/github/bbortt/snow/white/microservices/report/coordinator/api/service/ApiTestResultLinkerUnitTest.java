@@ -15,7 +15,6 @@ import static java.lang.Boolean.FALSE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
-import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +35,6 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -115,6 +113,35 @@ class ApiTestResultLinkerUnitTest {
       verify(apiTestResult).withIncludedInReport(false);
     }
 
+    @ParameterizedTest
+    @MethodSource("nullOrEmptyList")
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
+    void shouldSetApiTestStatusToPassed_whenNoResultIsIncluded(
+      Set<String> includedOpenApiCoverageCriteria
+    ) {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      // The one result present would fail on its own, so PASSED here can only come from the
+      // included set being empty -- a gate that selected nothing this API measured has nothing
+      // to object to, and must not fail on absence of evidence.
+      fixture.addApiTestResultsToApiTest(
+        Set.of(
+          ApiTestResult.builder()
+            .apiTestCriteria(PATH_COVERAGE.name())
+            .coverage(ZERO)
+            .includedInReport(FALSE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(mock(ApiTest.class))
+            .build()
+        ),
+        apiTest,
+        includedOpenApiCoverageCriteria,
+        80
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
+    }
+
     @Test
     @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
     void shouldSetApiTestStatusToPassed_whenAllIncludedResultsFullyCovered() {
@@ -174,11 +201,12 @@ class ApiTestResultLinkerUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
-    void shouldSetApiTestStatusToPassed_whenPassRateMeetsMinCoveragePercentage() {
+    void shouldSetApiTestStatusToFailed_whenOneIncludedResultMissesTheBar_howeverManyOthersPass() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
-      // 4 results: 3 with full coverage (1.0), 1 with zero coverage = 75% pass rate
-      // But minCoveragePercentage = 80, so this should FAIL
+      // 4 included results: 3 at full coverage, 1 at zero. The bar is a floor under each one,
+      // so the single zero fails the API test no matter where the bar sits -- including at 75,
+      // where three of four clearing it used to be a passing share.
       Set<ApiTestResult> apiTestResults = Set.of(
         ApiTestResult.builder()
           .apiTestCriteria("CRITERIA_1")
@@ -232,44 +260,70 @@ class ApiTestResultLinkerUnitTest {
         allCriteria,
         75
       );
-      assertThat(apiTest2.getReportStatus()).isEqualTo(PASSED);
+      assertThat(apiTest2.getReportStatus()).isEqualTo(FAILED);
+
+      // The same set passes once the gate stops selecting the criterion that missed: the floor
+      // applies to the included set, and nothing outside it votes either way.
+      var apiTest3 = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest3,
+        Set.of("CRITERIA_1", "CRITERIA_2", "CRITERIA_3"),
+        80
+      );
+      assertThat(apiTest3.getReportStatus()).isEqualTo(PASSED);
     }
 
     @Test
     @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
-    void shouldSetApiTestStatusToFailed_whenPassRateOnlyReachesMinCoveragePercentageByRounding() {
+    void shouldSetApiTestStatusToFailed_whenIncludedResultIsJustBelowTheBar() {
       var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
 
-      // 6 of 7 included results pass: a true share of 85.71%, which misses a bar of 86.
-      // Rounding the share to whole percents before comparing scored it 0.86 -> 86 and passed.
-      // A gate's bar is bounded to 80..100 and it can select at most the 14 criteria the enum
-      // declares; within those bounds this is the smallest included-result count at which the
-      // exact and the rounded comparison disagree, so it is an edge a real gate can hit.
-      var includedCriteria = IntStream.rangeClosed(1, 7)
-        .mapToObj(i -> "CRITERIA_" + i)
-        .collect(toSet());
-
-      var apiTestResults = includedCriteria
-        .stream()
-        .map(criteria ->
-          ApiTestResult.builder()
-            .apiTestCriteria(criteria)
-            .coverage("CRITERIA_7".equals(criteria) ? ZERO : ONE)
-            .includedInReport(FALSE)
-            .duration(Duration.ofSeconds(1))
-            .apiTest(mock(ApiTest.class))
-            .build()
-        )
-        .collect(toSet());
+      // The per-criterion comparison is exact and is now the only one: 0.79 against a bar of 80
+      // fails, where 0.80 exactly would pass. Nothing rounds either side of it.
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(new BigDecimal("0.79"))
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
 
       fixture.addApiTestResultsToApiTest(
         apiTestResults,
         apiTest,
-        includedCriteria,
-        86
+        Set.of(PATH_COVERAGE.name()),
+        80
       );
 
       assertThat(apiTest.getReportStatus()).isEqualTo(FAILED);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
+    void shouldSetApiTestStatusToPassed_whenIncludedResultSitsExactlyOnTheBar() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(new BigDecimal("0.80"))
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        Set.of(PATH_COVERAGE.name()),
+        80
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
     }
 
     @Test
