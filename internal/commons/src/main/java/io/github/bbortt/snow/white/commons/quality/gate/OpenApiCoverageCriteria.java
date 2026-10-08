@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.quality.gate;
 
+import static java.util.Objects.isNull;
 import static java.util.stream.Stream.iterate;
 
 import clew.traceables.clew.ArchTraceables;
@@ -30,7 +31,7 @@ public enum OpenApiCoverageCriteria {
   ),
   OPERATION_SUCCESS_COVERAGE(
     "Operation Success Coverage",
-    "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response. Complements `HTTP_METHOD_COVERAGE`, which only checks that an operation was called at all."
+    "Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response, not merely a call. This is a stricter check than `HTTP_METHOD_COVERAGE`."
   ),
   ERROR_RESPONSE_CODE_COVERAGE(
     "Error Response Code Coverage",
@@ -78,49 +79,91 @@ public enum OpenApiCoverageCriteria {
   );
 
   /**
+   * The form a declared containment takes. A criterion is judged on two things — the set of targets
+   * it selects and the check it applies to them — and containment requires the contained criterion
+   * to be strictly narrower on at least one of them while matching on the other. Two criteria
+   * identical on both contain neither the other, which is what keeps the relation directional and a
+   * forest without a separate rule saying so.
+   */
+  public enum ContainmentForm {
+    /**
+     * The same check over a strictly smaller set of targets, at the same spec pointer.
+     */
+    SUBSET,
+
+    /**
+     * A strictly stronger check over the same set of targets, at the same spec pointer.
+     */
+    STRENGTH,
+  }
+
+  private record Containment(
+    OpenApiCoverageCriteria container,
+    ContainmentForm form
+  ) {}
+
+  /**
    * The containment forest: every criterion that is contained by another one, mapped to its
-   * container. A criterion absent from this map is a root criterion. Containment means every target
-   * the contained criterion judges is also a target the container judges, at the same spec pointer,
-   * and the container judging targets the contained one does not — the same check over a strictly
-   * smaller set of targets. It carries no inheritance of calculation, of inclusion in a quality
-   * gate, or of coverage.
+   * container and the form of the containment. A criterion absent from this map is a root
+   * criterion. Containment means the contained criterion judges at the same spec pointer as its
+   * container and is strictly narrower in one of two ways: {@link ContainmentForm#SUBSET}, the same
+   * check over a strictly smaller set of targets, or {@link ContainmentForm#STRENGTH}, a strictly
+   * stronger check over the same set of targets. It carries no inheritance of calculation, of
+   * inclusion in a quality gate, or of coverage.
+   *
+   * <p>In particular no coverage implication rides along this relation in a fixed direction. Under
+   * {@code SUBSET} a container at full coverage implies its contained criteria at full coverage —
+   * full {@code RESPONSE_CODE_COVERAGE} is full {@code ERROR_RESPONSE_CODE_COVERAGE}. Under {@code
+   * STRENGTH} the implication runs the other way: full {@code OPERATION_SUCCESS_COVERAGE} implies
+   * full {@code HTTP_METHOD_COVERAGE}, while full method coverage says only that every operation
+   * was called, not that any of them succeeded. One relation, two directions of implication, so
+   * neither direction may be read off an edge.
    *
    * <p>This declaration is the single source of the relation.
    * {@code pages/_pages/quality-gate-criteria.md} publishes it as a tree, and
    * {@code OpenApiCoverageCriteriaUnitTest} asserts the page and this map agree.
    *
-   * <p>{@code PATH_COVERAGE} is deliberately absent: full {@code HTTP_METHOD_COVERAGE} does imply
-   * full path coverage, but the two judge different targets — a path item and an operation within
-   * it — so neither contains the other under the definition above. That implication between their
-   * ratios is a separate, documented fact; it is not containment, and a waiver on an operation must
-   * not reach the path around it.
+   * <p>{@code PATH_COVERAGE} is deliberately absent under either form: full
+   * {@code HTTP_METHOD_COVERAGE} does imply full path coverage, but the two judge different targets
+   * at different pointers — a path item and an operation within it — so neither the target sets
+   * match nor is one a subset of the other. That implication between their ratios is a separate,
+   * documented fact; it is not containment, and a waiver on an operation must not reach the path
+   * around it.
    *
    * <p>Filled from a static block rather than built around {@code Map.of}: an {@code EnumMap}
    * constructed from an empty map cannot infer its key type and would make "no criterion is
    * contained" a startup failure in every service instead of a plain, empty relation.
    */
-  private static final Map<
-    OpenApiCoverageCriteria,
-    OpenApiCoverageCriteria
-  > CONTAINED_BY = new EnumMap<>(OpenApiCoverageCriteria.class);
+  private static final Map<OpenApiCoverageCriteria, Containment> CONTAINED_BY =
+    new EnumMap<>(OpenApiCoverageCriteria.class);
 
   static {
     CONTAINED_BY.putAll(
       Map.of(
         POSITIVE_RESPONSE_CODE_COVERAGE,
-        RESPONSE_CODE_COVERAGE,
+        subsetOf(RESPONSE_CODE_COVERAGE),
         ERROR_RESPONSE_CODE_COVERAGE,
-        RESPONSE_CODE_COVERAGE,
+        subsetOf(RESPONSE_CODE_COVERAGE),
         NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES,
-        NO_UNDOCUMENTED_RESPONSE_CODES,
+        subsetOf(NO_UNDOCUMENTED_RESPONSE_CODES),
         NO_UNDOCUMENTED_ERROR_RESPONSE_CODES,
-        NO_UNDOCUMENTED_RESPONSE_CODES,
+        subsetOf(NO_UNDOCUMENTED_RESPONSE_CODES),
         REQUIRED_PARAMETER_COVERAGE,
-        PARAMETER_COVERAGE,
+        subsetOf(PARAMETER_COVERAGE),
         OPTIONAL_PARAMETER_COVERAGE,
-        PARAMETER_COVERAGE
+        subsetOf(PARAMETER_COVERAGE),
+        OPERATION_SUCCESS_COVERAGE,
+        stricterThan(HTTP_METHOD_COVERAGE)
       )
     );
+  }
+
+  private static Containment subsetOf(OpenApiCoverageCriteria container) {
+    return new Containment(container, ContainmentForm.SUBSET);
+  }
+
+  private static Containment stricterThan(OpenApiCoverageCriteria container) {
+    return new Containment(container, ContainmentForm.STRENGTH);
   }
 
   private final String label;
@@ -135,7 +178,20 @@ public enum OpenApiCoverageCriteria {
    * The criterion containing this one, or {@code null} if this is a root criterion.
    */
   public @Nullable OpenApiCoverageCriteria getContainedBy() {
-    return CONTAINED_BY.get(this);
+    var containment = CONTAINED_BY.get(this);
+
+    return isNull(containment) ? null : containment.container();
+  }
+
+  /**
+   * The form in which {@link #getContainedBy()} contains this one, or {@code null} if this is a
+   * root criterion. Consumed by the documentation views, which state the two forms in different
+   * words because "subset" is false of a {@link ContainmentForm#STRENGTH} edge.
+   */
+  public @Nullable ContainmentForm getContainmentForm() {
+    var containment = CONTAINED_BY.get(this);
+
+    return isNull(containment) ? null : containment.form();
   }
 
   /**

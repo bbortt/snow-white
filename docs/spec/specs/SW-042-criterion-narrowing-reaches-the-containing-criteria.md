@@ -44,15 +44,32 @@ this error body does not declare its required fields, but the code itself must s
 which is a real and different claim.
 
 The upward reach is what makes the narrow form usable at all.
-A child criterion judges a subset of its parent's targets at the same pointer:
+A child criterion makes a stricter claim than its parent about the same pointer, in one of the two
+forms `ARCH-016` declares.
+Under the subset form it judges fewer of the parent's targets:
 `ErrorResponseCodeCoverageCalculator` extends `ResponseCodeCoverageCalculator` and both emit a
 finding at the same response-entry pointer.
-Waiving only the child would leave the parent failing on the identical target, so the waiver would
-buy nothing while reading as though it had — the author would then add the parent by hand, which is
-the enumeration the optional form exists to avoid.
+Under the strength form it judges the parent's targets against a harder bar:
+`OperationSuccessCoverageCalculator` and `MethodCoverageCalculator` both emit at the operation
+pointer, and success is more than having been called.
+Under the subset form, waiving only the child leaves the parent failing on the identical target, so
+the waiver would buy nothing while reading as though it had — the author would then add the parent by
+hand, which is the enumeration the optional form exists to avoid.
+Under the strength form that argument does not hold on every target, because the parent can be
+passing while the child fails: an operation that was called but never answered `2xx` is covered for
+`HTTP_METHOD_COVERAGE` and uncovered for `OPERATION_SUCCESS_COVERAGE`, and reaching up to a criterion
+that already passes changes nothing.
+It is the operation nothing called at all that both of them fail, and there the reach saves the same
+enumeration the subset form does.
 Refusing the downward reach is the same reasoning in reverse: the parent's claim is weaker than the
 child's, and a waiver that silently satisfied stricter criteria than the one it named would be a
 privilege escalation in a mechanism whose whole purpose is to be narrow.
+What licenses the reach under both forms is the strength of the claim rather than the subsetting of
+targets, which is why the strength edge carries it despite the above: naming
+`OPERATION_SUCCESS_COVERAGE` for an operation also
+waives `HTTP_METHOD_COVERAGE` for it, because conceding that an operation cannot be made to succeed
+concedes the weaker statement about it too, while naming `HTTP_METHOD_COVERAGE` concedes nothing
+about success.
 
 Containment has to become machine-readable for this to be specifiable, which is why
 `ARCH-016` is a prerequisite rather than a nicety.
@@ -70,8 +87,13 @@ A test waives the same target naming `ERROR_RESPONSE_CODE_COVERAGE` and asserts 
 `WAIVED` while `REQUIRED_ERROR_FIELDS_COVERAGE` still judges the pointer.
 A test waives a target naming `RESPONSE_CODE_COVERAGE` and asserts
 `ERROR_RESPONSE_CODE_COVERAGE` still judges it.
+A test waives an operation naming `OPERATION_SUCCESS_COVERAGE` and asserts `HTTP_METHOD_COVERAGE`
+stopped judging that operation too, so the reach holds for the strength form and not only for
+subsets; the same test waives an operation naming `HTTP_METHOD_COVERAGE` and asserts
+`OPERATION_SUCCESS_COVERAGE` still judges it.
 A test walks every criterion that declares a parent and asserts a waiver naming it also waives the
-parent, so the rule holds for criteria added after this spec.
+parent, whichever form the declaration carries, so the rule holds for criteria added after this
+spec.
 A test asserts a waiver naming a criterion the gate excluded, whose target other criteria do judge,
 is accepted and applied to those criteria.
 
@@ -91,6 +113,8 @@ is accepted and applied to those criteria.
   the narrow form reaches upward to
 - [SW-006](SW-006-required-error-fields-coverage.md) — the criterion sharing a pointer without
   containing it, which is why the narrow form exists
+- [SW-001](SW-001-structural-call-coverage.md) — the operation pointer shared by the strength-form
+  pair the narrow form also reaches along
 - [ARCH-002](ARCH-002-criteria-metadata-owned-by-enum.md) — amended: the enum ownership this
   extends
 - [SYS-006](SYS-006-criteria-based-evaluation.md) — the criteria model the containment belongs to

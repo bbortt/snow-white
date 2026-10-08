@@ -141,11 +141,14 @@ class DefaultOpenApiQualityGatesUnitTest {
     }
 
     /**
-     * Containment is a declared fact about target spaces, not a composition rule: every gate that
-     * requires a contained criterion goes on requiring it without its containers. {@code
-     * basic-coverage} requires three such criteria, and naming all three containers it leaves out is
-     * what makes a composition that started applying containment fail here - pulling in even one of
-     * them drops that container from this set.
+     * Containment is a declared fact about target spaces and about the strength of the checks over
+     * them, not a composition rule: every gate that requires a contained criterion goes on
+     * requiring it without its containers. {@code basic-coverage} requires four such criteria, and
+     * naming the containers it leaves out is what makes a composition that started applying
+     * containment fail here - pulling in even one of them drops that container from this set. The
+     * fourth container, {@code HTTP_METHOD_COVERAGE} over {@code OPERATION_SUCCESS_COVERAGE}, is
+     * missing from the expected set because this gate already requires it in its own right, which
+     * is the one way a container can be absent here without this assertion objecting.
      */
     @Test
     @VerifiesArch(

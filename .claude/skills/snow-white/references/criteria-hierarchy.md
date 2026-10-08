@@ -14,11 +14,12 @@ without changing how quality gates are defined.
 | ---------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `PATH_COVERAGE`              | Path Coverage              | Every path defined in the specification has been called.                                                                         |
 | `HTTP_METHOD_COVERAGE`       | HTTP Method Coverage       | Each HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.) for each path has been tested.                                           |
-| `OPERATION_SUCCESS_COVERAGE` | Operation Success Coverage | Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response.                      |
+| `OPERATION_SUCCESS_COVERAGE` | Operation Success Coverage | Each operation (unique path + HTTP method combination) has produced at least one successful (2xx) response, not merely a call.   |
 | `CONTENT_TYPE_COVERAGE`      | Content Type Coverage      | Each documented request body content type (e.g. `application/json`, `multipart/form-data`) for each endpoint has been exercised. |
 
-`OPERATION_SUCCESS_COVERAGE` complements `HTTP_METHOD_COVERAGE`, which only checks that an
-operation was called at all — not that it ever succeeded.
+`OPERATION_SUCCESS_COVERAGE` is a stricter check than `HTTP_METHOD_COVERAGE`: both judge the same
+operations, but method coverage only asks whether one was called at all, not whether it ever
+succeeded.
 
 ## Response code criteria
 
@@ -56,10 +57,12 @@ The fix is normally in the **specification**, not the tests.
 
 ## The hierarchy
 
-Several criteria are parents of others.
-Satisfying the parent automatically satisfies its children, but not the reverse:
+Several criteria are narrowings of others, in one of two ways:
 
 ```plaintext
+HTTP_METHOD_COVERAGE
+└── OPERATION_SUCCESS_COVERAGE
+
 RESPONSE_CODE_COVERAGE
 ├── POSITIVE_RESPONSE_CODE_COVERAGE
 └── ERROR_RESPONSE_CODE_COVERAGE
@@ -73,9 +76,15 @@ NO_UNDOCUMENTED_RESPONSE_CODES
 └── NO_UNDOCUMENTED_ERROR_RESPONSE_CODES
 ```
 
-`PATH_COVERAGE`, `HTTP_METHOD_COVERAGE`, `OPERATION_SUCCESS_COVERAGE`, `CONTENT_TYPE_COVERAGE` and
-`REQUIRED_ERROR_FIELDS_COVERAGE` stand alone — they have neither parent nor children, so a failure
-there is always fixed directly.
+The last three groups are **subsets**: the child applies the same check to fewer targets, so a
+parent at 100% puts every child at 100% too.
+The first is a **stricter check**: `OPERATION_SUCCESS_COVERAGE` judges exactly the operations
+`HTTP_METHOD_COVERAGE` judges, and demands more of each.
+There the implication runs the other way — full operation-success coverage is full method coverage,
+while full method coverage says only that every operation was called.
+
+`PATH_COVERAGE`, `CONTENT_TYPE_COVERAGE` and `REQUIRED_ERROR_FIELDS_COVERAGE` stand alone — they
+have neither parent nor children, so a failure there is always fixed directly.
 
 `PATH_COVERAGE` and `HTTP_METHOD_COVERAGE` are not a parent/child pair, although they are often
 read as one: a path item and one operation within it are different targets, so neither criterion's
@@ -86,12 +95,18 @@ gate requiring one does not check the other.
 
 ## Using the hierarchy to prioritize
 
-When several criteria fail for the same API, fix the highest-level failing parent first.
+Within a subset group, when several criteria fail for the same API, fix the highest-level failing
+parent first.
 A fix that satisfies `RESPONSE_CODE_COVERAGE` also satisfies `POSITIVE_RESPONSE_CODE_COVERAGE` and
 `ERROR_RESPONSE_CODE_COVERAGE`, so addressing a child separately duplicates work.
 
-Read the hierarchy in the other direction too: if a parent passes while a child fails, the parent
+Read a subset group in the other direction too: if a parent passes while a child fails, the parent
 cannot help you — fix the child directly rather than broadening the change.
+
+The stricter-check group inverts that advice.
+When both `HTTP_METHOD_COVERAGE` and `OPERATION_SUCCESS_COVERAGE` fail, fix the **child**: making
+every operation succeed makes every operation called.
+Fixing the parent alone leaves the child exactly where it was.
 
 ## Online version
 

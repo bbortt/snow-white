@@ -23,7 +23,7 @@
         },
         "OPERATION_SUCCESS_COVERAGE": {
           "name": "Erfolgreiche Operation",
-          "description": "Jede Operation (eindeutige Pfad- und HTTP-Methoden-Kombination) hat mindestens eine erfolgreiche (2xx) Antwort erzeugt. Ergänzt `HTTP_METHOD_COVERAGE`, das nur prüft, ob eine Operation überhaupt aufgerufen wurde."
+          "description": "Jede Operation (eindeutige Pfad- und HTTP-Methoden-Kombination) hat mindestens eine erfolgreiche (2xx) Antwort erzeugt, nicht bloss einen Aufruf. Dies ist eine strengere Prüfung als `HTTP_METHOD_COVERAGE`."
         },
         "ERROR_RESPONSE_CODE_COVERAGE": {
           "name": "Fehler Antwort-Code",

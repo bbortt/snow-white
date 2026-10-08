@@ -6,8 +6,11 @@
 
 package io.github.bbortt.snow.white.commons.quality.gate;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ContainmentForm.STRENGTH;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ContainmentForm.SUBSET;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ERROR_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.HTTP_METHOD_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.OPERATION_SUCCESS_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
@@ -24,6 +27,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.ContainmentForm;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -66,8 +70,11 @@ class OpenApiCoverageCriteriaUnitTest {
   private static final Pattern CRITERION_SECTION = Pattern.compile(
     "^### (.+)$"
   );
-  private static final Pattern PROSE_CONTAINMENT = Pattern.compile(
+  private static final Pattern PROSE_SUBSET = Pattern.compile(
     "^This is a subset of \\[(.+)]\\(#(.+)\\)\\.$"
+  );
+  private static final Pattern PROSE_STRENGTH = Pattern.compile(
+    "^This is a stricter check than \\[(.+)]\\(#(.+)\\)\\.$"
   );
   private static final Pattern NOT_IN_AN_ANCHOR = Pattern.compile(
     "[^a-z0-9 -]"
@@ -127,12 +134,75 @@ class OpenApiCoverageCriteriaUnitTest {
   @VerifiesArch(
     ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
   )
-  void pathAndMethodCoverageContainNeitherEachOtherNorAnythingElse() {
+  void pathCoverageAndMethodCoverageContainNeitherEachOther() {
     assertThat(PATH_COVERAGE.getContainedBy()).isNull();
     assertThat(PATH_COVERAGE.getContainingCriteria()).isEmpty();
 
     assertThat(HTTP_METHOD_COVERAGE.getContainedBy()).isNull();
     assertThat(HTTP_METHOD_COVERAGE.getContainingCriteria()).isEmpty();
+  }
+
+  /**
+   * The strength form, and the only declared edge of it: `MethodCoverageCalculator` and
+   * `OperationSuccessCoverageCalculator` both emit at {@code toOperationPointer}, so the two judge
+   * exactly the same targets at the same pointer and differ only in the bar - called at all, versus
+   * called and answered 2xx. The edge is asserted here by name because the definition admits it on
+   * grounds the three subset groups do not use, and a regression would silently take the relation
+   * back to subsets only.
+   *
+   * <p>That the reach is one-way is pinned next door rather than here: {@code
+   * pathCoverageAndMethodCoverageContainNeitherEachOther} asserts {@code HTTP_METHOD_COVERAGE}
+   * reaches no container at all, which is the assertion a reversed edge would break. Asserting the
+   * absence from this end would read well and prove nothing, because a root's chain is empty
+   * whatever this edge says.
+   */
+  @Test
+  @VerifiesArch(
+    ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
+  )
+  void operationSuccessCoverageIsTheStricterCheckOfMethodCoverage() {
+    assertThat(OPERATION_SUCCESS_COVERAGE.getContainedBy()).isEqualTo(
+      HTTP_METHOD_COVERAGE
+    );
+    assertThat(OPERATION_SUCCESS_COVERAGE.getContainmentForm()).isEqualTo(
+      STRENGTH
+    );
+    assertThat(
+      OPERATION_SUCCESS_COVERAGE.getContainingCriteria()
+    ).containsExactly(HTTP_METHOD_COVERAGE);
+  }
+
+  /**
+   * The form is declared rather than inferred, and the two accessors agree about which criteria
+   * have one: a container comes with a form, a root comes without. That is all this asserts - which
+   * form a given edge carries is pinned by {@code
+   * descriptionNamesTheSameContainerTheEnumDeclares} and by the published page, both of which fail
+   * when a strength edge is declared as a subset. What this catches is the edge arriving with the
+   * question unanswered, which those two cannot: a form of {@code null} on a declared container
+   * would throw out of their switch rather than fail an assertion.
+   */
+  @EnumSource
+  @ParameterizedTest
+  @VerifiesArch(
+    ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
+  )
+  void everyDeclaredContainmentCarriesAFormAndEveryRootCarriesNone(
+    OpenApiCoverageCriteria criterion
+  ) {
+    if (isNull(criterion.getContainedBy())) {
+      assertThat(criterion.getContainmentForm())
+        .as(
+          "%s is a root criterion and declares no containment form",
+          criterion
+        )
+        .isNull();
+
+      return;
+    }
+
+    assertThat(criterion.getContainmentForm())
+      .as("%s declares a container without saying how it narrows it", criterion)
+      .isNotNull();
   }
 
   /**
@@ -216,6 +286,12 @@ class OpenApiCoverageCriteriaUnitTest {
     );
   }
 
+  /**
+   * The description's closing sentence is the enum's own view of the declaration, and it names the
+   * form as well as the container: "subset" is simply false of a {@code STRENGTH} edge, whose two
+   * criteria judge the same targets. A root carries neither sentence, so a dropped declaration
+   * cannot leave the claim behind in prose.
+   */
   @EnumSource
   @ParameterizedTest
   void descriptionNamesTheSameContainerTheEnumDeclares(
@@ -229,14 +305,47 @@ class OpenApiCoverageCriteriaUnitTest {
           "%s is a root criterion and claims no containment in prose",
           criterion
         )
-        .doesNotContain("subset of");
+        .doesNotContain("subset of")
+        .doesNotContain("stricter check than");
 
       return;
     }
 
+    var form = criterion.getContainmentForm();
+
     assertThat(criterion.getDescription())
-      .as("%s describes a containment the enum does not declare", criterion)
-      .endsWith("This is a subset of `%s`.".formatted(container.name()));
+      .as(
+        "%s describes a containment the enum does not declare as %s of %s",
+        criterion,
+        form,
+        container
+      )
+      .endsWith(describedContainment(form, container.name()))
+      .doesNotContain(describedContainment(otherThan(form), container.name()));
+  }
+
+  /**
+   * The closing sentence the enum description carries for a container of the given form. Bound to
+   * the form rather than written once, because the two forms claim different things and the page
+   * below states each in the same words the enum does.
+   */
+  private static String describedContainment(
+    ContainmentForm form,
+    String container
+  ) {
+    return switch (form) {
+      case SUBSET -> "This is a subset of `%s`.".formatted(container);
+      case STRENGTH -> "This is a stricter check than `%s`.".formatted(
+        container
+      );
+    };
+  }
+
+  private static ContainmentForm otherThan(ContainmentForm form) {
+    return switch (form) {
+      case SUBSET -> STRENGTH;
+      case STRENGTH -> SUBSET;
+    };
   }
 
   @Test
@@ -363,43 +472,66 @@ class OpenApiCoverageCriteriaUnitTest {
 
   /**
    * The containment the page states in prose, criterion name to container name. The page writes
-   * labels where the enum writes names, so both sides are resolved through the enum.
+   * labels where the enum writes names, so both sides are resolved through the enum. The sentence a
+   * criterion carries also has to be the one its declared form calls for, otherwise the page could
+   * publish a subset claim over a pair the enum declares to be the same targets under a stricter
+   * check.
    */
   private static Map<String, String> publishedProseContainment()
     throws IOException {
     var containment = new LinkedHashMap<String, String>();
-    String criterion = null;
+    OpenApiCoverageCriteria criterion = null;
 
     for (var line : publishedCriteriaSection()) {
       var section = CRITERION_SECTION.matcher(line);
 
       if (section.matches()) {
-        criterion = criterionLabelled(section.group(1)).name();
+        criterion = criterionLabelled(section.group(1));
 
         continue;
       }
 
-      var subset = PROSE_CONTAINMENT.matcher(line);
+      for (var form : ContainmentForm.values()) {
+        var prose = publishedContainmentPattern(form).matcher(line);
 
-      if (subset.matches()) {
+        if (!prose.matches()) {
+          continue;
+        }
+
         if (isNull(criterion)) {
           return fail("'%s' stands above any criterion section.", line);
         }
 
-        var container = criterionLabelled(subset.group(1));
+        var container = criterionLabelled(prose.group(1));
 
-        assertThat(subset.group(2))
+        assertThat(prose.group(2))
           .as(
             "the link to %s points where the page generates no anchor",
             container
           )
           .isEqualTo(anchorOf(container.getLabel()));
 
-        containment.put(criterion, container.name());
+        assertThat(form)
+          .as(
+            "%s is published as %s containment of %s, which the enum does not declare that way",
+            criterion,
+            form,
+            container
+          )
+          .isEqualTo(criterion.getContainmentForm());
+
+        containment.put(criterion.name(), container.name());
       }
     }
 
     return containment;
+  }
+
+  private static Pattern publishedContainmentPattern(ContainmentForm form) {
+    return switch (form) {
+      case SUBSET -> PROSE_SUBSET;
+      case STRENGTH -> PROSE_STRENGTH;
+    };
   }
 
   private static List<String> publishedCriteriaSection() throws IOException {
