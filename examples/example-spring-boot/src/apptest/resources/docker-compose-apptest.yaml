@@ -10,7 +10,7 @@ services:
   # Re-encodes what the example application exports as OTLP/JSON and forwards it to WireMock,
   # so the test can read the exported spans without a protobuf decoder of its own.
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.161.0
+    image: otel/opentelemetry-collector-contrib:0.162.0
     volumes:
       - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
     deploy:
