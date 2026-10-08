@@ -1,0 +1,84 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/pages.yml'
+      - 'pages/**'
+  # chart-releaser pushes index.yaml to gh-pages from "Deployments". That push can't trigger this
+  # workflow itself: it's made with GITHUB_TOKEN, and gh-pages carries no workflow files anyway.
+  # workflow_run always runs on the default branch, which is where pages/ lives. "Deployments" only
+  # fires on tag pushes, so no untrusted pull-request code ever reaches this run.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows:
+      - Deployments
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Site
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          lfs: true
+          persist-credentials: false
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: pages
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --baseurl "$BASE_PATH"
+        working-directory: pages
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          JEKYLL_ENV: production
+      - name: Include Helm chart index
+        run: |
+          if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
+            git fetch origin gh-pages --depth=1
+            if git show origin/gh-pages:index.yaml > /dev/null 2>&1; then
+              git show origin/gh-pages:index.yaml > pages/_site/index.yaml
+              echo "Helm chart index.yaml merged into site output."
+            else
+              echo "No index.yaml found on gh-pages branch - skipping."
+            fi
+          else
+            echo "No gh-pages branch found - skipping Helm index merge."
+          fi
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: pages/_site
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346

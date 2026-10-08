@@ -1,0 +1,40 @@
+name: Main-Branch Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-slim
+    environment: release
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # Manifest mode (config-file + manifest-file) replaces the inline `release-type`,
+      # so `extra-files` can keep apm.yml's version in step with the Maven reactor.
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+  zizmor:
+    # zizmor-action runs from a container image, so it needs a runner that ships a
+    # Docker daemon. `ubuntu-slim` has none - keep this in step with pull-requests.yml.
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482
