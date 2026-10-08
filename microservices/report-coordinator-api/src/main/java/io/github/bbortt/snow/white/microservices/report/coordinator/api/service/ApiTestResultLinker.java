@@ -35,8 +35,8 @@ final class ApiTestResultLinker {
 
   /**
    * A criterion outside the gate is persisted but flagged not-included; only included results
-   * decide the verdict, and the gate's {@code minCoveragePercentage} is the bar both for a single
-   * criterion and for the share of criteria clearing it.
+   * decide the verdict, and the gate's {@code minCoveragePercentage} is a floor under every one
+   * of them, so a single criterion below it fails the API test.
    * A redelivered result for a criterion already present on the {@code ApiTest} replaces it rather
    * than accumulating beside it: the incoming results are removed from the set by identity before
    * being re-added, so a redelivery never leaves two entries for the same criterion.
@@ -134,27 +134,15 @@ final class ApiTestResultLinker {
       RoundingMode.UNNECESSARY
     );
 
-    var includedResults = apiTest
+    // The bar is a floor under every included criterion, not a quota a majority can fill on
+    // behalf of the rest: one criterion below it fails the API test however well the others
+    // scored. An empty included set has nothing to object to, which allMatch already answers
+    // PASSED -- there is no separate branch for it, so there is none to rot.
+    return apiTest
       .getApiTestResults()
       .stream()
       .filter(ApiTestResult::getIncludedInReport)
-      .toList();
-
-    if (includedResults.isEmpty()) {
-      return PASSED;
-    }
-
-    long passedCount = includedResults
-      .stream()
-      .filter(r -> r.getCoverage().compareTo(threshold) >= 0)
-      .count();
-
-    // Cross-multiplied instead of dividing: passedCount / includedCount >= pct / 100.
-    // Dividing first quantised the share to whole percents, which could only ever round
-    // a share up over the bar, never down below it -- six of seven included results at a
-    // bar of 86 is a true share of 85.71% and scored 0.86 -> 86, passing a gate it misses.
-    return passedCount * 100L >=
-      (long) includedResults.size() * minCoveragePercentage
+      .allMatch(r -> r.getCoverage().compareTo(threshold) >= 0)
       ? PASSED
       : FAILED;
   }

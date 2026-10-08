@@ -105,3 +105,16 @@ the 100% implication, and is not asserted.
   scores four of six, which is 67% against an 80% bar, and fails.
   `CON-003` forbids users mutating a predefined gate precisely so a pinned name keeps meaning one
   thing; changing one across a release owes them the same warning in return.
+- **2026-10-08** — `basic-coverage`'s one tolerated failure is gone, without any change to the
+  table above.
+  `SW-016` no longer applies the threshold twice; every included criterion must clear the bar on
+  its own, so all six of this gate's criteria must now reach 80% rather than five of six.
+  That answers the question the entry above left open — whether a single criterion at zero should
+  be able to pass a gate — in the negative, and it means the 17%-path case that entry put on the
+  report now fails it rather than merely being visible on it.
+  `full-feature` and `minimal` are unaffected: at 100% and at one criterion respectively, both
+  already required every criterion they select.
+  `dry-run` selects none, and an empty included set still passes.
+  This compounds the breaking change the entry above warned about, for the same installations and
+  by the same mechanism: an upgraded instance's `basic-coverage` gains path coverage, and now has
+  no tolerance left to absorb it.

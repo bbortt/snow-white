@@ -1,9 +1,9 @@
-# Only the gate's own criteria decide an API test, and the threshold is applied twice
+# Only the gate's own criteria decide an API test, and every one of them must clear the bar
 
 <!-- markdownlint-disable MD036 -->
 
 **Title**
-Only the gate's own criteria decide an API test, and the threshold is applied twice
+Only the gate's own criteria decide an API test, and every one of them must clear the bar
 
 **Lens**: SW
 
@@ -18,12 +18,13 @@ When those results are attached to an API test:
   gate's criteria set names it.
   A criterion outside the gate is kept, visibly excluded — never discarded.
 - Only **included** results decide the verdict.
-  A result passes when its coverage reaches the gate's `minCoveragePercentage` (compared as a
-  ratio); the API test passes when the **share of included results that passed**, expressed as a
-  percentage, reaches that same `minCoveragePercentage`.
-  Otherwise the API test fails.
-  Both comparisons are **exact**: neither the ratio nor the share is rounded before being
-  compared, so a share that falls short of the bar by any margin fails it.
+  A result passes when its coverage reaches the gate's `minCoveragePercentage`, compared as a
+  ratio and compared **exactly** — nothing is rounded on either side, so a result short of the
+  bar by any margin misses it.
+  The API test passes when **every** included result passed, and fails as soon as one did not,
+  however many others cleared the bar.
+  The threshold is a floor under each included criterion, not a quota that a majority of them can
+  fill on behalf of the rest.
 - An API test whose included set is **empty** passes.
 - A response carrying no results at all leaves the API test untouched — neither its results nor
   its status change.
@@ -37,10 +38,25 @@ Keeping excluded results rather than dropping them is what lets a report explain
 can see that a criterion was measured and deliberately not counted, which is also what
 [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) renders as a skipped test
 case rather than a missing one.
-Reusing one configured number as both the per-criterion bar and the bar on the share of criteria
-clearing it is the decision worth pinning: a gate at 80% means both "a criterion must be 80%
-covered" and "80% of the gate's criteria must clear that", so a single knob tightens the gate at
-two altitudes at once, and neither can be tuned without the other.
+Making the threshold a floor under every included criterion is the decision worth pinning, and it
+is a reversal: this rule used to apply the same number twice, once per criterion and once to the
+share of criteria clearing it.
+That second application read as a designed allowance and was not one.
+A bar is bounded to 80–100 and a gate can select at most the fourteen criteria the coverage enum
+declares, and within those bounds the share tolerated at most two failing criteria, usually zero,
+and at bars of 95 or above never a single one — so what looked like a second altitude was in
+practice a flat "one or two criteria may be ignored", available only to gates that happened to
+select enough of them.
+Worse, a tolerated failure carried no floor of its own: a criterion at 0% coverage, which is a
+check that found nothing it was looking for, could be waved through by its neighbours.
+Nobody configures a gate meaning that, and `80%` does not say it; a reader told a gate is set to
+80% hears the per-criterion sentence, which is the one now in force.
+Each criterion standing alone is also what makes a verdict explainable: the gate names the
+criteria it cares about, and every name it lists is a condition rather than a vote.
+That is what lets [SW-017](SW-017-junit-export-mirrors-the-gate-verdict.md) keep its promise that
+the exported document never contradicts the verdict it accompanies — under the share rule a
+`PASSED` suite could contain an explicit `failure` test case, which is a document no build server
+would honour.
 The empty-set pass is vacuous truth made explicit: a gate that selected no criterion this API
 produced results for has nothing to object to, so the API test must not fail on absence of
 evidence.
@@ -52,9 +68,10 @@ explain.
 **Verification Description**
 A test attaches a mixed result set to an API test under a gate selecting a subset of the criteria
 and asserts: excluded results are persisted with the not-included flag, included results alone
-drive the outcome, a set where the passing share meets the threshold yields `PASSED` and one below
-it yields `FAILED`, an API test with no included results yields `PASSED`, and an empty result set
-leaves the API test unchanged.
+drive the outcome, a set where every included result reaches the threshold yields `PASSED` while
+one where a single included result misses it yields `FAILED` however many others passed, a result
+sitting exactly on the bar passes and one just below it fails, an API test with no included
+results yields `PASSED`, and an empty result set leaves the API test unchanged.
 `ApiTestResultLinkerUnitTest` covers these cases.
 
 ## Relations
@@ -73,12 +90,12 @@ leaves the API test unchanged.
   renders the same results under this same threshold
 - [SW-039](SW-039-report-publishes-its-pinned-threshold.md) — publishes the pinned threshold this
   rule applies, so a consumer can reach the same verdict
-- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — amends the share this
-  rule scores: a fully waived result leaves it rather than counting as passed
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the vacuous `1.00`
+  a waiver-emptied criterion publishes, which this rule no longer has to hold out of a population
 - [CON-011](CON-011-waiver-matching-no-finding-fails-the-calculation.md) — the gate scoping that lets
   a waiver name a criterion this calculation excluded
 - [SW-044](SW-044-report-publishes-judged-and-waived-target-counts.md) — the counts that identify a
-  verdict this rule reached over a waiver-thinned share
+  verdict this rule reached over criteria whose targets were waived
 
 ## Changes
 
@@ -127,3 +144,33 @@ leaves the API test unchanged.
   within fourteen criteria neither bar can be rounded over (80 would first need forty-four included
   results and 100 two hundred), so only a custom gate at one of those eight bars was reading a
   verdict it had not earned.
+- **2026-10-08** — The threshold is no longer applied twice.
+  Where the API test passed when the _share_ of included criteria clearing the bar cleared it too,
+  it now passes only when **every** included criterion clears the bar, and the title and rationale
+  above are rewritten accordingly.
+  This supersedes the exact-share comparison recorded immediately above: there is no share left to
+  compare, and the per-criterion comparison was always exact, so no rounding remains anywhere in
+  this rule.
+  The second application looked like a designed allowance and was not one.
+  Bounded to 80–100 over at most fourteen criteria, it tolerated two failing criteria at the very
+  widest, zero for most gate shapes, and none at all at bars of 95 or above — and what it did
+  tolerate had no floor under it, so a criterion at 0% coverage could be carried by its neighbours.
+  The deciding argument is `SW-017`.
+  The export emits a `failure` of type `AssertionError` for any included criterion below the bar
+  while claiming the document never contradicts the verdict it accompanies; under the share rule a
+  `PASSED` suite could carry explicit failures, which is a document no build server honours, and
+  that claim was simply false.
+  It is now true.
+  `CON-012` gets simpler rather than rewritten: it removed a waiver-emptied criterion's vacuous
+  `1.00` from the share so it could not carry a different criterion's genuine failure over the bar,
+  and with each criterion standing alone no criterion can carry another either way, so the removal
+  is no longer load-bearing for the verdict.
+  Of the four predefined gates only `basic-coverage` changes: six criteria at 80% tolerated exactly
+  one failure and now tolerates none.
+  `full-feature` at 100% and `minimal` at one criterion already demanded every included criterion,
+  and `dry-run` selects none, so the empty-set rule still passes it.
+
+  BREAKING: an API test that passed with one included criterion below the bar now fails, and the
+  reports that roll up from it (`SW-015`) fail with it.
+  No gate configuration changes and no stored report is rewritten; the new rule applies to API
+  tests scored from here on.
