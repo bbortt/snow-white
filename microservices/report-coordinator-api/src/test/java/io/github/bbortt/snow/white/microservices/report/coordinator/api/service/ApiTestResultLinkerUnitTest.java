@@ -15,6 +15,7 @@ import static java.lang.Boolean.FALSE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +36,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Set;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -231,6 +233,43 @@ class ApiTestResultLinkerUnitTest {
         75
       );
       assertThat(apiTest2.getReportStatus()).isEqualTo(PASSED);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_016_API_TEST_VERDICT_IS_GATE_SCOPED)
+    void shouldSetApiTestStatusToFailed_whenPassRateOnlyReachesMinCoveragePercentageByRounding() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      // 6 of 7 included results pass: a true share of 85.71%, which misses a bar of 86.
+      // Rounding the share to whole percents before comparing scored it 0.86 -> 86 and passed.
+      // A gate's bar is bounded to 80..100 and it can select at most the 14 criteria the enum
+      // declares; within those bounds this is the smallest included-result count at which the
+      // exact and the rounded comparison disagree, so it is an edge a real gate can hit.
+      var includedCriteria = IntStream.rangeClosed(1, 7)
+        .mapToObj(i -> "CRITERIA_" + i)
+        .collect(toSet());
+
+      var apiTestResults = includedCriteria
+        .stream()
+        .map(criteria ->
+          ApiTestResult.builder()
+            .apiTestCriteria(criteria)
+            .coverage("CRITERIA_7".equals(criteria) ? ZERO : ONE)
+            .includedInReport(FALSE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(mock(ApiTest.class))
+            .build()
+        )
+        .collect(toSet());
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        includedCriteria,
+        86
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(FAILED);
     }
 
     @Test
