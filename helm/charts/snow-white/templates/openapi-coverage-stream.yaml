@@ -136,8 +136,52 @@ spec:
                 {{- toYaml .valueFrom | nindent 16 }}
               {{- end }}
           {{- end }}
+          ports:
+            # No 'http' port: the main application port serves nothing, the actuator surface is
+            # all this service exposes over HTTP (ARCH-018).
+            - name: actuator
+              containerPort: 8090
+              protocol: TCP
           resources:
             {{- toYaml .Values.snowWhite.openapiCoverageStream.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              scheme: HTTP
+              # The aggregate, not a probe group: this asks whether the instance has got far
+              # enough to be asked, and stays down until the topology is genuinely up.
+              path: /actuator/health
+              port: actuator
+            # Unlike the native-image deployments, this one runs on the JVM and has to reach a
+            # broker and finish a consumer-group join before answering UP. Their ~20s budget would
+            # restart the pod mid-join and provoke a rebalance in its siblings, so allow minutes.
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 36  # 3 minutes of joining before the kubelet gives up
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/health/readiness
+              port: actuator
+            timeoutSeconds: 2
+            # Deliberately no quicker than liveness: this service has no inbound traffic to
+            # withhold (SW-008), so readiness gates only rollout progression and a tighter
+            # threshold would stall a rolling update without protecting a single request.
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/health/liveness
+              port: actuator
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            # Every DOWN state bar a not-yet-started one is terminal (SW-045), so restart
+            # promptly — a rebalancing instance never reaches that verdict.
+            failureThreshold: 3
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

@@ -1080,6 +1080,32 @@ describe('OpenAPI Coverage Stream', () => {
           });
         });
 
+        describe('ports', () => {
+          it('should expose the actuator port only', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            expect(openapiCoverageStream.ports).toStrictEqual([
+              {
+                name: 'actuator',
+                containerPort: 8090,
+                protocol: 'TCP',
+              },
+            ]);
+          });
+
+          it('should not declare an http port, the main port serves nothing', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            const portNames = openapiCoverageStream.ports.map(
+              (port: any) => port.name,
+            );
+
+            expect(portNames).not.toContain('http');
+          });
+        });
+
         describe('resources', () => {
           it('should be deployed default resource quota', async () => {
             const openapiCoverageStream =
@@ -1124,6 +1150,54 @@ describe('OpenAPI Coverage Stream', () => {
               );
 
             expect(openapiCoverageStream.resources).toStrictEqual(resources);
+          });
+        });
+
+        describe('probes', () => {
+          it('should target the health surface on the actuator port', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            expect(openapiCoverageStream.startupProbe.httpGet).toStrictEqual({
+              scheme: 'HTTP',
+              path: '/actuator/health',
+              port: 'actuator',
+            });
+            expect(openapiCoverageStream.readinessProbe.httpGet).toStrictEqual({
+              scheme: 'HTTP',
+              path: '/actuator/health/readiness',
+              port: 'actuator',
+            });
+            expect(openapiCoverageStream.livenessProbe.httpGet).toStrictEqual({
+              scheme: 'HTTP',
+              path: '/actuator/health/liveness',
+              port: 'actuator',
+            });
+          });
+
+          it('should allow at least two minutes to join a consumer group before restarting', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            const { startupProbe } = openapiCoverageStream;
+
+            const budgetSeconds =
+              startupProbe.periodSeconds * startupProbe.failureThreshold;
+
+            expect(budgetSeconds).toBeGreaterThanOrEqual(120);
+          });
+
+          it('should not poll readiness more often than liveness', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer();
+
+            // This service has no inbound traffic to withhold (SW-008), so readiness gates only
+            // rollout progression - there is nothing a tighter threshold would protect.
+            expect(
+              openapiCoverageStream.readinessProbe.periodSeconds,
+            ).toBeGreaterThanOrEqual(
+              openapiCoverageStream.livenessProbe.periodSeconds,
+            );
           });
         });
 
