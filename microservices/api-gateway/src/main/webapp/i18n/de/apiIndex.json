@@ -1,0 +1,17 @@
+{
+  "snowWhiteApp": {
+    "apiIndex": {
+      "home": {
+        "title": "API-Index",
+        "refreshListLabel": "Liste aktualisieren",
+        "notFound": "Keine APIs gefunden"
+      },
+      "serviceName": "Servicename",
+      "apiName": "API-Name",
+      "apiVersion": "Version",
+      "apiType": "Typ",
+      "prerelease": "Vorabversion",
+      "prereleaseLabel": "Pre"
+    }
+  }
+}
