@@ -50,7 +50,7 @@ class KafkaStreamsHealthIndicatorUnitTest {
   class HealthTest {
 
     @Test
-    void shouldReportDownWithoutStateDetail_withoutKafkaStreamsInstance() {
+    void shouldReportDownWithUninitializedStateOnly_withoutKafkaStreamsInstance() {
       doReturn(null).when(streamsBuilderFactoryBeanMock).getKafkaStreams();
 
       var health = fixture.health();
