@@ -1,6 +1,27 @@
 logging:
   level:
     org.apache.kafka.clients.admin.internals.AdminMetadataManager: WARN
+management:
+  endpoint:
+    health:
+      group:
+        liveness:
+          include: livenessState,kafkaStreams
+        readiness:
+          include: readinessState,kafkaStreams
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+  server:
+    port: 8090
+server:
+  # this service has no business HTTP surface; the actuator surface lives on the management port
+  port: -1
 spring:
   application:
     name: openapi-coverage-stream
