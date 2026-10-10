@@ -42,6 +42,7 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.r
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -718,6 +719,120 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
     createSimpleApiTestSet(qualityGateReport1);
     createSimpleApiTestSet(qualityGateReport2);
+  }
+
+  @Test
+  void findReport_answersTheWaiverDocumentItsCalculationWasGiven()
+    throws Exception {
+    var calculationId = UUID.fromString("0fd3f8bd-0d3d-4e4f-9ad8-5e5bd3dc2cb2");
+
+    persistReportWithWaivers(
+      calculationId,
+      List.of(
+        Waiver.builder()
+          .serviceName("serviceName")
+          .apiName("apiName")
+          .apiVersion("*")
+          .path("/api/v1/users")
+          .method("GET")
+          .responseCode("500")
+          .criterion(PATH_COVERAGE.name())
+          .reason("Upstream outage is simulated elsewhere.")
+          .expires(LocalDate.parse("2026-12-31"))
+          .build(),
+        Waiver.builder()
+          .serviceName("serviceName")
+          .apiName("apiName")
+          .apiVersion("apiVersion")
+          .path("/api/v1/users")
+          .method("POST")
+          .reason("Write path is not exercised by this suite.")
+          .expires(LocalDate.parse("2027-01-31"))
+          .build()
+      )
+    );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.calculationRequest.waivers.length()").value(2))
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].apiVersion").value("*")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].path").value("/api/v1/users")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].method").value("GET")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].responseCode").value("500")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].criterion").value(
+          PATH_COVERAGE.name()
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].reason").value(
+          "Upstream outage is simulated elsewhere."
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].expires").value("2026-12-31")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].method").value("POST")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].responseCode").doesNotExist()
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].criterion").doesNotExist()
+      );
+  }
+
+  @Test
+  void findReport_leavesWaiversAbsent_whenTheCalculationWasGivenNone()
+    throws Exception {
+    var calculationId = UUID.fromString("4f0a7f33-0c1e-4c86-9a01-6f9c0a1bd2f4");
+
+    persistReportWithWaivers(calculationId, List.of());
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.calculationRequest.waivers").doesNotExist());
+  }
+
+  private void persistReportWithWaivers(
+    UUID calculationId,
+    List<Waiver> waivers
+  ) {
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .reportParameter(
+          ReportParameter.builder()
+            .calculationId(calculationId)
+            .lookbackWindow("1m")
+            .waivers(waivers)
+            .build()
+        )
+        .reportStatus(IN_PROGRESS.getVal())
+        .build()
+    );
+
+    apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName("serviceName")
+        .apiName("apiName")
+        .apiVersion("apiVersion")
+        .qualityGateReport(qualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
+        .build()
+    );
   }
 
   private QualityGateReport createAndPersistQualityGateReport(
