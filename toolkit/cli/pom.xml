@@ -142,10 +142,10 @@
         <executions>
           <execution>
             <id>copy-generated-clients</id>
-            <phase>process-sources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-sources</phase>
             <configuration>
               <changeDetection>content</changeDetection>
               <outputDirectory>${project.basedir}/src/clients</outputDirectory>
