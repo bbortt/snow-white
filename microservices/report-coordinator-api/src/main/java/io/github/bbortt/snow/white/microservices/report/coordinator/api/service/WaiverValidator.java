@@ -37,7 +37,10 @@ public class WaiverValidator {
    * {@code apiTests} are the report's resolved API tests, so a waiver is matched against the
    * versions the calculation will actually judge rather than the ones the request wrote.
    */
-  @RealizesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @RealizesSw({
+    SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING,
+    SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST,
+  })
   public List<String> validate(List<Waiver> waivers, Set<ApiTest> apiTests) {
     return waivers
       .stream()

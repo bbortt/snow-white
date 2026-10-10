@@ -17,7 +17,7 @@ CREATE TABLE waiver
     waiver_index   INTEGER       NOT NULL,
     service_name   VARCHAR(64)   NOT NULL,
     api_name       VARCHAR(64)   NOT NULL,
-    -- '*' is stored verbatim where the request wildcarded the version (SW-040), so the row stays
+    -- '*' is stored verbatim where the request wildcarded the version, so the row stays
     -- the document that was submitted rather than the versions it happened to reach.
     api_version    VARCHAR(16)   NOT NULL,
     path           VARCHAR(256)  NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE waiver
     parameter_name VARCHAR(256),
     content_type   VARCHAR(128),
     -- Null where the waiver named no criterion, which waives the target for every criterion that
-    -- judged it (SW-042).
+    -- judged it.
     criterion      VARCHAR(64),
     reason         VARCHAR(1024) NOT NULL,
     expires        DATE          NOT NULL,

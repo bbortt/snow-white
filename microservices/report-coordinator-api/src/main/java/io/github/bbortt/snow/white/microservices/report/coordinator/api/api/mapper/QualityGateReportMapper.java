@@ -8,7 +8,9 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.map
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesCon;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
@@ -133,6 +135,8 @@ public interface QualityGateReportMapper {
    * which is a different thing from never having been asked.
    */
   @Named("toRequestWaivers")
+  @RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  @RealizesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
   default @Nullable List<CalculateQualityGateRequestWaiversInner> toRequestWaivers(
     List<Waiver> waivers
   ) {
@@ -146,6 +150,8 @@ public interface QualityGateReportMapper {
    * shape the generator emitted separately.
    */
   @Named("toReportWaivers")
+  @RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  @RealizesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
   default @Nullable List<ListQualityGateReports200ResponseInnerCalculationRequestWaiversInner> toReportWaivers(
     List<Waiver> waivers
   ) {

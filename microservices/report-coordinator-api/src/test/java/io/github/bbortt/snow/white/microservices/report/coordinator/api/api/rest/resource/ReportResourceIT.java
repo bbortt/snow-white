@@ -722,6 +722,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void findReport_answersTheWaiverDocumentItsCalculationWasGiven()
     throws Exception {
     var calculationId = UUID.fromString("0fd3f8bd-0d3d-4e4f-9ad8-5e5bd3dc2cb2");
@@ -793,6 +794,8 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
   void findReport_leavesWaiversAbsent_whenTheCalculationWasGivenNone()
     throws Exception {
     var calculationId = UUID.fromString("4f0a7f33-0c1e-4c86-9a01-6f9c0a1bd2f4");

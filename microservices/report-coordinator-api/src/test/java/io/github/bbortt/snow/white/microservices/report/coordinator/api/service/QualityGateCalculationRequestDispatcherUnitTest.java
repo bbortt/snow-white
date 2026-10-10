@@ -16,7 +16,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
@@ -347,6 +349,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
+    )
     void shouldLeaveWaiversAbsentWhereTheCalculationWasGivenNone() {
       var reportParameter = ReportParameter.builder()
         .calculationId(CALCULATION_ID)
@@ -372,6 +377,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
+    )
     void shouldCarryOnlyTheWaiversGoverningTheDispatchedApi() {
       var reportParameter = ReportParameter.builder()
         .calculationId(CALCULATION_ID)
@@ -418,6 +426,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
+    )
     void shouldCarryAWildcardedWaiverToEveryVersionOfThatApi() {
       var reportParameter = ReportParameter.builder()
         .calculationId(CALCULATION_ID)
@@ -468,6 +479,9 @@ class QualityGateCalculationRequestDispatcherUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
+    )
     void shouldMapEveryWaiverFieldToTheEvent() {
       var reportParameter = ReportParameter.builder()
         .calculationId(CALCULATION_ID)

@@ -11,7 +11,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
@@ -140,6 +142,7 @@ class QualityGateCalculationRequestDispatcher {
    * wildcarded version matches every version of its service and API, which is the whole of what the
    * wildcard does - it is resolved here, once, rather than shipped downstream to be interpreted.
    */
+  @RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   private static @Nullable List<Waiver> toWaivers(
     ReportParameter reportParameter,
     ApiTest apiTest
