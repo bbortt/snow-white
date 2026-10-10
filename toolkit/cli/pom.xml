@@ -206,6 +206,10 @@
             <configuration>
               <filesets>
                 <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
+                <fileset>
                   <directory>src/clients/</directory>
                   <includes>
                     <include>**/*.ts</include>

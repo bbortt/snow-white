@@ -333,10 +333,12 @@
             <configuration>
               <filesets>
                 <fileset>
-                  <directory>target/classes/static/</directory>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
                 </fileset>
                 <fileset>
                   <directory>src/main/webapp/app/clients/</directory>
+                  <followSymlinks>false</followSymlinks>
                   <includes>
                     <include>**/*.ts</include>
                   </includes>
