@@ -101,10 +101,10 @@
         <executions>
           <execution>
             <id>copy-spec</id>
-            <phase>initialize</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>initialize</phase>
             <configuration>
               <outputDirectory>
                 ${maven.multiModuleProjectDirectory}/dev/artifactory/__files
@@ -128,10 +128,10 @@
         <executions>
           <execution>
             <id>unpack-otel-agent</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
               <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
@@ -172,15 +172,15 @@
         <version>${spring-boot.version}</version>
         <executions>
           <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
             <configuration>
               <classifier>executable</classifier>
               <mainClass>
                 io.github.bbortt.snow.white.example.application.Application
               </mainClass>
             </configuration>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -273,10 +273,10 @@
             <executions>
               <execution>
                 <id>add-test-source</id>
-                <phase>generate-test-sources</phase>
                 <goals>
                   <goal>add-test-source</goal>
                 </goals>
+                <phase>generate-test-sources</phase>
                 <configuration>
                   <sources>
                     <source>src/apptest/java</source>
@@ -365,18 +365,18 @@
             <executions>
               <execution>
                 <id>start-containers</id>
-                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>start</goal>
                 </goals>
+                <phase>pre-integration-test</phase>
               </execution>
 
               <execution>
                 <id>stop-containers</id>
-                <phase>post-integration-test</phase>
                 <goals>
                   <goal>stop</goal>
                 </goals>
+                <phase>post-integration-test</phase>
               </execution>
             </executions>
           </plugin>
@@ -386,15 +386,15 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
                 <configuration>
                   <includes>
                     <include>**/*AppTest.java</include>
                   </includes>
                 </configuration>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>

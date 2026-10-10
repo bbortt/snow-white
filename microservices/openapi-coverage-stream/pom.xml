@@ -5,8 +5,8 @@
   ~ See LICENSE file for full details.
   -->
 <project
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
@@ -180,10 +180,10 @@
         <executions>
           <execution>
             <id>unpack-otel-agent</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
               <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
@@ -201,15 +201,15 @@
         <version>${spring-boot.version}</version>
         <executions>
           <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
             <configuration>
               <classifier>executable</classifier>
               <mainClass>
                 io.github.bbortt.snow.white.microservices.openapi.coverage.stream.Main
               </mainClass>
             </configuration>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -256,10 +256,10 @@
             <executions>
               <execution>
                 <id>copy-dependencies</id>
-                <phase>package</phase>
                 <goals>
                   <goal>copy-dependencies</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <outputDirectory>
                     ${project.build.directory}/dependencies
@@ -307,10 +307,10 @@
             <executions>
               <execution>
                 <id>add-test-source</id>
-                <phase>generate-test-sources</phase>
                 <goals>
                   <goal>add-test-source</goal>
                 </goals>
+                <phase>generate-test-sources</phase>
                 <configuration>
                   <sources>
                     <source>src/apptest/java</source>
@@ -353,6 +353,12 @@
                       <INFLUXDB_BUCKET>raw-data</INFLUXDB_BUCKET>
                       <!-- Fixed token, see src/apptest/resources/docker-compose-apptest.yaml -->
                       <INFLUXDB_TOKEN>apptest-token</INFLUXDB_TOKEN>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                      <OTEL_EXPORTER_OTLP_ENDPOINT>
+                        http://otel-collector:4318
+                      </OTEL_EXPORTER_OTLP_ENDPOINT>
                       <SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
                         http://wiremock:8080
                       </SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL>
@@ -385,6 +391,9 @@
                     <network>
                       <name>${docker.network}</name>
                     </network>
+                    <ports>
+                      <port>8080:8080</port>
+                    </ports>
                   </run>
                 </image>
 
@@ -395,6 +404,12 @@
                   <alias>openapi-coverage-stream-grafana</alias>
                   <run>
                     <env>
+                      <MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                        false
+                      </MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED>
+                      <OTEL_EXPORTER_OTLP_ENDPOINT>
+                        http://otel-collector:4318
+                      </OTEL_EXPORTER_OTLP_ENDPOINT>
                       <!--
                         Routed through Grafana's own datasource proxy rather than Tempo's raw port (3200):
                         the bundled Tempo has no auth of its own,
@@ -444,18 +459,18 @@
             <executions>
               <execution>
                 <id>start-containers</id>
-                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>start</goal>
                 </goals>
+                <phase>pre-integration-test</phase>
               </execution>
 
               <execution>
                 <id>stop-containers</id>
-                <phase>post-integration-test</phase>
                 <goals>
                   <goal>stop</goal>
                 </goals>
+                <phase>post-integration-test</phase>
               </execution>
             </executions>
           </plugin>
@@ -465,15 +480,15 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
                 <configuration>
                   <includes>
                     <include>**/*AppTest.java</include>
                   </includes>
                 </configuration>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
