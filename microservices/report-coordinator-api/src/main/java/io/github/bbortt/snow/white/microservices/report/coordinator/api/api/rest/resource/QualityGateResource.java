@@ -68,7 +68,10 @@ public class QualityGateResource implements QualityGateApi {
    * every bad entry, and no report.
    */
   @Override
-  @RealizesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @RealizesSw({
+    SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING,
+    SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST,
+  })
   public ResponseEntity calculateQualityGate(
     String qualityGateConfigName,
     CalculateQualityGateRequest calculateQualityGateRequest

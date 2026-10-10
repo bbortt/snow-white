@@ -274,6 +274,9 @@ class QualityGateResourceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+    @VerifiesSw(
+      SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
+    )
     void shouldReturnBadRequestAndCreateNoReport_whenAWaiverIsRejected()
       throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);

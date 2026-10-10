@@ -36,7 +36,7 @@ class DBMigrationUnitTest {
     "V2026_10_01__api_test_lookup_indexes.sql",
     "677b7440eaaf76d2dab1d9c1e52fa1414538f6eb22904ec5495784c9f67198de",
     "V2026_10_10__report_parameter_waivers.sql",
-    "e0ecf4ad7e75557fed54a45efa81a1b115674dddecb5f74d8f0c1becb663f65e"
+    "9df4a6edd388d4dba13a590e43f2ebc0bbd71dc71db22a5f9bc35e1a4388bf3a"
   );
 
   @Test

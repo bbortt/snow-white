@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.commons.event;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.commons.event.dto.Waiver;
@@ -45,6 +47,7 @@ public final class QualityGateCalculationRequestEvent {
    * absent where the request carried none for it.
    */
   @Nullable
+  @RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   private List<Waiver> waivers;
 
   /**

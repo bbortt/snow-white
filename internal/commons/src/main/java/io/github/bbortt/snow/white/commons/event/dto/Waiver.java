@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.commons.event.dto;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import java.time.LocalDate;
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +18,7 @@ import org.jspecify.annotations.Nullable;
  * per API test, so the record this travels on already names the one API it governs - and names it
  * by its resolved version, which a wildcard entry does not.
  */
+@RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
 public record Waiver(
   String path,
   String method,

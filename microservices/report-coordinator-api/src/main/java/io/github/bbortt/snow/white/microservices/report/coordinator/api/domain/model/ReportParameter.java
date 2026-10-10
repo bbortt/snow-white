@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 import static jakarta.persistence.FetchType.EAGER;
 import static lombok.AccessLevel.PRIVATE;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -70,6 +72,7 @@ public class ReportParameter {
    * calculation that was given none has none, whatever an earlier one was given.
    */
   @Builder.Default
+  @RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   @ElementCollection(fetch = EAGER)
   @OrderColumn(name = "waiver_index")
   @CollectionTable(

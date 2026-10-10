@@ -9,6 +9,8 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesSw;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.Size;
@@ -36,6 +38,7 @@ import org.jspecify.annotations.Nullable;
 @EqualsAndHashCode
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PRIVATE)
+@RealizesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
 public class Waiver {
 
   /**

@@ -7,7 +7,7 @@ A waiver enters only on the calculation request, naming one exact target with a 
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `QualityGateCalculationRequest` gains an optional `waivers` array.

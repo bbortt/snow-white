@@ -37,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto.QualityGateConfig;
@@ -357,6 +359,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withWaivers_shouldPersistAnswerBackAndFanThemOutPerApi()
     throws Exception {
     createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
@@ -490,6 +493,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWildcardedApiVersion_shouldReachEveryVersionOfThatApi()
     throws Exception {
     createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
@@ -557,6 +561,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withABlankWaiverReason_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatWaiverIsRejected(
@@ -566,6 +572,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withSeveralWaiverTargetDiscriminators_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatWaiverIsRejected(
@@ -578,6 +586,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWaiverForAnUnknownApi_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatWaiverIsRejected(
@@ -587,6 +597,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWildcardOutsideApiVersion_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatWaiverIsRejected(
@@ -596,6 +608,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWaiverMissingItsReason_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatMalformedWaiverIsRejected(
@@ -604,6 +618,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatMalformedWaiverIsRejected(
@@ -612,6 +628,8 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withAWildcardedWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
     throws Exception {
     assertThatMalformedWaiverIsRejected(
