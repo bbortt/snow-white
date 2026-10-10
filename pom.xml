@@ -17,10 +17,6 @@
 
   <packaging>pom</packaging>
 
-  <scm>
-    <url>scm:git:https://github.com/bbortt/snow-white.git</url>
-  </scm>
-
   <modules>
     <module>examples/example-snow-white-openapi-generator</module>
     <module>examples/example-spring-boot</module>
@@ -29,6 +25,18 @@
     <module>internal</module>
     <module>helm</module>
   </modules>
+
+  <scm>
+    <url>scm:git:https://github.com/bbortt/snow-white.git</url>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/bbortt/snow-white</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <!-- Global -->
@@ -253,15 +261,15 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <executions>
           <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
             <configuration>
               <includes>
                 <include>**/*IT.java</include>
               </includes>
             </configuration>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -296,10 +304,10 @@
         <executions>
           <execution>
             <id>reset-shared-jacoco-exec</id>
-            <phase>validate</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>validate</phase>
             <configuration>
               <target>
                 <delete
@@ -353,10 +361,10 @@
           </execution>
           <execution>
             <id>jacoco-report</id>
-            <phase>verify</phase>
             <goals>
               <goal>report</goal>
             </goals>
+            <phase>verify</phase>
             <configuration>
               <dataFile>
                 ${maven.multiModuleProjectDirectory}/target/jacoco.exec
@@ -368,10 +376,10 @@
           </execution>
           <execution>
             <id>check-coverage</id>
-            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
+            <phase>verify</phase>
             <configuration>
               <dataFile>
                 ${maven.multiModuleProjectDirectory}/target/jacoco.exec
@@ -466,10 +474,10 @@
             <executions>
               <execution>
                 <id>report-aggregate</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>report-aggregate</goal>
                 </goals>
+                <phase>verify</phase>
                 <configuration>
                   <dataFileIncludes>
                     <dataFileInclude>**/jacoco.exec</dataFileInclude>
@@ -526,10 +534,10 @@
             <executions>
               <execution>
                 <id>check-coverage</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>check</goal>
                 </goals>
+                <phase>verify</phase>
                 <configuration>
                   <skip>true</skip>
                 </configuration>
@@ -541,15 +549,6 @@
             <groupId>org.pitest</groupId>
             <artifactId>pitest-maven</artifactId>
             <version>${pitest.version}</version>
-            <executions>
-              <execution>
-                <id>mutation-coverage</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>mutationCoverage</goal>
-                </goals>
-              </execution>
-            </executions>
             <configuration>
               <mutationThreshold>80</mutationThreshold>
               <testStrengthThreshold>80</testStrengthThreshold>
@@ -605,17 +604,18 @@
                 <version>${junit.version}</version>
               </dependency>
             </dependencies>
+            <executions>
+              <execution>
+                <id>mutation-coverage</id>
+                <goals>
+                  <goal>mutationCoverage</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
     </profile>
   </profiles>
-
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/bbortt/snow-white</url>
-    </repository>
-  </distributionManagement>
 </project>
