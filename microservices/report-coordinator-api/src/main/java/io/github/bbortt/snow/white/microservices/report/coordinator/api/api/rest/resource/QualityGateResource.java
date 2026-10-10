@@ -30,12 +30,14 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.WaiverValidator;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,9 +55,17 @@ public class QualityGateResource implements QualityGateApi {
 
   private final ReportCoordinationServiceProperties reportCoordinationServiceProperties;
 
+  private final WaiverValidator waiverValidator;
+
   /**
    * All named APIs are validated before anything is persisted, and every failure is reported at
    * once: a request with any unresolvable API creates no report and dispatches nothing.
+   * <p>
+   * The submitted waivers are judged on the far side of that resolution, because the question
+   * "does this waiver name an API of this report" is asked of the versions the calculation will
+   * judge, not of the ones the request wrote - a request may leave a version out and get the
+   * indexed one. They are rejected the same way and to the same effect: one {@code 400} naming
+   * every bad entry, and no report.
    */
   @Override
   @RealizesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
@@ -77,53 +87,75 @@ public class QualityGateResource implements QualityGateApi {
         .stream()
         .anyMatch(ApiIndexService.ValidationResult::isFailure)
     ) {
-      return ResponseEntity.status(BAD_REQUEST).body(
-        CalculateQualityGate400Response.builder()
-          .code(BAD_REQUEST.getReasonPhrase())
-          .message(
-            apiInformationValidationResults
-              .stream()
-              .map(validationResult ->
-                validationResult instanceof
-                  ApiIndexService.ValidationResult.Failure(String errorMessage)
-                  ? errorMessage
-                  : null
-              )
-              .filter(Objects::nonNull)
-              .collect(joining(lineSeparator()))
+      return rejected(
+        BAD_REQUEST,
+        apiInformationValidationResults
+          .stream()
+          .map(validationResult ->
+            validationResult instanceof
+              ApiIndexService.ValidationResult.Failure(String errorMessage)
+              ? errorMessage
+              : null
           )
-          .build()
+          .filter(Objects::nonNull)
+          .collect(joining(lineSeparator()))
+      );
+    }
+
+    var resolvedApiTests = apiInformationValidationResults
+      .stream()
+      .map(validationResult ->
+        validationResult instanceof
+          ApiIndexService.ValidationResult.Success(ApiTest apiTest)
+          ? apiTest
+          : null
+      )
+      .filter(Objects::nonNull)
+      .collect(toSet());
+
+    var waiverRejections = waiverValidator.validate(
+      reportParameter.getWaivers(),
+      resolvedApiTests
+    );
+
+    if (!waiverRejections.isEmpty()) {
+      return rejected(
+        BAD_REQUEST,
+        String.join(lineSeparator(), waiverRejections)
       );
     }
 
     try {
       return initializeQualityGateCalculation(
         qualityGateConfigName,
-        apiInformationValidationResults
-          .stream()
-          .map(validationResult ->
-            validationResult instanceof
-              ApiIndexService.ValidationResult.Success(ApiTest apiTest)
-              ? apiTest
-              : null
-          )
-          .filter(Objects::nonNull)
-          .collect(toSet()),
+        resolvedApiTests,
         reportParameter
       );
     } catch (QualityGateNotFoundException _) {
-      return ResponseEntity.status(NOT_FOUND).body(
-        CalculateQualityGate400Response.builder()
-          .code(NOT_FOUND.getReasonPhrase())
-          .message(
-            format(
-              "Quality-Gate configuration '%s' does not exist!",
-              qualityGateConfigName
-            )
-          )
-          .build()
+      return rejected(
+        NOT_FOUND,
+        format(
+          "Quality-Gate configuration '%s' does not exist!",
+          qualityGateConfigName
+        )
       );
     }
+  }
+
+  /**
+   * The one rejection body this endpoint answers with, whatever rejected the request: the generator
+   * deduplicated the error shape, so the {@code 404} and both {@code 400}s share it.
+   */
+  private static ResponseEntity<CalculateQualityGate400Response> rejected(
+    HttpStatus status,
+    String message
+  ) {
+    return ResponseEntity.status(status).body(
+      CalculateQualityGate400Response.builder()
+        .code(status.getReasonPhrase())
+        .message(message)
+        .build()
+    );
   }
 
   private @NonNull ResponseEntity<CalculateQualityGate202Response> initializeQualityGateCalculation(

@@ -34,7 +34,9 @@ class DBMigrationUnitTest {
     "V2026_09_28__finding_evidence_test_identity.sql",
     "30e52ecdfe1f674fc49c66fa7339bf6dd75957816f209aceba752378ed60b164",
     "V2026_10_01__api_test_lookup_indexes.sql",
-    "677b7440eaaf76d2dab1d9c1e52fa1414538f6eb22904ec5495784c9f67198de"
+    "677b7440eaaf76d2dab1d9c1e52fa1414538f6eb22904ec5495784c9f67198de",
+    "V2026_10_10__report_parameter_waivers.sql",
+    "e0ecf4ad7e75557fed54a45efa81a1b115674dddecb5f74d8f0c1becb663f65e"
   );
 
   @Test

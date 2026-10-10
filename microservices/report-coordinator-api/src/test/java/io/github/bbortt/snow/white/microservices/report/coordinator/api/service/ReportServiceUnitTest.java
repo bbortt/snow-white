@@ -440,6 +440,7 @@ class ReportServiceUnitTest {
 
       verify(dispatcherMock).dispatch(
         savedReport.getCalculationId(),
+        savedReport.getCreatedAt(),
         savedReport.getReportParameter(),
         result.getApiTests()
       );
@@ -500,12 +501,13 @@ class ReportServiceUnitTest {
           reportParameter
         );
 
-        verify(dispatcherMock, never()).dispatch(any(), any(), any());
+        verify(dispatcherMock, never()).dispatch(any(), any(), any(), any());
 
         getSynchronizations().forEach(TransactionSynchronization::afterCommit);
 
         verify(dispatcherMock).dispatch(
           savedReport.getCalculationId(),
+          savedReport.getCreatedAt(),
           savedReport.getReportParameter(),
           result.getApiTests()
         );

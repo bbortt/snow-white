@@ -17,10 +17,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -59,6 +62,21 @@ public class ReportParameter {
     joinColumns = @JoinColumn(name = "calculation_id")
   )
   private final Map<String, String> attributeFilters = new HashMap<>();
+
+  /**
+   * The waiver document this calculation was told, in the order the request wrote it.
+   * <p>
+   * An input beside the lookback window and the attribute filters, not state the system keeps: a
+   * calculation that was given none has none, whatever an earlier one was given.
+   */
+  @Builder.Default
+  @ElementCollection(fetch = EAGER)
+  @OrderColumn(name = "waiver_index")
+  @CollectionTable(
+    name = "waiver",
+    joinColumns = @JoinColumn(name = "calculation_id")
+  )
+  private final List<Waiver> waivers = new ArrayList<>();
 
   @OneToOne(optional = false)
   @JoinColumn(name = "calculation_id")

@@ -1,0 +1,89 @@
+type: object
+description: >
+  One criterion declared inapplicable to one exact target of one API, for a stated reason, until a
+  stated date. A waiver is an input to the calculation and nothing else: it is recorded as part of
+  what the calculation was told and answered back with the report, and the system holds no waiver
+  state of its own.
+
+
+  Every field below that names the target is exact. The single exception is `apiVersion`, which
+  accepts `*` to mean every version of that API in this calculation - a bounded relaxation so a
+  waiver for a gap that has not closed does not have to be re-edited on every release. `*` is
+  rejected everywhere else, because a wildcard target would waive a target space rather than a
+  target.
+required:
+  - serviceName
+  - apiName
+  - apiVersion
+  - path
+  - method
+  - reason
+  - expires
+properties:
+  serviceName:
+    type: string
+    description: 'The service owning the API this waiver applies to - an exact value, and one named by an API of this calculation'
+    example: 'example-application'
+    minLength: 1
+    maxLength: 64
+  apiName:
+    type: string
+    description: 'The name of the API this waiver applies to - an exact value, and one named by an API of this calculation'
+    example: 'ping-pong'
+    minLength: 1
+    maxLength: 64
+  apiVersion:
+    type: string
+    description: "The version of the API this waiver applies to, or '*' for every version of that API in this calculation"
+    example: '1.0.0'
+    minLength: 1
+    maxLength: 16
+  path:
+    type: string
+    description: 'The path of the waived target, written as the specification writes it'
+    example: '/pung/{message}'
+    minLength: 1
+    maxLength: 256
+  method:
+    type: string
+    description: 'The method of the waived target'
+    example: 'GET'
+    minLength: 1
+    maxLength: 16
+  responseCode:
+    type: string
+    description: 'The waived response code, where the criterion target is narrower than an operation - at most one of this, parameterName and contentType'
+    example: '500'
+    minLength: 1
+    maxLength: 16
+  parameterName:
+    type: string
+    description: 'The waived parameter, where the criterion target is narrower than an operation - at most one of this, responseCode and contentType'
+    example: 'page'
+    minLength: 1
+    maxLength: 256
+  contentType:
+    type: string
+    description: 'The waived content type, where the criterion target is narrower than an operation - at most one of this, responseCode and parameterName'
+    example: 'application/json'
+    minLength: 1
+    maxLength: 128
+  criterion:
+    type: string
+    description: >
+      The criterion this waiver is narrowed to. Omitted, the target is waived for every criterion
+      that judged it. Named, it is waived for that criterion and for every criterion containing it.
+    example: 'ERROR_RESPONSE_CODE_COVERAGE'
+    minLength: 1
+    maxLength: 64
+  reason:
+    type: string
+    description: 'Why this target cannot be covered - non-blank, and reviewed wherever the request that carries it is reviewed'
+    example: 'Downstream is mocked in this environment, so the 500 cannot be provoked'
+    minLength: 1
+    maxLength: 1024
+  expires:
+    type: string
+    format: date
+    description: 'The last date this waiver is in force, judged against the instant the calculation was triggered'
+    example: '2026-12-31'

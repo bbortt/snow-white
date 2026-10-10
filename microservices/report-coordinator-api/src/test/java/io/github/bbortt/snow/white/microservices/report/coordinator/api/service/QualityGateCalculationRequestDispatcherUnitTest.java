@@ -22,9 +22,13 @@ import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -96,6 +100,10 @@ class QualityGateCalculationRequestDispatcherUnitTest {
       "59d11db1-b07a-4bea-b4c1-8ca178bed839"
     );
 
+    private static final Instant INITIATED_AT = Instant.parse(
+      "2026-04-01T10:15:30Z"
+    );
+
     @Test
     @VerifiesArch(
       ArchTraceables.ARCH_004_PER_API_TEST_FAN_OUT_KEYED_BY_CALCULATION_ID
@@ -124,6 +132,7 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       fixture.dispatch(
         CALCULATION_ID,
+        INITIATED_AT,
         reportParameter,
         Set.of(apiTest1, apiTest2)
       );
@@ -151,7 +160,12 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       mockPropagators();
 
-      fixture.dispatch(CALCULATION_ID, reportParameter, Set.of(apiTest));
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest)
+      );
 
       ArgumentCaptor<
         ProducerRecord<String, QualityGateCalculationRequestEvent>
@@ -185,7 +199,12 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       mockPropagators();
 
-      fixture.dispatch(CALCULATION_ID, reportParameter, Set.of(apiTest));
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest)
+      );
 
       ArgumentCaptor<
         ProducerRecord<String, QualityGateCalculationRequestEvent>
@@ -216,7 +235,12 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       mockPropagators();
 
-      fixture.dispatch(CALCULATION_ID, reportParameter, Set.of(apiTest));
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest)
+      );
 
       ArgumentCaptor<
         ProducerRecord<String, QualityGateCalculationRequestEvent>
@@ -245,7 +269,12 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       mockPropagators();
 
-      fixture.dispatch(CALCULATION_ID, reportParameter, Set.of(apiTest));
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest)
+      );
 
       ArgumentCaptor<
         ProducerRecord<String, QualityGateCalculationRequestEvent>
@@ -277,9 +306,246 @@ class QualityGateCalculationRequestDispatcherUnitTest {
 
       mockPropagators();
 
-      fixture.dispatch(CALCULATION_ID, reportParameter, Set.of(apiTest));
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest)
+      );
 
       verify(textMapPropagatorMock).inject(any(), any(), any());
+    }
+
+    @Test
+    void shouldCarryInitiatedAtOnEveryRecord() {
+      var reportParameter = ReportParameter.builder()
+        .calculationId(CALCULATION_ID)
+        .lookbackWindow("1d")
+        .attributeFilters(Map.of())
+        .build();
+
+      mockPropagators();
+
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(
+          apiTest("starWars", "aNewHope", "1"),
+          apiTest("starWars", "aNewHope", "2")
+        )
+      );
+
+      ArgumentCaptor<
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > captor = captor();
+      verify(kafkaTemplateMock, times(2)).send(captor.capture());
+
+      assertThat(captor.getAllValues())
+        .extracting(producerRecord -> producerRecord.value().getInitiatedAt())
+        .containsOnly(INITIATED_AT);
+    }
+
+    @Test
+    void shouldLeaveWaiversAbsentWhereTheCalculationWasGivenNone() {
+      var reportParameter = ReportParameter.builder()
+        .calculationId(CALCULATION_ID)
+        .lookbackWindow("1d")
+        .attributeFilters(Map.of())
+        .build();
+
+      mockPropagators();
+
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest("starWars", "aNewHope", "1"))
+      );
+
+      ArgumentCaptor<
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > captor = captor();
+      verify(kafkaTemplateMock).send(captor.capture());
+
+      assertThat(captor.getValue().value().getWaivers()).isNull();
+    }
+
+    @Test
+    void shouldCarryOnlyTheWaiversGoverningTheDispatchedApi() {
+      var reportParameter = ReportParameter.builder()
+        .calculationId(CALCULATION_ID)
+        .lookbackWindow("1d")
+        .attributeFilters(Map.of())
+        .waivers(
+          List.of(
+            waiver("starWars", "aNewHope", "1", "/x-wings"),
+            waiver("starWars", "theCloneWars", "2", "/clones")
+          )
+        )
+        .build();
+
+      mockPropagators();
+
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(
+          apiTest("starWars", "aNewHope", "1"),
+          apiTest("starWars", "theCloneWars", "2")
+        )
+      );
+
+      ArgumentCaptor<
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > captor = captor();
+      verify(kafkaTemplateMock, times(2)).send(captor.capture());
+
+      assertThat(captor.getAllValues()).allSatisfy(producerRecord ->
+        assertThat(producerRecord.value().getWaivers())
+          .singleElement()
+          .satisfies(dispatchedWaiver ->
+            assertThat(dispatchedWaiver.path()).isEqualTo(
+              "aNewHope".equals(
+                producerRecord.value().getApiInformation().getApiName()
+              )
+                ? "/x-wings"
+                : "/clones"
+            )
+          )
+      );
+    }
+
+    @Test
+    void shouldCarryAWildcardedWaiverToEveryVersionOfThatApi() {
+      var reportParameter = ReportParameter.builder()
+        .calculationId(CALCULATION_ID)
+        .lookbackWindow("1d")
+        .attributeFilters(Map.of())
+        .waivers(List.of(waiver("starWars", "aNewHope", "*", "/x-wings")))
+        .build();
+
+      mockPropagators();
+
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(
+          apiTest("starWars", "aNewHope", "1"),
+          apiTest("starWars", "aNewHope", "2"),
+          apiTest("starWars", "theCloneWars", "1")
+        )
+      );
+
+      ArgumentCaptor<
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > captor = captor();
+      verify(kafkaTemplateMock, times(3)).send(captor.capture());
+
+      assertThat(captor.getAllValues())
+        .filteredOn(producerRecord ->
+          "aNewHope".equals(
+            producerRecord.value().getApiInformation().getApiName()
+          )
+        )
+        .hasSize(2)
+        .allSatisfy(producerRecord ->
+          assertThat(producerRecord.value().getWaivers()).hasSize(1)
+        );
+
+      assertThat(captor.getAllValues())
+        .filteredOn(producerRecord ->
+          "theCloneWars".equals(
+            producerRecord.value().getApiInformation().getApiName()
+          )
+        )
+        .singleElement()
+        .satisfies(producerRecord ->
+          assertThat(producerRecord.value().getWaivers()).isNull()
+        );
+    }
+
+    @Test
+    void shouldMapEveryWaiverFieldToTheEvent() {
+      var reportParameter = ReportParameter.builder()
+        .calculationId(CALCULATION_ID)
+        .lookbackWindow("1d")
+        .attributeFilters(Map.of())
+        .waivers(
+          List.of(
+            Waiver.builder()
+              .serviceName("starWars")
+              .apiName("aNewHope")
+              .apiVersion("1")
+              .path("/x-wings")
+              .method("GET")
+              .responseCode("418")
+              .criterion("HTTP_RESPONSE_CODE_COVERAGE")
+              .reason("The teapot is documented but never flown.")
+              .expires(LocalDate.parse("2026-12-31"))
+              .build()
+          )
+        )
+        .build();
+
+      mockPropagators();
+
+      fixture.dispatch(
+        CALCULATION_ID,
+        INITIATED_AT,
+        reportParameter,
+        Set.of(apiTest("starWars", "aNewHope", "1"))
+      );
+
+      ArgumentCaptor<
+        ProducerRecord<String, QualityGateCalculationRequestEvent>
+      > captor = captor();
+      verify(kafkaTemplateMock).send(captor.capture());
+
+      assertThat(captor.getValue().value().getWaivers()).containsExactly(
+        new io.github.bbortt.snow.white.commons.event.dto.Waiver(
+          "/x-wings",
+          "GET",
+          "418",
+          null,
+          null,
+          "HTTP_RESPONSE_CODE_COVERAGE",
+          "The teapot is documented but never flown.",
+          LocalDate.parse("2026-12-31")
+        )
+      );
+    }
+
+    private static ApiTest apiTest(
+      String serviceName,
+      String apiName,
+      String apiVersion
+    ) {
+      return ApiTest.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion(apiVersion)
+        .apiType(OPENAPI.getVal())
+        .build();
+    }
+
+    private static Waiver waiver(
+      String serviceName,
+      String apiName,
+      String apiVersion,
+      String path
+    ) {
+      return Waiver.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion(apiVersion)
+        .path(path)
+        .method("GET")
+        .reason("Known gap, tracked elsewhere.")
+        .expires(LocalDate.parse("2026-12-31"))
+        .build();
     }
   }
 }

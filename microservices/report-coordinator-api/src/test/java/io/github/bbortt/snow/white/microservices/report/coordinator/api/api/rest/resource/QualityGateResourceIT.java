@@ -15,10 +15,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.QualityGateApi.PATH_CALCULATE_QUALITY_GATE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.IN_PROGRESS;
 import static java.lang.String.format;
+import static java.time.temporal.ChronoUnit.MICROS;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.matchesRegex;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -32,6 +34,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.consumerProps;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
@@ -39,11 +42,15 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.Abstract
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequestIncludeApisInner;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequestWaiversInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportParameter;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -346,6 +353,371 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     qualityGateApi.verifyThat(
       0,
       getRequestedFor(urlMatching("/api/rest/v1/quality-gates/.*"))
+    );
+  }
+
+  @Test
+  void postRequest_withWaivers_shouldPersistAnswerBackAndFanThemOutPerApi()
+    throws Exception {
+    createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
+    createQualityGateApiWiremockStub();
+
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
+      .includeApis(
+        singletonList(
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName("star-wars")
+            .apiName("yoda")
+            .apiVersion("1.2.3")
+            .build()
+        )
+      )
+      .waivers(
+        List.of(
+          waiver("star-wars", "yoda", "1.2.3")
+            .responseCode("500")
+            .criterion("HTTP_RESPONSE_CODE_COVERAGE")
+            .build()
+        )
+      )
+      .build();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
+      )
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.calculationRequest.waivers.length()").value(1))
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].path").value("/jedi")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].responseCode").value("500")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].reason").value(
+          "Known gap, tracked elsewhere."
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].expires").value("2026-12-31")
+      )
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var calculationIdStr = jsonMapper
+      .readTree(contentAsString)
+      .get("calculationId")
+      .asString();
+    var calculationId = UUID.fromString(calculationIdStr);
+
+    assertThat(qualityGateReportRepository.findById(calculationId))
+      .isPresent()
+      .get()
+      .satisfies(report ->
+        assertThat(report.getReportParameter().getWaivers())
+          .singleElement()
+          .satisfies(
+            persisted ->
+              assertThat(persisted.getServiceName()).isEqualTo("star-wars"),
+            persisted -> assertThat(persisted.getPath()).isEqualTo("/jedi"),
+            persisted -> assertThat(persisted.getMethod()).isEqualTo("GET"),
+            persisted ->
+              assertThat(persisted.getResponseCode()).isEqualTo("500"),
+            persisted ->
+              assertThat(persisted.getCriterion()).isEqualTo(
+                "HTTP_RESPONSE_CODE_COVERAGE"
+              ),
+            persisted ->
+              assertThat(persisted.getExpires()).isEqualTo(
+                LocalDate.parse("2026-12-31")
+              )
+          )
+      );
+
+    var report = qualityGateReportRepository
+      .findById(calculationId)
+      .orElseThrow();
+
+    var dispatchedEvents = new ArrayList<QualityGateCalculationRequestEvent>();
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(() -> {
+        consumer.poll(Duration.ofSeconds(5)).forEach(consumerRecord -> {
+          if (calculationIdStr.equals(consumerRecord.key())) {
+            dispatchedEvents.add(consumerRecord.value());
+          }
+        });
+
+        assertThat(dispatchedEvents)
+          .singleElement()
+          .satisfies(
+            // the column keeps microseconds, the dispatched instant keeps nanoseconds
+            event ->
+              assertThat(event.getInitiatedAt()).isCloseTo(
+                report.getCreatedAt(),
+                within(1, MICROS)
+              ),
+            event ->
+              assertThat(event.getWaivers())
+                .singleElement()
+                .satisfies(
+                  dispatched ->
+                    assertThat(dispatched.path()).isEqualTo("/jedi"),
+                  dispatched ->
+                    assertThat(dispatched.method()).isEqualTo("GET"),
+                  dispatched ->
+                    assertThat(dispatched.responseCode()).isEqualTo("500"),
+                  dispatched ->
+                    assertThat(dispatched.criterion()).isEqualTo(
+                      "HTTP_RESPONSE_CODE_COVERAGE"
+                    ),
+                  dispatched ->
+                    assertThat(dispatched.reason()).isEqualTo(
+                      "Known gap, tracked elsewhere."
+                    ),
+                  dispatched ->
+                    assertThat(dispatched.expires()).isEqualTo(
+                      LocalDate.parse("2026-12-31")
+                    )
+                )
+          );
+      });
+  }
+
+  @Test
+  void postRequest_withAWildcardedApiVersion_shouldReachEveryVersionOfThatApi()
+    throws Exception {
+    createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
+    createApiIndexApiWiremockStub("star-wars", "yoda", "2.0.0", OK);
+    createQualityGateApiWiremockStub();
+
+    var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
+      .includeApis(
+        List.of(
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName("star-wars")
+            .apiName("yoda")
+            .apiVersion("1.2.3")
+            .build(),
+          CalculateQualityGateRequestIncludeApisInner.builder()
+            .serviceName("star-wars")
+            .apiName("yoda")
+            .apiVersion("2.0.0")
+            .build()
+        )
+      )
+      .waivers(List.of(waiver("star-wars", "yoda", "*").build()))
+      .build();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(jsonMapper.writeValueAsString(qualityGateCalculationRequest))
+      )
+      .andExpect(status().isAccepted())
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].apiVersion").value("*")
+      )
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var calculationId = jsonMapper
+      .readTree(contentAsString)
+      .get("calculationId")
+      .asString();
+
+    var waiveredVersions = new ArrayList<String>();
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(() -> {
+        consumer.poll(Duration.ofSeconds(5)).forEach(consumerRecord -> {
+          if (!calculationId.equals(consumerRecord.key())) {
+            return;
+          }
+
+          assertThat(consumerRecord.value().getWaivers()).hasSize(1);
+          waiveredVersions.add(
+            consumerRecord.value().getApiInformation().getApiVersion()
+          );
+        });
+
+        assertThat(waiveredVersions).containsExactlyInAnyOrder(
+          "1.2.3",
+          "2.0.0"
+        );
+      });
+  }
+
+  @Test
+  void postRequest_withABlankWaiverReason_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3").reason("   ").build(),
+      "carries a blank reason!"
+    );
+  }
+
+  @Test
+  void postRequest_withSeveralWaiverTargetDiscriminators_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3")
+        .responseCode("500")
+        .contentType("application/json")
+        .build(),
+      "names several target discriminators"
+    );
+  }
+
+  @Test
+  void postRequest_withAWaiverForAnUnknownApi_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatWaiverIsRejected(
+      waiver("star-wars", "vader", "1.2.3").build(),
+      "matches no API test of this report!"
+    );
+  }
+
+  @Test
+  void postRequest_withAWildcardOutsideApiVersion_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3").path("*").build(),
+      "wildcards path - '*' is admitted on apiVersion only!"
+    );
+  }
+
+  @Test
+  void postRequest_withAWaiverMissingItsReason_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatMalformedWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3").reason(null).build()
+    );
+  }
+
+  @Test
+  void postRequest_withAWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatMalformedWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3").expires(null).build()
+    );
+  }
+
+  @Test
+  void postRequest_withAWildcardedWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatMalformedWaiverIsRejected(
+      waiver("star-wars", "yoda", "*").expires(null).build()
+    );
+  }
+
+  private static CalculateQualityGateRequestWaiversInner.Builder waiver(
+    String serviceName,
+    String apiName,
+    String apiVersion
+  ) {
+    return CalculateQualityGateRequestWaiversInner.builder()
+      .serviceName(serviceName)
+      .apiName(apiName)
+      .apiVersion(apiVersion)
+      .path("/jedi")
+      .method("GET")
+      .reason("Known gap, tracked elsewhere.")
+      .expires(LocalDate.parse("2026-12-31"));
+  }
+
+  /**
+   * A waiver the trigger judges and refuses: the request shape accepted it, so the complaint comes
+   * from the validator and is answered verbatim.
+   */
+  private void assertThatWaiverIsRejected(
+    CalculateQualityGateRequestWaiversInner waiver,
+    String expectedComplaint
+  ) throws Exception {
+    createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
+    createQualityGateApiWiremockStub();
+
+    var reportsBefore = qualityGateReportRepository.count();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(
+            jsonMapper.writeValueAsString(
+              CalculateQualityGateRequest.builder()
+                .includeApis(
+                  singletonList(
+                    CalculateQualityGateRequestIncludeApisInner.builder()
+                      .serviceName("star-wars")
+                      .apiName("yoda")
+                      .apiVersion("1.2.3")
+                      .build()
+                  )
+                )
+                .waivers(List.of(waiver))
+                .build()
+            )
+          )
+      )
+      .andExpect(status().isBadRequest())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    assertThat(
+      jsonMapper.readTree(contentAsString).get("message").asString()
+    ).contains(expectedComplaint);
+
+    assertThat(qualityGateReportRepository.count()).isEqualTo(reportsBefore);
+  }
+
+  /**
+   * A waiver the request shape itself refuses - a missing required field never reaches the
+   * validator, and the rejection is the framework's rather than a named complaint.
+   */
+  private void assertThatMalformedWaiverIsRejected(
+    CalculateQualityGateRequestWaiversInner waiver
+  ) throws Exception {
+    var reportsBefore = qualityGateReportRepository.count();
+
+    mockMvc
+      .perform(
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(
+            jsonMapper.writeValueAsString(
+              CalculateQualityGateRequest.builder()
+                .includeApis(
+                  singletonList(
+                    CalculateQualityGateRequestIncludeApisInner.builder()
+                      .serviceName("star-wars")
+                      .apiName("yoda")
+                      .apiVersion("1.2.3")
+                      .build()
+                  )
+                )
+                .waivers(List.of(waiver))
+                .build()
+            )
+          )
+      )
+      .andExpect(status().isBadRequest());
+
+    assertThat(qualityGateReportRepository.count()).isEqualTo(reportsBefore);
+
+    apiIndexApi.verifyThat(
+      0,
+      getRequestedFor(urlMatching("/api/rest/v1/apis/.*"))
     );
   }
 

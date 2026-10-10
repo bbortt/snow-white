@@ -12,13 +12,18 @@ import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGate202Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.CalculateQualityGateRequestWaiversInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerCalculationRequest;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInnerCalculationRequestWaiversInner;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.QualityGateReport;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -61,6 +66,11 @@ public interface QualityGateReportMapper {
     target = "attributeFilters",
     source = "reportParameter.attributeFilters"
   )
+  @Mapping(
+    target = "waivers",
+    source = "reportParameter.waivers",
+    qualifiedByName = "toRequestWaivers"
+  )
   CalculateQualityGateRequest toIncludeApis(
     QualityGateReport qualityGateReport
   );
@@ -84,6 +94,11 @@ public interface QualityGateReportMapper {
     target = "attributeFilters",
     source = "reportParameter.attributeFilters"
   )
+  @Mapping(
+    target = "waivers",
+    source = "reportParameter.waivers",
+    qualifiedByName = "toReportWaivers"
+  )
   ListQualityGateReports200ResponseInnerCalculationRequest toListIncludeApis(
     QualityGateReport qualityGateReport
   );
@@ -105,6 +120,39 @@ public interface QualityGateReportMapper {
   GetReportByCalculationId200Response toReportDto(
     QualityGateReport qualityGateReport
   );
+
+  CalculateQualityGateRequestWaiversInner toRequestWaiver(Waiver waiver);
+
+  ListQualityGateReports200ResponseInnerCalculationRequestWaiversInner toReportWaiver(
+    Waiver waiver
+  );
+
+  /**
+   * A calculation that was given no waivers answers no {@code waivers} field at all, rather than an
+   * empty array: an empty array reads as a document that was submitted and happened to be empty,
+   * which is a different thing from never having been asked.
+   */
+  @Named("toRequestWaivers")
+  default @Nullable List<CalculateQualityGateRequestWaiversInner> toRequestWaivers(
+    List<Waiver> waivers
+  ) {
+    return waivers.isEmpty()
+      ? null
+      : waivers.stream().map(this::toRequestWaiver).toList();
+  }
+
+  /**
+   * The same absent-rather-than-empty projection as {@link #toRequestWaivers(List)}, for the read
+   * shape the generator emitted separately.
+   */
+  @Named("toReportWaivers")
+  default @Nullable List<ListQualityGateReports200ResponseInnerCalculationRequestWaiversInner> toReportWaivers(
+    List<Waiver> waivers
+  ) {
+    return waivers.isEmpty()
+      ? null
+      : waivers.stream().map(this::toReportWaiver).toList();
+  }
 
   default OffsetDateTime map(Instant instant) {
     return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());

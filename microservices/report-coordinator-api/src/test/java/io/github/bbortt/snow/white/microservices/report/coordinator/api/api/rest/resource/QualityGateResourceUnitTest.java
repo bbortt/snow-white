@@ -14,6 +14,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -34,7 +36,9 @@ import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.m
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ApiIndexService.ValidationResult;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.ReportService;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.WaiverValidator;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
@@ -64,6 +68,9 @@ class QualityGateResourceUnitTest {
 
   @Mock
   private ReportCoordinationServiceProperties reportCoordinationServicePropertiesMock;
+
+  @Mock
+  private WaiverValidator waiverValidatorMock;
 
   @InjectMocks
   private QualityGateResource fixture;
@@ -263,6 +270,58 @@ class QualityGateResourceUnitTest {
                   )
               )
         );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+    void shouldReturnBadRequestAndCreateNoReport_whenAWaiverIsRejected()
+      throws QualityGateNotFoundException {
+      var apiTest = mock(ApiTest.class);
+      var apiTests = Set.of(apiTest);
+      doReturn(apiTests)
+        .when(apiTestMapperMock)
+        .getApiTests(calculateQualityGateRequestMock);
+
+      var reportParameter = mock(ReportParameter.class);
+      doReturn(reportParameter)
+        .when(reportParameterMapperMock)
+        .fromDto(eq(calculateQualityGateRequestMock), any(UUID.class));
+
+      doReturn(Set.<ValidationResult>of(ValidationResult.success(apiTest)))
+        .when(apiIndexServiceMock)
+        .fetchCompleteApiInformation(apiTests);
+
+      doReturn(List.of("first waiver is bad!", "second waiver is bad!"))
+        .when(waiverValidatorMock)
+        .validate(any(), eq(apiTests));
+
+      var response = fixture.calculateQualityGate(
+        QUALITY_GATE_CONFIG_NAME,
+        calculateQualityGateRequestMock
+      );
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(BAD_REQUEST),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(CalculateQualityGate400Response.class))
+              .satisfies(
+                e -> assertThat(e.getCode()).isEqualTo("Bad Request"),
+                e ->
+                  assertThat(e.getMessage()).contains(
+                    "first waiver is bad!",
+                    "second waiver is bad!"
+                  )
+              )
+        );
+
+      verify(reportServiceMock, never()).initializeQualityGateCalculation(
+        any(),
+        any(),
+        any()
+      );
     }
 
     @Test

@@ -23,3 +23,15 @@ properties:
     example:
       environment: 'production'
       region: 'us-west-1'
+  waivers:
+    type: array
+    description: >
+      Criteria declared inapplicable to single targets, for this calculation only. This is the only
+      way a waiver reaches a calculation: no query parameter, no header, no quality-gate property
+      and no separate endpoint supplies one.
+
+
+      The array is validated at the trigger, before any calculation exists, and a rejected entry
+      creates no report. It is absent rather than empty on a report that was given none.
+    items:
+      $ref: './Waiver.yml'

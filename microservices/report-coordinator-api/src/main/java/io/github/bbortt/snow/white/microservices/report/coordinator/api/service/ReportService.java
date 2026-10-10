@@ -255,9 +255,15 @@ public class ReportService {
     dispatchCalculationRequest(report);
   }
 
+  /**
+   * The report's own creation instant is what the fan-out carries, not a clock read here: every
+   * record of one calculation then names the same instant, and it is the same instant the report
+   * serves back.
+   */
   private void dispatchCalculationRequest(QualityGateReport report) {
     dispatcher.dispatch(
       report.getCalculationId(),
+      report.getCreatedAt(),
       report.getReportParameter(),
       report.getApiTests()
     );
