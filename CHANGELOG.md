@@ -1,5 +1,58 @@
 # Changelog
 
+## [2.0.0](https://github.com/bbortt/snow-white/compare/v1.13.0...v2.0.0) (2026-10-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **commons:** `getContainedBy()` is joined by `getContainmentForm()`, and a declared container now always carries a form. A consumer that read containment as "is a subset of" must read the form before drawing a coverage implication from an edge.
+* **report-coordinator-api:** of the four predefined gates only basic-coverage changes -- six criteria at 80% tolerated exactly one failure and now tolerates none. full-feature at 100% and minimal at one criterion already demanded every criterion they select, and dry-run selects none. An API test that passed with one included criterion below the bar now fails, and the reports that roll up from it (SW-015) fail with it. No gate configuration changes and no stored report is rewritten; the new rule applies to API tests scored from here on.
+* **report-coordinator-api:** a custom quality gate whose bar is 82, 85, 86, 88, 89, 91, 92 or 93 may now fail an API test it previously passed, when the passing share lands exactly on the rounding boundary. The gate's configuration does not change and no report is rewritten; only newly scored API tests are affected.
+* **quality-gate-api:** `basic-coverage` goes from five criteria to six, and `initPredefinedQualityGates` upserts predefined gates by name on every startup, so an upgraded instance gains the criterion without anyone asking for it. A pipeline that was green on exactly four of five criteria and has paths it never reaches now scores four of six, which is 67% against an 80% bar, and fails. `CON-003` forbids users mutating a predefined gate so that a pinned name keeps meaning one thing; changing one across a release owes them this warning in return.
+* **api:** the report, quality-gate and API-index list reads answer `400` for a `sort` value they cannot honour, where they previously answered `500` or ignored it. `sort=createdAt,…` on the report read and `sort=otelServiceName,…` on the API-index read are no longer accepted; use `initiatedAt` and `serviceName`. Reports can no longer be sorted by `status`, which is published as a name but stored as a stable code whose order those names do not imply, so the column lost its sort affordance in the UI.
+
+### Features
+
+* **api-gateway:** count the traces that contributed to the coverage ([29e4be5](https://github.com/bbortt/snow-white/commit/29e4be5c92cbc718566b76d2a991320042ca87c6))
+* **citrus-junit-jupiter-extension:** an extension for the test case otel semconv ([f72c955](https://github.com/bbortt/snow-white/commit/f72c9551b4fd14bb298381dd30c40ac12c71fddb))
+* **commons:** containment admits a stricter check, not only a smaller target set ([70f391f](https://github.com/bbortt/snow-white/commit/70f391f9dbf6174df571fc9b1deaa9e98c4f800a))
+* **commons:** declare criteria containment on the criteria enum ([cf98d91](https://github.com/bbortt/snow-white/commit/cf98d91a7f3b6678bb14a2c3dacc4ef8f97a0149))
+* **helm:** kubernetes restarts a coverage stream whose topology died ([d43e0d9](https://github.com/bbortt/snow-white/commit/d43e0d9cbb5c74139fdaf02d16384d3fcaa39d40))
+* **openapi-coverage-stream:** the stream reports its own health ([85b1f64](https://github.com/bbortt/snow-white/commit/85b1f648ec1995c7ac685be93448004d05050f0e))
+* **quality-gate-api:** basic-coverage measures path coverage again ([682690e](https://github.com/bbortt/snow-white/commit/682690e18f6e5ed6c3dc33a03350af9223db3e34))
+* **report-coordinator-api:** publish the threshold a report was scored against ([8813e97](https://github.com/bbortt/snow-white/commit/8813e97cb147c6889654a2ce90830029b62da1bf))
+
+
+### Bug Fixes
+
+* **api-gateway:** mark the coverage bars at the report's pinned threshold ([54b8e5f](https://github.com/bbortt/snow-white/commit/54b8e5f7f178debb785d014501bd770c4e705ec2))
+* **api-gateway:** swallow only a missing gate, not every fault ([6878ae2](https://github.com/bbortt/snow-white/commit/6878ae2d5524d70cb61cf8a05a3954e252c45ddd))
+* **api:** honour the documented sort contract on the three list reads ([b446a0a](https://github.com/bbortt/snow-white/commit/b446a0aaa02a9108934aef19364c9bd5cf02c301))
+* **cli:** fail closed when a report arrives without its threshold ([efbe848](https://github.com/bbortt/snow-white/commit/efbe8482ad67ff6cf48c3bd4e9ed5c1505f6a0bb))
+* **cli:** follow the generated error DTO rename ([0b76430](https://github.com/bbortt/snow-white/commit/0b76430224cd99532089dfb3b86b40ca4a9fd28b))
+* **cli:** keep the fail-closed threshold check free of an inverted comparison ([cb16daa](https://github.com/bbortt/snow-white/commit/cb16daa43b411a199d47aa0e186deea3d9f727fc))
+* **cli:** report only the criteria below the report's pinned bar ([278e38f](https://github.com/bbortt/snow-white/commit/278e38fc7146852695e860f47760eb4c75994721))
+* **cli:** treat a null threshold as no bar at all ([1362809](https://github.com/bbortt/snow-white/commit/13628093faddd0d49e560c36eed99dfc73b625f6))
+* **commons:** path coverage is not contained by HTTP method coverage ([0fb5b9a](https://github.com/bbortt/snow-white/commit/0fb5b9a1ad641d903df87f62fb252ebb84b11605))
+* **report-coordinator-api:** compare the passing share exactly ([90beb74](https://github.com/bbortt/snow-white/commit/90beb74a4985ee07b9ca35f85aba76b4297e73e3))
+* **report-coordinator-api:** every included criterion must clear the bar ([41c5776](https://github.com/bbortt/snow-white/commit/41c57763a3b9769decf96e71d22705457f36c5a0))
+* **report-coordinator-api:** follow the generated error DTO rename ([91f1df9](https://github.com/bbortt/snow-white/commit/91f1df9f7d1356e793f7072d54bb4b49b6b4e8d1))
+
+
+### Performance Improvements
+
+* **report-coordinator-api:** batch lazy and eager collection loads ([9732406](https://github.com/bbortt/snow-white/commit/9732406314c6732a27db6ab4ede67fa852b57205))
+* **report-coordinator-api:** index api test lookups ([ded4ba8](https://github.com/bbortt/snow-white/commit/ded4ba831bf22cb6871c1749351bc7571f59b1c1))
+
+
+### Documentation
+
+* **pages:** wrap up release 1.13.0 ([e73345e](https://github.com/bbortt/snow-white/commit/e73345e435ea92dfcdb8ec9786961aad81a5b70f))
+* **STR-021:** promote the sort contract specs and anchor them ([6423823](https://github.com/bbortt/snow-white/commit/642382364bc988c5c4fee1e1d29dc89c255f8e3e))
+* **STR-022:** describe the agentic failure set against the pinned bar ([3e24a05](https://github.com/bbortt/snow-white/commit/3e24a053cb595faf4ec0ec8bc2b8231b00c82654))
+* **STR-022:** promote the pinned-threshold spec and anchor its relations ([098208c](https://github.com/bbortt/snow-white/commit/098208c61f13b39f774fe3d33ab6d3225bb50982))
+* **STR-023:** promote the waiver specs and anchor their relations ([9350465](https://github.com/bbortt/snow-white/commit/9350465da54ab442999a24eea99a26548f9b00cd)), closes [#2009](https://github.com/bbortt/snow-white/issues/2009)
+
 ## [1.13.0](https://github.com/bbortt/snow-white/compare/v1.12.0...v1.13.0) (2026-10-01)
 
 ### Features
