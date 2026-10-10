@@ -23,6 +23,7 @@ import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -231,7 +232,11 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
     );
 
     @Test
-    void shouldPass() {}
+    void shouldPass() {
+      assertThat(SnowWhiteTestIdentity.current()).contains(
+        PassingFixture.class.getName() + "#shouldPass"
+      );
+    }
   }
 
   static class FailingFixture {
@@ -245,6 +250,10 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
 
     @Test
     void shouldFail() {
+      assertThat(SnowWhiteTestIdentity.current()).contains(
+        FailingFixture.class.getName() + "#shouldFail"
+      );
+
       throw new IllegalStateException("boom");
     }
   }
@@ -260,6 +269,10 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
 
     @Test
     void shouldAbort() {
+      assertThat(SnowWhiteTestIdentity.current()).contains(
+        AbortedFixture.class.getName() + "#shouldAbort"
+      );
+
       Assumptions.assumeTrue(false, "deliberately aborted");
     }
   }
@@ -275,6 +288,8 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
 
     @Test
     void shouldNestUnderTheTestSpan() {
+      assertThat(Span.current().isRecording()).isTrue();
+
       OTEL.getTracer("child").spanBuilder("child-span").startSpan().end();
     }
   }
@@ -290,7 +305,15 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "a", "b" })
-    void aParameterizedTest(String value) {}
+    void aParameterizedTest(String value) {
+      assertThat(value).isIn("a", "b");
+      assertThat(SnowWhiteTestIdentity.current())
+        .get()
+        .asString()
+        .startsWith(
+          ParameterizedFixture.class.getName() + "#aParameterizedTest["
+        );
+    }
   }
 
   @Execution(CONCURRENT)
@@ -304,7 +327,12 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
     );
 
     @RepeatedTest(8)
-    void aRepeatedTest() {}
+    void aRepeatedTest() {
+      assertThat(SnowWhiteTestIdentity.current())
+        .get()
+        .asString()
+        .startsWith(ConcurrentFixture.class.getName() + "#aRepeatedTest[");
+    }
   }
 
   static class ThrowingTracerFixture {
@@ -316,7 +344,9 @@ class SnowWhiteOpenTelemetryExtensionUnitTest {
       );
 
     @Test
-    void shouldStillPass() {}
+    void shouldStillPass() {
+      assertThat(SnowWhiteTestIdentity.current()).isEmpty();
+    }
   }
 
   private static EngineExecutionResults execute(Class<?> testClass) {
