@@ -574,6 +574,15 @@ importers:
         specifier: 4.1.3
         version: 4.1.3
 
+  microservices/openapi-coverage-stream:
+    devDependencies:
+      npm-run-all2:
+        specifier: 9.0.3
+        version: 9.0.3
+      wait-on:
+        specifier: 9.1.0
+        version: 9.1.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+
   microservices/quality-gate-api:
     devDependencies:
       npm-run-all2:

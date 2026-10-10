@@ -27,7 +27,7 @@
     "clean:versionsBackup": "rimraf --glob **/pom.xml.versionsBackup",
     "e2e:await-services": "run-p --print-label e2e:wait:*",
     "e2e:wait:api-gateway": "wait-on --timeout 1m http-get://localhost:80/management/info",
-    "e2e:wait:otel-collector": "wait-on --timeout 1m tcp:13133",
+    "e2e:wait:otel-collector": "wait-on --timeout 1m http-get://localhost:13133",
     "lint:markdown": "markdownlint --rules markdownlint-sentences-per-line -- **/*.md",
     "prepare": "husky",
     "prettier": "prettier \"{,**/}*.{cjs,java,js,json,md,mjs,ts,xml,yaml,yml}\"",
