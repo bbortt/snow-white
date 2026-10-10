@@ -57,7 +57,10 @@ jobs:
       (
         github.ref == 'refs/heads/main' ||
         github.event_name != 'push' ||
-        needs.detect-open-pr.outputs.has_open_pr != 'true'
+        needs.detect-open-pr.outputs.has_open_pr != 'true' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
       )
     permissions:
       contents: read
@@ -111,10 +114,13 @@ jobs:
             -Dsonar.projectKey=bbortt_snow-white
   app-tests:
     name: Application Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version')
+      )
     runs-on: ubuntu-24.04
     needs: ci
     strategy:
@@ -162,7 +168,7 @@ jobs:
             -DskipITs \
             -Djacoco.skip=true \
             -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
       - name: Build ${{ matrix.service }} Image
         run: |
           docker build \
@@ -244,11 +250,14 @@ jobs:
           retention-days: 7
   native-tests:
     name: Native Application Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-      contains(github.event.pull_request.title, 'citrus.version') ||
-      contains(github.event.pull_request.title, 'native-maven-plugin')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
+      )
     runs-on: ubuntu-24.04
     needs: ci
     strategy:
@@ -284,7 +293,7 @@ jobs:
             -Djacoco.skip=true \
             -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
       - name: Build Native ${{ matrix.service }} Image
         run: |
           ./mvnw -B spring-boot:build-image \
@@ -332,9 +341,12 @@ jobs:
           retention-days: 1
   cli-binary-verification:
     name: Verify CLI Binary
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'module:cli')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'module:cli')
+      )
     runs-on: ${{ matrix.os }}
     needs: ci
     strategy:
@@ -371,9 +383,12 @@ jobs:
           toolkit/cli/target/${{ matrix.binary }} info
   e2e-tests:
     name: End-to-End Tests
-    if: |
-      github.event_name == 'schedule' ||
-      contains(github.event.pull_request.labels.*.name, 'include:e2e')
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:e2e')
+      )
     runs-on: ubuntu-24.04
     needs:
       - app-tests
@@ -385,8 +400,14 @@ jobs:
       max-parallel: 3
       # The full version matrix runs weekly only; pull requests test against the pinned latest.
       matrix:
-        postgres: ${{ fromJSON(github.event_name == 'schedule' && '["16", "17", "18"]' || '["18"]') }}
-        kafka: ${{ fromJSON(github.event_name == 'schedule' && '["4.0", "4.1", "4.2", "4.3"]' || '["4.3"]') }}
+        postgres: ${{ fromJSON(github.event_name == 'schedule' && '["16-alpine", "17-alpine", "18-alpine"]' || '["18-alpine"]') }}
+        # | `kafka.version` | `confluentinc/cp-kafka` |
+        # |-----------------|-------------------------|
+        # | `4.0`           | `8.0.x`                 |
+        # | `4.1`           | `8.1.x`                 |
+        # | `4.2`           | `8.2.x`                 |
+        # | `4.3`           | `8.3.x`                 |
+        kafka: ${{ fromJSON(github.event_name == 'schedule' && '["8.0.8", "8.1.6", "8.2.4", "8.3.2"]' || '["8.3.2"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -404,12 +425,76 @@ jobs:
         with:
           pattern: traces-*
           path: /tmp/traces
-          merge-multiple: true
       - name: Load Docker Images
         run: |
           find /tmp/images -name '*.tar' -print0 |
             xargs -0 -r -n1 docker load -i
-      - name: Verify Trace Files
+      - name: Arrange Trace Files
         run: |
-          find /tmp/traces -type f -name '*.json' -print
-          test -n "$(find /tmp/traces -type f -name '*.json')"
+          mkdir -p microservices/api-index-api/target/otel-collector
+          cp /tmp/traces/traces-api-index-api/traces.json microservices/api-index-api/target/otel-collector/traces.json
+          mkdir -p microservices/quality-gate-api/target/otel-collector
+          cp /tmp/traces/traces-quality-gate-api/traces.json microservices/quality-gate-api/target/otel-collector/traces.json
+          mkdir -p microservices/report-coordinator-api/target/otel-collector
+          cp /tmp/traces/traces-report-coordinator-api/traces.json microservices/report-coordinator-api/target/otel-collector/traces.json
+      - name: Remove deploy.resources from every Service
+        uses: mikefarah/yq@fce17219e95459a4e642c279d1cafd4081c2fa87
+        with:
+          cmd: yq 'del(.services[].deploy.resources)' docker-compose.yaml > docker-compose.compatibility.yaml
+      - name: Start Snow-White
+        env:
+          CP_KAFKA_VERSION: ${{ matrix.kafka }}
+          POSTGRES_VERSION: ${{ matrix.postgres }}
+          SNOW_WHITE_BUILD: ${{ github.sha }}
+        run: docker compose -f docker-compose.compatibility.yaml up -d --no-deps --wait --wait-timeout 300
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Check Snow-White is up and running
+        run: pnpm run e2e:await-services
+      - name: Download CLI Artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: cli
+          path: toolkit/cli/target
+      - name: Make Binary Executable
+        run: chmod +x toolkit/cli/target/snow-white-linux-x64
+      - name: upload-prereleases
+        run: toolkit/cli/target/snow-white-linux-x64 upload-prereleases
+      - name: calculate
+        run: |
+          mkdir -p target
+          toolkit/cli/target/snow-white-linux-x64 calculate \
+            --junit-output target/junit.xml \
+            --report-output target/report.json
+      - name: Upload Snow-White Report
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: snow-white-reports
+          path: |
+            target/junit.xml
+            target/report.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Extract Snow-White Logs
+        if: failure()
+        run: |
+          mkdir -p target
+          docker compose logs > target/snow-white.log
+      - name: Upload Snow-White Logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: snow-white-logs
+          path: target/snow-white.log
+          if-no-files-found: error
+          retention-days: 7

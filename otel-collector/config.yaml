@@ -1,0 +1,58 @@
+receivers:
+  otlp_json_file:
+    include: /data/*.json
+  otlp:
+    protocols:
+      grpc:
+        endpoint: '0.0.0.0:4317'
+      http:
+        endpoint: '0.0.0.0:4318'
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 80
+    spike_limit_percentage: 25
+  batch:
+    send_batch_size: 512
+    send_batch_max_size: 1024
+  groupbyattrs/service:
+    keys:
+      - service.name
+      - service.namespace
+      - service.version
+  groupbytrace:
+    wait_duration: 5s
+    num_traces: 512
+  resource/cleanup:
+    attributes:
+      - action: delete
+        pattern: ^process\..+
+      - action: delete
+        pattern: ^telemetry\..+
+extensions:
+  health_check:
+    endpoint: '0.0.0.0:13133'
+    check_collector_pipeline:
+      enabled: true
+      interval: 30s
+  zpages: {}
+exporters:
+  otlp_grpc/grafana:
+    endpoint: 'grafana:4317'
+    tls:
+      insecure: true
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    logs/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp_grpc/grafana]
+    metrics/infra:
+      receivers: [otlp]
+      processors: [memory_limiter, groupbyattrs/service, batch]
+      exporters: [otlp_grpc/grafana]
+    traces/infra:
+      receivers: [otlp_json_file, otlp]
+      processors: [memory_limiter, groupbytrace, batch]
+      exporters: [otlp_grpc/grafana]

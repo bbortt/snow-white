@@ -132,13 +132,6 @@
           <groupId>io.github.git-commit-id</groupId>
           <artifactId>git-commit-id-maven-plugin</artifactId>
           <version>${git-commit-id-maven-plugin.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>revision</goal>
-              </goals>
-            </execution>
-          </executions>
           <configuration>
             <failOnNoGitDirectory>false</failOnNoGitDirectory>
             <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
@@ -149,6 +142,13 @@
               <includeOnlyProperty>^git.branch$</includeOnlyProperty>
             </includeOnlyProperties>
           </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>revision</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -179,10 +179,10 @@
         <executions>
           <execution>
             <id>unpack-otel-agent</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
               <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
@@ -198,13 +198,13 @@
         <version>${spring-boot.version}</version>
         <executions>
           <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
             <configuration>
               <classifier>executable</classifier>
               <mainClass>io.github.bbortt.snow.white.microservices.api.gateway.Main</mainClass>
             </configuration>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -266,13 +266,13 @@
         <executions>
           <execution>
             <id>copy-generated-clients</id>
-            <phase>process-sources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-sources</phase>
             <configuration>
+              <changeDetection>content</changeDetection>
               <outputDirectory>${project.basedir}/src/main/webapp/app/clients</outputDirectory>
-              <overwrite>true</overwrite>
               <resources>
                 <resource>
                   <directory>${project.build.directory}/generated-sources/openapi</directory>
@@ -333,10 +333,12 @@
             <configuration>
               <filesets>
                 <fileset>
-                  <directory>target/classes/static/</directory>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
                 </fileset>
                 <fileset>
                   <directory>src/main/webapp/app/clients/</directory>
+                  <followSymlinks>false</followSymlinks>
                   <includes>
                     <include>**/*.ts</include>
                   </includes>
@@ -377,10 +379,10 @@
             <executions>
               <execution>
                 <id>copy-dependencies</id>
-                <phase>package</phase>
                 <goals>
                   <goal>copy-dependencies</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
                 </configuration>
@@ -453,10 +455,10 @@
             <executions>
               <execution>
                 <id>add-test-source</id>
-                <phase>generate-test-sources</phase>
                 <goals>
                   <goal>add-test-source</goal>
                 </goals>
+                <phase>generate-test-sources</phase>
                 <configuration>
                   <sources>
                     <source>src/apptest/java</source>
@@ -513,18 +515,18 @@
             <executions>
               <execution>
                 <id>start-containers</id>
-                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>start</goal>
                 </goals>
+                <phase>pre-integration-test</phase>
               </execution>
 
               <execution>
                 <id>stop-containers</id>
-                <phase>post-integration-test</phase>
                 <goals>
                   <goal>stop</goal>
                 </goals>
+                <phase>post-integration-test</phase>
               </execution>
             </executions>
           </plugin>
@@ -579,15 +581,15 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
                 <configuration>
                   <includes>
                     <include>**/*AppTest.java</include>
                   </includes>
                 </configuration>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>

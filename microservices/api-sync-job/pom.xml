@@ -5,8 +5,8 @@
   ~ See LICENSE file for full details.
   -->
 <project
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
   <modelVersion>4.0.0</modelVersion>
@@ -148,10 +148,10 @@
         <executions>
           <execution>
             <id>unpack-otel-agent</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
               <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
@@ -185,15 +185,15 @@
         <version>${spring-boot.version}</version>
         <executions>
           <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
             <configuration>
               <classifier>executable</classifier>
               <mainClass>
                 io.github.bbortt.snow.white.microservices.api.sync.job.Main
               </mainClass>
             </configuration>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
@@ -240,10 +240,10 @@
             <executions>
               <execution>
                 <id>copy-dependencies</id>
-                <phase>package</phase>
                 <goals>
                   <goal>copy-dependencies</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <outputDirectory>
                     ${project.build.directory}/dependencies

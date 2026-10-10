@@ -142,13 +142,13 @@
         <executions>
           <execution>
             <id>copy-generated-clients</id>
-            <phase>process-sources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
+            <phase>process-sources</phase>
             <configuration>
+              <changeDetection>content</changeDetection>
               <outputDirectory>${project.basedir}/src/clients</outputDirectory>
-              <overwrite>true</overwrite>
               <resources>
                 <resource>
                   <directory>${project.build.directory}/generated-sources/openapi</directory>
@@ -205,6 +205,10 @@
             <version>3.5.0</version>
             <configuration>
               <filesets>
+                <fileset>
+                  <directory>node_modules</directory>
+                  <followSymlinks>false</followSymlinks>
+                </fileset>
                 <fileset>
                   <directory>src/clients/</directory>
                   <includes>

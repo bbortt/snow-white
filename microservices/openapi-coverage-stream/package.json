@@ -1,16 +1,17 @@
 {
-  "name": "api-index-api",
+  "name": "openapi-coverage-stream",
   "version": "1.0.0",
   "private": true,
-  "description": "Application testing dependencies of snow-white api-index api",
+  "description": "Application testing dependencies of snow-white openapi-coverage stream",
   "author": {
     "name": "Timon Borter",
     "email": "timon.borter@gmx.ch"
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:api-index-api": "wait-on --timeout 1m http-get://localhost:8095/actuator/health",
-    "apptest:wait:otel-collector": "wait-on --timeout 1m tcp:13133"
+    "apptest:wait:openapi-coverage-stream": "wait-on --timeout 1m http-get://localhost:8080/actuator/health",
+    "apptest:wait:otel-collector": "wait-on --timeout 1m tcp:13133",
+    "apptest:wait:wiremock": "wait-on --timeout 1m http-get://localhost:9000/__admin/health"
   },
   "devDependencies": {
     "npm-run-all2": "9.0.3",
