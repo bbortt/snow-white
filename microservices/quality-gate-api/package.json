@@ -9,7 +9,7 @@
   },
   "scripts": {
     "apptest:wait": "run-p --print-label apptest:wait:*",
-    "apptest:wait:otel-collector": "wait-on --timeout 1m tcp:4318",
+    "apptest:wait:otel-collector": "wait-on --timeout 1m tcp:13133",
     "apptest:wait:quality-gate-api": "wait-on --timeout 1m http-get://localhost:8091/actuator/health"
   },
   "devDependencies": {
