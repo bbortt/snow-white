@@ -469,6 +469,12 @@ jobs:
         run: chmod +x toolkit/cli/target/snow-white-linux-x64
       - name: upload-prereleases
         run: toolkit/cli/target/snow-white-linux-x64 upload-prereleases
+      # The CLI stores its own (runner-side) URL as sourceUrl, which openapi-coverage-stream cannot reach from inside the network.
+      - name: Point Prerelease Source URLs at api-index-api
+        run: |
+          docker compose -f docker-compose.compatibility.yaml exec -T postgres \
+            psql -U snow-white -d api-index-api -v ON_ERROR_STOP=1 \
+            -c "UPDATE api_reference SET source_url = regexp_replace(source_url, '^http://localhost/', 'http://api-index-api:8080/') WHERE source_url LIKE 'http://localhost/%';"
       - name: calculate
         run: |
           mkdir -p target
