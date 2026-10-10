@@ -168,7 +168,7 @@ jobs:
             -DskipITs \
             -Djacoco.skip=true \
             -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
       - name: Build ${{ matrix.service }} Image
         run: |
           docker build \
@@ -293,7 +293,7 @@ jobs:
             -Djacoco.skip=true \
             -Dfrontend.build.skip=true \
             -Dfrontend.test.skip=true \
-            -pl :${{ matrix.service }} -am
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
       - name: Build Native ${{ matrix.service }} Image
         run: |
           ./mvnw -B spring-boot:build-image \
