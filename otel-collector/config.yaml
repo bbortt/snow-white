@@ -24,6 +24,15 @@ processors:
   groupbytrace:
     wait_duration: 5s
     num_traces: 512
+  # Tempo cannot search spans that arrive with timestamps far behind their ingestion time, so recorded
+  # spans are moved up to the moment they are read (keeping their duration).
+  transform/replay:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        statements:
+          - set(span.start_time_unix_nano, UnixNano(Now()) - (span.end_time_unix_nano - span.start_time_unix_nano))
+          - set(span.end_time_unix_nano, UnixNano(Now()))
   resource/cleanup:
     attributes:
       - action: delete
@@ -56,6 +65,10 @@ service:
       processors: [memory_limiter, groupbyattrs/service, batch]
       exporters: [otlp_grpc/grafana]
     traces/infra:
-      receivers: [otlp_json_file, otlp]
+      receivers: [otlp]
       processors: [memory_limiter, groupbytrace, batch]
+      exporters: [otlp_grpc/grafana]
+    traces/replay:
+      receivers: [otlp_json_file]
+      processors: [memory_limiter, transform/replay, groupbytrace, batch]
       exporters: [otlp_grpc/grafana]
