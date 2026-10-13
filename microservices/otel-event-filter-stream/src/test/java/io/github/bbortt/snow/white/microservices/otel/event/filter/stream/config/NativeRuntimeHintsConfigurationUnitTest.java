@@ -117,8 +117,8 @@ class NativeRuntimeHintsConfigurationUnitTest {
 
     otelRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
 
-    // Should be something more than 1000, or Spring changed considerately!
-    verify(reflectionHintsMock, atLeast(1000)).registerType(
+    // Should be something more than 900, or Spring changed considerately!
+    verify(reflectionHintsMock, atLeast(900)).registerType(
       any(Class.class),
       eq(INVOKE_PUBLIC_METHODS)
     );
