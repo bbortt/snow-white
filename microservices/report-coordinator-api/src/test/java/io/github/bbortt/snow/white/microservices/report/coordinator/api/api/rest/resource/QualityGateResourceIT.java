@@ -358,6 +358,81 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     );
   }
 
+  /**
+   * A client that serializes absent optional fields as explicit nulls writes {@code "waivers":
+   * null}, which is the same document as omitting the field: no waivers were named. It is accepted
+   * and stores none, rather than failing the trigger's own validation on the null it was handed.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  void postRequest_withExplicitlyNullWaivers_shouldTriggerACalculationWithoutAny()
+    throws Exception {
+    var apiExistsEndpoint = createApiIndexApiWiremockStub(
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      OK
+    );
+    var qualityGateByNameEndpoint = createQualityGateApiWiremockStub();
+
+    var contentAsString = mockMvc
+      .perform(
+        post(PATH_CALCULATE_QUALITY_GATE, QUALITY_GATE_CONFIG_NAME)
+          .contentType(APPLICATION_JSON)
+          .content(
+            """
+            {
+              "includeApis": [
+                {
+                  "serviceName": "serviceName",
+                  "apiName": "apiName",
+                  "apiVersion": "apiVersion"
+                }
+              ],
+              "waivers": null
+            }
+            """
+          )
+      )
+      .andExpect(status().isAccepted())
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var calculationIdStr = jsonMapper
+      .readTree(contentAsString)
+      .get("calculationId")
+      .asString();
+
+    var report = qualityGateReportRepository.findById(
+      UUID.fromString(calculationIdStr)
+    );
+    assertThat(report).isPresent();
+    assertThat(report.get().getReportParameter().getWaivers()).isEmpty();
+
+    var dispatchedKeys = new ArrayList<String>();
+
+    await()
+      .atMost(1, MINUTES)
+      .untilAsserted(() -> {
+        consumer.poll(Duration.ofSeconds(5)).forEach(consumerRecord -> {
+          if (!calculationIdStr.equals(consumerRecord.key())) {
+            return;
+          }
+
+          assertThat(consumerRecord.value().getWaivers()).isNull();
+          dispatchedKeys.add(consumerRecord.key());
+        });
+
+        assertThat(dispatchedKeys).containsExactly(calculationIdStr);
+      });
+
+    apiIndexApi.verifyThat(getRequestedFor(urlEqualTo(apiExistsEndpoint)));
+    qualityGateApi.verifyThat(
+      getRequestedFor(urlEqualTo(qualityGateByNameEndpoint))
+    );
+  }
+
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   void postRequest_withWaivers_shouldPersistAnswerBackAndFanThemOutPerApi()

@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -140,9 +141,7 @@ public interface QualityGateReportMapper {
   default @Nullable List<CalculateQualityGateRequestWaiversInner> toRequestWaivers(
     List<Waiver> waivers
   ) {
-    return waivers.isEmpty()
-      ? null
-      : waivers.stream().map(this::toRequestWaiver).toList();
+    return absentIfEmpty(waivers, this::toRequestWaiver);
   }
 
   /**
@@ -155,9 +154,21 @@ public interface QualityGateReportMapper {
   default @Nullable List<ListQualityGateReports200ResponseInnerCalculationRequestWaiversInner> toReportWaivers(
     List<Waiver> waivers
   ) {
+    return absentIfEmpty(waivers, this::toReportWaiver);
+  }
+
+  /**
+   * The absent-rather-than-empty rule itself, in one place: the two read shapes above differ only
+   * in the per-waiver mapper the generator made them need, so the rule they share is written once
+   * and a change to it cannot reach one shape and miss the other.
+   */
+  private <T> @Nullable List<T> absentIfEmpty(
+    List<Waiver> waivers,
+    Function<Waiver, T> toWaiverDto
+  ) {
     return waivers.isEmpty()
       ? null
-      : waivers.stream().map(this::toReportWaiver).toList();
+      : waivers.stream().map(toWaiverDto).toList();
   }
 
   default OffsetDateTime map(Instant instant) {
