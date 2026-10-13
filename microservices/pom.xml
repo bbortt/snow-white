@@ -36,9 +36,6 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
 
-    <io.opentelemetry.instrumentation.version>
-      2.31.1
-    </io.opentelemetry.instrumentation.version>
     <io.opentelemetry.javaagent.version>
       2.31.1
     </io.opentelemetry.javaagent.version>
@@ -61,6 +58,21 @@
         <groupId>com.squareup.okhttp3</groupId>
         <artifactId>okhttp-bom</artifactId>
         <version>5.5.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${io.opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-instrumentation-bom</artifactId>
+        <version>${io.opentelemetry.instrumentation.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -97,11 +109,6 @@
         <version>${kafka-streams.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>io.opentelemetry.instrumentation</groupId>
-        <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-        <version>${io.opentelemetry.instrumentation.version}</version>
-      </dependency>
       <dependency>
         <groupId>io.opentelemetry.javaagent</groupId>
         <artifactId>opentelemetry-javaagent</artifactId>
