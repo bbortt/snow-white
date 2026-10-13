@@ -33,7 +33,7 @@
     <sonar.tests />
     <sonar.test.inclusions />
 
-    <openapi-generator.version>7.25.0</openapi-generator.version>
+    <openapi-generator.version>7.26.0</openapi-generator.version>
 
     <!-- Application Testing -->
     <container.registry>ghcr.io</container.registry>
