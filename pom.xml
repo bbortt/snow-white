@@ -146,6 +146,13 @@
         <groupId>io.github.bbortt.snow-white</groupId>
         <artifactId>archunit-rules</artifactId>
         <version>${project.version}</version>
+        <!--
+          Managed as `test` so the `logback-test.xml` this module ships can never reach a
+          runtime classpath. Without it, containment would rest on every consumer remembering
+          to declare the scope itself, and a single omission would land a test logging config in
+          `BOOT-INF/lib`, where Spring Boot prefers it over the real `logback.xml`.
+        -->
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>io.github.bbortt.snow-white</groupId>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Shared test logging configuration for every module that depends on this one.
+  ~
+  ~ It lives here rather than in `internal/commons` because this is the module every Java module
+  ~ already depends on at `test` scope, and the only one carrying `maven.deploy.skip`: `commons`
+  ~ is a published `compile` dependency packaged into every Spring Boot fat jar, where a
+  ~ `logback-test.xml` would take precedence over the real `logback.xml` at runtime. Shipping it
+  ~ as a dependency also beats a per-module `src/test/resources` copy, which the `apptest`
+  ~ profile would drop when it replaces `<testResources>`.
+  ~
+  ~ The appender is defined here rather than taken from Spring Boot's `console-appender.xml`
+  ~ because not every consumer resolves Spring Boot (or logback at all - `internal/commons` has
+  ~ only `slf4j-api`, so this file is inert there). Spring Boot's `defaults.xml` is included
+  ~ `optionally for the eight framework loggers it pins below INFO; the include is skipped
+  ~ silently where Spring Boot is absent. Spring Boot still applies `logging.level.*` from
+  ~ `application-test.yaml` on top of this file, so per-module level overrides keep working.
+  -->
+<configuration>
+  <include
+    resource="org/springframework/boot/logging/logback/defaults.xml"
+    optional="true"
+  />
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %5p [%15.15t] %-40.40logger{39} : %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <!--
+      jetty servlet handler context logs each request/response.
+    -->
+  <logger name="org.eclipse.jetty" level="WARN" />
+
+  <!--
+    WireMock's notifier (`Slf4jNotifier`, hardcoded to the logger name `WireMock`) reports every
+    request, stub match and near-miss at INFO, which buries the test's own output. Only the
+    failures are worth seeing.
+  -->
+  <logger name="WireMock" level="WARN" />
+
+  <!--
+    `wiremock-spring-boot` logs its own startup separately, under its class loggers rather than
+    the `WireMock` name above: a dozen "Looking for mocks in directory ..." lines plus one
+    "Configuring WireMock for default instance" per test class.
+  -->
+  <logger name="org.wiremock.spring" level="WARN" />
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE" />
+  </root>
+</configuration>
