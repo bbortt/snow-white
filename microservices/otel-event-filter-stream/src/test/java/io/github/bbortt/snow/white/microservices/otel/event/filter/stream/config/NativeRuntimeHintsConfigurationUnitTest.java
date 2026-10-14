@@ -14,6 +14,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.aot.hint.MemberCategory.DECLARED_FIELDS;
+import static org.springframework.aot.hint.MemberCategory.INVOKE_DECLARED_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS;
 import static org.springframework.aot.hint.MemberCategory.INVOKE_PUBLIC_METHODS;
 
@@ -24,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.TypeReference;
 
 @ExtendWith({ MockitoExtension.class })
 class NativeRuntimeHintsConfigurationUnitTest {
@@ -39,6 +42,7 @@ class NativeRuntimeHintsConfigurationUnitTest {
 
   private NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints apiIndexApiDtoRuntimeHints;
   private NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints confluentKafkaRuntimeHints;
+  private NativeRuntimeHintsConfiguration.KafkaStreamsRuntimeHints kafkaStreamsRuntimeHints;
   private NativeRuntimeHintsConfiguration.OtelRuntimeHints otelRuntimeHints;
 
   @BeforeEach
@@ -47,6 +51,8 @@ class NativeRuntimeHintsConfigurationUnitTest {
       new NativeRuntimeHintsConfiguration.ApiIndexApiDtoRuntimeHints();
     confluentKafkaRuntimeHints =
       new NativeRuntimeHintsConfiguration.ConfluentKafkaRuntimeHints();
+    kafkaStreamsRuntimeHints =
+      new NativeRuntimeHintsConfiguration.KafkaStreamsRuntimeHints();
     otelRuntimeHints = new NativeRuntimeHintsConfiguration.OtelRuntimeHints();
   }
 
@@ -103,6 +109,37 @@ class NativeRuntimeHintsConfigurationUnitTest {
     );
     verify(reflectionHintsMock).registerType(
       io.confluent.kafka.serializers.subject.TopicRecordNameStrategy.class
+    );
+
+    verifyNoInteractions(classLoaderMock);
+  }
+
+  @Test
+  void shouldRegisterKafkaStreamsRuntimeHints() {
+    doReturn(reflectionHintsMock).when(runtimeHintsMock).reflection();
+    doReturn(reflectionHintsMock)
+      .when(reflectionHintsMock)
+      .registerType(any(Class.class), eq(INVOKE_PUBLIC_CONSTRUCTORS));
+    doReturn(reflectionHintsMock)
+      .when(reflectionHintsMock)
+      .registerType(
+        any(TypeReference.class),
+        eq(INVOKE_DECLARED_CONSTRUCTORS),
+        eq(DECLARED_FIELDS)
+      );
+
+    kafkaStreamsRuntimeHints.registerHints(runtimeHintsMock, classLoaderMock);
+
+    verify(reflectionHintsMock).registerType(
+      org.apache.kafka.streams.processor.internals.StreamsPartitionAssignor.class,
+      INVOKE_PUBLIC_CONSTRUCTORS
+    );
+    verify(reflectionHintsMock).registerType(
+      TypeReference.of(
+        "org.apache.kafka.streams.processor.internals.StateDirectory$StateDirectoryProcessFile"
+      ),
+      INVOKE_DECLARED_CONSTRUCTORS,
+      DECLARED_FIELDS
     );
 
     verifyNoInteractions(classLoaderMock);
