@@ -32,7 +32,7 @@
   </modules>
 
   <properties>
-    <openapi-generator.version>7.25.0</openapi-generator.version>
+    <openapi-generator.version>7.26.0</openapi-generator.version>
   </properties>
 
   <dependencies>
