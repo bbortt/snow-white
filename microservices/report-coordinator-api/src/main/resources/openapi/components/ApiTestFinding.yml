@@ -6,12 +6,13 @@ required:
 properties:
   status:
     type: string
-    description: 'What the criterion concluded about this target'
+    description: 'What the criterion concluded about this target - WAIVED where the calculation request removed it from judgement'
     example: COVERED
     enum:
       - COVERED
       - UNCOVERED
       - NOT_APPLICABLE
+      - WAIVED
   specPointer:
     type: string
     description: 'RFC 6901 JSON Pointer into the analyzed OpenAPI document, resolving to the node the criterion judged'

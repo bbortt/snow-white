@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +17,13 @@ import java.util.Map;
 public interface OpenApiCoverageCalculator {
   boolean accepts(OpenApiCoverageCriteria openApiCriteria);
 
+  /**
+   * The criterion's verdict on the specification it is handed, given the telemetry that reached it
+   * and the waivers the calculation was triggered with.
+   */
   OpenApiTestResult calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
-    Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap,
+    WaiverContext waiverContext
   );
 }

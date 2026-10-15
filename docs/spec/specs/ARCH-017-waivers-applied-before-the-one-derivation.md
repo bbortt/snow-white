@@ -8,7 +8,7 @@ already derived
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 The waiver pass runs inside `AbstractOpenApiCoverageCalculator.calculate`, between the subclass's

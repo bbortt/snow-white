@@ -7,7 +7,7 @@ A waiver's expiry is judged against the instant the calculation was triggered, c
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A waiver suppresses nothing once it has expired.

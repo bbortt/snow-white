@@ -9,7 +9,9 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import static java.util.Objects.requireNonNull;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
@@ -18,6 +20,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenTelemetryService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.RequiredAttributeKeyService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
@@ -43,6 +46,7 @@ public class OpenApiCoverageCalculationServiceImpl
 
   @Override
   @WithSpan
+  @RealizesSw(SwTraceables.SW_043_EXPIRY_JUDGED_AGAINST_THE_TRIGGERING_INSTANT)
   public @NonNull OpenApiTestContext fetchOpenApiSpecification(
     String key,
     QualityGateCalculationRequestEvent calculationRequestEvent
@@ -55,7 +59,16 @@ public class OpenApiCoverageCalculationServiceImpl
       calculationRequestEvent.getLookbackWindow(),
       Optional.ofNullable(
         calculationRequestEvent.getAttributeFilters()
-      ).orElseGet(Collections::emptySet)
+      ).orElseGet(Collections::emptySet),
+      // Both halves come off the event and nowhere else. The instant in particular is the one the
+      // trigger pinned - not the record timestamp, whose meaning is a broker setting, and not this
+      // pod's clock, which would make the same request answer differently tomorrow.
+      new WaiverContext(
+        Optional.ofNullable(calculationRequestEvent.getWaivers()).orElseGet(
+          Collections::emptyList
+        ),
+        calculationRequestEvent.getInitiatedAt()
+      )
     );
   }
 

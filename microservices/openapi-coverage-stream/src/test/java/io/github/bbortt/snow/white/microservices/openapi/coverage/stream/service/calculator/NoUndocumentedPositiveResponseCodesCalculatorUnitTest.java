@@ -20,6 +20,7 @@ import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -88,7 +89,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -120,7 +122,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -141,7 +144,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -165,7 +169,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -186,7 +191,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -207,7 +213,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -239,7 +246,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -261,7 +269,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -282,7 +291,8 @@ class NoUndocumentedPositiveResponseCodesCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(

@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -58,14 +59,19 @@ class OpenApiCoverageCalculationCoordinatorUnitTest {
 
       doReturn(openApiCriteriaResult)
         .when(openApiCoverageCalculatorMock)
-        .calculate(pathToOpenAPIOperationMap, pathToTelemetryMap);
+        .calculate(
+          pathToOpenAPIOperationMap,
+          pathToTelemetryMap,
+          WaiverContext.none()
+        );
 
       var fixture = new OpenApiCoverageCalculationCoordinator(
         singletonList(openApiCoverageCalculatorMock)
       );
       Set<OpenApiTestResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).containsExactly(openApiCriteriaResult);
@@ -79,7 +85,8 @@ class OpenApiCoverageCalculationCoordinatorUnitTest {
 
       Set<OpenApiTestResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).isEmpty();
@@ -95,7 +102,8 @@ class OpenApiCoverageCalculationCoordinatorUnitTest {
 
       Set<OpenApiTestResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).isEmpty();
@@ -109,7 +117,8 @@ class OpenApiCoverageCalculationCoordinatorUnitTest {
 
       Set<OpenApiTestResult> result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).isEmpty();

@@ -7,7 +7,7 @@ A waiver resolves against the findings the calculation emitted, never by matchin
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A waiver is resolved by selecting from the findings a criterion has already produced.
