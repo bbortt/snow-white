@@ -369,7 +369,7 @@ jobs:
       contents: read
     steps:
       - name: Download CLI Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: cli
           path: toolkit/cli/target
@@ -415,13 +415,13 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Download Docker Images
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: image-*
           path: /tmp/images
           merge-multiple: true
       - name: Download Trace Files
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: traces-*
           path: /tmp/traces
@@ -461,7 +461,7 @@ jobs:
       - name: Check Snow-White is up and running
         run: pnpm run e2e:await-services
       - name: Download CLI Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: cli
           path: toolkit/cli/target
