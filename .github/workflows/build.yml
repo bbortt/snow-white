@@ -88,7 +88,7 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
       - name: Upload CLI Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: cli
           path: toolkit/cli/target/snow-white-*
@@ -194,7 +194,7 @@ jobs:
             -pl :${{ matrix.service }}
       - name: Upload Playwright Report
         if: failure() && matrix.service == 'api-gateway'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: playwright-report-container
           path: microservices/api-gateway/target/playwright-report
@@ -206,7 +206,7 @@ jobs:
             -o image-artifacts/${{ matrix.service }}.tar \
             ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
       - name: Upload Docker Image
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: image-${{ matrix.service }}
           path: image-artifacts/${{ matrix.service }}.tar
@@ -243,7 +243,7 @@ jobs:
         run: ./mvnw -B -pl :api-gateway -am -Pe2e test
       - name: Upload Playwright Report
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: playwright-report
           path: microservices/api-gateway/target/playwright-report
@@ -321,7 +321,7 @@ jobs:
             -pl :${{ matrix.service }}
       - name: Upload OTel Telemetry Data
         if: matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           if-no-files-found: error
           name: traces-${{ matrix.service }}
@@ -333,7 +333,7 @@ jobs:
             -o image-artifacts/${{ matrix.service }}.tar \
             ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
       - name: Upload Docker Image
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: image-${{ matrix.service }}
           path: image-artifacts/${{ matrix.service }}.tar
@@ -483,7 +483,7 @@ jobs:
             --report-output target/report.json
       - name: Upload Snow-White Report
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: snow-white-reports
           path: |
@@ -498,7 +498,7 @@ jobs:
           docker compose logs > target/snow-white.log
       - name: Upload Snow-White Logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: snow-white-logs
           path: target/snow-white.log
