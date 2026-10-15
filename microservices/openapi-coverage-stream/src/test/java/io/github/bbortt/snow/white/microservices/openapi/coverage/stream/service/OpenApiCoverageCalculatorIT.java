@@ -18,6 +18,7 @@ import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractOpenApiCoverageServiceIT;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -77,11 +78,19 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
     var withTestIdentity = hoistTestIdentity(telemetry(true));
 
     assertThat(openApiCoverageCalculators).allSatisfy(calculator ->
-      assertThat(calculator.calculate(operations, withTestIdentity))
+      assertThat(
+        calculator.calculate(operations, withTestIdentity, WaiverContext.none())
+      )
         .usingRecursiveComparison()
         .ignoringFields("duration")
         .ignoringFieldsMatchingRegexes(".*testCaseName")
-        .isEqualTo(calculator.calculate(operations, withoutTestIdentity))
+        .isEqualTo(
+          calculator.calculate(
+            operations,
+            withoutTestIdentity,
+            WaiverContext.none()
+          )
+        )
     );
   }
 
@@ -97,7 +106,9 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
 
     var testCaseNames = openApiCoverageCalculators
       .stream()
-      .map(calculator -> calculator.calculate(operations, telemetry))
+      .map(calculator ->
+        calculator.calculate(operations, telemetry, WaiverContext.none())
+      )
       .flatMap(result -> result.findings().stream())
       .map(ApiTestFinding::evidence)
       .flatMap(List::stream)

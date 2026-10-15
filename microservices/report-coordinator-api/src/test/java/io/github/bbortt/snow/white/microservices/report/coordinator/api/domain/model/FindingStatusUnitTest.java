@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.COVERED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.NOT_APPLICABLE;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.UNCOVERED;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.WAIVED;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.FindingStatus.findingStatus;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +37,7 @@ class FindingStatusUnitTest {
       );
     }
 
-    @ValueSource(shorts = { -1, 3, Short.MAX_VALUE })
+    @ValueSource(shorts = { -1, 4, Short.MAX_VALUE })
     @ParameterizedTest
     @VerifiesArch(
       ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE
@@ -45,7 +46,8 @@ class FindingStatusUnitTest {
       // A status this version does not know is one it cannot judge. Decoding it as
       // NOT_APPLICABLE keeps it out of both sides of the fraction, so the row cannot
       // make an older reader disagree with the ratio stored beside it — which is what
-      // decoding WAIVED as UNCOVERED would do.
+      // decoding it as UNCOVERED would do. That is exactly how a reader predating
+      // WAIVED reads a waived row: out of the fraction, not against it.
       assertThat(findingStatus(unknownCode)).isEqualTo(NOT_APPLICABLE);
     }
 
@@ -60,6 +62,7 @@ class FindingStatusUnitTest {
       assertThat(COVERED.getVal()).isEqualTo((short) 0);
       assertThat(UNCOVERED.getVal()).isEqualTo((short) 1);
       assertThat(NOT_APPLICABLE.getVal()).isEqualTo((short) 2);
+      assertThat(WAIVED.getVal()).isEqualTo((short) 3);
     }
   }
 }

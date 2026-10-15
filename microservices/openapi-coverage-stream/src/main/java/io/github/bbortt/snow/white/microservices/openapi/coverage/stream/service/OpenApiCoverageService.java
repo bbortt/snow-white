@@ -32,6 +32,7 @@ import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -75,13 +76,15 @@ public class OpenApiCoverageService {
 
     return calculateCoverage(
       openApiTestContext.openAPI(),
-      openApiTestContext.openTelemetryData()
+      openApiTestContext.openTelemetryData(),
+      openApiTestContext.waiverContext()
     );
   }
 
   private Set<OpenApiTestResult> calculateCoverage(
     OpenAPI openApi,
-    Set<OpenTelemetryData> openTelemetryData
+    Set<OpenTelemetryData> openTelemetryData,
+    WaiverContext waiverContext
   ) {
     logger.info(
       "Calculating OpenAPI coverage for {} telemetry data points",
@@ -96,7 +99,8 @@ public class OpenApiCoverageService {
 
     return openApiCoverageCalculationCoordinator.calculate(
       pathIndex.operationKeyToOperation(),
-      pathToTelemetryMap
+      pathToTelemetryMap,
+      waiverContext
     );
   }
 

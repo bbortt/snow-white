@@ -21,6 +21,7 @@ public record OpenApiTestContext(
   OpenAPI openAPI,
   String lookbackWindow,
   Set<AttributeFilter> attributeFilters,
+  WaiverContext waiverContext,
   @With @Nullable Set<OpenTelemetryData> openTelemetryData,
   @With @Nullable Set<OpenApiTestResult> openApiTestResults
 ) {
@@ -30,6 +31,32 @@ public record OpenApiTestContext(
     String lookbackWindow,
     Set<AttributeFilter> attributeFilters
   ) {
-    this(apiInformation, openAPI, lookbackWindow, attributeFilters, null, null);
+    this(
+      apiInformation,
+      openAPI,
+      lookbackWindow,
+      attributeFilters,
+      WaiverContext.none(),
+      null,
+      null
+    );
+  }
+
+  public OpenApiTestContext(
+    ApiInformation apiInformation,
+    OpenAPI openAPI,
+    String lookbackWindow,
+    Set<AttributeFilter> attributeFilters,
+    WaiverContext waiverContext
+  ) {
+    this(
+      apiInformation,
+      openAPI,
+      lookbackWindow,
+      attributeFilters,
+      waiverContext,
+      null,
+      null
+    );
   }
 }

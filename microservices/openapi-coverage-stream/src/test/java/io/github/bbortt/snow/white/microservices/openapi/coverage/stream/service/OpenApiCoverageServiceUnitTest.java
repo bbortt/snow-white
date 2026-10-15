@@ -130,7 +130,8 @@ class OpenApiCoverageServiceUnitTest {
         .when(openApiCoverageCalculationCoordinatorMock)
         .calculate(
           pathToOpenAPIOperationMapCaptor.capture(),
-          pathToTelemetryMapCaptor.capture()
+          pathToTelemetryMapCaptor.capture(),
+          any()
         );
 
       Set<OpenApiTestResult> result = fixture.calculateCoverage(
@@ -183,7 +184,8 @@ class OpenApiCoverageServiceUnitTest {
         .when(openApiCoverageCalculationCoordinatorMock)
         .calculate(
           pathToOpenAPIOperationMapCaptor.capture(),
-          pathToTelemetryMapCaptor.capture()
+          pathToTelemetryMapCaptor.capture(),
+          any()
         );
 
       fixture.calculateCoverage(openApiTestContext);
@@ -232,7 +234,7 @@ class OpenApiCoverageServiceUnitTest {
       > pathToTelemetryMapCaptor = captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), pathToTelemetryMapCaptor.capture());
+        .calculate(any(), pathToTelemetryMapCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -283,7 +285,7 @@ class OpenApiCoverageServiceUnitTest {
       > pathToTelemetryMapCaptor = captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), pathToTelemetryMapCaptor.capture());
+        .calculate(any(), pathToTelemetryMapCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -375,7 +377,7 @@ class OpenApiCoverageServiceUnitTest {
         captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), telemetryCaptor.capture());
+        .calculate(any(), telemetryCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -412,7 +414,7 @@ class OpenApiCoverageServiceUnitTest {
         captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), telemetryCaptor.capture());
+        .calculate(any(), telemetryCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -449,7 +451,7 @@ class OpenApiCoverageServiceUnitTest {
         captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), telemetryCaptor.capture());
+        .calculate(any(), telemetryCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -478,7 +480,7 @@ class OpenApiCoverageServiceUnitTest {
         captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), telemetryCaptor.capture());
+        .calculate(any(), telemetryCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 
@@ -505,7 +507,7 @@ class OpenApiCoverageServiceUnitTest {
         captor();
       doReturn(emptySet())
         .when(openApiCoverageCalculationCoordinatorMock)
-        .calculate(any(), telemetryCaptor.capture());
+        .calculate(any(), telemetryCaptor.capture(), any());
 
       fixture.calculateCoverage(openApiTestContext);
 

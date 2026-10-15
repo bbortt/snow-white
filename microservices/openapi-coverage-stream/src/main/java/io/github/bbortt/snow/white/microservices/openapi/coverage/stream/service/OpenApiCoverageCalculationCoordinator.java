@@ -14,6 +14,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;
@@ -34,7 +35,8 @@ class OpenApiCoverageCalculationCoordinator {
   @WithSpan
   public Set<OpenApiTestResult> calculate(
     Map<String, Operation> pathToOpenAPIOperationMap,
-    Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap,
+    WaiverContext waiverContext
   ) {
     if (isEmpty(pathToOpenAPIOperationMap) || isEmpty(pathToTelemetryMap)) {
       return emptySet();
@@ -48,7 +50,8 @@ class OpenApiCoverageCalculationCoordinator {
             () ->
               openApiCoverageCalculator.calculate(
                 pathToOpenAPIOperationMap,
-                pathToTelemetryMap
+                pathToTelemetryMap,
+                waiverContext
               ),
             newVirtualThreadPerTaskExecutor()
           )
