@@ -103,11 +103,6 @@
         <artifactId>kafka-clients</artifactId>
         <version>${kafka-streams.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-streams-test-utils</artifactId>
-        <version>${kafka-streams.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>io.opentelemetry.javaagent</groupId>

@@ -104,6 +104,16 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    ignore:
+      # Kafka 4.4 moved `ByteUtils` & co. to `common.utils.internals`, which breaks
+      # `kafka-streams-protobuf-serde` 8.3.x at runtime. Lift once a Confluent release
+      # built against Kafka 4.4 is out, and bump both together.
+      - dependency-name: 'org.apache.kafka:kafka-clients'
+        versions: ['>= 4.4.0']
+      - dependency-name: 'org.apache.kafka:kafka-streams'
+        versions: ['>= 4.4.0']
+      - dependency-name: 'org.apache.kafka:kafka-streams-test-utils'
+        versions: ['>= 4.4.0']
   - package-ecosystem: 'gitsubmodule'
     directory: '/opentelemetry-proto'
     schedule:
