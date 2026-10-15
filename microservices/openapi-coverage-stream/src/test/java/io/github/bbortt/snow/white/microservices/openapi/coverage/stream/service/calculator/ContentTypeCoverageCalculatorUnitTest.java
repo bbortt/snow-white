@@ -26,6 +26,7 @@ import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -100,7 +101,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -130,7 +132,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -154,7 +157,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -181,7 +185,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -205,7 +210,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -232,7 +238,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -260,7 +267,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(
@@ -292,7 +300,8 @@ class ContentTypeCoverageCalculatorUnitTest {
 
       OpenApiTestResult result = fixture.calculate(
         pathToOpenAPIOperationMap,
-        pathToTelemetryMap
+        pathToTelemetryMap,
+        WaiverContext.none()
       );
 
       assertThat(result).satisfies(

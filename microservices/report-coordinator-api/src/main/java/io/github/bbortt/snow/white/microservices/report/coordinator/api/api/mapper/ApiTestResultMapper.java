@@ -127,6 +127,7 @@ public interface ApiTestResultMapper {
       case COVERED -> FindingStatus.COVERED;
       case UNCOVERED -> FindingStatus.UNCOVERED;
       case NOT_APPLICABLE -> FindingStatus.NOT_APPLICABLE;
+      case WAIVED -> FindingStatus.WAIVED;
     };
   }
 
@@ -194,6 +195,7 @@ public interface ApiTestResultMapper {
       case COVERED -> GetReportByCalculationId200ResponseInterfacesInnerTestResultsInnerFindingsInner.StatusEnum.COVERED;
       case UNCOVERED -> GetReportByCalculationId200ResponseInterfacesInnerTestResultsInnerFindingsInner.StatusEnum.UNCOVERED;
       case NOT_APPLICABLE -> GetReportByCalculationId200ResponseInterfacesInnerTestResultsInnerFindingsInner.StatusEnum.NOT_APPLICABLE;
+      case WAIVED -> GetReportByCalculationId200ResponseInterfacesInnerTestResultsInnerFindingsInner.StatusEnum.WAIVED;
     };
   }
 }

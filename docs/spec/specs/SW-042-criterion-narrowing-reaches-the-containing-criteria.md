@@ -8,7 +8,7 @@ criteria containing it
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A waiver's `criterion` is optional, and the two forms say different things.
