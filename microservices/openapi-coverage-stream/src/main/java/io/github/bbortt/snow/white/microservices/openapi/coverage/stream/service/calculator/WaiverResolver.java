@@ -46,8 +46,8 @@ final class WaiverResolver {
    * A finding's own status is not consulted. A {@code COVERED} target is waived like any other,
    * because a waiver that only applied where the criterion was failing would be applied or skipped
    * according to which traces happened to land in the lookback window - the same request answering
-   * differently, which is what {@code CON-001} exists to exclude. It also cannot flatter a ratio:
-   * a covered target leaving the fraction can only lower it.
+   * differently, which is the one thing an analysis result may never do. It also cannot flatter a
+   * ratio: a covered target leaving the fraction can only lower it.
    */
   @RealizesSw(SwTraceables.SW_041_WAIVER_RESOLVES_AGAINST_THE_EMITTED_FINDINGS)
   static List<ApiTestFinding> applyWaivers(
@@ -196,8 +196,8 @@ final class WaiverResolver {
   /**
    * A name no criterion of this system carries addresses nothing here, rather than failing the
    * calculation from inside a calculator: the request that carried it is where a typo can still be
-   * answered usefully, and {@code CON-011} is what answers an entry that addressed nothing
-   * anywhere.
+   * answered usefully, and the match accounting across every criterion of the API test is what
+   * answers an entry that addressed nothing anywhere.
    */
   private static Optional<OpenApiCoverageCriteria> toCriterion(String name) {
     try {
