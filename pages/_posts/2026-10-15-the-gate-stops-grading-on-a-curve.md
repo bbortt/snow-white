@@ -161,8 +161,7 @@ An `apiVersion` of `*` matches on service and API name alone and reaches every v
 in the report.
 The accepted document is recorded beside the lookback window and attribute filters that calculation
 was told, and served back on every report read through `calculationRequest`
-([`SW-040`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SW-040-waiver-enters-only-on-the-calculation-request.md),
-[`SYS-014`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SYS-014-exemption-is-an-input-never-stored-state.md)).
+([`SW-040`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SW-040-waiver-enters-only-on-the-calculation-request.md)).
 
 **Be clear about what this does not do yet.**
 In 2.0.0 a waiver is accepted, validated, persisted and echoed back.
@@ -171,8 +170,10 @@ Resolution
 ([`SW-041`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SW-041-waiver-resolves-against-the-emitted-findings.md)),
 criterion narrowing
 ([`SW-042`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SW-042-criterion-narrowing-reaches-the-containing-criteria.md))
-and the rule that a criterion emptied by waivers is never a coverage pass
+the rule that a criterion emptied by waivers is never a coverage pass
 ([`CON-012`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md))
+and keeping an exemption an input rather than stored state
+([`SYS-014`](https://github.com/bbortt/snow-white/blob/main/docs/spec/specs/SYS-014-exemption-is-an-input-never-stored-state.md))
 are specified and planned, not shipped.
 
 The whole increment is shaped around one requirement: a report that passes with waivers must never
