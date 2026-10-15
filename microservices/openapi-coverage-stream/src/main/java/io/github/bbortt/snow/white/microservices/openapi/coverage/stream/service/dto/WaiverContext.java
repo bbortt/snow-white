@@ -40,9 +40,9 @@ public record WaiverContext(
 
     // A dispatch that carries waivers always carries the report's createdAt beside them, so a
     // missing instant here is a producer that moved without this consumer. Neither of the two ways
-    // on from that is acceptable - judging expiry against a local clock is the one thing SW-043
-    // exists to prevent, and dropping the waivers silently publishes a verdict nobody authorised -
-    // so the calculation stops instead.
+    // on from that is acceptable - judging expiry against a local clock is the one thing the
+    // triggering instant exists to prevent, and dropping the waivers silently publishes a verdict
+    // nobody authorised - so the calculation stops instead.
     if (!waivers.isEmpty() && isNull(initiatedAt)) {
       throw new IllegalArgumentException(
         "Cannot judge waiver expiry: the calculation request carries %d waiver(s) but names no instant it was triggered at!".formatted(

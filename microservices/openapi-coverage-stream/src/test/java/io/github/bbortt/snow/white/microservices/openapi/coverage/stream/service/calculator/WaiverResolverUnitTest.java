@@ -182,7 +182,7 @@ class WaiverResolverUnitTest {
     /**
      * {@code default} is a response code like any other here. The calculator resolved the wildcard
      * when it emitted the finding, so a waiver reaches it by naming the code the finding carries -
-     * which is literally {@code default} - and the wildcard rule of {@code SW-002} is neither
+     * which is literally {@code default} - and the criterion's own wildcard rule is neither
      * reimplemented nor consulted.
      */
     @Test
@@ -212,8 +212,8 @@ class WaiverResolverUnitTest {
      * A covered target is waived like any other. If application depended on the status, the same
      * request against the same specification would apply the waiver on a day the telemetry missed
      * the target and skip it on a day it did not - the waived count moving with the traces, which
-     * is what {@code CON-001} excludes. It cannot flatter the ratio either: a covered target
-     * leaving the fraction can only lower it.
+     * is precisely the non-determinism an analysis result may never show. It cannot flatter the
+     * ratio either: a covered target leaving the fraction can only lower it.
      */
     @Test
     @VerifiesSw(
@@ -491,8 +491,9 @@ class WaiverResolverUnitTest {
     /**
      * A criterion the gate excluded is not required to be running, so a waiver naming it is still
      * applied to the criteria that do judge its target. Nothing in this pass knows which criteria
-     * the gate selected - the narrowing is decided by containment alone - and
-     * {@code CON-011} is what answers an entry that addressed nothing anywhere.
+     * the gate selected - the narrowing is decided by containment alone - and the match accounting
+     * across every criterion of the API test is what answers an entry that addressed nothing
+     * anywhere.
      */
     @Test
     @VerifiesSw(
@@ -525,7 +526,8 @@ class WaiverResolverUnitTest {
     /**
      * A name no criterion carries addresses nothing here rather than failing the calculation from
      * inside a calculator: the request that carried the typo is where it can still be answered
-     * usefully, and {@code CON-011} is what reports an entry that matched nothing anywhere.
+     * usefully, and the match accounting across the whole API test is what reports an entry that
+     * matched nothing anywhere.
      */
     @Test
     @VerifiesSw(
