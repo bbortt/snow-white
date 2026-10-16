@@ -30,6 +30,8 @@ narrower criterion is a stricter claim and a waiver never widens itself into one
 A named criterion that is not among the criteria judging the target is governed by `CON-011`: the
 waiver has to match some finding somewhere, and a criterion the gate excluded is not required to be
 running.
+A name this system declares no criterion under is a different case and never arrives: `SW-040`
+rejects it at the trigger, which is what keeps the exemption above about criteria that exist.
 
 **Rationale**
 Making `criterion` optional rather than mandatory is a choice about which form of the common case is

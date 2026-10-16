@@ -454,7 +454,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
         List.of(
           waiver("star-wars", "yoda", "1.2.3")
             .responseCode("500")
-            .criterion("HTTP_RESPONSE_CODE_COVERAGE")
+            .criterion("RESPONSE_CODE_COVERAGE")
             .build()
         )
       )
@@ -507,7 +507,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
               assertThat(persisted.getResponseCode()).isEqualTo("500"),
             persisted ->
               assertThat(persisted.getCriterion()).isEqualTo(
-                "HTTP_RESPONSE_CODE_COVERAGE"
+                "RESPONSE_CODE_COVERAGE"
               ),
             persisted ->
               assertThat(persisted.getExpires()).isEqualTo(
@@ -552,7 +552,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
                     assertThat(dispatched.responseCode()).isEqualTo("500"),
                   dispatched ->
                     assertThat(dispatched.criterion()).isEqualTo(
-                      "HTTP_RESPONSE_CODE_COVERAGE"
+                      "RESPONSE_CODE_COVERAGE"
                     ),
                   dispatched ->
                     assertThat(dispatched.reason()).isEqualTo(
@@ -679,6 +679,19 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
     assertThatWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3").path("*").build(),
       "wildcards path - '*' is admitted on apiVersion only!"
+    );
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  void postRequest_withAnUnknownWaiverCriterion_shouldBeRejectedAndCreateNoReport()
+    throws Exception {
+    assertThatWaiverIsRejected(
+      waiver("star-wars", "yoda", "1.2.3")
+        .criterion("RESPONSE_CODE_COVRAGE")
+        .build(),
+      "names an unknown criterion 'RESPONSE_CODE_COVRAGE'!"
     );
   }
 

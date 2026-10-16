@@ -27,9 +27,15 @@ Each entry names, all required:
 `criterion` is optional; `SW-042` defines what naming it does and what omitting it does.
 
 The array is validated at the trigger, before any calculation exists: an entry missing `reason` or
-`expires`, carrying a blank `reason`, carrying more than one target discriminator, or naming an API
-that is not among the report's API tests is a `400`, and no report is created
+`expires`, carrying a blank `reason`, carrying more than one target discriminator, naming a
+`criterion` this system does not declare, or naming an API that is not among the report's API tests
+is a `400`, and no report is created
 (`SW-013`).
+A `criterion` is matched against the declared criterion names case-insensitively, the same question
+`SW-042`'s resolution asks of it, and a criterion's published label is not one of those names.
+It is the vocabulary that is checked and not the chosen quality gate: a `criterion` the gate
+excluded is accepted here, because which criteria run is the gate's choice and a waiver list written
+once for a repository is meant to outlive it.
 An entry whose `apiVersion` is `'*'` is matched on `serviceName` and `apiName` alone, both at that
 rejection and at the per-API dispatch of `ARCH-004`: it reaches the calculation of every version of
 that API in the report, and an unknown service or API name is still a `400`.
@@ -83,6 +89,24 @@ trigger already has: the report's API tests are resolved before dispatch, so a w
 that is not in this calculation is a typo the system can name immediately rather than a silent no-op.
 `SW-013` already makes the trigger all-or-nothing, so the rejection costs no partial report.
 
+An undeclared `criterion` is the one remaining unanswerable entry, and the trigger is the only place
+left that can answer it.
+Nothing downstream can: `CON-011` fails a calculation on a waiver that matched nothing, but a
+misspelled criterion and a criterion the gate excluded are indistinguishable to it — both name
+nothing that ran — and `SW-042` requires the excluded one to be accepted.
+That exemption is load-bearing and correct, and it is also exactly what a typo hides behind, so a
+waiver naming `RESPONSE_CODE_COVRAGE` would travel through intake, through resolution and through
+the match accounting without ever being applied, beside a ratio that reads as though it had been.
+The name is the one half of the question that needs no calculation to answer, and answering it at
+intake is what leaves `CON-011`'s exemption covering only the case it was written for.
+
+Checking the vocabulary rather than the gate is what keeps that narrow.
+A waiver list is written once per repository and run against whichever gate the pipeline names, so
+rejecting an entry because this gate does not run its criterion would make the document depend on
+the gate it is submitted with — a file that has to be re-edited per pipeline, which is the kind of
+maintenance `'*'` on `apiVersion` exists to avoid.
+Declared-but-not-running stays dormant; undeclared is rejected.
+
 Recording the document on `ReportParameter` rather than deriving it back from findings is what makes
 a report auditable.
 The applied waivers are visible in the findings, but the ones that were _asked for_ — including their
@@ -96,8 +120,11 @@ back under `calculationRequest`, with reasons and expiry dates intact.
 A test asserts a report triggered without waivers omits the property entirely rather than serving an
 empty array or `null`.
 Tests assert `400` and no created report for: a missing `reason`, a blank `reason`, a missing
-`expires`, two target discriminators on one entry, and an API block matching no API test of the
-report.
+`expires`, two target discriminators on one entry, an API block matching no API test of the
+report, and a `criterion` this system does not declare.
+A test asserts a declared `criterion` is accepted in any case, that a criterion's published label is
+not accepted as its name, and that a declared `criterion` the chosen gate excludes is accepted — so
+the check is on the vocabulary rather than on the gate.
 A test asserts an `apiVersion` of `'*'` is accepted and reaches the calculation of every version of
 that API in the report, while an unknown `serviceName` or `apiName` alongside it is still a `400`.
 A test asserts `'*'` is rejected as a `serviceName`, an `apiName`, a `path`, a `method` and each
@@ -132,3 +159,17 @@ confirming the addition is additive for the client this repo generates.
 - [CON-010](CON-010-rest-responses-never-carry-null.md) — why an absent `waivers` is omitted
 - [SYS-011](SYS-011-bounded-time-resolution.md) — the sibling per-calculation time input recorded on
   the same entity
+- [ARCH-016](ARCH-016-criteria-containment-declared-on-the-enum.md) — the declaration a submitted
+  `criterion` is checked against
+- [CON-011](CON-011-waiver-matching-no-finding-fails-the-calculation.md) — the downstream failure
+  whose necessary exemption an undeclared `criterion` would otherwise hide behind
+- [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — the gate scoping that is deliberately _not_
+  consulted when a `criterion` is judged here
+
+## Changes
+
+- **2026-10-16** — Amended: a `criterion` this system does not declare joins the trigger's `400`
+  set.
+  `CON-011` has to excuse a criterion that merely did not run, so nothing downstream could tell a
+  misspelled name from a gate-excluded one; the name is checked against the declaration of
+  `ARCH-016` at intake, and the gate is still not consulted.

@@ -6,7 +6,6 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
-import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
@@ -18,7 +17,6 @@ import io.github.bbortt.snow.white.commons.event.dto.Waiver;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import java.util.List;
-import java.util.Optional;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -134,6 +132,12 @@ final class WaiverResolver {
    * Upward only. Conceding that an operation cannot be made to succeed concedes the weaker
    * statement that it cannot be called, but not the reverse - a narrower criterion is a stricter
    * claim, and a waiver never widens itself into one.
+   * <p>
+   * A name no criterion of this system carries addresses nothing here rather than failing the
+   * calculation from inside a calculator. The trigger rejects such a name outright, which is where
+   * a typo can still be answered usefully, so this branch is what a dispatch from an older trigger
+   * reaches - and the match accounting across every criterion of the API test is what then answers
+   * an entry that addressed nothing anywhere.
    */
   @RealizesSw(
     SwTraceables.SW_042_CRITERION_NARROWING_REACHES_THE_CONTAINING_CRITERIA
@@ -148,29 +152,13 @@ final class WaiverResolver {
       return true;
     }
 
-    return toCriterion(named)
+    return OpenApiCoverageCriteria.byName(named)
       .map(
         namedCriterion ->
           namedCriterion.equals(criterion) ||
           namedCriterion.getContainingCriteria().contains(criterion)
       )
       .orElse(false);
-  }
-
-  /**
-   * A name no criterion of this system carries addresses nothing here, rather than failing the
-   * calculation from inside a calculator: the request that carried it is where a typo can still be
-   * answered usefully, and the match accounting across every criterion of the API test is what
-   * answers an entry that addressed nothing anywhere.
-   */
-  private static Optional<OpenApiCoverageCriteria> toCriterion(String name) {
-    try {
-      return Optional.of(
-        OpenApiCoverageCriteria.valueOf(name.toUpperCase(ROOT))
-      );
-    } catch (IllegalArgumentException e) {
-      return Optional.empty();
-    }
   }
 
   private static String describe(Waiver waiver) {
