@@ -23,6 +23,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import lombok.RequiredArgsConstructor;
@@ -113,10 +114,23 @@ public class OpenApiCoverageCalculationProcessor {
         exception
       );
 
-      return new OpenApiCoverageResponseEvent(
-        qualityGateCalculationRequestEventFixedKeyRecord
-          .value()
-          .getApiInformation(),
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        exception.getMessage()
+      );
+    } catch (UnmatchedWaiverException exception) {
+      logger.error(
+        "Refusing to publish coverage for a calculation holding a waiver that matched nothing: {}",
+        exception.getMessage()
+      );
+
+      // Caught by name rather than left to the handler below, because what this branch guarantees
+      // is the point of the failure and not an incidental consequence of it: the report carries the
+      // reason its author has to act on, and carries no ratio that would read as a verdict on an
+      // input the calculation did not fully apply. No stack trace - nothing went wrong in the code,
+      // only in the request.
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
         exception.getMessage()
       );
     } catch (Exception exception) {
@@ -128,15 +142,33 @@ public class OpenApiCoverageCalculationProcessor {
         exception
       );
 
-      return new OpenApiCoverageResponseEvent(
-        qualityGateCalculationRequestEventFixedKeyRecord
-          .value()
-          .getApiInformation(),
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
         rootCause.getMessage() != null
           ? rootCause.getMessage()
           : rootCause.getClass().getSimpleName()
       );
     }
+  }
+
+  /**
+   * Every failure answers the request the same way: the API it was about, and the reason, with no
+   * results. The branches above differ in what they log and in nothing else, and this keeps that the
+   * only thing they have to decide.
+   */
+  private static @NonNull OpenApiCoverageResponseEvent failureEvent(
+    FixedKeyRecord<
+      String,
+      QualityGateCalculationRequestEvent
+    > qualityGateCalculationRequestEventFixedKeyRecord,
+    String errorMessage
+  ) {
+    return new OpenApiCoverageResponseEvent(
+      qualityGateCalculationRequestEventFixedKeyRecord
+        .value()
+        .getApiInformation(),
+      errorMessage
+    );
   }
 
   private @NonNull OpenApiCoverageResponseEvent processOpenApiCoverageRequest(
@@ -146,7 +178,7 @@ public class OpenApiCoverageCalculationProcessor {
     > qualityGateCalculationRequestEventFixedKeyRecord,
     Long timestamp
   )
-    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
     var openApiTestContext =
       openApiCoverageCalculationService.fetchOpenApiSpecification(
         qualityGateCalculationRequestEventFixedKeyRecord.key(),

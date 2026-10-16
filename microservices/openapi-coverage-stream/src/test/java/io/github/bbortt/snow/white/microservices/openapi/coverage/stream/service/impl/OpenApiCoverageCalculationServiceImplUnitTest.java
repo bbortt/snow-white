@@ -36,6 +36,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.time.Instant;
@@ -325,7 +326,7 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
   class CalculateCoverageTest {
 
     @Test
-    void shouldCalculateCoverage() {
+    void shouldCalculateCoverage() throws UnmatchedWaiverException {
       var context = new OpenApiTestContext(
         mock(ApiInformation.class),
         mock(OpenAPI.class),

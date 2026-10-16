@@ -416,7 +416,7 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
         .containsExactly(tuple(UNCOVERED, null));
 
       assertThat(result.additionalInformation())
-        .startsWith("Waiver on 'GET /api' (500) expired on " + EXPIRES)
+        .startsWith("Waiver on 'GET /api (500)' expired on " + EXPIRES)
         .contains(REASON)
         .endsWith("1 finding");
     }

@@ -11,6 +11,7 @@ import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEv
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import org.jspecify.annotations.NonNull;
 
@@ -51,11 +52,14 @@ public interface OpenApiCoverageCalculationService {
    *
    * @param openApiTestContext the test context.
    * @return the test context with coverage results.
+   * @throws UnmatchedWaiverException if a waiver the request dispatched addressed no target any
+   *     criterion of this API test judged. No results come back in that case: the input was partly
+   *     ignored, and a ratio published beside it would read as though it had not been.
    */
   @NonNull
   OpenApiTestContext calculateCoverage(
     @NonNull OpenApiTestContext openApiTestContext
-  );
+  ) throws UnmatchedWaiverException;
 
   /**
    * Builds the response event for the given test context.

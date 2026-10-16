@@ -7,7 +7,7 @@ A waiver that matches no finding fails the calculation rather than silently doin
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every waiver dispatched to a calculation must match at least one emitted finding.
