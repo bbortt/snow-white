@@ -309,7 +309,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldRespondWithFriendlyMessage_whenTelemetryBackendUnavailable()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
       var calculationId = "3fb7c5b9-9c1e-4f7c-8f3f-15f5b6f4c1f0";
       var requestEvent = qualityGateCalculationRequestEvent();
 
