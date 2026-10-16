@@ -207,6 +207,100 @@ class WaiverValidatorUnitTest {
     }
 
     @Test
+    void shouldAcceptAnOmittedCriterion() {
+      assertThat(
+        fixture.validate(
+          List.of(acceptableWaiver().criterion(null).build()),
+          Set.of(A_NEW_HOPE_V1)
+        )
+      ).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+      strings = {
+        "RESPONSE_CODE_COVERAGE",
+        "response_code_coverage",
+        "Response_Code_Coverage",
+      }
+    )
+    void shouldAcceptADeclaredCriterionWhateverItsCase(String criterion) {
+      assertThat(
+        fixture.validate(
+          List.of(acceptableWaiver().criterion(criterion).build()),
+          Set.of(A_NEW_HOPE_V1)
+        )
+      ).isEmpty();
+    }
+
+    /**
+     * The vocabulary is checked, not the gate: which criteria a calculation runs is the gate's
+     * choice, and a waiver list written once for a repository outlives it.
+     */
+    @Test
+    void shouldAcceptADeclaredCriterionTheChosenGateMayExclude() {
+      assertThat(
+        fixture.validate(
+          List.of(
+            acceptableWaiver().criterion("REQUIRED_PARAMETER_COVERAGE").build()
+          ),
+          Set.of(A_NEW_HOPE_V1)
+        )
+      ).isEmpty();
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+    void shouldRejectACriterionThisSystemDoesNotDeclare() {
+      var rejections = fixture.validate(
+        List.of(acceptableWaiver().criterion("RESPONSE_CODE_COVRAGE").build()),
+        Set.of(A_NEW_HOPE_V1)
+      );
+
+      assertThat(rejections).containsExactly(
+        "Waiver { serviceName='starWars', apiName='aNewHope', apiVersion='1', path='/x-wings', method='GET' } names an unknown criterion 'RESPONSE_CODE_COVRAGE'!"
+      );
+    }
+
+    /**
+     * {@code 'Path Coverage'} is a criterion's published label, not its name, and the two are not
+     * interchangeable here.
+     */
+    @Test
+    void shouldRejectACriterionNamedByItsLabel() {
+      var rejections = fixture.validate(
+        List.of(acceptableWaiver().criterion("Path Coverage").build()),
+        Set.of(A_NEW_HOPE_V1)
+      );
+
+      assertThat(rejections).hasSize(1);
+    }
+
+    /**
+     * Both complaints are about the same entry and neither answers the other: the name is unknown
+     * and the API is not this report's.
+     */
+    @Test
+    void shouldRejectAnUnknownCriterionAlongsideAnUnknownApi() {
+      var rejections = fixture.validate(
+        List.of(
+          acceptableWaiver()
+            .apiName("theCloneWars")
+            .criterion("NO_SUCH_COVERAGE")
+            .build()
+        ),
+        Set.of(A_NEW_HOPE_V1)
+      );
+
+      assertThat(rejections)
+        .hasSize(2)
+        .satisfiesExactly(
+          first -> assertThat(first).contains("names an unknown criterion"),
+          second -> assertThat(second).contains("matches no API test")
+        );
+    }
+
+    @Test
     void shouldReportEveryComplaintOfASingleBadEntry() {
       var rejections = fixture.validate(
         List.of(

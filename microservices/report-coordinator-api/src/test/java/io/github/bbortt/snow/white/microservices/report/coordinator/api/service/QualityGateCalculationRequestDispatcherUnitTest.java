@@ -496,7 +496,7 @@ class QualityGateCalculationRequestDispatcherUnitTest {
               .path("/x-wings")
               .method("GET")
               .responseCode("418")
-              .criterion("HTTP_RESPONSE_CODE_COVERAGE")
+              .criterion("RESPONSE_CODE_COVERAGE")
               .reason("The teapot is documented but never flown.")
               .expires(LocalDate.parse("2026-12-31"))
               .build()
@@ -525,7 +525,7 @@ class QualityGateCalculationRequestDispatcherUnitTest {
           "418",
           null,
           null,
-          "HTTP_RESPONSE_CODE_COVERAGE",
+          "RESPONSE_CODE_COVERAGE",
           "The teapot is documented but never flown.",
           LocalDate.parse("2026-12-31")
         )

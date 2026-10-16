@@ -14,6 +14,7 @@ import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCr
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.POSITIVE_RESPONSE_CODE_COVERAGE;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_CODE_COVERAGE;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.byName;
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.values;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.readAllLines;
@@ -39,6 +40,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * A container that is not a member of this enum does not compile, and a member declared with two
@@ -284,6 +286,37 @@ class OpenApiCoverageCriteriaUnitTest {
     assertThat(RESPONSE_CODE_COVERAGE.getContainingCriteria()).doesNotContain(
       ERROR_RESPONSE_CODE_COVERAGE
     );
+  }
+
+  /**
+   * The one place that answers "is this a criterion", so the trigger rejecting an unknown name and
+   * the resolver reaching nothing through one agree by construction rather than by two matching
+   * implementations.
+   */
+  @EnumSource
+  @ParameterizedTest
+  void byNameResolvesEveryDeclaredCriterion(OpenApiCoverageCriteria criterion) {
+    assertThat(byName(criterion.name())).contains(criterion);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = { "path_coverage", "Path_Coverage", "pAtH_cOvErAgE" })
+  void byNameIgnoresCase(String name) {
+    assertThat(byName(name)).contains(PATH_COVERAGE);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = {
+      "PATH_COVERAGE_TYPO",
+      "PATH COVERAGE",
+      "Path Coverage",
+      "*",
+      "",
+    }
+  )
+  void byNameResolvesNothingForANameNoCriterionCarries(String name) {
+    assertThat(byName(name)).isEmpty();
   }
 
   /**
