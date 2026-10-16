@@ -27,12 +27,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
+import io.github.bbortt.snow.white.commons.event.dto.Waiver;
 import io.github.bbortt.snow.white.commons.quality.gate.ApiType;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
@@ -41,11 +44,13 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -124,7 +129,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldProcessCoverageRequest()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -194,7 +199,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldReportBackCoverageRequestsWithInvalidFilterCriteria()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
       var calculationId = "f57a401d-c3b4-48eb-8592-08aa91d14bcf";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -304,7 +309,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldRespondWithFriendlyMessage_whenTelemetryBackendUnavailable()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
       var calculationId = "3fb7c5b9-9c1e-4f7c-8f3f-15f5b6f4c1f0";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -344,6 +349,84 @@ class OpenApiCoverageCalculationProcessorUnitTest {
         anyLong()
       );
       verifyNoMoreInteractions(openApiCoverageCalculationServiceMock);
+    }
+
+    /**
+     * The report carries the reason and no ratio. A coverage figure published beside an input the
+     * calculation did not fully apply would read as a verdict on a specification nobody judged
+     * under the terms that were asked for, and it is the absence of the figure - not the presence
+     * of the message - that makes the failure impossible to mistake for a result.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_011_WAIVER_MATCHING_NO_FINDING_FAILS_THE_CALCULATION
+    )
+    void shouldReachNoVerdict_whenAWaiverMatchedNoFinding()
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+      var calculationId = "9a4f1f2e-6b7c-4d0a-9c21-5b7f3d8e1a44";
+      var requestEvent = qualityGateCalculationRequestEvent();
+
+      var openApiTestContext = mock(OpenApiTestContext.class);
+      doReturn(openApiTestContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(calculationId, requestEvent);
+
+      var enrichedContext = mock(OpenApiTestContext.class);
+      doReturn(
+        Set.of(
+          new OpenTelemetryData(
+            "5f2d3c8b9e1a0f4d",
+            "6e0c63257de34c92b8b045a7c3c2e3fc",
+            JsonNodeFactory.instance.objectNode()
+          )
+        )
+      )
+        .when(enrichedContext)
+        .openTelemetryData();
+      doReturn(enrichedContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .enrichWithOpenTelemetryData(eq(openApiTestContext), anyLong());
+
+      var unmatchedWaiverException = new UnmatchedWaiverException(
+        defaultApiInformation(),
+        singletonList(
+          new Waiver(
+            "/pets/{petId}",
+            "GET",
+            "418",
+            null,
+            null,
+            null,
+            "the downstream cannot be made to fail",
+            LocalDate.of(2026, 6, 15)
+          )
+        )
+      );
+      doThrow(unmatchedWaiverException)
+        .when(openApiCoverageCalculationServiceMock)
+        .calculateCoverage(enrichedContext);
+
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readRecordsToList())
+          .hasSize(1)
+          .first()
+          .satisfies(
+            r -> assertThat(r.getKey()).isEqualTo(calculationId),
+            r -> assertThat(r.value()).isNotNull(),
+            r ->
+              assertThat(r.value().errorMessage()).isEqualTo(
+                unmatchedWaiverException.getMessage()
+              ),
+            r -> assertThat(r.value().openApiTestResults()).isNull()
+          )
+      );
+
+      verify(openApiCoverageCalculationServiceMock).calculateCoverage(
+        enrichedContext
+      );
+      verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
+        any(OpenApiTestContext.class)
+      );
     }
 
     private void assertThatEventIsBeingRespondedWithException(

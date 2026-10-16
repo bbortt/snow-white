@@ -33,6 +33,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -69,16 +70,27 @@ public class OpenApiCoverageService {
   @WithSpan
   public Set<OpenApiTestResult> calculateCoverage(
     @NonNull OpenApiTestContext openApiTestContext
-  ) {
+  ) throws UnmatchedWaiverException {
     if (isEmpty(openApiTestContext.openTelemetryData())) {
       return emptySet();
     }
 
-    return calculateCoverage(
+    var results = calculateCoverage(
       openApiTestContext.openAPI(),
       openApiTestContext.openTelemetryData(),
       openApiTestContext.waiverContext()
     );
+
+    // After the criteria rather than between them: a waiver is placed by the API test as a whole,
+    // so the results are not handed back until every dispatched one is known to have placed
+    // itself.
+    WaiverMatchAccounting.verifyEveryWaiverMatched(
+      openApiTestContext.apiInformation(),
+      results,
+      openApiTestContext.waiverContext()
+    );
+
+    return results;
   }
 
   private Set<OpenApiTestResult> calculateCoverage(
