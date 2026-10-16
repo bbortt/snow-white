@@ -7,11 +7,13 @@
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver.API_VERSION_WILDCARD;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver;
 import java.util.List;
@@ -53,6 +55,7 @@ public class WaiverValidator {
       blankReason(waiver),
       severalTargetDiscriminators(waiver),
       misplacedWildcard(waiver),
+      unknownCriterion(waiver),
       unknownApi(waiver, apiTests)
     ).flatMap(Optional::stream);
   }
@@ -122,6 +125,34 @@ public class WaiverValidator {
           API_VERSION_WILDCARD
         )
       )
+    );
+  }
+
+  /**
+   * A {@code criterion} this system does not declare names nothing any calculation can reach, and
+   * nothing downstream can tell it apart from the one case that is legitimately absent: a criterion
+   * the chosen quality gate excluded. The rule failing a calculation on a waiver that matched no
+   * finding therefore has to excuse both, so a typo accepted here is an exemption that reads as
+   * applied and never was.
+   * <p>
+   * The gate is not consulted - only the vocabulary. Which criteria run is a property of the gate
+   * the pipeline names, and a waiver list written once for a repository is meant to outlive that
+   * choice; it is the name that has to exist, not the run.
+   */
+  private Optional<String> unknownCriterion(Waiver waiver) {
+    var criterion = waiver.getCriterion();
+
+    if (
+      isNull(criterion) ||
+      // owned by misplacedWildcard, which says more about it than this would
+      API_VERSION_WILDCARD.equals(criterion) ||
+      OpenApiCoverageCriteria.byName(criterion).isPresent()
+    ) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+      reject(waiver, "names an unknown criterion '%s'".formatted(criterion))
     );
   }
 

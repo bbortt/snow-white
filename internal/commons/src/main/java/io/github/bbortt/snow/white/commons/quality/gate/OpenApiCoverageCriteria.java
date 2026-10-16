@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.quality.gate;
 
+import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
 import static java.util.stream.Stream.iterate;
 
@@ -15,6 +16,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -172,6 +174,24 @@ public enum OpenApiCoverageCriteria {
   OpenApiCoverageCriteria(String label, String description) {
     this.label = label;
     this.description = description;
+  }
+
+  /**
+   * The criterion the given name addresses, or empty where this system declares no criterion under
+   * it. Case is not significant: the names are published upper-case and read back from documents
+   * humans write.
+   *
+   * <p>One place asks this question so that everyone asking it agrees on the answer. A name this
+   * method rejects is the one the trigger refuses with a {@code 400} and the one no calculator can
+   * resolve a waiver through, and two spellings of "is this a criterion" would mean a name accepted
+   * at intake that reaches nothing afterwards - the silent no-op the rejection exists to prevent.
+   */
+  public static Optional<OpenApiCoverageCriteria> byName(String name) {
+    try {
+      return Optional.of(valueOf(name.toUpperCase(ROOT)));
+    } catch (IllegalArgumentException _) {
+      return Optional.empty();
+    }
   }
 
   /**
