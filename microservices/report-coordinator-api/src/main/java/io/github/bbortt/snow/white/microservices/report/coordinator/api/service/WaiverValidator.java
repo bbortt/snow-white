@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.byName;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver.API_VERSION_WILDCARD;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -13,7 +14,6 @@ import static java.util.stream.Collectors.joining;
 
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
-import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver;
 import java.util.List;
@@ -146,7 +146,7 @@ public class WaiverValidator {
       isNull(criterion) ||
       // owned by misplacedWildcard, which says more about it than this would
       API_VERSION_WILDCARD.equals(criterion) ||
-      OpenApiCoverageCriteria.byName(criterion).isPresent()
+      byName(criterion).isPresent()
     ) {
       return Optional.empty();
     }

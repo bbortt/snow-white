@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.Getter;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 @Getter
@@ -185,8 +186,12 @@ public enum OpenApiCoverageCriteria {
    * method rejects is the one the trigger refuses with a {@code 400} and the one no calculator can
    * resolve a waiver through, and two spellings of "is this a criterion" would mean a name accepted
    * at intake that reaches nothing afterwards - the silent no-op the rejection exists to prevent.
+   *
+   * <p>A name is required. Absence is not an unknown criterion and the two callers mean opposite
+   * things by it - an omitted criterion waives a target for every criterion that judged it, and is
+   * accepted at intake - so an empty answer for no name would hand each of them the wrong one.
    */
-  public static Optional<OpenApiCoverageCriteria> byName(String name) {
+  public static Optional<OpenApiCoverageCriteria> byName(@NonNull String name) {
     try {
       return Optional.of(valueOf(name.toUpperCase(ROOT)));
     } catch (IllegalArgumentException _) {

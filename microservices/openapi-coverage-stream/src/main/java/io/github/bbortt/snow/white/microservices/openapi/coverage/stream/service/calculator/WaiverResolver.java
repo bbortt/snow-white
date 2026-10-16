@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.byName;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
@@ -152,7 +153,7 @@ final class WaiverResolver {
       return true;
     }
 
-    return OpenApiCoverageCriteria.byName(named)
+    return byName(named)
       .map(
         namedCriterion ->
           namedCriterion.equals(criterion) ||
