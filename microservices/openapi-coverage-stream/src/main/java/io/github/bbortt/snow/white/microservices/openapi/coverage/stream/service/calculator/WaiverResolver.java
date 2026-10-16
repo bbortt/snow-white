@@ -8,7 +8,6 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static java.util.Locale.ROOT;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -19,9 +18,7 @@ import io.github.bbortt.snow.white.commons.event.dto.Waiver;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -126,40 +123,7 @@ final class WaiverResolver {
     ApiTestFinding finding,
     Waiver waiver
   ) {
-    return (
-      coversCriterion(criterion, waiver) && addressesSameTarget(finding, waiver)
-    );
-  }
-
-  /**
-   * Whether the waiver's target is this finding's target.
-   * <p>
-   * Every discriminator is compared, including the ones the waiver omitted: an omitted
-   * {@code responseCode} addresses a target that has none - the operation itself - rather than
-   * standing for every response code under it. A waiver names one target, so widening an omission
-   * into a wildcard would make the narrowest entry in the document the broadest one in effect.
-   */
-  private static boolean addressesSameTarget(
-    ApiTestFinding finding,
-    Waiver waiver
-  ) {
-    return (
-      waiver.path().equals(finding.httpPath()) &&
-      sameMethod(waiver.method(), finding.httpMethod()) &&
-      Objects.equals(waiver.responseCode(), finding.responseCode()) &&
-      Objects.equals(waiver.parameterName(), finding.parameterName()) &&
-      Objects.equals(waiver.contentType(), finding.contentType())
-    );
-  }
-
-  /**
-   * Findings carry the method as the operation key spells it, which is upper case; a waiver carries
-   * it as its author typed it, which is as often the lower case their specification uses. The one
-   * normalisation here is on a scalar - it is not a matching rule, and it is the only place this
-   * class deviates from comparing a finding's addressing verbatim.
-   */
-  private static boolean sameMethod(String waived, @Nullable String emitted) {
-    return nonNull(emitted) && waived.toUpperCase(ROOT).equals(emitted);
+    return coversCriterion(criterion, waiver) && waiver.addresses(finding);
   }
 
   /**
@@ -210,24 +174,10 @@ final class WaiverResolver {
   }
 
   private static String describe(Waiver waiver) {
-    return "Waiver on '%s %s'%s expired on %s and was not applied: %s".formatted(
-      waiver.method().toUpperCase(ROOT),
-      waiver.path(),
-      discriminator(waiver),
+    return "Waiver on '%s' expired on %s and was not applied: %s".formatted(
+      waiver.target(),
       waiver.expires(),
       waiver.reason()
     );
-  }
-
-  private static String discriminator(Waiver waiver) {
-    return Stream.of(
-      waiver.responseCode(),
-      waiver.parameterName(),
-      waiver.contentType()
-    )
-      .filter(Objects::nonNull)
-      .findFirst()
-      .map(" (%s)"::formatted)
-      .orElse("");
   }
 }

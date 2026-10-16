@@ -23,6 +23,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Collections;
@@ -97,7 +98,7 @@ public class OpenApiCoverageCalculationServiceImpl
   @WithSpan
   public @NonNull OpenApiTestContext calculateCoverage(
     @NonNull OpenApiTestContext openApiTestContext
-  ) {
+  ) throws UnmatchedWaiverException {
     return openApiTestContext.withOpenApiTestResults(
       openApiCoverageService.calculateCoverage(openApiTestContext)
     );
