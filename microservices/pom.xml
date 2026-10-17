@@ -39,7 +39,7 @@
     <io.opentelemetry.javaagent.version>
       2.32.0
     </io.opentelemetry.javaagent.version>
-    <kafka-streams.version>4.3.1</kafka-streams.version>
+    <kafka-streams.version>4.4.0</kafka-streams.version>
     <org.flywaydb.version>13.10.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.1.1</org.springdoc.version>
