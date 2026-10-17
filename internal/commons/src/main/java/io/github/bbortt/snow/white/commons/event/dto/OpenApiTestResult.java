@@ -21,11 +21,17 @@ import org.jspecify.annotations.Nullable;
  * A criterion's outcome as it crosses the service boundary. The findings ride the result they
  * explain rather than a second event, so a persisted ratio never waits for the evidence it has to
  * agree with.
+ * <p>
+ * The two target counts ride it for the same reason. They come out of the one reduction that
+ * produced {@link #coverage}, and a consumer that re-derived them from the findings would be a
+ * second implementation of the arithmetic this contract exists to deliver once.
  */
 @RealizesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
 public record OpenApiTestResult(
   OpenApiCoverageCriteria openApiCriteria,
   BigDecimal coverage,
+  @Nullable Integer judgedTargetCount,
+  @Nullable Integer waivedTargetCount,
   Duration duration,
   @Nullable String additionalInformation,
   @JsonSetter(nulls = Nulls.AS_EMPTY) @NonNull List<ApiTestFinding> findings
@@ -37,6 +43,32 @@ public record OpenApiTestResult(
    */
   public OpenApiTestResult {
     findings = List.copyOf(findings);
+  }
+
+  /**
+   * A result that states no target counts: what an event serialized before they existed
+   * deserializes to, and what a caller with nothing to say about them constructs.
+   * <p>
+   * Absent rather than {@code 0}, because {@code judgedTargetCount: 0} asserts that the criterion
+   * judged nothing - a claim about the run, and a false one for every result scored before the
+   * counts were derived.
+   */
+  public OpenApiTestResult(
+    OpenApiCoverageCriteria openApiCriteria,
+    BigDecimal coverage,
+    Duration duration,
+    @Nullable String additionalInformation,
+    @NonNull List<ApiTestFinding> findings
+  ) {
+    this(
+      openApiCriteria,
+      coverage,
+      null,
+      null,
+      duration,
+      additionalInformation,
+      findings
+    );
   }
 
   public OpenApiTestResult(

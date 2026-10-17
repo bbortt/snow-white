@@ -80,9 +80,9 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
     );
   }
 
-  private static WaiverContext inForce(Waiver waiver) {
+  private static WaiverContext inForce(Waiver... waivers) {
     return new WaiverContext(
-      List.of(waiver),
+      List.of(waivers),
       EXPIRES.minusDays(1).atTime(NOON).toInstant(UTC)
     );
   }
@@ -99,9 +99,21 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
   }
 
   private static BigDecimal deriveCoverageOf(List<ApiTestFinding> findings) {
-    return new Fixture(findings)
-      .calculate(NO_OPERATIONS, NO_TELEMETRY, WaiverContext.none())
-      .coverage();
+    return calculationOf(findings).coverage();
+  }
+
+  private static OpenApiTestResult calculationOf(FindingStatus... statuses) {
+    return calculationOf(stream(statuses).map(Fixture::finding).toList());
+  }
+
+  private static OpenApiTestResult calculationOf(
+    List<ApiTestFinding> findings
+  ) {
+    return new Fixture(findings).calculate(
+      NO_OPERATIONS,
+      NO_TELEMETRY,
+      WaiverContext.none()
+    );
   }
 
   private static BigDecimal ratioOf(double value) {
@@ -171,6 +183,58 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
       var result = deriveCoverageOf(COVERED, COVERED, UNCOVERED);
 
       assertThat(result).isEqualTo(ratioOf(0.67));
+    }
+
+    /**
+     * The denominator the ratio was taken over, published rather than left to be guessed from it: a
+     * reader given 0.75 cannot tell three of four from seventy-five of a hundred, and the targets
+     * nothing was judged about are not in either.
+     */
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+    )
+    void shouldPublishTheJudgedCountTheRatioWasTakenOver() {
+      var result = calculationOf(
+        COVERED,
+        COVERED,
+        COVERED,
+        UNCOVERED,
+        NOT_APPLICABLE
+      );
+
+      assertThat(result.coverage()).isEqualTo(ratioOf(0.75));
+      assertThat(result.judgedTargetCount()).isEqualTo(4);
+      assertThat(result.waivedTargetCount()).isZero();
+    }
+
+    /**
+     * The vacuous {@code 1.00} keeps the counts that say why it is vacuous. Zero beside zero is the
+     * sentence a consumer needs to tell this apart from a criterion that judged targets and covered
+     * all of them - and from one emptied by waivers, which publishes a waived count instead.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldPublishBothCountsAsZeroWhenTheTargetSpaceIsEmpty() {
+      var result = calculationOf();
+
+      assertThat(result.coverage()).isEqualTo(ratioOf(1.0));
+      assertThat(result.judgedTargetCount()).isZero();
+      assertThat(result.waivedTargetCount()).isZero();
+    }
+
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldPublishBothCountsAsZeroWhenNothingIsApplicable() {
+      var result = calculationOf(NOT_APPLICABLE, NOT_APPLICABLE);
+
+      assertThat(result.coverage()).isEqualTo(ratioOf(1.0));
+      assertThat(result.judgedTargetCount()).isZero();
+      assertThat(result.waivedTargetCount()).isZero();
     }
 
     @Test
@@ -272,6 +336,62 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
     }
 
     /**
+     * What the waiver took out of the judgement, said as a number: the judged count falls by exactly
+     * as many targets as the waived count claims. Stated against the same calculation run without
+     * the waiver, so a pass that waived a target without removing it from the denominator - or
+     * removed two while reporting one - fails here.
+     */
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+    )
+    void shouldReduceTheJudgedCountByExactlyTheWaivedCount() {
+      var findings = List.of(
+        Fixture.finding(COVERED, "200"),
+        Fixture.finding(UNCOVERED, "404"),
+        Fixture.finding(UNCOVERED, "500")
+      );
+
+      var withoutPass = calculate(findings, WaiverContext.none());
+      var withPass = calculate(findings, inForce(waiverOn("500")));
+
+      assertThat(withoutPass.judgedTargetCount()).isEqualTo(3);
+      assertThat(withoutPass.waivedTargetCount()).isZero();
+
+      assertThat(withPass.waivedTargetCount()).isEqualTo(1);
+      assertThat(withPass.judgedTargetCount()).isEqualTo(
+        withoutPass.judgedTargetCount() - withPass.waivedTargetCount()
+      );
+    }
+
+    /**
+     * A criterion whose every target was waived publishes the vacuous ratio - there is nothing left
+     * to take a fraction over - and the counts that say so. The {@code 1.00} is indistinguishable
+     * from a genuine full pass on its own, which is the whole reason the counts travel beside it:
+     * nothing judged, this many waived, so no consumer may read the ratio alone as satisfaction.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldPublishNothingJudgedBesideTheWaivedCount_whenEveryTargetIsWaived() {
+      var result = calculate(
+        List.of(
+          Fixture.finding(COVERED, "200"),
+          Fixture.finding(UNCOVERED, "404")
+        ),
+        inForce(waiverOn("200"), waiverOn("404"))
+      );
+
+      assertThat(result.coverage())
+        .isEqualTo(ratioOf(1.0))
+        .isEqualTo(calculationOf().coverage());
+
+      assertThat(result.judgedTargetCount()).isZero();
+      assertThat(result.waivedTargetCount()).isEqualTo(2);
+    }
+
+    /**
      * The pass changes the statuses it matched and the numbers derived from them, and nothing else.
      * Compared against the same calculation run with no waiver at all, so a pass that dropped a
      * finding, reordered them, renamed the criterion or rewrote an unaddressed target fails here
@@ -292,7 +412,13 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
 
       assertThat(withPass)
         .usingRecursiveComparison()
-        .ignoringFields("coverage", "duration", "findings")
+        .ignoringFields(
+          "coverage",
+          "judgedTargetCount",
+          "waivedTargetCount",
+          "duration",
+          "findings"
+        )
         .isEqualTo(withoutPass);
 
       assertThat(withPass.findings()).zipSatisfy(
@@ -509,6 +635,39 @@ class AbstractOpenApiCoverageCalculatorUnitTest {
       );
 
       assertThat(result.coverage()).isEqualTo(expectedRatio(result.findings()));
+    }
+
+    /**
+     * And the counts over the same shapes: the judged count is however many targets the criterion
+     * concluded covered or uncovered about, the waived count however many it was told to leave
+     * alone, both stated from the fixture's own parameters rather than from the result.
+     */
+    @MethodSource("findingCounts")
+    @ParameterizedTest
+    @VerifiesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
+    @VerifiesSw(
+      SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+    )
+    void shouldPublishTheCountsItsOwnFindingsImply(
+      int covered,
+      int uncovered,
+      int notApplicable,
+      int waived
+    ) {
+      var findings = Stream.of(
+        nCopies(covered, COVERED),
+        nCopies(uncovered, UNCOVERED),
+        nCopies(notApplicable, NOT_APPLICABLE),
+        nCopies(waived, WAIVED)
+      )
+        .flatMap(List::stream)
+        .map(Fixture::finding)
+        .toList();
+
+      var result = calculationOf(findings);
+
+      assertThat(result.judgedTargetCount()).isEqualTo(covered + uncovered);
+      assertThat(result.waivedTargetCount()).isEqualTo(waived);
     }
 
     @Test

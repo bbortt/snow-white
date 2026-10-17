@@ -75,9 +75,13 @@ abstract class AbstractOpenApiCoverageCalculator
       waiverContext
     );
 
+    var coverage = deriveCoverage(findings);
+
     return new OpenApiTestResult(
       criterion,
-      deriveCoverage(findings),
+      coverage.ratio(),
+      coverage.judgedTargetCount(),
+      coverage.waivedTargetCount(),
       stopWatch.getDuration(),
       joinAdditionalInformation(
         describeExpiredWaivers(criterion, findings, waiverContext),
@@ -143,25 +147,53 @@ abstract class AbstractOpenApiCoverageCalculator
   }
 
   /**
-   * The covered share of the targets the criterion judged. Neither a {@code NOT_APPLICABLE} nor a
+   * The ratio, and the two counts that say what it was taken over.
+   * <p>
+   * {@code judgedTargetCount} is the denominator the ratio used, so the covered count is
+   * recoverable as {@code coverage × judgedTargetCount} and needs no field of its own. The waived
+   * count beside it is what distinguishes a criterion that was fully covered from one that waivers
+   * emptied, which the ratio alone cannot do: both read {@code 1.00}.
+   */
+  private record Coverage(
+    @NonNull BigDecimal ratio,
+    int judgedTargetCount,
+    int waivedTargetCount
+  ) {}
+
+  /**
+   * The covered share of the targets the criterion judged, the size of that judged set, and the
+   * number of targets a waiver took out of it. Neither a {@code NOT_APPLICABLE} nor a
    * {@code WAIVED} finding enters either side of the fraction - the first because nothing could
    * have judged it, the second because somebody said not to.
    * This is the only place a coverage ratio is produced, which is what keeps the stored ratio and
-   * the findings beside it from ever disagreeing: there is no second implementation to drift.
+   * the findings beside it from ever disagreeing: there is no second implementation to drift. The
+   * counts come out of the same walk for the same reason - published beside the ratio, they are
+   * read as describing the very fraction it came from.
+   * <p>
+   * A criterion every one of whose targets was waived reports a zero judged count against a
+   * non-zero waived one, and the empty fraction is left to mean whatever it is defined to mean. The
+   * arithmetic is not special-cased: the counts are what let a reader tell that result from a
+   * genuinely complete one, so the ratio never has to carry that distinction by itself.
    */
   @RealizesArch(ArchTraceables.ARCH_010_COVERAGE_DERIVED_FROM_FINDINGS)
-  @RealizesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
-  private static BigDecimal deriveCoverage(
+  @RealizesCon({
+    ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS,
+    ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS,
+  })
+  private static Coverage deriveCoverage(
     @NonNull List<ApiTestFinding> findings
   ) {
     var covered = 0;
     var judged = 0;
+    var waived = 0;
 
     for (ApiTestFinding finding : findings) {
-      if (
-        NOT_APPLICABLE.equals(finding.status()) ||
-        WAIVED.equals(finding.status())
-      ) {
+      if (WAIVED.equals(finding.status())) {
+        waived++;
+        continue;
+      }
+
+      if (NOT_APPLICABLE.equals(finding.status())) {
         continue;
       }
 
@@ -172,6 +204,6 @@ abstract class AbstractOpenApiCoverageCalculator
       }
     }
 
-    return calculatePercentage(covered, judged);
+    return new Coverage(calculatePercentage(covered, judged), judged, waived);
   }
 }

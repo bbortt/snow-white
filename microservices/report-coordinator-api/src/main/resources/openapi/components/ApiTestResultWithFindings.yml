@@ -20,6 +20,21 @@ properties:
     format: decimal
     description: The calculated coverage result for this criterion
     example: 0.8
+  # Not listed 'required': a result scored before these were derived serves neither key rather than
+  # a false '0'. 'judgedTargetCount: 0' asserts that the criterion judged nothing, the one claim a
+  # vacuous coverage of 1.00 must never make silently - so it is never supplied as a default.
+  judgedTargetCount:
+    type: integer
+    format: int32
+    minimum: 0
+    description: 'How many targets entered the coverage fraction - the denominator this coverage was derived from, absent on a result scored before it was recorded'
+    example: 8
+  waivedTargetCount:
+    type: integer
+    format: int32
+    minimum: 0
+    description: 'How many targets a waiver removed from the fraction before it was measured - a non-zero count beside a judgedTargetCount of 0 is a criterion waivers emptied, not one that was fully covered'
+    example: 2
   additionalInformation:
     type: string
     description: Additional information of a coverage of 1.0 has not been met

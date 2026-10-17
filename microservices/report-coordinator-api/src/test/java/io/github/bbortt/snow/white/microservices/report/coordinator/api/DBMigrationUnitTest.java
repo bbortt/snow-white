@@ -36,7 +36,9 @@ class DBMigrationUnitTest {
     "V2026_10_01__api_test_lookup_indexes.sql",
     "677b7440eaaf76d2dab1d9c1e52fa1414538f6eb22904ec5495784c9f67198de",
     "V2026_10_10__report_parameter_waivers.sql",
-    "9df4a6edd388d4dba13a590e43f2ebc0bbd71dc71db22a5f9bc35e1a4388bf3a"
+    "9df4a6edd388d4dba13a590e43f2ebc0bbd71dc71db22a5f9bc35e1a4388bf3a",
+    "V2026_10_16__api_test_result_target_counts.sql",
+    "ec6f6c084ff80741eae1c125fbf718f05c15b1eb7299091aac5f6d3ed8b58154"
   );
 
   @Test

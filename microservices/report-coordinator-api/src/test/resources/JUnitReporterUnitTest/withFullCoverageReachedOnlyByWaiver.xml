@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<!--
+  ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<testsuites
+  name="JUnitReporterUnitTest"
+  tests="1"
+  failures="0"
+  errors="0"
+  skipped="0"
+  assertions="1"
+  time="4.32100"
+  timestamp="2025-04-24T22:30:00Z"
+>
+  <properties>
+    <property
+      name="calculationId"
+      value="f8b1c0d2-3e4f-4a5b-8c6d-7e8f9a0b1c2d"
+    />
+    <property name="minCoveragePercentage" value="100" />
+    <property name="waivedTargetCount" value="2" />
+  </properties>
+  <testsuite
+    name="serviceName: testApi apiVersion [OPENAPI]"
+    tests="1"
+    failures="0"
+    errors="0"
+    skipped="0"
+    assertions="1"
+    time="4.32100"
+  >
+    <properties>
+      <property name="apiName" value="testApi" />
+      <property name="apiVersion" value="apiVersion" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
+    <testcase
+      name="Path Coverage"
+      classname="serviceName: testApi apiVersion [OPENAPI]"
+      time="4.32100"
+    >
+      <properties>
+        <property
+          name="description"
+          value="Every path defined in the OpenAPI specification has been called, by any HTTP method. Judged per path, where `HTTP_METHOD_COVERAGE` is judged per operation."
+        />
+        <property name="judgedTargetCount" value="0" />
+        <property name="waivedTargetCount" value="2" />
+        <property
+          name="waivedTargets"
+          value="GET /pets/{petId} (404), POST /pets"
+        />
+      </properties>
+      <system-out
+      >Waived until 2026-11-30: GET /pets/{petId} (404) - The upstream cannot produce a miss in the test environment.
+Waived until 2026-12-31: POST /pets - Creation is exercised by the contract suite instead.</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

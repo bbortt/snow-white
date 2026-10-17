@@ -51,6 +51,25 @@ public interface QualityGateReportRepository
   );
 
   /**
+   * The findings without their evidence, for the JUnit export: it names every waived target with
+   * the reason it was waived under, which lives on the finding, and renders not one of the traces
+   * underneath it.
+   * <p>
+   * A third fetch plan rather than reuse of {@link #findWithFindingsByCalculationId(UUID)}, because
+   * the grandchild table is the expensive half of that one and the only consumer that renders
+   * evidence is the drilldown. The two plans differ in exactly that attribute, which is also the
+   * only thing either has to be kept in step about.
+   */
+  @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
+  @EntityGraph(
+    attributePaths = { "apiTests.apiTestResults.findings" },
+    type = LOAD
+  )
+  Optional<QualityGateReport> findWithFindingsWithoutEvidenceByCalculationId(
+    UUID calculationId
+  );
+
+  /**
    * The stored status code and nothing else, for the read that has to know which shape a report
    * gets before it fetches the report. {@code findById} would answer the same question, but
    * {@code reportParameter}, {@code apiTests} and their results are declared eager, so asking it for
