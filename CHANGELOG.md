@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/bbortt/snow-white/compare/v2.0.0...v2.1.0) (2026-10-17)
+
+### Features
+
+- apply waivers to the findings the calculators emitted ([a278d5d](https://github.com/bbortt/snow-white/commit/a278d5d87c86589d2ef962cd850fa8f2eb5e3f89))
+- **openapi-coverage-stream:** fail the calculation when a waiver matches no finding ([7396e75](https://github.com/bbortt/snow-white/commit/7396e7548c4a95a4979ea571f966269f77febbd7))
+- **report-coordinator-api:** reject a waiver naming a criterion this system does not declare ([a2a2db0](https://github.com/bbortt/snow-white/commit/a2a2db05568fcec5473240fedab042d3ab34b5be))
+
+### Documentation
+
+- **pages:** announce release 2.0.0 ([fef56e1](https://github.com/bbortt/snow-white/commit/fef56e129d87d61388c7e52f3d15dcb8eacea346))
+- **pages:** cite SYS-014 as planned, not shipped ([ecfde5a](https://github.com/bbortt/snow-white/commit/ecfde5a745ec11cee9d4726d491e1bc6e14396ac))
+- state the neighbouring claims instead of citing their ids ([492eac2](https://github.com/bbortt/snow-white/commit/492eac2673133ea31df351361b84b3f2fede74da))
+
 ## [2.0.0](https://github.com/bbortt/snow-white/compare/v1.13.0...v2.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
