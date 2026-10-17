@@ -74,6 +74,29 @@ public class ApiTestResult {
   @Column(nullable = false, updatable = false, precision = 3, scale = 2)
   private BigDecimal coverage;
 
+  /**
+   * The denominator {@link #coverage} was divided by, and the number of targets a waiver removed
+   * before it was measured - both out of the one reduction that produced the ratio, cached here
+   * beside it rather than re-derived from {@link #findings} on a read.
+   * <p>
+   * Null on every result scored before they were derived, and deliberately not {@code 0}: a zero
+   * judged count asserts that the criterion judged nothing, so defaulting would publish that claim
+   * about the entire historical population.
+   */
+  @Nullable
+  @Column(updatable = false)
+  @RealizesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  private Integer judgedTargetCount;
+
+  @Nullable
+  @Column(updatable = false)
+  @RealizesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  private Integer waivedTargetCount;
+
   @NonNull
   @Column(nullable = false, updatable = false)
   private Boolean includedInReport;

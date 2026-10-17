@@ -89,10 +89,32 @@ public class ReportService {
   }
 
   /**
+   * The same report as {@link #findReportByCalculationId(UUID)}, with its findings loaded but not
+   * their evidence - what the JUnit export needs, which names every waived target with the reason
+   * it was waived under and renders none of the traces beneath it.
+   * <p>
+   * Transactional for the reason given on {@link #findReportWithFindingsByCalculationId(UUID)}:
+   * what the boundary protects is hydration, and the report's {@code stackTrace} is a LOB read as
+   * the row materializes.
+   */
+  @WithSpan
+  @Transactional(readOnly = true)
+  @RealizesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
+  public Optional<QualityGateReport> findReportWithFindingsWithoutEvidenceByCalculationId(
+    UUID calculationId
+  ) {
+    tagCurrentSpanWithCalculationId(calculationId);
+
+    return qualityGateReportRepository.findWithFindingsWithoutEvidenceByCalculationId(
+      calculationId
+    );
+  }
+
+  /**
    * The same report as {@link #findReportByCalculationId(UUID)}, but with its findings and their
-   * evidence already loaded. Kept apart from that method on purpose: the write path and the JUnit
-   * poll have no use for the grandchild table, and paying for it there would be a regression
-   * nobody asked for.
+   * evidence already loaded. Kept apart from that method on purpose: only the drilldown renders
+   * the grandchild table, and paying for it on the write path or on either poll would be a
+   * regression nobody asked for.
    * <p>
    * Transactional where {@link #findReportByCalculationId(UUID)} needs not to be: that one is
    * {@code findById}, which {@code SimpleJpaRepository} already runs read-only-transactionally, and

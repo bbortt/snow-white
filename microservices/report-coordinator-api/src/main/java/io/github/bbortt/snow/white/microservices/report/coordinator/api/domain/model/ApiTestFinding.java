@@ -12,7 +12,9 @@ import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesSw;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -24,6 +26,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -95,6 +98,31 @@ public class ApiTestFinding {
   @Size(min = 1, max = 128)
   @Column(updatable = false, length = 128)
   private String contentType;
+
+  /**
+   * The justification this target was waived under, and the date that justification was given until
+   * - both null unless {@link #getStatus()} is {@code WAIVED}.
+   * <p>
+   * They sit on the finding rather than in a parallel waiver record because every consumer already
+   * walks the findings; a second collection would make the report read, the export and the
+   * drilldown each implement the same join and agree about it. The waiver rows on
+   * {@code report_parameter} remain the record of what was <em>asked for</em>; these two are what
+   * was <em>applied</em>, to this target.
+   */
+  @Nullable
+  @Size(min = 1, max = 1024)
+  @Column(updatable = false, length = 1024)
+  @RealizesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  private String waiverReason;
+
+  @Nullable
+  @Column(updatable = false)
+  @RealizesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  private LocalDate waiverExpiresOn;
 
   @NonNull
   @Builder.Default

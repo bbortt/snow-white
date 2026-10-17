@@ -9,7 +9,6 @@ package io.github.bbortt.snow.white.microservices.report.coordinator.api.service
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.byName;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver.API_VERSION_WILDCARD;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 import clew.traceables.clew.SwTraceables;
@@ -17,6 +16,7 @@ import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.Waiver;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -82,7 +82,7 @@ public class WaiverValidator {
       waiver.getParameterName(),
       waiver.getContentType()
     )
-      .filter(discriminator -> nonNull(discriminator))
+      .filter(Objects::nonNull)
       .count();
 
     if (discriminators > 1) {

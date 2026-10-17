@@ -16,7 +16,9 @@ import static io.github.bbortt.snow.white.microservices.report.coordinator.api.d
 import static org.assertj.core.api.Assertions.assertThat;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,6 +62,27 @@ class ReportStatusUnitTest {
       assertThat(PASSED.getVal()).isEqualTo((short) 3);
       assertThat(FINISHED_EXCEPTIONALLY.getVal()).isEqualTo((short) 4);
       assertThat(TIMED_OUT.getVal()).isEqualTo((short) 5);
+    }
+
+    /**
+     * A criterion emptied by waivers is a passing criterion whose counts say what it rested on, not
+     * a third verdict. Pinning the member set makes a "WAIVED" or "PASSED_WITH_WAIVERS" status fail
+     * here, where the alternative is a value every consumer switching on this enum would have to
+     * learn - and would read as a failure until it did.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldIntroduceNoStatusOfItsOwnForAWaivedPass() {
+      assertThat(ReportStatus.values()).containsExactly(
+        NOT_STARTED,
+        IN_PROGRESS,
+        FAILED,
+        PASSED,
+        FINISHED_EXCEPTIONALLY,
+        TIMED_OUT
+      );
     }
   }
 }

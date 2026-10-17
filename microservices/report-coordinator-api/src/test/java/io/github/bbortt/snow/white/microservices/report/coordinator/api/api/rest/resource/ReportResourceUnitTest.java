@@ -327,21 +327,25 @@ class ReportResourceUnitTest {
     @VerifiesArch(
       ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE
     )
-    void shouldReadTheReportWithoutItsFindings() {
+    void shouldReadTheFindingsWithoutTheirEvidence() {
       var calculationId = UUID.fromString(
         "3d8a1c77-3b0f-4a27-9f2e-1c9d0b5a7e42"
       );
+      doReturn(Optional.of(PASSED))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
-        .findReportByCalculationId(calculationId);
+        .findReportWithFindingsWithoutEvidenceByCalculationId(calculationId);
       doReturn(mock(TestSuites.class))
         .when(jUnitReporterMock)
         .transformToJUnitTestSuites(qualityGateReport);
 
       fixture.getReportByCalculationIdAsJUnit(calculationId);
 
-      // A CI poll renders XML and never renders evidence; loading the grandchild table for it
-      // would spend a join per result on a body nobody reads.
+      // The document names every waived target, so it does need the findings - but it renders XML
+      // and never renders evidence; loading the grandchild table for it would spend a join per
+      // result on a body nobody reads.
       verify(reportServiceMock, never()).findReportWithFindingsByCalculationId(
         any()
       );
@@ -352,9 +356,12 @@ class ReportResourceUnitTest {
       var calculationId = UUID.fromString(
         "81699bec-99a0-4c8f-a9d0-06729477fe00"
       );
+      doReturn(Optional.of(PASSED))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
-        .findReportByCalculationId(calculationId);
+        .findReportWithFindingsWithoutEvidenceByCalculationId(calculationId);
 
       var testSuitesMock = mock(TestSuites.class);
       doReturn(testSuitesMock)
@@ -385,6 +392,9 @@ class ReportResourceUnitTest {
       var calculationId = UUID.fromString(
         "2a4d1e0b-0b4a-4d0e-9a3f-7b8c5d6e1f20"
       );
+      doReturn(Optional.of(IN_PROGRESS))
+        .when(reportServiceMock)
+        .findReportStatusByCalculationId(calculationId);
       doReturn(Optional.of(qualityGateReport))
         .when(reportServiceMock)
         .findReportByCalculationId(calculationId);
@@ -422,7 +432,7 @@ class ReportResourceUnitTest {
       );
       doReturn(Optional.empty())
         .when(reportServiceMock)
-        .findReportByCalculationId(calculationId);
+        .findReportStatusByCalculationId(calculationId);
 
       var response = fixture.getReportByCalculationIdAsJUnit(calculationId);
 

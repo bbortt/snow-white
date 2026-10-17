@@ -8,7 +8,7 @@ coverage pass
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A `WAIVED` finding enters neither side of the coverage fraction, exactly as `NOT_APPLICABLE` does.

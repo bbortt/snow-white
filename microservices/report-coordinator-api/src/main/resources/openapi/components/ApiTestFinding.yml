@@ -49,3 +49,18 @@ properties:
     description: 'The traces that evidence this finding - empty for anything but a covered one'
     items:
       $ref: './FindingEvidence.yml'
+  # Both absent on any finding whose status is not WAIVED, rather than served as null: the status
+  # already says the target was not waived, and a reason key present-but-empty invites the reader to
+  # conclude it was waived for no stated reason. They are set together or not at all - the trigger
+  # requires both of a waiver, so a reason without an expiry describes one this system never applied.
+  waiverReason:
+    type: string
+    description: 'Why this target was removed from judgement - present only on a WAIVED finding, quoted from the waiver the calculation was triggered with'
+    example: 'Downstream is mocked in this environment, so the 500 cannot be provoked'
+    minLength: 1
+    maxLength: 1024
+  waiverExpiresOn:
+    type: string
+    format: date
+    description: 'The date the applied waiver stops being honoured - present only on a WAIVED finding'
+    example: '2026-12-31'

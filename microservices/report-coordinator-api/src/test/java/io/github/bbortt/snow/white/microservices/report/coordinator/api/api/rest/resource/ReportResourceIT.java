@@ -29,8 +29,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.util.StreamUtils.copyToString;
 
+import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
@@ -70,6 +72,12 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     "/paths/~1api~1v1~1users/get/responses/404";
   private static final String UNCOVERED_SPEC_POINTER =
     "/paths/~1api~1v1~1users/get/responses/500";
+  private static final String WAIVED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/409";
+
+  private static final String WAIVER_REASON =
+    "conflict is raised by the storage layer, not this API";
+  private static final LocalDate WAIVER_EXPIRES_ON = LocalDate.of(2026, 12, 31);
 
   private static final String TRACE_ID_WITHOUT_TEST_IDENTITY =
     "1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e";
@@ -516,6 +524,463 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The counts travel with the criterion result on every shape that publishes one, the way the
+   * pinned threshold travels with the report. {@code IN_PROGRESS} is what reaches three of the four
+   * at once - both report endpoints answer {@code 202} and the listing still carries the report -
+   * and the completed {@code 200} is the sibling case below, because it is served by a forked
+   * component that a property added to the shared one alone would miss.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  void everyReportReadPublishesTheCountsBehindTheRatio() throws Exception {
+    var calculationId = UUID.fromString("b4c7e1a9-3d52-4f08-8e71-0a6b2c9d4f35");
+
+    persistReportWithTargetCounts(calculationId, IN_PROGRESS);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+  }
+
+  /**
+   * And the completed read publishes the same two numbers beside the findings they describe: four
+   * targets judged, one waived, which is what the findings array independently says. A result whose
+   * counts disagreed with the findings served next to them would be a report arguing with itself.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
+  void theCompletedReportReadPublishesTheSameCounts() throws Exception {
+    var calculationId = UUID.fromString("e2a5d7c1-6b39-4f84-9c02-7d1e8a3b5f46");
+
+    persistReportWithTargetCounts(calculationId, FAILED);
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.get("coverage").decimalValue()).isEqualByComparingTo(
+      "0.75"
+    );
+    assertThat(testResult.get("judgedTargetCount").asInt()).isEqualTo(4);
+    assertThat(testResult.get("waivedTargetCount").asInt()).isEqualTo(1);
+
+    var statuses = valuesOf(testResult.get("findings"), "status");
+    assertThat(statuses.stream().filter("WAIVED"::equals)).hasSize(
+      testResult.get("waivedTargetCount").asInt()
+    );
+    assertThat(
+      statuses.stream().filter(status -> !"WAIVED".equals(status))
+    ).hasSize(testResult.get("judgedTargetCount").asInt());
+  }
+
+  /**
+   * A waived target is served with the sentence that excused it. Its neighbours carry none of the
+   * three keys rather than three nulls, so a consumer reads "waived, for this reason, until this
+   * date" on exactly the findings a waiver addressed.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesAWaivedFindingWithItsReasonAndExpiry()
+    throws Exception {
+    var calculationId = UUID.fromString("c8f1b204-9e67-4a3d-85b0-2f4c6a1d7e98");
+
+    persistReportWithTargetCounts(calculationId, FAILED);
+
+    var findings = indexBy(
+      readSingleTestResult(calculationId).get("findings"),
+      "specPointer"
+    );
+
+    var waived = findings.get(WAIVED_SPEC_POINTER);
+    assertThat(waived.get("status").asString()).isEqualTo("WAIVED");
+    assertThat(waived.get("waiverReason").asString()).isEqualTo(WAIVER_REASON);
+    assertThat(waived.get("waiverExpiresOn").asString()).isEqualTo(
+      WAIVER_EXPIRES_ON.toString()
+    );
+
+    var uncovered = findings.get(UNCOVERED_SPEC_POINTER);
+    assertThat(uncovered.get("status").asString()).isEqualTo("UNCOVERED");
+    assertThat(uncovered.has("waiverReason")).isFalse();
+    assertThat(uncovered.has("waiverExpiresOn")).isFalse();
+  }
+
+  /**
+   * A report scored before the counts existed serves neither key. The only default available would
+   * be {@code 0}, and {@code judgedTargetCount: 0} states that the criterion judged nothing - the
+   * mark of a pass that waivers emptied, which has to stay distinguishable from one that passed on
+   * coverage alone. Defaulting would stamp that false sentence on every report predating this
+   * change. An absent key says "this report does not know", which is true.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesNeitherCount_whenTheResultWasScoredBeforeThem()
+    throws Exception {
+    var calculationId = UUID.fromString("a7d0c3e5-1f48-4b96-8e23-5c7a9b0d6f12");
+
+    var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
+
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    apiTestRepository.save(
+      apiTest.withApiTestResults(
+        Set.of(
+          ApiTestResult.builder()
+            .apiTestCriteria(PATH_COVERAGE.name())
+            .coverage(coverage)
+            .includedInReport(TRUE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(apiTest)
+            .build()
+        )
+      )
+    );
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.has("judgedTargetCount")).isFalse();
+    assertThat(testResult.has("waivedTargetCount")).isFalse();
+
+    // And the ratio it was scored with is untouched by the keys it does not carry.
+    assertThat(testResult.get("coverage").decimalValue()).isEqualByComparingTo(
+      coverage
+    );
+  }
+
+  /**
+   * The counts are read from storage, not recomputed from the findings on the way out. A result
+   * persisted with counts its own findings cannot account for publishes the stored pair anyway -
+   * which is the observable difference between caching what the reduction measured and taking a
+   * second opinion from a drilldown that may have been pruned, replaced, or never delivered.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
+  void findReport_servesThePersistedCounts_ratherThanDerivingThemFromTheFindings()
+    throws Exception {
+    var calculationId = UUID.fromString("d3b6f09a-7c21-4e58-9ab4-1f0e5c8d2a73");
+
+    // Nine targets judged and two waived, with a single finding to show for it: no derivation from
+    // what is served beside them could arrive at these numbers.
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      FAILED,
+      new BigDecimal("0.75"),
+      9,
+      2
+    );
+
+    apiTestResult
+      .getFindings()
+      .add(finding(apiTestResult, FindingStatus.COVERED, "200"));
+
+    persist(apiTestResult);
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.get("findings")).hasSize(1);
+    assertThat(testResult.get("judgedTargetCount").asInt()).isEqualTo(9);
+    assertThat(testResult.get("waivedTargetCount").asInt()).isEqualTo(2);
+  }
+
+  /**
+   * A criterion whose every target was waived publishes the vacuous {@code 1.00} with the counts
+   * that qualify it, on every shape that serves a criterion result. The ratio alone cannot carry
+   * this: it is the same number a criterion at genuine full coverage reports.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+  )
+  void everyReportReadPublishesNothingJudged_whenEveryTargetWasWaived()
+    throws Exception {
+    var calculationId = UUID.fromString("f09c2d78-4a16-4b3e-92d5-6e8a1c0b7f24");
+
+    persistFullyWaivedReport(calculationId, IN_PROGRESS);
+
+    for (var path : List.of(
+      PATH_GET_REPORT_BY_CALCULATION_ID,
+      PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT
+    )) {
+      mockMvc
+        .perform(get(path, calculationId))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.interfaces[0].testResults[0].coverage").value(1))
+        .andExpect(
+          jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(0)
+        )
+        .andExpect(
+          jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(3)
+        );
+    }
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].judgedTargetCount").value(0)
+      )
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].waivedTargetCount").value(3)
+      );
+  }
+
+  /**
+   * Two reports that scored the same and mean opposite things, told apart on the shapes a dashboard
+   * reads. The ratios are identical by design - an empty denominator reports full coverage by
+   * convention - so the counts are the whole of the difference, and the listing, the surface most
+   * likely to show a waived pass as a clean one, is the one that deliberately carries no findings
+   * to fall back on.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+  )
+  void everyReportReadDistinguishesAFullyWaivedPassFromAGenuineOne()
+    throws Exception {
+    var genuine = UUID.fromString("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d");
+    var waived = UUID.fromString("9f8e7d6c-5b4a-4938-8271-6c5d4e3f2a1b");
+
+    persistFullyCoveredReport(genuine, PASSED);
+    persistFullyWaivedReport(waived, PASSED);
+
+    var genuineResult = readSingleTestResult(genuine);
+    var waivedResult = readSingleTestResult(waived);
+
+    // The same ratio on both, so nothing below may be read off it.
+    assertThat(genuineResult.get("coverage").decimalValue())
+      .isEqualByComparingTo("1.00")
+      .isEqualByComparingTo(waivedResult.get("coverage").decimalValue());
+
+    assertThat(genuineResult.get("judgedTargetCount").asInt()).isEqualTo(3);
+    assertThat(genuineResult.get("waivedTargetCount").asInt()).isZero();
+
+    assertThat(waivedResult.get("judgedTargetCount").asInt()).isZero();
+    assertThat(waivedResult.get("waivedTargetCount").asInt()).isEqualTo(3);
+
+    var listed = indexBy(
+      jsonMapper.readTree(
+        mockMvc
+          .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+          .andExpect(status().isOk())
+          .andReturn()
+          .getResponse()
+          .getContentAsString()
+      ),
+      "calculationId"
+    );
+
+    assertThat(listedCountsOf(listed.get(genuine.toString()))).containsExactly(
+      3,
+      0
+    );
+    assertThat(listedCountsOf(listed.get(waived.toString()))).containsExactly(
+      0,
+      3
+    );
+  }
+
+  private static List<Integer> listedCountsOf(JsonNode report) {
+    var testResult = report.get("interfaces").get(0).get("testResults").get(0);
+
+    return List.of(
+      testResult.get("judgedTargetCount").asInt(),
+      testResult.get("waivedTargetCount").asInt()
+    );
+  }
+
+  /**
+   * One report, one criterion result carrying the counts the reduction that produced its ratio
+   * recorded, with the findings those counts describe: three covered and one uncovered target
+   * judged, one waived out of the fraction entirely.
+   */
+  private void persistReportWithTargetCounts(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      new BigDecimal("0.75"),
+      4,
+      1
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.COVERED, "200"),
+          finding(apiTestResult, FindingStatus.COVERED, "201"),
+          finding(apiTestResult, FindingStatus.COVERED, "204"),
+          finding(apiTestResult, FindingStatus.UNCOVERED, "500"),
+          finding(apiTestResult, FindingStatus.WAIVED, "409")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  /** The criterion that earned its {@code 1.00}: three targets judged, all of them covered. */
+  private void persistFullyCoveredReport(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      ONE.setScale(2, HALF_UP),
+      3,
+      0
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.COVERED, "200"),
+          finding(apiTestResult, FindingStatus.COVERED, "201"),
+          finding(apiTestResult, FindingStatus.COVERED, "204")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  /** The criterion that was excused it: nothing judged, three targets waived. */
+  private void persistFullyWaivedReport(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      ONE.setScale(2, HALF_UP),
+      0,
+      3
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.WAIVED, "200"),
+          finding(apiTestResult, FindingStatus.WAIVED, "404"),
+          finding(apiTestResult, FindingStatus.WAIVED, "500")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  private ApiTestResult resultWithCounts(
+    UUID calculationId,
+    ReportStatus reportStatus,
+    BigDecimal coverage,
+    int judgedTargetCount,
+    int waivedTargetCount
+  ) {
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      reportStatus
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    return ApiTestResult.builder()
+      .apiTestCriteria(PATH_COVERAGE.name())
+      .coverage(coverage)
+      .judgedTargetCount(judgedTargetCount)
+      .waivedTargetCount(waivedTargetCount)
+      .includedInReport(TRUE)
+      .duration(Duration.ofSeconds(1))
+      .apiTest(apiTest)
+      .build();
+  }
+
+  private void persist(ApiTestResult apiTestResult) {
+    apiTestRepository.save(
+      apiTestResult.getApiTest().withApiTestResults(Set.of(apiTestResult))
+    );
+  }
+
+  /**
+   * One target the criterion concluded something about, addressed by its response code - and, where
+   * a waiver was what concluded it, carrying the reason and expiry that say so.
+   */
+  private static ApiTestFinding finding(
+    ApiTestResult apiTestResult,
+    FindingStatus status,
+    String responseCode
+  ) {
+    var waived = FindingStatus.WAIVED.equals(status);
+
+    return ApiTestFinding.builder()
+      .specPointer("/paths/~1api~1v1~1users/get/responses/" + responseCode)
+      .status(status.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode(responseCode)
+      .waiverReason(waived ? WAIVER_REASON : null)
+      .waiverExpiresOn(waived ? WAIVER_EXPIRES_ON : null)
+      .apiTestResult(apiTestResult)
+      .build();
   }
 
   /** One report pinned at a given threshold, with the one API test every read shape walks. */

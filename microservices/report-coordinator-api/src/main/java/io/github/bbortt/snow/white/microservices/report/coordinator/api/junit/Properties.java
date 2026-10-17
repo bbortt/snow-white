@@ -21,4 +21,19 @@ public final class Properties {
   static final String API_VERSION = "apiVersion";
 
   static final String DESCRIPTION = "description";
+
+  /**
+   * The two numbers the JSON reads publish beside a coverage ratio, spelled here exactly as they
+   * are spelled there: a reader comparing the document against the report it came from should not
+   * have to translate a name.
+   * On the {@code testsuites} root, {@code waivedTargetCount} is the document's total.
+   */
+  static final String JUDGED_TARGET_COUNT = "judgedTargetCount";
+  static final String WAIVED_TARGET_COUNT = "waivedTargetCount";
+
+  /**
+   * The waived targets themselves, for a reader that parses rather than reads - the same targets
+   * the case's {@code system-out} names in prose, where the reasons and expiries are.
+   */
+  static final String WAIVED_TARGETS = "waivedTargets";
 }
