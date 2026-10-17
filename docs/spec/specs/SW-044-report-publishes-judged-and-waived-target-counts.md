@@ -7,7 +7,7 @@ Every criterion result publishes how many targets it judged and how many were wa
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A criterion result carries two integers beside its `coverage`:
@@ -79,11 +79,16 @@ clean one, and it is the surface that deliberately does not load findings — so
 there it would have no way to show the difference.
 The two components continue to differ in `findings` alone (`SW-031`).
 
-Bumping the agentic schema version rather than adding the fields quietly is what the version exists
-for.
-An agent that reads `qualityGateFailures` and sees nothing concludes the gate is clean; after this
-change that conclusion requires the counts, so a consumer needs to be able to tell which payload it
-is holding.
+Leaving the agentic schema version at `'1'` is the harder half of that, and it is deliberate.
+An agent that reads `qualityGateFailures`, sees nothing and concludes the gate is clean is reaching
+exactly the conclusion these counts exist to qualify — so the temptation is to bump the version and
+make the payload announce that it changed.
+But a bump tells a consumer only that something moved, not what to do about it, and the counts are
+detectable where they matter: an agent that wants them asks whether `judgedTargetCount` is present,
+which is the same question it must ask anyway for a report scored before this change.
+A version is the right signal for a key that was removed or reshaped under a consumer's feet, and
+spending the first step on a purely additive change would leave that signal already used when one
+of those arrives.
 
 **Verification Description**
 A contract test reads a report through all four shapes and asserts every criterion result carries

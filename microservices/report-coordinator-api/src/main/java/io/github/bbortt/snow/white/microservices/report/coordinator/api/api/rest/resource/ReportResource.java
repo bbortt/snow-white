@@ -107,25 +107,52 @@ public class ReportResource implements ReportApi {
    * A still-running report answers {@code 202} with the partial report as JSON rather than XML,
    * because a half-populated JUnit document would read as a genuine passing test run.
    * <p>
-   * It reads the report without its findings: the {@code 202} body is a courtesy for a CI consumer
-   * waiting on XML, and no poll should pay for evidence nobody renders.
+   * It decides that on the projected status, exactly as {@link #getReportByCalculationId(UUID)}
+   * does and for the same reason: the document names every waived target, which needs the findings,
+   * and this endpoint is polled every two seconds by a consumer that reads nothing but the status
+   * until the last of those reads. A poll that loaded the findings to discover it was too early
+   * would pay for the export on every attempt. The evidence table stays out of both branches -
+   * nothing here renders a trace.
    */
   @Override
   @RealizesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
   public ResponseEntity getReportByCalculationIdAsJUnit(UUID calculationId) {
-    var optionalReport = reportService.findReportByCalculationId(calculationId);
+    var optionalStatus = reportService.findReportStatusByCalculationId(
+      calculationId
+    );
 
-    if (optionalReport.isEmpty()) {
+    if (optionalStatus.isEmpty()) {
       return reportNotFound(calculationId);
     }
 
-    var report = optionalReport.get();
+    if (IN_PROGRESS.equals(optionalStatus.get())) {
+      var optionalReport = reportService.findReportByCalculationId(
+        calculationId
+      );
 
-    if (IN_PROGRESS.equals(report.getReportStatus())) {
-      return reportStillInProgress(report);
+      if (optionalReport.isEmpty()) {
+        return reportNotFound(calculationId);
+      }
+
+      var report = optionalReport.get();
+
+      if (IN_PROGRESS.equals(report.getReportStatus())) {
+        return reportStillInProgress(report);
+      }
     }
 
-    var jUnitReport = jUnitReporter.transformToJUnitTestSuites(report);
+    var optionalReportWithFindings =
+      reportService.findReportWithFindingsWithoutEvidenceByCalculationId(
+        calculationId
+      );
+
+    if (optionalReportWithFindings.isEmpty()) {
+      return reportNotFound(calculationId);
+    }
+
+    var jUnitReport = jUnitReporter.transformToJUnitTestSuites(
+      optionalReportWithFindings.get()
+    );
 
     return ResponseEntity.ok()
       .header(

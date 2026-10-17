@@ -17,6 +17,7 @@ import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -25,8 +26,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTest;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ApiTestFinding;
@@ -350,6 +353,152 @@ class ApiTestResultLinkerUnitTest {
       );
 
       assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
+    }
+
+    /**
+     * A criterion emptied by waivers clears the bar, because the bar is a floor under each
+     * criterion's own ratio and an empty judgement has nothing below it. What it must not do is
+     * speak for its neighbours: the verdict beside it is the one its own coverage implies, and the
+     * counts are what tell a reader which of the two rested on a waiver.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldSetApiTestStatusToPassed_whenAFullyWaivedResultSitsBesideACoveredOne() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(ONE)
+          .judgedTargetCount(10)
+          .waivedTargetCount(0)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria("FULLY_WAIVED_CRITERIA")
+          .coverage(ONE)
+          .judgedTargetCount(0)
+          .waivedTargetCount(3)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        Set.of(PATH_COVERAGE.name(), "FULLY_WAIVED_CRITERIA"),
+        100
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
+
+      // The same 1.00 twice, and the counts are the only thing that separates the criterion that
+      // earned it from the one that was excused it.
+      assertThat(apiTest.getApiTestResults())
+        .extracting(
+          ApiTestResult::getApiTestCriteria,
+          ApiTestResult::getCoverage,
+          ApiTestResult::getJudgedTargetCount,
+          ApiTestResult::getWaivedTargetCount
+        )
+        .containsExactlyInAnyOrder(
+          tuple(PATH_COVERAGE.name(), ONE, 10, 0),
+          tuple("FULLY_WAIVED_CRITERIA", ONE, 0, 3)
+        );
+    }
+
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldSetApiTestStatusToFailed_whenAGenuineFailureSitsBesideAFullyWaivedResult() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria("FULLY_WAIVED_CRITERIA")
+          .coverage(ONE)
+          .judgedTargetCount(0)
+          .waivedTargetCount(3)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(ZERO)
+          .judgedTargetCount(4)
+          .waivedTargetCount(0)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        Set.of(PATH_COVERAGE.name(), "FULLY_WAIVED_CRITERIA"),
+        100
+      );
+
+      // A waiver rescues nothing it was not written against: the failing criterion still fails the
+      // API test with a fully-waived one beside it.
+      assertThat(apiTest.getReportStatus()).isEqualTo(FAILED);
+    }
+
+    /**
+     * And where every included criterion was emptied, the API test passes with nothing judged -
+     * which is a true statement about a gate that had nothing left to object to, and a different one
+     * from passing on coverage. The counts on every result are what say which happened.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+    )
+    void shouldSetApiTestStatusToPassed_whenEveryIncludedResultIsFullyWaived() {
+      var apiTest = ApiTest.builder().apiType(OPENAPI.getVal()).build();
+
+      Set<ApiTestResult> apiTestResults = Set.of(
+        ApiTestResult.builder()
+          .apiTestCriteria(PATH_COVERAGE.name())
+          .coverage(ONE)
+          .judgedTargetCount(0)
+          .waivedTargetCount(2)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build(),
+        ApiTestResult.builder()
+          .apiTestCriteria("OTHER_CRITERIA")
+          .coverage(ONE)
+          .judgedTargetCount(0)
+          .waivedTargetCount(5)
+          .includedInReport(FALSE)
+          .duration(Duration.ofSeconds(1))
+          .apiTest(mock(ApiTest.class))
+          .build()
+      );
+
+      fixture.addApiTestResultsToApiTest(
+        apiTestResults,
+        apiTest,
+        Set.of(PATH_COVERAGE.name(), "OTHER_CRITERIA"),
+        100
+      );
+
+      assertThat(apiTest.getReportStatus()).isEqualTo(PASSED);
+
+      assertThat(apiTest.getApiTestResults()).allSatisfy(result -> {
+        assertThat(result.getJudgedTargetCount()).isZero();
+        assertThat(result.getWaivedTargetCount()).isPositive();
+      });
     }
 
     @Test

@@ -10,12 +10,13 @@ import type { IWireMockRequest, IWireMockResponse } from 'wiremock-captain';
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { unlinkSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { MatchingAttributes, WireMock } from 'wiremock-captain';
+import { BodyType, MatchingAttributes, WireMock } from 'wiremock-captain';
 
 import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
+import type { GetReportByCalculationId200ResponseInterfacesInnerTestResultsInner } from './clients/report-api';
 
 import { QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from './common/exit-codes';
 
@@ -97,6 +98,101 @@ const executeCLICommand = async (
     }, 10000); // 10 second timeout
   });
 };
+
+/** What a criterion waived, and the denominator that decides whether the waiver mattered. */
+interface TargetCounts {
+  judged: number;
+  waived: number;
+}
+
+type CountsByCriterion = Record<string, TargetCounts>;
+
+/**
+ * A criterion result as the report read serves it, down to the two keys the shapes have to agree on.
+ * Narrowed out of the generated model rather than redeclared, so a rename or a retype in the client
+ * stops this fixture compiling instead of letting it drift into describing a shape the CLI no longer
+ * receives. `Required` because a fixture that left the counts off would be testing their absence
+ * rather than their agreement, and that case belongs to `clients.spec.ts`.
+ */
+type CriterionResultFixture = Required<
+  Pick<
+    GetReportByCalculationId200ResponseInterfacesInnerTestResultsInner,
+    'coverage' | 'id' | 'isIncludedInQualityGate' | 'judgedTargetCount' | 'waivedTargetCount'
+  >
+>;
+
+/**
+ * The document the report service exports, stubbed in the shape its own reporter emits: the waived
+ * total on the suite, and every criterion a `<testcase>` under its published label carrying both
+ * counts as properties. The one below the threshold also carries the `<failure>` the export writes,
+ * so the document the CLI is handed is one the service could really have produced.
+ */
+const junitDocumentFor = (calculationId: string, testResults: CriterionResultFixture[], labelOf: Record<string, string>): string => {
+  const classname = 'user-service: user-api 1.0.0 [OPENAPI]';
+  const waivedInTotal = testResults.reduce((total, testResult) => total + testResult.waivedTargetCount, 0);
+
+  const testCases = testResults
+    .map(testResult => {
+      const failure = testResult.coverage < 0.8 ? `      <failure message="Coverage is below the configured threshold." />\n` : '';
+
+      return `    <testcase name="${labelOf[testResult.id]}" classname="${classname}" time="4.32100">
+      <properties>
+        <property name="judgedTargetCount" value="${testResult.judgedTargetCount}" />
+        <property name="waivedTargetCount" value="${testResult.waivedTargetCount}" />
+      </properties>
+${failure}    </testcase>`;
+    })
+    .join('\n');
+
+  return `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<testsuites name="Snow-White Quality-Gate Report">
+  <properties>
+    <property name="calculationId" value="${calculationId}" />
+    <property name="minCoveragePercentage" value="80" />
+    <property name="waivedTargetCount" value="${waivedInTotal}" />
+  </properties>
+  <testsuite name="${classname}">
+${testCases}
+  </testsuite>
+</testsuites>`;
+};
+
+/**
+ * Reduces either of the two JSON shapes to the counts it published per criterion. The `--agentic`
+ * payload and the JSON read both nest their results under `interfaces`, so one reading serves both
+ * and neither gets a reading tailored to it.
+ */
+const countsByCriterion = (report: { interfaces: { testResults: CriterionResultFixture[] }[] }): CountsByCriterion =>
+  Object.fromEntries(
+    report.interfaces.flatMap(api =>
+      api.testResults.map(testResult => [testResult.id, { judged: testResult.judgedTargetCount, waived: testResult.waivedTargetCount }]),
+    ),
+  );
+
+/**
+ * The same reduction over the exported document, keyed back onto criterion ids so the comparison is
+ * about the numbers rather than about the two vocabularies.
+ */
+const countsByCriterionFromJUnit = (document: string, labelOf: Record<string, string>): CountsByCriterion => {
+  const idOf = Object.fromEntries(Object.entries(labelOf).map(([id, label]) => [label, id]));
+
+  return Object.fromEntries(
+    [...document.matchAll(/<testcase name="([^"]+)"[\s\S]*?<\/testcase>/g)].map(([testCase, label]) => {
+      const properties = Object.fromEntries(
+        [...testCase.matchAll(/<property name="([^"]+)" value="([^"]+)"/g)].map(([, name, value]) => [name, Number(value)]),
+      );
+
+      return [idOf[label!], { judged: properties.judgedTargetCount, waived: properties.waivedTargetCount }];
+    }),
+  );
+};
+
+/** The criteria that carried a waiver at all, named the way the report names them. */
+const carriedAWaiver = (counts: CountsByCriterion): string[] =>
+  Object.entries(counts)
+    .filter(([, { waived }]) => waived > 0)
+    .map(([criterion]) => criterion)
+    .sort();
 
 describe('CLI', () => {
   const qualityGateConfigName = 'test-quality-gate';
@@ -486,6 +582,128 @@ describe('CLI', () => {
         'excluded',
       ]);
       expect(agenticOutput.summary.qualityGateFailureCount).toBe(1);
+    });
+
+    /**
+     * One report, published three ways in a single run: the JSON read the poll walks and
+     * `--report-output` writes, the JUnit document `--junit-output` writes, and the `--agentic`
+     * payload derived from the first. All three have to agree on which criteria carried waivers and
+     * on how many targets each waived — a consumer that reaches a different conclusion depending on
+     * which artifact it opened has no report at all.
+     *
+     * The three shapes name a criterion differently: the JSON reads use its id, the JUnit export its
+     * published label. The pairing below is the fixture's, declared once, because neither the CLI nor
+     * the payload it prints knows the labels.
+     *
+     * The report is one where the distinction is load-bearing. `HTTP_METHOD_COVERAGE` reports a
+     * vacuous full coverage with nothing judged and two targets waived, beside a criterion genuinely
+     * at full coverage with no waiver at all, so a reader that went by the ratio would call the two
+     * the same.
+     */
+    it('should agree with the JUnit export and the JSON read on which criteria carried waivers and how many targets each waived', async () => {
+      const junitOutput = join(tmpdir(), `temp-junit-${randomBytes(8).toString('hex')}.xml`);
+      const reportOutput = join(tmpdir(), `temp-report-${randomBytes(8).toString('hex')}.json`);
+
+      const testResults = [
+        // Three of four targets covered, the fourth waived out of the fraction entirely.
+        { coverage: 0.75, id: 'PATH_COVERAGE', isIncludedInQualityGate: true, judgedTargetCount: 4, waivedTargetCount: 1 },
+        // Nothing judged: the 1.00 is what an empty denominator returns, not coverage.
+        { coverage: 1, id: 'HTTP_METHOD_COVERAGE', isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 },
+        // The same 1.00, earned over three judged targets and excused by nothing.
+        { coverage: 1, id: 'RESPONSE_CODE_COVERAGE', isIncludedInQualityGate: true, judgedTargetCount: 3, waivedTargetCount: 0 },
+      ];
+
+      const labelOf: Record<string, string> = {
+        HTTP_METHOD_COVERAGE: 'HTTP Method Coverage',
+        PATH_COVERAGE: 'Path Coverage',
+        RESPONSE_CODE_COVERAGE: 'Response Code Coverage',
+      };
+
+      await wiremock.register(calculateWireMockRequest, makeCalculateMockResponse(), {
+        requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo },
+      });
+
+      await wiremock.register(
+        { endpoint: `/api/rest/v1/reports/${calculationId}`, method: 'GET' },
+        {
+          body: {
+            calculationId,
+            initiatedAt: '2026-01-01T00:00:00Z',
+            interfaces: [
+              {
+                apiName: 'user-api',
+                apiVersion: '1.0.0',
+                serviceName: 'user-service',
+                status: 'FAILED',
+                testResults,
+              },
+            ],
+            minCoveragePercentage: 80,
+            qualityGateConfigName,
+            status: 'FAILED',
+          },
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      );
+
+      await wiremock.register(
+        { endpoint: `/api/rest/v1/reports/${calculationId}/junit`, method: 'GET' },
+        {
+          body: junitDocumentFor(calculationId, testResults, labelOf),
+          headers: { 'Content-Type': 'application/xml' },
+          status: 200,
+        },
+        // The export is a document, not JSON: served as a JSON body it would arrive quoted and escaped.
+        { responseBodyType: BodyType.Body },
+      );
+
+      try {
+        const cliResult = await executeCLICommand([
+          'calculate',
+          '--agentic',
+          '--junit-output',
+          junitOutput,
+          '--report-output',
+          reportOutput,
+          '--quality-gate',
+          qualityGateConfigName,
+          '--service-name',
+          'user-service',
+          '--api-name',
+          'user-api',
+          '--api-version',
+          '1.0.0',
+          '--url',
+          WIREMOCK_URL,
+        ]);
+
+        expect(cliResult.exitCode, cliResult.stderr).toBe(QUALITY_GATE_FAILED);
+
+        const agenticCounts = countsByCriterion(JSON.parse(cliResult.stdout));
+        const jsonReadCounts = countsByCriterion(JSON.parse(readFileSync(reportOutput, 'utf8')));
+        const junitCounts = countsByCriterionFromJUnit(readFileSync(junitOutput, 'utf8'), labelOf);
+
+        // Which criteria carried waivers: the same two, named the same way, in all three.
+        expect(carriedAWaiver(agenticCounts)).toEqual(['HTTP_METHOD_COVERAGE', 'PATH_COVERAGE']);
+        expect(carriedAWaiver(junitCounts)).toEqual(carriedAWaiver(agenticCounts));
+        expect(carriedAWaiver(jsonReadCounts)).toEqual(carriedAWaiver(agenticCounts));
+
+        // And how many targets each waived, beside the denominator that gives the number its meaning.
+        expect(agenticCounts).toEqual({
+          HTTP_METHOD_COVERAGE: { judged: 0, waived: 2 },
+          PATH_COVERAGE: { judged: 4, waived: 1 },
+          RESPONSE_CODE_COVERAGE: { judged: 3, waived: 0 },
+        });
+        expect(junitCounts).toEqual(agenticCounts);
+        expect(jsonReadCounts).toEqual(agenticCounts);
+      } finally {
+        // The CLI writes both of these, so a failure before it got that far leaves either missing.
+        // `force` keeps the two removals independent and keeps an ENOENT here from burying the
+        // assertion that actually failed.
+        rmSync(junitOutput, { force: true });
+        rmSync(reportOutput, { force: true });
+      }
     });
   });
 
