@@ -525,11 +525,8 @@ public class JUnitReporter {
         .map(" (%s)"::formatted)
         .orElse("");
 
-      return format(
-        "%s %s%s",
-        finding.getHttpMethod(),
-        finding.getHttpPath(),
-        discriminator
+      return (
+        finding.getHttpMethod() + " " + finding.getHttpPath() + discriminator
       );
     }
 

@@ -188,19 +188,19 @@ abstract class AbstractOpenApiCoverageCalculator
     var waived = 0;
 
     for (ApiTestFinding finding : findings) {
-      if (WAIVED.equals(finding.status())) {
+      var status = finding.status();
+
+      // Three mutually exclusive outcomes, written as one chain rather than as two early
+      // continues: a waived target leaves the fraction and is counted as having left it, a
+      // NOT_APPLICABLE one leaves without being counted at all, and whatever remains was judged.
+      if (WAIVED.equals(status)) {
         waived++;
-        continue;
-      }
+      } else if (!NOT_APPLICABLE.equals(status)) {
+        judged++;
 
-      if (NOT_APPLICABLE.equals(finding.status())) {
-        continue;
-      }
-
-      judged++;
-
-      if (COVERED.equals(finding.status())) {
-        covered++;
+        if (COVERED.equals(status)) {
+          covered++;
+        }
       }
     }
 
