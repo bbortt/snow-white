@@ -162,6 +162,59 @@ describe('AgenticQualityGateResponseTransformer', () => {
     expect(result.summary.qualityGateFailureCount).toBe(0);
   });
 
+  /**
+   * Two reports a reader going by coverage alone could not tell apart: both report `1.00` on the same
+   * criterion, both pass, both name the same API. One earned it over three judged targets; the other
+   * judged nothing at all, because three waivers emptied the fraction before it was measured and
+   * `1.00` is what an empty denominator returns. The `--agentic` payload is one of the shapes that has
+   * to keep those two apart, and the counts are the whole of how it does it - nothing else about the
+   * two payloads differs.
+   *
+   * It says so inside the schema it had already published, so a consumer pinned to the current version
+   * reads the distinction without being asked to upgrade first.
+   */
+  it('should distinguish a genuinely fully covered report from one whose coverage is only full because everything was waived', () => {
+    const fullyCovered = transformer.transform(
+      response({
+        interfaces: [
+          apiInterface({
+            testResults: [
+              testResult({ coverage: 1, id: 'PATH_COVERAGE', isIncludedInQualityGate: true, judgedTargetCount: 3, waivedTargetCount: 0 }),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    const fullyWaived = transformer.transform(
+      response({
+        interfaces: [
+          apiInterface({
+            testResults: [
+              testResult({ coverage: 1, id: 'PATH_COVERAGE', isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 3 }),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    // Everything a reader might go by instead is identical, down to the summary.
+    expect(fullyWaived.status).toBe(fullyCovered.status);
+    expect(fullyWaived.interfaces[0].status).toBe(fullyCovered.interfaces[0].status);
+    expect(fullyWaived.interfaces[0].testResults[0].coverage).toBe(fullyCovered.interfaces[0].testResults[0].coverage);
+    expect(fullyWaived.interfaces[0].qualityGateFailures).toEqual(fullyCovered.interfaces[0].qualityGateFailures);
+    expect(fullyWaived.summary).toEqual(fullyCovered.summary);
+
+    // And the two are still not the same report.
+    expect(fullyWaived.interfaces[0].testResults[0]).not.toEqual(fullyCovered.interfaces[0].testResults[0]);
+    expect(fullyCovered.interfaces[0].testResults[0]).toMatchObject({ judgedTargetCount: 3, waivedTargetCount: 0 });
+    expect(fullyWaived.interfaces[0].testResults[0]).toMatchObject({ judgedTargetCount: 0, waivedTargetCount: 3 });
+
+    // Both read off the version that was already published, not off a bumped one.
+    expect(fullyCovered.schemaVersion).toBe('1');
+    expect(fullyWaived.schemaVersion).toBe('1');
+  });
+
   it('should apply the threshold the report was scored against rather than full coverage', () => {
     const result = transformer.transform(
       response({
