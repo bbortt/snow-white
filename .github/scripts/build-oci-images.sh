@@ -11,7 +11,7 @@ registry="${2:-ghcr.io}"
 additional_args="$3"
 
 if [[ -z "$image_tag" ]]; then
-  echo "Must provide image tag as first variable: .github/scripts/build-oci-images.sh [IMAGE_TAG]" 1>&2
+  echo "Must provide image tag as first variable: .github/scripts/build-oci-images.sh [IMAGE_TAG] [REGISTRY] [MAVEN_ARGS...]" 1>&2
   exit 1
 fi
 
