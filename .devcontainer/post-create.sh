@@ -22,6 +22,16 @@ for cache_dir in "${HOME}/.m2" "${HOME}/.local/share/pnpm" "${HOME}/.bun"; do
   sudo chown -R "$(id -u):$(id -g)" "${cache_dir}"
 done
 
+# The same holds for the `node_modules` volumes devcontainer.json mounts over
+# the workspace. Only actual mount points are touched: anything else matching
+# the glob is either the host's or nested inside one of these volumes.
+log 'Taking ownership of the node_modules volumes'
+for modules_dir in "${workspace}/node_modules" "${workspace}"/*/node_modules "${workspace}"/*/*/node_modules; do
+  if mountpoint -q "${modules_dir}"; then
+    sudo chown -R "$(id -u):$(id -g)" "${modules_dir}"
+  fi
+done
+
 # The workspace is bind-mounted from the host, so its owner is the host user.
 git config --global --add safe.directory "${workspace}"
 git config --global --add safe.directory "${workspace}/opentelemetry-proto"
@@ -43,7 +53,11 @@ else
 fi
 
 log 'Installing Node dependencies'
-pnpm install --frozen-lockfile
+# `HUSKY=0` skips the root `prepare` script. Husky writes its hook shims into
+# `.husky/_` in the bind-mounted workspace, where they are the host's: the
+# git hooks a host commit runs. Run `pnpm exec husky` here only if this
+# container is the sole place this checkout is ever committed from.
+HUSKY=0 pnpm install --frozen-lockfile
 
 # The `helm` module renders the chart in its tests, which needs the chart
 # dependencies present. Non-fatal: a failure here costs `./mvnw verify` on that
