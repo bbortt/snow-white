@@ -2,26 +2,23 @@
 
 ## [2.1.0](https://github.com/bbortt/snow-white/compare/v2.0.0...v2.1.0) (2026-10-18)
 
-
 ### Features
 
-* apply waivers to the findings the calculators emitted ([a278d5d](https://github.com/bbortt/snow-white/commit/a278d5d87c86589d2ef962cd850fa8f2eb5e3f89))
-* **cli:** send the waivers of the config file on the calculation request ([08b14b7](https://github.com/bbortt/snow-white/commit/08b14b72e711a0c177a7e162ad3cbf6d75abe1a5))
-* **openapi-coverage-stream:** fail the calculation when a waiver matches no finding ([7396e75](https://github.com/bbortt/snow-white/commit/7396e7548c4a95a4979ea571f966269f77febbd7))
-* publish the judged and waived target counts beside the coverage ([f28ca76](https://github.com/bbortt/snow-white/commit/f28ca765ed72aff3acac671bb9f699fd8f104652))
-* **report-coordinator-api:** reject a waiver naming a criterion this system does not declare ([a2a2db0](https://github.com/bbortt/snow-white/commit/a2a2db05568fcec5473240fedab042d3ab34b5be))
-
+- apply waivers to the findings the calculators emitted ([a278d5d](https://github.com/bbortt/snow-white/commit/a278d5d87c86589d2ef962cd850fa8f2eb5e3f89))
+- **cli:** send the waivers of the config file on the calculation request ([08b14b7](https://github.com/bbortt/snow-white/commit/08b14b72e711a0c177a7e162ad3cbf6d75abe1a5))
+- **openapi-coverage-stream:** fail the calculation when a waiver matches no finding ([7396e75](https://github.com/bbortt/snow-white/commit/7396e7548c4a95a4979ea571f966269f77febbd7))
+- publish the judged and waived target counts beside the coverage ([f28ca76](https://github.com/bbortt/snow-white/commit/f28ca765ed72aff3acac671bb9f699fd8f104652))
+- **report-coordinator-api:** reject a waiver naming a criterion this system does not declare ([a2a2db0](https://github.com/bbortt/snow-white/commit/a2a2db05568fcec5473240fedab042d3ab34b5be))
 
 ### Bug Fixes
 
-* **devcontainer:** keep the container's node_modules off the host ([f4b29a4](https://github.com/bbortt/snow-white/commit/f4b29a41c01d8c361ae1ea8e6cf677f627064522))
-
+- **devcontainer:** keep the container's node_modules off the host ([f4b29a4](https://github.com/bbortt/snow-white/commit/f4b29a41c01d8c361ae1ea8e6cf677f627064522))
 
 ### Documentation
 
-* **pages:** announce release 2.0.0 ([fef56e1](https://github.com/bbortt/snow-white/commit/fef56e129d87d61388c7e52f3d15dcb8eacea346))
-* **pages:** cite SYS-014 as planned, not shipped ([ecfde5a](https://github.com/bbortt/snow-white/commit/ecfde5a745ec11cee9d4726d491e1bc6e14396ac))
-* state the neighbouring claims instead of citing their ids ([492eac2](https://github.com/bbortt/snow-white/commit/492eac2673133ea31df351361b84b3f2fede74da))
+- **pages:** announce release 2.0.0 ([fef56e1](https://github.com/bbortt/snow-white/commit/fef56e129d87d61388c7e52f3d15dcb8eacea346))
+- **pages:** cite SYS-014 as planned, not shipped ([ecfde5a](https://github.com/bbortt/snow-white/commit/ecfde5a745ec11cee9d4726d491e1bc6e14396ac))
+- state the neighbouring claims instead of citing their ids ([492eac2](https://github.com/bbortt/snow-white/commit/492eac2673133ea31df351361b84b3f2fede74da))
 
 ## [2.0.0](https://github.com/bbortt/snow-white/compare/v1.13.0...v2.0.0) (2026-10-15)
 
