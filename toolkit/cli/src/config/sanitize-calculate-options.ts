@@ -18,6 +18,7 @@ import { scanGlob } from '../common/glob';
 import { DEFAULT_API_NAME_PATH, DEFAULT_API_VERSION_PATH, DEFAULT_SERVICE_NAME_PATH, extractApiSpecMetadata } from '../common/openapi';
 import { parseFilterObjectFromString } from './parse-filter-object-from-string';
 import { resolveConfig } from './resolve-config';
+import { sanitizeWaivers } from './sanitize-waivers';
 
 const exactConfigurationGroup = Object.freeze(['serviceName', 'apiName', 'apiVersion']);
 const distinctConfigGroups = Object.freeze([exactConfigurationGroup, ['configFile']]);
@@ -327,6 +328,9 @@ export const validateConfiguration = (config: CalculateOptions): CalculateOption
 export const sanitizeCalculateOptions = (options: CliOptions): CalculateOptions => {
   assertNoMixedGroups(options);
   const { base, fileApiSpecs } = resolveBaseConfig(options);
-  const config = applyApiSpecsOverlay(base, options, fileApiSpecs);
-  return validateConfiguration(config as CalculateOptions);
+  const config = validateConfiguration(applyApiSpecsOverlay(base, options, fileApiSpecs) as CalculateOptions);
+
+  // only ever present when read from a config file - no CLI flag supplies waivers
+  const waivers = sanitizeWaivers(config.waivers);
+  return waivers ? { ...config, waivers } : config;
 };

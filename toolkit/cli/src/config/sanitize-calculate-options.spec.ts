@@ -805,4 +805,58 @@ info:
       });
     });
   });
+
+  // what makes a waiver valid is `sanitize-waivers.spec.ts`'s business - this only covers how waivers get here
+  describe('waivers', () => {
+    const waiver = {
+      apiName: 'orders-api',
+      apiVersion: '1.0.0',
+      expires: '2026-12-31',
+      method: 'POST',
+      path: '/orders/{id}',
+      reason: 'Downstream is mocked in this environment',
+      responseCode: '500',
+      serviceName: 'order-service',
+    };
+
+    const withWaivers = (waivers: unknown) => {
+      (resolveConfig as any).mockReturnValueOnce({ config: { ...sanitizedOptions, waivers } });
+      return sanitizeCalculateOptions({ configFile: 'configFile' });
+    };
+
+    it('should carry waivers from the config file, with expires parsed into a date', () => {
+      expect(withWaivers([waiver])).toEqual({
+        ...sanitizedOptions,
+        waivers: [{ ...waiver, expires: new Date('2026-12-31') }],
+      });
+
+      expect(exit).not.toHaveBeenCalled();
+    });
+
+    it('should leave waivers absent when the config file carries none', () => {
+      (resolveConfig as any).mockReturnValueOnce({ config: sanitizedOptions });
+
+      expect(sanitizeCalculateOptions({ configFile: 'configFile' })).not.toHaveProperty('waivers');
+    });
+
+    it('should never take waivers from the command line', () => {
+      const cliOptions = {
+        apiName: 'test-api',
+        apiVersion: 'api-version',
+        qualityGate: 'quality-gate',
+        serviceName: 'test-service',
+        url: 'url',
+        waivers: [waiver],
+      } as CliOptions;
+
+      expect(sanitizeCalculateOptions(cliOptions)).not.toHaveProperty('waivers');
+    });
+
+    it('should exit with code 3 if a waiver in the config file is invalid', () => {
+      expect(() => withWaivers([{ ...waiver, reason: '' }])).toThrowError('Process exited with code 3');
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Waiver #1 is invalid:'));
+      expect(exit).toHaveBeenCalledWith(INVALID_CONFIG_FORMAT);
+    });
+  });
 });
