@@ -18,7 +18,7 @@ import { BodyType, MatchingAttributes, WireMock } from 'wiremock-captain';
 import type { CalculateQualityGateRequest } from './clients/quality-gate-api';
 import type { GetReportByCalculationId200ResponseInterfacesInnerTestResultsInner } from './clients/report-api';
 
-import { QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from './common/exit-codes';
+import { INVALID_CONFIG_FORMAT, QUALITY_GATE_CALCULATION_FAILED, QUALITY_GATE_FAILED } from './common/exit-codes';
 
 const WIREMOCK_PORT = process.env.WIREMOCK_PORT || 8080;
 
@@ -411,6 +411,105 @@ describe('CLI', () => {
 
         const unmatchedRequests = await wiremock.getUnmatchedRequests();
         expect(unmatchedRequests).toHaveLength(0);
+      });
+    });
+
+    describe('waivers', () => {
+      it('should send the waivers of a YAML config file on the calculation request, expiring on the date as written', async () => {
+        const { apiName, apiVersion, serviceName, wireMockRequest } = configureSuccessfulWireMockRequest();
+
+        // YAML parses an unquoted date into a `Date` - the request has to carry the calendar day back out
+        const tmpPath = join(tmpdir(), `temp-${randomBytes(16).toString('hex')}.yml`);
+        writeFileSync(
+          tmpPath,
+          `apiInformation:
+  - serviceName: ${serviceName}
+    apiName: ${apiName}
+    apiVersion: ${apiVersion}
+qualityGate: ${qualityGateConfigName}
+url: ${WIREMOCK_URL}
+waivers:
+  - serviceName: ${serviceName}
+    apiName: ${apiName}
+    apiVersion: '*'
+    path: /users/{id}
+    method: GET
+    responseCode: '500'
+    criterion: ERROR_RESPONSE_CODE_COVERAGE
+    reason: Downstream is mocked in this environment
+    expires: 2026-12-31
+`,
+        );
+
+        await wiremock.register(
+          {
+            ...wireMockRequest,
+            body: {
+              ...wireMockRequest.body,
+              waivers: [
+                {
+                  apiName,
+                  apiVersion: '*',
+                  criterion: 'ERROR_RESPONSE_CODE_COVERAGE',
+                  expires: '2026-12-31',
+                  method: 'GET',
+                  path: '/users/{id}',
+                  reason: 'Downstream is mocked in this environment',
+                  responseCode: '500',
+                  serviceName,
+                },
+              ],
+            },
+          },
+          { body: { calculationId: '550e8400-e29b-41d4-a716-446655440000' }, headers: { 'Content-Type': 'application/json' }, status: 202 },
+          { requestHeaderFeatures: { 'Content-Type': MatchingAttributes.EqualTo } },
+        );
+
+        try {
+          const cliResult = await executeCLICommand(['calculate', '--config-file', tmpPath, '--async']);
+
+          assertThatBasicInformationIsBeingPrinted(cliResult, 0);
+          expect(cliResult.stdout).toContain('Waivers: 1');
+
+          const unmatchedRequests = await wiremock.getUnmatchedRequests();
+          expect(unmatchedRequests).toHaveLength(0);
+        } finally {
+          unlinkSync(tmpPath);
+        }
+      });
+
+      it('should not send a calculation request when a waiver has no reason', async () => {
+        const tmpPath = join(tmpdir(), `temp-${randomBytes(16).toString('hex')}.json`);
+        writeFileSync(
+          tmpPath,
+          JSON.stringify({
+            apiInformation: [{ apiName: 'user-api', apiVersion: '1.0.0', serviceName: 'user-service' }],
+            qualityGate: qualityGateConfigName,
+            url: WIREMOCK_URL,
+            waivers: [
+              {
+                apiName: 'user-api',
+                apiVersion: '1.0.0',
+                expires: '2026-12-31',
+                method: 'GET',
+                path: '/users',
+                serviceName: 'user-service',
+              },
+            ],
+          }),
+        );
+
+        try {
+          const cliResult = await executeCLICommand(['calculate', '--config-file', tmpPath, '--async']);
+
+          expect(cliResult.exitCode).toBe(INVALID_CONFIG_FORMAT);
+          expect(cliResult.stderr).toContain("'reason' must be a non-blank string");
+
+          const requests = await wiremock.getRequestsForAPI('POST', `/api/rest/v1/quality-gates/${qualityGateConfigName}/calculate`);
+          expect(requests).toHaveLength(0);
+        } finally {
+          unlinkSync(tmpPath);
+        }
       });
     });
   });

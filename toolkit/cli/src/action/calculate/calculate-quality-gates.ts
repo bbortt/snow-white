@@ -45,6 +45,10 @@ export const calculateQualityGates = async (
     console.log(chalk.gray(`Attribute filters: ${JSON.stringify(options.attributeFilters)}`));
   }
 
+  if (!options.agentic && options.waivers && options.waivers.length > 0) {
+    console.log(chalk.gray(`Waivers: ${options.waivers.length}`));
+  }
+
   if (!options.agentic) {
     console.log('');
   }
@@ -53,6 +57,7 @@ export const calculateQualityGates = async (
     attributeFilters: options.attributeFilters,
     includeApis: toDtos(options.apiInformation),
     lookbackWindow: options.lookbackWindow,
+    waivers: options.waivers,
   };
 
   const apiResponse = await qualityGateApi.calculateQualityGateRaw({

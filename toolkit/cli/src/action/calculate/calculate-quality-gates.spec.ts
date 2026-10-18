@@ -98,6 +98,53 @@ describe('calculateQualityGates', () => {
     expect(toDtos).toHaveBeenCalledWith(options.apiInformation);
   });
 
+  describe('waivers', () => {
+    const waiver = {
+      apiName: 'orders-api',
+      apiVersion: '1.0.0',
+      expires: new Date('2026-12-31'),
+      method: 'POST',
+      path: '/orders/{id}',
+      reason: 'Downstream is mocked in this environment',
+      responseCode: '500',
+      serviceName: 'order-service',
+    };
+
+    const createQualityGateApi = (): QualityGateApi =>
+      ({
+        calculateQualityGateRaw: mock(() => ({
+          raw: { headers: { get: mock(() => null) } },
+          value: mock(() => ({ calculationId: 'calc-waived' })),
+        })),
+      }) as unknown as QualityGateApi;
+
+    it('should forward the waivers on the calculation request', async () => {
+      const qualityGateApi = createQualityGateApi();
+      const options = { ...createOptions(), waivers: [waiver] };
+
+      await calculateQualityGates(qualityGateApi, {} as ReportApi, options);
+
+      expect(qualityGateApi.calculateQualityGateRaw).toHaveBeenCalledWith({
+        calculateQualityGateRequest: {
+          attributeFilters: options.attributeFilters,
+          includeApis: [{ id: 'mapped-api' }],
+          lookbackWindow: options.lookbackWindow,
+          waivers: [waiver],
+        },
+        qualityGateConfigName: options.qualityGate,
+      });
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Waivers: 1'));
+    });
+
+    it('should not log the waiver count in agentic mode', async () => {
+      const options = { ...createOptions(), agentic: true, waivers: [waiver] };
+
+      await calculateQualityGates(createQualityGateApi(), {} as ReportApi, options);
+
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining('Waivers:'));
+    });
+  });
+
   it('should poll calculation result when async mode is disabled', async () => {
     const apiResponse = {
       raw: {
