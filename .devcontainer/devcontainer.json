@@ -37,7 +37,20 @@
   "mounts": [
     "source=snow-white-m2,target=/home/vscode/.m2,type=volume",
     "source=snow-white-pnpm-store,target=/home/vscode/.local/share/pnpm,type=volume",
-    "source=snow-white-bun-cache,target=/home/vscode/.bun/install/cache,type=volume"
+    "source=snow-white-bun-cache,target=/home/vscode/.bun/install/cache,type=volume",
+    // Every `node_modules` the container installs lives on a volume of its own, never in the
+    // bind-mounted workspace. Otherwise a Linux install replaces the host's: pnpm's symlinks and
+    // Linux-only native bindings, which a Windows or macOS host can then no longer run.
+    // `${devcontainerId}` keeps two checkouts of this repository from sharing one.
+    "source=snow-white-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=snow-white-helm-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/helm/node_modules,type=volume",
+    "source=snow-white-api-gateway-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/api-gateway/node_modules,type=volume",
+    "source=snow-white-api-index-api-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/api-index-api/node_modules,type=volume",
+    "source=snow-white-api-sync-job-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/api-sync-job/node_modules,type=volume",
+    "source=snow-white-openapi-coverage-stream-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/openapi-coverage-stream/node_modules,type=volume",
+    "source=snow-white-quality-gate-api-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/quality-gate-api/node_modules,type=volume",
+    "source=snow-white-report-coordinator-api-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/microservices/report-coordinator-api/node_modules,type=volume",
+    "source=snow-white-cli-node-modules-${devcontainerId},target=${containerWorkspaceFolder}/toolkit/cli/node_modules,type=volume"
   ],
   "remoteEnv": {
     "MAVEN_OPTS": "-Xmx2g"
