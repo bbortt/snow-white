@@ -12,8 +12,9 @@ import React, { useEffect, useId, useState } from 'react';
 import { translate } from 'react-jhipster';
 import { Badge, Button, Collapse } from 'reactstrap';
 
-// Uncovered first: that's what a user drilling into a low coverage number is after.
-const STATUS_ORDER = [FindingStatus.UNCOVERED, FindingStatus.COVERED, FindingStatus.NOT_APPLICABLE];
+// Uncovered first: that's what a user drilling into a low coverage number is after. Waived next,
+// because a waiver moved that number too, and its reason is what a reviewer has to judge.
+const STATUS_ORDER = [FindingStatus.UNCOVERED, FindingStatus.WAIVED, FindingStatus.COVERED, FindingStatus.NOT_APPLICABLE];
 const INITIAL_VISIBLE_FINDINGS = 20;
 const VISIBLE_UNNAMED_TRACES = 3;
 const SHORT_TRACE_ID_LENGTH = 8;
@@ -93,6 +94,17 @@ const Evidence: React.FC<{ evidence: IFindingEvidence[] }> = ({ evidence }) => {
   );
 };
 
+const Waiver: React.FC<{ reason?: string; expiresOn?: string }> = ({ reason, expiresOn }) => (
+  <div className="small" data-cy="findingWaiver">
+    {reason ? <span className="text-break">{reason}</span> : null}{' '}
+    {expiresOn ? (
+      <span className="text-muted text-nowrap ms-2">
+        {translate('snowWhiteApp.apiTestResult.findings.waiverExpiresOn')} <time dateTime={expiresOn}>{expiresOn}</time>
+      </span>
+    ) : null}
+  </div>
+);
+
 const Finding: React.FC<{ finding: IApiTestFinding }> = ({ finding }) => (
   <li className="py-2 border-bottom" data-cy="finding">
     <div className="d-flex flex-wrap align-items-center gap-1">
@@ -123,6 +135,7 @@ const Finding: React.FC<{ finding: IApiTestFinding }> = ({ finding }) => (
       <CopyButton value={finding.specPointer} />
     </div>
     {finding.status === FindingStatus.COVERED && finding.evidence.length > 0 ? <Evidence evidence={finding.evidence} /> : null}
+    {finding.status === FindingStatus.WAIVED ? <Waiver reason={finding.waiverReason} expiresOn={finding.waiverExpiresOn} /> : null}
   </li>
 );
 

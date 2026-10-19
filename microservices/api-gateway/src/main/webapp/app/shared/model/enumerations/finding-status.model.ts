@@ -8,4 +8,5 @@ export enum FindingStatus {
   UNCOVERED = 'UNCOVERED',
   COVERED = 'COVERED',
   NOT_APPLICABLE = 'NOT_APPLICABLE',
+  WAIVED = 'WAIVED',
 }
