@@ -4,6 +4,8 @@
  * See LICENSE file for full details.
  */
 
+import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
+
 import { render, screen } from '@testing-library/react';
 import { IOpenApiTestResult } from 'app/shared/model/open-api-test-result.model';
 import React from 'react';
@@ -114,6 +116,20 @@ describe('ShapePieChart', () => {
       const cells = screen.getAllByTestId('pie-cell');
       expect(cells).toHaveLength(1);
       expect(cells[0]).toHaveAttribute('data-fill', '#a91320'); // FAILED color
+    });
+
+    it('should render a criterion waivers emptied in the waived color, not the passed one', () => {
+      render(
+        <ShapePieChart
+          apiTestResults={[
+            { coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 3, waivedTargetCount: 0 },
+            { coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 },
+          ]}
+        />,
+      );
+
+      const cellColors = screen.getAllByTestId('pie-cell').map(cell => cell.getAttribute('data-fill'));
+      expect(cellColors).toEqual(['#245c45', '#d9861a']); // PASSED, then WAIVED ($warning-amber)
     });
 
     it('should render both cells when coverage is only partial across all results', () => {
@@ -279,6 +295,7 @@ describe('Utility Functions', () => {
       expect(result.stats).toEqual({
         total: 0,
         covered: 0,
+        waived: 0,
         uncovered: 0,
         coveragePercentage: 0,
       });
@@ -312,6 +329,36 @@ describe('Utility Functions', () => {
 
       expect(result.stats.covered).toBe(1);
       expect(result.stats.uncovered).toBe(1);
+    });
+  });
+
+  describe('waived criteria', () => {
+    const fullyWaived: IApiTestResult = { coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 };
+    const partlyWaived: IApiTestResult = { coverage: 0.5, isIncludedInQualityGate: true, judgedTargetCount: 4, waivedTargetCount: 1 };
+    const covered: IApiTestResult = { coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 3, waivedTargetCount: 0 };
+
+    it('should count a criterion waivers emptied as waived, never as covered', () => {
+      expect(groupOpenApiTestResults([fullyWaived, covered])).toEqual([
+        { name: 'PASSED', value: 1 },
+        { name: 'WAIVED', value: 1 },
+      ]);
+    });
+
+    it('should keep the ratio of a partly waived criterion', () => {
+      expect(groupOpenApiTestResults([partlyWaived])).toEqual([
+        { name: 'PASSED', value: 0.5 },
+        { name: 'FAILED', value: 0.5 },
+      ]);
+    });
+
+    it('should leave the waived share out of the coverage percentage', () => {
+      const { stats } = groupOpenApiTestResultsWithStats([fullyWaived, covered, partlyWaived]);
+
+      expect(stats).toEqual({ total: 3, covered: 1.5, waived: 1, uncovered: 0.5, coveragePercentage: 50 });
+    });
+
+    it('should show no waived share for a report persisted before the counts existed', () => {
+      expect(groupOpenApiTestResults([{ coverage: 1, isIncludedInQualityGate: true }])).toEqual([{ name: 'PASSED', value: 1 }]);
     });
   });
 

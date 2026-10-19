@@ -76,6 +76,35 @@ describe('CoverageProgressBar', () => {
       expect(dangerBar).toBeInTheDocument();
     });
 
+    it('should render no waived segment when nothing was waived', () => {
+      const { container } = render(
+        <CoverageProgressBar apiTestResults={[result(1), { ...result(1), judgedTargetCount: 2, waivedTargetCount: 0 }]} />,
+      );
+
+      expect(container.querySelector('[data-cy="waivedShare"]')).not.toBeInTheDocument();
+    });
+
+    it('should draw a criterion waivers emptied as a waived segment, never as covered', () => {
+      const fullyWaived: IApiTestResult = { ...result(1), judgedTargetCount: 0, waivedTargetCount: 2 };
+      const { container } = render(<CoverageProgressBar apiTestResults={[result(1), fullyWaived, result(0)]} />);
+
+      const waivedShare = container.querySelector('[data-cy="waivedShare"]');
+      expect(waivedShare).toHaveClass('bg-warning');
+      expect(waivedShare).toHaveTextContent('33 %');
+      // one covered, one waived, one uncovered: the waiver's 100 % is not added to the green share
+      expect(container.querySelector('.progress-bar.bg-success')).toHaveTextContent('33 %');
+      expect(container.querySelector('.progress-bar.bg-danger')).toHaveTextContent('33 %');
+    });
+
+    it('should keep the ratio of a partly waived criterion in the green and red shares', () => {
+      const { container } = render(
+        <CoverageProgressBar apiTestResults={[{ ...result(0.5), judgedTargetCount: 4, waivedTargetCount: 1 }]} />,
+      );
+
+      expect(container.querySelector('[data-cy="waivedShare"]')).not.toBeInTheDocument();
+      expect(screen.getAllByText('50 %')).toHaveLength(2);
+    });
+
     it('should render the minimum-coverage marker when minCoveragePercentage is set', () => {
       const { container } = render(<CoverageProgressBar apiTestResults={[result(1)]} minCoveragePercentage={80} />);
 

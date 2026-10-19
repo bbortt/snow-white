@@ -4,6 +4,7 @@
  * See LICENSE file for full details.
  */
 
+import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import type { IApiTest } from 'app/shared/model/api-test.model';
 
 import { ReportStatus } from 'app/shared/model/enumerations/report-status.model';
@@ -74,4 +75,37 @@ const STATUS_SEVERITY: ReportStatus[] = [
 
 export function mostSevereStatus(statuses: ReportStatus[]): ReportStatus {
   return STATUS_SEVERITY.find(status => statuses.includes(status)) ?? ReportStatus.NOT_STARTED;
+}
+
+/**
+ * A criterion whose every target was waived has nothing left to judge: its coverage of 1 is what an
+ * empty denominator returns, not full coverage (CON-012). A report persisted before the counts
+ * existed carries neither, and is never fully waived.
+ */
+export function isFullyWaived(apiTestResult: IApiTestResult): boolean {
+  return apiTestResult.judgedTargetCount === 0 && (apiTestResult.waivedTargetCount ?? 0) > 0;
+}
+
+export interface CoverageSplit {
+  total: number;
+  covered: number;
+  waived: number;
+  uncovered: number;
+}
+
+/**
+ * Splits a set of criteria into covered, waived and uncovered shares, one unit per criterion.
+ *
+ * Each result contributes its fractional coverage rather than being bucketed by a pass/fail
+ * threshold. A criterion waivers emptied contributes its whole unit to the waived share instead:
+ * counting the coverage of 1 it publishes as covered would present a waiver as coverage. A partly
+ * waived criterion keeps its ratio over what it did judge.
+ */
+export function splitCoverage(apiTestResults: IApiTestResult[]): CoverageSplit {
+  const waived = apiTestResults.filter(isFullyWaived).length;
+  const covered = apiTestResults
+    .filter(apiTestResult => !isFullyWaived(apiTestResult))
+    .reduce((sum, apiTestResult) => sum + (apiTestResult.coverage ?? 0), 0);
+
+  return { total: apiTestResults.length, covered, waived, uncovered: apiTestResults.length - covered - waived };
 }

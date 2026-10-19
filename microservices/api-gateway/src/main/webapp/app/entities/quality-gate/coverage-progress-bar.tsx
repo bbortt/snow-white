@@ -4,6 +4,7 @@
  * See LICENSE file for full details.
  */
 
+import { splitCoverage } from 'app/entities/quality-gate/quality-gate.utils';
 import { IApiTestResult } from 'app/shared/model/api-test-result.model';
 import React from 'react';
 import { Progress } from 'reactstrap';
@@ -14,12 +15,11 @@ interface CoverageProgressBarProps {
 }
 
 export const CoverageProgressBar: React.FC<CoverageProgressBarProps> = ({ apiTestResults, minCoveragePercentage }) => {
-  const total = apiTestResults.length;
-  const passed = apiTestResults.reduce((partialSum, r) => partialSum + (r.coverage ?? 0), 0);
-  const failed = total - passed;
+  const { total, covered, waived, uncovered } = splitCoverage(apiTestResults);
 
-  const passedPercentage = Math.round((passed / total) * 100);
-  const failedPercentage = Math.round((failed / total) * 100);
+  const passedPercentage = Math.round((covered / total) * 100);
+  const waivedPercentage = Math.round((waived / total) * 100);
+  const failedPercentage = Math.round((uncovered / total) * 100);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -27,6 +27,11 @@ export const CoverageProgressBar: React.FC<CoverageProgressBarProps> = ({ apiTes
         <Progress bar color="success" value={passedPercentage}>
           {passedPercentage} %
         </Progress>
+        {waived > 0 ? (
+          <Progress bar color="warning" className="text-dark" value={waivedPercentage} data-cy="waivedShare">
+            {waivedPercentage} %
+          </Progress>
+        ) : null}
         <Progress bar color="danger" value={failedPercentage}>
           {failedPercentage} %
         </Progress>

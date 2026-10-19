@@ -275,6 +275,33 @@ test('never shows a criterion waivers emptied as full coverage', async ({ page }
   await expect(methodRow.locator('[data-cy="waivedTargets"]')).toHaveText('1 waived · measured over the other 4');
 });
 
+test('draws fully waived criteria in amber, in the chart and in the coverage bar', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    interfaces: [
+      {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '1.0.0',
+        status: 'PASSED',
+        testResults: [
+          { id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 },
+          { id: 'HTTP_METHOD_COVERAGE', coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 3, waivedTargetCount: 0 },
+        ],
+      },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  // recharts paints each slice as a path filled with its color, and names it in the legend
+  await expect(page.locator('path[fill="#d9861a"]')).toHaveCount(1);
+  await expect(page.getByText('Waived', { exact: true })).toBeVisible();
+
+  await expect(dataCy(page, 'waivedShare')).toHaveText('50 %');
+  await expect(dataCy(page, 'waivedShare')).toHaveClass(/bg-warning/);
+});
+
 test('offers no drilldown for a result without findings', async ({ page }) => {
   await page.getByRole('button', { name: /orders-api/ }).click();
 

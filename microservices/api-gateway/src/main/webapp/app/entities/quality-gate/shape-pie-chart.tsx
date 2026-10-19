@@ -6,6 +6,7 @@
 
 import type { IApiTestResult } from 'app/shared/model/api-test-result.model';
 
+import { splitCoverage } from 'app/entities/quality-gate/quality-gate.utils';
 import React, { useMemo } from 'react';
 import { Translate, translate } from 'react-jhipster';
 import { Alert } from 'reactstrap';
@@ -13,6 +14,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recha
 
 enum ResultType {
   PASSED = 'PASSED',
+  WAIVED = 'WAIVED',
   FAILED = 'FAILED',
 }
 
@@ -21,43 +23,25 @@ export interface IGroupedTestResult {
   value: number;
 }
 
-// Sums each result's fractional coverage rather than bucketing by a pass/fail threshold, so the
-// chart's covered/uncovered split matches the same criteria's aggregated CoverageProgressBar
-// percentage instead of a differently-derived number.
+// Same split as the CoverageProgressBar, so the chart and the bar never disagree.
 export const groupOpenApiTestResults = (testResults: IApiTestResult[]): IGroupedTestResult[] => {
-  const total = testResults.length;
-  if (total === 0) {
-    return [];
-  }
+  const { covered, waived, uncovered } = splitCoverage(testResults);
 
-  const covered = testResults.reduce((sum, result) => sum + (result.coverage ?? 0), 0);
-  const uncovered = total - covered;
-
-  const groups: IGroupedTestResult[] = [];
-
-  if (covered > 0) {
-    groups.push({ name: ResultType.PASSED, value: covered });
-  }
-
-  if (uncovered > 0) {
-    groups.push({ name: ResultType.FAILED, value: uncovered });
-  }
-
-  return groups;
+  return [
+    { name: ResultType.PASSED, value: covered },
+    { name: ResultType.WAIVED, value: waived },
+    { name: ResultType.FAILED, value: uncovered },
+  ].filter(group => group.value > 0);
 };
 
 export const groupOpenApiTestResultsWithStats = (testResults: IApiTestResult[]) => {
-  const total = testResults.length;
-  const covered = testResults.reduce((sum, result) => sum + (result.coverage ?? 0), 0);
-  const uncovered = total - covered;
+  const split = splitCoverage(testResults);
 
   return {
     groups: groupOpenApiTestResults(testResults),
     stats: {
-      total,
-      covered,
-      uncovered,
-      coveragePercentage: total > 0 ? (covered / total) * 100 : 0,
+      ...split,
+      coveragePercentage: split.total > 0 ? (split.covered / split.total) * 100 : 0,
     },
   };
 };
@@ -65,9 +49,16 @@ export const groupOpenApiTestResultsWithStats = (testResults: IApiTestResult[]) 
 const COLORS: Record<ResultType, string> = {
   // $ruby-dark
   FAILED: '#a91320',
+  // $warning-amber
+  WAIVED: '#d9861a',
   // $success-green
   PASSED: '#245c45',
 } as const;
+
+// Waived is a finding status, not a report status (CON-012 adds none), so its legend label comes
+// from the findings vocabulary.
+const legendLabel = (value: ResultType): string =>
+  translate(value === ResultType.WAIVED ? 'snowWhiteApp.apiTestResult.findings.status.WAIVED' : `snowWhiteApp.reportStatus.${value}`);
 
 type ShapePieChartProps = {
   apiTestResults?: IApiTestResult[];
@@ -99,7 +90,7 @@ export const ShapePieChart: React.FC<ShapePieChartProps> = ({ apiTestResults }: 
             <Cell key={`cell-${entry.name}`} fill={COLORS[entry.name]} />
           ))}
         </Pie>
-        <Legend formatter={(value: ResultType) => translate(`snowWhiteApp.reportStatus.${value}`)} />
+        <Legend formatter={legendLabel} />
         <Tooltip />
       </PieChart>
     </ResponsiveContainer>

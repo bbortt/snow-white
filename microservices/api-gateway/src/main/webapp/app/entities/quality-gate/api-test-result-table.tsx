@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
 import ApiCriterionInfo from 'app/entities/quality-gate/api-criterion-info';
 import ApiTestFindings from 'app/entities/quality-gate/api-test-findings';
+import { isFullyWaived } from 'app/entities/quality-gate/quality-gate.utils';
 import { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
 import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { createRef, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -74,8 +75,7 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
         const waivedTargetCount = apiTestResult.waivedTargetCount ?? 0;
-        // A report persisted before the counts existed carries neither, and is never fully waived.
-        const fullyWaived = apiTestResult.judgedTargetCount === 0 && waivedTargetCount > 0;
+        const fullyWaived = isFullyWaived(apiTestResult);
 
         const passedPercentage = apiTestResult.coverage ? Math.round(apiTestResult.coverage * 100) : 0;
         const failedPercentage = 100 - passedPercentage;
