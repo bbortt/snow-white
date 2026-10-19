@@ -244,6 +244,37 @@ test('shows a waived finding with the reason and expiry of its waiver', async ({
   await expect(dataCy(page, 'findingWaiver')).toHaveText('Downstream is mocked in this environment Waived until 2026-12-31');
 });
 
+test('never shows a criterion waivers emptied as full coverage', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    interfaces: [
+      {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '1.0.0',
+        status: 'PASSED',
+        testResults: [
+          { id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 },
+          { id: 'HTTP_METHOD_COVERAGE', coverage: 0.75, isIncludedInQualityGate: true, judgedTargetCount: 4, waivedTargetCount: 1 },
+        ],
+      },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  await page.getByRole('button', { name: /orders-api/ }).click();
+
+  const pathRow = dataCy(page, 'apiTestResultTable').filter({ hasText: 'Path' });
+  await expect(pathRow.locator('[data-cy="fullyWaived"]')).toHaveText('Fully waived');
+  await expect(pathRow.locator('[data-cy="waivedTargets"]')).toHaveText('All 2 targets waived');
+  await expect(pathRow.getByText('100 %')).toHaveCount(0);
+
+  const methodRow = dataCy(page, 'apiTestResultTable').filter({ hasText: 'HTTP Method' });
+  await expect(methodRow.getByText('75 %')).toBeVisible();
+  await expect(methodRow.locator('[data-cy="waivedTargets"]')).toHaveText('1 waived · measured over the other 4');
+});
+
 test('offers no drilldown for a result without findings', async ({ page }) => {
   await page.getByRole('button', { name: /orders-api/ }).click();
 

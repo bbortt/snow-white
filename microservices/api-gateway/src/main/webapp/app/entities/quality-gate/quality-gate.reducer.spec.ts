@@ -395,6 +395,35 @@ describe('Quality-Gate reducer tests', () => {
       expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toEqual([{ ...finding, status: FindingStatus.COVERED }]);
     });
 
+    it('carries the judged and waived target counts, and leaves them absent where the report has none', async () => {
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              testResults: [
+                { id: 'PATH_COVERAGE', coverage: 1, isIncludedInQualityGate: true, judgedTargetCount: 0, waivedTargetCount: 2 },
+                { id: 'HTTP_METHOD_COVERAGE', coverage: 1, isIncludedInQualityGate: true },
+              ],
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      const [waived, legacy] = fulfilledAction.payload.data.apiTests[0].testResults;
+      expect(waived).toEqual(expect.objectContaining({ judgedTargetCount: 0, waivedTargetCount: 2 }));
+      expect(legacy.judgedTargetCount).toBeUndefined();
+      expect(legacy.waivedTargetCount).toBeUndefined();
+    });
+
     it('carries a waived finding into the entity, with the reason and expiry of its waiver', async () => {
       const finding = {
         status: 'WAIVED',

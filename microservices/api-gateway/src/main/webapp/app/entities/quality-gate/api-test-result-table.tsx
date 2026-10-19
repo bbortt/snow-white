@@ -17,7 +17,7 @@ import { TextWithCode } from 'app/shared/TextWithCode';
 import React, { createRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { translate, Translate } from 'react-jhipster';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { Button, Progress, Table, UncontrolledTooltip } from 'reactstrap';
+import { Badge, Button, Progress, Table, UncontrolledTooltip } from 'reactstrap';
 
 interface ApiTestResultTableProps {
   apiTestResults: IApiTestResult[];
@@ -73,6 +73,10 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
 
         const nameText = translate(`snowWhiteApp.openApiCriterion.description.${apiCriterion.name}.name`);
 
+        const waivedTargetCount = apiTestResult.waivedTargetCount ?? 0;
+        // A report persisted before the counts existed carries neither, and is never fully waived.
+        const fullyWaived = apiTestResult.judgedTargetCount === 0 && waivedTargetCount > 0;
+
         const passedPercentage = apiTestResult.coverage ? Math.round(apiTestResult.coverage * 100) : 0;
         const failedPercentage = 100 - passedPercentage;
 
@@ -106,15 +110,31 @@ export const ApiTestResultTable: React.FC<ApiTestResultTableProps> = ({ apiTestR
                       <FontAwesomeIcon icon="search" aria-hidden="true" />
                     </Button>
                   ) : null}
-                  <Progress multi className="flex-grow-1">
-                    <Progress bar color="success" value={passedPercentage}>
-                      {passedPercentage} %
+                  {fullyWaived ? (
+                    // No target was left to judge, so the 100 % an empty denominator returns is not
+                    // coverage - drawing it as a green bar would read as one (CON-012).
+                    <Badge color="warning" className="text-dark text-wrap text-start mw-100" data-cy="fullyWaived">
+                      {translate('snowWhiteApp.apiTestResult.fullyWaived')}
+                    </Badge>
+                  ) : (
+                    <Progress multi className="flex-grow-1">
+                      <Progress bar color="success" value={passedPercentage}>
+                        {passedPercentage} %
+                      </Progress>
+                      <Progress bar color="danger" value={failedPercentage}>
+                        {failedPercentage} %
+                      </Progress>
                     </Progress>
-                    <Progress bar color="danger" value={failedPercentage}>
-                      {failedPercentage} %
-                    </Progress>
-                  </Progress>
+                  )}
                 </div>
+                {waivedTargetCount > 0 ? (
+                  <div className="small text-muted" data-cy="waivedTargets">
+                    {translate(fullyWaived ? 'snowWhiteApp.apiTestResult.waivedTargetsOnly' : 'snowWhiteApp.apiTestResult.waivedTargets', {
+                      waived: waivedTargetCount,
+                      judged: apiTestResult.judgedTargetCount,
+                    })}
+                  </div>
+                ) : null}
               </td>
               <td className="text-center">
                 <span id={includedTargetId} aria-label={includedLabel}>

@@ -48,6 +48,8 @@ const fromDto = ({
     testResults: apiTest.testResults?.map(testResult => ({
       id: testResult.id,
       coverage: testResult.coverage,
+      judgedTargetCount: testResult.judgedTargetCount,
+      waivedTargetCount: testResult.waivedTargetCount,
       additionalInformation: testResult.additionalInformation,
       isIncludedInQualityGate: testResult.isIncludedInQualityGate ?? false,
       findings: testResult.findings?.map(finding => ({ ...finding, status: FindingStatus[finding.status] })),
