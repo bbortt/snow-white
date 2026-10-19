@@ -546,6 +546,12 @@
                       <OTEL_EXPORTER_OTLP_ENDPOINT>
                         http://otel-collector:4318
                       </OTEL_EXPORTER_OTLP_ENDPOINT>
+                      <!--
+                        CONTENT_TYPE_COVERAGE reads the request's content type off the span, and neither the Java agent nor the native image's Spring Boot starter captures headers unless told to.
+                      -->
+                      <OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS>
+                        content-type
+                      </OTEL_INSTRUMENTATION_HTTP_SERVER_CAPTURE_REQUEST_HEADERS>
                       <OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE
                       >
                         test.case.name
