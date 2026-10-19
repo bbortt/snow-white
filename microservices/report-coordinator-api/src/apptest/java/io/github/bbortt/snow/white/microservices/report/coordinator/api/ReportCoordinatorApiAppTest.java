@@ -57,6 +57,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -428,6 +429,195 @@ class ReportCoordinatorApiAppTest {
   }
 
   /**
+   * Verifies that the report listing filters by the exact API identity, orders by the requested
+   * property and pages through the result.
+   *
+   * <p>
+   * Given two reports for one API version - under two different quality-gates - and a third for
+   * another version of the same API, listing by {@code serviceName}, {@code apiName} and
+   * {@code apiVersion} with {@code sort=qualityGateConfigName,desc} and a page size of one must
+   * return the second gate's report on page 0, the first gate's on page 1, and never the other
+   * version's.
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+  @VerifiesSw(SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES)
+  void shouldListQualityGateReportsFilteredSortedAndPaged(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName =
+      "shouldListQualityGateReportsFilteredSortedAndPaged-service";
+    var apiName = "shouldListQualityGateReportsFilteredSortedAndPaged-api";
+    var firstGate = "shouldListQualityGateReportsFilteredSortedAndPaged-gate-a";
+    var secondGate =
+      "shouldListQualityGateReportsFilteredSortedAndPaged-gate-b";
+
+    stubApiIndexExists(serviceName, apiName, "1.0.0");
+    stubApiIndexExists(serviceName, apiName, "2.0.0");
+    stubQualityGateConfig(firstGate);
+    stubQualityGateConfig(secondGate);
+
+    triggerCalculation(testRunner, firstGate, serviceName, apiName, "1.0.0");
+    triggerCalculation(testRunner, secondGate, serviceName, apiName, "1.0.0");
+    // same gate as the second report, but another version: must be filtered out
+    triggerCalculation(testRunner, secondGate, serviceName, apiName, "2.0.0");
+
+    for (var page = 0; page < 2; page++) {
+      var expectedGate = page == 0 ? secondGate : firstGate;
+
+      testRunner.when(
+        reportApi
+          .sendListQualityGateReports()
+          .serviceName(serviceName)
+          .apiName(apiName)
+          .apiVersion("1.0.0")
+          .sort(sortValue("qualityGateConfigName", "desc"))
+          .page(page)
+          .size(1)
+      );
+      testRunner.then(
+        reportApi
+          .receiveListQualityGateReports(OK)
+          .message()
+          .validate((message, context) -> {
+            var reports = JsonMapper.shared().readValue(
+              message.getPayload(String.class),
+              new TypeReference<List<Map<String, Object>>>() {}
+            );
+
+            assertThat(reports)
+              .extracting(report -> report.get("qualityGateConfigName"))
+              .containsExactly(expectedGate);
+          })
+      );
+    }
+  }
+
+  /**
+   * Verifies that the report listing rejects a {@code sort} property it cannot order by with HTTP
+   * 400.
+   *
+   * <p>
+   * {@code status} is published on every report, but deliberately not sortable: it is stored as a
+   * stable code whose order is not the order its names imply. Asking for it must answer HTTP 400
+   * with an error body naming the properties the listing does accept.
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
+  void shouldReturn400WhenSortingReportsByUnsortableProperty(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    testRunner.when(
+      reportApi.sendListQualityGateReports().sort(sortValue("status", "asc"))
+    );
+
+    testRunner.then(
+      reportApi
+        .receiveListQualityGateReports(BAD_REQUEST)
+        .message()
+        .validate((message, context) -> {
+          var error = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Map.class
+          );
+
+          assertThat(error.get("code")).isEqualTo(
+            BAD_REQUEST.getReasonPhrase()
+          );
+          assertThat((String) error.get("message"))
+            .contains("status")
+            .contains("calculationId", "initiatedAt", "qualityGateConfigName");
+        })
+    );
+  }
+
+  /**
+   * Verifies that both representations of a report answer HTTP 404 for a calculation id no report
+   * carries, with an error body naming that id.
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+  void shouldReturn404WhenReportDoesNotExist(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var calculationId = UUID.randomUUID();
+
+    testRunner.when(reportApi.sendGetReportByCalculationId(calculationId));
+    testRunner.then(
+      reportApi
+        .receiveGetReportByCalculationId(NOT_FOUND)
+        .message()
+        .validate((message, context) ->
+          assertReportNotFound(message.getPayload(String.class), calculationId)
+        )
+    );
+
+    testRunner.when(
+      reportApi.sendGetReportByCalculationIdAsJUnit(calculationId)
+    );
+    testRunner.then(
+      reportApi
+        .receiveGetReportByCalculationIdAsJUnit(NOT_FOUND)
+        .message()
+        .validate((message, context) ->
+          assertReportNotFound(message.getPayload(String.class), calculationId)
+        )
+    );
+  }
+
+  /**
+   * Verifies that the JUnit XML representation of a report still {@code IN_PROGRESS} answers HTTP
+   * 202 with the report as it currently stands, in JSON - there is no verdict to export yet.
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_014_IN_PROGRESS_REPORT_ANSWERS_ACCEPTED)
+  void shouldReturn202WhenJUnitReportIsStillInProgress(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName = "shouldReturn202WhenJUnitReportIsStillInProgress-service";
+    var apiName = "shouldReturn202WhenJUnitReportIsStillInProgress-api";
+    var apiVersion = "1.0.0";
+    var qualityGateConfigName =
+      "shouldReturn202WhenJUnitReportIsStillInProgress-gate";
+
+    stubApiIndexExists(serviceName, apiName, apiVersion);
+    stubQualityGateConfig(qualityGateConfigName);
+
+    // No OpenApiCoverageResponseEvent is ever published, so the report stays IN_PROGRESS.
+    var calculationId = triggerCalculation(
+      testRunner,
+      qualityGateConfigName,
+      serviceName,
+      apiName,
+      apiVersion
+    );
+
+    testRunner.when(
+      reportApi.sendGetReportByCalculationIdAsJUnit(calculationId)
+    );
+    testRunner.then(
+      reportApi
+        .receiveGetReportByCalculationIdAsJUnit(ACCEPTED)
+        .message()
+        .validate((message, context) -> {
+          var report = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Map.class
+          );
+
+          assertThat(report.get("calculationId")).isEqualTo(
+            calculationId.toString()
+          );
+          assertThat(report.get("status")).isEqualTo("IN_PROGRESS");
+        })
+    );
+  }
+
+  /**
    * Verifies that the housekeeping job can be triggered on demand and accepts the request
    * asynchronously.
    */
@@ -524,6 +714,62 @@ class ReportCoordinatorApiAppTest {
           "'"
       );
     }
+  }
+
+  /**
+   * Triggers a calculation for one API and answers the calculation id the report was created
+   * under.
+   */
+  private UUID triggerCalculation(
+    TestCaseRunner testRunner,
+    String qualityGateConfigName,
+    String serviceName,
+    String apiName,
+    String apiVersion
+  ) {
+    testRunner.when(
+      qualityGateApi
+        .sendCalculateQualityGate(qualityGateConfigName)
+        .getMessageBuilderSupport()
+        .body(calculateRequestBody(serviceName, apiName, apiVersion))
+    );
+
+    var calculationIdHolder = new UUID[1];
+    testRunner.then(
+      qualityGateApi
+        .receiveCalculateQualityGate(ACCEPTED)
+        .message()
+        .validate((message, context) -> {
+          var report = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Map.class
+          );
+          calculationIdHolder[0] = UUID.fromString(
+            (String) report.get("calculationId")
+          );
+        })
+    );
+
+    return calculationIdHolder[0];
+  }
+
+  private static void assertReportNotFound(String payload, UUID calculationId) {
+    var error = JsonMapper.shared().readValue(payload, Map.class);
+
+    assertThat(error.get("code")).isEqualTo(NOT_FOUND.getReasonPhrase());
+    assertThat((String) error.get("message")).contains(
+      calculationId.toString()
+    );
+  }
+
+  /**
+   * A {@code property,direction} sort value as Citrus has to be handed it. Citrus joins a message's
+   * query parameters with {@code ,} and splits them apart again when building the URL, so a literal
+   * comma would cut the value short - the server would receive just {@code property}. The comma is
+   * written as {@code %2C} instead, which Citrus decodes back to {@code ,} in the URL it sends.
+   */
+  private static String sortValue(String property, String direction) {
+    return property + "%2C" + direction;
   }
 
   private void stubApiIndexExists(
