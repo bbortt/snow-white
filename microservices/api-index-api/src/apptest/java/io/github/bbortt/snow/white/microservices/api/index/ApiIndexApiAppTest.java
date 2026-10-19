@@ -9,7 +9,9 @@ package io.github.bbortt.snow.white.microservices.api.index;
 import static io.github.bbortt.snow.white.microservices.api.index.CitrusUtils.getHttpEndpoint;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
+import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -53,10 +55,6 @@ class ApiIndexApiAppTest {
    *   <li>return HTTP 200 OK</li>
    *   <li>return a valid JSON array (empty or populated)</li>
    * </ul>
-   *
-   * <p>
-   * Note: the {@code sort} parameter is intentionally omitted because Citrus currently attempts to
-   * parse its value as JSON, causing the request to fail.
    */
   @Test
   @CitrusTest
@@ -76,6 +74,113 @@ class ApiIndexApiAppTest {
         );
         assertThat(apis).isNotNull();
       })
+    );
+  }
+
+  /**
+   * Verifies that the APIs listing filters by service name and API name prefix, case-insensitively,
+   * and orders by the requested property.
+   *
+   * <p>
+   * Given two APIs of one service and a third whose service name merely contains the first one's,
+   * the service must:
+   * <ul>
+   *   <li>for {@code serviceName} in a different case and {@code sort=apiName,desc}, return HTTP 200
+   *       with exactly the first service's two APIs, in descending API name order</li>
+   *   <li>for an additional {@code apiName} prefix, return HTTP 200 with only the matching API</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw({
+    SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX,
+    SwTraceables.SW_036_SORT_VOCABULARY_IS_THE_PUBLISHED_NAMES,
+  })
+  void shouldGetAllApisFilteredAndSorted(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName = "shouldGetAllApisFilteredAndSorted";
+
+    ingestStableApi(testRunner, serviceName, "beta-api");
+    ingestStableApi(testRunner, serviceName, "alpha-api");
+    // contains the service name, but does not start with it
+    ingestStableApi(testRunner, "x-" + serviceName, "alpha-api");
+
+    testRunner.when(
+      apiIndexApi
+        .sendGetAllApis()
+        .serviceName(serviceName.toUpperCase(ROOT))
+        .sort(sortValue("apiName", "desc"))
+        .size(50)
+    );
+    testRunner.then(
+      apiIndexApi.receiveGetAllApis(OK).validate((message, context) -> {
+        var apis = readApis(message.getPayload(String.class));
+        assertThat(apis)
+          .extracting(
+            GetAllApis200ResponseInner::getServiceName,
+            GetAllApis200ResponseInner::getApiName
+          )
+          .containsExactly(
+            tuple(serviceName, "beta-api"),
+            tuple(serviceName, "alpha-api")
+          );
+      })
+    );
+
+    testRunner.when(
+      apiIndexApi.sendGetAllApis().serviceName(serviceName).apiName("ALP")
+    );
+    testRunner.then(
+      apiIndexApi.receiveGetAllApis(OK).validate((message, context) -> {
+        var apis = readApis(message.getPayload(String.class));
+        assertThat(apis)
+          .extracting(
+            GetAllApis200ResponseInner::getServiceName,
+            GetAllApis200ResponseInner::getApiName
+          )
+          .containsExactly(tuple(serviceName, "alpha-api"));
+      })
+    );
+  }
+
+  /**
+   * Verifies that the APIs listing rejects a {@code sort} property it cannot order by with HTTP 400.
+   *
+   * <p>
+   * When sending {@code GET /api/rest/v1/apis?sort=indexedAt,asc} - a property the entity carries but
+   * the API does not publish - the service must:
+   * <ul>
+   *   <li>return HTTP 400 Bad Request</li>
+   *   <li>return a JSON error body naming the properties it does accept</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
+  void shouldReturn400WhenSortingByUnsortableProperty(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    testRunner.when(
+      apiIndexApi.sendGetAllApis().sort(sortValue("indexedAt", "asc"))
+    );
+
+    testRunner.then(
+      apiIndexApi
+        .receiveGetAllApis(BAD_REQUEST)
+        .validate((message, context) -> {
+          var payload = message.getPayload(String.class);
+          assertThat(payload).isNotEmpty();
+
+          var error = JsonMapper.shared().readValue(
+            payload,
+            GetAllApis400Response.class
+          );
+          assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
+          assertThat(error.getMessage())
+            .contains("indexedAt,asc")
+            .contains("serviceName", "apiName", "apiVersion", "apiType");
+        })
     );
   }
 
@@ -379,6 +484,59 @@ class ApiIndexApiAppTest {
 
     testRunner.when(
       apiIndexApi.sendCheckApiExists(serviceName, apiName, apiVersion)
+    );
+    testRunner.then(apiIndexApi.receiveCheckApiExists(OK));
+  }
+
+  /**
+   * Verifies that the existence check finds a prerelease API only when asked to include prereleases.
+   *
+   * <p>
+   * Given a prerelease API ingested via {@code POST /api/rest/v1/apis} (HTTP 201), when sending
+   * {@code GET /api/rest/v1/apis/{serviceName}/{apiName}/{apiVersion}/exists}, the service must:
+   * <ul>
+   *   <li>return HTTP 404 Not Found with {@code includePrereleases=false}</li>
+   *   <li>return HTTP 200 OK with {@code includePrereleases=true}</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  void shouldCheckPrereleaseApiExistsOnlyWhenIncludingPrereleases(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName =
+      "shouldCheckPrereleaseApiExistsOnlyWhenIncludingPrereleases";
+    var apiName = serviceName + "-api";
+    var apiVersion = "0.1.0-SNAPSHOT";
+
+    var payload = JsonMapper.shared().writeValueAsString(
+      GetAllApis200ResponseInner.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion(apiVersion)
+        .sourceUrl("https://example.com/api.yaml")
+        .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .prerelease(true)
+        .content("openapi: 3.1.2\ninfo:\n  title: Test API\n  version: 0.1.0")
+        .build()
+    );
+
+    testRunner.when(
+      apiIndexApi.sendIngestApi().getMessageBuilderSupport().body(payload)
+    );
+    testRunner.then(apiIndexApi.receiveIngestApi(CREATED));
+
+    testRunner.when(
+      apiIndexApi
+        .sendCheckApiExists(serviceName, apiName, apiVersion)
+        .includePrereleases(false)
+    );
+    testRunner.then(apiIndexApi.receiveCheckApiExists(NOT_FOUND));
+
+    testRunner.when(
+      apiIndexApi
+        .sendCheckApiExists(serviceName, apiName, apiVersion)
+        .includePrereleases(true)
     );
     testRunner.then(apiIndexApi.receiveCheckApiExists(OK));
   }
@@ -691,6 +849,46 @@ class ApiIndexApiAppTest {
         );
         assertThat(apiNames).doesNotContain(apiName);
       })
+    );
+  }
+
+  private void ingestStableApi(
+    TestCaseRunner testRunner,
+    String serviceName,
+    String apiName
+  ) {
+    var payload = JsonMapper.shared().writeValueAsString(
+      GetAllApis200ResponseInner.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion("1.0.0")
+        .sourceUrl("https://example.com/api.yaml")
+        .apiType(GetAllApis200ResponseInner.ApiTypeEnum.OPENAPI)
+        .content("")
+        .build()
+    );
+
+    testRunner.when(
+      apiIndexApi.sendIngestApi().getMessageBuilderSupport().body(payload)
+    );
+    testRunner.then(apiIndexApi.receiveIngestApi(CREATED));
+  }
+
+  /**
+   * A {@code property,direction} sort value as Citrus has to be handed it. Citrus joins a message's
+   * query parameters with {@code ,} and splits them apart again when building the URL, so a literal
+   * comma would cut the value short - the server would receive just {@code property}. The comma is
+   * written as {@code %2C} instead, which Citrus decodes back to {@code ,} in the URL it sends.
+   */
+  private static String sortValue(String property, String direction) {
+    return property + "%2C" + direction;
+  }
+
+  private static List<GetAllApis200ResponseInner> readApis(String payload) {
+    assertThat(payload).isNotEmpty();
+    return JsonMapper.shared().readValue(
+      payload,
+      new TypeReference<List<GetAllApis200ResponseInner>>() {}
     );
   }
 }
