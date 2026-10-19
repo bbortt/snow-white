@@ -11,7 +11,9 @@ import {
   countActiveFilters,
   extractQualityGateFilterParams,
   groupByService,
+  isFullyWaived,
   mostSevereStatus,
+  splitCoverage,
 } from './quality-gate.utils';
 
 describe('extractQualityGateFilterParams', () => {
@@ -172,5 +174,39 @@ describe('mostSevereStatus', () => {
 
   it('falls back to NOT_STARTED without any status', () => {
     expect(mostSevereStatus([])).toEqual(ReportStatus.NOT_STARTED);
+  });
+});
+
+describe('isFullyWaived', () => {
+  it('is true when waivers left nothing to judge', () => {
+    expect(isFullyWaived({ isIncludedInQualityGate: true, coverage: 1, judgedTargetCount: 0, waivedTargetCount: 2 })).toBe(true);
+  });
+
+  it('is false for a criterion that judged some of its targets', () => {
+    expect(isFullyWaived({ isIncludedInQualityGate: true, coverage: 1, judgedTargetCount: 1, waivedTargetCount: 2 })).toBe(false);
+  });
+
+  it('is false for a criterion with nothing to judge and no waiver', () => {
+    expect(isFullyWaived({ isIncludedInQualityGate: true, coverage: 1, judgedTargetCount: 0, waivedTargetCount: 0 })).toBe(false);
+  });
+
+  it('is false for a report persisted before the counts existed', () => {
+    expect(isFullyWaived({ isIncludedInQualityGate: true, coverage: 1 })).toBe(false);
+  });
+});
+
+describe('splitCoverage', () => {
+  it('gives a criterion waivers emptied its whole unit to the waived share', () => {
+    expect(
+      splitCoverage([
+        { isIncludedInQualityGate: true, coverage: 1, judgedTargetCount: 0, waivedTargetCount: 2 },
+        { isIncludedInQualityGate: true, coverage: 0.5 },
+        { isIncludedInQualityGate: true },
+      ]),
+    ).toEqual({ total: 3, covered: 0.5, waived: 1, uncovered: 1.5 });
+  });
+
+  it('splits nothing into nothing', () => {
+    expect(splitCoverage([])).toEqual({ total: 0, covered: 0, waived: 0, uncovered: 0 });
   });
 });
