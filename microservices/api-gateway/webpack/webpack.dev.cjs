@@ -8,8 +8,16 @@ const webpackMerge = require('webpack-merge').merge;
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
 const WebpackNotifierPlugin = require('webpack-notifier');
+const net = require('node:net');
 const path = require('node:path');
 const sass = require('sass');
+
+// BrowserSync probes for a free port by connecting to `localhost`, which resolves to both ::1 and
+// 127.0.0.1. Node gives each address 250 ms by default; under the load of the initial build,
+// Windows can take longer than that to refuse on ::1, and the probe then fails with ETIMEDOUT
+// instead of ECONNREFUSED. BrowserSync treats that as fatal and exits, printing only
+// `AggregateError`. More time per address lets a closed port be refused, as intended.
+net.setDefaultAutoSelectFamilyAttemptTimeout(2000);
 
 const utils = require('./utils.cjs');
 const commonConfig = require('./webpack.common.cjs');
