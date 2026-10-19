@@ -1,6 +1,195 @@
 {
   "apiNamePath": "info.x-api-name",
   "apiSpecs": "microservices/*/src/main/resources/openapi/*.yml",
-  "qualityGate": "basic-coverage",
-  "url": "http://localhost"
+  "qualityGate": "full-feature",
+  "url": "http://localhost",
+  "waivers": [
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis",
+      "method": "POST",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis/meta/api-names",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis/meta/service-names",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}/exists",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "api-index-api",
+      "apiName": "api-index-api",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/apis/{otelServiceName}/{apiName}/{apiVersion}/raw",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "criteria",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/criteria/openapi",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Serves a static enum; a 500 needs the service itself to break",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates",
+      "method": "POST",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates/{name}",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates/{name}",
+      "method": "PUT",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "quality-gate-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates/{name}",
+      "method": "DELETE",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "report-coordinator-api",
+      "apiName": "quality-gate",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/quality-gates/{qualityGateConfigName}/calculate",
+      "method": "POST",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database or Kafka mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "report-coordinator-api",
+      "apiName": "report",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/reports",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "report-coordinator-api",
+      "apiName": "report",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/reports/{calculationId}",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    },
+    {
+      "serviceName": "report-coordinator-api",
+      "apiName": "report",
+      "apiVersion": "1.0.0",
+      "path": "/api/rest/v1/reports/{calculationId}/junit",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Generic server error; only reachable by failing the database mid-run",
+      "expires": "2027-04-19"
+    }
+  ]
 }
