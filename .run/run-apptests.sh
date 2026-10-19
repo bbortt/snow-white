@@ -57,11 +57,13 @@ for compose_file in microservices/*/src/apptest/resources/docker-compose-apptest
   # shellcheck disable=SC2086 # one compose service name per word
   if COMPOSE_NETWORK_NAME="$network" docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services; then
     ./mvnw -B verify \
+      -b smart \
       -Papptest \
       -Ddocker.network="$network" \
       -Dcontainer.registry="$registry" \
       -Dimage.tag="$image_tag" \
       -pl ":${service}" \
+      -am \
       ${additional_args[@]+"${additional_args[@]}"} ||
       failed_services+=("$service")
   else
@@ -71,6 +73,16 @@ for compose_file in microservices/*/src/apptest/resources/docker-compose-apptest
   # Every stack publishes the same host ports (9000, 5432, 9092, 4317, ...), so the next service's
   # stack cannot start while this one is still up. CI never sees this: each matrix entry gets a VM.
   COMPOSE_NETWORK_NAME="$network" docker compose -f "$compose_file" down --volumes --remove-orphans
+done
+
+for microservice in api-index-api quality-gate-api report-coordinator-api; do
+  traces_dir="microservices/${microservice}/target/otel-collector"
+
+  # Absent when the service was skipped, failed before its collector wrote anything, or this
+  # script already renamed it on an earlier run.
+  if [[ -f "${traces_dir}/traces.json" ]]; then
+    mv "${traces_dir}/traces.json" "${traces_dir}/traces-${microservice}.json"
+  fi
 done
 
 echo
