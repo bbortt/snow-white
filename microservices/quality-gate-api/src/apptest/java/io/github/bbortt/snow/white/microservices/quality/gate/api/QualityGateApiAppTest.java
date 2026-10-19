@@ -13,7 +13,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.*;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
@@ -105,6 +107,48 @@ class QualityGateApiAppTest {
             .hasSizeGreaterThanOrEqualTo(4)
             .map(QualityGateConfig::getName)
             .containsSequence(PREDEFINED_QUALITY_GATE_NAMES);
+        })
+    );
+  }
+
+  /**
+   * Verifies that the quality-gates listing rejects a {@code sort} property it cannot order by with
+   * HTTP 400.
+   *
+   * <p>
+   * {@code description} is published on every quality gate, but deliberately not sortable. When
+   * requesting {@code GET /api/rest/v1/quality-gates?sort=description,asc}, the service must:
+   * <ul>
+   *   <li>return HTTP 400 Bad Request</li>
+   *   <li>return a JSON error body naming the properties it does accept</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_038_UNUSABLE_SORT_IS_REJECTED_NOT_IGNORED)
+  void shouldReturn400WhenSortingByUnsortableProperty(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    testRunner.when(
+      qualityGateApi
+        .sendGetAllQualityGates()
+        .sort(URLEncoder.encode("description,asc", UTF_8))
+    );
+
+    testRunner.then(
+      qualityGateApi
+        .receiveGetAllQualityGates(BAD_REQUEST)
+        .message()
+        .validate((message, context) -> {
+          var error = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Error.class
+          );
+
+          assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
+          assertThat(error.getMessage())
+            .contains("description")
+            .contains("name", "isPredefined", "minCoveragePercentage");
         })
     );
   }
@@ -367,6 +411,57 @@ class QualityGateApiAppTest {
         )
     );
     testRunner.then(qualityGateApi.receiveUpdateQualityGate(NOT_FOUND));
+  }
+
+  /**
+   * Verifies that a predefined quality gate cannot be updated.
+   *
+   * <p>
+   * When sending {@code PUT /api/rest/v1/quality-gates/minimal} with a changed description, the
+   * service must:
+   * <ul>
+   *   <li>return HTTP 400 Bad Request</li>
+   *   <li>return a JSON error body naming the gate as not modifiable</li>
+   * </ul>
+   */
+  @Test
+  @CitrusTest
+  @VerifiesCon(ConTraceables.CON_003_PREDEFINED_QUALITY_GATES_ARE_IMMUTABLE)
+  void shouldReturn400WhenUpdatingPredefinedQualityGate(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var qualityGateConfigName = "minimal";
+
+    testRunner.when(
+      qualityGateApi
+        .sendUpdateQualityGate(qualityGateConfigName)
+        .getMessageBuilderSupport()
+        .body(
+          JsonMapper.shared().writeValueAsString(
+            QualityGateConfig.builder()
+              .name(qualityGateConfigName)
+              .description("shouldReturn400WhenUpdatingPredefinedQualityGate")
+              .build()
+          )
+        )
+    );
+
+    testRunner.then(
+      qualityGateApi
+        .receiveUpdateQualityGate(BAD_REQUEST)
+        .message()
+        .validate((message, context) -> {
+          var error = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Error.class
+          );
+
+          assertThat(error.getCode()).isEqualTo(BAD_REQUEST.getReasonPhrase());
+          assertThat(error.getMessage()).contains(
+            "'" + qualityGateConfigName + "' is not modifiable"
+          );
+        })
+    );
   }
 
   /**
