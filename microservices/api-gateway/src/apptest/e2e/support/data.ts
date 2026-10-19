@@ -22,7 +22,9 @@ export interface FindingDto {
   parameterName?: string;
   responseCode?: string;
   specPointer: string;
-  status: 'COVERED' | 'NOT_APPLICABLE' | 'UNCOVERED';
+  status: 'COVERED' | 'NOT_APPLICABLE' | 'UNCOVERED' | 'WAIVED';
+  waiverExpiresOn?: string;
+  waiverReason?: string;
 }
 
 export interface ApiTestResultDto {

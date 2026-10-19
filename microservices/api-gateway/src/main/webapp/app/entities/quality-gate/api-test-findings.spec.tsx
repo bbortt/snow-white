@@ -26,12 +26,13 @@ describe('ApiTestFindings', () => {
   const sectionToggle = (status: FindingStatus) =>
     within(document.querySelector(`[data-cy="findings-${status}"]`) as HTMLElement).getAllByRole('button')[0];
 
-  it('should list uncovered findings first and not-applicable ones last', () => {
+  it('should list uncovered findings first, waived ones next and not-applicable ones last', () => {
     render(
       <ApiTestFindings
         findings={[
           finding({ status: FindingStatus.NOT_APPLICABLE, specPointer: '#/a' }),
           finding({ status: FindingStatus.COVERED, specPointer: '#/b' }),
+          finding({ status: FindingStatus.WAIVED, specPointer: '#/e' }),
           finding({ status: FindingStatus.UNCOVERED, specPointer: '#/c' }),
           finding({ status: FindingStatus.UNCOVERED, specPointer: '#/d' }),
         ]}
@@ -39,7 +40,7 @@ describe('ApiTestFindings', () => {
     );
 
     const sections = Array.from(document.querySelectorAll('[data-cy^="findings-"]')).map(section => section.getAttribute('data-cy'));
-    expect(sections).toEqual(['findings-UNCOVERED', 'findings-COVERED', 'findings-NOT_APPLICABLE']);
+    expect(sections).toEqual(['findings-UNCOVERED', 'findings-WAIVED', 'findings-COVERED', 'findings-NOT_APPLICABLE']);
     expect(sectionToggle(FindingStatus.UNCOVERED)).toHaveTextContent('snowWhiteApp.apiTestResult.findings.status.UNCOVERED (2)');
   });
 
@@ -121,6 +122,38 @@ describe('ApiTestFindings', () => {
     expect(shownTrace).not.toHaveTextContent('aaaaaaaa1');
     expect(within(evidence).queryByTitle('dddddddd4')).not.toBeInTheDocument();
     expect(evidence).toHaveTextContent('snowWhiteApp.apiTestResult.findings.moreTraces:2');
+  });
+
+  it('should show a waived finding open, with the reason and the day the waiver stops being honoured', () => {
+    render(
+      <ApiTestFindings
+        findings={[
+          finding({
+            status: FindingStatus.WAIVED,
+            httpMethod: 'POST',
+            httpPath: '/orders/{id}',
+            responseCode: '500',
+            waiverReason: 'Downstream is mocked in this environment',
+            waiverExpiresOn: '2026-12-31',
+          }),
+        ]}
+      />,
+    );
+
+    expect(sectionToggle(FindingStatus.WAIVED)).toHaveAttribute('aria-expanded', 'true');
+    const waiver = document.querySelector('[data-cy="findingWaiver"]') as HTMLElement;
+    expect(waiver).toHaveTextContent('Downstream is mocked in this environment');
+    expect(waiver).toHaveTextContent('snowWhiteApp.apiTestResult.findings.waiverExpiresOn 2026-12-31');
+    // a calendar day, not an instant: rendered as written, never shifted into another timezone's day
+    expect(waiver.querySelector('time')).toHaveAttribute('dateTime', '2026-12-31');
+  });
+
+  it('should show no waiver details on a finding that is not waived', () => {
+    render(
+      <ApiTestFindings findings={[finding({ status: FindingStatus.COVERED, waiverReason: 'stale', waiverExpiresOn: '2026-12-31' })]} />,
+    );
+
+    expect(document.querySelector('[data-cy="findingWaiver"]')).not.toBeInTheDocument();
   });
 
   it('should list no evidence for an uncovered finding', () => {

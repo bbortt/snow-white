@@ -395,6 +395,39 @@ describe('Quality-Gate reducer tests', () => {
       expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toEqual([{ ...finding, status: FindingStatus.COVERED }]);
     });
 
+    it('carries a waived finding into the entity, with the reason and expiry of its waiver', async () => {
+      const finding = {
+        status: 'WAIVED',
+        specPointer: '#/paths/~1orders/post/responses/500',
+        httpPath: '/orders',
+        httpMethod: 'POST',
+        responseCode: '500',
+        evidence: [],
+        waiverReason: 'Downstream is mocked in this environment',
+        waiverExpiresOn: '2026-12-31',
+      };
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          interfaces: [
+            {
+              serviceName: 'test service',
+              apiName: 'test api',
+              apiVersion: 'test api version',
+              apiType: 'OPENAPI',
+              testResults: [{ id: 'RESPONSE_CODE_COVERAGE', coverage: 1, isIncludedInQualityGate: true, findings: [finding] }],
+            },
+          ],
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toEqual([{ ...finding, status: FindingStatus.WAIVED }]);
+    });
+
     it('leaves findings undefined when a test result carries none', async () => {
       (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
         ...resolvedObject,

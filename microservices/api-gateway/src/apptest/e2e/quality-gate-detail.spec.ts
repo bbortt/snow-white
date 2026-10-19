@@ -196,6 +196,54 @@ test('drills into the findings behind a criterion, uncovered ones first', async 
   await expect(findings).toHaveCount(0);
 });
 
+test('shows a waived finding with the reason and expiry of its waiver', async ({ page }) => {
+  const report = qualityGateReport({
+    calculationId: CALCULATION_ID,
+    interfaces: [
+      {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '1.0.0',
+        status: 'PASSED',
+        testResults: [
+          {
+            id: 'PATH_COVERAGE',
+            coverage: 1,
+            isIncludedInQualityGate: true,
+            findings: [
+              {
+                status: 'COVERED',
+                specPointer: '#/paths/~1orders',
+                httpPath: '/orders',
+                evidence: [{ traceId: '4bf92f3577b34da6a3ce929d0e0e4736', testCaseName: 'OrderApiIT#listsOrders' }],
+              },
+              {
+                status: 'WAIVED',
+                specPointer: '#/paths/~1orders~1{id}',
+                httpPath: '/orders/{id}',
+                evidence: [],
+                waiverReason: 'Downstream is mocked in this environment',
+                waiverExpiresOn: '2026-12-31',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  await mockJson(page, reportById(CALCULATION_ID), report);
+  await page.reload();
+
+  await page.getByRole('button', { name: /orders-api/ }).click();
+  await page.getByRole('button', { name: 'Show findings for Path' }).click();
+
+  const findings = dataCy(page, 'apiTestFindings');
+  await expect(findings.locator('[data-cy^="findings-"]')).toHaveCount(2);
+  await expect(findings.locator('[data-cy^="findings-"]').first()).toHaveAttribute('data-cy', 'findings-WAIVED');
+  await expect(findings.getByRole('button', { name: 'Waived (1)' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(dataCy(page, 'findingWaiver')).toHaveText('Downstream is mocked in this environment Waived until 2026-12-31');
+});
+
 test('offers no drilldown for a result without findings', async ({ page }) => {
   await page.getByRole('button', { name: /orders-api/ }).click();
 

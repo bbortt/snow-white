@@ -20,4 +20,8 @@ export interface IApiTestFinding {
   parameterName?: string;
   contentType?: string;
   evidence: IFindingEvidence[];
+  // Present only on a WAIVED finding: quoted from the waiver the calculation was triggered with.
+  waiverReason?: string;
+  // The last day the waiver is in force, as a calendar date (YYYY-MM-DD) - not an instant.
+  waiverExpiresOn?: string;
 }

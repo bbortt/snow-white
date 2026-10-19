@@ -23,12 +23,14 @@
         "status": {
           "UNCOVERED": "Nicht abgedeckt",
           "COVERED": "Abgedeckt",
-          "NOT_APPLICABLE": "Nicht anwendbar"
+          "NOT_APPLICABLE": "Nicht anwendbar",
+          "WAIVED": "Ausgenommen"
         },
         "showAll": "Alle {{ count }} anzeigen",
         "responseCode": "Antwort",
         "parameter": "Parameter",
         "contentType": "Inhaltstyp",
+        "waiverExpiresOn": "Ausgenommen bis",
         "traces": "{{ count }} Traces",
         "moreTraces": "+{{ count }} Traces",
         "trace": "Trace {{ traceId }}",
