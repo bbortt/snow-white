@@ -34,7 +34,12 @@ jest.mock('app/entities/quality-gate/api-test-findings', () => ({
 
 jest.mock('react-jhipster', () => ({
   Translate: ({ contentKey }: { contentKey: string }) => <div data-testid="translate">{contentKey}</div>,
-  translate: (key: string) => key,
+  translate: (key: string, interpolate?: Record<string, unknown>) =>
+    interpolate
+      ? `${key}:${Object.entries(interpolate)
+          .map(([name, value]) => `${name}=${String(value)}`)
+          .join(',')}`
+      : key,
 }));
 
 describe('ApiTestResultTable', () => {
@@ -134,6 +139,46 @@ describe('ApiTestResultTable', () => {
     expect(screen.getByText('100 %')).toBeInTheDocument();
   });
 
+  describe('waived targets', () => {
+    beforeEach(() => returnOpenApiCriterionList([openApiCriterion('CRITERION_A')]));
+
+    it('should mark a criterion waivers emptied as fully waived, never as a 100 % bar', () => {
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ coverage: 1, judgedTargetCount: 0, waivedTargetCount: 2 })]} />);
+
+      expect(document.querySelector('[data-cy="fullyWaived"]')).toHaveTextContent('snowWhiteApp.apiTestResult.fullyWaived');
+      expect(screen.queryByText('100 %')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-cy="waivedTargets"]')).toHaveTextContent(
+        'snowWhiteApp.apiTestResult.waivedTargetsOnly:waived=2,judged=0',
+      );
+    });
+
+    it('should keep the real bar of a partly waived criterion and say what it was measured over', () => {
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ coverage: 0.75, judgedTargetCount: 4, waivedTargetCount: 1 })]} />);
+
+      expect(screen.getByText('75 %')).toBeInTheDocument();
+      expect(document.querySelector('[data-cy="fullyWaived"]')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-cy="waivedTargets"]')).toHaveTextContent(
+        'snowWhiteApp.apiTestResult.waivedTargets:waived=1,judged=4',
+      );
+    });
+
+    it('should show a criterion with nothing to judge and no waiver as it always has', () => {
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ coverage: 1, judgedTargetCount: 0, waivedTargetCount: 0 })]} />);
+
+      expect(screen.getByText('100 %')).toBeInTheDocument();
+      expect(document.querySelector('[data-cy="fullyWaived"]')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-cy="waivedTargets"]')).not.toBeInTheDocument();
+    });
+
+    it('should show a report persisted before the counts existed as it always has', () => {
+      render(<ApiTestResultTable apiTestResults={[apiTestResult({ coverage: 1 })]} />);
+
+      expect(screen.getByText('100 %')).toBeInTheDocument();
+      expect(document.querySelector('[data-cy="fullyWaived"]')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-cy="waivedTargets"]')).not.toBeInTheDocument();
+    });
+  });
+
   it('should sort rows by result id', () => {
     returnOpenApiCriterionList([openApiCriterion('CRITERION_A'), openApiCriterion('CRITERION_B')]);
 
@@ -158,7 +203,7 @@ describe('ApiTestResultTable', () => {
 
       render(<ApiTestResultTable apiTestResults={[apiTestResult({ findings: [] }), apiTestResult({ id: 'CRITERION_B' })]} />);
 
-      expect(screen.queryByRole('button', { name: 'snowWhiteApp.apiTestResult.findings.show' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^snowWhiteApp\.apiTestResult\.findings\.show:/ })).not.toBeInTheDocument();
     });
 
     it('should open the findings below the criterion and close them again', async () => {
@@ -166,14 +211,14 @@ describe('ApiTestResultTable', () => {
 
       render(<ApiTestResultTable apiTestResults={[apiTestResult({ findings: [finding] })]} />);
 
-      const toggle = screen.getByRole('button', { name: 'snowWhiteApp.apiTestResult.findings.show' });
+      const toggle = screen.getByRole('button', { name: /^snowWhiteApp\.apiTestResult\.findings\.show:/ });
       expect(toggle).toHaveAttribute('aria-expanded', 'false');
       expect(screen.queryByTestId('api-test-findings')).not.toBeInTheDocument();
 
       fireEvent.click(toggle);
 
       expect(toggle).toHaveAttribute('aria-expanded', 'true');
-      expect(toggle).toHaveAccessibleName('snowWhiteApp.apiTestResult.findings.hide');
+      expect(toggle).toHaveAccessibleName(/^snowWhiteApp\.apiTestResult\.findings\.hide:/);
       expect(screen.getByTestId('api-test-findings')).toHaveTextContent('1');
       expect(screen.getByTestId('api-test-findings').closest('tr')).toHaveAttribute('id', toggle.getAttribute('aria-controls'));
 

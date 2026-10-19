@@ -33,6 +33,8 @@ export interface ApiTestResultDto {
   findings?: FindingDto[];
   id: string;
   isIncludedInQualityGate?: boolean;
+  judgedTargetCount?: number;
+  waivedTargetCount?: number;
 }
 
 export interface ApiTestDto {
