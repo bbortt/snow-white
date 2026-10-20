@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk-alpine
+FROM eclipse-temurin:27-jdk-alpine
 
 EXPOSE 8080
 EXPOSE 8090

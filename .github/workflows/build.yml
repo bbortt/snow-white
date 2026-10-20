@@ -112,6 +112,59 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
+  ci-jdk27:
+    # Deliberately a second job rather than a matrix leg on 'ci': a matrix would rename the check
+    # to 'Build and Test (25)' and 'Build and Test (27)', and 'Build and Test' is a required status
+    # check on main - it would never report again, blocking every pull request. Keeping 'ci' as the
+    # single bearer of that name costs one duplicated checkout and build, and keeps the ruleset
+    # untouched. The flip side: until the ruleset gains this job's name, a 27-only failure is
+    # advisory and cannot block a merge.
+    #
+    # The runtime images run JDK 27 (see the Dockerfiles) while 'maven.compiler.release' stays at
+    # 25, so the published artifacts remain Java 25 bytecode. This job covers the JVM half of that
+    # split: it compiles the same '--release 25' sources with JDK 27's javac and runs the unit and
+    # integration suites on a JDK 27 JVM.
+    #
+    # No Sonar and no CLI artifact here: analysis stays on 25 so the quality gate has one authority,
+    # and a second upload of the 'cli' artifact name would collide with the one 'ci' publishes.
+    name: Build and Test (JDK 27)
+    runs-on: ubuntu-24.04
+    needs: detect-open-pr
+    # Mirrors 'ci': detect-open-pr only runs for branch pushes, so a skipped dependency must not
+    # skip this job - but a cancelled run must still stop it.
+    if: >-
+      !cancelled() &&
+      (
+        github.ref == 'refs/heads/main' ||
+        github.event_name != 'push' ||
+        needs.detect-open-pr.outputs.has_open_pr != 'true' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
+      )
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 27
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Build with Maven
+        run: ./mvnw -B -Pprod verify
   app-tests:
     name: Application Tests
     if: >-
@@ -151,12 +204,16 @@ jobs:
           lfs: true
           persist-credentials: false
           submodules: true
+      # 27, matching the runtime the rebuilt jar is about to be baked into. Note the asymmetry
+      # with deploy.yml, which still compiles the published jars on 25: both emit '--release 25'
+      # bytecode, so the artifacts are equivalent, but the jar these tests exercise is the one
+      # javac 27 produced, not byte-for-byte the one a release ships.
       - name: Set up JDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 25
+          java-version: 27
       - name: Create Docker Network
         run: docker network create github_actions
       - name: Rebuild JAR
@@ -276,12 +333,14 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
+      # 27, as in 'app-tests'. The native image itself is unaffected: 'BP_JVM_VERSION' is
+      # 'maven.compiler.release', so the buildpack still compiles it with 25.
       - name: Set up JDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 25
+          java-version: 27
       - name: Create Docker Network
         run: docker network create github_actions
       - name: Rebuild JAR
