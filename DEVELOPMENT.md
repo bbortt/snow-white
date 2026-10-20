@@ -27,7 +27,7 @@ Both are set up below.
 
 | Tool               | Version                                                             |
 | ------------------ | ------------------------------------------------------------------- |
-| Temurin JDK        | 25, matching CI                                                     |
+| Temurin JDK        | 25, the bytecode target (CI also runs the suites on 27)             |
 | Node.js            | 24 (LTS)                                                            |
 | pnpm               | the `packageManager` pin from `package.json`, installed by corepack |
 | Bun                | latest                                                              |
