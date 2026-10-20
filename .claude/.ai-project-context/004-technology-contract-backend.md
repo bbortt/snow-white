@@ -9,9 +9,32 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
 
 ## 1. Runtime
 
-- Java 25 — current LTS (released September 2025).
+- Java 25 — current LTS (released September 2025) — is the **bytecode target**.
   Pinned via `java.version` /
-  `maven.compiler.release` in the root `pom.xml`.
+  `maven.compiler.release` in the root `pom.xml`, and the JDK every published artifact and
+  release build is compiled with.
+- Java 27 is the **JVM-image runtime**: the `eclipse-temurin:27-jdk-alpine` base image in every
+  `microservices/*` and `examples/*` `Dockerfile`, and the `jlink` toolchain deriving the custom
+  JREs for the three services `build-oci-images.sh` publishes (`api-gateway`, `api-sync-job`,
+  `openapi-coverage-stream`).
+  Release-25 bytecode on a 27 JVM is forward-compatible, so this
+  stays additive — consumers of the published Maven artifacts still only need a JDK 25.
+  Non-LTS caveat: Adoptium's End of Availability for 27 is March 2027, so this pin needs
+  revisiting before then, either forward to 28 or back to the 25 LTS.
+- The four services published as **GraalVM native images** (`api-index-api`,
+  `otel-event-filter-stream`, `quality-gate-api`, `report-coordinator-api`) are unaffected: their
+  `BP_JVM_VERSION` is `maven.compiler.release`, so the buildpack still compiles them with 25.
+  Their `Dockerfile`s are a local JVM-image fallback, built by neither CI nor release.
+- Because of that split, no module may compile with `--enable-preview`.
+  Preview class files are
+  version-locked: javac rejects the flag unless `--release` matches the compiling JDK, and a
+  27 JVM refuses to load classes marked preview-for-25.
+- CI exercises both halves.
+  The `Build and Test` job builds and runs the suites on JDK 25;
+  the `Build and Test (JDK 27)` job repeats them on 27.
+  Sonar analysis and all publishing stay on 25.
+  Only `Build and Test` is in the default-branch ruleset's required status checks, so the 27 job
+  is advisory until that ruleset gains it — a 27-only failure does not block a merge today.
 - Spring Boot 4.1.0, via `spring-boot-dependencies` BOM import.
   Latest patch on this minor line
   at contract time is 4.1.1 — not a support gap, just worth picking up on a routine dependency
