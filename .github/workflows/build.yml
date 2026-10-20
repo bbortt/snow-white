@@ -85,6 +85,19 @@ jobs:
           helm repo add kafbat-ui https://kafbat.github.io/helm-charts
           helm dependency build
         working-directory: 'helm/charts/snow-white'
+      # The runtime images are on JDK 27 while 'maven.compiler.release' stays at 25, and preview class
+      # files are version-locked: a 27 JVM refuses to load classes marked preview-for-25. A re-added
+      # '--enable-preview' would compile clean here and only fail when the published image starts, so
+      # this guard lives in the one job the default-branch ruleset actually requires. See
+      # '.claude/.ai-project-context/004-technology-contract-backend.md' for the rule it enforces.
+      - name: Reject Preview Features
+        run: |
+          # '-e' rather than a bare pattern: a leading '--' would otherwise be read as an option,
+          # and a '--' separator would swallow the '--include' filters along with it.
+          if grep -rn --include=pom.xml --include=Dockerfile -e '--enable-preview' . ; then
+            echo '::error::--enable-preview is incompatible with the JDK 27 runtime (release-25 preview classes will not load). Remove it.'
+            exit 1
+          fi
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
       - name: Upload CLI Artifacts
@@ -150,6 +163,11 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
+      # 'cache: maven' keys on the pom hashes only, with no java-version component, so this job and
+      # 'ci' contend for one entry and whichever finishes first saves it. Harmless as long as both
+      # stop at 'verify': the ~/.m2 contents are downloaded dependencies, identical either way, and
+      # no reactor snapshot is installed. Add '-Dmaven.repo.local=' or drop the cache here if either
+      # job ever gains an 'install'.
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with:
@@ -208,6 +226,11 @@ jobs:
       # with deploy.yml, which still compiles the published jars on 25: both emit '--release 25'
       # bytecode, so the artifacts are equivalent, but the jar these tests exercise is the one
       # javac 27 produced, not byte-for-byte the one a release ships.
+      #
+      # Consequence worth stating plainly: every job now pairs javac N with JVM N - 'ci' 25/25,
+      # 'ci-jdk27' 27/27, this one 27/27 - so nothing covers the combination that actually ships,
+      # a javac-25 jar on the temurin-27 JRE. Closing it needs either a third rebuild leg pinned to
+      # 25 or a 27 publish, and publishing deliberately stays on 25.
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with:
@@ -333,8 +356,13 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      # 27, as in 'app-tests'. The native image itself is unaffected: 'BP_JVM_VERSION' is
-      # 'maven.compiler.release', so the buildpack still compiles it with 25.
+      # 27, as in 'app-tests'. The native-image compiler itself is untouched: 'BP_JVM_VERSION' is
+      # 'maven.compiler.release', so the buildpack still uses GraalVM 25. But 'spring-boot:build-image'
+      # under '-Pnative' runs 'process-aot' locally first, so the AOT-generated sources handed to that
+      # compiler are produced by a 27 JDK. Release has no such skew - deploy.yml's
+      # 'publish-native-images' is on 25 end to end - so this job exercises a 27-AOT/25-native pairing
+      # that is never published. Pinning this step back to 25 is the one-line fix if that ever
+      # produces a false alarm.
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with:

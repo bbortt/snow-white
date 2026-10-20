@@ -29,6 +29,10 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
   Preview class files are
   version-locked: javac rejects the flag unless `--release` matches the compiling JDK, and a
   27 JVM refuses to load classes marked preview-for-25.
+  This one is mechanically enforced — the
+  `Reject Preview Features` step in the `Build and Test` job greps every `pom.xml` and `Dockerfile`
+  for the flag — because the failure it prevents surfaces only when a published image starts, long
+  after a green build.
 - CI exercises both halves.
   The `Build and Test` job builds and runs the suites on JDK 25;
   the `Build and Test (JDK 27)` job repeats them on 27.
