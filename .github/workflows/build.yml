@@ -47,7 +47,22 @@ jobs:
         id: lookup
         uses: jwalton/gh-find-current-pr@8adf30db44cd0384087fcff3a04664ad46798646
   ci:
-    name: Build and Test
+    # A matrix leg per JDK, not two jobs: the legs cannot drift, which a duplicated job eventually
+    # would. The cost is the check name - 'Build and Test (25)' and 'Build and Test (27)' replace
+    # 'Build and Test', so the default-branch ruleset's required status checks must be swapped to the
+    # two new contexts, and open pull requests rebased onto a head that produces them.
+    #
+    # The runtime images run JDK 27 (see the Dockerfiles) while 'maven.compiler.release' stays at 25,
+    # so the published artifacts remain Java 25 bytecode. This job covers the JVM half of that split:
+    # both legs compile the same '--release 25' sources and run the unit and integration suites, one
+    # on a 25 JVM and one on 27.
+    #
+    # 'fail-fast: false' because the point is to learn which JDK broke, not to lose the other leg's
+    # result. The downstream jobs declaring 'needs: ci' now wait for both legs, but a failing leg does
+    # not stop them: their own 'if' opens with '!cancelled()', which is true for a failed dependency
+    # and so overrides the implicit success check. Enforcement of a red leg is the ruleset's job, not
+    # the graph's.
+    name: Build and Test (${{ matrix.java }})
     runs-on: ubuntu-24.04
     needs: detect-open-pr
     # detect-open-pr only runs for branch pushes, so a skipped dependency must not skip this job -
@@ -66,18 +81,29 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+    strategy:
+      matrix:
+        java: [25, 27]
+      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
           submodules: true
+      # 'cache: maven' keys on the pom hashes only, with no java-version component, so every job in
+      # this workflow shares one entry and whichever finishes first saves it. These two legs only
+      # 'verify', so they contribute downloaded dependencies and nothing else - but 'app-tests' and
+      # 'native-tests' share the same key and do run 'clean install' on JDK 27, so a restored ~/.m2
+      # can hold reactor snapshots that javac 27 produced. Benign here, because 'verify' on the full
+      # reactor rebuilds every module from source and resolves siblings from the reactor rather than
+      # the repository. Give the legs their own '-Dmaven.repo.local' if that ever stops being true.
       - name: Set up JDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
           cache: maven
           distribution: 'temurin'
-          java-version: 25
+          java-version: ${{ matrix.java }}
       - name: Fetch Helm Dependencies
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -85,30 +111,55 @@ jobs:
           helm repo add kafbat-ui https://kafbat.github.io/helm-charts
           helm dependency build
         working-directory: 'helm/charts/snow-white'
-      # The runtime images are on JDK 27 while 'maven.compiler.release' stays at 25, and preview class
-      # files are version-locked: a 27 JVM refuses to load classes marked preview-for-25. A re-added
-      # '--enable-preview' would compile clean here and only fail when the published image starts, so
-      # this guard lives in the one job the default-branch ruleset actually requires. See
+      # Preview class files are version-locked twice over: javac rejects '--enable-preview' unless
+      # '--release' matches the compiling JDK, and a 27 JVM refuses to load classes marked
+      # preview-for-25. So a re-added flag fails the 27 leg - but it compiles clean on the 25 leg
+      # and clean in deploy.yml, which also publishes on 25, and the breakage then first appears
+      # when the shipped 27 image starts. This runs on both legs, in a second, and says why. See
       # '.claude/.ai-project-context/004-technology-contract-backend.md' for the rule it enforces.
       - name: Reject Preview Features
         run: |
-          # '-e' rather than a bare pattern: a leading '--' would otherwise be read as an option,
-          # and a '--' separator would swallow the '--include' filters along with it.
-          if grep -rn --include=pom.xml --include=Dockerfile -e '--enable-preview' . ; then
-            echo '::error::--enable-preview is incompatible with the JDK 27 runtime (release-25 preview classes will not load). Remove it.'
+          set -euo pipefail
+          # Three spellings, not one: the compiler argument, maven-compiler-plugin's own
+          # '<enablePreview>' flag, and the '-Dmaven.compiler.enablePreview' property that sets it.
+          # 'Dockerfile*' because a suffixed variant is still a Dockerfile.
+          #
+          # '-e' rather than a bare pattern: a leading '--' would otherwise be read as an option, and
+          # a '--' separator would swallow the '--include' filters along with it. The exit status is
+          # captured rather than branched on directly, so that grep's error status 2 - an unreadable
+          # path, say - fails the step instead of passing as 'no matches'.
+          status=0
+          grep -rn \
+            --include=pom.xml --include='Dockerfile*' \
+            -e '--enable-preview' \
+            -e 'enablePreview' \
+            . || status=$?
+          if [ "$status" -eq 0 ]; then
+            echo '::error::Preview features are incompatible with the JDK 27 runtime: a 27 JVM will not load classes marked preview-for-25. Remove the flag.'
             exit 1
+          elif [ "$status" -ne 1 ]; then
+            echo "::error::Preview-feature scan failed (grep exit $status)."
+            exit "$status"
           fi
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
+      # 25 only, and deliberately so: 'cli-binary-verification' downloads this by the fixed name
+      # 'cli', and both legs uploading it would collide. The CLI is a Bun binary, unaffected by the
+      # JDK either way.
       - name: Upload CLI Artifacts
+        if: matrix.java == 25
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: cli
           path: toolkit/cli/target/snow-white-*
           if-no-files-found: error
+      # Sonar runs on 25 only, so that the quality gate has a single authority and one set of
+      # findings per commit. The three steps below are its setup and the analysis itself.
       - name: Fetch References
+        if: matrix.java == 25
         run: git fetch --unshallow origin
       - name: Cache SonarQube Packages
+        if: matrix.java == 25
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/.sonar/cache
@@ -117,7 +168,7 @@ jobs:
       - name: Sonar Analysis
         # The pull request's author, not 'github.actor': on a labelled run the actor is whoever
         # applied the label, which would put a Dependabot branch through Sonar after all.
-        if: "!contains(github.event.pull_request.user.login, 'dependabot')"
+        if: matrix.java == 25 && !contains(github.event.pull_request.user.login, 'dependabot')
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -125,64 +176,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
-  ci-jdk27:
-    # Deliberately a second job rather than a matrix leg on 'ci': a matrix would rename the check
-    # to 'Build and Test (25)' and 'Build and Test (27)', and 'Build and Test' is a required status
-    # check on main - it would never report again, blocking every pull request. Keeping 'ci' as the
-    # single bearer of that name costs one duplicated checkout and build, and keeps the ruleset
-    # untouched. The flip side: until the ruleset gains this job's name, a 27-only failure is
-    # advisory and cannot block a merge.
-    #
-    # The runtime images run JDK 27 (see the Dockerfiles) while 'maven.compiler.release' stays at
-    # 25, so the published artifacts remain Java 25 bytecode. This job covers the JVM half of that
-    # split: it compiles the same '--release 25' sources with JDK 27's javac and runs the unit and
-    # integration suites on a JDK 27 JVM.
-    #
-    # No Sonar and no CLI artifact here: analysis stays on 25 so the quality gate has one authority,
-    # and a second upload of the 'cli' artifact name would collide with the one 'ci' publishes.
-    name: Build and Test (JDK 27)
-    runs-on: ubuntu-24.04
-    needs: detect-open-pr
-    # Mirrors 'ci': detect-open-pr only runs for branch pushes, so a skipped dependency must not
-    # skip this job - but a cancelled run must still stop it.
-    if: >-
-      !cancelled() &&
-      (
-        github.ref == 'refs/heads/main' ||
-        github.event_name != 'push' ||
-        needs.detect-open-pr.outputs.has_open_pr != 'true' ||
-        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
-        contains(github.event.pull_request.title, 'citrus.version') ||
-        contains(github.event.pull_request.title, 'native-maven-plugin')
-      )
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          submodules: true
-      # 'cache: maven' keys on the pom hashes only, with no java-version component, so this job and
-      # 'ci' contend for one entry and whichever finishes first saves it. Harmless as long as both
-      # stop at 'verify': the ~/.m2 contents are downloaded dependencies, identical either way, and
-      # no reactor snapshot is installed. Add '-Dmaven.repo.local=' or drop the cache here if either
-      # job ever gains an 'install'.
-      - name: Set up JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
-        with:
-          cache: maven
-          distribution: 'temurin'
-          java-version: 27
-      - name: Fetch Helm Dependencies
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add influxdata https://helm.influxdata.com
-          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
-          helm dependency build
-        working-directory: 'helm/charts/snow-white'
-      - name: Build with Maven
-        run: ./mvnw -B -Pprod verify
   app-tests:
     name: Application Tests
     if: >-
@@ -227,10 +220,10 @@ jobs:
       # bytecode, so the artifacts are equivalent, but the jar these tests exercise is the one
       # javac 27 produced, not byte-for-byte the one a release ships.
       #
-      # Consequence worth stating plainly: every job now pairs javac N with JVM N - 'ci' 25/25,
-      # 'ci-jdk27' 27/27, this one 27/27 - so nothing covers the combination that actually ships,
-      # a javac-25 jar on the temurin-27 JRE. Closing it needs either a third rebuild leg pinned to
-      # 25 or a 27 publish, and publishing deliberately stays on 25.
+      # Consequence worth stating plainly: every job now pairs javac N with JVM N - both 'ci' legs
+      # match, and this one is 27/27 - so nothing covers the combination that actually ships, a
+      # javac-25 jar on the temurin-27 JRE. Closing it needs either a second leg here pinned to 25
+      # or a 27 publish, and publishing deliberately stays on 25.
       - name: Set up JDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
