@@ -29,16 +29,23 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
   Preview class files are
   version-locked: javac rejects the flag unless `--release` matches the compiling JDK, and a
   27 JVM refuses to load classes marked preview-for-25.
-  This one is mechanically enforced — the
-  `Reject Preview Features` step in the `Build and Test` job greps every `pom.xml` and `Dockerfile`
-  for the flag — because the failure it prevents surfaces only when a published image starts, long
-  after a green build.
-- CI exercises both halves.
-  The `Build and Test` job builds and runs the suites on JDK 25;
-  the `Build and Test (JDK 27)` job repeats them on 27.
+  This one is mechanically enforced by the
+  `Reject Preview Features` step in `Build and Test`, which greps every `pom.xml` and `Dockerfile`
+  for all three spellings of the flag.
+  The 27 leg would reject it too, but the 25 leg and
+  `deploy.yml` — which publishes on 25 — would both stay green, and the breakage would first appear
+  when the shipped 27 image starts.
+- CI covers both JDKs, not both sides of the split.
+  `Build and Test` is a two-leg matrix: each
+  leg builds the reactor and runs the unit and integration suites, one on a JDK 25 JVM and one on 27.
   Sonar analysis and all publishing stay on 25.
-  Only `Build and Test` is in the default-branch ruleset's required status checks, so the 27 job
-  is advisory until that ruleset gains it — a 27-only failure does not block a merge today.
+  Note that each leg pairs javac N with JVM N,
+  so the combination that actually ships — a javac-25 jar on the temurin-27 runtime — is exercised
+  by no job; `build.yml` says so at the `app-tests` JDK step.
+  The legs report as the status checks
+  `Build and Test (25)` and `Build and Test (27)`, and both belong in the default-branch ruleset's
+  required checks — adding a third JDK means adding its context there too, or the new leg is
+  advisory.
 - Spring Boot 4.1.0, via `spring-boot-dependencies` BOM import.
   Latest patch on this minor line
   at contract time is 4.1.1 — not a support gap, just worth picking up on a routine dependency
