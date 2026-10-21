@@ -2,26 +2,23 @@
 
 ## [2.2.0](https://github.com/bbortt/snow-white/compare/v2.1.0...v2.2.0) (2026-10-21)
 
-
 ### Features
 
-* **api-gateway:** draw fully waived criteria in amber in the coverage bar and chart ([ad39d55](https://github.com/bbortt/snow-white/commit/ad39d55d3ace7b022d47770764eea1f9a4ae3199))
-* **api-gateway:** show the whole calculation request in the raw request view ([f065d05](https://github.com/bbortt/snow-white/commit/f065d05dda9c7b772637844ca8abb5f1a0b20bf5))
-* **api-gateway:** show waived findings with the reason and expiry of their waiver ([c94bab2](https://github.com/bbortt/snow-white/commit/c94bab25fecae1711e16dc55e15288e526975939))
-* **api-gateway:** tell a criterion waivers emptied apart from full coverage ([3d3c840](https://github.com/bbortt/snow-white/commit/3d3c8406e805d8c7f52726cee4798fce379046e7))
-
+- **api-gateway:** draw fully waived criteria in amber in the coverage bar and chart ([ad39d55](https://github.com/bbortt/snow-white/commit/ad39d55d3ace7b022d47770764eea1f9a4ae3199))
+- **api-gateway:** show the whole calculation request in the raw request view ([f065d05](https://github.com/bbortt/snow-white/commit/f065d05dda9c7b772637844ca8abb5f1a0b20bf5))
+- **api-gateway:** show waived findings with the reason and expiry of their waiver ([c94bab2](https://github.com/bbortt/snow-white/commit/c94bab25fecae1711e16dc55e15288e526975939))
+- **api-gateway:** tell a criterion waivers emptied apart from full coverage ([3d3c840](https://github.com/bbortt/snow-white/commit/3d3c8406e805d8c7f52726cee4798fce379046e7))
 
 ### Bug Fixes
 
-* **api-gateway:** keep the dev server alive while BrowserSync scans for a port ([ffc166b](https://github.com/bbortt/snow-white/commit/ffc166bf77162409381371cf401f1426401d1c49))
-* **report-coordinator-api:** stop documenting a 400 housekeeping cannot return ([480791f](https://github.com/bbortt/snow-white/commit/480791fa8ff90abfd0428fbf83fdf2e269a770ba))
-
+- **api-gateway:** keep the dev server alive while BrowserSync scans for a port ([ffc166b](https://github.com/bbortt/snow-white/commit/ffc166bf77162409381371cf401f1426401d1c49))
+- **report-coordinator-api:** stop documenting a 400 housekeeping cannot return ([480791f](https://github.com/bbortt/snow-white/commit/480791fa8ff90abfd0428fbf83fdf2e269a770ba))
 
 ### Documentation
 
-* add compatibility matrix ([6934b74](https://github.com/bbortt/snow-white/commit/6934b74d03bd719108ef198c4f7c122d73a86b0d))
-* document waivers ([4f137c4](https://github.com/bbortt/snow-white/commit/4f137c45bbd0c650d5c09f4549dd6d0887f4bd4c))
-* **STR-023:** set SYS-014 active and the story done ([e89aa43](https://github.com/bbortt/snow-white/commit/e89aa434a6dcf05319e13da40dc81183577b4125))
+- add compatibility matrix ([6934b74](https://github.com/bbortt/snow-white/commit/6934b74d03bd719108ef198c4f7c122d73a86b0d))
+- document waivers ([4f137c4](https://github.com/bbortt/snow-white/commit/4f137c45bbd0c650d5c09f4549dd6d0887f4bd4c))
+- **STR-023:** set SYS-014 active and the story done ([e89aa43](https://github.com/bbortt/snow-white/commit/e89aa434a6dcf05319e13da40dc81183577b4125))
 
 ## [2.1.0](https://github.com/bbortt/snow-white/compare/v2.0.0...v2.1.0) (2026-10-18)
 
