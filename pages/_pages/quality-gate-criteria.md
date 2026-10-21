@@ -118,3 +118,116 @@ It and `HTTP_METHOD_COVERAGE` judge different things — a path item, and one op
 Full method coverage does imply full path coverage, but never the reverse: a path whose `GET` was called and whose `POST` was not is fully covered for path coverage and half covered for method coverage.
 Below 100% even that one direction breaks down, so requiring either criterion at a threshold tells you nothing about the other.
 Require both if you want both reported.
+
+## When a Target Cannot Be Covered
+
+Sometimes one target holds back a criterion that works everywhere else.
+A typical case is a documented `500` on one operation that only a failing downstream can provoke.
+Removing `ERROR_RESPONSE_CODE_COVERAGE` from the gate would make that one target pass, but it would also stop the gate from checking every other error response.
+Before that, try the two answers below, in this order.
+
+### Cover It With a Real Test First
+
+Snow-White only needs a span from the instrumented application, showing the request and the response it produced.
+It does not care how the test got the application to produce that response.
+A component test that mocks the _downstream_ dependency, so that your service answers `500`, is real evidence, provided that the test calls the service over HTTP with the OpenTelemetry agent attached.
+Only mocking the handler layer itself hides the call from Snow-White.
+
+So check first whether such a test exists or could be written, and make sure its traces reach Snow-White within the calculation's lookback window.
+If the span also carries `test.case.name` (see [Onboarding](./onboarding.md)), the finding names the test that covered the target.
+Then, every later run checks that the behaviour still exists.
+
+### Waive It When Nothing Can Exercise It
+
+A **waiver** declares that one criterion does not apply to one target of one API, with a reason, until a given date.
+All other targets stay fully enforced, including other targets of the same criterion.
+A waiver is an input to a single calculation.
+It travels in the calculation request and is echoed back on the report, and Snow-White stores no waivers of its own.
+With the CLI, waivers come from the [config file](./cli.md#waivers) only, never from a command-line flag, so adding one is always a change someone can review.
+
+```json
+{
+  "serviceName": "order-service",
+  "apiName": "orders-api",
+  "apiVersion": "*",
+  "path": "/orders/{orderId}",
+  "method": "GET",
+  "responseCode": "500",
+  "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+  "reason": "Only reachable by failing the database mid-request",
+  "expires": "2027-04-30"
+}
+```
+
+| Field                                            | Required | Meaning                                                                                                                 |
+| ------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `serviceName`, `apiName`                         | yes      | The API the waiver applies to, exactly as it is named in the calculation                                                |
+| `apiVersion`                                     | yes      | An exact version, or `'*'` for every version of that API in the calculation. `'*'` is allowed in this field only        |
+| `path`, `method`                                 | yes      | The target operation, with the path written exactly as in the specification (`/orders/{orderId}`, not `/orders/42`)     |
+| `responseCode` / `parameterName` / `contentType` | no       | At most one of these. Narrows the target from the operation to one response code, parameter or request content type     |
+| `criterion`                                      | no       | Limits the waiver to one criterion, as described in [Which Criteria a Waiver Reaches](#which-criteria-a-waiver-reaches) |
+| `reason`                                         | yes      | A non-blank justification, shown wherever the waived target appears                                                     |
+| `expires`                                        | yes      | The last day the waiver is in force, as a date (`YYYY-MM-DD`)                                                           |
+
+The calculation is rejected with a `400`, and no report is created, if a waiver:
+
+- is missing `reason` or `expires`;
+- sets more than one of `responseCode`, `parameterName` and `contentType`;
+- names a `criterion` that does not exist;
+- names an API that is not part of the calculation.
+
+### Which Criteria a Waiver Reaches
+
+One target can be judged by several criteria.
+For example, a documented `500` is judged by `RESPONSE_CODE_COVERAGE`, `ERROR_RESPONSE_CODE_COVERAGE` and `REQUIRED_ERROR_FIELDS_COVERAGE`.
+These are different claims about the same response.
+
+- **Without `criterion`**, the target is waived for every criterion that judged it.
+  This is the strong claim: nothing can exercise this target.
+- **With `criterion`**, the target is waived for that criterion and for every criterion [containing it](#criteria-relationships).
+  `criterion: ERROR_RESPONSE_CODE_COVERAGE` also waives the target for `RESPONSE_CODE_COVERAGE`, so a waived child never leaves its parent failing on the same target.
+  `REQUIRED_ERROR_FIELDS_COVERAGE` still judges that response.
+
+A `criterion` that the chosen quality gate does not include is accepted.
+A waiver list written once for a repository can then outlive changes to the gate.
+
+### Expiry
+
+`expires` is compared with the moment the calculation was triggered, which is the report's `initiatedAt`, not with the time the report is read.
+Recalculating an old report therefore gives the same waiver verdicts.
+
+An expired waiver is not silently dropped.
+Its target is judged normally, as covered or uncovered according to the evidence, and the criterion's result names the waiver and the date it expired.
+A build that turns red because of an expired waiver therefore says why.
+
+### A Waiver That Matches Nothing Fails the Calculation
+
+Every waiver has to match at least one target that a criterion actually judged.
+Otherwise, that API's calculation fails, and the error names the waiver.
+There are only two possible causes, and the author needs to know about both:
+
+- the waiver was written wrong, for example `/orders/42` instead of `/orders/{orderId}`;
+- the target no longer exists in the specification.
+
+A waiver whose `apiVersion` is `'*'` has to match in every version it reaches.
+It is the only kind of waiver whose target can disappear without anyone editing it.
+
+### How a Waived Pass Is Reported
+
+A waived target counts on neither side of the coverage ratio.
+A criterion with ten targets, two of them waived, reports its coverage over the remaining eight.
+If every target of a criterion is waived, it still reports `1.00`, but that is not a pass on coverage.
+Every report shape lets you tell the two apart:
+
+- **JSON report and `--agentic` output**: every criterion result carries `judgedTargetCount` (targets in the ratio) and `waivedTargetCount` (targets a waiver removed from it).
+  `judgedTargetCount: 0` together with a `waivedTargetCount` above zero means the criterion was emptied by waivers, not fully covered.
+  Waived findings have the status `WAIVED` and carry `waiverReason` and `waiverExpiresOn`.
+- **JUnit export**: a criterion with waived targets is a passing `testcase` with `judgedTargetCount`, `waivedTargetCount` and `waivedTargets` properties.
+  Its `system-out` lists each waived target with its expiry and reason.
+  The `testsuites` root carries the document's total `waivedTargetCount`.
+  `skipped` still means only that the gate excluded the criterion.
+- **Web UI**: waived findings appear in the drilldown with their reason and expiry, and a criterion emptied by waivers is marked as fully waived.
+
+A fully waived criterion neither raises nor lowers its API's verdict.
+An API whose included criteria are all fully waived is `PASSED`, and only the counts show that this pass comes from waivers.
+`coverage == 1.00` and a `PASSED` status are therefore never proof on their own that a criterion was satisfied.
