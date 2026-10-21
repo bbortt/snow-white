@@ -143,7 +143,7 @@ A **waiver** declares that one criterion does not apply to one target of one API
 All other targets stay fully enforced, including other targets of the same criterion.
 A waiver is an input to a single calculation.
 It travels in the calculation request and is echoed back on the report, and Snow-White stores no waivers of its own.
-With the CLI, waivers come from the [config file](./cli.md#waivers) only, never from a command-line flag, so adding one is always a change someone can review.
+With the CLI, waivers come from the [config file](./cli.md#calculate) only, never from a command-line flag, so adding one is always a change someone can review.
 
 ```json
 {
