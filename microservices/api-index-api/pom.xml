@@ -305,7 +305,7 @@
             <configuration>
               <image>
                 <env>
-                  <BP_JVM_VERSION>${maven.compiler.release}</BP_JVM_VERSION>
+                  <BP_JVM_VERSION>${native.java.version}</BP_JVM_VERSION>
                   <BP_IMAGE_LABELS>
                     org.opencontainers.image.name=api-index-api
                   </BP_IMAGE_LABELS>

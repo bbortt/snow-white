@@ -22,19 +22,31 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
   Non-LTS caveat: Adoptium's End of Availability for 27 is March 2027, so this pin needs
   revisiting before then, either forward to 28 or back to the 25 LTS.
 - The four services published as **GraalVM native images** (`api-index-api`,
-  `otel-event-filter-stream`, `quality-gate-api`, `report-coordinator-api`) are unaffected: their
-  `BP_JVM_VERSION` is `maven.compiler.release`, so the buildpack still compiles them with 25.
-  Their `Dockerfile`s are a local JVM-image fallback, built by neither CI nor release.
-- Because of that split, no module may compile with `--enable-preview`.
+  `otel-event-filter-stream`, `quality-gate-api`, `report-coordinator-api`) carry no JDK in the
+  published artifact at all — a native image embeds SubstrateVM — so the 27 JVM pin describes only
+  their `Dockerfile` fallback, which does use `eclipse-temurin:27-jdk-alpine` like every other
+  service but is built by neither CI nor release.
+  What the image build pins instead is the compiler: their `BP_JVM_VERSION` is
+  `native.java.version`, selecting the buildpack's build-time NIK, and it is **25**.
+  The bellsoft-liberica buildpack ships `jdk`/`jre` for 27.0.0 but `native-image-svm` only up to
+  25.0.4, so 27 fails dependency resolution — the ceiling is the buildpack's, not a choice.
+  The property is separate from `maven.compiler.release` so it can be lifted in one edit once a 27
+  NIK is published, without moving the bytecode target.
+  A future JVM-runtime bump therefore has to touch three things, not one: the `Dockerfile` bases,
+  the `jlink` toolchain, and — only when a matching NIK exists — this property.
+- Because of the bytecode/runtime split, no module may compile with `--enable-preview`.
   Preview class files are
   version-locked: javac rejects the flag unless `--release` matches the compiling JDK, and a
   27 JVM refuses to load classes marked preview-for-25.
-  This one is mechanically enforced by the
-  `Reject Preview Features` step in `Build and Test`, which greps every `pom.xml` and `Dockerfile`
-  for all three spellings of the flag.
-  The 27 leg would reject it too, but the 25 leg and
-  `deploy.yml` — which publishes on 25 — would both stay green, and the breakage would first appear
-  when the shipped 27 image starts.
+  Nothing enforces this by a dedicated check; the 27 leg of `Build and Test` is the detector, and
+  it fails at compile time — `--release 25` with `--enable-preview` is rejected outright by a
+  javac 27.
+  What that leaves open: the 25 leg and `deploy.yml` — which publishes on 25 — both stay green, so
+  a flag added without the 27 leg running goes unnoticed; and the detector only sees what `-Pprod`
+  actually compiles, so a preview flag confined to the `native` or `apptest` profiles slips past
+  every leg.
+  (A `--enable-preview` on a `Dockerfile` `ENTRYPOINT` is harmless on its own — the launcher
+  accepts the flag unconditionally; it is the class files that are version-locked.)
 - CI covers both JDKs, not both sides of the split.
   `Build and Test` is a two-leg matrix: each
   leg builds the reactor and runs the unit and integration suites, one on a JDK 25 JVM and one on 27.
@@ -43,13 +55,14 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
   so the combination that actually ships — a javac-25 jar on the temurin-27 runtime — is exercised
   by no job; `build.yml` says so at the `app-tests` JDK step.
   The legs report as the status checks
-  `Build and Test (25)` and `Build and Test (27)`, and both belong in the default-branch ruleset's
-  required checks — adding a third JDK means adding its context there too, or the new leg is
-  advisory.
-- Spring Boot 4.1.0, via `spring-boot-dependencies` BOM import.
-  Latest patch on this minor line
-  at contract time is 4.1.1 — not a support gap, just worth picking up on a routine dependency
-  bump.
+  `Build and Test (25)` and `Build and Test (27)`.
+  The matrix **renamed** the context, and nothing in the repo can apply that rename — the
+  default-branch ruleset lives in GitHub settings and has to be edited by hand.
+  Until it is, a still-required plain `Build and Test` never reports and blocks every PR, while the
+  two real legs are advisory.
+  Same for a third JDK: add its context there, or the new leg does not gate.
+- Spring Boot 4.1.1, via `spring-boot-dependencies` BOM import (`spring-boot.version` in the root
+  `pom.xml`).
 - Maven multi-module reactor (`./mvnw -b smart package`, `-pl :<artifactId> -am` for scoped
   builds).
 
