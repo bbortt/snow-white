@@ -61,6 +61,36 @@ artifact: the JUnit export passes it and explains the gap in `system-out`.
 An `interfaces[].status` other than `"PASSED"` with an empty `testResults` is the JSON equivalent
 of a JUnit `testsuite` with `tests="0"` — see Step 2.
 
+### Waived targets
+
+A **waiver** removes one target from one criterion's judgement for a single calculation.
+The calculation is told to do this in the `waivers` key of the CLI config file, and each waiver
+carries a `reason` and an `expires` date.
+A waived target counts on neither side of the coverage ratio, so **a passing criterion is not
+necessarily a covered one**:
+
+- In the JUnit XML, a criterion with waived targets is a passing `testcase` with a
+  `waivedTargetCount` property and a `waivedTargets` property listing them.
+  Its `system-out` contains one `Waived until <date>: <target> - <reason>` line per target.
+  The `testsuites` root carries the total `waivedTargetCount`.
+- In the `--agentic` JSON and the report read, every criterion result carries `judgedTargetCount`
+  and `waivedTargetCount`.
+  Waived findings have the status `WAIVED` and carry `waiverReason` and `waiverExpiresOn`.
+- `judgedTargetCount` of `0` with a non-zero `waivedTargetCount` means waivers emptied the
+  criterion.
+  Its coverage of `1.0` is not evidence, and neither is a `PASSED` status for an API whose
+  criteria are all emptied this way.
+
+When you summarize a passing gate, say how many targets passed only because they were waived, and
+don't describe them as covered.
+A waived target is not a test gap you should silently close.
+Still, if a reason looks outdated (for example "cannot be triggered" when the project now has fault
+injection), point out that a real test could cover the target, so the waiver can be removed.
+An expired waiver no longer suppresses anything; the failure names the waiver and its expiry date.
+A waiver that matches no target fails the calculation; the usual cause is a path that does not match
+how the spec writes it.
+Fix the waiver in both cases rather than adding tests.
+
 ## Step 1 — Parse the report
 
 Read the report and, for every API (`testsuite` in XML, or entry in `interfaces` for

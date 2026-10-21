@@ -173,6 +173,61 @@ snow-white calculate \
   --agentic
 ```
 
+**Waivers:**
+
+A waiver declares that one criterion does not apply to one target of one API, with a reason and an expiry date.
+Before writing one, check whether a real test can cover the target; [Quality Gate Criteria](./quality-gate-criteria.md#when-a-target-cannot-be-covered) explains both options and how waived targets are reported.
+
+Waivers can only be set with the `waivers` key in the config file.
+No command-line flag sets them, so adding a waiver is always a change that someone can review:
+
+```json
+{
+  "url": "http://<snow-white-host>",
+  "qualityGate": "full-feature",
+  "apiInformation": [
+    {
+      "serviceName": "order-service",
+      "apiName": "orders-api",
+      "apiVersion": "1.0.0"
+    }
+  ],
+  "waivers": [
+    {
+      "serviceName": "order-service",
+      "apiName": "orders-api",
+      "apiVersion": "*",
+      "path": "/orders/{orderId}",
+      "method": "GET",
+      "responseCode": "500",
+      "criterion": "ERROR_RESPONSE_CODE_COVERAGE",
+      "reason": "Only reachable by failing the database mid-request",
+      "expires": "2027-04-30"
+    }
+  ]
+}
+```
+
+`serviceName`, `apiName`, `apiVersion`, `path`, `method`, `reason` and `expires` (`YYYY-MM-DD`) are required.
+At most one of `responseCode`, `parameterName` and `contentType` may be set, and `criterion` is optional.
+Before it sends anything, the CLI rejects with exit code `3` a waiver that:
+
+- is missing one of these fields;
+- has an impossible date such as `2026-02-30`;
+- contains an unknown key, for example a misspelt `responseCod`.
+
+Without this check, a misspelt key would be dropped and the waiver would silently apply to the whole operation.
+Checks that need the calculation itself are left to the server.
+It rejects the request with a `400`, and the CLI exits with `10`, if:
+
+- the API is not part of the calculation;
+- `'*'` is used outside `apiVersion`;
+- the criterion does not exist.
+
+A waiver that matches no target fails that API's calculation, so the gate fails with exit code `11`, and the failure names the waiver.
+
+Unless `--agentic` is set, the CLI prints how many waivers it sent.
+
 **Agentic mode (`--agentic`):**
 
 Instead of the usual progress logs, `--agentic` prints a single line of JSON to stdout once the calculation finishes, intended for consumption by coding agents or other automation rather than humans.
@@ -208,6 +263,9 @@ It carries the same pass/fail result and exit codes as the default mode, plus a 
 `qualityGateFailures` on each interface lists only the criteria that are part of the quality gate and whose coverage is below the report's pinned `minCoveragePercentage`; `testResults` lists every evaluated criterion.
 A criterion that clears that bar without reaching full coverage is not a failure, which is the verdict the JUnit export gives it as well.
 `summary.qualityGateFailureCount` is the total of those failures across all interfaces.
+Every entry in `testResults` and `qualityGateFailures` carries `judgedTargetCount` and `waivedTargetCount`, as in the report read; only reports calculated before waivers existed lack them.
+A `coverage` of `1` with `judgedTargetCount: 0` and a non-zero `waivedTargetCount` means waivers emptied the criterion; it was not covered.
+An automated consumer must check these counts before treating a `PASSED` status as proof of coverage.
 `--junit-output` and `--report-output` can be combined with `--agentic`: they still write their files, silently, so the single line of JSON stays the only thing on stdout.
 
 **Report output (`--report-output`):**

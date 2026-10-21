@@ -26,13 +26,15 @@ to parse and act on directly, without scraping a report format meant for people.
 
 ## What it does
 
-Once installed, Claude automatically applies the skill whenever it encounters a Snow-White JUnit XML report, a quality gate failure, or a request like "fix the failing coverage criteria." It:
+Once installed, Claude automatically applies the skill whenever it encounters a Snow-White JUnit XML report, a quality gate failure, or a request like "fix the failing coverage criteria."
+It:
 
 1. Parses the JUnit XML structure Snow-White emits (`testsuites` → `testsuite` per API → `testcase` per criterion).
 2. Detects **correlation failures** (`tests="0"`) and walks through the [onboarding checklist]/onboarding.md#checklist) instead of treating it as a test gap.
 3. Looks up each failing criterion against the [Quality Gate Criteria](./quality-gate-criteria.md) hierarchy, so it fixes the highest-level failing criterion first instead of duplicating work on children that will pass automatically once the parent does.
-4. Proposes integration tests — real HTTP calls with the OTel agent attached, since Snow-White correlates traces, not mocks — matching your existing test style.
-5. Summarizes what was fixed, what criteria that resolves, and what's left.
+4. Tells waived targets apart from covered ones, using the `waivedTargetCount` and `waivedTargets` properties in the JUnit export and `judgedTargetCount` / `waivedTargetCount` in the `--agentic` output, so a gate that passed because of [waivers](./quality-gate-criteria.md#when-a-target-cannot-be-covered) is never reported as fully covered.
+5. Proposes integration tests — real HTTP calls with the OTel agent attached, since Snow-White correlates traces, not mocks — matching your existing test style.
+6. Summarizes what was fixed, what criteria that resolves, and what's left — including which targets pass only because they are waived.
 
 The package bundles `references/criteria-hierarchy.md` alongside the skill, so Claude can look up the full criteria hierarchy offline rather than fetching this site.
 
