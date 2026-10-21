@@ -111,36 +111,6 @@ jobs:
           helm repo add kafbat-ui https://kafbat.github.io/helm-charts
           helm dependency build
         working-directory: 'helm/charts/snow-white'
-      # Preview class files are version-locked twice over: javac rejects '--enable-preview' unless
-      # '--release' matches the compiling JDK, and a 27 JVM refuses to load classes marked
-      # preview-for-25. So a re-added flag fails the 27 leg - but it compiles clean on the 25 leg
-      # and clean in deploy.yml, which also publishes on 25, and the breakage then first appears
-      # when the shipped 27 image starts. This runs on both legs, in a second, and says why. See
-      # '.claude/.ai-project-context/004-technology-contract-backend.md' for the rule it enforces.
-      - name: Reject Preview Features
-        run: |
-          set -euo pipefail
-          # Three spellings, not one: the compiler argument, maven-compiler-plugin's own
-          # '<enablePreview>' flag, and the '-Dmaven.compiler.enablePreview' property that sets it.
-          # 'Dockerfile*' because a suffixed variant is still a Dockerfile.
-          #
-          # '-e' rather than a bare pattern: a leading '--' would otherwise be read as an option, and
-          # a '--' separator would swallow the '--include' filters along with it. The exit status is
-          # captured rather than branched on directly, so that grep's error status 2 - an unreadable
-          # path, say - fails the step instead of passing as 'no matches'.
-          status=0
-          grep -rn \
-            --include=pom.xml --include='Dockerfile*' \
-            -e '--enable-preview' \
-            -e 'enablePreview' \
-            . || status=$?
-          if [ "$status" -eq 0 ]; then
-            echo '::error::Preview features are incompatible with the JDK 27 runtime: a 27 JVM will not load classes marked preview-for-25. Remove the flag.'
-            exit 1
-          elif [ "$status" -ne 1 ]; then
-            echo "::error::Preview-feature scan failed (grep exit $status)."
-            exit "$status"
-          fi
       - name: Build with Maven
         run: ./mvnw -B -Pprod verify
       # 25 only, and deliberately so: 'cli-binary-verification' downloads this by the fixed name
@@ -349,13 +319,14 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      # 27, as in 'app-tests'. The native-image compiler itself is untouched: 'BP_JVM_VERSION' is
-      # 'maven.compiler.release', so the buildpack still uses GraalVM 25. But 'spring-boot:build-image'
-      # under '-Pnative' runs 'process-aot' locally first, so the AOT-generated sources handed to that
-      # compiler are produced by a 27 JDK. Release has no such skew - deploy.yml's
-      # 'publish-native-images' is on 25 end to end - so this job exercises a 27-AOT/25-native pairing
-      # that is never published. Pinning this step back to 25 is the one-line fix if that ever
-      # produces a false alarm.
+      # 27, as in 'app-tests'. This is the local JDK only - it does not reach the native compiler.
+      # 'BP_JVM_VERSION' is 'native.java.version', pinned to 25 because the buildpack publishes no
+      # NIK above 25 (see the property's comment in the root pom). 'spring-boot:build-image' under
+      # '-Pnative' runs 'process-aot' locally first, so this job straddles: AOT generation on 27,
+      # native compilation on a 25 NIK. Harmless - the AOT output is release-25 bytecode either way
+      # - but it is why this leg cannot prove the native images against a 27 toolchain.
+      #
+      # deploy.yml's 'publish-native-images' runs Maven on 25, so release is 25 on both sides.
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with:

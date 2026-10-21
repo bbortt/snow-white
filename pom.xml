@@ -42,6 +42,25 @@
     <!-- Global -->
     <java.version>25</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
+    <!--
+      The JDK the buildpack compiles the native images with, via 'BP_JVM_VERSION' in the four native
+      services. Deliberately not a reuse of 'maven.compiler.release': that coupling made the
+      toolchain unmovable without also moving the bytecode target, which must stay at 25 so
+      consumers of the published artifacts still only need a JDK 25.
+
+      25 rather than the 27 the JVM images run, because 27 does not resolve. The bellsoft-liberica
+      buildpack ships 'jdk'/'jre' for 27.0.0 but 'native-image-svm' (the NIK a native build selects)
+      only for 11, 17, 21 and 25 - on both arm64 and amd64, on 'main', so no builder pin helps.
+      'BP_JVM_VERSION=27' fails dependency resolution, and fails late: 'native-tests' is label- and
+      schedule-gated, so an unlabelled PR merges green and the break surfaces in the Monday cron on
+      main - or on a release tag, if one lands first. Raise this to 27 once a 27 NIK is published.
+
+      Not named 'java.runtime.version': that is a JVM system property, so an undefined project
+      property would not fail - '${java.runtime.version}' silently resolves to the build machine's
+      own JDK string ('25.0.4.1+1-LTS'), which would reach 'BP_JVM_VERSION' as a per-runner value.
+      A name that is not a system property resolves to nothing and breaks loudly instead.
+    -->
+    <native.java.version>25</native.java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- SonarQube properties -->
