@@ -8,7 +8,7 @@ holds
 
 **Lens**: SYS
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A criterion can be declared inapplicable to a single target of a single API — one response code of
@@ -96,3 +96,9 @@ A test asserts a criterion whose every judged target is waived is not reported a
   this capability is delivered through
 - [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the honesty
   rule that keeps a waiver from becoming a verdict
+
+## Changes
+
+- **2026-10-21** — Set active: delivered by `STR-023` through `SW-040`–`SW-044`, `CON-011` and
+  `CON-012`, which carry the code anchors; like every other system spec, this one is held by those
+  and is not anchored itself.
