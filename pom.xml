@@ -97,7 +97,7 @@
     <org.projectlombok.version>1.18.48</org.projectlombok.version>
     <org.wiremock.version>3.13.2</org.wiremock.version>
     <pitest-junit5.version>1.2.3</pitest-junit5.version>
-    <pitest.version>1.30.0</pitest.version>
+    <pitest.version>1.30.1</pitest.version>
     <sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
     <spring-boot.version>4.1.1</spring-boot.version>
     <spring-retry.version>2.0.13</spring-retry.version>
