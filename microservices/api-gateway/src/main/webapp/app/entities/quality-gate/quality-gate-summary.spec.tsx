@@ -147,6 +147,52 @@ describe('QualityGateSummary', () => {
     expect(toggle).toHaveTextContent('snowWhiteApp.qualityGate.trigger.showRawRequest');
   });
 
+  it('should include the waivers in the raw request', () => {
+    renderSummary(
+      qualityGate({
+        lookbackWindow: '24h',
+        waivers: [
+          {
+            serviceName: 'order-service',
+            apiName: 'orders-api',
+            apiVersion: '*',
+            path: '/orders/{id}',
+            method: 'POST',
+            responseCode: '500',
+            criterion: 'ERROR_RESPONSE_CODE_COVERAGE',
+            reason: 'Downstream is mocked in this environment',
+            expires: '2026-12-31',
+          },
+        ],
+      }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'snowWhiteApp.qualityGate.trigger.showRawRequest' }));
+
+    const rawRequest = screen.getByTestId('code-highlight-block');
+    expect(rawRequest).toHaveTextContent('"waivers": [');
+    expect(rawRequest).toHaveTextContent('"reason": "Downstream is mocked in this environment"');
+    expect(rawRequest).toHaveTextContent('"expires": "2026-12-31"');
+  });
+
+  it('should include the APIs the calculation covered in the raw request', () => {
+    renderSummary(qualityGate({ includeApis: [{ serviceName: 'order-service', apiName: 'orders-api', apiVersion: '1.0.0' }] }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'snowWhiteApp.qualityGate.trigger.showRawRequest' }));
+
+    const rawRequest = screen.getByTestId('code-highlight-block');
+    expect(rawRequest).toHaveTextContent('"includeApis": [');
+    expect(rawRequest).toHaveTextContent('"serviceName": "order-service"');
+  });
+
+  it('should show no waivers key in the raw request of a calculation given none', () => {
+    renderSummary(qualityGate({ lookbackWindow: '24h' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'snowWhiteApp.qualityGate.trigger.showRawRequest' }));
+
+    expect(screen.getByTestId('code-highlight-block')).not.toHaveTextContent('waivers');
+  });
+
   it('should offer no raw request toggle without a calculation request', () => {
     renderSummary(qualityGate());
 

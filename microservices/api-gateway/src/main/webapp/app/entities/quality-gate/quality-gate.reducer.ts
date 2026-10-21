@@ -60,8 +60,10 @@ const fromDto = ({
   status: ReportStatus[status],
   createdAt: initiatedAt,
   calculationRequest: {
+    includeApis: calculationRequest.includeApis,
     lookbackWindow: calculationRequest.lookbackWindow,
     attributeFilters: calculationRequest.attributeFilters,
+    waivers: calculationRequest.waivers,
   },
 });
 

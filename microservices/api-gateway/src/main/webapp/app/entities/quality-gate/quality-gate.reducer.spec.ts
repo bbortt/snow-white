@@ -220,6 +220,13 @@ describe('Quality-Gate reducer tests', () => {
       status: 'IN_PROGRESS',
       createdAt: '2025-05-07T18:00:00.00Z',
       calculationRequest: {
+        includeApis: [
+          {
+            serviceName: 'test service',
+            apiName: 'test api',
+            apiVersion: 'test api version',
+          },
+        ],
         lookbackWindow: '1234',
         attributeFilters: { foo: 'bar', traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' },
       },
@@ -393,6 +400,32 @@ describe('Quality-Gate reducer tests', () => {
 
       const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
       expect(fulfilledAction.payload.data.apiTests[0].testResults[0].findings).toEqual([{ ...finding, status: FindingStatus.COVERED }]);
+    });
+
+    it('carries the waivers the calculation was triggered with into the entity', async () => {
+      const waiver = {
+        serviceName: 'order-service',
+        apiName: 'orders-api',
+        apiVersion: '*',
+        path: '/orders/{id}',
+        method: 'POST',
+        responseCode: '500',
+        criterion: 'ERROR_RESPONSE_CODE_COVERAGE',
+        reason: 'Downstream is mocked in this environment',
+        expires: '2026-12-31',
+      };
+      (reportApi.getReportByCalculationId as jest.MockedFn<any>).mockReset().mockResolvedValueOnce({
+        ...resolvedObject,
+        data: {
+          ...resolvedObject.data,
+          calculationRequest: { ...resolvedObject.data.calculationRequest, waivers: [waiver] },
+        },
+      });
+
+      await store.dispatch(getEntity('0a32c534-8333-4b96-8e14-34bb5b4095d2'));
+
+      const fulfilledAction = store.getActions().find(action => action.type === getEntity.fulfilled.type);
+      expect(fulfilledAction.payload.data.calculationRequest.waivers).toEqual([waiver]);
     });
 
     it('carries the judged and waived target counts, and leaves them absent where the report has none', async () => {
