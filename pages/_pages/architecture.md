@@ -62,11 +62,11 @@ The UI Development Server (used by `api-gateway`) runs on port `9001`.
 
 ## Additional Services (Docker Compose Only)
 
-| Service                      | Ports                                                    |
-| ---------------------------- | -------------------------------------------------------- |
-| OTel Collector               | `1888`, `8888`, `8889`, `13133`, `4317`, `4318`, `55679` |
-| Kafka                        | `9092`, `9094`                                           |
-| Kafka UI                     | `8090`                                                   |
-| InfluxDB                     | `8086`                                                   |
-| PostgreSQL                   | `5432`                                                   |
-| Service Interface Repository | `3000`                                                   |
+| Service                      | Ports                    |
+| ---------------------------- | ------------------------ |
+| OTel Collector               | `13133`, `4317`, `4318`, |
+| Kafka                        | `9092`, `9094`           |
+| Kafka UI                     | `8090`                   |
+| InfluxDB                     | `8086`                   |
+| PostgreSQL                   | `5432`                   |
+| Service Interface Repository | `3000`                   |
