@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig",
+  "include": ["src", "eslint.config.mjs", "lint-staged.config.cjs"],
+  "exclude": []
+}

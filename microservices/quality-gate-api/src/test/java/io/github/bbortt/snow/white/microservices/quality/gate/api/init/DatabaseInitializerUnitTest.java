@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.quality.gate.api.init;
+
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
+
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.OpenApiCoverageConfigurationService;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith({ MockitoExtension.class })
+class DatabaseInitializerUnitTest {
+
+  @Mock
+  private OpenApiCoverageConfigurationService openApiCoverageConfigurationServiceMock;
+
+  @Mock
+  private QualityGateService qualityGateServiceMock;
+
+  @InjectMocks
+  private DatabaseInitializer fixture;
+
+  @Nested
+  class RunTest {
+
+    @Test
+    @VerifiesArch(ArchTraceables.ARCH_003_IDEMPOTENT_ORDERED_STARTUP_SEEDING)
+    void shouldInitiateDatabaseInitialization() {
+      fixture.run();
+
+      var inOrder = inOrder(
+        openApiCoverageConfigurationServiceMock,
+        qualityGateServiceMock
+      );
+      inOrder
+        .verify(openApiCoverageConfigurationServiceMock)
+        .initOpenApiCoverageCriteria();
+      inOrder.verify(qualityGateServiceMock).initPredefinedQualityGates();
+    }
+  }
+}

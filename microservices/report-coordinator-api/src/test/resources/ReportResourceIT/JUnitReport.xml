@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<!--
+  ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<testsuites
+  assertions="0"
+  errors="0"
+  failures="0"
+  name="qualityGateConfigName"
+  skipped="0"
+  tests="0"
+  time="0"
+  timestamp="2025-04-28T08:00:00Z"
+>
+  <properties>
+    <property
+      name="calculationId"
+      value="aaac28e5-2d0e-4ea6-8fef-4dc85169759e"
+    />
+    <property name="minCoveragePercentage" value="100" />
+  </properties>
+  <testsuite
+    assertions="0"
+    errors="0"
+    failures="0"
+    name="serviceName: apiName null [UNSPECIFIED]"
+    skipped="0"
+    tests="0"
+    time="0"
+  >
+    <properties>
+      <property name="apiName" value="apiName" />
+      <property name="apiVersion" />
+      <property name="serviceName" value="serviceName" />
+    </properties>
+  </testsuite>
+</testsuites>

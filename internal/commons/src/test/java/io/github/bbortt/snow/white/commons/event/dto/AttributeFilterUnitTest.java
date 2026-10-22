@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.commons.event.dto;
+
+import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+class AttributeFilterUnitTest {
+
+  @Test
+  void equalsContract() {
+    EqualsVerifier.forClass(AttributeFilter.class).verify();
+  }
+
+  @Nested
+  class AttributeFiltersTest {
+
+    @Test
+    void shouldReturnBuilder() {
+      AttributeFilter.Builder builder = AttributeFilter.attributeFilters();
+
+      assertThat(builder)
+        .isNotNull()
+        .isInstanceOf(AttributeFilter.Builder.class);
+    }
+  }
+
+  @Nested
+  class BuilderTest {
+
+    @Test
+    void shouldReturnEmptyList_whenNoFiltersAdded() {
+      Set<AttributeFilter> filters = AttributeFilter.attributeFilters().build();
+
+      assertThat(filters).isEmpty();
+    }
+
+    @Nested
+    class WithTest {
+
+      @Test
+      void shouldAddAttributeFilterToList() {
+        var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
+        var filter2 = new AttributeFilter(
+          "http.target",
+          STRING_EQUALS,
+          "/api/v1/users"
+        );
+
+        Set<AttributeFilter> filters = AttributeFilter.attributeFilters()
+          .with(filter1)
+          .with(filter2)
+          .build();
+
+        assertThat(filters).containsExactlyInAnyOrder(filter1, filter2);
+      }
+    }
+  }
+}

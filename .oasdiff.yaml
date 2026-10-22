@@ -1,0 +1,2 @@
+fail-on: ERR
+severity-levels: ./oasdiff-levels.txt

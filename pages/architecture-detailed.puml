@@ -1,0 +1,111 @@
+@startuml
+
+' Stylin'
+
+!theme vibrant
+left to right direction
+
+' External actors and systems
+
+actor User as user
+component "CLI" as cli #DarkOrange
+
+component "JFrog Artifactory" as artifactory #Teal
+component "Example Application" as app
+
+package "Snow-White" {
+
+  ' API Gateway
+
+  component "API Gateway\n<<Spring Cloud Gateway>>\n:9080" as gate #DarkOrange {
+    component "Web Application (UI)\n<<React / JHipster>>" as ui #Orange
+  }
+
+  ' Business Microservices
+
+  component "API Index API\n<<Spring Boot / JPA>>\n:8085" as index #DarkOrange
+  database "PostgreSQL\n[api_index_api]" as db_index #LightBlue
+
+  component "API Sync Job\n<<Spring Batch>>" as sync #DarkOrange
+
+  component "Quality-Gate API\n<<Spring Boot / JPA>>\n:8081" as qgate #DarkOrange
+  database "PostgreSQL\n[quality_gate_api]" as db_qgate #LightBlue
+
+  component "Report Coordinator API\n<<Spring Boot / JPA + Kafka>>\n:8084" as coordinator #DarkOrange
+  database "PostgreSQL\n[report_coordinator_api]" as db_coordinator #LightBlue
+
+  ' Kafka Stream Processors
+
+  component "OTEL Event Filter Stream\n<<Kafka Streams>>" as filter #DarkOrange
+  component "OpenAPI Coverage Stream\n<<Kafka Streams>>" as coverage #DarkOrange
+
+  ' Infrastructure
+
+  database "InfluxDB\n:8086\n[Bucket: raw-data]" as influx #Teal
+
+  component "Kafka\n<<Confluent>>" #Teal {
+    queue "snow-white_inbound" as inbound
+    queue "snow-white_outbound" as outbound
+    queue "snow-white-calculation-request" as request
+    queue "snow-white-openapi-calculation-response" as response
+  }
+
+  component "OpenTelemetry Collector\n:4317 (gRPC)\n:4318 (HTTP)" as otel #Teal
+}
+
+' User connections
+
+user <--> ui : HTTPS
+user ..> cli : uses
+cli --> gate : HTTPS
+
+' Gateway routes
+
+gate <--> index : REST /api/rest/v1/api-index/
+gate <--> qgate : REST /api/rest/v1/quality-gates/
+gate <--> coordinator : REST /api/rest/v1/reports/
+
+' Report Coordinator dependencies
+
+coordinator --> index : REST (fetch API metadata)
+coordinator --> qgate : REST (fetch quality-gate config)
+coordinator ..> request : produce
+response ..> coordinator : consume
+
+' Persistent storage
+
+index --> db_index
+qgate --> db_qgate
+coordinator --> db_coordinator
+
+' API Sync Job
+
+sync ---> artifactory : REST (fetch OpenAPI specs)
+sync --> index : REST (store API metadata)
+
+' OTEL Event Filter Stream
+
+app --> otel : gRPC / Protobuf
+
+otel ..> inbound
+inbound .down.> filter
+filter --> index : REST (query API metadata)
+filter .up.> outbound
+outbound ..> otel
+otel --> influx : persist telemetry data
+
+' OpenAPI Coverage Stream
+
+request .down.> coverage
+coverage --> index : REST (query API metadata)
+coverage --> influx : query telemetry data
+coverage .up.> response
+
+legend right
+  <back:DarkOrange>+</back> Snow-White Component
+  <back:Orange>+</back> Snow-White UI
+  <back:Teal>+</back> Infrastructure / Third Party
+  <back:LightBlue>+</back> Persistent Storage
+end legend
+
+@enduml

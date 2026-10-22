@@ -1,0 +1,557 @@
+name: Application CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+    # The gates below read the payload's label list, which is frozen when the run is created, and
+    # 'labeled' is not one of the default types: labelling an open pull request left them judging
+    # the labels it had beforehand, so asking for application tests meant pushing an empty commit.
+    # Labels the 'labeler' job applies never arrive here, since events raised by GITHUB_TOKEN start
+    # no workflow run - only a human or Dependabot labelling a pull request re-evaluates the gates.
+    # A labelled run repeats the whole board, deliberately: skipping the jobs no label can change
+    # would post them as skipped check runs on a commit that already has real ones, and GitHub
+    # keeps the most recent run of a check name - so labelling a red pull request would bury the
+    # red, and satisfy a required check that had genuinely failed.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+  schedule:
+    - cron: '0 2 * * 1'
+
+concurrency:
+  # Per workflow and event: a push and a pull_request run for the same commit share a ref only
+  # nominally, and a push to main must not cancel the weekly scheduled run on it.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect-open-pr:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has_open_pr: ${{ steps.lookup.outputs.number != '' }}
+    steps:
+      - name: Check if PR exists
+        id: lookup
+        uses: jwalton/gh-find-current-pr@8adf30db44cd0384087fcff3a04664ad46798646
+  ci:
+    # A matrix leg per JDK, not two jobs: the legs cannot drift, which a duplicated job eventually
+    # would. The cost is the check name - 'Build and Test (25)' and 'Build and Test (27)' replace
+    # 'Build and Test', so the default-branch ruleset's required status checks must be swapped to the
+    # two new contexts, and open pull requests rebased onto a head that produces them.
+    #
+    # The runtime images run JDK 27 (see the Dockerfiles) while 'maven.compiler.release' stays at 25,
+    # so the published artifacts remain Java 25 bytecode. This job covers the JVM half of that split:
+    # both legs compile the same '--release 25' sources and run the unit and integration suites, one
+    # on a 25 JVM and one on 27.
+    #
+    # 'fail-fast: false' because the point is to learn which JDK broke, not to lose the other leg's
+    # result. The downstream jobs declaring 'needs: ci' now wait for both legs, but a failing leg does
+    # not stop them: their own 'if' opens with '!cancelled()', which is true for a failed dependency
+    # and so overrides the implicit success check. Enforcement of a red leg is the ruleset's job, not
+    # the graph's.
+    name: Build and Test (${{ matrix.java }})
+    runs-on: ubuntu-24.04
+    needs: detect-open-pr
+    # detect-open-pr only runs for branch pushes, so a skipped dependency must not skip this job -
+    # but a cancelled run must still stop it, hence '!cancelled()' rather than 'always()'.
+    if: >-
+      !cancelled() &&
+      (
+        github.ref == 'refs/heads/main' ||
+        github.event_name != 'push' ||
+        needs.detect-open-pr.outputs.has_open_pr != 'true' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
+      )
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    strategy:
+      matrix:
+        java: [25, 27]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      # 'cache: maven' keys on the pom hashes only, with no java-version component, so every job in
+      # this workflow shares one entry and whichever finishes first saves it. These two legs only
+      # 'verify', so they contribute downloaded dependencies and nothing else - but 'app-tests' and
+      # 'native-tests' share the same key and do run 'clean install' on JDK 27, so a restored ~/.m2
+      # can hold reactor snapshots that javac 27 produced. Benign here, because 'verify' on the full
+      # reactor rebuilds every module from source and resolves siblings from the reactor rather than
+      # the repository. Give the legs their own '-Dmaven.repo.local' if that ever stops being true.
+      - name: Set up JDK
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Fetch Helm Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add influxdata https://helm.influxdata.com
+          helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+          helm dependency build
+        working-directory: 'helm/charts/snow-white'
+      - name: Build with Maven
+        run: ./mvnw -B -Pprod verify
+      # 25 only, and deliberately so: 'cli-binary-verification' downloads this by the fixed name
+      # 'cli', and both legs uploading it would collide. The CLI is a Bun binary, unaffected by the
+      # JDK either way.
+      - name: Upload CLI Artifacts
+        if: matrix.java == 25
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cli
+          path: toolkit/cli/target/snow-white-*
+          if-no-files-found: error
+      # Sonar runs on 25 only, so that the quality gate has a single authority and one set of
+      # findings per commit. The three steps below are its setup and the analysis itself.
+      - name: Fetch References
+        if: matrix.java == 25
+        run: git fetch --unshallow origin
+      - name: Cache SonarQube Packages
+        if: matrix.java == 25
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Sonar Analysis
+        # The pull request's author, not 'github.actor': on a labelled run the actor is whoever
+        # applied the label, which would put a Dependabot branch through Sonar after all.
+        if: matrix.java == 25 && !contains(github.event.pull_request.user.login, 'dependabot')
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw -B sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=bbortt-github \
+            -Dsonar.projectKey=bbortt_snow-white
+  app-tests:
+    name: Application Tests
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version')
+      )
+    runs-on: ubuntu-24.04
+    needs: ci
+    strategy:
+      matrix:
+        # `directory` is where the module's Dockerfile and apptest compose file live - the
+        # microservices under microservices/, the example applications under examples/.
+        include:
+          - service: api-gateway
+            directory: microservices/api-gateway
+          - service: api-sync-job
+            directory: microservices/api-sync-job
+          - service: openapi-coverage-stream
+            directory: microservices/openapi-coverage-stream
+          # Not microservices: these two prove a consuming service needs no Snow-White code to put
+          # a test identity on its spans (ARCH-013), which only a test against the built image can
+          # show. Both integration stories carry the proof - hand-written, and generated by the
+          # Snow-White OpenAPI generator - because the claim is about agent configuration, not
+          # about how the controllers came to be.
+          - service: example-spring-boot
+            directory: examples/example-spring-boot
+          - service: example-snow-white-openapi-generator
+            directory: examples/example-snow-white-openapi-generator
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          lfs: true
+          persist-credentials: false
+          submodules: true
+      # 27, matching the runtime the rebuilt jar is about to be baked into. Note the asymmetry
+      # with deploy.yml, which still compiles the published jars on 25: both emit '--release 25'
+      # bytecode, so the artifacts are equivalent, but the jar these tests exercise is the one
+      # javac 27 produced, not byte-for-byte the one a release ships.
+      #
+      # Consequence worth stating plainly: every job now pairs javac N with JVM N - both 'ci' legs
+      # match, and this one is 27/27 - so nothing covers the combination that actually ships, a
+      # javac-25 jar on the temurin-27 JRE. Closing it needs either a second leg here pinned to 25
+      # or a 27 publish, and publishing deliberately stays on 25.
+      - name: Set up JDK
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 27
+      - name: Create Docker Network
+        run: docker network create github_actions
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -Dfrontend.test.skip=true \
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
+      - name: Build ${{ matrix.service }} Image
+        run: |
+          docker build \
+            -f ${{ matrix.directory }}/Dockerfile \
+            -t ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }} \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg PROJECT_VERSION="${{ github.sha }}" \
+            ${{ matrix.directory }}
+      - name: Start Required Services
+        run: |
+          compose_file=${{ matrix.directory }}/src/apptest/resources/docker-compose-apptest.yaml
+          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
+          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
+          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
+        env:
+          COMPOSE_NETWORK_NAME: github_actions
+      - name: Test ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=github_actions \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+      - name: Upload Playwright Report
+        if: failure() && matrix.service == 'api-gateway'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: playwright-report-container
+          path: microservices/api-gateway/target/playwright-report
+          retention-days: 7
+      - name: Export Docker Image
+        run: |
+          mkdir -p image-artifacts
+          docker save \
+            -o image-artifacts/${{ matrix.service }}.tar \
+            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: image-${{ matrix.service }}
+          path: image-artifacts/${{ matrix.service }}.tar
+          if-no-files-found: error
+          retention-days: 1
+  ui-app-tests:
+    name: UI Application Tests
+    runs-on: ubuntu-24.04
+    # Application tests run on pull requests and the weekly schedule only - a branch push gets 'ci'.
+    if: github.event_name != 'push'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up JDK
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 25
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Run UI Application Tests
+        run: ./mvnw -B -pl :api-gateway -am -Pe2e test
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: playwright-report
+          path: microservices/api-gateway/target/playwright-report
+          retention-days: 7
+  native-tests:
+    name: Native Application Tests
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:apptests') ||
+        contains(github.event.pull_request.title, 'citrus.version') ||
+        contains(github.event.pull_request.title, 'native-maven-plugin')
+      )
+    runs-on: ubuntu-24.04
+    needs: ci
+    strategy:
+      matrix:
+        service:
+          [
+            api-index-api,
+            otel-event-filter-stream,
+            quality-gate-api,
+            report-coordinator-api,
+          ]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      # 27, as in 'app-tests'. This is the local JDK only - it does not reach the native compiler.
+      # 'BP_JVM_VERSION' is 'native.java.version', pinned to 25 because the buildpack publishes no
+      # NIK above 25 (see the property's comment in the root pom). 'spring-boot:build-image' under
+      # '-Pnative' runs 'process-aot' locally first, so this job straddles: AOT generation on 27,
+      # native compilation on a 25 NIK. Harmless - the AOT output is release-25 bytecode either way
+      # - but it is why this leg cannot prove the native images against a 27 toolchain.
+      #
+      # deploy.yml's 'publish-native-images' runs Maven on 25, so release is 25 on both sides.
+      - name: Set up JDK
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          cache: maven
+          distribution: 'temurin'
+          java-version: 27
+      - name: Create Docker Network
+        run: docker network create github_actions
+      - name: Rebuild JAR
+        run: |
+          ./mvnw -B clean install \
+            -b smart -T4C \
+            -Pprod \
+            -DskipTests \
+            -Djacoco.skip=true \
+            -Dfrontend.build.skip=true \
+            -Dfrontend.test.skip=true \
+            -pl :citrus-junit-jupiter-extension,:${{ matrix.service }} -am
+      - name: Build Native ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B spring-boot:build-image \
+            -b smart -T4C \
+            -Pnative,prod \
+            -DskipTests \
+            -DskipITs \
+            -Djacoco.skip=true \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+      - name: Start Required Services
+        run: |
+          compose_file=microservices/${{ matrix.service }}/src/apptest/resources/docker-compose-apptest.yaml
+          # kafka.ui is a dev-convenience dashboard, never needed by the tests themselves - skip it to keep resource usage low.
+          services=$(docker compose -f "$compose_file" config --services | grep -v '^kafka\.ui$')
+          docker compose -f "$compose_file" up -d --no-deps --wait --wait-timeout 120 $services
+        env:
+          COMPOSE_NETWORK_NAME: github_actions
+      - name: Test Native ${{ matrix.service }} Image
+        run: |
+          ./mvnw -B verify \
+            -Papptest \
+            -Ddocker.network=github_actions \
+            -Dimage.tag=${{ github.sha }} \
+            -pl :${{ matrix.service }}
+      - name: Upload OTel Telemetry Data
+        if: matrix.service == 'api-index-api' || matrix.service == 'quality-gate-api' || matrix.service == 'report-coordinator-api'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          if-no-files-found: error
+          name: traces-${{ matrix.service }}
+          path: microservices/${{ matrix.service }}/target/otel-collector/traces.json
+      - name: Export Docker Image
+        run: |
+          mkdir -p image-artifacts
+          docker save \
+            -o image-artifacts/${{ matrix.service }}.tar \
+            ghcr.io/bbortt/snow-white/${{ matrix.service }}:${{ github.sha }}
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: image-${{ matrix.service }}
+          path: image-artifacts/${{ matrix.service }}.tar
+          if-no-files-found: error
+          retention-days: 1
+  cli-binary-verification:
+    name: Verify CLI Binary
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'module:cli')
+      )
+    runs-on: ${{ matrix.os }}
+    needs: ci
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-slim
+            binary: snow-white-linux-x64
+          - os: ubuntu-24.04-arm
+            binary: snow-white-linux-arm64
+          - os: macos-26-intel
+            binary: snow-white-macos-x64
+          - os: macos-26
+            binary: snow-white-macos-arm64
+          - os: windows-2025
+            binary: snow-white-windows-x64.exe
+          - os: windows-11-arm
+            binary: snow-white-windows-arm64.exe
+      fail-fast: false
+    permissions:
+      contents: read
+    steps:
+      - name: Download CLI Artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: cli
+          path: toolkit/cli/target
+      - name: Make Binary Executable
+        if: runner.os != 'Windows'
+        run: chmod +x toolkit/cli/target/${{ matrix.binary }}
+      - name: Verify Binary Runs
+        shell: bash
+        run: |
+          toolkit/cli/target/${{ matrix.binary }} --version
+          toolkit/cli/target/${{ matrix.binary }} info
+  e2e-tests:
+    name: End-to-End Tests
+    if: >-
+      !cancelled() &&
+      (
+        github.event_name == 'schedule' ||
+        contains(github.event.pull_request.labels.*.name, 'include:e2e')
+      )
+    runs-on: ubuntu-24.04
+    needs:
+      - app-tests
+      - native-tests
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      # The full version matrix runs weekly only; pull requests test against the pinned latest.
+      matrix:
+        postgres: ${{ fromJSON(github.event_name == 'schedule' && '["16-alpine", "17-alpine", "18-alpine"]' || '["18-alpine"]') }}
+        # | `kafka.version` | `confluentinc/cp-kafka` |
+        # |-----------------|-------------------------|
+        # | `4.0`           | `8.0.x`                 |
+        # | `4.1`           | `8.1.x`                 |
+        # | `4.2`           | `8.2.x`                 |
+        # | `4.3`           | `8.3.x`                 |
+        kafka: ${{ fromJSON(github.event_name == 'schedule' && '["8.0.8", "8.1.6", "8.2.4", "8.3.2"]' || '["8.3.2"]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Download Docker Images
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: image-*
+          path: /tmp/images
+          merge-multiple: true
+      - name: Download Trace Files
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: traces-*
+          path: /tmp/traces
+      - name: Load Docker Images
+        run: |
+          find /tmp/images -name '*.tar' -print0 |
+            xargs -0 -r -n1 docker load -i
+      - name: Arrange Trace Files
+        run: |
+          mkdir -p microservices/api-index-api/target/otel-collector
+          cp /tmp/traces/traces-api-index-api/traces.json microservices/api-index-api/target/otel-collector/traces-api-index-api.json
+          mkdir -p microservices/quality-gate-api/target/otel-collector
+          cp /tmp/traces/traces-quality-gate-api/traces.json microservices/quality-gate-api/target/otel-collector/traces-quality-gate-api.json
+          mkdir -p microservices/report-coordinator-api/target/otel-collector
+          cp /tmp/traces/traces-report-coordinator-api/traces.json microservices/report-coordinator-api/target/otel-collector/traces-report-coordinator-api.json
+      - name: Remove deploy.resources from every Service
+        uses: mikefarah/yq@c2a5da47eac34382dfceb032521b2b08ca8d543e
+        with:
+          cmd: yq 'del(.services[].deploy.resources)' docker-compose.yaml > docker-compose.compatibility.yaml
+      - name: Start Snow-White
+        env:
+          CP_KAFKA_VERSION: ${{ matrix.kafka }}
+          POSTGRES_VERSION: ${{ matrix.postgres }}
+          SNOW_WHITE_BUILD: ${{ github.sha }}
+        run: docker compose -f docker-compose.compatibility.yaml up -d --no-deps --wait --wait-timeout 300
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          cache: 'pnpm'
+          node-version: 24
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Check Snow-White is up and running
+        run: pnpm run e2e:await-services
+      - name: Download CLI Artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: cli
+          path: toolkit/cli/target
+      - name: Make Binary Executable
+        run: chmod +x toolkit/cli/target/snow-white-linux-x64
+      - name: upload-prereleases
+        run: toolkit/cli/target/snow-white-linux-x64 upload-prereleases
+      # The CLI stores its own (runner-side) URL as sourceUrl, which openapi-coverage-stream cannot reach from inside the network.
+      - name: Point Prerelease Source URLs at api-index-api
+        run: |
+          docker compose -f docker-compose.compatibility.yaml exec -T postgres \
+            psql -U snow-white -d api-index-api -v ON_ERROR_STOP=1 \
+            -c "UPDATE api_reference SET source_url = regexp_replace(source_url, '^http://localhost/', 'http://api-index-api:8080/') WHERE source_url LIKE 'http://localhost/%';"
+      - name: calculate
+        run: |
+          mkdir -p target
+          toolkit/cli/target/snow-white-linux-x64 calculate \
+            --junit-output target/junit.xml \
+            --report-output target/report.json
+      - name: Upload Snow-White Report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: snow-white-reports
+          path: |
+            target/junit.xml
+            target/report.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Extract Snow-White Logs
+        if: failure()
+        run: |
+          mkdir -p target
+          docker compose logs > target/snow-white.log
+      - name: Upload Snow-White Logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: snow-white-logs
+          path: target/snow-white.log
+          if-no-files-found: error
+          retention-days: 7

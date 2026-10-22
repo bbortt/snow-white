@@ -1,0 +1,84 @@
+@startuml
+
+!theme vibrant
+
+actor User
+participant "Application" as App
+participant "Pipeline" as Pipeline
+participant "Artifactory" as Artifactory
+participant "Snow-White" as SnowWhite
+database "Persistence\nStore" as DB
+
+== Publish API Specification ==
+
+User -> Artifactory : Publish API specification
+activate Artifactory
+Artifactory --> User : Confirm publication
+deactivate Artifactory
+
+== API Specification Sync ==
+
+loop Every [interval]
+    Artifactory -> SnowWhite : Sync API specifications
+    activate SnowWhite
+    SnowWhite -> DB : Upsert API specifications
+    activate DB
+    DB --> SnowWhite : Confirmed
+    deactivate DB
+    SnowWhite --> Artifactory : Sync acknowledged
+    deactivate SnowWhite
+end
+
+== Update Application ==
+
+User -> App : Update application\n(API spec provider)
+
+== Pipeline Execution (QA) ==
+
+User -> Pipeline : Trigger pipeline
+activate Pipeline
+
+Pipeline -> App : Deploy application
+activate App
+Pipeline -> App : Run quality assurance checks\n(black-box tests against deployed app)
+
+== Telemetry Export ==
+
+App --> SnowWhite : Export telemetry data
+activate SnowWhite
+
+Pipeline -> App : Teardown
+deactivate App
+
+== API Specification Filtering ==
+
+SnowWhite -> SnowWhite : Filter telemetry for\nAPI specification references
+SnowWhite -> DB : Lookup API specification\n(does it exist?)
+DB --> SnowWhite : Lookup result
+
+alt [API specification exists]
+
+    SnowWhite -> DB : Persist telemetry data\nfor matched API spec
+    DB --> SnowWhite : Persisted
+    SnowWhite --> Pipeline : Notify: API spec found & data persisted
+    deactivate SnowWhite
+
+    == Trigger Analysis ==
+
+    Pipeline -> SnowWhite : Trigger analysis for\nspecified (implemented)\nAPI specification
+    activate SnowWhite
+    note right of SnowWhite #90EED4 : Analysis runs against\nthe persisted telemetry\nfor the matched API spec
+    SnowWhite --> Pipeline : Analysis complete
+    deactivate SnowWhite
+
+else [API specification does NOT exist]
+
+    SnowWhite --> Pipeline : Notify: API spec not found, skip
+    deactivate Pipeline
+    note right of Pipeline #90EED4 : No analysis triggered;\nspec absent in Artifactory
+
+end
+
+User --> SnowWhite: Review Analysis Result
+
+@enduml

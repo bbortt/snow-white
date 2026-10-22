@@ -1,0 +1,45 @@
+{
+  "snowWhiteApp": {
+    "apiTestResult": {
+      "home": {
+        "title": "API Test Results",
+        "refreshListLabel": "Refresh list",
+        "notFound": "No API Test Results found"
+      },
+      "detail": {
+        "title": "API Test Result"
+      },
+      "id": "API Criterion",
+      "coverage": "Coverage",
+      "fullyWaived": "Fully waived",
+      "waivedTargets": "{{ waived }} waived · measured over the other {{ judged }}",
+      "waivedTargetsOnly": "All {{ waived }} targets waived",
+      "isIncludedInQualityGate": "Included?",
+      "included": "Included in Quality-Gate",
+      "notIncluded": "Not included in Quality-Gate",
+      "showOnlyIncluded": "Show only included",
+      "additionalInformation": "Details",
+      "qualityGate": "Quality-Gate",
+      "findings": {
+        "show": "Show findings for {{ criterion }}",
+        "hide": "Hide findings for {{ criterion }}",
+        "status": {
+          "UNCOVERED": "Uncovered",
+          "COVERED": "Covered",
+          "NOT_APPLICABLE": "Not applicable",
+          "WAIVED": "Waived"
+        },
+        "showAll": "Show all {{ count }}",
+        "responseCode": "Response",
+        "parameter": "Parameter",
+        "contentType": "Content type",
+        "waiverExpiresOn": "Waived until",
+        "traces": "{{ count }} traces",
+        "moreTraces": "+{{ count }} traces",
+        "trace": "Trace {{ traceId }}",
+        "copy": "Copy to clipboard",
+        "copied": "Copied"
+      }
+    }
+  }
+}

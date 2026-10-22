@@ -1,0 +1,32 @@
+# The example application exports over OTLP/HTTP, unchanged from how it is deployed - the
+# apptest only points it at this collector instead of at a real backend.
+# This collector only re-encodes what it receives as OTLP/JSON and forwards it to WireMock,
+# so the test can read the exported spans as JSON without a protobuf decoder of its own.
+# No processor sits in the pipeline: a batch or filter step could plausibly add or drop the
+# very attribute under test, and the assertion is about what the application exported.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: '0.0.0.0:4318'
+extensions:
+  health_check:
+    endpoint: '0.0.0.0:13133'
+exporters:
+  otlp_http/wiremock:
+    endpoint: http://wiremock:8080
+    encoding: json
+    # Uncompressed on purpose: the test reads the exported span out of WireMock's request
+    # journal as text, and gzip would put a decoding step between the assertion and the span.
+    compression: none
+service:
+  extensions: [health_check]
+  pipelines:
+    # Only spans are relevant here - the attribute under test rides on a server span, and the
+    # metric and log pipelines are dropped entirely rather than routed anywhere.
+    traces:
+      receivers: [otlp]
+      exporters: [otlp_http/wiremock]
+  telemetry:
+    logs:
+      level: INFO

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/snow-white-generic-local/ping-pong.yml"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/yaml"
+    },
+    "bodyFileName": "ping-pong.yml"
+  }
+}

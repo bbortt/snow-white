@@ -1,0 +1,13 @@
+{
+  "reflection": [
+    {
+      "type": "org.apache.kafka.streams.processor.internals.NoOpProcessorWrapper",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    }
+  ]
+}

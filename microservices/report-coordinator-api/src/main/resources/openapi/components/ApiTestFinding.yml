@@ -1,0 +1,66 @@
+type: object
+required:
+  - status
+  - specPointer
+  - evidence
+properties:
+  status:
+    type: string
+    description: 'What the criterion concluded about this target - WAIVED where the calculation request removed it from judgement'
+    example: COVERED
+    enum:
+      - COVERED
+      - UNCOVERED
+      - NOT_APPLICABLE
+      - WAIVED
+  specPointer:
+    type: string
+    description: 'RFC 6901 JSON Pointer into the analyzed OpenAPI document, resolving to the node the criterion judged'
+    example: '/paths/~1pung~1{message}/get/responses/404'
+    minLength: 1
+    maxLength: 512
+  httpPath:
+    type: string
+    description: 'The path of the judged target, as the specification spells it - absent where the target has no path dimension'
+    example: '/pung/{message}'
+    maxLength: 256
+  httpMethod:
+    type: string
+    description: 'The method of the judged target - absent where the target has no method dimension'
+    example: GET
+    maxLength: 16
+  responseCode:
+    type: string
+    description: 'The response code judged - absent where the target has no response-code dimension'
+    example: '404'
+    maxLength: 16
+  parameterName:
+    type: string
+    description: 'The name of the judged parameter - absent where the target is not a parameter'
+    example: page
+    maxLength: 256
+  contentType:
+    type: string
+    description: 'The judged content type - absent where the target has no content-type dimension'
+    example: application/json
+    maxLength: 128
+  evidence:
+    type: array
+    description: 'The traces that evidence this finding - empty for anything but a covered one'
+    items:
+      $ref: './FindingEvidence.yml'
+  # Both absent on any finding whose status is not WAIVED, rather than served as null: the status
+  # already says the target was not waived, and a reason key present-but-empty invites the reader to
+  # conclude it was waived for no stated reason. They are set together or not at all - the trigger
+  # requires both of a waiver, so a reason without an expiry describes one this system never applied.
+  waiverReason:
+    type: string
+    description: 'Why this target was removed from judgement - present only on a WAIVED finding, quoted from the waiver the calculation was triggered with'
+    example: 'Downstream is mocked in this environment, so the 500 cannot be provoked'
+    minLength: 1
+    maxLength: 1024
+  waiverExpiresOn:
+    type: string
+    format: date
+    description: 'The date the applied waiver stops being honoured - present only on a WAIVED finding'
+    example: '2026-12-31'

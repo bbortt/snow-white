@@ -1,0 +1,45 @@
+{
+  "snowWhiteApp": {
+    "apiTestResult": {
+      "home": {
+        "title": "OpenAPI Test Resultate",
+        "refreshListLabel": "Liste aktualisieren",
+        "notFound": "Keine OpenAPI Test Resultate gefunden"
+      },
+      "detail": {
+        "title": "OpenAPI Test Resultat"
+      },
+      "id": "API Kriterium",
+      "coverage": "Abdeckung",
+      "fullyWaived": "Vollständig ausgenommen",
+      "waivedTargets": "{{ waived }} ausgenommen · gemessen über die übrigen {{ judged }}",
+      "waivedTargetsOnly": "Alle {{ waived }} Ziele ausgenommen",
+      "isIncludedInQualityGate": "Inkludiert?",
+      "included": "In Quality-Gate inkludiert",
+      "notIncluded": "Nicht in Quality-Gate inkludiert",
+      "showOnlyIncluded": "Nur inkludierte anzeigen",
+      "additionalInformation": "Details",
+      "qualityGate": "Quality-Gate",
+      "findings": {
+        "show": "Befunde für {{ criterion }} anzeigen",
+        "hide": "Befunde für {{ criterion }} ausblenden",
+        "status": {
+          "UNCOVERED": "Nicht abgedeckt",
+          "COVERED": "Abgedeckt",
+          "NOT_APPLICABLE": "Nicht anwendbar",
+          "WAIVED": "Ausgenommen"
+        },
+        "showAll": "Alle {{ count }} anzeigen",
+        "responseCode": "Antwort",
+        "parameter": "Parameter",
+        "contentType": "Inhaltstyp",
+        "waiverExpiresOn": "Ausgenommen bis",
+        "traces": "{{ count }} Traces",
+        "moreTraces": "+{{ count }} Traces",
+        "trace": "Trace {{ traceId }}",
+        "copy": "In die Zwischenablage kopieren",
+        "copied": "Kopiert"
+      }
+    }
+  }
+}

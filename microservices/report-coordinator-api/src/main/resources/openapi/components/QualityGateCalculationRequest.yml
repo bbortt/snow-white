@@ -1,0 +1,37 @@
+type: object
+required:
+  - includeApis
+properties:
+  includeApis:
+    type: array
+    description: 'List of OpenAPI information objects for which the Quality-Gate is being calculated'
+    items:
+      $ref: './ApiInformation.yml'
+  lookbackWindow:
+    type: string
+    description: "The time window to consider for calculation (e.g., '1h', '24h', '7d')"
+    default: '1h'
+    example: '1h'
+    maxLength: 8
+  attributeFilters:
+    type: object
+    description: 'Key-value map of attributes to filter data considered for calculation'
+    additionalProperties:
+      type: string
+      minLength: 1
+      maxLength: 64
+    example:
+      environment: 'production'
+      region: 'us-west-1'
+  waivers:
+    type: array
+    description: >
+      Criteria declared inapplicable to single targets, for this calculation only. This is the only
+      way a waiver reaches a calculation: no query parameter, no header, no quality-gate property
+      and no separate endpoint supplies one.
+
+
+      The array is validated at the trigger, before any calculation exists, and a rejected entry
+      creates no report. It is absent rather than empty on a report that was given none.
+    items:
+      $ref: './Waiver.yml'

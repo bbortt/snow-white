@@ -1,0 +1,1713 @@
+/*
+ * Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+ * Licensed under the Polyform Small Business License 1.0.0
+ * See LICENSE file for full details.
+ */
+
+package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.resource;
+
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
+import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.ReportApi.*;
+import static io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.ReportStatus.*;
+import static java.lang.Boolean.TRUE;
+import static java.math.BigDecimal.ONE;
+import static java.math.RoundingMode.HALF_UP;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.util.StreamUtils.copyToString;
+
+import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesArch;
+import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.AbstractReportCoordinationServiceIT;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.GetReportByCalculationId200Response;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.rest.dto.ListQualityGateReports200ResponseInner;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.model.*;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.ApiTestRepository;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.domain.repository.QualityGateReportRepository;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+
+@AutoConfigureMockMvc
+class ReportResourceIT extends AbstractReportCoordinationServiceIT {
+
+  private static final String COVERED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/404";
+  private static final String UNCOVERED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/500";
+  private static final String WAIVED_SPEC_POINTER =
+    "/paths/~1api~1v1~1users/get/responses/409";
+
+  private static final String WAIVER_REASON =
+    "conflict is raised by the storage layer, not this API";
+  private static final LocalDate WAIVER_EXPIRES_ON = LocalDate.of(2026, 12, 31);
+
+  private static final String TRACE_ID_WITHOUT_TEST_IDENTITY =
+    "1f8b0c4d2e3a4b5c6d7e8f9a0b1c2d3e";
+  private static final String TRACE_ID_WITH_TEST_IDENTITY =
+    "2e3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c";
+
+  @Autowired
+  private JsonMapper jsonMapper;
+
+  @Autowired
+  private ApiTestRepository apiTestRepository;
+
+  @Autowired
+  private QualityGateReportRepository qualityGateReportRepository;
+
+  @Autowired
+  private MockMvc mockMvc;
+
+  private static String reportStatusAsString(
+    @NonNull ReportStatus reportStatus
+  ) {
+    return NOT_STARTED.equals(reportStatus)
+      ? "IN_PROGRESS"
+      : reportStatus.toString();
+  }
+
+  /**
+   * The database outlives the test class, and the listener ITs leave their reports behind. A list
+   * read asserting on the whole page needs an empty table regardless of which class ran before it,
+   * so the teardown is mirrored here rather than relied on.
+   */
+  @BeforeEach
+  void beforeEachCleanSlate() {
+    qualityGateReportRepository.deleteAll();
+  }
+
+  @AfterEach
+  void afterEachTeardown() {
+    qualityGateReportRepository.deleteAll();
+  }
+
+  @Test
+  void findReport_IN_PROGRESS_byCalculationId() throws Exception {
+    var calculationId = UUID.fromString("3130fae9-e67c-43cd-9c2d-23aee9920736");
+
+    var serviceName = "serviceName";
+    var apiName = "apiName";
+    var apiVersion = "apiVersion";
+    var lookbackWindow = "1m";
+
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      serviceName,
+      apiName,
+      apiVersion,
+      lookbackWindow,
+      IN_PROGRESS
+    );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(jsonPath("$.calculationId").value(calculationId.toString()))
+      .andExpect(
+        jsonPath("$.qualityGateConfigName").value(
+          qualityGateReport.getQualityGateConfigName()
+        )
+      )
+      .andExpect(jsonPath("$.status").value(IN_PROGRESS.name()))
+      .andExpect(jsonPath("$.calculationRequest.includeApis.length()").value(1))
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].serviceName").value(
+          serviceName
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].apiName").value(apiName)
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.includeApis[0].apiVersion").value(
+          apiVersion
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.lookbackWindow").value(lookbackWindow)
+      )
+      .andExpect(jsonPath("$.initiatedAt").value(not(nullValue())))
+      .andExpect(jsonPath("$.interfaces.length()").value(1))
+      .andExpect(jsonPath("$.interfaces[0].serviceName").value(serviceName))
+      .andExpect(jsonPath("$.interfaces[0].apiName").value(apiName))
+      .andExpect(jsonPath("$.interfaces[0].apiVersion").value(apiVersion))
+      .andExpect(jsonPath("$.interfaces[0].apiType").value(UNSPECIFIED.name()))
+      .andExpect(jsonPath("$.interfaces[0].testResults").isArray());
+  }
+
+  @Test
+  void findReport_withOpenApiResults_byCalculationId() throws Exception {
+    var calculationId = UUID.fromString("3130fae9-e67c-43cd-9c2d-23aee9920736");
+
+    var serviceName = "serviceName";
+    var apiName = "apiName";
+    var apiVersion = "apiVersion";
+    var lookbackWindow = "1m";
+
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      serviceName,
+      apiName,
+      apiVersion,
+      lookbackWindow,
+      FAILED
+    );
+
+    var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
+    var additionalInformation = "some additional information";
+
+    qualityGateReport = qualityGateReport.withApiTests(
+      qualityGateReport
+        .getApiTests()
+        .stream()
+        .map(apiTest ->
+          apiTest.withApiTestResults(
+            Set.of(
+              ApiTestResult.builder()
+                .apiTestCriteria(PATH_COVERAGE.name())
+                .coverage(coverage)
+                .includedInReport(TRUE)
+                .duration(Duration.ofSeconds(1))
+                .additionalInformation(additionalInformation)
+                .apiTest(apiTest)
+                .build()
+            )
+          )
+        )
+        .collect(toSet())
+    );
+
+    qualityGateReportRepository.save(qualityGateReport);
+
+    var responseAsString = mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    var resultingQualityGateReport = jsonMapper.readValue(
+      responseAsString,
+      GetReportByCalculationId200Response.class
+    );
+
+    assertThat(resultingQualityGateReport).satisfies(
+      report -> assertThat(report.getCalculationId()).isEqualTo(calculationId),
+      report ->
+        assertThat(report.getStatus()).isEqualTo(
+          GetReportByCalculationId200Response.StatusEnum.FAILED
+        ),
+      report ->
+        assertThat(report.getCalculationRequest())
+          .isNotNull()
+          .satisfies(
+            request ->
+              assertThat(request.getIncludeApis())
+                .hasSize(1)
+                .first()
+                .satisfies(
+                  includedApi ->
+                    assertThat(includedApi.getServiceName()).isEqualTo(
+                      serviceName
+                    ),
+                  includedApi ->
+                    assertThat(includedApi.getApiName()).isEqualTo(apiName),
+                  includedApi ->
+                    assertThat(includedApi.getApiVersion()).isEqualTo(
+                      apiVersion
+                    )
+                ),
+            request ->
+              assertThat(request.getLookbackWindow()).isEqualTo(lookbackWindow)
+          ),
+      report -> assertThat(report.getInitiatedAt()).isNotNull(),
+      report ->
+        assertThat(report.getInterfaces())
+          .hasSize(1)
+          .first()
+          .satisfies(api ->
+            assertThat(api).satisfies(
+              includedApi ->
+                assertThat(includedApi.getServiceName()).isEqualTo(serviceName),
+              includedApi ->
+                assertThat(includedApi.getApiName()).isEqualTo(apiName),
+              includedApi ->
+                assertThat(includedApi.getApiVersion()).isEqualTo(apiVersion),
+              includedApi ->
+                assertThat(includedApi.getTestResults())
+                  .hasSize(1)
+                  .first()
+                  .satisfies(
+                    result ->
+                      assertThat(result.getId()).isEqualTo(
+                        PATH_COVERAGE.name()
+                      ),
+                    result ->
+                      assertThat(result.getCoverage()).isEqualTo(coverage),
+                    result ->
+                      assertThat(result.getAdditionalInformation()).isEqualTo(
+                        additionalInformation
+                      ),
+                    result ->
+                      assertThat(result.getIsIncludedInQualityGate()).isTrue()
+                  )
+            )
+          )
+    );
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesTheFindingsBehindEveryCriterionResult()
+    throws Exception {
+    var calculationId = UUID.fromString("52ad2f1b-2a9e-4d42-9e2f-9c2a0f9f7a21");
+
+    persistReportWithFindings(calculationId);
+
+    var findingsArray = readSingleTestResult(calculationId).get("findings");
+
+    // Ordered by spec pointer, and asserted in order: the entity's identity hashCode would
+    // otherwise let two identical requests hand the same findings over in two different orders.
+    assertThat(valuesOf(findingsArray, "specPointer")).containsExactly(
+      COVERED_SPEC_POINTER,
+      UNCOVERED_SPEC_POINTER
+    );
+
+    var findings = indexBy(findingsArray, "specPointer");
+
+    var covered = findings.get(COVERED_SPEC_POINTER);
+    // The status reads as its name; the stored code says nothing to whoever opens the drilldown.
+    assertThat(covered.get("status").asString()).isEqualTo("COVERED");
+    assertThat(covered.get("httpPath").asString()).isEqualTo("/api/v1/users");
+    assertThat(covered.get("httpMethod").asString()).isEqualTo("GET");
+    assertThat(covered.get("responseCode").asString()).isEqualTo("404");
+    assertThat(covered.has("parameterName")).isFalse();
+    assertThat(covered.get("contentType").asString()).isEqualTo(
+      "application/json"
+    );
+    assertThat(covered.get("evidence").size()).isEqualTo(2);
+
+    var uncovered = findings.get(UNCOVERED_SPEC_POINTER);
+    assertThat(uncovered.get("status").asString()).isEqualTo("UNCOVERED");
+    // Empty never means "not loaded" - it means this finding has no evidence. Only null is
+    // omitted, so the empty array stays on the wire.
+    assertThat(uncovered.has("evidence")).isTrue();
+    assertThat(uncovered.get("evidence").isEmpty()).isTrue();
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesEvidenceAsObjectsOmittingAnUnsetTestCaseName()
+    throws Exception {
+    var calculationId = UUID.fromString("7b3f0c58-0a6b-4f95-8d4e-2f5c4a1b6d33");
+
+    persistReportWithFindings(calculationId);
+
+    var evidence = indexBy(
+      indexBy(
+        readSingleTestResult(calculationId).get("findings"),
+        "specPointer"
+      )
+        .get(COVERED_SPEC_POINTER)
+        .get("evidence"),
+      "traceId"
+    );
+
+    assertThat(evidence).containsOnlyKeys(
+      TRACE_ID_WITHOUT_TEST_IDENTITY,
+      TRACE_ID_WITH_TEST_IDENTITY
+    );
+
+    assertThat(
+      evidence.get(TRACE_ID_WITH_TEST_IDENTITY).get("testCaseName").asString()
+    ).isEqualTo("shouldReturnNotFound");
+
+    // A trace whose span carried no test identity carries no key at all: an unset property is
+    // omitted rather than served as null.
+    var withoutTestIdentity = evidence.get(TRACE_ID_WITHOUT_TEST_IDENTITY);
+    assertThat(withoutTestIdentity.has("traceId")).isTrue();
+    assertThat(withoutTestIdentity.has("testCaseName")).isFalse();
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  void findReport_servesAnEmptyFindingsArray_leavingEveryOtherFieldUntouched()
+    throws Exception {
+    var calculationId = UUID.fromString("c1f4a6d8-5e2b-4a70-9f13-8b6c0d2e4a55");
+
+    var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
+    var additionalInformation = "some additional information";
+
+    var qualityGateReport = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    );
+
+    // A report written before findings existed: its results carry none, and nothing about the
+    // coverage they already reported may move.
+    qualityGateReportRepository.save(
+      qualityGateReport.withApiTests(
+        qualityGateReport
+          .getApiTests()
+          .stream()
+          .map(apiTest ->
+            apiTest.withApiTestResults(
+              Set.of(
+                ApiTestResult.builder()
+                  .apiTestCriteria(PATH_COVERAGE.name())
+                  .coverage(coverage)
+                  .includedInReport(TRUE)
+                  .duration(Duration.ofSeconds(1))
+                  .additionalInformation(additionalInformation)
+                  .apiTest(apiTest)
+                  .build()
+              )
+            )
+          )
+          .collect(toSet())
+      )
+    );
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.has("findings")).isTrue();
+    assertThat(testResult.get("findings").isEmpty()).isTrue();
+
+    var listedReport = jsonMapper
+      .readTree(
+        mockMvc
+          .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+          .andExpect(status().isOk())
+          .andReturn()
+          .getResponse()
+          .getContentAsString()
+      )
+      .get(0);
+
+    // The findings are the only thing the widened shape adds; everything the list read already
+    // served must render identically here. Asserted over the whole report rather than the one
+    // criterion result, because three components are forked - the report, the interface and the
+    // result - and a field added to any narrow one would otherwise vanish from this read with a
+    // green build.
+    assertThat(withoutFindings(readSingleReport(calculationId))).isEqualTo(
+      listedReport
+    );
+  }
+
+  @Test
+  void findReport_withoutRequiredCalculationId() throws Exception {
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, "not-a-uuid"))
+      .andExpect(status().isBadRequest());
+  }
+
+  /**
+   * All four shapes that answer a report publish the threshold it was scored against. The report is
+   * pinned at {@code 85} rather than the domain default of {@code 100}, so a read that hardcoded the
+   * default, or dropped the property on one of the two components, fails here instead of passing by
+   * coincidence.
+   * <p>
+   * {@code IN_PROGRESS} is what makes one report reach all four: it answers {@code 202} on both
+   * report endpoints, and the completed {@code 200} shape is asserted by the sibling case below.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void everyReportReadPublishesTheThresholdTheReportWasScoredAgainst()
+    throws Exception {
+    var calculationId = UUID.fromString("5f0d4b1e-2c33-4a7e-9f61-6d0a8c2b4e17");
+
+    persistReportPinnedAt(calculationId, 85, IN_PROGRESS);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(jsonPath("$[0].minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The findings-carrying {@code 200} publishes the same pinned threshold as the narrow shapes. It
+   * is a forked component, so a property added to the shared one alone would vanish from exactly
+   * this read with a green build.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void theCompletedReportReadPublishesTheSamePinnedThreshold()
+    throws Exception {
+    var calculationId = UUID.fromString("9c1e7a46-8b52-4d0f-ae33-1b7c05d9e284");
+
+    persistReportPinnedAt(calculationId, 85, PASSED);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The read answers the number pinned on the report, not one the gate currently carries. The column
+   * is non-updatable, so an attempt to move the report's threshold after the fact - which is what a
+   * later edit to the gate would have to do to change this read - leaves the pinned value standing.
+   */
+  @Test
+  @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
+  void theReadAnswersThePinnedThresholdAfterAnAttemptToMoveIt()
+    throws Exception {
+    var calculationId = UUID.fromString("2a6f9d08-4e71-4c5b-b3a2-7e8d1f046c93");
+
+    persistReportPinnedAt(calculationId, 85, PASSED);
+
+    qualityGateReportRepository.saveAndFlush(
+      qualityGateReportRepository
+        .findById(calculationId)
+        .orElseThrow()
+        .withMinCoveragePercentage(95)
+    );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.minCoveragePercentage").value(85));
+  }
+
+  /**
+   * The counts travel with the criterion result on every shape that publishes one, the way the
+   * pinned threshold travels with the report. {@code IN_PROGRESS} is what reaches three of the four
+   * at once - both report endpoints answer {@code 202} and the listing still carries the report -
+   * and the completed {@code 200} is the sibling case below, because it is served by a forked
+   * component that a property added to the shared one alone would miss.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  void everyReportReadPublishesTheCountsBehindTheRatio() throws Exception {
+    var calculationId = UUID.fromString("b4c7e1a9-3d52-4f08-8e71-0a6b2c9d4f35");
+
+    persistReportWithTargetCounts(calculationId, IN_PROGRESS);
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].judgedTargetCount").value(4)
+      )
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].waivedTargetCount").value(1)
+      );
+  }
+
+  /**
+   * And the completed read publishes the same two numbers beside the findings they describe: four
+   * targets judged, one waived, which is what the findings array independently says. A result whose
+   * counts disagreed with the findings served next to them would be a report arguing with itself.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesCon(ConTraceables.CON_009_COVERAGE_AGREES_WITH_FINDINGS)
+  void theCompletedReportReadPublishesTheSameCounts() throws Exception {
+    var calculationId = UUID.fromString("e2a5d7c1-6b39-4f84-9c02-7d1e8a3b5f46");
+
+    persistReportWithTargetCounts(calculationId, FAILED);
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.get("coverage").decimalValue()).isEqualByComparingTo(
+      "0.75"
+    );
+    assertThat(testResult.get("judgedTargetCount").asInt()).isEqualTo(4);
+    assertThat(testResult.get("waivedTargetCount").asInt()).isEqualTo(1);
+
+    var statuses = valuesOf(testResult.get("findings"), "status");
+    assertThat(statuses.stream().filter("WAIVED"::equals)).hasSize(
+      testResult.get("waivedTargetCount").asInt()
+    );
+    assertThat(
+      statuses.stream().filter(status -> !"WAIVED".equals(status))
+    ).hasSize(testResult.get("judgedTargetCount").asInt());
+  }
+
+  /**
+   * A waived target is served with the sentence that excused it. Its neighbours carry none of the
+   * three keys rather than three nulls, so a consumer reads "waived, for this reason, until this
+   * date" on exactly the findings a waiver addressed.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesAWaivedFindingWithItsReasonAndExpiry()
+    throws Exception {
+    var calculationId = UUID.fromString("c8f1b204-9e67-4a3d-85b0-2f4c6a1d7e98");
+
+    persistReportWithTargetCounts(calculationId, FAILED);
+
+    var findings = indexBy(
+      readSingleTestResult(calculationId).get("findings"),
+      "specPointer"
+    );
+
+    var waived = findings.get(WAIVED_SPEC_POINTER);
+    assertThat(waived.get("status").asString()).isEqualTo("WAIVED");
+    assertThat(waived.get("waiverReason").asString()).isEqualTo(WAIVER_REASON);
+    assertThat(waived.get("waiverExpiresOn").asString()).isEqualTo(
+      WAIVER_EXPIRES_ON.toString()
+    );
+
+    var uncovered = findings.get(UNCOVERED_SPEC_POINTER);
+    assertThat(uncovered.get("status").asString()).isEqualTo("UNCOVERED");
+    assertThat(uncovered.has("waiverReason")).isFalse();
+    assertThat(uncovered.has("waiverExpiresOn")).isFalse();
+  }
+
+  /**
+   * A report scored before the counts existed serves neither key. The only default available would
+   * be {@code 0}, and {@code judgedTargetCount: 0} states that the criterion judged nothing - the
+   * mark of a pass that waivers emptied, which has to stay distinguishable from one that passed on
+   * coverage alone. Defaulting would stamp that false sentence on every report predating this
+   * change. An absent key says "this report does not know", which is true.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_servesNeitherCount_whenTheResultWasScoredBeforeThem()
+    throws Exception {
+    var calculationId = UUID.fromString("a7d0c3e5-1f48-4b96-8e23-5c7a9b0d6f12");
+
+    var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
+
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    apiTestRepository.save(
+      apiTest.withApiTestResults(
+        Set.of(
+          ApiTestResult.builder()
+            .apiTestCriteria(PATH_COVERAGE.name())
+            .coverage(coverage)
+            .includedInReport(TRUE)
+            .duration(Duration.ofSeconds(1))
+            .apiTest(apiTest)
+            .build()
+        )
+      )
+    );
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.has("judgedTargetCount")).isFalse();
+    assertThat(testResult.has("waivedTargetCount")).isFalse();
+
+    // And the ratio it was scored with is untouched by the keys it does not carry.
+    assertThat(testResult.get("coverage").decimalValue()).isEqualByComparingTo(
+      coverage
+    );
+  }
+
+  /**
+   * The counts are read from storage, not recomputed from the findings on the way out. A result
+   * persisted with counts its own findings cannot account for publishes the stored pair anyway -
+   * which is the observable difference between caching what the reduction measured and taking a
+   * second opinion from a drilldown that may have been pruned, replaced, or never delivered.
+   */
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
+  )
+  @VerifiesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
+  void findReport_servesThePersistedCounts_ratherThanDerivingThemFromTheFindings()
+    throws Exception {
+    var calculationId = UUID.fromString("d3b6f09a-7c21-4e58-9ab4-1f0e5c8d2a73");
+
+    // Nine targets judged and two waived, with a single finding to show for it: no derivation from
+    // what is served beside them could arrive at these numbers.
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      FAILED,
+      new BigDecimal("0.75"),
+      9,
+      2
+    );
+
+    apiTestResult
+      .getFindings()
+      .add(finding(apiTestResult, FindingStatus.COVERED, "200"));
+
+    persist(apiTestResult);
+
+    var testResult = readSingleTestResult(calculationId);
+
+    assertThat(testResult.get("findings")).hasSize(1);
+    assertThat(testResult.get("judgedTargetCount").asInt()).isEqualTo(9);
+    assertThat(testResult.get("waivedTargetCount").asInt()).isEqualTo(2);
+  }
+
+  /**
+   * A criterion whose every target was waived publishes the vacuous {@code 1.00} with the counts
+   * that qualify it, on every shape that serves a criterion result. The ratio alone cannot carry
+   * this: it is the same number a criterion at genuine full coverage reports.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+  )
+  void everyReportReadPublishesNothingJudged_whenEveryTargetWasWaived()
+    throws Exception {
+    var calculationId = UUID.fromString("f09c2d78-4a16-4b3e-92d5-6e8a1c0b7f24");
+
+    persistFullyWaivedReport(calculationId, IN_PROGRESS);
+
+    for (var path : List.of(
+      PATH_GET_REPORT_BY_CALCULATION_ID,
+      PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT
+    )) {
+      mockMvc
+        .perform(get(path, calculationId))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.interfaces[0].testResults[0].coverage").value(1))
+        .andExpect(
+          jsonPath("$.interfaces[0].testResults[0].judgedTargetCount").value(0)
+        )
+        .andExpect(
+          jsonPath("$.interfaces[0].testResults[0].waivedTargetCount").value(3)
+        );
+    }
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].judgedTargetCount").value(0)
+      )
+      .andExpect(
+        jsonPath("$[0].interfaces[0].testResults[0].waivedTargetCount").value(3)
+      );
+  }
+
+  /**
+   * Two reports that scored the same and mean opposite things, told apart on the shapes a dashboard
+   * reads. The ratios are identical by design - an empty denominator reports full coverage by
+   * convention - so the counts are the whole of the difference, and the listing, the surface most
+   * likely to show a waived pass as a clean one, is the one that deliberately carries no findings
+   * to fall back on.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
+  )
+  void everyReportReadDistinguishesAFullyWaivedPassFromAGenuineOne()
+    throws Exception {
+    var genuine = UUID.fromString("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d");
+    var waived = UUID.fromString("9f8e7d6c-5b4a-4938-8271-6c5d4e3f2a1b");
+
+    persistFullyCoveredReport(genuine, PASSED);
+    persistFullyWaivedReport(waived, PASSED);
+
+    var genuineResult = readSingleTestResult(genuine);
+    var waivedResult = readSingleTestResult(waived);
+
+    // The same ratio on both, so nothing below may be read off it.
+    assertThat(genuineResult.get("coverage").decimalValue())
+      .isEqualByComparingTo("1.00")
+      .isEqualByComparingTo(waivedResult.get("coverage").decimalValue());
+
+    assertThat(genuineResult.get("judgedTargetCount").asInt()).isEqualTo(3);
+    assertThat(genuineResult.get("waivedTargetCount").asInt()).isZero();
+
+    assertThat(waivedResult.get("judgedTargetCount").asInt()).isZero();
+    assertThat(waivedResult.get("waivedTargetCount").asInt()).isEqualTo(3);
+
+    var listed = indexBy(
+      jsonMapper.readTree(
+        mockMvc
+          .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+          .andExpect(status().isOk())
+          .andReturn()
+          .getResponse()
+          .getContentAsString()
+      ),
+      "calculationId"
+    );
+
+    assertThat(listedCountsOf(listed.get(genuine.toString()))).containsExactly(
+      3,
+      0
+    );
+    assertThat(listedCountsOf(listed.get(waived.toString()))).containsExactly(
+      0,
+      3
+    );
+  }
+
+  private static List<Integer> listedCountsOf(JsonNode report) {
+    var testResult = report.get("interfaces").get(0).get("testResults").get(0);
+
+    return List.of(
+      testResult.get("judgedTargetCount").asInt(),
+      testResult.get("waivedTargetCount").asInt()
+    );
+  }
+
+  /**
+   * One report, one criterion result carrying the counts the reduction that produced its ratio
+   * recorded, with the findings those counts describe: three covered and one uncovered target
+   * judged, one waived out of the fraction entirely.
+   */
+  private void persistReportWithTargetCounts(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      new BigDecimal("0.75"),
+      4,
+      1
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.COVERED, "200"),
+          finding(apiTestResult, FindingStatus.COVERED, "201"),
+          finding(apiTestResult, FindingStatus.COVERED, "204"),
+          finding(apiTestResult, FindingStatus.UNCOVERED, "500"),
+          finding(apiTestResult, FindingStatus.WAIVED, "409")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  /** The criterion that earned its {@code 1.00}: three targets judged, all of them covered. */
+  private void persistFullyCoveredReport(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      ONE.setScale(2, HALF_UP),
+      3,
+      0
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.COVERED, "200"),
+          finding(apiTestResult, FindingStatus.COVERED, "201"),
+          finding(apiTestResult, FindingStatus.COVERED, "204")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  /** The criterion that was excused it: nothing judged, three targets waived. */
+  private void persistFullyWaivedReport(
+    UUID calculationId,
+    ReportStatus reportStatus
+  ) {
+    var apiTestResult = resultWithCounts(
+      calculationId,
+      reportStatus,
+      ONE.setScale(2, HALF_UP),
+      0,
+      3
+    );
+
+    apiTestResult
+      .getFindings()
+      .addAll(
+        Set.of(
+          finding(apiTestResult, FindingStatus.WAIVED, "200"),
+          finding(apiTestResult, FindingStatus.WAIVED, "404"),
+          finding(apiTestResult, FindingStatus.WAIVED, "500")
+        )
+      );
+
+    persist(apiTestResult);
+  }
+
+  private ApiTestResult resultWithCounts(
+    UUID calculationId,
+    ReportStatus reportStatus,
+    BigDecimal coverage,
+    int judgedTargetCount,
+    int waivedTargetCount
+  ) {
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      reportStatus
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    return ApiTestResult.builder()
+      .apiTestCriteria(PATH_COVERAGE.name())
+      .coverage(coverage)
+      .judgedTargetCount(judgedTargetCount)
+      .waivedTargetCount(waivedTargetCount)
+      .includedInReport(TRUE)
+      .duration(Duration.ofSeconds(1))
+      .apiTest(apiTest)
+      .build();
+  }
+
+  private void persist(ApiTestResult apiTestResult) {
+    apiTestRepository.save(
+      apiTestResult.getApiTest().withApiTestResults(Set.of(apiTestResult))
+    );
+  }
+
+  /**
+   * One target the criterion concluded something about, addressed by its response code - and, where
+   * a waiver was what concluded it, carrying the reason and expiry that say so.
+   */
+  private static ApiTestFinding finding(
+    ApiTestResult apiTestResult,
+    FindingStatus status,
+    String responseCode
+  ) {
+    var waived = FindingStatus.WAIVED.equals(status);
+
+    return ApiTestFinding.builder()
+      .specPointer("/paths/~1api~1v1~1users/get/responses/" + responseCode)
+      .status(status.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode(responseCode)
+      .waiverReason(waived ? WAIVER_REASON : null)
+      .waiverExpiresOn(waived ? WAIVER_EXPIRES_ON : null)
+      .apiTestResult(apiTestResult)
+      .build();
+  }
+
+  /** One report pinned at a given threshold, with the one API test every read shape walks. */
+  private QualityGateReport persistReportPinnedAt(
+    UUID calculationId,
+    Integer minCoveragePercentage,
+    ReportStatus reportStatus
+  ) {
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .minCoveragePercentage(minCoveragePercentage)
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId).build()
+        )
+        .reportStatus(reportStatus.getVal())
+        .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
+        .build()
+    );
+
+    createSimpleApiTestSet(qualityGateReport);
+
+    return qualityGateReport;
+  }
+
+  @Test
+  void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
+    throws Exception {
+    var calculationId = UUID.fromString("aaac28e5-2d0e-4ea6-8fef-4dc85169759e");
+
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId).build()
+        )
+        .reportStatus(PASSED.getVal())
+        .createdAt(Instant.parse("2025-04-28T08:00:00.00Z"))
+        .build()
+    );
+
+    createSimpleApiTestSet(qualityGateReport);
+
+    qualityGateReport = qualityGateReport.withApiTests(
+      qualityGateReport
+        .getApiTests()
+        .stream()
+        .map(apiTest ->
+          apiTest.withApiTestResults(
+            Set.of(
+              ApiTestResult.builder()
+                .apiTestCriteria(PATH_COVERAGE.name())
+                .coverage(ONE)
+                .includedInReport(TRUE)
+                .duration(Duration.ofSeconds(1))
+                .apiTest(apiTest)
+                .build()
+            )
+          )
+        )
+        .collect(toSet())
+    );
+
+    qualityGateReportRepository.saveAndFlush(qualityGateReport);
+
+    var jUnitReport = mockMvc
+      .perform(
+        get(PATH_GET_REPORT_BY_CALCULATION_ID_AS_J_UNIT, calculationId).accept(
+          APPLICATION_XML_VALUE
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(
+        header().string(
+          CONTENT_DISPOSITION,
+          "attachment; filename=\"snow-white-junit.xml\""
+        )
+      )
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_XML_VALUE))
+      .andReturn()
+      .getResponse()
+      .getContentAsString();
+
+    assertXMLEqual(
+      copyToString(
+        getClass()
+          .getClassLoader()
+          .getResourceAsStream("ReportResourceIT/JUnitReport.xml"),
+        UTF_8
+      ),
+      jUnitReport
+    );
+  }
+
+  @EnumSource
+  @ParameterizedTest
+  void findAllReports(ReportStatus reportStatus) throws Exception {
+    persistTwoReportsOrderedByCreationTime(reportStatus);
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam(
+          "sort",
+          "initiatedAt,desc"
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "2"))
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
+      .andExpect(
+        jsonPath("$[0].status").value(reportStatusAsString(reportStatus))
+      )
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"))
+      .andExpect(
+        jsonPath("$[1].status").value(reportStatusAsString(reportStatus))
+      );
+  }
+
+  /**
+   * Without a {@code sort} the listing still orders newest first, so a caller that expresses no
+   * preference gets the documented default rather than whatever the database returns.
+   */
+  @Test
+  void findAllReportsWithoutSortAppliesTheDocumentedDefaultOrder()
+    throws Exception {
+    persistTwoReportsOrderedByCreationTime(PASSED);
+
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.length()").value(2))
+      .andExpect(jsonPath("$[0].qualityGateConfigName").value("nameB"))
+      .andExpect(jsonPath("$[1].qualityGateConfigName").value("nameA"));
+  }
+
+  /**
+   * {@code createdAt} is the entity attribute behind the published {@code initiatedAt}. It is not a
+   * second spelling of it, and asking for it is a request this listing refuses rather than a 500.
+   */
+  @ParameterizedTest
+  @ValueSource(
+    strings = {
+      "createdAt,desc",
+      "status,asc",
+      "initiatedAt",
+      "initiatedAt,sideways",
+    }
+  )
+  void findAllReportsRejectsASortItDoesNotPublish(String sort)
+    throws Exception {
+    mockMvc
+      .perform(get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("sort", sort))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value("Bad Request"))
+      .andExpect(
+        jsonPath("$.message").value(
+          containsString(
+            "one of: calculationId, initiatedAt, qualityGateConfigName"
+          )
+        )
+      );
+  }
+
+  /** Two reports a known five minutes apart, so any assertion on order has something to order. */
+  private void persistTwoReportsOrderedByCreationTime(
+    ReportStatus reportStatus
+  ) {
+    var calculationId1 = UUID.fromString(
+      "b30bb84b-7bf6-4744-8bfc-ac05b8a85991"
+    );
+    var qualityGateReport1 = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId1)
+        .qualityGateConfigName("nameA")
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId1).build()
+        )
+        .reportStatus(reportStatus.getVal())
+        .createdAt(Instant.parse("2025-05-07T18:00:00.00Z"))
+        .build()
+    );
+
+    var calculationId2 = UUID.fromString(
+      "99635525-27a5-43ee-ae46-1cedf2ba4c35"
+    );
+    var qualityGateReport2 = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId2)
+        .qualityGateConfigName("nameB")
+        .reportParameter(
+          ReportParameter.builder().calculationId(calculationId2).build()
+        )
+        .reportStatus(reportStatus.getVal())
+        .createdAt(Instant.parse("2025-05-07T18:05:00.00Z"))
+        .build()
+    );
+
+    createSimpleApiTestSet(qualityGateReport1);
+    createSimpleApiTestSet(qualityGateReport2);
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  void findReport_answersTheWaiverDocumentItsCalculationWasGiven()
+    throws Exception {
+    var calculationId = UUID.fromString("0fd3f8bd-0d3d-4e4f-9ad8-5e5bd3dc2cb2");
+
+    persistReportWithWaivers(
+      calculationId,
+      List.of(
+        Waiver.builder()
+          .serviceName("serviceName")
+          .apiName("apiName")
+          .apiVersion("*")
+          .path("/api/v1/users")
+          .method("GET")
+          .responseCode("500")
+          .criterion(PATH_COVERAGE.name())
+          .reason("Upstream outage is simulated elsewhere.")
+          .expires(LocalDate.parse("2026-12-31"))
+          .build(),
+        Waiver.builder()
+          .serviceName("serviceName")
+          .apiName("apiName")
+          .apiVersion("apiVersion")
+          .path("/api/v1/users")
+          .method("POST")
+          .reason("Write path is not exercised by this suite.")
+          .expires(LocalDate.parse("2027-01-31"))
+          .build()
+      )
+    );
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.calculationRequest.waivers.length()").value(2))
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].apiVersion").value("*")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].path").value("/api/v1/users")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].method").value("GET")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].responseCode").value("500")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].criterion").value(
+          PATH_COVERAGE.name()
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].reason").value(
+          "Upstream outage is simulated elsewhere."
+        )
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[0].expires").value("2026-12-31")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].method").value("POST")
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].responseCode").doesNotExist()
+      )
+      .andExpect(
+        jsonPath("$.calculationRequest.waivers[1].criterion").doesNotExist()
+      );
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
+  @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
+  void findReport_leavesWaiversAbsent_whenTheCalculationWasGivenNone()
+    throws Exception {
+    var calculationId = UUID.fromString("4f0a7f33-0c1e-4c86-9a01-6f9c0a1bd2f4");
+
+    persistReportWithWaivers(calculationId, List.of());
+
+    mockMvc
+      .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+      .andExpect(status().isAccepted())
+      .andExpect(jsonPath("$.calculationRequest.waivers").doesNotExist());
+  }
+
+  private void persistReportWithWaivers(
+    UUID calculationId,
+    List<Waiver> waivers
+  ) {
+    var qualityGateReport = qualityGateReportRepository.save(
+      QualityGateReport.builder()
+        .calculationId(calculationId)
+        .qualityGateConfigName("qualityGateConfigName")
+        .reportParameter(
+          ReportParameter.builder()
+            .calculationId(calculationId)
+            .lookbackWindow("1m")
+            .waivers(waivers)
+            .build()
+        )
+        .reportStatus(IN_PROGRESS.getVal())
+        .build()
+    );
+
+    apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName("serviceName")
+        .apiName("apiName")
+        .apiVersion("apiVersion")
+        .qualityGateReport(qualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
+        .build()
+    );
+  }
+
+  private QualityGateReport createAndPersistQualityGateReport(
+    UUID calculationId,
+    String serviceName,
+    String apiName,
+    String apiVersion,
+    String lookbackWindow,
+    ReportStatus reportStatus
+  ) {
+    var qualityGateReport = QualityGateReport.builder()
+      .calculationId(calculationId)
+      .qualityGateConfigName("qualityGateConfigName")
+      .reportParameter(
+        ReportParameter.builder()
+          .calculationId(calculationId)
+          .lookbackWindow(lookbackWindow)
+          .build()
+      )
+      .reportStatus(reportStatus.getVal())
+      .build();
+
+    final var persistedQualityGateReport = qualityGateReportRepository.save(
+      qualityGateReport
+    );
+
+    var persistedApiTests = apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName(serviceName)
+        .apiName(apiName)
+        .apiVersion(apiVersion)
+        .qualityGateReport(persistedQualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
+        .build()
+    );
+
+    return persistedQualityGateReport.withApiTests(Set.of(persistedApiTests));
+  }
+
+  /**
+   * One report, one criterion result, two findings: a covered one carrying every discriminator the
+   * target has plus two traces - one of them named, one not - and an uncovered one with no evidence
+   * at all.
+   */
+  private void persistReportWithFindings(UUID calculationId) {
+    var apiTest = createAndPersistQualityGateReport(
+      calculationId,
+      "serviceName",
+      "apiName",
+      "apiVersion",
+      "1m",
+      FAILED
+    )
+      .getApiTests()
+      .iterator()
+      .next();
+
+    var apiTestResult = ApiTestResult.builder()
+      .apiTestCriteria(PATH_COVERAGE.name())
+      .coverage(BigDecimal.valueOf(0.5).setScale(2, HALF_UP))
+      .includedInReport(TRUE)
+      .duration(Duration.ofSeconds(1))
+      .additionalInformation("some additional information")
+      .apiTest(apiTest)
+      .build();
+
+    var covered = ApiTestFinding.builder()
+      .specPointer(COVERED_SPEC_POINTER)
+      .status(FindingStatus.COVERED.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode("404")
+      .contentType("application/json")
+      .apiTestResult(apiTestResult)
+      .build();
+
+    covered
+      .getEvidence()
+      .addAll(
+        Set.of(
+          FindingEvidence.builder()
+            .traceId(TRACE_ID_WITHOUT_TEST_IDENTITY)
+            .build(),
+          FindingEvidence.builder()
+            .traceId(TRACE_ID_WITH_TEST_IDENTITY)
+            .testCaseName("shouldReturnNotFound")
+            .build()
+        )
+      );
+
+    var uncovered = ApiTestFinding.builder()
+      .specPointer(UNCOVERED_SPEC_POINTER)
+      .status(FindingStatus.UNCOVERED.getVal())
+      .httpPath("/api/v1/users")
+      .httpMethod("GET")
+      .responseCode("500")
+      .contentType("application/json")
+      .apiTestResult(apiTestResult)
+      .build();
+
+    apiTestResult.getFindings().addAll(Set.of(covered, uncovered));
+
+    apiTestRepository.save(apiTest.withApiTestResults(Set.of(apiTestResult)));
+  }
+
+  /**
+   * The report read as a tree rather than through the generated DTO: these tests assert on what is
+   * on the wire - a key present and null is not the same as an absent one, and a DTO cannot tell
+   * them apart.
+   */
+  private JsonNode readSingleReport(UUID calculationId) throws Exception {
+    return jsonMapper.readTree(
+      mockMvc
+        .perform(get(PATH_GET_REPORT_BY_CALCULATION_ID, calculationId))
+        .andExpect(status().isOk())
+        .andExpect(header().string(CONTENT_TYPE, APPLICATION_JSON_VALUE))
+        .andReturn()
+        .getResponse()
+        .getContentAsString()
+    );
+  }
+
+  private JsonNode readSingleTestResult(UUID calculationId) throws Exception {
+    return readSingleReport(calculationId)
+      .get("interfaces")
+      .get(0)
+      .get("testResults")
+      .get(0);
+  }
+
+  /** The report with {@code findings} stripped from every criterion result it carries. */
+  private static JsonNode withoutFindings(JsonNode report) {
+    var stripped = report.deepCopy();
+
+    for (var api : stripped.get("interfaces")) {
+      for (var testResult : api.get("testResults")) {
+        ((ObjectNode) testResult).without("findings");
+      }
+    }
+
+    return stripped;
+  }
+
+  private static Map<String, JsonNode> indexBy(
+    JsonNode array,
+    String keyField
+  ) {
+    var byKey = new HashMap<String, JsonNode>();
+
+    for (var element : array) {
+      byKey.put(element.get(keyField).asString(), element);
+    }
+
+    return byKey;
+  }
+
+  private static List<String> valuesOf(JsonNode array, String field) {
+    var values = new ArrayList<String>();
+
+    for (var element : array) {
+      values.add(element.get(field).asString());
+    }
+
+    return values;
+  }
+
+  @Test
+  void findAllReports_filteredByServiceName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "30f7b64c-2a31-4452-90bc-1210d4a2faab"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "84753ea3-3ee3-446b-be96-edb6b049f4a3"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "beta",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("serviceName", "alpha")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByApiName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "a785a394-c1ef-492d-b96c-fa6a24ff7e10"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "svc",
+      "foo-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "65fef062-2dfe-47b6-9182-79ede0d37a6f"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "svc",
+      "bar-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("apiName", "foo-api")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByApiVersion_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "8f75c75e-c4a2-4a36-af55-70c98565b098"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "svc",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "2a4bb6c5-ee0b-4f8d-a3ce-ac5abc24f2be"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "svc",
+      "api1",
+      "v2",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("apiVersion", "v1")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_filteredByServiceNameAndApiName_returnsOnlyMatchingReports()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "2e2bafb5-c0cd-435c-8cb9-b91516c7ef3d"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "foo-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    var calculationId2 = UUID.fromString(
+      "3f1ba337-3bf5-46af-89a3-8ddcf199caa7"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "alpha",
+      "bar-api",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS)
+          .queryParam("serviceName", "alpha")
+          .queryParam("apiName", "foo-api")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "1"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(
+        jsonPath("$[0].calculationId").value(calculationId1.toString())
+      );
+  }
+
+  @Test
+  void findAllReports_withNonMatchingFilter_returnsEmptyList()
+    throws Exception {
+    var calculationId1 = UUID.fromString(
+      "1eddb17f-60b6-4b8a-8a9f-d547e6204f27"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam(
+          "serviceName",
+          "nonexistent"
+        )
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "0"))
+      .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void findAllReports_withFilter_respectsPagination() throws Exception {
+    var calculationId1 = UUID.fromString(
+      "bc4600b8-abb4-4775-b650-b2139ffacc35"
+    );
+    createAndPersistQualityGateReport(
+      calculationId1,
+      "alpha",
+      "api1",
+      "v1",
+      "1h",
+      PASSED
+    );
+    var calculationId2 = UUID.fromString(
+      "5aa1c1ea-bd4d-4d9c-a401-d29e6da06d05"
+    );
+    createAndPersistQualityGateReport(
+      calculationId2,
+      "alpha",
+      "api2",
+      "v1",
+      "1h",
+      PASSED
+    );
+    var calculationId3 = UUID.fromString(
+      "36c06802-7be1-4ad4-800d-3e7595945e28"
+    );
+    createAndPersistQualityGateReport(
+      calculationId3,
+      "alpha",
+      "api3",
+      "v1",
+      "1h",
+      PASSED
+    );
+
+    mockMvc
+      .perform(
+        get(PATH_LIST_QUALITY_GATE_REPORTS)
+          .queryParam("serviceName", "alpha")
+          .queryParam("size", "2")
+          .queryParam("page", "0")
+      )
+      .andExpect(status().isOk())
+      .andExpect(header().string(HEADER_X_TOTAL_COUNT, "3"))
+      .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  private void createSimpleApiTestSet(QualityGateReport qualityGateReport) {
+    apiTestRepository.save(
+      ApiTest.builder()
+        .serviceName("serviceName")
+        .apiName("apiName")
+        .qualityGateReport(qualityGateReport)
+        .apiType(UNSPECIFIED.getVal())
+        .build()
+    );
+  }
+}
