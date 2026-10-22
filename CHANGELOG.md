@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/bbortt/snow-white/compare/v2.2.0...v2.3.0) (2026-10-22)
+
+
+### Features
+
+* run the services on a JDK 27 runtime, still built for Java 25 ([7dbf034](https://github.com/bbortt/snow-white/commit/7dbf03418040598d1a8a74d7666807e631611b9f))
+
 ## [2.2.0](https://github.com/bbortt/snow-white/compare/v2.1.0...v2.2.0) (2026-10-21)
 
 ### Features
