@@ -104,6 +104,13 @@ updates:
     labels:
       - 'severity:low'
       - 'status:ready-for-review'
+    groups:
+      # instrumentation is built against a specific core version; bumping core alone breaks the spring boot starter
+      opentelemetry:
+        patterns:
+          - 'io.opentelemetry:*'
+          - 'io.opentelemetry.instrumentation:*'
+          - 'io.opentelemetry.javaagent:*'
   - package-ecosystem: 'gitsubmodule'
     directory: '/opentelemetry-proto'
     schedule:
