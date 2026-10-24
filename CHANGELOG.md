@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/bbortt/snow-white/compare/v2.3.0...v2.3.1) (2026-10-24)
+
+
+### Documentation
+
+* **STR-027:** promote the MCP API specs ([c58c890](https://github.com/bbortt/snow-white/commit/c58c890de704f1d7870e91d9e29a18498ccc291f)), closes [#2276](https://github.com/bbortt/snow-white/issues/2276)
+
 ## [2.3.0](https://github.com/bbortt/snow-white/compare/v2.2.0...v2.3.0) (2026-10-22)
 
 ### Features
