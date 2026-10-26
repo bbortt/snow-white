@@ -38,9 +38,9 @@
   },
   "devDependencies": {
     "@ariadne-thread/clew": "0.3.0",
-    "@commitlint/config-conventional": "21.2.3",
+    "@commitlint/config-conventional": "21.2.4",
     "@prettier/plugin-xml": "3.4.2",
-    "commitlint": "21.2.3",
+    "commitlint": "21.2.4",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "markdownlint-cli": "0.49.1",
