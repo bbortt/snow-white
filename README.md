@@ -157,6 +157,8 @@ To simplify this, the project provides:
   annotations.
 - [**Spring Web Autoconfiguration**](./toolkit/spring-web-autoconfiguration) - Automatically enriches spans with API
   metadata in Spring-based services.
+- [**Spring Kafka Autoconfiguration**](./toolkit/spring-kafka-autoconfiguration) - Does the same for records consumed by
+  a `@KafkaListener`, using the [AsyncAPI attributes](./semantic-convention/asyncapi.md).
 
 ### Coverage Calculation
 

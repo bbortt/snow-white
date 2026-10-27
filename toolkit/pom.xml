@@ -27,6 +27,7 @@
     <module>cli</module>
     <module>citrus-junit-jupiter-extension</module>
     <module>openapi-generator</module>
+    <module>spring-kafka-autoconfiguration</module>
     <module>spring-web-autoconfiguration</module>
     <module>spring-web-autoconfiguration-it</module>
   </modules>

@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "io.github.bbortt.snow.white.toolkit.spring.kafka.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Option to disable auto configuration of Snow-White Spring Kafka interceptors. These interceptors would enhance OTEL spans with information of the consumed AsyncAPI operation if applicable."
+    }
+  ]
+}
