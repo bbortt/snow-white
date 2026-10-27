@@ -33,7 +33,7 @@ jobs:
             -DskipTests \
             -DskipITs \
             -Djacoco.skip=true \
-            -pl :commons,:annotation-api,:openapi-generator,:spring-web-autoconfiguration -am
+            -pl :commons,:annotation-api,:openapi-generator,:spring-kafka-autoconfiguration,:spring-web-autoconfiguration -am
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish-cli:

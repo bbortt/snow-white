@@ -76,19 +76,20 @@ Maven reactor root modules: `examples/`, `microservices/`, `toolkit/`, `internal
 Key
 artifacts (Maven `-pl :<artifactId>`):
 
-| Module                                 | Responsibility                                                                                                                        |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `api-gateway`                          | Routes incoming HTTP to internal services; hosts the React web UI.                                                                    |
-| `api-index-api`                        | Manages indexed API specifications (lookup by service/api name/version).                                                              |
-| `api-sync-job`                         | Periodically syncs API specs from external sources (e.g. Artifactory).                                                                |
-| `otel-event-filter-stream`             | Optional Kafka Streams filter — drops telemetry not relevant to Snow-White before it reaches coverage analysis.                       |
-| `openapi-coverage-stream`              | Analyzes coverage of real API usage (InfluxDB/Tempo telemetry) against OpenAPI specs.                                                 |
-| `quality-gate-api`                     | Quality-gate config and criteria management.                                                                                          |
-| `report-coordinator-api`               | Coordinates calculation requests/results across services; owns the report domain.                                                     |
-| `toolkit/cli`                          | Node/TypeScript CLI for triggering syncs, calculations, and gate checks (own test runner: `bun`, own build: `frontend-maven-plugin`). |
-| `toolkit/spring-web-autoconfiguration` | Auto-enriches Spring Boot spans with API metadata (`@SnowWhiteInformation`).                                                          |
-| `toolkit/openapi-generator`            | OpenAPI Generator plugin that emits code carrying the right Snow-White annotations.                                                   |
-| `internal/commons`                     | Shared DTOs/events/utilities used across microservices.                                                                               |
+| Module                                   | Responsibility                                                                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `api-gateway`                            | Routes incoming HTTP to internal services; hosts the React web UI.                                                                    |
+| `api-index-api`                          | Manages indexed API specifications (lookup by service/api name/version).                                                              |
+| `api-sync-job`                           | Periodically syncs API specs from external sources (e.g. Artifactory).                                                                |
+| `otel-event-filter-stream`               | Optional Kafka Streams filter — drops telemetry not relevant to Snow-White before it reaches coverage analysis.                       |
+| `openapi-coverage-stream`                | Analyzes coverage of real API usage (InfluxDB/Tempo telemetry) against OpenAPI specs.                                                 |
+| `quality-gate-api`                       | Quality-gate config and criteria management.                                                                                          |
+| `report-coordinator-api`                 | Coordinates calculation requests/results across services; owns the report domain.                                                     |
+| `toolkit/cli`                            | Node/TypeScript CLI for triggering syncs, calculations, and gate checks (own test runner: `bun`, own build: `frontend-maven-plugin`). |
+| `toolkit/spring-web-autoconfiguration`   | Auto-enriches Spring Boot spans with API metadata (`@SnowWhiteInformation`).                                                          |
+| `toolkit/spring-kafka-autoconfiguration` | Same, for records consumed by a `@KafkaListener` (AsyncAPI attributes).                                                               |
+| `toolkit/openapi-generator`              | OpenAPI Generator plugin that emits code carrying the right Snow-White annotations.                                                   |
+| `internal/commons`                       | Shared DTOs/events/utilities used across microservices.                                                                               |
 
 Coverage calculation is **deliberately asynchronous**: Report Coordinator publishes to
 `snow-white-calculation-request`, `openapi-coverage-stream` computes and publishes to
