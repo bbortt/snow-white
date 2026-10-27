@@ -1,0 +1,13 @@
+# A locally launched process talking MCP over standard streams (ARCH-022). Nothing but
+# protocol frames may reach stdout, so the web server, the banner and the console
+# appender all move out of the way.
+logging:
+  config: classpath:logback-stdio.xml
+spring:
+  ai:
+    mcp:
+      server:
+        stdio: true
+  main:
+    banner-mode: 'off'
+    web-application-type: none

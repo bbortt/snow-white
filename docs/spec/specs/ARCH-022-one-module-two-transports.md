@@ -8,7 +8,7 @@ stdout reserved for the protocol in stdio mode
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A single Spring Boot module, `microservices/mcp-api`, builds one artifact that runs in one of two

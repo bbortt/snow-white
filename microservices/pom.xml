@@ -26,6 +26,7 @@
     <module>api-gateway</module>
     <module>api-index-api</module>
     <module>api-sync-job</module>
+    <module>mcp-api</module>
     <module>otel-event-filter-stream</module>
     <module>openapi-coverage-stream</module>
     <module>report-coordinator-api</module>
@@ -43,6 +44,8 @@
     <org.flywaydb.version>13.10.3</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.1.1</org.springdoc.version>
+    <!-- The 2.0.x line is the one built against Spring Boot 4.1; 1.1.x targets Boot 3. -->
+    <spring-ai.version>2.0.2</spring-ai.version>
     <wiremock-spring-boot.version>4.4.3</wiremock-spring-boot.version>
 
     <container.registry>ghcr.io</container.registry>
@@ -81,6 +84,14 @@
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-bom</artifactId>
         <version>12.1.14</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-bom</artifactId>
+        <version>${spring-ai.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

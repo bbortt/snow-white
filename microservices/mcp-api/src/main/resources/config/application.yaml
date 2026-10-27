@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: mcp-api
+  profiles:
+    default: prod
+  ai:
+    mcp:
+      server:
+        name: snow-white
+        # The streamable HTTP transport is what a hosted Snow-White serves; the `stdio` profile
+        # switches a locally launched process over to standard streams (ARCH-022).
+        protocol: STREAMABLE
+        stdio: false
