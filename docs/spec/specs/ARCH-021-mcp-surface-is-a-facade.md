@@ -8,7 +8,7 @@ CLI's agentic transformer
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Every MCP tool is implemented as a call through a generated Java REST client — the same

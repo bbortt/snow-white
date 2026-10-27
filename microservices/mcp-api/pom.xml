@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2026 Timon Borter <timon.borter@gmx.ch>
+  ~ Licensed under the Polyform Small Business License 1.0.0
+  ~ See LICENSE file for full details.
+  -->
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.bbortt.snow-white.microservices</groupId>
+    <artifactId>microservices</artifactId>
+    <version>2.3.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>mcp-api</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <basePackage>io.github.bbortt.snow.white.microservices.mcp.api</basePackage>
+    <baseClientPackage>${basePackage}.api.client</baseClientPackage>
+
+    <!-- Application Testing -->
+    <container.registry>ghcr.io</container.registry>
+    <image.tag>${project.version}</image.tag>
+    <docker.network>bridge</docker.network>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!--
+        WireMock drags a 1.x of this in at a nearer depth than the MCP SDK's own 3.x, and
+        nearest-wins then leaves the server with a validator missing the dialect API it
+        loads at startup. Pin what the SDK declares.
+      -->
+      <dependency>
+        <groupId>com.networknt</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>3.0.6</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>commons</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry.javaagent</groupId>
+      <artifactId>opentelemetry-javaagent</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+
+    <!--
+      The webmvc starter brings spring-boot-starter-web with it. Both transports ship in one
+      artifact (ARCH-022); the stdio run turns the web server off by configuration rather than by
+      leaving the dependency out.
+    -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-spring-boot-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.bbortt.snow-white</groupId>
+      <artifactId>archunit-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-otel-agent</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <includeGroupIds>io.opentelemetry.javaagent</includeGroupIds>
+              <includeArtifactIds>opentelemetry-javaagent</includeArtifactIds>
+              <outputDirectory>
+                ${project.build.directory}/opentelemetry-javaagent
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+            <configuration>
+              <classifier>executable</classifier>
+              <mainClass>${basePackage}.Main</mainClass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--
+        Read clients only. Every operation this module calls is a GET; CON-014's ArchUnit rule is
+        what keeps a write operation sharing one of these documents out of reach.
+      -->
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-v1-api-index-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/api-index-api/src/main/resources/openapi/v1-api-index-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.apiindexapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.apiindexapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.apiindexapi.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJackson3>true</useJackson3>
+                <useJakartaEe>true</useJakartaEe>
+                <useJspecify>true</useJspecify>
+                <useSpringBoot4>true</useSpringBoot4>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-v1-criteria-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/quality-gate-api/src/main/resources/openapi/v1-criteria-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.criteriaapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.criteriaapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.criteriaapi.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJackson3>true</useJackson3>
+                <useJakartaEe>true</useJakartaEe>
+                <useJspecify>true</useJspecify>
+                <useSpringBoot4>true</useSpringBoot4>
+              </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-v1-report-api-client</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                microservices/report-coordinator-api/src/main/resources/openapi/v1-report-api.yml
+              </inputSpec>
+              <apiPackage>${baseClientPackage}.reportapi.api</apiPackage>
+              <invokerPackage>${baseClientPackage}.reportapi</invokerPackage>
+              <modelPackage>${baseClientPackage}.reportapi.dto</modelPackage>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <library>restclient</library>
+                <useJackson3>true</useJackson3>
+                <useJakartaEe>true</useJakartaEe>
+                <useJspecify>true</useJspecify>
+                <useSpringBoot4>true</useSpringBoot4>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <outputDirectory>
+                    ${project.build.directory}/dependencies
+                  </outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

@@ -8,7 +8,7 @@ configuration and waivers stay permanently out of reach
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 No tool the MCP server exposes can change any state: not a quality gate's configuration, not a
