@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.commons.quality.gate;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.UNSPECIFIED;
 import static java.util.Locale.ROOT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,5 +41,13 @@ class ApiTypeUnitTest {
   @Test
   void fromIntegerNullValue() {
     assertThat(ApiType.apiType((Short) null)).isEqualTo(UNSPECIFIED);
+  }
+
+  @EnumSource
+  @ParameterizedTest
+  void onlyOpenApiHasACoverageCalculator(ApiType apiType) {
+    assertThat(apiType.isCoverageCalculatorAvailable()).isEqualTo(
+      OPENAPI.equals(apiType)
+    );
   }
 }

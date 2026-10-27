@@ -15,15 +15,23 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 public enum ApiType {
-  UNSPECIFIED((short) 0),
-  ASYNCAPI((short) 1),
-  OPENAPI((short) 2),
-  GRAPHQL((short) 3);
+  UNSPECIFIED((short) 0, false),
+  ASYNCAPI((short) 1, false),
+  OPENAPI((short) 2, true),
+  GRAPHQL((short) 3, false);
 
   final short val;
 
-  ApiType(short val) {
+  /**
+   * Whether a coverage-calculating stream service consumes calculation requests of this type. Flip
+   * this on in the same change that deploys the calculator, because a request for a type nothing
+   * consumes is never answered.
+   */
+  final boolean coverageCalculatorAvailable;
+
+  ApiType(short val, boolean coverageCalculatorAvailable) {
     this.val = val;
+    this.coverageCalculatorAvailable = coverageCalculatorAvailable;
   }
 
   public static ApiType apiType(@Nullable String typeName) {
