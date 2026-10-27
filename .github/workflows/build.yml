@@ -489,7 +489,7 @@ jobs:
           mkdir -p microservices/report-coordinator-api/target/otel-collector
           cp /tmp/traces/traces-report-coordinator-api/traces.json microservices/report-coordinator-api/target/otel-collector/traces-report-coordinator-api.json
       - name: Remove deploy.resources from every Service
-        uses: mikefarah/yq@f488e74a19e2f0286f84f0506d07e91fbf99960a
+        uses: mikefarah/yq@fb05831b3aa710b699fbdb8561268847061b8689
         with:
           cmd: yq 'del(.services[].deploy.resources)' docker-compose.yaml > docker-compose.compatibility.yaml
       - name: Start Snow-White
