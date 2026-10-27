@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.ASYNCAPI;
 import static io.github.bbortt.snow.white.commons.quality.gate.ApiType.OPENAPI;
 import static io.github.bbortt.snow.white.microservices.report.coordinator.api.TestData.defaultApiTest;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,6 +115,36 @@ class ApiIndexServiceUnitTest {
         .extracting(Failure::errorMessage)
         .isEqualTo(
           "API { serviceName='serviceName', apiName='apiName', apiVersion='apiVersion' } not indexed!"
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+    void returnsFailureWhenIndexedApiTypeHasNoCoverageCalculator() {
+      var apiTest = defaultApiTest();
+
+      var response = mock(ResponseEntity.class);
+
+      var apiDetails = mock(GetAllApis200ResponseInner.class);
+      doReturn(apiDetails).when(response).getBody();
+
+      doReturn(response)
+        .when(apiIndexApiClientMock)
+        .getApiDetailsWithHttpInfo("serviceName", "apiName", "apiVersion");
+
+      doReturn(apiTest.withApiType(ASYNCAPI.getVal()))
+        .when(apiTestMapperMock)
+        .toApiTest(apiDetails);
+
+      var results = fixture.fetchCompleteApiInformation(Set.of(apiTest));
+
+      assertThat(results)
+        .hasSize(1)
+        .first()
+        .asInstanceOf(type(Failure.class))
+        .extracting(Failure::errorMessage)
+        .isEqualTo(
+          "API { serviceName='serviceName', apiName='apiName', apiVersion='apiVersion' } is indexed as 'ASYNCAPI', which no coverage calculator serves!"
         );
     }
 

@@ -62,7 +62,22 @@ public class ApiIndexService {
         "API response body must not be null"
       );
 
-      return ValidationResult.success(apiTestMapper.toApiTest(body));
+      var indexedApiTest = apiTestMapper.toApiTest(body);
+
+      // Dispatching this would wait for a coverage response nobody publishes, and only surface
+      // minutes later as a timed-out report.
+      if (!indexedApiTest.getApiType().isCoverageCalculatorAvailable()) {
+        return ValidationResult.failure(
+          "API { serviceName='%s', apiName='%s', apiVersion='%s' } is indexed as '%s', which no coverage calculator serves!".formatted(
+            apiTest.getServiceName(),
+            apiTest.getApiName(),
+            apiTest.getApiVersion(),
+            indexedApiTest.getApiType()
+          )
+        );
+      }
+
+      return ValidationResult.success(indexedApiTest);
     } catch (RestClientResponseException e) {
       if (NOT_FOUND.equals(e.getStatusCode())) {
         return ValidationResult.failure(

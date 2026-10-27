@@ -278,6 +278,52 @@ class ReportCoordinatorApiAppTest {
   }
 
   /**
+   * An API the index knows, but whose type no coverage calculator consumes, must be rejected at
+   * the trigger rather than dispatched: nothing would ever answer the calculation request, and the
+   * caller would learn about it only once housekeeping times the report out.
+   */
+  @Test
+  @CitrusTest
+  @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
+  void shouldReturn400WhenApiTypeHasNoCoverageCalculator(
+    @CitrusResource TestCaseRunner testRunner
+  ) {
+    var serviceName = "shouldReturn400WhenApiTypeHasNoCalculator-service";
+    var apiName = "shouldReturn400WhenApiTypeHasNoCalculator-api";
+    var apiVersion = "1.0.0";
+
+    stubApiIndexExists(serviceName, apiName, apiVersion, ApiType.ASYNCAPI);
+
+    testRunner.when(
+      qualityGateApi
+        .sendCalculateQualityGate(
+          "shouldReturn400WhenApiTypeHasNoCalculator-gate"
+        )
+        .getMessageBuilderSupport()
+        .body(calculateRequestBody(serviceName, apiName, apiVersion))
+    );
+
+    testRunner.then(
+      qualityGateApi
+        .receiveCalculateQualityGate(BAD_REQUEST)
+        .message()
+        .validate((message, context) -> {
+          var error = JsonMapper.shared().readValue(
+            message.getPayload(String.class),
+            Map.class
+          );
+
+          assertThat(error.get("code")).isEqualTo(
+            BAD_REQUEST.getReasonPhrase()
+          );
+          assertThat((String) error.get("message")).contains(
+            "is indexed as 'ASYNCAPI', which no coverage calculator serves!"
+          );
+        })
+    );
+  }
+
+  /**
    * Verifies the full asynchronous calculation lifecycle: once the OpenAPI coverage response
    * event arrives on the real Kafka response topic - exactly as openapi-coverage-stream would
    * publish it - the report must transition from {@code IN_PROGRESS} to {@code PASSED}, and both
@@ -777,6 +823,15 @@ class ReportCoordinatorApiAppTest {
     String apiName,
     String apiVersion
   ) {
+    stubApiIndexExists(serviceName, apiName, apiVersion, ApiType.OPENAPI);
+  }
+
+  private void stubApiIndexExists(
+    String serviceName,
+    String apiName,
+    String apiVersion,
+    ApiType apiType
+  ) {
     stubFor(
       get(urlPathTemplate(API_DETAILS_PATH_TEMPLATE))
         .withPathParam("otelServiceName", equalTo(serviceName))
@@ -795,7 +850,7 @@ class ReportCoordinatorApiAppTest {
                 "sourceUrl",
                 "https://example.test/openapi.yaml",
                 "apiType",
-                "OPENAPI"
+                apiType.name()
               )
             )
           )
