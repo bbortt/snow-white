@@ -102,7 +102,7 @@ class SnowWhiteAutoConfigurationIT {
 
     @Bean
     RecordInterceptor<Object, Object> recordInterceptor() {
-      return (record, consumer) -> record;
+      return (consumerRecord, consumer) -> consumerRecord;
     }
   }
 }

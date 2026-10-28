@@ -33,21 +33,21 @@ public class AsyncApiInformationEnhancer
 
   @Override
   public ConsumerRecord<Object, Object> intercept(
-    ConsumerRecord<Object, Object> record,
+    ConsumerRecord<Object, Object> consumerRecord,
     Consumer<Object, Object> consumer
   ) {
     var currentSpan = spanProvider.getCurrentSpan();
     var information = kafkaListenerInformationRegistry.findByTopic(
-      record.topic()
+      consumerRecord.topic()
     );
 
     if (isNull(currentSpan) || isNull(information)) {
-      return record;
+      return consumerRecord;
     }
 
     logger.trace(
       "Enhancing span: topic=[{}], information=[{}]",
-      record.topic(),
+      consumerRecord.topic(),
       information
     );
 
@@ -76,6 +76,6 @@ public class AsyncApiInformationEnhancer
       );
     }
 
-    return record;
+    return consumerRecord;
   }
 }
