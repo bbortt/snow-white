@@ -14,10 +14,6 @@ management:
     sampling:
       probability: 1.0
 spring:
-  aot:
-    enabled: true
-    repositories:
-      enabled: true
   web:
     error:
       include-message: always

@@ -16,6 +16,9 @@ discovery: `RoutingConfig` declares one `RouteLocator` bean per backend
 (`api-index-api`, `quality-gate-api`, `report-coordinator-api`), each matching a fixed REST path
 prefix (for example `/api/rest/v1/criteria/**` and `/api/rest/v1/quality-gates/**` for
 `quality-gate-api`) and forwarding to that backend's configured URL.
+`mcp-api` is routed the same way, under `/mcp`, but it is the one backend whose prefix does not
+carry REST: it speaks MCP there and publishes no OpenAPI document, so it has no docs route of the
+kind described below.
 No two backends share a path prefix, and no path is routed to more than one backend.
 
 Each backend's own OpenAPI document is re-exposed under a **second**, per-backend route —
@@ -23,7 +26,7 @@ Each backend's own OpenAPI document is re-exposed under a **second**, per-backen
 the request is forwarded.
 This is deliberately a second route, not a side effect of the REST-prefix route: a backend's docs
 endpoint does not itself live under that backend's REST prefix, so the gateway aggregates all three
-under one external path family (`/v3/api-docs/*`) a single Swagger UI can enumerate, rather than
+REST backends' docs under one external path family (`/v3/api-docs/*`) a single Swagger UI can enumerate, rather than
 each backend answering its docs request at an address only that backend recognizes.
 
 Separately, when a distinct management port is configured (`management.server.port` differs from
@@ -50,6 +53,7 @@ for what the gateway itself reports as up, while still surfacing the one piece o
 **Verification Description**
 `RoutingConfigUnitTest` and `RoutingConfigIT` assert each backend's REST-prefix route resolves to
 the configured backend URL and that the docs route rewrites the path correctly.
+`McpApiIT` asserts `/mcp` and its sub-paths forward unrewritten.
 `ApiIndexApiAppTest`, `QualityGateApiAppTest`, and `ReportCoordinationServiceAppTest` exercise the
 routes end to end against the real backends.
 `ManagementEndpointsAppTest` asserts `/management/info` is served from the configured management

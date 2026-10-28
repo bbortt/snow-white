@@ -3,6 +3,7 @@ snow:
     api:
       gateway:
         api-index-api-url: http://localhost:8085
+        mcp-api-url: http://localhost:8087
         quality-gate-api-url: http://localhost:8081
         report-coordinator-api-url: http://localhost:8084
 server:

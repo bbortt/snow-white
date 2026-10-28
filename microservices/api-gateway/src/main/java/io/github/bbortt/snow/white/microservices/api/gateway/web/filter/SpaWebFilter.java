@@ -25,6 +25,7 @@ public class SpaWebFilter implements WebFilter {
     if (
       !path.startsWith("/api/") &&
       !path.startsWith("/management") &&
+      !path.startsWith("/mcp") &&
       !path.startsWith("/swagger-ui") &&
       !path.startsWith("/v3/api-docs") &&
       !path.contains(".") &&

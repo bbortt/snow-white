@@ -18,7 +18,7 @@ fi
 scripts_dir="$(dirname "$(realpath "$0")")"
 root_dir="$scripts_dir/../.."
 
-microservices="api-gateway api-sync-job openapi-coverage-stream"
+microservices="api-gateway api-sync-job mcp-api openapi-coverage-stream"
 
 for service in $microservices; do
   echo "Building $service..."

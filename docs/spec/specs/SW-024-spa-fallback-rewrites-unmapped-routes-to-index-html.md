@@ -12,10 +12,14 @@ server-side to index.html
 
 **Description**
 `SpaWebFilter` rewrites a request's path to `/index.html` when **all** of the following hold: the
-path does not start with `/api/`, `/management`, `/swagger-ui`, or `/v3/api-docs`; the path
+path does not start with `/api/`, `/management`, `/mcp`, `/swagger-ui`, or `/v3/api-docs`; the path
 contains no `.`; and the path matches `/(.*)` (effectively, any absolute path).
-Any request failing one of these — an API call, a management/docs/swagger-ui path, or a path
-naming a file extension — passes through unchanged.
+Any request failing one of these — an API call, an MCP call, a management/docs/swagger-ui path, or
+a path naming a file extension — passes through unchanged.
+`/mcp` is excluded for the same reason `/api/` is: it is a proxied backend prefix
+([ARCH-008](ARCH-008-backend-services-addressed-by-path-prefix-with-aggregated-openapi-docs.md)),
+and this filter runs before the gateway's route predicates, so without the exclusion the rewrite
+would swallow the request before any route could match it.
 The rewrite happens **server-side**, before the request reaches the SPA's own client-side router:
 the browser's address bar and history keep the originally-requested path, only the served content
 changes to the SPA shell.

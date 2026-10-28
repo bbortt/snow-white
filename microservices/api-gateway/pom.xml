@@ -487,6 +487,7 @@
                   <run>
                     <env>
                       <SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL>http://wiremock:8080</SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL>
+                      <SNOW_WHITE_API_GATEWAY_MCP-API-URL>http://wiremock:8080</SNOW_WHITE_API_GATEWAY_MCP-API-URL>
                       <SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL>http://wiremock:8080</SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL>
                       <SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL>
                         http://wiremock:8080

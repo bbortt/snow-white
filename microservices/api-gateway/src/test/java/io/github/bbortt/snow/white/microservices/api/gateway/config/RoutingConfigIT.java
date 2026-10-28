@@ -34,7 +34,7 @@ class RoutingConfigIT {
     var routes = snowWhiteRouteLocator.getRoutes().collectList().block(Duration.ofSeconds(5));
 
     assertThat(routes)
-      .hasSize(6)
+      .hasSize(7)
       .satisfiesOnlyOnce(route ->
         assertThat(route).satisfies(
           r -> assertThat(r.getId()).isEqualTo("api-index-api"),
@@ -45,6 +45,12 @@ class RoutingConfigIT {
         assertThat(route).satisfies(
           r -> assertThat(r.getId()).isEqualTo("api-index-api-swagger"),
           r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8085"))
+        )
+      )
+      .satisfiesOnlyOnce(route ->
+        assertThat(route).satisfies(
+          r -> assertThat(r.getId()).isEqualTo("mcp-api"),
+          r -> assertThat(r.getUri()).isEqualTo(new URI("http://localhost:8087"))
         )
       )
       .satisfiesOnlyOnce(route ->

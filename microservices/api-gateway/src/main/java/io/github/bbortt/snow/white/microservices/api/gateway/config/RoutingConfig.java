@@ -39,6 +39,16 @@ public class RoutingConfig {
       .build();
   }
 
+  /**
+   * MCP is not REST and publishes no OpenAPI document, so this route has no {@code /v3/api-docs}
+   * sibling. The path matches {@code spring.ai.mcp.server.streamable-http.mcp-endpoint}, which
+   * {@code mcp-api} pins rather than inheriting from the framework.
+   */
+  @Bean
+  public RouteLocator mcpApi(RouteLocatorBuilder builder) {
+    return builder.routes().route("mcp-api", r -> r.path("/mcp", "/mcp/**").uri(apiGatewayProperties.getMcpApiUrl())).build();
+  }
+
   @Bean
   public RouteLocator reportCoordinatorApi(RouteLocatorBuilder builder) {
     return builder
