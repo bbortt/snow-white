@@ -11,3 +11,7 @@ spring:
         # switches a locally launched process over to standard streams (ARCH-022).
         protocol: STREAMABLE
         stdio: false
+        streamable-http:
+          # Pinned, not left to the framework default: the api-gateway route predicate and the
+          # chart's probes both have to name this path.
+          mcp-endpoint: /mcp

@@ -31,6 +31,7 @@ public class ApiGatewayProperties {
 
   private String publicUrl;
   private String apiIndexApiUrl;
+  private String mcpApiUrl;
   private String qualityGateApiUrl;
   private String reportCoordinatorApiUrl;
 }

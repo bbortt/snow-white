@@ -61,7 +61,15 @@ class SpaWebFilterUnitTest {
     }
 
     public static Stream<String> passesMappedPathThroughUntouched() {
-      return Stream.of("/api/rest/v1/apis", "/management/health", "/swagger-ui/index.html", "/v3/api-docs/api-index-api", "/file.js");
+      return Stream.of(
+        "/api/rest/v1/apis",
+        "/management/health",
+        "/mcp",
+        "/mcp/message",
+        "/swagger-ui/index.html",
+        "/v3/api-docs/api-index-api",
+        "/file.js"
+      );
     }
 
     @MethodSource

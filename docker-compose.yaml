@@ -105,6 +105,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
       SNOW_WHITE_API_GATEWAY_PUBLIC-URL: 'http://localhost'
       SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL: 'http://api-index-api:8080'
+      SNOW_WHITE_API_GATEWAY_MCP-API-URL: 'http://mcp-api:8080'
       SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL: 'http://quality-gate-api:8080'
       SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL: 'http://report-coordinator-api:8080'
     ports:
@@ -121,6 +122,8 @@ services:
       otel-collector:
         condition: service_started
       microservices.api-index-api:
+        condition: service_started
+      microservices.mcp-api:
         condition: service_started
       microservices.quality-gate-api:
         condition: service_started
@@ -163,6 +166,37 @@ services:
         condition: service_started
       postgres:
         condition: service_healthy
+    restart: on-failure
+    networks:
+      - internal
+
+  microservices.mcp-api:
+    image: ${CONTAINER_REGISTRY:-ghcr.io}/bbortt/snow-white/mcp-api:${SNOW_WHITE_BUILD:-latest}
+    hostname: mcp-api
+    environment:
+      LOGGING_PATTERN_CONSOLE: '%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX} level="%level" thread="%thread" logger="%logger{2}"%replace(%mdc{traceId}){^(.+)$, '' traceId="$1"''} msg="%msg"%n%ex'
+      OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc'
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://otel-collector:4317'
+      SNOW_WHITE_MCP_API_API-INDEX_BASE-URL: 'http://api-index-api:8080'
+      SNOW_WHITE_MCP_API_CRITERIA_BASE-URL: 'http://quality-gate-api:8080'
+      SNOW_WHITE_MCP_API_REPORT_BASE-URL: 'http://report-coordinator-api:8080'
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.1'
+          memory: '128m'
+        limits:
+          cpus: '0.2'
+          memory: '512m'
+    depends_on:
+      otel-collector:
+        condition: service_started
+      microservices.api-index-api:
+        condition: service_started
+      microservices.quality-gate-api:
+        condition: service_started
+      microservices.report-coordinator-api:
+        condition: service_started
     restart: on-failure
     networks:
       - internal

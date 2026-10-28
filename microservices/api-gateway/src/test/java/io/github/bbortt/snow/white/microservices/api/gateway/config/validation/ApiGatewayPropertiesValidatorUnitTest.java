@@ -48,6 +48,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -56,6 +57,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
 
     @Test
     void shouldThrowException_withMissingApiIndexApiUrl() {
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -67,6 +69,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
     @Test
     void shouldThrowException_withMissingQualityGateApiUrl() {
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
 
       assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
@@ -77,11 +80,23 @@ class ApiGatewayPropertiesValidatorUnitTest {
     @Test
     void shouldThrowException_withMissingReportCoordinationServiceUrl() {
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.quality-gate-api-url].");
+    }
+
+    @Test
+    void shouldThrowException_withMissingMcpApiUrl() {
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
+
+      assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.mcp-api-url].");
     }
 
     public static Stream<String> throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {
@@ -95,6 +110,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -106,6 +122,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
     @Test
     void doesNotRequirePublicUrl_whenEnvironmentIsNull() {
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
@@ -118,6 +135,7 @@ class ApiGatewayPropertiesValidatorUnitTest {
       fixture.setEnvironment(environmentMock);
 
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 

@@ -186,6 +186,14 @@ A Helm chart for deploying [`snow-white`](https://github.com/bbortt/snow-white).
 | snowWhite.kafka.initTopics                      | string | `"true"`                                                                   | Initialize Kafka topics.           |
 | snowWhite.kafka.openapiCalculationResponseTopic | string | `"snow-white-openapi-calculation-response"`                                | OpenAPI calculation response topic |
 
+### Snow-White MCP API
+
+| Key                             | Type   | Default                                                                                                                        | Description                                                                                                                                                              |
+| ------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| snowWhite.mcpApi.additionalEnvs | list   | `[]`                                                                                                                           | Additional environment variables forwarded to container.                                                                                                                 |
+| snowWhite.mcpApi.image.tag      | string | `""`                                                                                                                           | Image tag.                                                                                                                                                               |
+| snowWhite.mcpApi.resources      | object | `{"limits":{"ephemeral-storage":"2Gi","memory":"512Mi"},"requests":{"cpu":"0.2","ephemeral-storage":"50Mi","memory":"512Mi"}}` | MCP API pod resources. A jlink JVM image, not a native one, but it only proxies read-only calls to three sibling APIs — no state store and no database pool to size for. |
+
 ### Availability
 
 | Key                        | Type   | Default            | Description                                                                              |
