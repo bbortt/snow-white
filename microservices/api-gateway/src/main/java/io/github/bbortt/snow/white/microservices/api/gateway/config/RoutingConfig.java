@@ -46,7 +46,10 @@ public class RoutingConfig {
    */
   @Bean
   public RouteLocator mcpApi(RouteLocatorBuilder builder) {
-    return builder.routes().route("mcp-api", r -> r.path("/mcp", "/mcp/**").uri(apiGatewayProperties.getMcpApiUrl())).build();
+    return builder
+      .routes()
+      .route("mcp-api", r -> r.path("/mcp", "/mcp/**").uri(apiGatewayProperties.getMcpApiUrl()))
+      .build();
   }
 
   @Bean
