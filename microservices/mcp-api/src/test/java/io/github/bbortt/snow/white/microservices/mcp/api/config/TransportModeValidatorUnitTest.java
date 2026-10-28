@@ -64,14 +64,11 @@ class TransportModeValidatorUnitTest {
 
   @Test
   void aWebRunWithStdioLeftOnIsRefused() {
-    var applicationContext = withStdio(
-      new StaticWebApplicationContext(),
-      "true"
+    var fixture = new TransportModeValidator(
+      withStdio(new StaticWebApplicationContext(), "true")
     );
 
-    assertThatThrownBy(() ->
-      new TransportModeValidator(applicationContext).afterPropertiesSet()
-    )
+    assertThatThrownBy(fixture::afterPropertiesSet)
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining(STDIO_PROPERTY_NAME);
   }

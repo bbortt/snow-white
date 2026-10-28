@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.mcp.api.config;
 
+import static java.lang.Boolean.TRUE;
 import static org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerProperties.CONFIG_PREFIX;
 
 import clew.traceables.clew.ArchTraceables;
@@ -38,9 +39,11 @@ public class TransportModeValidator implements InitializingBean {
     // HTTP configuration was started without turning stdio off.
     if (
       applicationContext instanceof WebApplicationContext &&
-      applicationContext
-        .getEnvironment()
-        .getProperty(STDIO_PROPERTY_NAME, Boolean.class, false)
+      TRUE.equals(
+        applicationContext
+          .getEnvironment()
+          .getProperty(STDIO_PROPERTY_NAME, Boolean.class)
+      )
     ) {
       throw new IllegalStateException(
         "Cannot serve the MCP HTTP transport while '%s' is true: set it to false, or start this application with 'spring.main.web-application-type=none'.".formatted(
