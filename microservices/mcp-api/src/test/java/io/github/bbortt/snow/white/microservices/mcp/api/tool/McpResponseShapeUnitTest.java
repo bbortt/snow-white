@@ -21,6 +21,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.ai.mcp.annotation.McpTool;
 
 /** What the tools answer with is the REST surface's own shape. */
@@ -31,12 +33,7 @@ class McpResponseShapeUnitTest {
 
   /** The shape a ported verdict derivation would have to produce. */
   private static final Pattern VERDICT_FIELD = Pattern.compile(
-    "(?i).*(pass|fail|verdict).*"
-  );
-
-  private static final List<Class<?>> PER_CRITERION_RESULTS = List.of(
-    ListQualityGateReports200ResponseInnerInterfacesInnerTestResultsInner.class,
-    GetReportByCalculationId200ResponseInterfacesInnerTestResultsInner.class
+    "(?i)(?:pass|fail|verdict)"
   );
 
   private static List<JavaMethod> declaredTools() {
@@ -74,14 +71,18 @@ class McpResponseShapeUnitTest {
    * holding both can ask the follow-up question; the report's own status is the only
    * verdict this surface serves.
    */
-  @Test
-  void noPerCriterionResultCarriesAVerdictField() {
-    assertThat(PER_CRITERION_RESULTS).allSatisfy(perCriterionResult ->
-      assertThat(perCriterionResult.getDeclaredFields())
-        .extracting(Field::getName)
-        .isNotEmpty()
-        .noneMatch(name -> VERDICT_FIELD.matcher(name).matches())
-    );
+  @ParameterizedTest
+  @ValueSource(
+    classes = {
+      ListQualityGateReports200ResponseInnerInterfacesInnerTestResultsInner.class,
+      GetReportByCalculationId200ResponseInterfacesInnerTestResultsInner.class,
+    }
+  )
+  void noPerCriterionResultCarriesAVerdictField(Class<?> perCriterionResult) {
+    assertThat(perCriterionResult.getDeclaredFields())
+      .extracting(Field::getName)
+      .isNotEmpty()
+      .noneMatch(name -> VERDICT_FIELD.matcher(name).find());
   }
 
   private static Type unwrap(Type type) {
