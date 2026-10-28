@@ -44,7 +44,7 @@ jobs:
           BASE_HREF: ${{ github.base_ref }}
         run: git fetch --depth=1 origin "$BASE_HREF"
       - name: oasdiff
-        uses: oasdiff/oasdiff-action/changelog@514e22ec2f1d1654fb78ac3bb7dc00d8f3c6c4d9
+        uses: oasdiff/oasdiff-action/changelog@9ce3a29eb0e6478dd0140932a678c7fb59d08f22
         with:
           base: 'origin/${{ github.base_ref }}:${{ matrix.spec }}'
           revision: 'HEAD:${{ matrix.spec }}'
