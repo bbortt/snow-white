@@ -140,11 +140,10 @@ class KafkaListenerInformationRegistryUnitTest {
 
   @Test
   void missingServiceNameFailsFast() {
+    var listener = new IncompleteListener();
+
     assertThatThrownBy(() ->
-      fixture.postProcessAfterInitialization(
-        new IncompleteListener(),
-        "incompleteListener"
-      )
+      fixture.postProcessAfterInitialization(listener, "incompleteListener")
     )
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("IncompleteListener#receiveOnIncompleteTopic")
@@ -153,11 +152,10 @@ class KafkaListenerInformationRegistryUnitTest {
 
   @Test
   void missingApiNameFailsFast() {
+    var listener = new MissingApiNameListener();
+
     assertThatThrownBy(() ->
-      fixture.postProcessAfterInitialization(
-        new MissingApiNameListener(),
-        "missingApiNameListener"
-      )
+      fixture.postProcessAfterInitialization(listener, "missingApiNameListener")
     )
       .isInstanceOf(IllegalStateException.class)
       .hasMessageContaining("apiName=''");
@@ -165,9 +163,11 @@ class KafkaListenerInformationRegistryUnitTest {
 
   @Test
   void missingApiVersionFailsFast() {
+    var listener = new MissingApiVersionListener();
+
     assertThatThrownBy(() ->
       fixture.postProcessAfterInitialization(
-        new MissingApiVersionListener(),
+        listener,
         "missingApiVersionListener"
       )
     )
