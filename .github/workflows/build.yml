@@ -166,6 +166,8 @@ jobs:
             directory: microservices/api-gateway
           - service: api-sync-job
             directory: microservices/api-sync-job
+          - service: mcp-api
+            directory: microservices/mcp-api
           - service: openapi-coverage-stream
             directory: microservices/openapi-coverage-stream
           # Not microservices: these two prove a consuming service needs no Snow-White code to put
