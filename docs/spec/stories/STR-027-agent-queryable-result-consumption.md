@@ -5,7 +5,7 @@
 **Title**
 Agent-queryable result consumption
 
-**Status**: planned
+**Status**: done
 
 **Business Value**
 An agentic client acting on Snow-White's output today has to consume a complete document — the
