@@ -50,8 +50,10 @@ spec:
               value: '{{ include "snow-white.publicAddress" . }}'
             - name: 'SNOW_WHITE_API_GATEWAY_API-INDEX-API-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "api-index-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+            {{- if eq .Values.snowWhite.mcpApi.enabled true }}
             - name: 'SNOW_WHITE_API_GATEWAY_MCP-API-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "mcp-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
+            {{- end }}
             - name: 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL'
               value: 'http://{{ include "snow-white.name" (dict "name" "quality-gate-api" "context" .) }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:80'
             - name: 'SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL'

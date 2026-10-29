@@ -442,9 +442,9 @@ describe('API Gateway', () => {
         });
 
         describe('env', () => {
-          it('should deploy 3+1+5 environment variables by default', async () => {
+          it('should deploy 3+1+4 environment variables by default', async () => {
             const apiGateway = await renderAndGetApiGatewayContainer();
-            expect(apiGateway.env).toHaveLength(9);
+            expect(apiGateway.env).toHaveLength(8);
           });
 
           it('should include default log pattern', async () => {
@@ -566,14 +566,6 @@ describe('API Gateway', () => {
               'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
             );
 
-            const mcpApiUrl = apiGateway.env.find(
-              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_MCP-API-URL',
-            );
-            expect(mcpApiUrl).toBeDefined();
-            expect(mcpApiUrl.value).toBe(
-              'http://snow-white-mcp-api-test-release.default.svc.cluster.local.:80',
-            );
-
             const qualityGateUrl = apiGateway.env.find(
               (env) =>
                 env.name === 'SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL',
@@ -594,6 +586,36 @@ describe('API Gateway', () => {
             );
           });
 
+          it('should not connect to the MCP API by default', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer();
+
+            const mcpApiUrl = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_MCP-API-URL',
+            );
+            expect(mcpApiUrl).toBeUndefined();
+          });
+
+          it('should connect to the MCP API where it is enabled', async () => {
+            const apiGateway = await renderAndGetApiGatewayContainer(
+              await renderHelmChart({
+                chartPath: 'charts/snow-white',
+                values: {
+                  snowWhite: {
+                    mcpApi: { enabled: true },
+                  },
+                },
+              }),
+            );
+
+            const mcpApiUrl = apiGateway.env.find(
+              (env) => env.name === 'SNOW_WHITE_API_GATEWAY_MCP-API-URL',
+            );
+            expect(mcpApiUrl).toBeDefined();
+            expect(mcpApiUrl.value).toBe(
+              'http://snow-white-mcp-api-test-release.default.svc.cluster.local.:80',
+            );
+          });
+
           it('should accept additional environment variables', async () => {
             const additionalEnvs = [
               { name: 'author', value: 'bbortt' },
@@ -611,8 +633,8 @@ describe('API Gateway', () => {
               }),
             );
 
-            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 5 default + 2 additional
-            expect(apiGateway.env).toHaveLength(11);
+            // 1 Logging + 2 OTEL + 1 JAVA_TOOL_OPTIONS + 4 default + 2 additional
+            expect(apiGateway.env).toHaveLength(10);
 
             const authorEnv = apiGateway.env.find(
               (env) => env.name === 'author',

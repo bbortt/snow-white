@@ -28,14 +28,16 @@ functions properly:
 
 <!-- markdownlint-disable markdownlint-sentences-per-line -->
 
-| Property                                            | Description                                                                                                | Example Value                        |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `SNOW_WHITE_API_GATEWAY_MCP-API-URL`                | Internal URL to the `mcp-api` service. Used for routing the `/mcp` endpoint internally within the cluster. | `http://mcp-api:8080`                |
-| `SNOW_WHITE_API_GATEWAY_PUBLIC-URL`                 | The public URL where the gateway is exposed. This is the entry point into the Snow White system.           | `http://localhost`                   |
-| `SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL`       | Internal URL to the `quality-gate-api` service. Used for routing requests internally within the cluster.   | `http://quality-gate-api:8080`       |
-| `SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL` | Internal URL to the `report-coordinator-api`. Also used for internal routing.                              | `http://report-coordinator-api:8080` |
+| Property                                            | Description                                                                                              | Example Value                        |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `SNOW_WHITE_API_GATEWAY_PUBLIC-URL`                 | The public URL where the gateway is exposed. This is the entry point into the Snow White system.         | `http://localhost`                   |
+| `SNOW_WHITE_API_GATEWAY_QUALITY-GATE-API-URL`       | Internal URL to the `quality-gate-api` service. Used for routing requests internally within the cluster. | `http://quality-gate-api:8080`       |
+| `SNOW_WHITE_API_GATEWAY_REPORT-COORDINATOR-API-URL` | Internal URL to the `report-coordinator-api`. Also used for internal routing.                            | `http://report-coordinator-api:8080` |
 
 <!-- markdownlint-enable markdownlint-sentences-per-line -->
+
+`SNOW_WHITE_API_GATEWAY_MCP-API-URL` (for example `http://mcp-api:8080`) is the one backend URL that is optional, because the MCP server is an opt-in deployment.
+Where it is unset the `/mcp` prefix is not routed at all and the gateway answers it with `404`; where it is set it must not be empty.
 
 ## Deployment Notes
 

@@ -297,6 +297,10 @@ snowWhite:
         memory: '1Gi'
         ephemeral-storage: '50Mi'
   mcpApi:
+    # -- Deploy the MCP server alongside Snow-White, and route `/mcp` to it.
+    # Only an agentic client reaches this surface; without one it is a JVM serving nobody. Leaving it off also leaves `/mcp` unrouted, so the gateway answers it as a path this installation does not serve.
+    # @section -- Snow-White MCP API
+    enabled: false
     image:
       # -- Image tag.
       # @section -- Snow-White MCP API

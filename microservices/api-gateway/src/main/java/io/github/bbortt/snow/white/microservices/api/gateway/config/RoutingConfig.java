@@ -9,7 +9,9 @@ package io.github.bbortt.snow.white.microservices.api.gateway.config;
 import static java.lang.String.format;
 
 import clew.traceables.clew.ArchTraceables;
+import clew.traceables.clew.NfTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
+import clew.traceables.clew.annotation.RealizesNf;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +45,17 @@ public class RoutingConfig {
    * MCP is not REST and publishes no OpenAPI document, so this route has no {@code /v3/api-docs}
    * sibling. The path matches {@code spring.ai.mcp.server.streamable-http.mcp-endpoint}, which
    * {@code mcp-api} pins rather than inheriting from the framework.
+   *
+   * <p>This is the one backend route that may be absent: the MCP server is an opt-in deployment, so
+   * an installation without one leaves {@code mcp-api-url} unset and {@code /mcp} is answered as a
+   * path this gateway does not serve - rather than proxied to a backend that was never deployed,
+   * which would answer the {@code 503} a deployed-but-unhealthy one does.
    */
   @Bean
+  @RealizesNf(NfTraceables.NF_011_MCP_SERVER_IS_AN_OPT_IN_DEPLOYMENT)
+  // Not @ConditionalOnProperty: that reads a value of `false` as absent, which would take the
+  // route away behind a URL the validator accepted.
+  @ConditionalOnExpression("'${" + ApiGatewayProperties.PREFIX + ".mcp-api-url:}' != ''")
   public RouteLocator mcpApi(RouteLocatorBuilder builder) {
     return builder
       .routes()
