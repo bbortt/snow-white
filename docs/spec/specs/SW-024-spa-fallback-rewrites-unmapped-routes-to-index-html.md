@@ -20,6 +20,10 @@ a path naming a file extension — passes through unchanged.
 ([ARCH-008](ARCH-008-backend-services-addressed-by-path-prefix-with-aggregated-openapi-docs.md)),
 and this filter runs before the gateway's route predicates, so without the exclusion the rewrite
 would swallow the request before any route could match it.
+The exclusion does not depend on that route existing: the MCP backend is an opt-in deployment
+([NF-011](NF-011-mcp-server-is-an-opt-in-deployment.md)), and where it is not deployed `/mcp` has to
+be answered as a path this installation does not serve rather than as the SPA shell, which is what
+the prefix staying excluded achieves.
 The rewrite happens **server-side**, before the request reaches the SPA's own client-side router:
 the browser's address bar and history keep the originally-requested path, only the served content
 changes to the SPA shell.

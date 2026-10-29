@@ -72,6 +72,9 @@ construction rather than by convention.
 - A value an MCP tool returns agrees with the same value as published by the JSON REST API, the
   JUnit export, and `--agentic`, for the same report — the published figures the four surfaces
   share, not `--agentic`'s derived failure set, which this surface does not produce.
+- An installation with no agentic client runs no MCP server: it is deployed where an operator asks
+  for it, and a Snow-White without one answers `/mcp` as a surface this installation does not have,
+  rather than as a backend that is down.
 
 **Out of scope**
 
@@ -84,6 +87,9 @@ construction rather than by convention.
 - The deployment and packaging work (helm chart, docker-compose entry, `api-gateway` route, JVM
   image, published skill update) — later implementation increments, not a new observable behavior
   these specs need to pin.
+  One exception surfaced once that increment existed: whether the server is deployed at all is an
+  operator's choice rather than a consequence of installing Snow-White, which is a behavior, and
+  `NF-011` pins it.
 - Which probes target the deployed HTTP mode's management surface — `ARCH-022` settles the
   posture for both run modes against `ARCH-018` and `NF-001`, and defers the probe wiring to the
   increment that adds the deployment, exactly as `ARCH-018` defers its own.
@@ -100,6 +106,8 @@ construction rather than by convention.
   shape the tools run on
 - [CON-014](../specs/CON-014-mcp-tool-set-is-read-only.md) — the read-only invariant
   this story's tool set must hold
+- [NF-011](../specs/NF-011-mcp-server-is-an-opt-in-deployment.md) — the operator's choice
+  of whether this path is deployed at all
 
 **Related**
 

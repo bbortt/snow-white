@@ -16,9 +16,12 @@ discovery: `RoutingConfig` declares one `RouteLocator` bean per backend
 (`api-index-api`, `quality-gate-api`, `report-coordinator-api`), each matching a fixed REST path
 prefix (for example `/api/rest/v1/criteria/**` and `/api/rest/v1/quality-gates/**` for
 `quality-gate-api`) and forwarding to that backend's configured URL.
-`mcp-api` is routed the same way, under `/mcp`, but it is the one backend whose prefix does not
-carry REST: it speaks MCP there and publishes no OpenAPI document, so it has no docs route of the
-kind described below.
+`mcp-api` is routed the same way, under `/mcp`, but it differs from the three in two respects: its
+prefix does not carry REST — it speaks MCP there and publishes no OpenAPI document, so it has no
+docs route of the kind described below — and its entry in the table is the one that may be absent.
+Its `RouteLocator` is declared only where that backend's URL is configured, because the backend
+itself is an opt-in deployment ([NF-011](NF-011-mcp-server-is-an-opt-in-deployment.md)); the three
+REST backends' URLs remain required, so their routes are always declared.
 No two backends share a path prefix, and no path is routed to more than one backend.
 
 Each backend's own OpenAPI document is re-exposed under a **second**, per-backend route —
