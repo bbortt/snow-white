@@ -108,3 +108,5 @@ exactly the writes the constraint exists to catch.
   pattern this module's HTTP mode departs from, having a business surface of its own
 - [NF-001](NF-001-operational-observability.md) — the observability quality the deployed HTTP
   mode must reach, and that the stdio mode is out of reach of by construction
+- [NF-011](NF-011-mcp-server-is-an-opt-in-deployment.md) — whether the HTTP mode is deployed at
+  all, which is an operator's choice; the stdio mode is out of that setting's reach
