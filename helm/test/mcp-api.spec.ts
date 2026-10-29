@@ -13,12 +13,32 @@ import {
 } from './helpers';
 import { defaultLogPattern } from './constants';
 
+const valuesWithEnabledMcpApi = {
+  snowWhite: {
+    mcpApi: {
+      enabled: true,
+    },
+  },
+};
+
 describe('MCP API', () => {
+  it('should not be enabled by default', async () => {
+    const manifests = await renderHelmChart({
+      chartPath: 'charts/snow-white',
+    });
+
+    const mcpApiManifests = manifests.filter(
+      (m) => m.metadata.name === 'snow-white-mcp-api-test-release',
+    );
+    expect(mcpApiManifests).toHaveLength(0);
+  });
+
   describe('Deployment', () => {
     const renderAndGetDeployment = async (manifests?: any[]) => {
       if (!manifests) {
         manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
+          values: valuesWithEnabledMcpApi,
         });
       }
 
@@ -93,6 +113,7 @@ describe('MCP API', () => {
                 values: {
                   snowWhite: {
                     image: { registry: customRegistry },
+                    mcpApi: { enabled: true },
                   },
                 },
               }),
@@ -111,7 +132,7 @@ describe('MCP API', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    mcpApi: { image: { tag: customTag } },
+                    mcpApi: { enabled: true, image: { tag: customTag } },
                   },
                 },
               }),
@@ -137,6 +158,7 @@ describe('MCP API', () => {
               await renderHelmChart({
                 chartPath: 'charts/snow-white',
                 values: {
+                  ...valuesWithEnabledMcpApi,
                   image: { pullPolicy: imagePullPolicy },
                 },
               }),
@@ -219,7 +241,7 @@ describe('MCP API', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    mcpApi: { additionalEnvs },
+                    mcpApi: { enabled: true, additionalEnvs },
                   },
                 },
               }),
@@ -301,7 +323,7 @@ describe('MCP API', () => {
                 chartPath: 'charts/snow-white',
                 values: {
                   snowWhite: {
-                    mcpApi: { resources },
+                    mcpApi: { enabled: true, resources },
                   },
                 },
               }),
@@ -319,6 +341,7 @@ describe('MCP API', () => {
       if (!manifests) {
         manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
+          values: valuesWithEnabledMcpApi,
         });
       }
 
@@ -334,6 +357,7 @@ describe('MCP API', () => {
     it('should select correct pod based on selector labels', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
+        values: valuesWithEnabledMcpApi,
       });
 
       const pdb = await renderAndGetPdb(manifests);
@@ -354,6 +378,7 @@ describe('MCP API', () => {
       if (!manifests) {
         manifests = await renderHelmChart({
           chartPath: 'charts/snow-white',
+          values: valuesWithEnabledMcpApi,
         });
       }
 
@@ -381,6 +406,7 @@ describe('MCP API', () => {
     it('should select correct pod based on selector labels', async () => {
       const manifests = await renderHelmChart({
         chartPath: 'charts/snow-white',
+        values: valuesWithEnabledMcpApi,
       });
 
       const service = await renderAndGetMcpApiService(manifests);

@@ -26,12 +26,18 @@ public class ApiGatewayPropertiesValidator {
   public ApiGatewayPropertiesValidator(ApiGatewayProperties apiGatewayProperties, Environment environment) {
     Map<String, String> fields = new HashMap<>();
     fields.put(PREFIX + ".api-index-api-url", apiGatewayProperties.getApiIndexApiUrl());
-    fields.put(PREFIX + ".mcp-api-url", apiGatewayProperties.getMcpApiUrl());
     fields.put(PREFIX + ".quality-gate-api-url", apiGatewayProperties.getQualityGateApiUrl());
     fields.put(PREFIX + ".report-coordinator-api-url", apiGatewayProperties.getReportCoordinatorApiUrl());
 
     if (nonNull(environment) && environment.acceptsProfiles(Profiles.of("prod"))) {
       fields.put(PREFIX + ".public-url", apiGatewayProperties.getPublicUrl());
+    }
+
+    // The MCP backend is an opt-in deployment, so its URL may be absent entirely. A key that is
+    // present but empty is a typo rather than a choice, and would otherwise leave `/mcp` unrouted
+    // with nothing said about why.
+    if (nonNull(environment) && environment.containsProperty(PREFIX + ".mcp-api-url")) {
+      fields.put(PREFIX + ".mcp-api-url", apiGatewayProperties.getMcpApiUrl());
     }
 
     assertRequiredProperties(fields);

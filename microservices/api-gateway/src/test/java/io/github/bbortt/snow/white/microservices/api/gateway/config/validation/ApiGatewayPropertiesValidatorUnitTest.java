@@ -28,6 +28,7 @@ import org.springframework.core.env.Profiles;
 class ApiGatewayPropertiesValidatorUnitTest {
 
   private static final Profiles PROD = Profiles.of("prod");
+  private static final String MCP_API_URL = "snow.white.api.gateway.mcp-api-url";
 
   @Mock
   private Environment environmentMock;
@@ -89,14 +90,43 @@ class ApiGatewayPropertiesValidatorUnitTest {
     }
 
     @Test
-    void shouldThrowException_withMissingMcpApiUrl() {
+    void doesNotRequireMcpApiUrl_whenItIsNotConfiguredAtAll() {
       fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
+
+      assertThatNoException().isThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock));
+    }
+
+    public static Stream<String> shouldThrowException_withConfiguredButBlankMcpApiUrl() {
+      return Stream.of("", " ");
+    }
+
+    @MethodSource
+    @ParameterizedTest
+    void shouldThrowException_withConfiguredButBlankMcpApiUrl(String mcpApiUrl) {
+      doReturn(true).when(environmentMock).containsProperty(MCP_API_URL);
+
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl(mcpApiUrl);
       fixture.setQualityGateApiUrl("qualityGateApiUrl");
       fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
 
       assertThatThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("All properties must be configured - missing: [snow.white.api.gateway.mcp-api-url].");
+    }
+
+    @Test
+    void doesNotThrowAnythingIfConfiguredMcpApiUrlIsSet() {
+      doReturn(true).when(environmentMock).containsProperty(MCP_API_URL);
+
+      fixture.setApiIndexApiUrl("apiIndexApiUrl");
+      fixture.setMcpApiUrl("mcpApiUrl");
+      fixture.setQualityGateApiUrl("qualityGateApiUrl");
+      fixture.setReportCoordinatorApiUrl("reportCoordinationServiceUrl");
+
+      assertThatNoException().isThrownBy(() -> new ApiGatewayPropertiesValidator(fixture, environmentMock));
     }
 
     public static Stream<String> throwsExceptionIfInProdProfileAndUndefinedPublicUrl() {

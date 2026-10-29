@@ -1,3 +1,4 @@
+{{- if eq .Values.snowWhite.mcpApi.enabled true }}
 {{- $name := include "snow-white.name" (dict "name" "mcp-api" "context" .) -}}
 {{- $labels := include "snow-white.labels" (dict "name" "mcp-api" "context" .) | nindent 0 -}}
 {{- $selectorLabels := include "snow-white.selectorLabels" (dict "name" "mcp-api" "context" .) | nindent 0 -}}
@@ -144,3 +145,4 @@ spec:
       protocol: TCP
       port: 80
       targetPort: http
+{{- end }}
