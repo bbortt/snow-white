@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.4.0](https://github.com/bbortt/snow-white/compare/v2.3.0...v2.4.0) (2026-10-29)
+
+
+### Features
+
+* **mcp-api:** deploy the MCP server alongside the other microservices ([6e58bce](https://github.com/bbortt/snow-white/commit/6e58bce5c2fd8a4fb4b72608025e657be001b11f))
+* **mcp-api:** deploy the MCP server only where it is asked for ([770269e](https://github.com/bbortt/snow-white/commit/770269ed4650296b4c2bef9e1795c079741bbb16)), closes [#2276](https://github.com/bbortt/snow-white/issues/2276)
+* **mcp-api:** serve the read-only Snow-White tool set over MCP ([e320507](https://github.com/bbortt/snow-white/commit/e320507a9686490867068a5238c36b85a297573f)), closes [#2276](https://github.com/bbortt/snow-white/issues/2276)
+* **report-coordinator-api:** reject APIs no coverage calculator serves ([1ddb557](https://github.com/bbortt/snow-white/commit/1ddb557c1ac59a2008ecdb4e85c6c708179d0630)), closes [#2164](https://github.com/bbortt/snow-white/issues/2164)
+* **toolkit:** stamp AsyncAPI attributes on consumed Kafka records ([fb4faa9](https://github.com/bbortt/snow-white/commit/fb4faa9a8be2c31fb3e7af89164a464010d6063a)), closes [#2164](https://github.com/bbortt/snow-white/issues/2164)
+
+
+### Bug Fixes
+
+* **mcp-api:** add the JRE module the embedded server needs to start ([1f3765b](https://github.com/bbortt/snow-white/commit/1f3765b42cadda8e8ff915842ac937c9e0be704a))
+* **mcp-api:** clear the SonarCloud findings on the new module ([18a554a](https://github.com/bbortt/snow-white/commit/18a554a36fe9e8ab4b0518bd5d1fecc5dd3a3606))
+* **toolkit:** clear the SonarCloud findings on the Kafka interceptor ([cc14b99](https://github.com/bbortt/snow-white/commit/cc14b99553d9a26a0da2901ab543e1136e96c62f))
+
+
+### Documentation
+
+* **snow-white-skill:** teach the skill to query a running instance ([bfe849f](https://github.com/bbortt/snow-white/commit/bfe849f43b305aa9f2bbb365c0cee77dc1fabdde))
+* **STR-027:** make the MCP server an opt-in deployment ([a307661](https://github.com/bbortt/snow-white/commit/a3076611476fde2ab2f462a694b1e80c4ab2d3d8)), closes [#2276](https://github.com/bbortt/snow-white/issues/2276)
+* **STR-027:** mark agent-queryable result consumption done ([32b515c](https://github.com/bbortt/snow-white/commit/32b515c2a0d98a0f8717ec41b1cdbec88c39cc3c))
+* **STR-027:** promote the MCP API specs ([c58c890](https://github.com/bbortt/snow-white/commit/c58c890de704f1d7870e91d9e29a18498ccc291f)), closes [#2276](https://github.com/bbortt/snow-white/issues/2276)
+
 ## [2.3.0](https://github.com/bbortt/snow-white/compare/v2.2.0...v2.3.0) (2026-10-22)
 
 ### Features
