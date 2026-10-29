@@ -14,7 +14,7 @@
     "apptest:wait:wiremock": "wait-on --timeout 1m http-get://localhost:9000/__admin/health"
   },
   "devDependencies": {
-    "npm-run-all2": "9.0.3",
+    "npm-run-all2": "9.0.4",
     "wait-on": "9.5.1"
   },
   "packageManager": "pnpm@12.4.2",
