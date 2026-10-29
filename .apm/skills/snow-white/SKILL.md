@@ -36,6 +36,32 @@ When the findings and the evidence behind them matter rather than just the verdi
 `--report-output <path>`: it writes the report read's response body to a file, which is the full
 report including every finding, untruncated.
 
+## Asking a running Snow-White instead of recalculating
+
+An installation deploys the MCP server only where an operator asked for it, so it may not be
+there.
+Where it is, a follow-up question is a tool call rather than another `snow-white calculate`.
+All four tools are read-only; none of them can trigger a calculation or change a gate:
+
+- `list_apis` — which specifications Snow-White has indexed, optionally narrowed to one service or
+  API name.
+  Start here to learn what can be asked about.
+- `get_coverage` — the most recent report covering a service or API, with each interface's
+  per-criterion coverage, the threshold it was scored against, and the judged and waived target
+  counts.
+  It does not say whether the gate passed: read the report's own status, which also distinguishes
+  a calculation still running from absent coverage.
+- `list_findings` — one report in full, keyed by the calculation UUID `get_coverage` returned,
+  including every finding's JSON Pointer into the specification and the trace evidence behind it.
+- `explain_criterion` — what one criterion named by a report actually judges.
+  `references/criteria-hierarchy.md` answers the same question offline and additionally carries the
+  parent/child relations Step 3 needs, which this tool does not return.
+
+Reach for the CLI when the calculation still has to run, and for these tools when a report already
+exists and the question is "what else?".
+A value these tools return is the same published figure as the JSON REST API, the JUnit export and
+`--agentic` carry for that report, so mixing surfaces across one investigation is safe.
+
 ## Report structure
 
 Snow-White's JUnit XML follows this shape:
