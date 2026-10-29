@@ -1,7 +1,9 @@
 FROM eclipse-temurin:27-jdk-alpine AS jlink-builder
 
-# Essential modules that jdeps misses for Spring Boot + OpenTelemetry
-ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.naming"
+# Essential modules that jdeps misses for Spring Boot + OpenTelemetry.
+# java.security.jgss is Tomcat's: it reaches for GSS on startup, and without the module the
+# embedded server fails to start at all.
+ENV ESSENTIAL_MODULES="java.desktop,java.instrument,java.logging,java.management,java.naming,java.security.jgss"
 
 RUN apk add --no-cache binutils
 
