@@ -208,6 +208,21 @@ otelCollector:
 
 ## Replacing Bundled Infrastructure
 
+By default, the chart installs PostgreSQL, Kafka, InfluxDB and an OTel Collector alongside Snow-White.
+Each can be replaced by infrastructure you already operate, independently of the others.
+See [Architecture — Installation Modes](./architecture.md#installation-modes) for how this changes the data flow.
+
+### Disable Kafka
+
+```yaml
+kafka:
+  enabled: false
+
+snowWhite:
+  kafka:
+    brokers: 'my.kafka:9092'
+```
+
 ### Disable PostgreSQL
 
 Add this to your `values.yaml`:
