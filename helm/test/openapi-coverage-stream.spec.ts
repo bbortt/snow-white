@@ -988,6 +988,33 @@ describe('OpenAPI Coverage Stream', () => {
             expect(springDatasourceUrl.value).toBe(brokers);
           });
 
+          it('should not derive api-index api base url from kafka brokers', async () => {
+            const openapiCoverageStream =
+              await renderAndGetOpenapiCoverageStreamContainer(
+                await renderHelmChart({
+                  chartPath: 'charts/snow-white',
+                  values: {
+                    snowWhite: {
+                      kafka: {
+                        brokers: 'my.kafka:9092',
+                      },
+                    },
+                  },
+                }),
+              );
+
+            const apiIndexBaseUrl = openapiCoverageStream.env.find(
+              (env) =>
+                env.name ===
+                'SNOW_WHITE_OPENAPI_COVERAGE_STREAM_API-INDEX_BASE-URL',
+            );
+            expect(apiIndexBaseUrl).toBeDefined();
+
+            expect(apiIndexBaseUrl.value).toBe(
+              'http://snow-white-api-index-api-test-release.default.svc.cluster.local.:80',
+            );
+          });
+
           it.each([
             {
               otelCollector: {
