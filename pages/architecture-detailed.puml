@@ -9,6 +9,7 @@ left to right direction
 
 actor User as user
 component "CLI" as cli #DarkOrange
+actor "AI Agent" as agent
 
 component "JFrog Artifactory" as artifactory #Teal
 component "Example Application" as app
@@ -33,6 +34,8 @@ package "Snow-White" {
 
   component "Report Coordinator API\n<<Spring Boot / JPA + Kafka>>\n:8084" as coordinator #DarkOrange
   database "PostgreSQL\n[report_coordinator_api]" as db_coordinator #LightBlue
+
+  component "MCP API\n<<Spring AI MCP Server>>\n/mcp" as mcp #DarkOrange
 
   ' Kafka Stream Processors
 
@@ -64,6 +67,14 @@ cli --> gate : HTTPS
 gate <--> index : REST /api/rest/v1/api-index/
 gate <--> qgate : REST /api/rest/v1/quality-gates/
 gate <--> coordinator : REST /api/rest/v1/reports/
+gate <--> mcp : MCP /mcp (optional)
+
+' MCP API (read-only facade)
+
+agent --> gate : MCP (streamable HTTP)
+mcp --> index : REST
+mcp --> qgate : REST
+mcp --> coordinator : REST
 
 ' Report Coordinator dependencies
 

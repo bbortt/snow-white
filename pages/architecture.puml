@@ -19,6 +19,7 @@ component "OTEL Event Filter Stream" as filter #Darkorange
 component "OpenAPI Coverage Stream" as coverage #Darkorange
 component "Quality-Gate API" as qgate #Darkorange
 component "Report Coordinator API" as coordinator #Darkorange
+component "MCP API" as mcp #Darkorange
 
 ' Third-party components next
 
@@ -40,6 +41,7 @@ component "JFrog Artifactory" as sir #Teal
 
 actor User as user
 component CLI as cli #Darkorange
+actor "AI Agent" as agent
 
 user <--> ui: HTTP/S
 
@@ -49,6 +51,11 @@ cli --> gate: HTTP/S
 gate <--> qgate
 gate <--> coordinator
 gate <--> index
+agent --> gate: MCP (/mcp)
+gate <--> mcp
+mcp --> index
+mcp --> qgate
+mcp --> coordinator
 
 ' API Sync Job
 

@@ -1,0 +1,80 @@
+@startuml
+
+' Stylin'
+
+!theme vibrant
+left to right direction
+
+package "Snow-White" {
+
+  component "API Gateway" as gate #Darkorange {
+    component "Webapplication (UI)" as ui #Orange
+  }
+
+  component "API Index API" as index #Darkorange
+  component "API Sync Job" as sync #Darkorange
+  component "OpenAPI Coverage Stream" as coverage #Darkorange
+  component "Quality-Gate API" as qgate #Darkorange
+  component "Report Coordinator API" as coordinator #Darkorange
+  component "MCP API" as mcp #Darkorange
+}
+
+' Self-provisioned infrastructure, operated outside of Snow-White
+
+package "Existing Infrastructure" {
+
+  database "PostgreSQL" as postgres #Teal
+
+  component "Kafka" #Teal {
+    queue "Request Topic" as request
+    queue "Response Topic" as response
+  }
+
+  database "InfluxDB or Grafana Tempo" as backend #Teal
+  component "Otel Collector" as otel #Teal
+}
+
+component "JFrog Artifactory" as sir #Teal
+
+actor User as user
+component CLI as cli #Darkorange
+actor "AI Agent" as agent
+
+user <--> ui: HTTP/S
+user ..> cli: uses
+cli --> gate: HTTP/S
+agent --> gate: MCP (/mcp)
+
+gate <--> qgate
+gate <--> coordinator
+gate <--> index
+gate <--> mcp
+
+sync ---> sir : Fetch API Index
+sync --> index : Store API Meta Information
+
+index --> postgres
+qgate --> postgres
+coordinator --> postgres
+
+' Applications report to the existing telemetry stack, never to Snow-White
+
+component "Example-Application" as app
+
+app --> otel: gRPC or Protobuf
+otel --> backend: Persist Telemetry Data
+
+coordinator .down.> request
+response .up.> coordinator
+
+request .down.> coverage
+coverage <--> index: Query API Meta Information
+coverage <-up-> backend: Query Telemetry Data (read-only)
+coverage .up.> response
+
+legend right
+<back:Darkorange>+</back> Snow-White
+<back:Teal>+</back> Third Party
+end legend
+
+@enduml
