@@ -76,7 +76,7 @@ jobs:
           gh release upload "$REF_NAME" toolkit/cli/target/snow-white-windows-x64.exe
           gh release upload "$REF_NAME" toolkit/cli/target/snow-white-windows-arm64.exe
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -167,7 +167,7 @@ jobs:
             -Dfrontend.test.skip=true \
             -pl :api-gateway,:api-sync-job,:mcp-api,:openapi-coverage-stream -am
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -216,7 +216,7 @@ jobs:
             -Djacoco.skip=true \
             -pl :${{ matrix.service }} -am
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
