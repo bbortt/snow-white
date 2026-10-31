@@ -2,16 +2,14 @@
 
 ## [2.4.1](https://github.com/bbortt/snow-white/compare/v2.4.0...v2.4.1) (2026-10-31)
 
-
 ### Bug Fixes
 
-* **helm:** decouple coverage stream api-index url from kafka brokers ([51a69ac](https://github.com/bbortt/snow-white/commit/51a69ac0227570928e4eaadf29d48fa7f0882567))
-
+- **helm:** decouple coverage stream api-index url from kafka brokers ([51a69ac](https://github.com/bbortt/snow-white/commit/51a69ac0227570928e4eaadf29d48fa7f0882567))
 
 ### Documentation
 
-* **pages:** announce release 2.4.0 ([d74ec14](https://github.com/bbortt/snow-white/commit/d74ec14ef8df06028e01a0f06ca4a8b164bdd827))
-* **pages:** describe installation modes and mcp api in architecture ([d5dfe1e](https://github.com/bbortt/snow-white/commit/d5dfe1e9ba0645314e9de45cda69c841fb86b492))
+- **pages:** announce release 2.4.0 ([d74ec14](https://github.com/bbortt/snow-white/commit/d74ec14ef8df06028e01a0f06ca4a8b164bdd827))
+- **pages:** describe installation modes and mcp api in architecture ([d5dfe1e](https://github.com/bbortt/snow-white/commit/d5dfe1e9ba0645314e9de45cda69c841fb86b492))
 
 ## [2.4.0](https://github.com/bbortt/snow-white/compare/v2.3.0...v2.4.0) (2026-10-29)
 
