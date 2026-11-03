@@ -130,7 +130,7 @@ jobs:
           git config user.name "Timon Borter"
           git config user.email "timon.borter@gmx.ch"
       - name: Release Helm Chart
-        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f
+        uses: helm/chart-releaser-action@df287104677278f869ca5480bd260358397cc3f9
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
