@@ -7,7 +7,7 @@ A harness-exported span contributes to conformance and to nothing else
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A span the test harness exported

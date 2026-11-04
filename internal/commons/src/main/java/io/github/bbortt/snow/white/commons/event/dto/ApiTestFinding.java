@@ -28,6 +28,19 @@ public record ApiTestFinding(
   @Nullable String waiverReason,
   @Nullable LocalDate waiverExpiresOn
 ) {
+  /**
+   * The longest spec pointer a finding is stored under, in UTF-8 bytes.
+   * <p>
+   * {@code report-coordinator-api} holds it in a {@code VARCHAR(512) NOT NULL} column, so a longer
+   * pointer does not cost one finding its identity - the insert fails and the whole calculation's
+   * result is lost. In bytes rather than characters for the reason
+   * {@link FindingEvidence#MAX_TEST_CASE_NAME_BYTES} records, and stated here rather than in either
+   * service because it is a bound both ends have to agree on. Every pointer derived from a document
+   * alone is far inside it; the bound exists for the one that appends a value a third party
+   * supplied.
+   */
+  public static final int MAX_SPEC_POINTER_BYTES = 512;
+
   public ApiTestFinding {
     evidence = List.copyOf(evidence);
   }

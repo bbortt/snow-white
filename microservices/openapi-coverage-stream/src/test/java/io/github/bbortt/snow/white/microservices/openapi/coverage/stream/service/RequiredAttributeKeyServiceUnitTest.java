@@ -37,6 +37,12 @@ class RequiredAttributeKeyServiceUnitTest {
   private static final String TEST_CASE_NAME_ATTRIBUTE =
     "snow.white.test.case.name";
 
+  private static final String RESPONSE_SCHEMA_VALID_ATTRIBUTE =
+    "snow.white.response.schema.valid";
+
+  private static final String RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE =
+    "snow.white.response.schema.violations";
+
   private static final List<String> FIXED_KEYS = List.of(
     "http.request.method",
     "url.path",
@@ -44,7 +50,9 @@ class RequiredAttributeKeyServiceUnitTest {
     "url.query",
     HEADER_KEY_PREFIX + "content-type",
     OPERATION_ID_ATTRIBUTE,
-    TEST_CASE_NAME_ATTRIBUTE
+    TEST_CASE_NAME_ATTRIBUTE,
+    RESPONSE_SCHEMA_VALID_ATTRIBUTE,
+    RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE
   );
 
   @Mock
@@ -60,6 +68,12 @@ class RequiredAttributeKeyServiceUnitTest {
     doReturn(TEST_CASE_NAME_ATTRIBUTE)
       .when(openApiCoverageStreamPropertiesMock)
       .getTestCaseNameAttribute();
+    doReturn(RESPONSE_SCHEMA_VALID_ATTRIBUTE)
+      .when(openApiCoverageStreamPropertiesMock)
+      .getResponseSchemaValidAttribute();
+    doReturn(RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE)
+      .when(openApiCoverageStreamPropertiesMock)
+      .getResponseSchemaViolationsAttribute();
 
     fixture = new RequiredAttributeKeyService(
       openApiCoverageStreamPropertiesMock

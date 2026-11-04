@@ -95,10 +95,13 @@ final class SpecPointerUtils {
   }
 
   /**
+   * A key as it appears inside a JSON Pointer.
+   * <p>
    * Escaping order is load-bearing: a literal {@code ~} must become {@code ~0} before any
-   * {@code /} becomes {@code ~1}, or the {@code ~} of the latter is escaped a second time.
+   * {@code /} becomes {@code ~1}, or the {@code ~} of the latter is escaped a second time. One
+   * copy of that rule, so a change to it reaches every pointer this service publishes.
    */
-  private static String escape(String specKey) {
+  static String escape(String specKey) {
     return specKey.replace("~", "~0").replace("/", "~1");
   }
 }

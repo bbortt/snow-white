@@ -68,6 +68,10 @@
         "NO_UNDOCUMENTED_POSITIVE_RESPONSE_CODES": {
           "name": "Alle Nicht-Fehler-Codes Dokumentiert",
           "description": "Alle Antwortcodes, die aufgetreten sind und nicht als Fehler betrachtet werden (0 - 399), müssen in der OpenAPI-Spezifikation dokumentiert werden. Dies ist eine Untermenge von `NO_UNDOCUMENTED_RESPONSE_CODES`."
+        },
+        "RESPONSE_SCHEMA_CONFORMANCE": {
+          "name": "Konformität des Antwortschemas",
+          "description": "Jede Antwort, die ein Test-Harness gegen das in der OpenAPI-Spezifikation dokumentierte Schema geprüft hat, entsprach diesem Schema. Antworten, die kein Harness geprüft hat, werden nicht gezählt; eine API, deren Telemetrie überhaupt kein Urteil enthält, erfüllt dieses Kriterium nicht, anstatt es gegenstandslos zu erfüllen."
         }
       }
     }

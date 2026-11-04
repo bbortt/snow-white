@@ -51,9 +51,15 @@ The fix is normally in the **specification**, not the tests.
 
 ## Other criteria
 
-| Criterion                        | Label                          | Passes when                                                                   |
-| -------------------------------- | ------------------------------ | ----------------------------------------------------------------------------- |
-| `REQUIRED_ERROR_FIELDS_COVERAGE` | Required Error Fields Coverage | Error responses include all required fields as declared in the specification. |
+| Criterion                        | Label                          | Passes when                                                                                      |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `REQUIRED_ERROR_FIELDS_COVERAGE` | Required Error Fields Coverage | Error responses include all required fields as declared in the specification.                    |
+| `RESPONSE_SCHEMA_CONFORMANCE`    | Response Schema Conformance    | Every response a test harness judged against its documented response schema matched that schema. |
+
+`RESPONSE_SCHEMA_CONFORMANCE` is the only criterion that judges what an API answered rather than whether it was reached.
+It is therefore allowed to disagree with the response-code family about the same response: a `200` that broke its schema is covered there and uncovered here.
+Snow-White does not validate payloads itself — a test harness publishes a verdict per response, and a response no harness judged is not counted.
+An API with no verdict at all fails the criterion at 0% rather than passing it vacuously, so a failure here can mean a missing or misconfigured producer rather than a broken API.
 
 ## The hierarchy
 

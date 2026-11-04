@@ -6,17 +6,23 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.NO_UNDOCUMENTED_RESPONSE_CODES;
+import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.RESPONSE_SCHEMA_CONFORMANCE;
 import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.concat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.AbstractOpenApiCoverageServiceIT;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ConformanceVerdictReader.Warnings;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
@@ -28,6 +34,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,6 +47,12 @@ import tools.jackson.databind.node.ObjectNode;
 class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
 
   private static final String TEST_CASE_NAME_ATTRIBUTE = "test.case.name";
+
+  private static final String RESPONSE_SCHEMA_VALID_ATTRIBUTE =
+    "openapi.response.schema.valid";
+
+  private static final String RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE =
+    "openapi.response.schema.violations";
 
   private static final String A_TEST_CASE =
     "org.example.PetstoreIT.shouldRejectUnknownPet";
@@ -117,6 +130,166 @@ class OpenApiCoverageCalculatorIT extends AbstractOpenApiCoverageServiceIT {
       .toList();
 
     assertThat(testCaseNames).contains(A_TEST_CASE).containsNull();
+  }
+
+  /**
+   * A harness's spans are admitted to the analysed dataset to supply conformance verdicts, and for
+   * nothing else. Enabling conformance reporting must therefore leave every pre-existing criterion
+   * exactly where it was - the same statuses, the same ratio, the same findings - on an API whose
+   * behaviour did not change.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+  )
+  void noCriterionButConformanceShouldMoveWhenHarnessSpansArePresent() {
+    var operations = operations();
+
+    var applicationOnly = hoistVerdicts(telemetry(true));
+    var withHarnessSpans = hoistVerdicts(withHarnessSpans(telemetry(true)));
+
+    assertThat(openApiCoverageCalculators)
+      .filteredOn(
+        calculator -> !calculator.accepts(RESPONSE_SCHEMA_CONFORMANCE)
+      )
+      .allSatisfy(calculator ->
+        assertThat(
+          calculator.calculate(
+            operations,
+            withHarnessSpans,
+            WaiverContext.none()
+          )
+        )
+          .usingRecursiveComparison()
+          .ignoringFields("duration")
+          .isEqualTo(
+            calculator.calculate(
+              operations,
+              applicationOnly,
+              WaiverContext.none()
+            )
+          )
+      );
+  }
+
+  /**
+   * Guards the invariance above against passing vacuously twice over. The harness spans carry a
+   * {@code 418} on an operation that documents no such code and a path of their own, so an inverted
+   * criterion consulting them would report undocumented traffic the API never served; and the
+   * conformance criterion is asserted to differ between the two runs, which it can only do if the
+   * spans reached it.
+   */
+  @Test
+  @VerifiesCon(
+    ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+  )
+  void onlyConformanceShouldSeeTheHarnessSpansItWasGivenThem() {
+    var operations = operations();
+
+    var applicationOnly = hoistVerdicts(telemetry(true));
+    var withHarnessSpans = hoistVerdicts(withHarnessSpans(telemetry(true)));
+
+    var conformance = openApiCoverageCalculators
+      .stream()
+      .filter(calculator -> calculator.accepts(RESPONSE_SCHEMA_CONFORMANCE))
+      .findFirst()
+      .orElseThrow();
+
+    // The findings rather than the whole result: a result carries its own duration, and two of
+    // those are never equal, which would make this assertion pass however inert the spans were.
+    assertThat(
+      conformance
+        .calculate(operations, withHarnessSpans, WaiverContext.none())
+        .findings()
+    ).isNotEqualTo(
+      conformance
+        .calculate(operations, applicationOnly, WaiverContext.none())
+        .findings()
+    );
+
+    var undocumentedCodes = openApiCoverageCalculators
+      .stream()
+      .filter(calculator -> calculator.accepts(NO_UNDOCUMENTED_RESPONSE_CODES))
+      .findFirst()
+      .orElseThrow();
+
+    assertThat(
+      undocumentedCodes
+        .calculate(operations, withHarnessSpans, WaiverContext.none())
+        .findings()
+    ).isEqualTo(
+      undocumentedCodes
+        .calculate(operations, applicationOnly, WaiverContext.none())
+        .findings()
+    );
+  }
+
+  /**
+   * The given telemetry plus two spans a harness exported: one verdict on a documented pair, and
+   * one on a {@code 418} nothing documents.
+   */
+  private static Map<String, List<OpenTelemetryData>> withHarnessSpans(
+    Map<String, List<OpenTelemetryData>> telemetry
+  ) {
+    Map<String, List<OpenTelemetryData>> withHarnessSpans = new HashMap<>(
+      telemetry
+    );
+
+    withHarnessSpans.merge(
+      "GET_/pets/42",
+      List.of(
+        verdictSpan("traceId5", "200", true, null),
+        verdictSpan("traceId6", "418", false, "[\"/properties/code\"]")
+      ),
+      (existing, added) -> concat(existing.stream(), added.stream()).toList()
+    );
+
+    return withHarnessSpans;
+  }
+
+  private static Map<String, List<OpenTelemetryData>> hoistVerdicts(
+    Map<String, List<OpenTelemetryData>> telemetry
+  ) {
+    return telemetry
+      .entrySet()
+      .stream()
+      .collect(
+        toMap(Entry::getKey, entry ->
+          entry
+            .getValue()
+            .stream()
+            .map(data ->
+              data.withConformanceVerdictFrom(
+                RESPONSE_SCHEMA_VALID_ATTRIBUTE,
+                RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE,
+                new Warnings()
+              )
+            )
+            .toList()
+        )
+      );
+  }
+
+  /**
+   * A span as the shipped producer exports one: no request method and no path, since the pair is
+   * located by operation id and status code alone.
+   */
+  private static OpenTelemetryData verdictSpan(
+    String traceId,
+    String responseCode,
+    boolean valid,
+    @Nullable String violations
+  ) {
+    ObjectNode attributes = JsonMapper.shared().createObjectNode();
+    attributes.put("http.response.status_code", responseCode);
+    attributes.put("openapi.operation.id", "readPet");
+    attributes.put(RESPONSE_SCHEMA_VALID_ATTRIBUTE, String.valueOf(valid));
+
+    if (nonNull(violations)) {
+      attributes.put(RESPONSE_SCHEMA_VIOLATIONS_ATTRIBUTE, violations);
+    }
+
+    return new OpenTelemetryData(traceId + "-span", traceId, attributes);
   }
 
   private static Map<String, List<OpenTelemetryData>> hoistTestIdentity(

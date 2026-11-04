@@ -27,6 +27,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
 import io.swagger.v3.oas.models.Operation;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,9 +70,13 @@ abstract class AbstractOpenApiCoverageCalculator
     var stopWatch = getStartedStopWatch();
     var criterion = getSupportedOpenApiCoverageCriteria();
 
+    var telemetry = readsHarnessSpans()
+      ? pathToTelemetryMap
+      : withoutHarnessSpans(pathToTelemetryMap);
+
     var findings = applyWaivers(
       criterion,
-      calculateFindings(pathToOpenAPIOperationMap, pathToTelemetryMap),
+      calculateFindings(pathToOpenAPIOperationMap, telemetry),
       waiverContext
     );
 
@@ -86,11 +91,7 @@ abstract class AbstractOpenApiCoverageCalculator
       joinAdditionalInformation(
         describeExpiredWaivers(criterion, findings, waiverContext),
         getAdditionalInformationOrNull(
-          new Calculation(
-            pathToOpenAPIOperationMap,
-            pathToTelemetryMap,
-            findings
-          )
+          new Calculation(pathToOpenAPIOperationMap, telemetry, findings)
         )
       ),
       findings
@@ -98,6 +99,62 @@ abstract class AbstractOpenApiCoverageCalculator
   }
 
   protected abstract @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria();
+
+  /**
+   * Whether this calculator is handed the spans a test harness exported, which only the criterion
+   * those spans exist for is.
+   * <p>
+   * Declared here, defaulting to no, rather than left to each calculator to remember: a harness
+   * span admitted into the analysed dataset supplies conformance verdicts and must move no other
+   * criterion's number, and a calculator added years from now inherits that without anyone having
+   * read the spec. The filter runs inside {@code calculate}, which is {@code final}, so a
+   * calculator cannot opt out by accident either.
+   */
+  @RealizesCon(
+    ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+  )
+  protected boolean readsHarnessSpans() {
+    return false;
+  }
+
+  /**
+   * The telemetry without the harness's own spans, keeping an operation key whose every span was
+   * one: an absent key and a key with no spans mean the same thing to every caller, and dropping
+   * the key would make the map depend on whether conformance reporting was switched on.
+   */
+  @RealizesCon(
+    ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+  )
+  private static Map<String, List<OpenTelemetryData>> withoutHarnessSpans(
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    // No verdict in the dataset at all is every deployment that has not configured a producer:
+    // the map handed on is the one handed in, rather than a copy per calculator per calculation.
+    if (
+      pathToTelemetryMap
+        .values()
+        .stream()
+        .flatMap(List::stream)
+        .noneMatch(OpenTelemetryData::isHarnessSpan)
+    ) {
+      return pathToTelemetryMap;
+    }
+
+    Map<String, List<OpenTelemetryData>> applicationSpans =
+      new LinkedHashMap<>();
+
+    pathToTelemetryMap.forEach((operationKey, spans) ->
+      applicationSpans.put(
+        operationKey,
+        spans
+          .stream()
+          .filter(span -> !span.isHarnessSpan())
+          .toList()
+      )
+    );
+
+    return applicationSpans;
+  }
 
   /**
    * One finding per target the criterion looked at, including the targets it does not judge.
