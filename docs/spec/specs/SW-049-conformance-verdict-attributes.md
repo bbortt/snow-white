@@ -17,9 +17,19 @@ A conformance verdict travels on a span as two attributes Snow-White defines, do
 - `openapi.response.schema.valid` — boolean.
   Present means a validator judged this response against
   its documented schema; `true` means it conformed.
-- `openapi.response.schema.violations` — string array of JSON Pointers, each relative to the
-  response schema the document declares for this response.
+- `openapi.response.schema.violations` — a **string** whose value is a JSON array of JSON Pointers,
+  each relative to the response schema the document declares for this response, e.g.
+  `["/properties/id","/required"]`.
   Present only where `valid` is `false`.
+
+The violation list is a serialised string rather than an OpenTelemetry array attribute because the
+analysed dataset cannot carry an array.
+The InfluxDB backend reads each attribute through Flux's `string()`, which fails the whole query
+on a list value (`cannot convert [string] to string`), so one verdict span in the window would cost
+every criterion's calculation.
+A string passes through both backends unchanged, and any producer can emit one by serialising a
+list.
+A value that is not a JSON array of strings is unparseable, and read under the rules below.
 
 The contract is that each entry is a JSON Pointer intended to resolve into that response's schema;
 how a validator's own message is turned into one is **deferred to the increment that builds the
@@ -37,6 +47,35 @@ operation and the upstream `http.response.status_code` for the code.
 A span missing either of those identifies no pair and contributes no target, which is the same
 outcome as carrying no verdict.
 
+These attributes, together with the span shape that carries them, are a **producer contract**
+that does not depend on any framework.
+Citrus is the reference producer
+([ARCH-023](ARCH-023-conformance-verdict-is-harvested-not-recomputed.md)), not the only
+permitted one: Snow-White reads the span, not who emitted it, so any test framework or harness
+that emits the following is judged exactly as a Citrus-driven suite is:
+
+- one span per validated response — never two responses' verdicts on one span;
+- `service.name` as a **resource** attribute, not a span attribute, equal to the service name the
+  specification declares ([ARCH-015](ARCH-015-identity-declared-in-the-specification.md));
+- `api.name` and `api.version` as span attributes, equal to the values the specification declares;
+- `openapi.operation.id` and `http.response.status_code` as span attributes, locating the pair;
+- `openapi.response.schema.valid` and, where it is `false`, `openapi.response.schema.violations`,
+  read as described below;
+- export through any OTLP path that reaches the configured telemetry backend.
+
+A producer need not emit `http.request.method`.
+The collector configurations Snow-White ships admit a span into the analysed dataset when it
+carries either `http.request.method` or `openapi.response.schema.valid`, alongside `api.name` and
+`api.version`; an operator running their own collector filter has to admit the same.
+
+Carrying `openapi.response.schema.valid` also marks the span as a harness span, so it contributes to
+this criterion and to no other
+([CON-015](CON-015-harness-span-never-moves-a-coverage-verdict.md)).
+A producer need not and must not do anything further to keep it out of reach coverage.
+This whole contract — not only the two new attributes — is documented in
+`semantic-convention/openapi.md`, which is the page user-facing documentation links to for
+anyone implementing a producer.
+
 Both keys are operator-configurable on `openapi-coverage-stream`, defaulting to the names above,
 exactly as `operationIdAttribute` and `testCaseNameAttribute` are today
 ([SW-021](SW-021-required-attribute-key-set-derivation.md)).
@@ -50,9 +89,11 @@ Three readings are fixed because each is a place a lenient reader would silently
 - **A non-boolean or unparseable `valid` is a violation**, logged at `WARN` with the span id and the
   attribute key — never the value.
 
-The violation list is bounded at capture, not at read: at most 32 pointers, each at most 512 UTF-8
-bytes, declared as constants on the published event contract the way
-`FindingEvidence.MAX_TEST_CASE_NAME_BYTES` is.
+The violation list is bounded at most 32 pointers, each at most 512 UTF-8 bytes, declared as
+constants on the published event contract the way `FindingEvidence.MAX_TEST_CASE_NAME_BYTES` is.
+The bound is applied twice: at capture by a producer Snow-White ships, and again at read by
+`openapi-coverage-stream`, because the producer contract admits producers Snow-White does not ship
+and cannot vouch for.
 Beyond either bound the surplus pointers are dropped — never truncated — the `valid=false` verdict
 survives, and the drop is logged at `WARN` with the counts.
 A dropped pointer costs a finding's detail, never the finding that the pair did not conform.
@@ -81,9 +122,12 @@ A reader flipping to a known-good interpretation also mirrors the Sonar S1940 tr
 has already paid for once: "the opposite operator" is not equivalence-preserving when an operand can
 be absent or unparseable.
 
-Bounding at capture rather than at the column follows the precedent set when `test.case.name` gained
-a bound: the producing service and the storing service are deployed separately, so the limit belongs
-on the contract both see.
+Bounding on the contract rather than at the column follows the precedent set when `test.case.name`
+gained a bound: the producing service and the storing service are deployed separately, so the limit
+belongs on the contract both see.
+Applying it at read as well is what keeps the bound a guarantee rather than a courtesy once a
+third-party producer is in the picture; applying it at capture too keeps the shipped producer from
+exporting what the reader would only discard.
 32 and 512 are chosen to keep a pathological response — a large array failing one field per
 element — from turning a single span into thousands of findings, which would make the report
 unreadable and the finding table unbounded in the size of someone else's payload.
@@ -97,11 +141,16 @@ A test asserts a non-boolean `valid` is read as non-conforming and logged at `WA
 value.
 A test asserts a span with a verdict but no `openapi.operation.id`, and one with no status code,
 each contribute no target.
-A test asserts a 33rd pointer and an over-long pointer are dropped with the verdict preserved, and
+A test asserts a violation list that is not a JSON array of strings is read as non-conforming.
+A test asserts, on the reading side, a 33rd pointer and an over-long pointer are dropped with the
+verdict preserved, and
 that the bounds are the constants on the event contract rather than literals in either service.
 A test asserts non-default configured keys are honoured and the defaults are the two names above.
+A test asserts a span emitted directly through the OpenTelemetry SDK — no Citrus on the
+classpath — that meets the producer contract yields the same verdict as a Citrus-harvested one.
 A documentation check asserts `semantic-convention/openapi.md` lists both attributes with their
-stability — deferred for the reason `SW-032` records if no docs-assertion pattern exists yet.
+stability and states the full producer contract above — deferred for the reason `SW-032` records if
+no docs-assertion pattern exists yet.
 
 ## Relations
 
