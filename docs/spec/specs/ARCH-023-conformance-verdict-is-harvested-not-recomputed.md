@@ -45,9 +45,15 @@ Citrus treated as a pass stays a pass, one it treated as a failure stays a failu
 of the harvest itself — an SPI that does not load, a report shape the mapper does not recognise, an
 unreachable exporter — costs the verdict and never the test.
 
-The cost accepted in exchange is coverage: a consumer whose tests are not Citrus-driven publishes no
-verdicts, and the criterion is inapplicable for them
-([SW-030](SW-030-unjudged-target-is-not-applicable.md)).
+This harvest is the reference producer of the
+[SW-049](SW-049-conformance-verdict-attributes.md) producer contract, not its definition.
+The contract is framework-neutral, and another test framework can implement the same behaviour
+by harvesting its own validator's verdict and emitting it to that contract; Snow-White ships only
+the Citrus producer.
+A consumer whose framework has no producer publishes no verdicts, and the criterion fails for them
+with an explanation pointing at that contract
+([SW-048](SW-048-response-schema-conformance-criterion.md)) — which decides a gate only where they
+included it.
 
 **Rationale**
 The validation already happens; what is missing is a path from it to a quality gate.
@@ -67,9 +73,9 @@ change.
 to re-read something another component already parsed; the SPI reaches the parsed result directly.
 The issue that proposed this work named the interceptor, and that was the wrong seam.
 
-Accepting the Citrus coupling rather than paying for portability is a judgement that
-[SW-030](SW-030-unjudged-target-is-not-applicable.md) makes safe: an unjudged response is reported as
-unjudged, so a non-Citrus consumer gets an honest "nothing to report" instead of a wrong number.
+Accepting the Citrus coupling rather than paying for portability is a judgement the producer
+contract makes safe: a non-Citrus consumer can produce verdicts without Snow-White's code, and one
+that produces none is told so by a failing criterion rather than handed a vacuous pass.
 Reaching consumers' own tests is a separate audience and a later decision.
 
 **Verification Description**
@@ -102,5 +108,5 @@ A review check asserts no production source outside the toolkit references a sch
   here is subordinate to
 - [ARCH-020](ARCH-020-test-identity-published-not-propagated.md) — the module this harvest joins,
   and the interceptor seam it deliberately does not use
-- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — what a non-Citrus consumer's responses
+- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — what a response without a verdict
   become

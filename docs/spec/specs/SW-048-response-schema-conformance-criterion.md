@@ -24,11 +24,39 @@ keep.
 
 A pair with no verdict is a target the criterion does not judge
 ([SW-030](SW-030-unjudged-target-is-not-applicable.md)), never an uncovered one.
-That is the load-bearing asymmetry: a response nobody validated is a response Snow-White has nothing
-to say about, so a consumer whose suite publishes no verdicts sees the criterion as inapplicable
-rather than as a red gate it did not ask for.
+So a suite that judges some responses is measured over those alone: a partial rollout of a producer
+is a legitimate state, not a defect.
 It also means the criterion's own denominator moves as a consumer adopts the harness, which is
 correct and is why the ratio must never be read as a share of the API.
+
+**No verdict at all is a failure, not a pass.**
+Where the document declares at least one (operation, response code) pair and no pair carries a
+verdict, the criterion emits one further finding: `UNCOVERED`, at the pointer `#/paths` — the root of
+its own target space — with no evidence and every location field null.
+It stands for "no response of this API was judged", and it is emitted only in that case, never
+alongside a judged pair.
+The per-pair findings are still all `NOT_APPLICABLE`, so the list still enumerates the target space
+(`SW-030`); the derivation (`ARCH-010`) then reports `0` over `1` judged target.
+A document declaring no pair at all has an empty target space and emits nothing, so it keeps
+`CON-004`'s vacuous `1`.
+
+Without that finding every pair would be inapplicable, the judged count zero, and `CON-004` would
+report `1.00` — a green pass for a check that never ran, which is the shape
+[CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) already forbids for
+waivers.
+The finding fails the criterion through the existing derivation, so no rule of `CON-004` or
+[CON-009](CON-009-coverage-agrees-with-findings.md) is amended: the stored ratio still equals the
+ratio the findings imply.
+It is a target like any other, so a waiver naming `#/paths` under this criterion removes it, and the
+result reads "Fully waived" as `CON-012` already requires.
+
+That result also carries an `additionalInformation` text saying that no conformance verdict was found
+for this API, that responses are judged only where a test harness reports them, that Citrus does so
+through `citrus-junit-jupiter-extension` and any other framework can through the producer contract
+([SW-049](SW-049-conformance-verdict-attributes.md)), and linking `semantic-convention/openapi.md`.
+`additionalInformation` is already published on every surface a result appears on, so the
+explanation travels to the UI, the JUnit export and the CLI without a new field.
+The text is emitted only in the no-verdict case.
 
 Each violation becomes one finding, identified by the JSON Pointer the verdict carried, resolved
 against the response schema in the document through the existing pointer ladder
@@ -64,13 +92,18 @@ Reach and conformance are different questions, and Snow-White answered only the 
 An API can be fully covered and still not keep its contract, which is a hole in the ground-truth
 claim rather than a missing report column.
 
-Making the unjudged case inapplicable rather than failing is what makes the criterion shippable at
-all.
+An unjudged pair is inapplicable, but a criterion with no judged pair at all fails, and the two
+rules answer different questions.
 Harvested conformance exists only where a harness publishes it
-([ARCH-023](ARCH-023-conformance-verdict-is-harvested-not-recomputed.md)), so absence is the
-normal state for every consumer on day one; a criterion that read absence as failure would turn a
-Snow-White upgrade into a red gate on an unchanged API, and consumers would disable it before ever
-seeing it work.
+([ARCH-023](ARCH-023-conformance-verdict-is-harvested-not-recomputed.md)), so a pair without a
+verdict says nothing about the API, and counting it uncovered would punish a partial rollout.
+A whole API without a single verdict says something about the setup instead: an operator who
+included this criterion in a gate asked for the check, and receiving none means the producer is
+missing or misconfigured — a REST-assured suite with no producer, an exporter pointed nowhere, a
+collector filter dropping the spans.
+Passing that case would report the opposite of what happened.
+Failing it costs no consumer who did not ask: the criterion is in no shipped gate, and a criterion
+outside a gate decides nothing ([SW-016](SW-016-api-test-verdict-is-gate-scoped.md)).
 
 Judging the pair rather than the individual response is what keeps the number comparable with the
 response-code family it will be read beside.
@@ -88,8 +121,13 @@ A unit test on the new calculator asserts that telemetry for an operation docume
 one span carrying a conforming verdict and one carrying a violation at a pointer, reports the pair
 uncovered and produces one finding whose pointer resolves into the `200` response schema.
 A test asserts two spans with conforming verdicts for the same pair report it covered.
-A test asserts telemetry carrying no verdict at all reports the criterion inapplicable rather than
-0%.
+A test asserts telemetry carrying no verdict at all, over a document declaring pairs, reports every
+pair `NOT_APPLICABLE`, one `UNCOVERED` finding at `#/paths`, coverage `0` over one judged target, and
+an `additionalInformation` naming the producer contract.
+A test asserts a document declaring no pair emits no finding and reports `1`.
+A test asserts that once a single pair carries a verdict, the `#/paths` finding and the text are
+absent and the unjudged pairs stay `NOT_APPLICABLE`.
+A test asserts a waiver on `#/paths` leaves the no-verdict result fully waived.
 A test asserts two violations at different pointers on one pair are two findings, and the same
 pointer twice is one.
 A test asserts a pointer that does not resolve in the document falls back to the shortest resolvable
@@ -119,6 +157,10 @@ A test asserts no finding field carries the validator's message.
 - [SW-003](SW-003-undocumented-response-code-detection.md) — the per-documented-operation target
   unit this criterion reuses
 - [CON-004](CON-004-coverage-ratio-is-always-bounded-and-well-defined.md) — the shared formula
+- [CON-009](CON-009-coverage-agrees-with-findings.md) — why the no-verdict failure is a finding
+  rather than an amended ratio
+- [CON-012](CON-012-criterion-emptied-by-waivers-is-never-a-coverage-pass.md) — the precedent: a
+  pass with nothing judged behind it must not read as coverage
 - [ARCH-016](ARCH-016-criteria-containment-declared-on-the-enum.md) — the containment families this
   criterion joins none of
 - [SW-016](SW-016-api-test-verdict-is-gate-scoped.md) — the gate scoping that makes arriving

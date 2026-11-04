@@ -77,8 +77,8 @@ A harness-published span must not move any existing criterion's number, which is
 additive for every consumer that does not opt in, and is stated as an invariant rather than left to
 whichever calculator happens not to look.
 And a response with no verdict is a target the criterion does not judge (`SW-030`), not a
-violation — so a consumer whose tests are not Citrus-driven gets a report that says it has nothing
-to report, rather than a red gate.
+violation — but an API with no verdict at all fails the criterion and says why, because an operator
+who configured the check and received nothing has a broken setup, not a conforming API.
 
 **Acceptance Criteria**
 
@@ -86,9 +86,15 @@ to report, rather than a red gate.
   `RESPONSE_SCHEMA_CONFORMANCE` is below 100%, and the finding names the operation and the JSON
   Pointer of the offending field.
 - The same test with a conforming response produces 100% for that criterion.
-- A test suite that publishes no conformance verdict at all produces a report in which
-  `RESPONSE_SCHEMA_CONFORMANCE` is inapplicable rather than 0% — an unjudged response is not a
-  failing one.
+- A response without a verdict is not judged: a suite that publishes verdicts for some responses is
+  measured over those alone.
+- A test suite that publishes no conformance verdict at all — a REST-assured suite with no
+  producer, say — produces a report in which `RESPONSE_SCHEMA_CONFORMANCE` fails at 0%, never a
+  vacuous 100%, and explains why: no verdict was found, how verdicts are produced, and a link to the
+  producer contract.
+  The UI shows that case as a translated notice in place of the coverage bar, the way it shows
+  "Fully waived", linking the same documentation.
+  It decides a gate only where an operator included the criterion.
 - Harvesting the verdict never changes a test's outcome: a validation report Citrus treated as a
   pass stays a pass, one it treated as a failure stays a failure, and a harness that cannot
   publish at all (no SDK configured, export unreachable) still runs the test to its own verdict.
@@ -100,6 +106,9 @@ to report, rather than a red gate.
   moves no number a consumer is already gating on.
 - The attributes are documented in `semantic-convention/` as attributes Snow-White defines, with
   their stability stated, alongside `api.name`, `api.version` and `openapi.operation.id`.
+- That documentation states the full producer contract (`SW-049`) — span shape, identity
+  placement, verdict readings — so that someone could implement a producer for a test framework
+  other than Citrus without reading Snow-White's source, and the user-facing pages link to it.
 
 **Out of scope**
 
@@ -115,9 +124,11 @@ to report, rather than a red gate.
 - Reaching consumers' own tests through `spring-web-autoconfiguration`.
   That is a different audience and possibly also worth doing, but this story earns the shape
   against this repository's tests first.
-- Independent, Citrus-free validation.
-  Harvesting couples the feature to Citrus and leaves non-Citrus consumers unjudged; that is
-  accepted here, and `SW-030` is what makes it safe rather than silently wrong.
+- Shipping producers for test frameworks other than Citrus.
+  The contract they would implement is in scope and framework-neutral (`SW-049`); only the Citrus
+  producer ships with this story.
+  A consumer on a framework without a producer is unjudged, and `SW-030` is what makes that safe
+  rather than silently wrong.
 
 ## Relations
 

@@ -45,6 +45,14 @@ span-level `service.name` would pass the Kafka ingestion path and never match a 
 correct against one backend and silently inert against the other
 ([ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md)).
 
+The span also has to survive the collector before it reaches either backend.
+The `filter/openapi-traces` processor Snow-White ships (in `dev/otel-collector/config.yaml` and the
+Helm chart's collector configmap) drops a span lacking `http.request.method`, which a verdict span
+has no reason to carry.
+That condition becomes "carries neither `http.request.method` nor `openapi.response.schema.valid`",
+so the verdict marker itself is what admits the span; the `api.name` and `api.version` conditions
+are unchanged.
+
 What the extension takes as settings is **where to read, never what**: the three JSON paths
 `ARCH-015` makes operator settings, defaulting to its defaults.
 That is not redundant, because this repository already overrides one.
@@ -60,8 +68,10 @@ The SDK side is already present rather than new: `AutoConfiguredOpenTelemetrySou
 a real SDK as soon as any `otel.*` or `OTEL_*` setting exists, and
 [SW-047](SW-047-one-current-span-per-test.md) already creates one current span per test.
 A document declaring no service name publishes no verdict, and a suite configuring no exporter
-publishes nothing; both are the unjudged case
-([SW-030](SW-030-unjudged-target-is-not-applicable.md)) rather than an error.
+publishes nothing.
+Neither fails the test (`CON-013`); both surface in the report instead, as the criterion's
+no-verdict failure and its explanation
+([SW-048](SW-048-response-schema-conformance-criterion.md)).
 
 This is a departure, stated plainly: under
 [ARCH-013](ARCH-013-test-identity-travels-as-baggage.md) and
@@ -148,5 +158,5 @@ classpath lookup of its own.
 - [SW-047](SW-047-one-current-span-per-test.md) — the span that already exists per test
 - [CON-013](CON-013-extension-never-changes-a-test-verdict.md) — why an unreachable exporter is not
   a test failure
-- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — what an unconfigured suite's responses
+- [SW-030](SW-030-unjudged-target-is-not-applicable.md) — what a response without a verdict
   become
