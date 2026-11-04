@@ -7,7 +7,7 @@ A conformance verdict is a boolean plus bounded pointers, read fail-closed
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 A conformance verdict travels on a span as two attributes Snow-White defines, documented in

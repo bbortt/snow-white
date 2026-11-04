@@ -7,7 +7,7 @@ Response-schema conformance judges the responses a harness vouched for, and no o
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `RESPONSE_SCHEMA_CONFORMANCE` is a fifteenth `OpenApiCoverageCriteria` constant, and the first that
@@ -60,11 +60,16 @@ The text is emitted only in the no-verdict case.
 
 Each violation becomes one finding, identified by the JSON Pointer the verdict carried, resolved
 against the response schema in the document through the existing pointer ladder
-([SW-029](SW-029-finding-identified-by-spec-pointer.md)) — `#/paths/<path>/<method>/responses/<code>`
-with the verdict's pointer appended where it resolves, and the shortest resolvable ancestor where it
-does not.
-Several violations on one pair are several findings, discriminated by their pointers; the same
-pointer seen twice on the same pair is one finding.
+([SW-029](SW-029-finding-identified-by-spec-pointer.md)) —
+`#/paths/<path>/<method>/responses/<code>/content/<mediaType>/schema` with the verdict's pointer
+appended where it resolves, and the nearest resolvable ancestor where it does not, down to the
+response entry itself.
+The media type is part of the pointer because the schema is declared under it; a verdict names no
+media type of its own, so the first one whose schema the violation resolves in is the one published.
+A resolved pointer longer than a finding is stored under walks one node further up as well, because
+a pointer no report can hold would cost the whole result rather than one finding's precision.
+Several violations on one pair are several findings, discriminated by their resolved pointers; two
+pointers that resolve to the same node are one finding.
 The violation message is not a finding field: it is Citrus's and
 `com.atlassian.oai.validator`'s wording, not Snow-White's contract, and persisting it would publish
 a third party's prose as a stable surface.

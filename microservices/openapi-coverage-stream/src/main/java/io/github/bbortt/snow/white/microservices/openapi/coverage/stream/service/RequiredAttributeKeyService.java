@@ -60,6 +60,12 @@ public class RequiredAttributeKeyService {
    * test-identity attribute is requested for every spec so that an evidence entry can name the
    * test that satisfied a target, though no verdict and no ratio depends on it. Omitting it here
    * would leave the one component that could attach it to a finding unable to see it.
+   * <p>
+   * The two conformance-verdict attributes are requested for every spec for the same reason, and
+   * with a second consequence: a span whose verdict attribute was never fetched is indistinguishable
+   * from an application's own span, so omitting them here would both empty
+   * {@code RESPONSE_SCHEMA_CONFORMANCE} and let a harness's spans reach every other criterion,
+   * which is the one thing admitting them into the dataset may never cost.
    */
   @RealizesSw(SwTraceables.SW_021_REQUIRED_ATTRIBUTE_KEY_SET_DERIVATION)
   public Set<String> requiredAttributeKeys(OpenAPI openAPI) {
@@ -73,6 +79,12 @@ public class RequiredAttributeKeyService {
     requiredKeys.add(openApiCoverageStreamProperties.getOperationIdAttribute());
     requiredKeys.add(
       openApiCoverageStreamProperties.getTestCaseNameAttribute()
+    );
+    requiredKeys.add(
+      openApiCoverageStreamProperties.getResponseSchemaValidAttribute()
+    );
+    requiredKeys.add(
+      openApiCoverageStreamProperties.getResponseSchemaViolationsAttribute()
     );
 
     requiredKeys.addAll(headerParameterKeys(openAPI));

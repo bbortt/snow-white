@@ -81,6 +81,18 @@ This is a subset of [All Response Codes must be Specified](#all-response-codes-m
 All response codes that occurred and are not being considered errors (0–399) must be documented in the specification.
 This is a subset of [All Response Codes must be Specified](#all-response-codes-must-be-specified).
 
+### Response Schema Conformance
+
+Each response a test harness judged against the schema the specification documents for it matched that schema.
+This is the only criterion that judges what an API answered rather than whether it was reached, so a `200` that broke its schema counts as covered for [Response Code Coverage](#response-code-coverage) and uncovered here, on purpose.
+
+Snow-White does not validate responses itself.
+A test harness reports a verdict per response — a Citrus suite through `citrus-junit-jupiter-extension`, any other framework through the producer contract in [`semantic-convention/openapi.md`](https://github.com/bbortt/snow-white/blob/main/semantic-convention/openapi.md) — and this criterion judges the verdicts it finds.
+A response no harness judged is not counted, so adopting a producer one suite at a time lowers no number.
+
+An API whose telemetry carries no verdict at all fails this criterion at 0% rather than passing it vacuously, and the result says why: a gate that asked for conformance and received nothing has a producer missing or misconfigured, not a conforming API.
+Each violation is reported as its own finding, at the JSON Pointer of the offending field within the documented response schema.
+
 ## Criteria Relationships
 
 Several criteria form a hierarchy — a narrower criterion sits under the broader one it is a narrowing of:

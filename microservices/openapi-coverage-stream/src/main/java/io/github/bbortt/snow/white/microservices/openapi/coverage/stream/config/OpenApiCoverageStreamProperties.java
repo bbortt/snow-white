@@ -32,6 +32,11 @@ public class OpenApiCoverageStreamProperties {
 
   private String testCaseNameAttribute = "test.case.name";
 
+  private String responseSchemaValidAttribute = "openapi.response.schema.valid";
+
+  private String responseSchemaViolationsAttribute =
+    "openapi.response.schema.violations";
+
   private final ApiIndexProperties apiIndex = new ApiIndexProperties();
   private final FilteringProperties filtering = new FilteringProperties();
 

@@ -178,7 +178,7 @@ public class ResponseCodeCoverageCalculator
     SwTraceables.SW_002_RESPONSE_CODE_COVERAGE_TREATS_DEFAULT_AS_WILDCARD
   )
   @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
-  private List<OpenTelemetryData> getSatisfyingTelemetry(
+  protected List<OpenTelemetryData> getSatisfyingTelemetry(
     ResponseCode responseCode,
     List<ResponseCode> judgedResponseCodes,
     List<ObservedResponseCode> observedResponseCodes
@@ -247,7 +247,7 @@ public class ResponseCodeCoverageCalculator
     return responseCodes;
   }
 
-  private List<ObservedResponseCode> extractObservedResponseCodes(
+  protected List<ObservedResponseCode> extractObservedResponseCodes(
     @Nullable List<OpenTelemetryData> telemetryDataList
   ) {
     List<ObservedResponseCode> observedCodes = new ArrayList<>();
@@ -390,7 +390,7 @@ public class ResponseCodeCoverageCalculator
    * it — what lets the match that proves a target also name its evidence.
    */
   @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
-  private record ObservedResponseCode(
+  protected record ObservedResponseCode(
     String statusCode,
     OpenTelemetryData telemetryData
   ) {}

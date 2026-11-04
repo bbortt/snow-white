@@ -6,6 +6,8 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service;
 
+import static io.github.bbortt.snow.white.commons.event.dto.ConformanceVerdict.MAX_VIOLATION_POINTERS;
+import static io.github.bbortt.snow.white.commons.event.dto.ConformanceVerdict.MAX_VIOLATION_POINTER_BYTES;
 import static io.github.bbortt.snow.white.commons.event.dto.FindingEvidence.MAX_TEST_CASE_NAME_BYTES;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.OperationKeyCalculator.toOperationKey;
 import static io.opentelemetry.semconv.HttpAttributes.HTTP_REQUEST_METHOD;
@@ -30,6 +32,7 @@ import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ConformanceVerdictReader;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
@@ -156,13 +159,16 @@ public class OpenApiCoverageService {
    * Groups the telemetry by the operation it belongs to, and hoists each span's test identity on
    * the way past.
    * <p>
-   * This is the one place that knows which attribute the operator configured for a test identity,
-   * so it is the one place that reads it: a calculator is handed spans that already name their
-   * test, and stays free of configuration it would only pass on. Hoisting here also keeps the
-   * identity out of the grouping key - the attribute never influences which operation a span is
-   * attributed to.
+   * This is the one place that knows which attributes the operator configured for a test identity
+   * and for a conformance verdict, so it is the one place that reads them: a calculator is handed
+   * spans that already name their test and already carry whatever verdict they hold, and stays free
+   * of configuration it would only pass on. Hoisting here also keeps both out of the grouping key -
+   * neither attribute influences which operation a span is attributed to.
    */
-  @RealizesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
+  @RealizesSw({
+    SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN,
+    SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES,
+  })
   private Map<String, List<OpenTelemetryData>> groupTelemetryByPath(
     Set<OpenTelemetryData> telemetryData,
     Map<String, String> operationIdToOperationKey
@@ -176,6 +182,10 @@ public class OpenApiCoverageService {
     // bury the calculation's own log under thousands of identical lines. Collected here and
     // reported once instead - the sequential stream below is the only writer.
     List<String> spansWithUnstorableTestIdentity = new ArrayList<>();
+
+    // Same reasoning, and the same shape: one misconfigured producer emits the same unreadable
+    // verdict on every span it exports.
+    var verdictWarnings = new ConformanceVerdictReader.Warnings();
 
     var pathToTelemetryMap = telemetryData
       .stream()
@@ -196,6 +206,10 @@ public class OpenApiCoverageService {
                 data,
                 testCaseNameAttr,
                 spansWithUnstorableTestIdentity
+              ).withConformanceVerdictFrom(
+                openApiCoverageStreamProperties.getResponseSchemaValidAttribute(),
+                openApiCoverageStreamProperties.getResponseSchemaViolationsAttribute(),
+                verdictWarnings
               ),
             toList()
           )
@@ -207,7 +221,45 @@ public class OpenApiCoverageService {
       testCaseNameAttr
     );
 
+    warnAboutUnreadableVerdicts(verdictWarnings);
+
     return pathToTelemetryMap;
+  }
+
+  /**
+   * What the verdict reading had to decide for a producer rather than read from it, reported once
+   * per calculation.
+   */
+  @RealizesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+  private void warnAboutUnreadableVerdicts(
+    ConformanceVerdictReader.Warnings warnings
+  ) {
+    var unreadable = warnings.spansWithUnreadableVerdict();
+
+    if (!unreadable.isEmpty()) {
+      // Loud rather than silent: these responses are reported as breaking their schema without a
+      // validator ever having said so, and only the producer's own configuration explains it. The
+      // values are not logged - they are the untrusted part.
+      logger.warn(
+        "Read the conformance verdict of {} span(s) as non-conforming, '{}' among them: attribute '{}' was absent where violations were reported, held no boolean, or stated true alongside violations. A verdict Snow-White cannot read must not pass.",
+        unreadable.size(),
+        unreadable.getFirst(),
+        openApiCoverageStreamProperties.getResponseSchemaValidAttribute()
+      );
+    }
+
+    var unusablePointers = warnings.spansWithUnusablePointers();
+
+    if (!unusablePointers.isEmpty()) {
+      logger.warn(
+        "Dropped violation pointers of {} span(s), '{}' among them: attribute '{}' was not a JSON array of strings, or named more than the {} pointers of {} UTF-8 bytes a verdict carries. Their verdicts are unaffected - a dropped pointer costs a finding's detail, never the finding.",
+        unusablePointers.size(),
+        unusablePointers.getFirst(),
+        openApiCoverageStreamProperties.getResponseSchemaViolationsAttribute(),
+        MAX_VIOLATION_POINTERS,
+        MAX_VIOLATION_POINTER_BYTES
+      );
+    }
   }
 
   private OpenTelemetryData hoistTestIdentity(
