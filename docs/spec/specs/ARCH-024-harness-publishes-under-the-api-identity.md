@@ -39,6 +39,15 @@ tracer provider is built, so no per-response code can set it.
 The harness holds one tracer provider per distinct service name it reads, built on first use for
 that name and sharing the exporter the test JVM already configured; the ambient SDK is left alone,
 so the test's own span keeps the test JVM's identity.
+Each such provider's resource is the test JVM's configured resource with `service.name` replaced
+and nothing else changed, so resource attributes set through `OTEL_RESOURCE_ATTRIBUTES` or
+`otel.resource.attributes` reach the verdict span without a setting of the extension's own.
+That matters because a calculation's attribute filters are matched against the resource (Tempo
+queries them as `resource.<key>`): a verdict resource carrying only `service.name` would fail a
+filter the application's spans pass, and the criterion would report no verdict at all for a suite
+that published them ([SW-049](SW-049-conformance-verdict-attributes.md)).
+Whether the InfluxDB path sees resource attributes the same way is unverified, and the increment
+building this has to establish it before relying on it.
 That placement is not an implementation detail.
 `OtelInformationFilteringService` extracts the triple from resource and span attributes merged, so a
 span-level `service.name` would pass the Kafka ingestion path and never match a Tempo query —
@@ -132,6 +141,9 @@ there, and a test asserts a document missing the service name exports no verdict
 still runs to its own verdict.
 A test asserts the ambient SDK's resource is untouched, so the test's own span keeps the test JVM's
 identity.
+A test asserts a resource attribute configured on the test JVM (e.g. through
+`OTEL_RESOURCE_ATTRIBUTES`) appears on the verdict span's resource unchanged, and that only
+`service.name` differs from the ambient resource.
 A test with two specifications declaring different service names in one JVM asserts each verdict
 span carries its own.
 An application test in this repository, or in an example, asserts the exported span is returned by
