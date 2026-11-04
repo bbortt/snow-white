@@ -6779,8 +6779,8 @@ packages:
     resolution: {integrity: sha512-Nr8nl/K1oqxcSX5jle3/dDlQyej1DYzhoSTbWRMNECV/NTl5KTIjxhgElmn167PEAqgMEdaXMRQo7kaGbXUS5Q==}
     engines: {node: '>=22.14.0'}
 
-  serialize-javascript@7.1.2:
-    resolution: {integrity: sha512-GL2BWwVa6JydKO6l/ljVgjAZF4QJ3S7dWDWi53s5GZT8PJzD2fNxi67HANQGKAqPrwEpL5ba7gUBGi0Ls/sEoQ==}
+  serialize-javascript@7.1.4:
+    resolution: {integrity: sha512-FqlEuoTq/zRmA4Lg6aOqyH3lCHbUtCB0bmHCeFniX2GBdDqMJM3FwdvEhlE5Pim1dlt2FfBdVPmUNNiGhhKqpw==}
     engines: {node: '>=20.0.0'}
 
   serve-index@1.9.2:
@@ -9667,7 +9667,7 @@ snapshots:
 
   '@rollup/plugin-terser@1.0.2(rollup@4.65.0)':
     dependencies:
-      serialize-javascript: 7.1.2
+      serialize-javascript: 7.1.4
       smob: 1.6.2
       terser: 5.51.2
     optionalDependencies:
@@ -11140,7 +11140,7 @@ snapshots:
       glob-parent: 6.0.2
       normalize-path: 3.0.0
       schema-utils: 4.8.1(webpack@5.112.2)
-      serialize-javascript: 7.1.2
+      serialize-javascript: 7.1.4
       tinyglobby: 0.2.17
       webpack: 5.112.2(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.31))(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.31)(svgo@4.1.0)(uglify-js@3.19.3)(webpack-cli@7.2.3)
 
@@ -11205,7 +11205,7 @@ snapshots:
       jest-worker: 30.5.1
       postcss: 8.5.31
       schema-utils: 4.8.1(webpack@5.112.2)
-      serialize-javascript: 7.1.2
+      serialize-javascript: 7.1.4
       webpack: 5.112.2(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.31))(csso@5.0.5)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.31)(svgo@4.1.0)(uglify-js@3.19.3)(webpack-cli@7.2.3)
     optionalDependencies:
       clean-css: 5.3.3
@@ -14999,7 +14999,7 @@ snapshots:
 
   sentences-per-line@0.5.6: {}
 
-  serialize-javascript@7.1.2: {}
+  serialize-javascript@7.1.4: {}
 
   serve-index@1.9.2(supports-color@8.1.1):
     dependencies:
