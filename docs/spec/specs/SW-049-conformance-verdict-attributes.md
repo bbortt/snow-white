@@ -61,6 +61,12 @@ that emits the following is judged exactly as a Citrus-driven suite is:
 - `openapi.operation.id` and `http.response.status_code` as span attributes, locating the pair;
 - `openapi.response.schema.valid` and, where it is `false`, `openapi.response.schema.violations`,
   read as described below;
+- every **resource** attribute a calculation filters on, with the value the application's own spans
+  carry — a calculation's attribute filters are applied to the verdict span exactly as to the
+  application's (Tempo matches them as `resource.<key>`), so a verdict span lacking, say, the
+  `deployment.environment` the calculation filters on is never read, and the criterion reports no
+  verdict at all ([SW-048](SW-048-response-schema-conformance-criterion.md)) rather than the
+  verdicts that exist;
 - export through any OTLP path that reaches the configured telemetry backend.
 
 A producer need not emit `http.request.method`.
