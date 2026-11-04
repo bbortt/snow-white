@@ -29,7 +29,8 @@ data:
       filter/openapi-traces:
         error_mode: ignore
         trace_conditions:
-            - span.attributes["http.request.method"] == nil
+            # a conformance verdict span (SW-049) carries no HTTP method of its own
+            - span.attributes["http.request.method"] == nil and span.attributes["openapi.response.schema.valid"] == nil
             - span.attributes["api.name"] == nil
             - span.attributes["api.version"] == nil
       filter/snow-white-microservices:
