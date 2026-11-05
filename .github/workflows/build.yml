@@ -460,7 +460,7 @@ jobs:
         # | `4.1`           | `8.1.x`                 |
         # | `4.2`           | `8.2.x`                 |
         # | `4.3`           | `8.3.x`                 |
-        kafka: ${{ fromJSON(github.event_name == 'schedule' && '["8.0.8", "8.1.6", "8.2.4", "8.3.2"]' || '["8.3.2"]') }}
+        kafka: ${{ fromJSON(github.event_name == 'schedule' && '["8.0.8", "8.1.6", "8.2.4", "8.4.0"]' || '["8.4.0"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

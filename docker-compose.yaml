@@ -40,7 +40,7 @@ services:
       - internal
 
   kafka:
-    image: confluentinc/cp-kafka:${CP_KAFKA_VERSION:-8.3.2}
+    image: confluentinc/cp-kafka:${CP_KAFKA_VERSION:-8.4.0}
     environment:
       # Cluster / broker identity
       KAFKA_NODE_ID: 1

@@ -38,7 +38,7 @@ public abstract class AbstractReportCoordinationServiceIT {
     "snow-white-openapi-calculation-response";
 
   protected static final ConfluentKafkaContainer KAFKA_CONTAINER =
-    new ConfluentKafkaContainer("confluentinc/cp-kafka:8.3.2").withExposedPorts(
+    new ConfluentKafkaContainer("confluentinc/cp-kafka:8.4.0").withExposedPorts(
       9092
     );
 
