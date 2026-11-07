@@ -69,6 +69,13 @@
       <groupId>io.confluent</groupId>
       <artifactId>kafka-streams-protobuf-serde</artifactId>
       <version>${confluent.version}</version>
+      <exclusions>
+        <!-- its direct okio 3.4.0 pin wins nearest-first and lacks Okio.socket, which okhttp 5 (OTLP exporter) needs -->
+        <exclusion>
+          <groupId>com.squareup.okio</groupId>
+          <artifactId>okio-jvm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
