@@ -34,8 +34,8 @@ public record OpenTelemetryData(
    * have been hoisted.
    * A backend reads attributes, not configuration, so it cannot know which attribute the operator
    * named for either - {@link #withTestIdentityFrom(String)} and
-   * {@link #withConformanceVerdictFrom(String, String)} resolve that once, on the way into the
-   * calculators.
+   * {@link #withConformanceVerdictFrom(String, String, Warnings)} resolve that once, on the way
+   * into the calculators.
    */
   public OpenTelemetryData(String spanId, String traceId, JsonNode attributes) {
     this(spanId, traceId, attributes, null, null);

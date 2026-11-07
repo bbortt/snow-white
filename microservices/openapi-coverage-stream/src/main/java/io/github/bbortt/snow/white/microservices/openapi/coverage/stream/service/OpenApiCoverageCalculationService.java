@@ -9,6 +9,7 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 import io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent;
 import io.github.bbortt.snow.white.commons.event.QualityGateCalculationRequestEvent;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.NoApplicationTelemetryException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
@@ -55,11 +56,14 @@ public interface OpenApiCoverageCalculationService {
    * @throws UnmatchedWaiverException if a waiver the request dispatched addressed no target any
    *     criterion of this API test judged. No results come back in that case: the input was partly
    *     ignored, and a ratio published beside it would read as though it had not been.
+   * @throws NoApplicationTelemetryException if a test harness exported every span of the window
+   *     and the application under test none of them. No results come back in that case either: a
+   *     ratio would judge reach over a dataset the application never appeared in.
    */
   @NonNull
   OpenApiTestContext calculateCoverage(
     @NonNull OpenApiTestContext openApiTestContext
-  ) throws UnmatchedWaiverException;
+  ) throws UnmatchedWaiverException, NoApplicationTelemetryException;
 
   /**
    * Builds the response event for the given test context.

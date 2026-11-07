@@ -15,8 +15,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import clew.traceables.clew.ConTraceables;
-import clew.traceables.clew.annotation.VerifiesCon;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
@@ -118,34 +116,6 @@ class OpenApiCoverageCalculationCoordinatorUnitTest {
 
     @Test
     void shouldReturnEmptySet_withoutAnyTelemetryData() {
-      var fixture = new OpenApiCoverageCalculationCoordinator(
-        singletonList(openApiCoverageCalculatorMock)
-      );
-
-      Set<OpenApiTestResult> result = fixture.calculate(
-        pathToOpenAPIOperationMap,
-        pathToTelemetryMap,
-        WaiverContext.none()
-      );
-
-      assertThat(result).isEmpty();
-
-      verifyNoInteractions(openApiCoverageCalculatorMock);
-    }
-
-    /**
-     * The window a harness reported verdicts into, with no span of the application's own: the same
-     * window without a producer configured carries nothing at all and publishes nothing, so a
-     * verdict span may not be what makes every criterion that judges reach publish 0%.
-     */
-    @Test
-    @VerifiesCon(
-      ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
-    )
-    void shouldReturnEmptySet_whenOnlyAHarnessExportedSpans() {
-      pathToOpenAPIOperationMap.put("GET_/foo", mock(Operation.class));
-      pathToTelemetryMap.put("GET_/foo", singletonList(harnessSpan()));
-
       var fixture = new OpenApiCoverageCalculationCoordinator(
         singletonList(openApiCoverageCalculatorMock)
       );

@@ -28,14 +28,18 @@ import static java.util.stream.Collectors.toList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.RealizesCon;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.event.dto.ApiInformation;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.ConformanceVerdictReader;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.WaiverContext;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.NoApplicationTelemetryException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -73,12 +77,13 @@ public class OpenApiCoverageService {
   @WithSpan
   public Set<OpenApiTestResult> calculateCoverage(
     @NonNull OpenApiTestContext openApiTestContext
-  ) throws UnmatchedWaiverException {
+  ) throws UnmatchedWaiverException, NoApplicationTelemetryException {
     if (isEmpty(openApiTestContext.openTelemetryData())) {
       return emptySet();
     }
 
     var results = calculateCoverage(
+      openApiTestContext.apiInformation(),
       openApiTestContext.openAPI(),
       openApiTestContext.openTelemetryData(),
       openApiTestContext.waiverContext()
@@ -97,10 +102,11 @@ public class OpenApiCoverageService {
   }
 
   private Set<OpenApiTestResult> calculateCoverage(
+    ApiInformation apiInformation,
     OpenAPI openApi,
     Set<OpenTelemetryData> openTelemetryData,
     WaiverContext waiverContext
-  ) {
+  ) throws NoApplicationTelemetryException {
     logger.info(
       "Calculating OpenAPI coverage for {} telemetry data points",
       openTelemetryData.size()
@@ -112,10 +118,39 @@ public class OpenApiCoverageService {
       pathIndex.operationIdToOperationKey()
     );
 
+    // Asked here and nowhere earlier: a verdict is hoisted onto its span by the grouping above, so
+    // a span read straight out of a backend carries none and no caller upstream of this line can
+    // tell a harness's span from the application's.
+    if (onlyHarnessSpansIn(pathToTelemetryMap)) {
+      throw new NoApplicationTelemetryException(apiInformation);
+    }
+
     return openApiCoverageCalculationCoordinator.calculate(
       pathIndex.operationKeyToOperation(),
       pathToTelemetryMap,
       waiverContext
+    );
+  }
+
+  /**
+   * Whether a harness exported every span of this window, and the application under test none of
+   * them.
+   */
+  @RealizesCon(
+    ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+  )
+  private static boolean onlyHarnessSpansIn(
+    Map<String, List<OpenTelemetryData>> pathToTelemetryMap
+  ) {
+    var spans = pathToTelemetryMap
+      .values()
+      .stream()
+      .flatMap(List::stream)
+      .toList();
+
+    return (
+      !spans.isEmpty() &&
+      spans.stream().allMatch(OpenTelemetryData::isHarnessSpan)
     );
   }
 

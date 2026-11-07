@@ -90,8 +90,13 @@ Snow-White does not validate responses itself.
 A test harness reports a verdict per response — a Citrus suite through `citrus-junit-jupiter-extension`, any other framework through the producer contract in [`semantic-convention/openapi.md`](https://github.com/bbortt/snow-white/blob/main/semantic-convention/openapi.md) — and this criterion judges the verdicts it finds.
 A response no harness judged is not counted, so adopting a producer one suite at a time lowers no number.
 
-An API whose telemetry carries no verdict at all fails this criterion at 0% rather than passing it vacuously, and the result says why: a gate that asked for conformance and received nothing has a producer missing or misconfigured, not a conforming API.
-Each violation is reported as its own finding, at the JSON Pointer of the offending field within the documented response schema.
+An API where no verdict matched a documented response fails this criterion at 0% rather than passing it vacuously, and the result says why: either no harness published a verdict — a producer missing or misconfigured — or the verdicts name responses the specification does not declare, which [All Response Codes must be Specified](#all-response-codes-must-be-specified) reports separately.
+Either way it is not a conforming API.
+
+Each violation is reported at the JSON Pointer of the offending field within the documented response schema.
+Where that schema is a `$ref` to a component — which most specifications use — the pointer cannot be resolved against the document, because Snow-White measures the specification as written and never dereferences it.
+Violations on such a response are all reported at the response entry instead, so expect one finding per response rather than one per violation.
+The response is still uncovered either way, but the percentage is computed over findings, so the same API scores differently with referenced and with inlined response schemas — compare this criterion's ratio only between specifications of the same shape.
 
 ## Criteria Relationships
 

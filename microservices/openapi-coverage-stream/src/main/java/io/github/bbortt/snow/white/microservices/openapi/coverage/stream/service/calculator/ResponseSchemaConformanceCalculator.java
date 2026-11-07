@@ -34,11 +34,13 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -66,11 +68,16 @@ public class ResponseSchemaConformanceCalculator
 {
 
   /**
-   * What an operator who configured this criterion and received no verdict needs to read, because
-   * from the outside a conforming API and a producer that never published look identical.
+   * What an operator who configured this criterion and received no judged pair needs to read,
+   * because from the outside a conforming API and a producer that never published look identical.
+   * <p>
+   * It says that nothing <em>matched</em> rather than that nothing was found, because the two have
+   * the same symptom and different remedies: a verdict naming a response code the document does not
+   * declare satisfies no documented pair, so this text is emitted while verdicts exist, and
+   * "none was found" would send a reader looking for a producer that is already running.
    */
   static final String NO_VERDICT_INFORMATION =
-    "No response schema conformance verdict was found for this API. Responses are judged only where a test harness reports a verdict: a Citrus suite does so through `citrus-junit-jupiter-extension`, and any other framework can through the producer contract documented in `semantic-convention/openapi.md`.";
+    "No response schema conformance verdict matched a documented response of this API. Either no test harness published a verdict, or the verdicts published matched no response this specification declares - whether the status code or the operation is the undeclared one, the undocumented-response-code findings name that traffic. Responses are judged only where a test harness reports a verdict: a Citrus suite does so through `citrus-junit-jupiter-extension`, and any other framework can through the producer contract documented in `semantic-convention/openapi.md`.";
 
   @Override
   protected @NonNull OpenApiCoverageCriteria getSupportedOpenApiCoverageCriteria() {
@@ -315,22 +322,153 @@ public class ResponseSchemaConformanceCalculator
   }
 
   /**
-   * The producer contract, where this calculation found no verdict to read.
+   * The producer contract, where this calculation found no verdict to read, and the verdicts it
+   * read and could not place, where a harness judged a response the document does not declare.
    * <p>
-   * Read off the presence of the root finding rather than derived a second time: by the time this
-   * is asked, waivers have rewritten the statuses the derivation looked at, and a waiver on any one
-   * pair would answer "something was judged" and drop the explanation of a gate still failing at 0
-   * over 1 - the one case an operator cannot diagnose from the report alone.
+   * Either half may be absent, and one calculation can carry both: a harness that judged nothing
+   * but undeclared responses leaves every documented pair unjudged, which is exactly the case the
+   * no-verdict text alone would misdescribe.
+   * <p>
+   * The no-verdict half is read off the presence of the root finding rather than derived a second
+   * time: by the time this is asked, waivers have rewritten the statuses the derivation looked at,
+   * and a waiver on any one pair would answer "something was judged" and drop the explanation of a
+   * gate still failing at 0 over 1 - the one case an operator cannot diagnose from the report alone.
    */
   @Override
   protected @Nullable String getAdditionalInformationOrNull(
     @NonNull Calculation calculation
   ) {
-    return calculation
+    var noVerdict = calculation
       .findings()
       .stream()
       .anyMatch(finding -> PATHS_POINTER.equals(finding.specPointer()))
       ? NO_VERDICT_INFORMATION
       : null;
+
+    return joinAdditionalInformation(
+      noVerdict,
+      droppedVerdictInformationOrNull(calculation)
+    );
+  }
+
+  /**
+   * The verdicts a harness published that this criterion had to leave uncounted, named so that the
+   * drop is visible in the report rather than only in the gap between what a producer published and
+   * what the ratio was taken over.
+   * <p>
+   * Said here rather than reported as a finding, because the drop is not a verdict about the API: a
+   * response the document does not declare has no documented schema to be judged against, so there
+   * is no target to mark uncovered and no node a spec pointer could address. The traffic itself is
+   * the undocumented-response-code criterion's to report, and a second criterion reporting it would
+   * count one gap twice. What belongs here is only that a verdict went uncounted - an operator
+   * reading a conformance ratio has no other way to learn it.
+   * <p>
+   * Taken as what the pairs above did <em>not</em> collect, rather than re-deciding per operation
+   * which observed code goes undeclared. A concrete request key matches the pattern of every
+   * templated operation it could have been routed to, so one span is collected by more than one
+   * operation and a per-operation walk reports it once per match - naming an operation no request
+   * reached, over a count that is too high. Subtraction also needs no case of its own for a
+   * documented {@code default}, which collects the span like any other entry, and it catches the
+   * verdict whose span names no status code at all, which no observed-code walk can see.
+   */
+  @RealizesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+  private @Nullable String droppedVerdictInformationOrNull(
+    @NonNull Calculation calculation
+  ) {
+    var harnessSpans = calculation
+      .pathToTelemetryMap()
+      .values()
+      .stream()
+      .flatMap(List::stream)
+      .filter(OpenTelemetryData::isHarnessSpan)
+      .toList();
+
+    // Asked before the walk below, because by far the commonest calculation has no harness span in
+    // it at all and would otherwise pay for the whole enumeration to be told nothing was dropped.
+    if (harnessSpans.isEmpty()) {
+      return null;
+    }
+
+    // Identified by span id rather than by the record, whose equality walks the whole attribute
+    // tree of every span it is compared against - the one cost this walk could carry into a
+    // calculation holding thousands of them.
+    Set<String> countedSpanIds = new HashSet<>();
+
+    for (var entry : calculation.pathToOpenAPIOperationMap().entrySet()) {
+      var documentedResponseCodes = extractResponseCodes(entry.getValue());
+      var observedResponseCodes = extractObservedResponseCodes(
+        getTelemetryForTemplate(
+          calculation.pathToTelemetryMap(),
+          entry.getKey()
+        )
+      );
+
+      for (var responseCode : documentedResponseCodes) {
+        getSatisfyingTelemetry(
+          responseCode,
+          documentedResponseCodes,
+          observedResponseCodes
+        )
+          .stream()
+          .map(OpenTelemetryData::spanId)
+          .forEach(countedSpanIds::add);
+      }
+    }
+
+    var uncounted = harnessSpans
+      .stream()
+      .filter(span -> !countedSpanIds.contains(span.spanId()))
+      .toList();
+
+    if (uncounted.isEmpty()) {
+      return null;
+    }
+
+    return "A test harness published %d response schema conformance verdict(s) this criterion could not place, and none of them was counted: %s. A verdict is judged only where it names a response this specification declares, under an operation it declares; the undocumented-response-code findings report traffic that matched neither.".formatted(
+      uncounted.size(),
+      describeUncounted(uncounted)
+    );
+  }
+
+  /**
+   * Why the uncounted verdicts could not be placed, grouped by cause rather than listed per span:
+   * one misconfigured producer emits the same shape on every span it exports.
+   * <p>
+   * The status codes are reported as what matched no documented response rather than as codes the
+   * specification does not declare, because those are not the same claim: a verdict is equally
+   * unplaced when its span reached no documented operation at all, and the code it names may be
+   * declared under every operation but that one.
+   */
+  private String describeUncounted(List<OpenTelemetryData> uncounted) {
+    var withStatusCode = extractObservedResponseCodes(uncounted);
+
+    Set<String> unmatchedResponseCodes = new TreeSet<>();
+    withStatusCode
+      .stream()
+      .map(ObservedResponseCode::statusCode)
+      .forEach(unmatchedResponseCodes::add);
+
+    List<String> causes = new ArrayList<>();
+
+    if (!unmatchedResponseCodes.isEmpty()) {
+      causes.add(
+        "%d that matched no documented response (status code(s) %s)".formatted(
+          withStatusCode.size(),
+          String.join(", ", unmatchedResponseCodes)
+        )
+      );
+    }
+
+    var withoutStatusCode = uncounted.size() - withStatusCode.size();
+
+    if (withoutStatusCode > 0) {
+      causes.add(
+        "%d on spans carrying no readable HTTP status code".formatted(
+          withoutStatusCode
+        )
+      );
+    }
+
+    return String.join("; ", causes);
   }
 }
