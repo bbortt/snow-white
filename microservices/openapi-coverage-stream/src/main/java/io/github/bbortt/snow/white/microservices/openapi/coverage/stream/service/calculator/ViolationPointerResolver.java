@@ -36,6 +36,12 @@ import org.jspecify.annotations.Nullable;
  * So the pointer walks back to its nearest resolvable ancestor rather than being dropped: an
  * imperfect translation costs a finding's precision, never the finding that the response did not
  * conform.
+ * <p>
+ * That walk is the ordinary path, not a fallback for an unusual document. Most specifications
+ * {@code $ref} their response schemas, and such a schema carries only its reference and no walkable
+ * node, so every pointer on the pair resolves nowhere and every violation of it is published at the
+ * response entry. Callers grouping by the resolved pointer therefore see one finding per pair in the
+ * common case, not one per violation.
  */
 @NoArgsConstructor(access = PRIVATE)
 @RealizesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)

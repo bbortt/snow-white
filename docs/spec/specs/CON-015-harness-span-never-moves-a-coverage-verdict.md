@@ -30,6 +30,24 @@ code on it is undocumented.
 A harness span is therefore the one kind of telemetry that could register as undocumented traffic
 the API never served — a criterion failing because conformance reporting was switched on.
 
+The degenerate case is part of the invariance, not an exception to it: a window whose every
+attributable span came from the harness is the no-traffic window it would have been before
+conformance reporting existed, and it must be reported as one.
+It is asked of the spans a documented operation collected rather than of the window as read, so an
+application answering only requests the specification does not declare counts as absent here — its
+spans are dropped by the routing before the question is reached, and naming that as a third
+possible cause is what the report owes an operator, since the remedy differs.
+Admitting the harness's spans may not turn it into a calculation — every criterion that judges reach
+would publish 0% over a dataset the application never appeared in, which is exactly the
+already-green criterion turning red that this spec exists to prevent.
+Nor may it be answered with no result at all, the way that window was handled before this criterion
+existed: a calculation publishing an empty result set has no criterion below the gate's threshold
+and is read as a pass, so an uninstrumented application would report a green gate.
+It is therefore reported as a failed calculation naming the cause, as a request Snow-White cannot
+honour is reported.
+This is the one thing these spans decide about a calculation other than conformance, and they decide
+it for every criterion at once rather than moving any one of them.
+
 What marks a harness span is the verdict attribute itself: a span carrying
 `openapi.response.schema.valid` is one, and no other producer emits it — in-application validation
 is out of scope by decision
@@ -75,6 +93,9 @@ and paths that _would_ register as undocumented traffic if they were consulted, 
 `NO_UNDOCUMENTED_RESPONSE_CODES` is unchanged.
 A third asserts the conformance criterion does differ between the two runs, so the spans were
 genuinely present.
+A fourth asserts that a window whose every span came from the harness reaches no calculation at all:
+the service refuses it, naming the application's absence, and no result is published for any
+criterion.
 
 ## Relations
 

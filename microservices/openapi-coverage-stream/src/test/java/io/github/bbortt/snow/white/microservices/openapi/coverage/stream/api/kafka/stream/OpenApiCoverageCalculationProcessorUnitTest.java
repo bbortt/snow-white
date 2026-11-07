@@ -42,6 +42,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.NoApplicationTelemetryException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
@@ -129,7 +130,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldProcessCoverageRequest()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -199,7 +200,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldReportBackCoverageRequestsWithInvalidFilterCriteria()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
       var calculationId = "f57a401d-c3b4-48eb-8592-08aa91d14bcf";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -253,6 +254,71 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       );
       verify(openApiCoverageCalculationServiceMock, never()).calculateCoverage(
         any(OpenApiTestContext.class)
+      );
+      verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
+        any(OpenApiTestContext.class)
+      );
+    }
+
+    /**
+     * A harness publishing verdicts against an uninstrumented application: the window carries
+     * spans, so the no-telemetry branch above does not catch it, and a calculation returning no
+     * result at all would be published as a passing gate - nothing is below the threshold.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+    )
+    void shouldReportBack_whenOnlyAHarnessExportedSpans()
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+      var calculationId = "9b1f2c4e-5d6a-47b8-91c3-2e7a8f0d4b65";
+      var requestEvent = qualityGateCalculationRequestEvent();
+
+      var openApiTestContext = mock(OpenApiTestContext.class);
+      doReturn(openApiTestContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .fetchOpenApiSpecification(calculationId, requestEvent);
+
+      var enrichedContext = mock(OpenApiTestContext.class);
+      doReturn(
+        Set.of(
+          new OpenTelemetryData(
+            "7c3a1d5f8b2e4906",
+            "1d4e9a73bc6f45028ad1e5c7f93b20de",
+            JsonNodeFactory.instance.objectNode()
+          )
+        )
+      )
+        .when(enrichedContext)
+        .openTelemetryData();
+      doReturn(enrichedContext)
+        .when(openApiCoverageCalculationServiceMock)
+        .enrichWithOpenTelemetryData(eq(openApiTestContext), anyLong());
+
+      var noApplicationTelemetryException = new NoApplicationTelemetryException(
+        defaultApiInformation()
+      );
+      doThrow(noApplicationTelemetryException)
+        .when(openApiCoverageCalculationServiceMock)
+        .calculateCoverage(enrichedContext);
+
+      sendEventsAndAssert(calculationId, requestEvent, outputTopic ->
+        assertThat(outputTopic.readRecordsToList())
+          .hasSize(1)
+          .first()
+          .satisfies(
+            r -> assertThat(r.getKey()).isEqualTo(calculationId),
+            r -> assertThat(r.value()).isNotNull(),
+            r ->
+              assertThat(r.value().errorMessage()).isEqualTo(
+                noApplicationTelemetryException.getMessage()
+              ),
+            r -> assertThat(r.value().openApiTestResults()).isNull()
+          )
+      );
+
+      verify(openApiCoverageCalculationServiceMock).calculateCoverage(
+        enrichedContext
       );
       verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
         any(OpenApiTestContext.class)
@@ -362,7 +428,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       ConTraceables.CON_011_WAIVER_MATCHING_NO_FINDING_FAILS_THE_CALCULATION
     )
     void shouldReachNoVerdict_whenAWaiverMatchedNoFinding()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
       var calculationId = "9a4f1f2e-6b7c-4d0a-9c21-5b7f3d8e1a44";
       var requestEvent = qualityGateCalculationRequestEvent();
 

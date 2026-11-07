@@ -17,6 +17,7 @@ import static io.swagger.v3.oas.models.PathItem.HttpMethod.POST;
 import static io.swagger.v3.oas.models.PathItem.HttpMethod.PUT;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentCaptor.captor;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,12 +25,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import clew.traceables.clew.ConTraceables;
 import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesCon;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.commons.event.dto.OpenApiTestResult;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenApiTestContext;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.NoApplicationTelemetryException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -102,7 +106,7 @@ class OpenApiCoverageServiceUnitTest {
     void shouldReturnCalculatedCoverage(
       PathItem.HttpMethod httpMethod,
       PathItem pathItem
-    ) throws UnmatchedWaiverException {
+    ) throws UnmatchedWaiverException, NoApplicationTelemetryException {
       var spanId = "5f2d3c8b9e1a0f4d";
       var traceId = "6e0c63257de34c92b8b045a7c3c2e3fc";
       var attributes = JsonMapper.shared().readTree(
@@ -163,7 +167,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldReturnEmptyOperationMap_whenOpenApiHasNoPaths()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
@@ -205,7 +209,7 @@ class OpenApiCoverageServiceUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
     void shouldHoistTheTestIdentityOntoEverySpanHandedToTheCalculators()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       doReturn("snow.white.test.case.name")
         .when(openApiCoverageStreamPropertiesMock)
         .getTestCaseNameAttribute();
@@ -259,7 +263,7 @@ class OpenApiCoverageServiceUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
     void shouldHandOnASpanWhoseTestIdentityIsTooLongToStore()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       doReturn("snow.white.test.case.name")
         .when(openApiCoverageStreamPropertiesMock)
         .getTestCaseNameAttribute();
@@ -315,7 +319,7 @@ class OpenApiCoverageServiceUnitTest {
     @ParameterizedTest
     void shouldReturnEmptySet_whenNoTelemetryDataGathered(
       @Nullable Set<OpenTelemetryData> openTelemetryData
-    ) throws UnmatchedWaiverException {
+    ) throws UnmatchedWaiverException, NoApplicationTelemetryException {
       openApiTestContext = openApiTestContext.withOpenTelemetryData(
         openTelemetryData
       );
@@ -327,6 +331,62 @@ class OpenApiCoverageServiceUnitTest {
       assertThat(result).isEmpty();
 
       verifyNoInteractions(openAPIMock);
+      verifyNoInteractions(openApiCoverageCalculationCoordinatorMock);
+    }
+
+    /**
+     * The window a harness reported verdicts into, with no span of the application's own: the same
+     * window without a producer configured carries nothing at all and is reported as no telemetry,
+     * so a verdict span may not turn it into a calculation. No criterion is dispatched at all - an
+     * empty result set has nothing below the gate's threshold and would be published as a pass.
+     * <p>
+     * Every other test of this class hands over spans without a verdict, which is the counterpart:
+     * one span of the application's own and the calculation runs.
+     */
+    @Test
+    @VerifiesCon(
+      ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
+    )
+    void shouldFailTheCalculation_whenEverySpanCameFromAHarness() {
+      // The verdict is read off the attributes while grouping, not taken from the span handed in:
+      // a span straight out of a backend carries none.
+      doReturn("snow.white.response.schema.valid")
+        .when(openApiCoverageStreamPropertiesMock)
+        .getResponseSchemaValidAttribute();
+
+      openApiTestContext = openApiTestContext.withOpenTelemetryData(
+        Set.of(
+          new OpenTelemetryData(
+            "5f2d3c8b9e1a0f4d",
+            "6e0c63257de34c92b8b045a7c3c2e3fc",
+            JsonMapper.shared().readTree(
+              // language=json
+              """
+              {
+                "http.request.method": "GET",
+                "url.path": "/api/rest/v1/foo",
+                "snow.white.response.schema.valid": true
+              }
+              """
+            )
+          )
+        )
+      );
+
+      var paths = new Paths();
+      paths.addPathItem(
+        "/api/rest/v1/foo",
+        new PathItem().get(mock(Operation.class))
+      );
+
+      doReturn(paths).when(openAPIMock).getPaths();
+
+      assertThatThrownBy(() -> fixture.calculateCoverage(openApiTestContext))
+        .isInstanceOf(NoApplicationTelemetryException.class)
+        .hasMessageContaining(
+          "was exported by a test harness, and none by the application under test"
+        );
+
       verifyNoInteractions(openApiCoverageCalculationCoordinatorMock);
     }
   }
@@ -353,7 +413,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldGroupTelemetryByTemplateKey_whenOperationIdIsKnown()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -393,7 +453,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFallbackToConcretePathKey_whenOperationIdIsNotInSpec()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -431,7 +491,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFallbackToConcretePathKey_whenOperationIdAttributeIsBlank()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -469,7 +529,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFilterOut_whenOperationIdIsUnknownAndUrlAttributesAreMissing()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
@@ -497,7 +557,7 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFilterOut_whenUrlPathAttributeIsMissing()
-      throws UnmatchedWaiverException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """

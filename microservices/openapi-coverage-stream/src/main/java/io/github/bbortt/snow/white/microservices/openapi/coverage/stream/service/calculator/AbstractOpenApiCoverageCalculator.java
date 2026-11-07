@@ -191,8 +191,11 @@ abstract class AbstractOpenApiCoverageCalculator
   /**
    * The expired-waiver note ahead of the criterion's own message, because the note is what explains
    * a verdict whoever reads it did not expect. Either half may be absent; both absent is absent.
+   * <p>
+   * Open to a subclass assembling its own message out of two independent halves, so that one rule
+   * about absence holds for every sentence an operator reads beside a ratio.
    */
-  private static @Nullable String joinAdditionalInformation(
+  static @Nullable String joinAdditionalInformation(
     @Nullable String expiredWaivers,
     @Nullable String criterionMessage
   ) {

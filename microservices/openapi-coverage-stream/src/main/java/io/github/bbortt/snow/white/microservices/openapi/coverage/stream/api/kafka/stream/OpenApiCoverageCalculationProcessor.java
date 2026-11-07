@@ -21,6 +21,7 @@ import io.github.bbortt.snow.white.commons.event.dto.AttributeFilter;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.api.kafka.serialization.QualityGateCalculationEventSerdes;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.config.OpenApiCoverageStreamProperties;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.OpenApiCoverageCalculationService;
+import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.NoApplicationTelemetryException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.OpenApiNotIndexedException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.TelemetryBackendUnavailableException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
@@ -133,6 +134,19 @@ public class OpenApiCoverageCalculationProcessor {
         qualityGateCalculationRequestEventFixedKeyRecord,
         exception.getMessage()
       );
+    } catch (NoApplicationTelemetryException exception) {
+      logger.error(
+        "Refusing to publish coverage for a window the application under test never appeared in: {}",
+        exception.getMessage()
+      );
+
+      // Caught by name for the reason above, and with the same consequence: an empty result set
+      // has no criterion below the gate's threshold, so answering this case with one would publish
+      // an uninstrumented application as a passing gate.
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        exception.getMessage()
+      );
     } catch (Exception exception) {
       var rootCause = getRootCause(exception);
 
@@ -178,7 +192,7 @@ public class OpenApiCoverageCalculationProcessor {
     > qualityGateCalculationRequestEventFixedKeyRecord,
     Long timestamp
   )
-    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException {
+    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
     var openApiTestContext =
       openApiCoverageCalculationService.fetchOpenApiSpecification(
         qualityGateCalculationRequestEventFixedKeyRecord.key(),

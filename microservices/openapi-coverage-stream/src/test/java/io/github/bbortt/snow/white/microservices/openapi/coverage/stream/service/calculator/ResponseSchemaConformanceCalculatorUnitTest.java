@@ -241,6 +241,29 @@ class ResponseSchemaConformanceCalculatorUnitTest {
         .containsExactly(RESPONSE_ENTRY_POINTER);
     }
 
+    /**
+     * The document is measured as written, so a response schema declared as a reference has no
+     * walkable node and every pointer on the pair resolves nowhere. This is the ordinary case
+     * rather than a degenerate one - most documents reference their response schemas - so the
+     * collapse to one finding per response is pinned here and not planned around.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_029_FINDING_IDENTIFIED_BY_SPEC_POINTER)
+    void producesOneFindingAtTheResponseEntry_whenTheSchemaIsOnlyAReference() {
+      var result = fixture.calculate(
+        operationDocumentingReferencedSchema("200"),
+        telemetry(
+          verdictSpan("200", nonConforming(of("/properties/id", "/required")))
+        ),
+        WaiverContext.none()
+      );
+
+      assertThat(result.findings())
+        .extracting(ApiTestFinding::specPointer, ApiTestFinding::status)
+        .containsExactly(tuple(RESPONSE_ENTRY_POINTER, UNCOVERED));
+      assertThat(result.judgedTargetCount()).isEqualTo(1);
+    }
+
     @Test
     @VerifiesSw(SwTraceables.SW_030_UNJUDGED_TARGET_IS_NOT_APPLICABLE)
     void leavesAPairWithoutAVerdictUnjudged_whileJudgingTheOneBesideIt() {
@@ -384,6 +407,132 @@ class ResponseSchemaConformanceCalculatorUnitTest {
 
       assertThat(information).isEqualTo(NO_VERDICT_INFORMATION);
     }
+
+    /**
+     * The case the no-verdict text alone would misdescribe: a harness judged a response, the
+     * document declares no entry that response could satisfy, and the ratio was taken over nothing.
+     * Both sentences are needed - one says no documented response was judged, the other says a
+     * verdict was read and left uncounted, which is the half no finding and no ratio can show.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+    void namesTheDrop_whenAVerdictMatchedNoDocumentedEntry() {
+      var result = fixture.calculate(
+        operationDocumenting("200"),
+        telemetry(verdictSpan("500", nonConforming(of("/properties/id")))),
+        WaiverContext.none()
+      );
+
+      assertThat(result.additionalInformation())
+        .startsWith(NO_VERDICT_INFORMATION)
+        .contains("published 1 response schema conformance verdict(s)")
+        .contains("1 that matched no documented response (status code(s) 500)");
+      assertThat(result.coverage()).isEqualTo(ratio(0));
+    }
+
+    /**
+     * A verdict whose span names no status code is the third way a verdict goes uncounted, and the
+     * one an observed-code walk cannot see: it never becomes an observed code to begin with. The
+     * no-verdict text asserts two causes, so leaving this one unnamed would describe a calculation
+     * by neither of them.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+    void namesTheCause_whenAJudgedSpanCarriesNoStatusCode() {
+      var result = fixture.calculate(
+        operationDocumenting("200"),
+        telemetry(
+          new OpenTelemetryData(
+            "span-no-status",
+            "trace-no-status",
+            JsonMapper.shared().createObjectNode(),
+            null,
+            CONFORMING_RESPONSE
+          )
+        ),
+        WaiverContext.none()
+      );
+
+      assertThat(result.additionalInformation())
+        .startsWith(NO_VERDICT_INFORMATION)
+        .contains("published 1 response schema conformance verdict(s)")
+        .contains("1 on spans carrying no readable HTTP status code")
+        .doesNotContain("matched no documented response");
+    }
+
+    /**
+     * A verdict is equally unplaced when its span reached no documented operation, and the status
+     * code it names may be declared under every operation but that one. So the drop is reported as
+     * having matched no documented response, never as a code the specification does not declare -
+     * the second would be false here, where `200` is declared.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+    void doesNotCallTheCodeUndeclared_whenTheSpanReachedNoDocumentedOperation() {
+      Map<String, List<OpenTelemetryData>> telemetry = new HashMap<>();
+      telemetry.put(
+        "GET_/api/v1/health",
+        of(verdictSpan("200", CONFORMING_RESPONSE))
+      );
+
+      var result = fixture.calculate(
+        operationDocumenting("200"),
+        telemetry,
+        WaiverContext.none()
+      );
+
+      assertThat(result.additionalInformation())
+        .contains("published 1 response schema conformance verdict(s)")
+        .contains("1 that matched no documented response (status code(s) 200)")
+        .doesNotContain("response codes this specification does not declare");
+    }
+
+    /**
+     * One span, one drop. A concrete request key matches the pattern of every templated operation
+     * it could have been routed to, so the span below is collected by both documented operations -
+     * and counting what each operation failed to place would report it twice, against an operation
+     * no request reached.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+    void countsOneDropOnce_whenATemplatedOperationAlsoCollectsTheSpan() {
+      Map<String, Operation> operations = new HashMap<>();
+      operations.put("GET_/api/v1/pets/mine", documenting("200"));
+      operations.put("GET_/api/v1/pets/{petId}", documenting("200"));
+
+      Map<String, List<OpenTelemetryData>> telemetry = new HashMap<>();
+      telemetry.put(
+        "GET_/api/v1/pets/mine",
+        of(verdictSpan("500", nonConforming(of("/properties/id"))))
+      );
+
+      var result = fixture.calculate(
+        operations,
+        telemetry,
+        WaiverContext.none()
+      );
+
+      assertThat(result.additionalInformation())
+        .contains("published 1 response schema conformance verdict(s)")
+        .contains("1 that matched no documented response (status code(s) 500)");
+    }
+
+    /**
+     * A documented catch-all declares every response the operation can answer with, so the verdict
+     * lands on that entry and there is no drop to report.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_048_RESPONSE_SCHEMA_CONFORMANCE_CRITERION)
+    void saysNothing_whenADocumentedDefaultEntryCaughtTheResponse() {
+      var result = fixture.calculate(
+        operationDocumenting("200", "default"),
+        telemetry(verdictSpan("500", CONFORMING_RESPONSE)),
+        WaiverContext.none()
+      );
+
+      assertThat(result.additionalInformation()).isNull();
+      assertThat(result.coverage()).isEqualTo(ratio(1));
+    }
   }
 
   private static BigDecimal ratio(double value) {
@@ -397,6 +546,17 @@ class ResponseSchemaConformanceCalculatorUnitTest {
   private static Map<String, Operation> operationDocumenting(
     String... responseCodes
   ) {
+    Map<String, Operation> operations = new HashMap<>();
+    operations.put(OPERATION_KEY, documenting(responseCodes));
+
+    return operations;
+  }
+
+  /**
+   * One operation documenting the given response codes, for a test that places it under an
+   * operation key of its own.
+   */
+  private static Operation documenting(String... responseCodes) {
     var responses = new ApiResponses();
 
     for (var responseCode : responseCodes) {
@@ -413,10 +573,7 @@ class ResponseSchemaConformanceCalculatorUnitTest {
       );
     }
 
-    Map<String, Operation> operations = new HashMap<>();
-    operations.put(OPERATION_KEY, new Operation().responses(responses));
-
-    return operations;
+    return new Operation().responses(responses);
   }
 
   private static Schema<?> petSchema() {
@@ -425,6 +582,35 @@ class ResponseSchemaConformanceCalculatorUnitTest {
     schema.addRequiredItem("id");
 
     return schema;
+  }
+
+  /**
+   * The same operation with the response schema referenced instead of inlined, as a document
+   * declaring reusable components states it - and as the parser leaves it, since nothing
+   * dereferences the document before it is measured.
+   */
+  private static Map<String, Operation> operationDocumentingReferencedSchema(
+    String responseCode
+  ) {
+    var responses = new ApiResponses();
+    responses.addApiResponse(
+      responseCode,
+      new ApiResponse()
+        .description("Test")
+        .content(
+          new Content().addMediaType(
+            "application/json",
+            new MediaType().schema(
+              new Schema<>().$ref("#/components/schemas/Pet")
+            )
+          )
+        )
+    );
+
+    Map<String, Operation> operations = new HashMap<>();
+    operations.put(OPERATION_KEY, new Operation().responses(responses));
+
+    return operations;
   }
 
   private static Map<String, List<OpenTelemetryData>> telemetry(
