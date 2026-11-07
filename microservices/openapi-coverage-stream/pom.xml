@@ -52,6 +52,13 @@
       <groupId>com.influxdb</groupId>
       <artifactId>influxdb-client-java</artifactId>
       <version>${influxdb.version}</version>
+      <exclusions>
+        <!-- its direct okio pin wins nearest-first over the newer one okhttp 5 needs -->
+        <exclusion>
+          <groupId>com.squareup.okio</groupId>
+          <artifactId>okio</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

@@ -108,6 +108,7 @@
     </io.opentelemetry.instrumentation.version>
     <junit.version>6.1.3</junit.version>
     <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
+    <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
     <maven-failsafe-plugin.version>3.6.1</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
     <mockito.version>5.24.0</mockito.version>
@@ -271,6 +272,39 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven-enforcer-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>require-upper-bound-deps</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!--
+                  Fails when a dependency resolves lower than something else on the classpath was built
+                  against - e.g. okio 3.4.0 winning over okhttp's 3.18.1 broke every OTLP export at runtime.
+                  Scoped to the OTLP exporter's transport: Spring Boot's managed versions legitimately
+                  hold Jackson, Kafka and friends below what third parties ask for.
+                  Includes match exact groupId:artifactId only - a bare groupId or `:*` silently matches nothing.
+                -->
+                <requireUpperBoundDeps>
+                  <includes>
+                    <include>com.squareup.okio:okio</include>
+                    <include>com.squareup.okio:okio-jvm</include>
+                    <include>com.squareup.okhttp3:okhttp</include>
+                    <include>com.squareup.okhttp3:okhttp-jvm</include>
+                  </includes>
+                </requireUpperBoundDeps>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
