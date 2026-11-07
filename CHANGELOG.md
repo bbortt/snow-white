@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.5.0](https://github.com/bbortt/snow-white/compare/v2.4.1...v2.5.0) (2026-11-07)
+
+### Features
+
+- **helm:** admit conformance verdict spans through the collector filter ([bddb41c](https://github.com/bbortt/snow-white/commit/bddb41c9d5cdfe641806a798a7e2be6db495ddd0)), closes [#2278](https://github.com/bbortt/snow-white/issues/2278)
+- **SW-048:** judge the response schema conformance a test harness vouched for ([8dbc4f0](https://github.com/bbortt/snow-white/commit/8dbc4f0cdc32e23176573dc280d32335e2e7e0de))
+
+### Bug Fixes
+
+- **otel-event-filter-stream:** exclude stale okio pin breaking OTLP export ([d2f5e04](https://github.com/bbortt/snow-white/commit/d2f5e049820f511375fe34c6cc3047f2bd944661))
+
+### Documentation
+
+- **STR-028:** carry filtered resource attributes onto verdict spans ([8904b4f](https://github.com/bbortt/snow-white/commit/8904b4ff7d601d0897f55775318dd4c7da5e1a1d)), closes [#2278](https://github.com/bbortt/snow-white/issues/2278)
+- **STR-028:** promote the response schema conformance specs ([e7fd299](https://github.com/bbortt/snow-white/commit/e7fd299cd4cc39e300aa9247814265f8cb386c1b)), closes [#2278](https://github.com/bbortt/snow-white/issues/2278)
+- **STR-028:** state the producer contract and fail on missing verdicts ([17fc921](https://github.com/bbortt/snow-white/commit/17fc921c680d7f199c49e0b15668ca165eddfa67)), closes [#2278](https://github.com/bbortt/snow-white/issues/2278)
+
 ## [2.4.1](https://github.com/bbortt/snow-white/compare/v2.4.0...v2.4.1) (2026-10-31)
 
 ### Bug Fixes
