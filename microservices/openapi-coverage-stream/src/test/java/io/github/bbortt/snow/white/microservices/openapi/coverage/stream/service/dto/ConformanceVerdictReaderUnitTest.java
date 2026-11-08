@@ -209,6 +209,87 @@ class ConformanceVerdictReaderUnitTest {
       assertThat(result.conforming()).isFalse();
     }
 
+    /**
+     * A list arriving as a list is the same statement as the contract's serialised string, and is
+     * read as one. Reading it through its text instead would raise, be swallowed as "no pointers",
+     * and - alongside a {@code valid} of true - report the break as conforming.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+    void readsAnArrayValuedViolationList_withoutLosingThePointers() {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put(VALID_ATTRIBUTE, false);
+      attributes.putArray(VIOLATIONS_ATTRIBUTE).add("/properties/id");
+
+      var result = readVerdict(
+        SPAN_ID,
+        attributes,
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      assertThat(result).isNotNull();
+      assertThat(result.conforming()).isFalse();
+      assertThat(result.violationPointers()).containsExactly("/properties/id");
+      assertThat(warnings.spansWithUnusablePointers()).isEmpty();
+    }
+
+    /**
+     * The shape that would otherwise read green: a producer contradicting itself with
+     * {@code valid} true alongside an array-valued violation list. Losing the pointers here would
+     * leave an empty list, which the caller reads as nothing to report.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+    void returnsNonConforming_whenValidIsTrueAlongsideAnArrayValuedViolationList() {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put(VALID_ATTRIBUTE, true);
+      attributes.putArray(VIOLATIONS_ATTRIBUTE).add("/properties/id");
+
+      var result = readVerdict(
+        SPAN_ID,
+        attributes,
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      assertThat(result).isNotNull();
+      assertThat(result.conforming()).isFalse();
+      assertThat(result.violationPointers()).containsExactly("/properties/id");
+      assertThat(warnings.spansWithUnreadableVerdict()).containsExactly(
+        SPAN_ID
+      );
+    }
+
+    /**
+     * A backend that keeps an attribute's own type hands a composite value straight through, and
+     * Jackson raises rather than coerces when one is read as text. The verdict stays fail-closed:
+     * refusing it here is what keeps one malformed producer from costing the whole window's
+     * calculation.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+    void returnsNonConforming_whenValidIsAComposite() {
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.putArray(VALID_ATTRIBUTE).add(true);
+
+      var result = readVerdict(
+        SPAN_ID,
+        attributes,
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      assertThat(result).isNotNull();
+      assertThat(result.conforming()).isFalse();
+      assertThat(warnings.spansWithUnreadableVerdict()).containsExactly(
+        SPAN_ID
+      );
+    }
+
     @ValueSource(
       strings = {
         "not json at all",

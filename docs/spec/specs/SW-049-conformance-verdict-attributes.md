@@ -23,10 +23,13 @@ A conformance verdict travels on a span as two attributes Snow-White defines, do
   Present only where `valid` is `false`.
 
 The violation list is a serialised string rather than an OpenTelemetry array attribute because the
-analysed dataset cannot carry an array.
-The InfluxDB backend reads each attribute through Flux's `string()`, which fails the whole query
-on a list value (`cannot convert [string] to string`), so one verdict span in the window would cost
-every criterion's calculation.
+analysed dataset cannot carry an array through both backends alike.
+The Tempo backend builds its attributes from the OTLP value members it recognises — `stringValue`,
+`intValue`, `doubleValue`, `boolValue` — and silently drops an `arrayValue`, which costs the
+pointers without reporting that it did.
+The InfluxDB backend carries an array faithfully, because it JSON-encodes each attribute rather
+than coercing it to text
+([SW-023](SW-023-influxdb-query-narrows-attributes-to-required-keys.md)).
 A string passes through both backends unchanged, and any producer can emit one by serialising a
 list.
 A value that is not a JSON array of strings is unparseable, and read under the rules below.

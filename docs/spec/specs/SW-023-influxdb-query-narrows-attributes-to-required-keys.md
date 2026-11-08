@@ -17,6 +17,12 @@ Every `OpenTelemetryData` this
 implementation returns therefore carries an `attributes` `JsonNode` containing at most the required
 keys, even when the underlying span carried additional attributes InfluxDB stored for it.
 
+Each narrowed value is JSON-encoded into its column and read back as JSON, so an attribute keeps
+the type the span carried it in: an array stays an array, a boolean stays a boolean.
+Coercing each value with Flux's `string()` instead would both flatten those types and fail the
+whole query on any composite value, which an array-valued attribute such as
+`http.request.header.<key>` is.
+
 **Rationale**
 This mirrors `SW-022`'s Tempo behavior at the response-payload level: neither backend hands the
 calculators (or the network layer, or process memory) more attribute data per span than any
@@ -36,6 +42,8 @@ An integration test against an InfluxDB
 test instance seeded with spans carrying attributes outside the required set asserts every
 returned `OpenTelemetryData`'s `attributes` `JsonNode` contains only keys from that set, and that
 the values for keys within the set are unchanged from what was seeded.
+A further integration test seeds an array-valued attribute and asserts the query completes and
+returns it as an array, since coercion would fail the query for every span in the window.
 
 ## Relations
 

@@ -119,14 +119,23 @@ public final class ConformanceVerdictReader {
   /**
    * The boolean the given attribute states, or {@code null} where it states none.
    * <p>
-   * Both forms a telemetry backend can deliver are accepted: Tempo keeps an OTLP {@code boolValue}
-   * as a JSON boolean, while InfluxDB stores every attribute as a string and hands back
-   * {@code "true"}. Nothing else is read as a boolean - not {@code "1"}, not {@code "yes"} - so a
-   * producer emitting a value Snow-White cannot be sure of fails rather than passes.
+   * Both forms a telemetry backend can deliver are accepted: either reads a producer's OTLP
+   * {@code boolValue} back as a JSON boolean, while a producer that stated the verdict as the
+   * string {@code "true"} is read as having stated it. Nothing else is read as a boolean - not
+   * {@code "1"}, not {@code "yes"} - so a producer emitting a value Snow-White cannot be sure of
+   * fails rather than passes.
+   * <p>
+   * A composite value states no boolean either, and is refused before it is read as text: Jackson
+   * raises on {@code asString()} for an array or an object, and this class owes its caller a
+   * fail-closed verdict rather than an exception that would cost the whole window's calculation.
    */
   private static @Nullable Boolean readBoolean(JsonNode valid) {
     if (valid.isBoolean()) {
       return valid.booleanValue();
+    }
+
+    if (!valid.isValueNode()) {
+      return null;
     }
 
     var value = valid.asString();
@@ -143,6 +152,10 @@ public final class ConformanceVerdictReader {
    * <p>
    * An unparseable value costs the detail and not the verdict: the caller still reads a violation,
    * which is why this returns an empty list rather than refusing.
+   * <p>
+   * The producer contract is a string holding a JSON array, and that is what a conforming producer
+   * emits; a list arriving as a list is read as the same thing rather than refused, because the
+   * backends do not agree on whether an array attribute survives the trip.
    */
   private static @NonNull List<String> readViolationPointers(
     @Nullable JsonNode violations,
@@ -156,7 +169,13 @@ public final class ConformanceVerdictReader {
     List<String> pointers = new ArrayList<>();
 
     try {
-      var parsed = JSON_MAPPER.readTree(violations.asString());
+      // A backend that keeps an attribute's own type hands a list over as a list, so it is read
+      // as one rather than through its text: Jackson raises on reading a composite as text, and
+      // the failure would be swallowed into "no pointers" - which, alongside a `valid` of true,
+      // reads as conforming and hides the break the producer did report.
+      var parsed = violations.isArray()
+        ? violations
+        : JSON_MAPPER.readTree(violations.asString());
 
       if (!parsed.isArray()) {
         return unusable(spanId, warnings);

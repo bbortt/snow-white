@@ -8,8 +8,11 @@ package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.servic
 
 import static io.github.bbortt.snow.white.commons.event.dto.AttributeFilterOperator.STRING_EQUALS;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.TestData.defaultApiInformation;
+import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.ContentTypeCoverageCalculator.CONTENT_TYPE_HEADER_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.SPAN_ID_KEY;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData.TRACE_ID_KEY;
+import static io.opentelemetry.semconv.HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
+import static io.opentelemetry.semconv.UrlAttributes.URL_QUERY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -58,9 +61,13 @@ class InfluxDBTelemetryServiceImplUnitTest {
   private static final Set<String> REQUIRED_ATTRIBUTE_KEYS =
     new LinkedHashSet<>(List.of("http.request.method", "url.path"));
 
+  /**
+   * {@code jsonEncoder.encode} rather than {@code string}, because {@code string} cannot convert a
+   * composite value and an array-valued attribute would fail the whole query.
+   */
   private static final String EXPECTED_ATTRIBUTE_PROJECTIONS =
-    "attr_0: (if exists parsed[\"http.request.method\"] then string(v: parsed[\"http.request.method\"]) else \"\"), " +
-    "attr_1: (if exists parsed[\"url.path\"] then string(v: parsed[\"url.path\"]) else \"\")";
+    "attr_0: (if exists parsed[\"http.request.method\"] then string(v: jsonEncoder.encode(v: parsed[\"http.request.method\"])) else \"\"), " +
+    "attr_1: (if exists parsed[\"url.path\"] then string(v: jsonEncoder.encode(v: parsed[\"url.path\"])) else \"\")";
 
   private static final String EXPECTED_KEEP_CLAUSE =
     "|> keep(columns: [\"span_id\", \"trace_id\", \"attr_0\", \"attr_1\"])";
@@ -142,6 +149,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
       assertThat(capturedQuery).contains(
         "import \"date\"",
         "import \"experimental/json\"",
+        "import jsonEncoder \"json\"",
         "from(bucket: \"" + OTEL_BUCKET + "\")",
         "|> range(start: date.sub(d: " +
           LOOKBACK_WINDOW +
@@ -267,8 +275,9 @@ class InfluxDBTelemetryServiceImplUnitTest {
       var fluxRecord1 = mock(FluxRecord.class);
       doReturn(spanId1).when(fluxRecord1).getValueByKey(SPAN_ID_KEY);
       doReturn(traceId1).when(fluxRecord1).getValueByKey(TRACE_ID_KEY);
-      doReturn("GET").when(fluxRecord1).getValueByKey("attr_0");
-      doReturn("/api/v1/test").when(fluxRecord1).getValueByKey("attr_1");
+      // JSON-encoded, as the query's projection returns them.
+      doReturn("\"GET\"").when(fluxRecord1).getValueByKey("attr_0");
+      doReturn("\"/api/v1/test\"").when(fluxRecord1).getValueByKey("attr_1");
 
       // Prepare second record
       var spanId2 = "8a7d2e4b9c3f1d0a";
@@ -277,8 +286,8 @@ class InfluxDBTelemetryServiceImplUnitTest {
       var fluxRecord2 = mock(FluxRecord.class);
       doReturn(spanId2).when(fluxRecord2).getValueByKey(SPAN_ID_KEY);
       doReturn(traceId2).when(fluxRecord2).getValueByKey(TRACE_ID_KEY);
-      doReturn("POST").when(fluxRecord2).getValueByKey("attr_0");
-      doReturn("/api/v1/create").when(fluxRecord2).getValueByKey("attr_1");
+      doReturn("\"POST\"").when(fluxRecord2).getValueByKey("attr_0");
+      doReturn("\"/api/v1/create\"").when(fluxRecord2).getValueByKey("attr_1");
 
       doReturn(List.of(fluxRecord1, fluxRecord2)).when(fluxTable).getRecords();
       doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
@@ -329,8 +338,9 @@ class InfluxDBTelemetryServiceImplUnitTest {
       doReturn("f2c79a8d4bce407aa65c1e7289f6febb")
         .when(fluxRecord1)
         .getValueByKey(TRACE_ID_KEY);
-      doReturn("GET").when(fluxRecord1).getValueByKey("attr_0");
-      // The span carried no `url.path`, so its column came back empty.
+      doReturn("\"GET\"").when(fluxRecord1).getValueByKey("attr_0");
+      // The span carried no `url.path`, so its column came back empty. Not `""`, which is the
+      // encoding of an attribute that is present and empty.
       doReturn("").when(fluxRecord1).getValueByKey("attr_1");
 
       doReturn(List.of(fluxRecord1)).when(fluxTable).getRecords();
@@ -352,6 +362,106 @@ class InfluxDBTelemetryServiceImplUnitTest {
             data.attributes().get("http.request.method").asString()
           ).isEqualTo("GET");
         });
+    }
+
+    /**
+     * The shape that used to fail every calculation on this backend: {@code
+     * http.request.header.<key>} is an array in the OpenTelemetry semantic conventions, and Flux's
+     * {@code string()} cannot convert one.
+     */
+    @Test
+    void withArrayValuedAttribute_shouldKeepItAnArray()
+      throws TelemetryBackendUnavailableException {
+      var result = parseSingleRecordWith(
+        CONTENT_TYPE_HEADER_KEY,
+        "[\"application/json\"]"
+      );
+
+      var attribute = result.attributes().get(CONTENT_TYPE_HEADER_KEY);
+      assertThat(attribute.isArray()).isTrue();
+      assertThat(attribute)
+        .singleElement()
+        .satisfies(element ->
+          assertThat(element.asString()).isEqualTo("application/json")
+        );
+    }
+
+    /**
+     * Encoding keeps the value's own JSON type instead of flattening it to text, which the
+     * calculators comparing a status code as text must survive unchanged.
+     */
+    @Test
+    void withNumericAttribute_shouldKeepItNumericAndStillReadAsItsDigits()
+      throws TelemetryBackendUnavailableException {
+      var result = parseSingleRecordWith(
+        HTTP_RESPONSE_STATUS_CODE.getKey(),
+        "200"
+      );
+
+      var attribute = result
+        .attributes()
+        .get(HTTP_RESPONSE_STATUS_CODE.getKey());
+      assertThat(attribute.isNumber()).isTrue();
+      assertThat(attribute.asString()).isEqualTo("200");
+    }
+
+    @Test
+    void withBooleanAttribute_shouldKeepItBoolean()
+      throws TelemetryBackendUnavailableException {
+      var result = parseSingleRecordWith(
+        "openapi.response.schema.valid",
+        "true"
+      );
+
+      var attribute = result.attributes().get("openapi.response.schema.valid");
+      assertThat(attribute.isBoolean()).isTrue();
+      assertThat(attribute.booleanValue()).isTrue();
+    }
+
+    /**
+     * The encoding makes an attribute carrying the empty string distinguishable from an absent
+     * one, where coercion could not. It is still dropped, because the calculators reading
+     * {@code has(key)} read it as "carries a usable value".
+     */
+    @Test
+    void withEmptyStringAttribute_shouldDropItAsAbsent()
+      throws TelemetryBackendUnavailableException {
+      var result = parseSingleRecordWith(URL_QUERY.getKey(), "\"\"");
+
+      assertThat(result.attributes().has(URL_QUERY.getKey())).isFalse();
+    }
+
+    /**
+     * One span carrying one attribute, whose column holds exactly what the query's projection
+     * would have JSON-encoded into it.
+     */
+    private OpenTelemetryData parseSingleRecordWith(
+      String attributeKey,
+      String encodedColumnValue
+    ) throws TelemetryBackendUnavailableException {
+      var singleRecord = mock(FluxRecord.class);
+      doReturn("3f1a2c9e7d4b8a61")
+        .when(singleRecord)
+        .getValueByKey(SPAN_ID_KEY);
+      doReturn("f2c79a8d4bce407aa65c1e7289f6febb")
+        .when(singleRecord)
+        .getValueByKey(TRACE_ID_KEY);
+      doReturn(encodedColumnValue).when(singleRecord).getValueByKey("attr_0");
+
+      doReturn(List.of(singleRecord)).when(fluxTable).getRecords();
+      doReturn(singletonList(fluxTable)).when(queryApi).query(anyString());
+
+      Set<OpenTelemetryData> result = fixture.findOpenTelemetryTracingData(
+        API_INFORMATION,
+        LOOKBACK_FROM,
+        LOOKBACK_WINDOW,
+        null,
+        new LinkedHashSet<>(List.of(attributeKey))
+      );
+
+      assertThat(result).hasSize(1);
+
+      return result.iterator().next();
     }
   }
 
