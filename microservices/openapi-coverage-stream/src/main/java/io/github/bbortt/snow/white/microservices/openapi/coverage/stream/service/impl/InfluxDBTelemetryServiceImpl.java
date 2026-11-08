@@ -12,6 +12,7 @@ import static java.lang.String.join;
 import static java.time.Instant.ofEpochMilli;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.ConcurrentHashMap.newKeySet;
 import static java.util.stream.Collectors.joining;
@@ -48,6 +49,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
@@ -170,9 +172,12 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
 
     fluxBuilder.append(buildKeepClause(requiredAttributeKeys));
 
+    // Aliased because both packages are named "json": the experimental one parses the stored blob,
+    // the stdlib one encodes each attribute back out of it.
     return """
     import "date"
     import "experimental/json"
+    import jsonEncoder "json"
 
     %s
     """.formatted(fluxBuilder.toString());
@@ -244,6 +249,17 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
    * <p>
    * A key absent from a given span yields no column value rather than failing the query - a span
    * carrying no {@code url.query} is ordinary, not an error.
+   * <p>
+   * Each value is JSON-encoded rather than coerced with Flux's {@code string()}, which cannot
+   * operate on composite types: an array-valued attribute - which
+   * {@code http.request.header.<key>} is, per the OpenTelemetry semantic conventions - raises
+   * {@code cannot convert [string] to string} inside {@code map} and so fails the whole query, not
+   * the one span. Encoding also keeps the value's type for
+   * {@link #parseOpenTelemetryData} to restore, which {@code string()} flattened away.
+   * <p>
+   * Not {@code display()}, the other composite-capable conversion: it yields the Flux literal
+   * {@code ["application/json"]}, which parses back as a string carrying brackets and turns a
+   * failed query into a silently wrong coverage score.
    */
   private static List<String> requiredAttributeProjections(
     List<String> requiredAttributeKeys
@@ -254,9 +270,9 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
           attributeColumnName(index) +
           ": (if exists parsed[\"" +
           requiredAttributeKeys.get(index) +
-          "\"] then string(v: parsed[\"" +
+          "\"] then string(v: jsonEncoder.encode(v: parsed[\"" +
           requiredAttributeKeys.get(index) +
-          "\"]) else \"\")"
+          "\"])) else \"\")"
       )
       .toList();
   }
@@ -312,10 +328,9 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
    * {@link #requiredAttributeProjections} projected, mapping each back to the key at the same
    * index.
    * <p>
-   * An empty column means the span did not carry that attribute, which is not the same as
-   * carrying it empty - it is left off the resulting object, so a calculator's
-   * {@code attributes().has(key)} check reads false, exactly as it did when the attribute was
-   * absent from the full blob.
+   * A key the span carried no usable value for is left off the resulting object, so a
+   * calculator's {@code attributes().has(key)} check reads false, exactly as it did when the
+   * attribute was absent from the full blob.
    */
   private static OpenTelemetryData parseOpenTelemetryData(
     FluxRecord fluxRecord,
@@ -324,12 +339,13 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
     var attributes = JsonMapper.shared().createObjectNode();
 
     for (var index = 0; index < requiredAttributeKeys.size(); index++) {
-      var value = fluxRecord.getValueByKey(attributeColumnName(index));
-      if (isNull(value) || value.toString().isEmpty()) {
-        continue;
-      }
+      var attribute = usableAttribute(
+        fluxRecord.getValueByKey(attributeColumnName(index))
+      );
 
-      attributes.put(requiredAttributeKeys.get(index), value.toString());
+      if (nonNull(attribute)) {
+        attributes.set(requiredAttributeKeys.get(index), attribute);
+      }
     }
 
     return new OpenTelemetryData(
@@ -337,5 +353,29 @@ public class InfluxDBTelemetryServiceImpl implements OpenTelemetryService {
       requireNonNull(fluxRecord.getValueByKey(TRACE_ID_KEY)).toString(),
       attributes
     );
+  }
+
+  /**
+   * The attribute the given column holds, or {@code null} where it holds none.
+   * <p>
+   * The value is read back as JSON rather than taken as text, so an attribute reaches the
+   * calculators as the type the span carried: an array stays an array, a boolean stays a boolean.
+   * A column that is not valid JSON contradicts the projection that wrote it, so it fails the
+   * calculation rather than being read as an absent attribute.
+   * <p>
+   * An empty column means the span did not carry the attribute. One carrying the empty string
+   * reads as none either, even though the encoding tells the two apart: several calculators read
+   * {@code attributes().has(key)} as "carries a usable value", so separating them here would turn
+   * an empty status code into an undocumented response code and an empty verdict into a failed
+   * one.
+   */
+  private static @Nullable JsonNode usableAttribute(@Nullable Object column) {
+    if (isNull(column) || column.toString().isEmpty()) {
+      return null;
+    }
+
+    var decoded = JsonMapper.shared().readTree(column.toString());
+
+    return decoded.isString() && decoded.asString().isEmpty() ? null : decoded;
   }
 }
