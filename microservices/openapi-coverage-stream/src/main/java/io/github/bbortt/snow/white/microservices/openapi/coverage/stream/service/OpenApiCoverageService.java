@@ -272,14 +272,16 @@ public class OpenApiCoverageService {
     var unreadable = warnings.spansWithUnreadableVerdict();
 
     if (!unreadable.isEmpty()) {
-      // Loud rather than silent: these responses are reported as breaking their schema without a
-      // validator ever having said so, and only the producer's own configuration explains it. The
-      // values are not logged - they are the untrusted part.
+      // Loud rather than silent: these responses are reported as breaking their schema on a
+      // verdict their validator did not state readably - at times without having said so at all -
+      // and only the producer's own configuration explains it. The values are not logged - they
+      // are the untrusted part.
       logger.warn(
-        "Read the conformance verdict of {} span(s) as non-conforming, '{}' among them: attribute '{}' was absent where violations were reported, held no boolean, or stated true alongside violations. A verdict Snow-White cannot read must not pass.",
+        "Read the conformance verdict of {} span(s) as non-conforming, '{}' among them: attribute '{}' was absent where violations were reported, held no boolean, or stated true alongside violations - or attribute '{}' was not a JSON array of strings, and so stated no violation list to read the verdict against. A verdict Snow-White cannot read must not pass.",
         unreadable.size(),
         unreadable.getFirst(),
-        openApiCoverageStreamProperties.getResponseSchemaValidAttribute()
+        openApiCoverageStreamProperties.getResponseSchemaValidAttribute(),
+        openApiCoverageStreamProperties.getResponseSchemaViolationsAttribute()
       );
     }
 
@@ -287,7 +289,7 @@ public class OpenApiCoverageService {
 
     if (!unusablePointers.isEmpty()) {
       logger.warn(
-        "Dropped violation pointers of {} span(s), '{}' among them: attribute '{}' was not a JSON array of strings, or named more than the {} pointers of {} UTF-8 bytes a verdict carries. Their verdicts are unaffected - a dropped pointer costs a finding's detail, never the finding.",
+        "Dropped violation pointers of {} span(s), '{}' among them: attribute '{}' named more than the {} pointers of {} UTF-8 bytes a verdict carries. Their verdicts are unaffected - a dropped pointer costs a finding's detail, never the finding.",
         unusablePointers.size(),
         unusablePointers.getFirst(),
         openApiCoverageStreamProperties.getResponseSchemaViolationsAttribute(),

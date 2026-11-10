@@ -86,6 +86,15 @@ public final class ConformanceVerdictReader {
 
     var violationPointers = readViolationPointers(violations, spanId, warnings);
 
+    if (isNull(violationPointers)) {
+      // A violations attribute that is not a list of pointers states no violation list, which is
+      // not a verdict this class can read - whatever `valid` says alongside it. Reading it as "no
+      // pointers" would let a producer emitting one malformed attribute report green.
+      warnings.spansWithUnreadableVerdict().add(spanId);
+
+      return nonConforming(emptyList());
+    }
+
     if (isNull(valid)) {
       warnings.spansWithUnreadableVerdict().add(spanId);
 
@@ -148,16 +157,18 @@ public final class ConformanceVerdictReader {
   }
 
   /**
-   * The pointers the given attribute lists, bounded.
+   * The pointers the given attribute lists, bounded, or {@code null} where it lists none: an empty
+   * list and an unreadable attribute are different readings, and only the first is a statement.
    * <p>
-   * An unparseable value costs the detail and not the verdict: the caller still reads a violation,
-   * which is why this returns an empty list rather than refusing.
+   * Losing pointers to the bound costs the detail and not the verdict, because the producer did
+   * state a list and the surplus is Snow-White's own limit. A value that is not a list of pointers
+   * states nothing the verdict can be read against, and is refused to the caller instead.
    * <p>
    * The producer contract is a string holding a JSON array, and that is what a conforming producer
    * emits; a list arriving as a list is read as the same thing rather than refused, because the
    * backends do not agree on whether an array attribute survives the trip.
    */
-  private static @NonNull List<String> readViolationPointers(
+  private static @Nullable List<String> readViolationPointers(
     @Nullable JsonNode violations,
     String spanId,
     Warnings warnings
@@ -170,26 +181,24 @@ public final class ConformanceVerdictReader {
 
     try {
       // A backend that keeps an attribute's own type hands a list over as a list, so it is read
-      // as one rather than through its text: Jackson raises on reading a composite as text, and
-      // the failure would be swallowed into "no pointers" - which, alongside a `valid` of true,
-      // reads as conforming and hides the break the producer did report.
+      // as one rather than through its text: Jackson raises on reading a composite as text.
       var parsed = violations.isArray()
         ? violations
         : JSON_MAPPER.readTree(violations.asString());
 
       if (!parsed.isArray()) {
-        return unusable(spanId, warnings);
+        return null;
       }
 
       for (JsonNode pointer : parsed) {
         if (!pointer.isString()) {
-          return unusable(spanId, warnings);
+          return null;
         }
 
         pointers.add(pointer.asString());
       }
     } catch (JacksonException _) {
-      return unusable(spanId, warnings);
+      return null;
     }
 
     var boundedPointers = bounded(pointers);
@@ -201,15 +210,6 @@ public final class ConformanceVerdictReader {
     }
 
     return boundedPointers;
-  }
-
-  private static @NonNull List<String> unusable(
-    String spanId,
-    Warnings warnings
-  ) {
-    warnings.spansWithUnusablePointers().add(spanId);
-
-    return emptyList();
   }
 
   /**
