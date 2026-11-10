@@ -89,7 +89,7 @@ Both keys are operator-configurable on `openapi-coverage-stream`, defaulting to 
 exactly as `operationIdAttribute` and `testCaseNameAttribute` are today
 ([SW-021](SW-021-required-attribute-key-set-derivation.md)).
 
-Three readings are fixed because each is a place a lenient reader would silently lose a failure:
+Four readings are fixed because each is a place a lenient reader would silently lose a failure:
 
 - **Absent `valid` is unjudged, not conforming.** A span with violations but no `valid` is
   malformed, and is read as a violation rather than discarded.
@@ -97,6 +97,12 @@ Three readings are fixed because each is a place a lenient reader would silently
   reading that fails the gate is the one that cannot hide a real break.
 - **A non-boolean or unparseable `valid` is a violation**, logged at `WARN` with the span id and the
   attribute key — never the value.
+- **An unparseable violation list is a violation**, whatever `valid` states alongside it, logged the
+  same way.
+  A value that is not a JSON array of strings states no violation list, so there is nothing for
+  `valid=true` to be read against, and reading it as an empty list would let one malformed attribute
+  silence the criterion.
+  An empty array is not that case: it states a list, and `valid=true` alongside it conforms.
 
 The violation list is bounded at most 32 pointers, each at most 512 UTF-8 bytes, declared as
 constants on the published event contract the way `FindingEvidence.MAX_TEST_CASE_NAME_BYTES` is.
@@ -150,7 +156,9 @@ A test asserts a non-boolean `valid` is read as non-conforming and logged at `WA
 value.
 A test asserts a span with a verdict but no `openapi.operation.id`, and one with no status code,
 each contribute no target.
-A test asserts a violation list that is not a JSON array of strings is read as non-conforming.
+A test asserts a violation list that is not a JSON array of strings is read as non-conforming
+alongside `valid=false` and alongside `valid=true` alike, and that an empty array alongside
+`valid=true` conforms.
 A test asserts, on the reading side, a 33rd pointer and an over-long pointer are dropped with the
 verdict preserved, and
 that the bounds are the constants on the event contract rather than literals in either service.

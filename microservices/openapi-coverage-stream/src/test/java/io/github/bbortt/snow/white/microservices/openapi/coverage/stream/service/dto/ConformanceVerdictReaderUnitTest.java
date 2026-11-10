@@ -318,6 +318,75 @@ class ConformanceVerdictReaderUnitTest {
     }
 
     /**
+     * The shape that read green before: a value that is not a list of pointers states no violation
+     * list at all, so there is nothing for {@code valid} true to be read against. Reading it as an
+     * empty list would let a producer silence the criterion with one malformed attribute.
+     */
+    @ValueSource(
+      strings = {
+        "not json at all",
+        "{\"/properties/id\":true}",
+        "[1,2]",
+        "[\"/properties/id\",7]",
+        "\"/properties/id\"",
+      }
+    )
+    @ParameterizedTest
+    @VerifiesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+    void returnsNonConforming_whenValidIsTrueAlongsideUnparseableViolations(
+      String violations
+    ) {
+      var result = readVerdict(
+        SPAN_ID,
+        attributes("true", violations),
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      assertThat(result).isNotNull();
+      assertThat(result.conforming()).isFalse();
+      assertThat(result.violationPointers()).isEmpty();
+    }
+
+    /**
+     * An empty list is a statement and not a failure to state one: a producer saying it found
+     * nothing says the same thing twice, in both shapes a backend can deliver.
+     */
+    @Test
+    @VerifiesSw(SwTraceables.SW_049_CONFORMANCE_VERDICT_ATTRIBUTES)
+    void returnsConforming_whenValidIsTrueAlongsideAnEmptyViolationList() {
+      var serialised = readVerdict(
+        SPAN_ID,
+        attributes("true", "[]"),
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      var attributes = JsonMapper.shared().createObjectNode();
+      attributes.put(VALID_ATTRIBUTE, true);
+      attributes.putArray(VIOLATIONS_ATTRIBUTE);
+
+      var arrayValued = readVerdict(
+        SPAN_ID,
+        attributes,
+        VALID_ATTRIBUTE,
+        VIOLATIONS_ATTRIBUTE,
+        warnings
+      );
+
+      assertThat(serialised).isNotNull();
+      assertThat(serialised.conforming()).isTrue();
+      assertThat(serialised.violationPointers()).isEmpty();
+      assertThat(arrayValued).isNotNull();
+      assertThat(arrayValued.conforming()).isTrue();
+      assertThat(arrayValued.violationPointers()).isEmpty();
+      assertThat(warnings.spansWithUnreadableVerdict()).isEmpty();
+      assertThat(warnings.spansWithUnusablePointers()).isEmpty();
+    }
+
+    /**
      * The bound is applied at read as well as at capture, because the producer contract admits
      * producers Snow-White does not ship and cannot vouch for.
      */
@@ -426,6 +495,10 @@ class ConformanceVerdictReaderUnitTest {
       );
     }
 
+    /**
+     * Reported as a verdict that could not be read and not as a dropped pointer: the operator's
+     * action is to fix the producer, and the verdict did change because of it.
+     */
     @Test
     void collectsTheSpan_whenViolationsAreNotAJsonArrayOfStrings() {
       readVerdict(
@@ -436,8 +509,10 @@ class ConformanceVerdictReaderUnitTest {
         warnings
       );
 
-      assertThat(warnings.spansWithUnusablePointers()).containsExactly(SPAN_ID);
-      assertThat(warnings.spansWithUnreadableVerdict()).isEmpty();
+      assertThat(warnings.spansWithUnreadableVerdict()).containsExactly(
+        SPAN_ID
+      );
+      assertThat(warnings.spansWithUnusablePointers()).isEmpty();
     }
 
     @Test

@@ -48,10 +48,12 @@ Every ambiguous reading resolves to "did not conform", because the alternative l
 | On the span                                       | Read as                                                           |
 | ------------------------------------------------- | ----------------------------------------------------------------- |
 | `valid=true`, no violations                       | conformed                                                         |
+| `valid=true`, violations `[]`                     | conformed — an empty list states a list                           |
 | `valid=false`, with violations                    | did not conform, one finding per pointer                          |
 | `valid=true` alongside a non-empty violation list | did not conform — the two disagree, and the failing reading wins  |
 | violations present, `valid` absent                | did not conform                                                   |
 | `valid` neither boolean nor `"true"`/`"false"`    | did not conform, logged at `WARN` without the value               |
+| violations not a JSON array of strings            | did not conform whatever `valid` says, logged at `WARN`           |
 | neither attribute present                         | no verdict — the response is not judged, and nothing fails for it |
 
 Both attribute keys are operator-configurable on `openapi-coverage-stream` (`snow.white.openapi.coverage.stream.response-schema-valid-attribute` and `…-response-schema-violations-attribute`), defaulting to the names above.
