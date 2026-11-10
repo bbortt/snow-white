@@ -276,7 +276,7 @@ jobs:
           distribution: 'temurin'
           java-version: 25
       - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
           run_install: false
       - name: Install Node.js
@@ -501,7 +501,7 @@ jobs:
           SNOW_WHITE_BUILD: ${{ github.sha }}
         run: docker compose -f docker-compose.compatibility.yaml up -d --no-deps --wait --wait-timeout 300
       - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
           run_install: false
       - name: Install Node.js
