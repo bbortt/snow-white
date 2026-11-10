@@ -105,7 +105,7 @@ jobs:
       - name: Extract Version from Tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
           run_install: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
@@ -256,7 +256,7 @@ jobs:
       - name: Build Maven License Report
         run: ./mvnw license:aggregate-add-third-party
       - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
           run_install: false
       - name: Install Node.js
