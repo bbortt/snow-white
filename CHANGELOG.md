@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.5.1](https://github.com/bbortt/snow-white/compare/v2.5.0...v2.5.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **openapi-coverage-stream:** encode InfluxDB attributes instead of coercing them ([af446f0](https://github.com/bbortt/snow-white/commit/af446f0c18f0418236fd20d8da39fe20f0f18c19)), closes [#2374](https://github.com/bbortt/snow-white/issues/2374)
+* **openapi-coverage-stream:** refuse an unreadable violation list ([ec32691](https://github.com/bbortt/snow-white/commit/ec326914eab6235c6f289e0f1b3e27c35939bc3e)), closes [#2391](https://github.com/bbortt/snow-white/issues/2391)
+
+
+### Documentation
+
+* make waivers findable outside the release post ([f03df89](https://github.com/bbortt/snow-white/commit/f03df89a668b78813bfc19983e9b510805b82fee))
+
 ## [2.5.0](https://github.com/bbortt/snow-white/compare/v2.4.1...v2.5.0) (2026-11-07)
 
 ### Features
