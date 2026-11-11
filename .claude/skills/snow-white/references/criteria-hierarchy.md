@@ -99,6 +99,15 @@ Calling an operation does cover its path, so raising method coverage raises path
 but path coverage can fail while method coverage passes on the paths it did reach, and a quality
 gate requiring one does not check the other.
 
+Containment also decides how far a waiver reaches, upward only.
+A waiver naming a `criterion` waives its target for that criterion and for every criterion
+containing it, in either form — `ERROR_RESPONSE_CODE_COVERAGE` reaches `RESPONSE_CODE_COVERAGE`,
+and `OPERATION_SUCCESS_COVERAGE` reaches `HTTP_METHOD_COVERAGE` — so a waived child never leaves its
+parent failing on the same target.
+A criterion outside that chain keeps judging the target, so `REQUIRED_ERROR_FIELDS_COVERAGE` still
+judges a waived response code, and a waiver naming no `criterion` waives its target for every
+criterion that judged it.
+
 ## Using the hierarchy to prioritize
 
 Within a subset group, when several criteria fail for the same API, fix the highest-level failing

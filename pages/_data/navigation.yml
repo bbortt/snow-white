@@ -35,6 +35,8 @@ docs:
     children:
       - title: 'Quality Gate Criteria'
         url: /quality-gate-criteria/
+      - title: 'Waivers'
+        url: /quality-gate-criteria/#when-a-target-cannot-be-covered
       - title: 'Requirements'
         url: /requirements/
       - title: 'License'
