@@ -99,7 +99,7 @@ jobs:
       # reactor rebuilds every module from source and resolves siblings from the reactor rather than
       # the repository. Give the legs their own '-Dmaven.repo.local' if that ever stops being true.
       - name: Set up JDK
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           cache: maven
           distribution: 'temurin'
@@ -197,7 +197,7 @@ jobs:
       # javac-25 jar on the temurin-27 JRE. Closing it needs either a second leg here pinned to 25
       # or a 27 publish, and publishing deliberately stays on 25.
       - name: Set up JDK
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           cache: maven
           distribution: 'temurin'
@@ -270,7 +270,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up JDK
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           cache: maven
           distribution: 'temurin'
@@ -330,7 +330,7 @@ jobs:
       #
       # deploy.yml's 'publish-native-images' runs Maven on 25, so release is 25 on both sides.
       - name: Set up JDK
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           cache: maven
           distribution: 'temurin'
