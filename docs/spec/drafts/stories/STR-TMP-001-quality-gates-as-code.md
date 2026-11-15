@@ -67,14 +67,16 @@ Reads are untouched, and the mode travels on them so a client learns it before o
 that would be refused
 ([SW-TMP-003](../specs/SW-TMP-003-managed-mode-published-on-gate-reads.md)).
 A UI that renders create and edit controls which then fail server-side is worse than one that
-renders them disabled with a reason.
+renders them disabled with a reason, and the edit routes refuse a deep link rather than leaving a
+reachable form whose submit earns the `409`
+([SW-TMP-005](../specs/SW-TMP-005-managed-instance-ui-offers-no-gate-write.md)).
 
 Nothing new is exposed on the network: no apply endpoint, no CLI command, and therefore no
 authorisation question of its own.
 The file's schema is the `QualityGateConfig` payload `POST /quality-gates` already takes, accepted
 as either JSON or YAML, which costs no new dependency.
-The UI's read-only state is outside clew's scope and carries no spec of its own; the server-side
-mode it depends on is what this story specifies.
+The UI's read-only state is specified where the behaviour is observable, which is the webapp itself
+rather than the server-side mode it reads.
 
 **Acceptance Criteria**
 
@@ -105,6 +107,9 @@ mode it depends on is what this story specifies.
   reachable on any gate path.
 - The web UI renders gate create, edit and delete controls disabled, with a reason, on a managed
   instance, and never issues a write it knows will be refused.
+- On a managed instance, the gate `new`, `edit` and `delete` routes opened directly — by deep link,
+  bookmark or history, without the list being rendered first — show that reason instead of a form or
+  a confirmation dialog.
 
 **Out of scope**
 
@@ -138,6 +143,8 @@ mode it depends on is what this story specifies.
   the mode before it offers a control
 - [SW-TMP-004](../specs/SW-TMP-004-empty-file-owned-instance-names-its-file.md) — what a managed
   instance says when its file defines no gates
+- [SW-TMP-005](../specs/SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — what the web UI
+  offers instead of a write it knows will be refused
 - [CON-TMP-001](../specs/CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — the
   invariant that makes the file a source of truth rather than a claim
 
