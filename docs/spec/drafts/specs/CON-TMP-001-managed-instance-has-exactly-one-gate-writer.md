@@ -78,6 +78,8 @@ after a restart.
 - [SW-TMP-001](SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md) — the one writer
 - [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — how the REST
   writers are closed
+- [SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — how the UI stops being one
+  of those writers rather than being refused as one
 - [SW-TMP-004](SW-TMP-004-empty-file-owned-instance-names-its-file.md) — how the empty state this
   invariant allows explains itself
 - [ARCH-003](ARCH-003-idempotent-ordered-startup-seeding.md) — the ordered startup step this

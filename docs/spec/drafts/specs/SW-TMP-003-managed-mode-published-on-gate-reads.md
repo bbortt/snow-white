@@ -48,9 +48,10 @@ client is already making can carry.
 **Verification Description**
 A test asserts both reads carry the header, with the value matching the configured mode, on an
 instance in each mode.
-A webapp test asserts the gate create, edit and delete controls render disabled with a reason when
-the header reports file ownership, and enabled when it does not, and that no write request is issued
-in the disabled state.
+A webapp test asserts the client reads the header off both responses into its gate state, the way it
+already reads `x-total-count` off the list.
+What the screens then do with it is
+[SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md)'s to verify.
 
 ## Relations
 
@@ -65,6 +66,8 @@ in the disabled state.
   this read publishes, and the per-gate field it must not become
 - [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal this
   lets a client avoid issuing
+- [SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — what the web UI does with
+  the header, and the screens it has to reach
 - [SW-009](SW-009-quality-gate-crud-contract.md) — the read contract this extends without changing
   a status code or a body
 - [CON-006](CON-006-actuator-endpoints-deny-by-default.md) — why the management surface is not an
