@@ -7,11 +7,11 @@ A managed instance refuses a gate write with 409, and keeps every read
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 While an instance's gates are file-owned
-([ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md)),
+([ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md)),
 `POST /api/rest/v1/quality-gates`, `PUT /api/rest/v1/quality-gates/{name}` and
 `DELETE /api/rest/v1/quality-gates/{name}` answer `409` with the surface's `Error` body, carrying a
 code that names the mode.
@@ -60,18 +60,22 @@ on create still means only that the name is taken.
 
 **Realizes**
 
-- [CON-TMP-001](CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — the one-writer
+- [CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md) — the one-writer
   invariant, enforced at this surface
 
 **Related**
 
 - [SW-009](SW-009-quality-gate-crud-contract.md) — the contract this suspends, and whose `409` this
   one shares
-- [ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md) — the switch that decides
+- [ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md) — the switch that decides
   whether the refusal applies
-- [SW-TMP-001](SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md) — the write path that
+- [SW-050](SW-050-startup-makes-the-gate-set-exactly-the-file.md) — the write path that
   remains open, and the only one
-- [SW-TMP-003](SW-TMP-003-managed-mode-published-on-gate-reads.md) — how a client avoids earning
+- [SW-053](SW-053-managed-mode-published-on-gate-reads.md) — how a client avoids earning
   this refusal
 - [SW-012](SW-012-criteria-catalog-endpoint.md) — the catalog read the mode leaves alone
 - [CON-010](CON-010-rest-responses-never-carry-null.md) — the response shape the refusal body obeys
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.

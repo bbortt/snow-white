@@ -33,6 +33,11 @@ gate's own threshold, which is why `full-feature` can omit path coverage at 100%
 The gates are also a ladder — `minimal` requires a subset of `basic-coverage`, which `full-feature`
 covers in turn through containment and, for path coverage, through that 100% implication.
 
+An instance whose gates are file-owned seeds none of the four
+([CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md)).
+The composition above is what these gates _are_ wherever they are seeded; it is not a claim that
+every instance holds them.
+
 **Rationale**
 Each predefined gate targets a distinct use case a team should be able to reach for by name
 without composing one from criteria themselves: a pragmatic baseline (`basic-coverage`), the
@@ -118,3 +123,8 @@ the 100% implication, and is not asserted.
   This compounds the breaking change the entry above warned about, for the same installations and
   by the same mechanism: an upgraded instance's `basic-coverage` gains path coverage, and now has
   no tolerance left to absorb it.
+- **2026-11-16** — Scoped the seeding claim to an unmanaged instance, without touching the
+  composition: `STR-029` lets an instance's gates be file-owned, and such an instance seeds none of
+  the four.
+  The description read as a claim about every instance; what this spec pins is what these four
+  gates contain wherever they are seeded.

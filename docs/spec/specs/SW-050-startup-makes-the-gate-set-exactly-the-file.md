@@ -7,10 +7,10 @@ Startup makes the gate set exactly what the file says
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
-On a file-owned instance ([ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md)),
+On a file-owned instance ([ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md)),
 `quality-gate-api` reads its gate file during startup and makes the gate set exactly the set that
 file defines.
 A gate the file names and the database lacks is created; a gate both hold is replaced by the file's
@@ -30,7 +30,7 @@ A gate file that is configured but absent or unreadable fails startup for the sa
 An absent file is never read as an empty gate set: a volume that failed to mount would otherwise
 delete every gate the instance has.
 A file that is present and defines no gates is a valid statement, and leaves the instance holding
-none ([SW-TMP-004](SW-TMP-004-empty-file-owned-instance-names-its-file.md)).
+none ([SW-052](SW-052-empty-file-owned-instance-names-its-file.md)).
 
 The file is accepted as either JSON or YAML, which costs no new dependency, and its schema is the
 `QualityGateConfig` payload `POST /quality-gates` already takes.
@@ -75,11 +75,11 @@ fails and no gate was deleted.
 
 **Related**
 
-- [CON-TMP-001](CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — the invariant that
+- [CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md) — the invariant that
   makes this read the only writer
-- [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — the writes this
+- [SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — the writes this
   read replaces on a file-owned instance
-- [SW-TMP-004](SW-TMP-004-empty-file-owned-instance-names-its-file.md) — what an instance whose file
+- [SW-052](SW-052-empty-file-owned-instance-names-its-file.md) — what an instance whose file
   defines no gates tells a calculation
 - [ARCH-003](ARCH-003-idempotent-ordered-startup-seeding.md) — the ordered startup step this read
   occupies, and the criteria seeding it depends on
@@ -89,3 +89,7 @@ fails and no gate was deleted.
   reuses
 - [SW-010](SW-010-update-merge-patch-empty-criteria-clears.md) — the update semantics this
   deliberately does not inherit
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.

@@ -7,7 +7,7 @@ Every gate read publishes who owns the gates, as a response header
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 `GET /api/rest/v1/quality-gates` and `GET /api/rest/v1/quality-gates/{name}` carry the instance's
@@ -21,7 +21,7 @@ reachable by deep link without the list ever being fetched.
 
 It is not published as a field on `QualityGateConfig`.
 That schema describes one gate; an instance-level fact placed on it would be indistinguishable from
-the per-gate ownership flag [ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md)
+the per-gate ownership flag [ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md)
 excludes, and would have to be repeated identically on every element of a page.
 Nor is a new info or configuration endpoint introduced for it.
 
@@ -51,22 +51,22 @@ instance in each mode.
 A webapp test asserts the client reads the header off both responses into its gate state, the way it
 already reads `x-total-count` off the list.
 What the screens then do with it is
-[SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md)'s to verify.
+[SW-054](SW-054-managed-instance-ui-offers-no-gate-write.md)'s to verify.
 
 ## Relations
 
 **Realizes**
 
-- [CON-TMP-001](CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — makes the single
+- [CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md) — makes the single
   writer visible to a client rather than only enforced against it
 
 **Related**
 
-- [ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md) — the instance-level fact
+- [ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md) — the instance-level fact
   this read publishes, and the per-gate field it must not become
-- [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal this
+- [SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal this
   lets a client avoid issuing
-- [SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — what the web UI does with
+- [SW-054](SW-054-managed-instance-ui-offers-no-gate-write.md) — what the web UI does with
   the header, and the screens it has to reach
 - [SW-009](SW-009-quality-gate-crud-contract.md) — the read contract this extends without changing
   a status code or a body
@@ -74,3 +74,7 @@ What the screens then do with it is
   option for this
 - [ARCH-018](ARCH-018-management-surface-without-a-business-one.md) — the same boundary, stated from
   the service side
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.
