@@ -778,6 +778,143 @@ describe('Quality-Gate API', () => {
     });
   });
 
+  describe('gate file', () => {
+    const qualityGates = [
+      {
+        name: 'repo-defined',
+        description: 'Owned by the deployment repository',
+        minCoveragePercentage: 90,
+        openApiCoverageCriteria: ['PATH_COVERAGE'],
+      },
+    ];
+
+    const gateFileEnvName = 'SNOW_WHITE_QUALITY_GATE_API_GATE-FILE';
+    const mountPath = '/etc/snow-white/quality-gates';
+
+    const renderWithGates = () =>
+      renderHelmChart({
+        chartPath: 'charts/snow-white',
+        values: {
+          snowWhite: {
+            qualityGateApi: { qualityGates },
+          },
+        },
+      });
+
+    const getDeployment = (manifests: any[]) =>
+      manifests.find(
+        (m) =>
+          m.kind === 'Deployment' &&
+          m.metadata.name === 'snow-white-quality-gate-api-test-release',
+      );
+
+    describe('without configured gates', () => {
+      it('should not render a gate ConfigMap, mount or environment variable', async () => {
+        const manifests = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+        });
+
+        const deployment = getDeployment(manifests);
+        const podSpec = getPodSpec(deployment);
+        const container = podSpec.containers[0];
+
+        expect(
+          container.env.find((env) => env.name === gateFileEnvName),
+        ).toBeUndefined();
+        expect(
+          container.volumeMounts.find(
+            (mount) => mount.name === 'quality-gates',
+          ),
+        ).toBeUndefined();
+        expect(
+          podSpec.volumes.find((volume) => volume.name === 'quality-gates'),
+        ).toBeUndefined();
+        expect(
+          manifests.find(
+            (m) =>
+              m.kind === 'ConfigMap' &&
+              m.metadata.name.includes('quality-gate-api-gates'),
+          ),
+        ).toBeUndefined();
+      });
+    });
+
+    describe('with configured gates', () => {
+      it('should point the service at the mounted file', async () => {
+        const container = getPodSpec(getDeployment(await renderWithGates()))
+          .containers[0];
+
+        const gateFileEnv = container.env.find(
+          (env) => env.name === gateFileEnvName,
+        );
+        expect(gateFileEnv).toBeDefined();
+        expect(gateFileEnv.value).toBe(`file:${mountPath}/quality-gates.yaml`);
+      });
+
+      it('should mount the ConfigMap read-only at that path', async () => {
+        const manifests = await renderWithGates();
+        const podSpec = getPodSpec(getDeployment(manifests));
+
+        const mount = podSpec.containers[0].volumeMounts.find(
+          (volumeMount) => volumeMount.name === 'quality-gates',
+        );
+        expect(mount).toBeDefined();
+        expect(mount.mountPath).toBe(mountPath);
+        expect(mount.readOnly).toBe(true);
+
+        const volume = podSpec.volumes.find(
+          (podVolume) => podVolume.name === 'quality-gates',
+        );
+        expect(volume).toBeDefined();
+        expect(volume.configMap.items).toStrictEqual([
+          { key: 'quality-gates.yaml', path: 'quality-gates.yaml' },
+        ]);
+
+        // The mount has to resolve to a ConfigMap this same release renders, or the volume fails
+        // to mount and the service refuses to start.
+        const configMap = manifests.find(
+          (m) =>
+            m.kind === 'ConfigMap' && m.metadata.name === volume.configMap.name,
+        );
+        expect(configMap).toBeDefined();
+        expect(configMap.metadata.name).toContain('quality-gate-api-gates');
+      });
+
+      it('should render the configured gates as the file content', async () => {
+        const manifests = await renderWithGates();
+        const volume = getPodSpec(getDeployment(manifests)).volumes.find(
+          (podVolume) => podVolume.name === 'quality-gates',
+        );
+
+        const configMap = manifests.find(
+          (m) =>
+            m.kind === 'ConfigMap' && m.metadata.name === volume.configMap.name,
+        );
+
+        expect(
+          parseDocument(configMap.data['quality-gates.yaml']).toJS(),
+        ).toStrictEqual(qualityGates);
+      });
+
+      it('should have default labels', async () => {
+        const manifests = await renderWithGates();
+        const volume = getPodSpec(getDeployment(manifests)).volumes.find(
+          (podVolume) => podVolume.name === 'quality-gates',
+        );
+
+        const configMap = manifests.find(
+          (m) =>
+            m.kind === 'ConfigMap' && m.metadata.name === volume.configMap.name,
+        );
+
+        expectToHaveDefaultLabelsForMicroservice(
+          configMap.metadata.labels,
+          'quality-gate-api',
+        );
+      });
+    });
+  });
+
   describe('PodDisruptionBudget', () => {
     const renderAndGetPdb = async (manifests?: any[]) => {
       if (!manifests) {

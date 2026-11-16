@@ -330,7 +330,9 @@ class ReportServiceUnitTest {
         .when(qualityGateReportRepositoryMock)
         .findById(CALCULATION_ID);
 
-      doThrow(new QualityGateNotFoundException(QUALITY_GATE_CONFIG_NAME))
+      doThrow(
+        QualityGateNotFoundException.forGateName(QUALITY_GATE_CONFIG_NAME)
+      )
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(QUALITY_GATE_CONFIG_NAME);
 
@@ -523,7 +525,9 @@ class ReportServiceUnitTest {
       var qualityGateConfigName = "non-existent-config";
       var reportParameter = new ReportParameter();
 
-      var cause = new QualityGateNotFoundException(qualityGateConfigName);
+      var cause = QualityGateNotFoundException.forGateName(
+        qualityGateConfigName
+      );
       doThrow(cause)
         .when(qualityGateServiceMock)
         .findQualityGateConfigByName(qualityGateConfigName);

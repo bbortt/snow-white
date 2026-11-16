@@ -11,8 +11,11 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesCon;
+import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
@@ -140,6 +143,71 @@ public class QualityGateService {
     }
 
     return qualityGateConfigurationRepository.save(qualityGateConfiguration);
+  }
+
+  /**
+   * Makes the gate set exactly what the file states: a gate the file names is created, a gate it
+   * both names and the database holds is replaced by the file's definition, and a gate the database
+   * holds and the file does not name is gone. Matching is by name, which is already the gate's
+   * unique identity.
+   *
+   * <p>Replace rather than merge in place, for a structural reason: the entity's {@code name} and
+   * {@code isPredefined} columns are not updatable, so a gate seeded as predefined before the
+   * switch was turned on could not be reshaped into the ordinary, file-defined gate it now is. The
+   * record's {@code id} is in no API schema and nothing refers to a gate by anything but its name,
+   * so discarding it costs nothing the seeding step's upsert was protecting.
+   *
+   * <p>All-or-nothing, in one transaction: an unresolvable criterion leaves every gate record as it
+   * was and takes the startup down with it, rather than landing half a file.
+   */
+  @RealizesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+  @RealizesCon(
+    ConTraceables.CON_016_MANAGED_INSTANCE_HAS_EXACTLY_ONE_GATE_WRITER
+  )
+  @Transactional
+  public void applyQualityGateFile(
+    @NonNull List<QualityGateConfig> qualityGateConfigs
+  ) {
+    logger.info(
+      "Replacing Quality-Gate configuration table with {} file-defined gate(s)",
+      qualityGateConfigs.size()
+    );
+
+    qualityGateConfigurationRepository.deleteAll();
+    // Without this, an insert can be ordered ahead of the delete and hit the unique name constraint.
+    qualityGateConfigurationRepository.flush();
+
+    for (var qualityGateConfig : qualityGateConfigs) {
+      qualityGateConfigurationRepository.save(
+        toFileDefinedQualityGate(qualityGateConfig)
+      );
+    }
+  }
+
+  /**
+   * A file-defined gate is never predefined, whatever the file's {@code isPredefined} field says —
+   * the same closure the create endpoint applies, so a file-owned instance cannot grow the
+   * predefined set either.
+   */
+  @RealizesCon(ConTraceables.CON_005_API_CREATED_GATES_ARE_NEVER_PREDEFINED)
+  private QualityGateConfiguration toFileDefinedQualityGate(
+    QualityGateConfig qualityGateConfig
+  ) {
+    var qualityGateConfiguration = QualityGateConfiguration.builder()
+      .name(qualityGateConfig.getName())
+      .description(qualityGateConfig.getDescription())
+      .isPredefined(FALSE)
+      .minCoveragePercentage(qualityGateConfig.getMinCoveragePercentage())
+      .build();
+
+    qualityGateConfiguration.setOpenApiCoverageConfigurations(
+      qualityGateConfigurationMapper.mapOpenApiCriteriaToMappings(
+        qualityGateConfig.getOpenApiCoverageCriteria(),
+        qualityGateConfiguration
+      )
+    );
+
+    return qualityGateConfiguration;
   }
 
   /**

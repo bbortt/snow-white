@@ -213,6 +213,15 @@ snowWhite:
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Quality Gate API
     additionalEnvs: []
+    # -- Quality-Gate definitions that own this instance's gates, each entry the payload
+    # `POST /api/rest/v1/quality-gates` takes. Setting this makes the gates file-owned: the chart
+    # renders them into a ConfigMap, mounts it, and the service reads it at startup, after which the
+    # instance holds exactly these gates — one not listed here is deleted, none of the four
+    # predefined gates is seeded, and every create, update and delete on a gate path answers 409.
+    # A gate change is a change to this list plus a restart of the pod. Leave empty to manage gates
+    # through the API and the web UI instead.
+    # @section -- Snow-White Quality Gate API
+    qualityGates: []
     # -- Quality Gate API pod resources.
     # A GraalVM native image (built via the `native` Maven profile / `publish-native-images` CI job) — the low baseline footprint is real; this only adds headroom for its own Postgres connection pool.
     # @section -- Snow-White Quality Gate API

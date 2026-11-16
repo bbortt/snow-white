@@ -14,7 +14,10 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.api.QualityGateApi;
+import io.github.bbortt.snow.white.microservices.report.coordinator.api.api.client.qualitygateapi.dto.Error;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.dto.mapper.QualityGateConfigMapper;
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.service.exception.QualityGateNotFoundException;
@@ -24,12 +27,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateServiceUnitTest {
 
   private static final String TEST_QUALITY_GATE_NAME = "test-quality-gate";
+
+  private static final String OWN_MESSAGE =
+    "No Quality-Gate configuration with ID 'test-quality-gate' exists!";
+
+  private static final String OWNER_MESSAGE =
+    "No Quality-Gate configuration with name 'test-quality-gate' exists! This instance's Quality-Gates are defined by its gate file, and that file defines none: add the Quality-Gate to the file and restart this instance!";
 
   @Mock
   private QualityGateApi qualityGateApiMock;
@@ -88,6 +98,69 @@ class QualityGateServiceUnitTest {
       assertThatThrownBy(() ->
         fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
       ).isInstanceOf(QualityGateNotFoundException.class);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldSurfaceTheOwnersRejection_whenItCarriesOne() {
+      notFoundRejectionCarrying(
+        new Error().code("Not Found").message(OWNER_MESSAGE)
+      );
+
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      )
+        .isInstanceOf(QualityGateNotFoundException.class)
+        .hasMessage(OWNER_MESSAGE);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldKeepItsOwnWording_whenTheRejectionCarriesNoBody() {
+      notFoundRejectionCarrying(null);
+
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).hasMessage(OWN_MESSAGE);
+    }
+
+    @Test
+    void shouldKeepItsOwnWording_whenTheOwnersMessageIsBlank() {
+      notFoundRejectionCarrying(new Error().code("Not Found").message(" "));
+
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).hasMessage(OWN_MESSAGE);
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldKeepItsOwnWording_whenTheBodyCannotBeRead() {
+      var notFoundExceptionMock = mock(RestClientResponseException.class);
+
+      doReturn(NOT_FOUND).when(notFoundExceptionMock).getStatusCode();
+      doThrow(new RestClientException("not JSON"))
+        .when(notFoundExceptionMock)
+        .getResponseBodyAs(Error.class);
+      doThrow(notFoundExceptionMock)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
+
+      assertThatThrownBy(() ->
+        fixture.findQualityGateConfigByName(TEST_QUALITY_GATE_NAME)
+      ).hasMessage(OWN_MESSAGE);
+    }
+
+    private void notFoundRejectionCarrying(Error error) {
+      var notFoundExceptionMock = mock(RestClientResponseException.class);
+
+      doReturn(NOT_FOUND).when(notFoundExceptionMock).getStatusCode();
+      doReturn(error)
+        .when(notFoundExceptionMock)
+        .getResponseBodyAs(Error.class);
+      doThrow(notFoundExceptionMock)
+        .when(qualityGateApiMock)
+        .getQualityGateByName(TEST_QUALITY_GATE_NAME);
     }
 
     @Test

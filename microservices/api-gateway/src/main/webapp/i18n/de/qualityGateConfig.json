@@ -8,6 +8,7 @@
         "editLabel": "Quality-Gate bearbeiten",
         "notFound": "Keine Quality-Gates gefunden"
       },
+      "fileOwned": "Die Quality-Gates dieser Instanz sind in ihrer Gate-Datei definiert. Sie können hier weder erstellt noch bearbeitet oder gelöscht werden; ändern Sie stattdessen die Gate-Datei.",
       "created": "Quality-Gate mit ID {{ param }} erstellt",
       "updated": "Quality-Gate mit ID {{ param }} aktualisiert",
       "deleted": "Quality-Gate mit ID {{ param }} gelöscht",

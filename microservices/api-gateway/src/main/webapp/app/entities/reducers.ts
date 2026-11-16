@@ -5,8 +5,8 @@
  */
 
 import type { GetAllApis200ResponseInner } from 'app/clients/api-index-api';
+import type { QualityGateConfigState } from 'app/entities/quality-gate-config/quality-gate-config.reducer';
 import type { IOpenApiCriterion } from 'app/shared/model/open-api-criterion.model';
-import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
 import type { IQualityGate } from 'app/shared/model/quality-gate.model';
 import type { EntityState } from 'app/shared/reducers/reducer.utils';
 
@@ -21,7 +21,7 @@ export interface SnowWhiteState {
   apiIndex: EntityState<GetAllApis200ResponseInner>;
   openApiCriterion: EntityState<IOpenApiCriterion>;
   qualityGate: EntityState<IQualityGate>;
-  qualityGateConfig: EntityState<IQualityGateConfig>;
+  qualityGateConfig: QualityGateConfigState;
 }
 
 export const getSnowWhiteState = (getState): SnowWhiteState => {

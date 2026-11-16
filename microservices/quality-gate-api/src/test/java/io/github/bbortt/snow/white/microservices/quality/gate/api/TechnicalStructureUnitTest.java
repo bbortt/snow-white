@@ -15,8 +15,10 @@ import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.config.QualityGateApiProperties;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateFileReader;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 
 @AnalyzeClasses(
@@ -48,5 +50,10 @@ class TechnicalStructureUnitTest {
     .ignoreDependency(alwaysTrue(), simpleNameEndingWith("__BeanDefinitions"))
 
     // Explicitly allow access into Mapper because of transitive dependency issue
-    .ignoreDependency(belongToAnyOf(QualityGateService.class), belongToAnyOf(QualityGateConfigurationMapper.class));
+    .ignoreDependency(belongToAnyOf(QualityGateService.class), belongToAnyOf(QualityGateConfigurationMapper.class))
+
+    // The gate file's schema is fixed as the payload POST /quality-gates already takes, so the file
+    // read binds to that generated DTO rather than to a second declaration of the same shape that
+    // could drift from it.
+    .ignoreDependency(belongToAnyOf(QualityGateService.class, QualityGateFileReader.class), belongToAnyOf(QualityGateConfig.class));
 }

@@ -15,10 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.SET;
 import static org.mockito.ArgumentCaptor.captor;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -27,8 +30,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.OpenApiCoverageConfiguration;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
@@ -333,6 +340,96 @@ class QualityGateServiceUnitTest {
 
       assertThatThrownBy(() -> fixture.update(configuration)).isInstanceOf(
         UnmodifiableConfigurationException.class
+      );
+    }
+  }
+
+  @Nested
+  class ApplyQualityGateFileTest {
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+    @VerifiesCon(
+      ConTraceables.CON_016_MANAGED_INSTANCE_HAS_EXACTLY_ONE_GATE_WRITER
+    )
+    void shouldClearTheTableBeforeWritingTheFilesGates() {
+      fixture.applyQualityGateFile(
+        List.of(
+          QualityGateConfig.builder().name("from-file").build(),
+          QualityGateConfig.builder().name("also-from-file").build()
+        )
+      );
+
+      var inOrder = inOrder(qualityGateConfigurationRepositoryMock);
+      inOrder.verify(qualityGateConfigurationRepositoryMock).deleteAll();
+      inOrder.verify(qualityGateConfigurationRepositoryMock).flush();
+      inOrder
+        .verify(qualityGateConfigurationRepositoryMock, times(2))
+        .save(any(QualityGateConfiguration.class));
+      inOrder.verifyNoMoreInteractions();
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+    void shouldLeaveNoGatesBehind_whenTheFileDefinesNone() {
+      fixture.applyQualityGateFile(emptyList());
+
+      verify(qualityGateConfigurationRepositoryMock).deleteAll();
+      verify(qualityGateConfigurationRepositoryMock).flush();
+      verify(qualityGateConfigurationRepositoryMock, never()).save(
+        any(QualityGateConfiguration.class)
+      );
+    }
+
+    @Test
+    @VerifiesCon(ConTraceables.CON_005_API_CREATED_GATES_ARE_NEVER_PREDEFINED)
+    void shouldNeverPersistAFileDefinedGateAsPredefined() {
+      fixture.applyQualityGateFile(
+        singletonList(
+          QualityGateConfig.builder()
+            .name("claims-to-be-predefined")
+            .description("a description")
+            .isPredefined(TRUE)
+            .minCoveragePercentage(42)
+            .build()
+        )
+      );
+
+      ArgumentCaptor<QualityGateConfiguration> persisted = captor();
+      verify(qualityGateConfigurationRepositoryMock).save(persisted.capture());
+
+      assertThat(persisted.getValue()).satisfies(
+        c -> assertThat(c.getName()).isEqualTo("claims-to-be-predefined"),
+        c -> assertThat(c.getDescription()).isEqualTo("a description"),
+        c -> assertThat(c.getIsPredefined()).isEqualTo(FALSE),
+        c -> assertThat(c.getMinCoveragePercentage()).isEqualTo(42)
+      );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+    void shouldPropagateAnUnresolvableCriterion_withoutWritingAGate() {
+      var unresolvable = new OpenApiCriterionDoesNotExistException(
+        "no-such-criterion"
+      );
+
+      doThrow(unresolvable)
+        .when(qualityGateConfigurationMapperMock)
+        .mapOpenApiCriteriaToMappings(eq(List.of("no-such-criterion")), any());
+
+      assertThatThrownBy(() ->
+        fixture.applyQualityGateFile(
+          singletonList(
+            QualityGateConfig.builder()
+              .name("broken")
+              .openApiCoverageCriteria(List.of("no-such-criterion"))
+              .build()
+          )
+        )
+      ).isSameAs(unresolvable);
+
+      verify(qualityGateConfigurationRepositoryMock, never()).save(
+        any(QualityGateConfiguration.class)
       );
     }
   }

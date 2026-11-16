@@ -47,6 +47,8 @@ paths:
               description: 'Total number of Quality-Gate Configurations available'
               schema:
                 type: integer
+            X-Quality-Gate-Ownership:
+              $ref: '#/components/headers/QualityGateOwnership'
           content:
             application/json:
               schema:
@@ -55,6 +57,9 @@ paths:
                   $ref: '#/components/schemas/QualityGateConfig'
         '400':
           description: 'The sort parameter names a property this listing cannot order by, or does not parse'
+          headers:
+            X-Quality-Gate-Ownership:
+              $ref: '#/components/headers/QualityGateOwnership'
           content:
             application/json:
               schema:
@@ -98,7 +103,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '409':
-          description: Configuration name already exists
+          description: >-
+            Either the configuration name already exists, or this instance's gates are file-owned
+            and the API cannot write them. The two are told apart by the error body's code:
+            GATES_ARE_FILE_OWNED for the latter.
           content:
             application/json:
               schema:
@@ -126,12 +134,18 @@ paths:
       responses:
         '200':
           description: Quality gate configuration
+          headers:
+            X-Quality-Gate-Ownership:
+              $ref: '#/components/headers/QualityGateOwnership'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QualityGateConfig'
         '404':
           description: Configuration not found
+          headers:
+            X-Quality-Gate-Ownership:
+              $ref: '#/components/headers/QualityGateOwnership'
           content:
             application/json:
               schema:
@@ -180,6 +194,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '409':
+          description: >-
+            This instance's gates are file-owned and the API cannot write them. The error body's
+            code is GATES_ARE_FILE_OWNED. Returned before the named gate is looked up, so an
+            unknown name earns this rather than a 404.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -208,6 +231,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '409':
+          description: >-
+            This instance's gates are file-owned and the API cannot write them. The error body's
+            code is GATES_ARE_FILE_OWNED. Returned before the named gate is looked up, so an
+            unknown name earns this rather than a 404.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -215,6 +247,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  headers:
+    QualityGateOwnership:
+      description: >-
+        Who owns this instance's Quality-Gates, on every response to a gate read. "database" means
+        they are owned through this API, which is the behaviour of an instance deployed without a
+        gate file. "file" means they come from the instance's gate file, so every write on a gate
+        path answers 409. "file-empty" means the same and that the file defines no gates, which is
+        what tells a 404 for a gate name apart from a name that is merely absent from a non-empty
+        file. A client that reads none of these is unaffected.
+      schema:
+        type: string
+        enum:
+          - database
+          - file
+          - file-empty
+        example: database
   schemas:
     QualityGateConfig:
       type: object

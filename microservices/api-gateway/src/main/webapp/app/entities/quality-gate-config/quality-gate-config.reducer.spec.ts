@@ -6,13 +6,14 @@
 
 import type { QualityGateConfig } from 'app/clients/quality-gate-api';
 import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.model';
-import type { EntityState } from 'app/shared/reducers/reducer.utils';
 import type { AxiosResponse } from 'axios';
 
 import { qualityGateApi } from 'app/entities/quality-gate-config/quality-gate-api';
 import { defaultValue } from 'app/shared/model/quality-gate-config.model';
 import configureStore from 'redux-mock-store';
 import { thunk } from 'redux-thunk';
+
+import type { QualityGateConfigState } from './quality-gate-config.reducer';
 
 import reducer, { createEntity, deleteEntity, getEntities, getEntity, updateEntity, reset } from './quality-gate-config.reducer';
 
@@ -34,7 +35,7 @@ describe('Quality-Gate Config reducer tests', () => {
     return Object.keys(element).length === 0;
   }
 
-  const initialState: EntityState<IQualityGateConfig> = {
+  const initialState: QualityGateConfigState = {
     loading: false,
     errorMessage: null,
     entities: [],
@@ -42,6 +43,7 @@ describe('Quality-Gate Config reducer tests', () => {
     totalItems: 0,
     updating: false,
     updateSuccess: false,
+    fileOwned: false,
   };
 
   function testInitialState(state) {
@@ -147,6 +149,26 @@ describe('Quality-Gate Config reducer tests', () => {
         ...initialState,
         loading: false,
         entity: payload.data,
+      });
+    });
+
+    describe.each([
+      ['list', getEntities.fulfilled.type, [], { 'x-total-count': '0' }],
+      ['single', getEntity.fulfilled.type, {}, {}],
+    ])('the ownership header on the %s read', (_read, type, data, headers) => {
+      const fileOwnedAfter = (startFileOwned: boolean, ownership?: string) =>
+        reducer(
+          { ...initialState, fileOwned: startFileOwned },
+          { type, payload: { data, headers: ownership === undefined ? headers : { ...headers, 'x-quality-gate-ownership': ownership } } },
+        ).fileOwned;
+
+      it.each(['file', 'file-empty'])('should mark the gates file-owned when it reads %s', ownership => {
+        expect(fileOwnedAfter(false, ownership)).toBe(true);
+      });
+
+      // Starting from `true`, so a reducer that leaves the flag untouched fails.
+      it.each([['database'], ['an-unknown-mode'], [undefined]])('should leave writes enabled when it reads %s', ownership => {
+        expect(fileOwnedAfter(true, ownership)).toBe(false);
       });
     });
 

@@ -13,6 +13,7 @@ import { Translate } from 'react-jhipster';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 
+import { QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
 import { getEntity, deleteEntity } from './quality-gate-config.reducer';
 
 export const QualityGateConfigDeleteDialog = () => {
@@ -31,6 +32,8 @@ export const QualityGateConfigDeleteDialog = () => {
 
   const qualityGateConfigEntity: IQualityGateConfig = useAppSelector(state => state.snowwhite.qualityGateConfig.entity);
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
+  const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
+  const fileOwned: boolean = useAppSelector(state => state.snowwhite.qualityGateConfig.fileOwned);
 
   const handleClose = () => {
     navigate(`/quality-gate-config${location.search}`);
@@ -48,6 +51,15 @@ export const QualityGateConfigDeleteDialog = () => {
       dispatch(deleteEntity(qualityGateConfigEntity.name));
     }
   };
+
+  // No dialog until the gate read has reported the ownership mode.
+  if (!loadModal || loading) {
+    return null;
+  }
+
+  if (fileOwned) {
+    return <QualityGateConfigFileOwned />;
+  }
 
   return (
     <Modal isOpen toggle={handleClose}>

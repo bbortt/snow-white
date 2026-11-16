@@ -47,6 +47,10 @@ spec:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
               value: '{{ include "snow-white.publicAddress" . }}'
+          {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+            - name: 'SNOW_WHITE_QUALITY_GATE_API_GATE-FILE'
+              value: 'file:/etc/snow-white/quality-gates/quality-gates.yaml'
+          {{- end }}
           {{- if .Values.postgresql.enabled }}
             - name: 'SPRING_DATASOURCE_URL'
               value: 'jdbc:postgresql://{{ printf "%s-%s" .Release.Name "postgresql" }}.{{ include "common.names.namespace" . }}.svc.cluster.local.:5432/quality-gate-api'
@@ -125,11 +129,24 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+          {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+            - name: quality-gates
+              mountPath: /etc/snow-white/quality-gates
+              readOnly: true
+          {{- end }}
       volumes:
         - name: tmp
           emptyDir:
             medium: ""
             sizeLimit: 256Mi
+        {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+        - name: quality-gates
+          configMap:
+            name: {{ include "snow-white.name" (dict "name" "quality-gate-api-gates" "context" .) }}
+            items:
+              - key: quality-gates.yaml
+                path: quality-gates.yaml
+        {{- end }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

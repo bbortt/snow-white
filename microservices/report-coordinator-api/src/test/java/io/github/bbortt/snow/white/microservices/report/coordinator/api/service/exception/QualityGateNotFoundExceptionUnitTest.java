@@ -14,8 +14,15 @@ class QualityGateNotFoundExceptionUnitTest {
 
   @Test
   void shouldConstructMessage() {
-    assertThat(new QualityGateNotFoundException("foo")).hasMessage(
+    assertThat(QualityGateNotFoundException.forGateName("foo")).hasMessage(
       "No Quality-Gate configuration with ID 'foo' exists!"
     );
+  }
+
+  @Test
+  void shouldSurfaceTheOwnersMessageVerbatim() {
+    assertThat(
+      QualityGateNotFoundException.surfacing("whatever the owner said")
+    ).hasMessage("whatever the owner said");
   }
 }
