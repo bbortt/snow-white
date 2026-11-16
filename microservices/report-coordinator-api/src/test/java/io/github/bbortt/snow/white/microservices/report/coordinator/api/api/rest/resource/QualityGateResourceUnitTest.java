@@ -346,7 +346,9 @@ class QualityGateResourceUnitTest {
         .when(apiIndexServiceMock)
         .fetchCompleteApiInformation(apiTests);
 
-      doThrow(new QualityGateNotFoundException(QUALITY_GATE_CONFIG_NAME))
+      doThrow(
+        QualityGateNotFoundException.forGateName(QUALITY_GATE_CONFIG_NAME)
+      )
         .when(reportServiceMock)
         .initializeQualityGateCalculation(
           eq(QUALITY_GATE_CONFIG_NAME),

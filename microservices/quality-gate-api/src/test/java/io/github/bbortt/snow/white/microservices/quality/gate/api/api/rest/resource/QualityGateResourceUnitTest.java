@@ -7,6 +7,9 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.resource;
 
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.OWNERSHIP_DATABASE;
+import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.OWNERSHIP_FILE;
+import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.OWNERSHIP_FILE_EMPTY;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -24,11 +27,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import clew.traceables.clew.SwTraceables;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.Error;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.OpenApiCriterionDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.model.QualityGateConfiguration;
+import io.github.bbortt.snow.white.microservices.quality.gate.api.service.GateOwnershipService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.QualityGateService;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationDoesNotExistException;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.service.exception.ConfigurationNameAlreadyExistsException;
@@ -41,6 +47,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -52,6 +60,9 @@ import org.springframework.http.ResponseEntity;
 
 @ExtendWith({ MockitoExtension.class })
 class QualityGateResourceUnitTest {
+
+  @Mock
+  private GateOwnershipService gateOwnershipServiceMock;
 
   @Mock
   private QualityGateConfigurationMapper qualityGateConfigurationMapperMock;
@@ -80,6 +91,26 @@ class QualityGateResourceUnitTest {
                 assertThat(e.getMessage()).isEqualTo(
                   "Quality-Gate configuration '%s' does not exist!",
                   name
+                )
+            )
+      );
+  }
+
+  private static void verifyResponseIsHttpConflictGatesAreFileOwned(
+    ResponseEntity response
+  ) {
+    assertThat(response)
+      .isNotNull()
+      .satisfies(
+        r -> assertThat(r.getStatusCode()).isEqualTo(CONFLICT),
+        r ->
+          assertThat(r.getBody())
+            .asInstanceOf(type(Error.class))
+            .satisfies(
+              e -> assertThat(e.getCode()).isEqualTo("GATES_ARE_FILE_OWNED"),
+              e ->
+                assertThat(e.getMessage()).isEqualTo(
+                  "This instance's Quality-Gates are defined by its gate file. Change the file and restart the instance; this API cannot write them!"
                 )
             )
       );
@@ -192,6 +223,21 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
+    @VerifiesSw(
+      SwTraceables.SW_051_MANAGED_INSTANCE_REJECTS_CRUD_WRITES_WITH_CONFLICT
+    )
+    void shouldReturnConflictResponseWithoutWriting_whenGatesAreFileOwned() {
+      doReturn(true).when(gateOwnershipServiceMock).isFileOwned();
+
+      var response = fixture.createQualityGate(qualityGateConfig);
+
+      verifyResponseIsHttpConflictGatesAreFileOwned(response);
+
+      verifyNoInteractions(qualityGateServiceMock);
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
+    }
+
+    @Test
     void createdResponseShouldContainCorrectLocationUri() {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
@@ -222,6 +268,20 @@ class QualityGateResourceUnitTest {
         .isEqualTo(NO_CONTENT);
 
       verify(qualityGateServiceMock).deleteByName(name);
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_051_MANAGED_INSTANCE_REJECTS_CRUD_WRITES_WITH_CONFLICT
+    )
+    void shouldReturnConflictResponseWithoutReadingOrWriting_whenGatesAreFileOwned() {
+      doReturn(true).when(gateOwnershipServiceMock).isFileOwned();
+
+      var response = fixture.deleteQualityGate("NonExistingConfiguration");
+
+      verifyResponseIsHttpConflictGatesAreFileOwned(response);
+
+      verifyNoInteractions(qualityGateServiceMock);
     }
 
     @Test
@@ -400,6 +460,59 @@ class QualityGateResourceUnitTest {
 
       verifyResponseIsHttpNotFoundWithMessage(response, name);
     }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldNameTheGateFile_whenConfigurationDoesNotExistAndFileDefinesNoGates()
+      throws ConfigurationDoesNotExistException {
+      var name = "NonExistingConfiguration";
+      doThrow(new ConfigurationDoesNotExistException(name))
+        .when(qualityGateServiceMock)
+        .findByName(name);
+      doReturn(OWNERSHIP_FILE_EMPTY)
+        .when(gateOwnershipServiceMock)
+        .currentOwnership();
+
+      var response = fixture.getQualityGateByName(name);
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(Error.class))
+              .satisfies(
+                e ->
+                  assertThat(e.getCode()).isEqualTo(
+                    NOT_FOUND.getReasonPhrase()
+                  ),
+                e ->
+                  assertThat(e.getMessage()).isEqualTo(
+                    "Quality-Gate configuration '%s' does not exist! This instance's Quality-Gates are defined by its gate file, and that file defines none: add the Quality-Gate to the file and restart this instance!".formatted(
+                      name
+                    )
+                  )
+              )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { OWNERSHIP_FILE, OWNERSHIP_DATABASE })
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldNotAppendAnything_whenConfigurationDoesNotExistAndInstanceHoldsGatesOrIsUnmanaged(
+      String ownership
+    ) throws ConfigurationDoesNotExistException {
+      var name = "NonExistingConfiguration";
+      doThrow(new ConfigurationDoesNotExistException(name))
+        .when(qualityGateServiceMock)
+        .findByName(name);
+      doReturn(ownership).when(gateOwnershipServiceMock).currentOwnership();
+
+      var response = fixture.getQualityGateByName(name);
+
+      verifyResponseIsHttpNotFoundWithMessage(response, name);
+    }
   }
 
   @Nested
@@ -448,6 +561,21 @@ class QualityGateResourceUnitTest {
               .asInstanceOf(type(QualityGateConfig.class))
               .isEqualTo(responseEntity)
         );
+    }
+
+    @Test
+    @VerifiesSw(
+      SwTraceables.SW_051_MANAGED_INSTANCE_REJECTS_CRUD_WRITES_WITH_CONFLICT
+    )
+    void shouldReturnConflictResponseWithoutReadingOrWriting_whenGatesAreFileOwned() {
+      doReturn(true).when(gateOwnershipServiceMock).isFileOwned();
+
+      var response = fixture.updateQualityGate(NAME, qualityGateConfig);
+
+      verifyResponseIsHttpConflictGatesAreFileOwned(response);
+
+      verifyNoInteractions(qualityGateServiceMock);
+      verifyNoInteractions(qualityGateConfigurationMapperMock);
     }
 
     @Test

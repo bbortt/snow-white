@@ -8,6 +8,7 @@
         "editLabel": "Edit Quality-Gate",
         "notFound": "No Quality-Gates found"
       },
+      "fileOwned": "This instance's Quality-Gates are defined in its gate file. They cannot be created, edited or deleted here; change the gate file instead.",
       "created": "A new Quality-Gate with identifier {{ param }} created",
       "updated": "A Quality-Gate with identifier {{ param }} updated",
       "deleted": "A Quality-Gate with identifier {{ param }} deleted",

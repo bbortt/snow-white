@@ -34,6 +34,14 @@ none ([SW-052](SW-052-empty-file-owned-instance-names-its-file.md)).
 
 The file is accepted as either JSON or YAML, which costs no new dependency, and its schema is the
 `QualityGateConfig` payload `POST /quality-gates` already takes.
+What the file does state answers to that payload's constraints too: a threshold outside the allowed
+range, or a name longer than the API accepts, fails startup with an error naming the gate and the
+field, exactly as the create endpoint would have refused the same body.
+What it omits is cleared, as above, which means an unstated criteria set is no criteria and an
+unstated threshold is the schema's own default of 100 — the strictest value there is, so an omission
+cannot quietly lower a bar.
+`isPredefined` is set rather than read: a file-defined gate is never predefined whatever the file
+says ([CON-005](CON-005-api-created-gates-are-never-predefined.md)).
 
 **Rationale**
 Full replacement is what makes the file readable as the instance's gate set.
@@ -65,6 +73,9 @@ A third starts an instance whose file names an unknown criterion and asserts sta
 error names the criterion, and every gate record is as it was.
 A fourth starts an instance configured with a gate file that is not present and asserts startup
 fails and no gate was deleted.
+A unit test asserts a gate stating a threshold below the allowed minimum, and one above its
+maximum, are both refused with an error naming that gate and that field; a further test asserts a
+gate that states only its name is read with no criteria, a threshold of 100, and not predefined.
 
 ## Relations
 

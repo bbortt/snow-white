@@ -8,6 +8,8 @@ package io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.reso
 
 import static io.github.bbortt.snow.white.commons.quality.gate.OpenApiCoverageCriteria.PATH_COVERAGE;
 import static io.github.bbortt.snow.white.commons.web.PaginationUtils.HEADER_X_TOTAL_COUNT;
+import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.HEADER_X_QUALITY_GATE_OWNERSHIP;
+import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.OWNERSHIP_DATABASE;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +18,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -30,7 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import clew.traceables.clew.ConTraceables;
+import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.VerifiesCon;
+import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.AbstractQualityGateApiIT;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.dto.QualityGateConfig;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.mapper.QualityGateConfigurationMapper;
@@ -371,6 +376,92 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
       .get()
       .extracting(QualityGateConfiguration::getDescription)
       .isEqualTo(qualityGateConfiguration.getDescription());
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_053_MANAGED_MODE_PUBLISHED_ON_GATE_READS)
+  void gateReadsPublishTheDatabaseMode() throws Exception {
+    var qualityGateConfiguration = createAndSaveQualityGateConfig(
+      "gateReadsPublishTheDatabaseMode"
+    );
+
+    mockMvc
+      .perform(get(ENTITY_API_URL))
+      .andExpect(status().isOk())
+      .andExpect(
+        header().string(HEADER_X_QUALITY_GATE_OWNERSHIP, OWNERSHIP_DATABASE)
+      );
+
+    mockMvc
+      .perform(get(SINGLE_ENTITY_API_URL, qualityGateConfiguration.getName()))
+      .andExpect(status().isOk())
+      .andExpect(
+        header().string(HEADER_X_QUALITY_GATE_OWNERSHIP, OWNERSHIP_DATABASE)
+      );
+
+    mockMvc
+      .perform(get(SINGLE_ENTITY_API_URL, "no-such-gate"))
+      .andExpect(status().isNotFound())
+      .andExpect(
+        header().string(HEADER_X_QUALITY_GATE_OWNERSHIP, OWNERSHIP_DATABASE)
+      );
+
+    // Produced by the exception handler, not by the resource: the reason the header is set in a filter.
+    mockMvc
+      .perform(get(ENTITY_API_URL).param("sort", "name,sideways"))
+      .andExpect(status().isBadRequest())
+      .andExpect(
+        header().string(HEADER_X_QUALITY_GATE_OWNERSHIP, OWNERSHIP_DATABASE)
+      );
+  }
+
+  @Test
+  @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+  void unknownGateOnADatabaseOwnedInstanceIsAPlainDoesNotExist()
+    throws Exception {
+    mockMvc
+      .perform(get(SINGLE_ENTITY_API_URL, "no-such-gate"))
+      .andExpect(status().isNotFound())
+      .andExpect(
+        jsonPath("$.message").value(
+          "Quality-Gate configuration 'no-such-gate' does not exist!"
+        )
+      )
+      .andExpect(jsonPath("$.message").value(not(containsString("gate file"))));
+  }
+
+  @Test
+  @VerifiesSw(
+    SwTraceables.SW_051_MANAGED_INSTANCE_REJECTS_CRUD_WRITES_WITH_CONFLICT
+  )
+  void createQualityGateConfig_conflictMeansOnlyThatTheNameIsTaken()
+    throws Exception {
+    var qualityGateConfiguration = createAndSaveQualityGateConfig(
+      "nameIsTaken"
+    );
+
+    mockMvc
+      .perform(
+        post(ENTITY_API_URL)
+          .contentType(APPLICATION_JSON)
+          .content(
+            jsonMapper.writeValueAsString(
+              QualityGateConfig.builder()
+                .name(qualityGateConfiguration.getName())
+                .build()
+            )
+          )
+      )
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("Conflict"))
+      .andExpect(
+        jsonPath("$.message").value(
+          format(
+            "Quality-Gate configuration '%s' does already exist!",
+            qualityGateConfiguration.getName()
+          )
+        )
+      );
   }
 
   private QualityGateConfiguration createAndSaveQualityGateConfig(

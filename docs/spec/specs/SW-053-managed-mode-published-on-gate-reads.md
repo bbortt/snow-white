@@ -11,10 +11,20 @@ Every gate read publishes who owns the gates, as a response header
 
 **Description**
 `GET /api/rest/v1/quality-gates` and `GET /api/rest/v1/quality-gates/{name}` carry the instance's
-gate-ownership mode on every response, as a response header beside the list's existing
-`X-Total-Count`.
+gate-ownership mode on every response, as the `X-Quality-Gate-Ownership` header, beside the list's
+existing `X-Total-Count`.
 A client therefore knows whether a write would be refused before it offers the control that issues
 one.
+
+The header takes one of three values: `database` for an instance whose gates are owned through this
+API, `file` for one whose gates come from its gate file, and `file-empty` for one whose gate file
+defines no gates at all.
+Three values of one header rather than two headers or a header plus a boolean: the three are
+mutually exclusive states of a single fact about the instance, a client decides what to render from
+exactly one lookup, and there is no pair of values that can disagree with each other.
+`file-empty` is published rather than left to be inferred from a zero-length page, because an
+empty page and a file that defines nothing are not the same thing to a screen that has to say why
+it is empty and why its controls are disabled.
 
 The mode is published on the single-gate read as well as the list, because an edit view is
 reachable by deep link without the list ever being fetched.
@@ -47,7 +57,8 @@ client is already making can carry.
 
 **Verification Description**
 A test asserts both reads carry the header, with the value matching the configured mode, on an
-instance in each mode.
+instance in each of the three — including the `400` a malformed `sort` earns, which the resource
+never returns itself.
 A webapp test asserts the client reads the header off both responses into its gate state, the way it
 already reads `x-total-count` off the list.
 What the screens then do with it is

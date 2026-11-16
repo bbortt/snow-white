@@ -10,12 +10,13 @@ import type { IQualityGateConfig } from 'app/shared/model/quality-gate-config.mo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntities as getOpenApiCoverageCriteria } from 'app/entities/open-api-criterion/open-api-criterion.reducer';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Translate, translate, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, Row } from 'reactstrap';
 
-import { createEntity, getEntity, reset, updateEntity } from './quality-gate-config.reducer';
+import { QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
+import { createEntity, getEntities, getEntity, reset, updateEntity } from './quality-gate-config.reducer';
 
 export const QualityGateUpdate = () => {
   const dispatch = useAppDispatch();
@@ -29,6 +30,10 @@ export const QualityGateUpdate = () => {
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const updating = useAppSelector(state => state.snowwhite.qualityGateConfig.updating);
   const updateSuccess = useAppSelector(state => state.snowwhite.qualityGateConfig.updateSuccess);
+  const fileOwned: boolean = useAppSelector(state => state.snowwhite.qualityGateConfig.fileOwned);
+
+  // False until the mount effect has issued the gate read that reports the ownership mode.
+  const [modeRequested, setModeRequested] = useState(false);
 
   const handleClose = () => {
     navigate(`/quality-gate-config${location.search}`);
@@ -37,11 +42,14 @@ export const QualityGateUpdate = () => {
   useEffect(() => {
     if (isNew) {
       dispatch(reset());
+      // Nothing else on `new` reads a gate, so this is what learns the ownership mode.
+      dispatch(getEntities({ size: 1 }));
     } else {
       dispatch(getEntity(id));
     }
 
     dispatch(getOpenApiCoverageCriteria());
+    setModeRequested(true);
   }, []);
 
   useEffect(() => {
@@ -89,8 +97,10 @@ export const QualityGateUpdate = () => {
       </Row>
       <Row className="justify-content-center">
         <Col md="8">
-          {loading ? (
+          {loading || !modeRequested ? (
             <p>Loading...</p>
+          ) : fileOwned ? (
+            <QualityGateConfigFileOwned />
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
               <ValidatedField

@@ -14,12 +14,13 @@ import { useAnimatedList } from 'app/shared/use-animated-list';
 import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
 import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
 import React, { createRef, useEffect, useRef, useState } from 'react';
-import { Translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
+import { Translate, translate, getPaginationState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Button, Spinner, Table } from 'reactstrap';
 import 'app/shared/table-row-animation.scss';
 
+import { FILE_OWNED_REASON_ID, FILE_OWNED_REASON_KEY, QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
 import { getEntities } from './quality-gate-config.reducer';
 
 export const QualityGateConfig = () => {
@@ -39,6 +40,18 @@ export const QualityGateConfig = () => {
   const { displayedList, isExiting, animationsEnabled } = useAnimatedList(qualityGateConfigList, q => q.name!);
   const loading = useAppSelector(state => state.snowwhite.qualityGateConfig.loading);
   const totalItems = useAppSelector(state => state.snowwhite.qualityGateConfig.totalItems);
+  const fileOwned: boolean = useAppSelector(state => state.snowwhite.qualityGateConfig.fileOwned);
+
+  // Disabled rather than hidden: unlike `isPredefined`, nothing on a row explains file ownership.
+  const writeControlProps = fileOwned
+    ? {
+        disabled: true,
+        'aria-disabled': true,
+        tabIndex: -1,
+        title: translate(FILE_OWNED_REASON_KEY),
+        'aria-describedby': FILE_OWNED_REASON_ID,
+      }
+    : {};
 
   const getAllEntities = () => {
     dispatch(
@@ -187,6 +200,7 @@ export const QualityGateConfig = () => {
                               color="primary"
                               size="sm"
                               data-testid="entityEditButton"
+                              {...writeControlProps}
                             >
                               <FontAwesomeIcon icon="pencil-alt" />{' '}
                               <span className="d-none d-md-inline">
@@ -199,6 +213,7 @@ export const QualityGateConfig = () => {
                               color="danger"
                               size="sm"
                               data-testid="entityDeleteButton"
+                              {...writeControlProps}
                             >
                               <FontAwesomeIcon icon="trash" />{' '}
                               <span className="d-none d-md-inline">
@@ -242,18 +257,22 @@ export const QualityGateConfig = () => {
             <FontAwesomeIcon icon="sync" spin={loading} />{' '}
             <Translate contentKey="snowWhiteApp.qualityGateConfig.home.refreshListLabel">Refresh List</Translate>
           </Button>
-          <Link
+          <Button
+            tag={Link}
             to="/quality-gate-config/new"
-            className="btn btn-primary jh-create-entity"
+            color="primary"
+            className="jh-create-entity"
             id="jh-create-entity"
             data-testid="entityCreateButton"
+            {...writeControlProps}
           >
             <FontAwesomeIcon icon="plus" />
             &nbsp;
             <Translate contentKey="snowWhiteApp.qualityGateConfig.home.createLabel">Create new Quality Gate Config</Translate>
-          </Link>
+          </Button>
         </div>
       </h2>
+      {fileOwned && <QualityGateConfigFileOwned />}
       <div className="table-responsive">{renderTableContent()}</div>
       {totalItems ? (
         <div className={qualityGateConfigList && qualityGateConfigList.length > 0 ? '' : 'd-none'}>

@@ -16,7 +16,12 @@ import { defaultValue } from 'app/shared/model/quality-gate-config.model';
 import { createEntitySlice, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { cleanEntity } from 'app/shared/util/entity-utils';
 
-const initialState: EntityState<IQualityGateConfig> = {
+export interface QualityGateConfigState extends EntityState<IQualityGateConfig> {
+  /** The gate reads' `X-Quality-Gate-Ownership` header says the instance's gate file owns the gates. */
+  fileOwned: boolean;
+}
+
+const initialState: QualityGateConfigState = {
   loading: false,
   errorMessage: null,
   entities: [],
@@ -24,7 +29,12 @@ const initialState: EntityState<IQualityGateConfig> = {
   updating: false,
   totalItems: 0,
   updateSuccess: false,
+  fileOwned: false,
 };
+
+// A missing or unknown value is an older server, whose gates are database-owned.
+const isFileOwned = (headers?: Record<string, unknown>): boolean =>
+  ['file', 'file-empty'].includes(headers?.['x-quality-gate-ownership'] as string);
 
 const toDto = ({ name, description, minCoveragePercentage, openApiCoverageCriteria }: IQualityGateConfig): QualityGateConfig => {
   return {
@@ -120,8 +130,12 @@ export const QualityGateConfigSlice = createEntitySlice({
   extraReducers(builder) {
     builder
       .addCase(getEntity.fulfilled, (state, action) => {
-        state.loading = false;
-        state.entity = action.payload.data;
+        return {
+          ...state,
+          loading: false,
+          entity: action.payload.data,
+          fileOwned: isFileOwned(action.payload.headers),
+        } as QualityGateConfigState;
       })
       .addCase(deleteEntity.fulfilled, state => {
         state.updating = false;
@@ -136,7 +150,8 @@ export const QualityGateConfigSlice = createEntitySlice({
           loading: false,
           entities: data,
           totalItems: parseInt(headers['x-total-count'], 10),
-        };
+          fileOwned: isFileOwned(headers),
+        } as QualityGateConfigState;
       })
       .addMatcher(isFulfilled(createEntity, updateEntity), (state, action) => {
         state.updating = false;
