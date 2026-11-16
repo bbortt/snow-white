@@ -7,15 +7,15 @@ A file-owned instance has exactly one gate writer, and it is startup
 
 **Lens**: CON
 
-**Status**: planned
+**Status**: active
 
 **Description**
 While an instance's gates are file-owned
-([ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md)), the startup read of its
-gate file ([SW-TMP-001](SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md)) is the only
+([ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md)), the startup read of its
+gate file ([SW-050](SW-050-startup-makes-the-gate-set-exactly-the-file.md)) is the only
 thing that creates, changes or deletes a gate record.
 The REST writes are refused
-([SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md)), and nothing else
+([SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md)), and nothing else
 writes gates.
 
 Startup is that writer rather than a second one to be silenced.
@@ -33,14 +33,6 @@ No new predefined gate can appear on a file-owned instance, so the set stays clo
 [CON-005](CON-005-api-created-gates-are-never-predefined.md) requires, and
 [CON-003](CON-003-predefined-quality-gates-are-immutable.md) continues to hold as stated for the
 CRUD surface, which refuses every write here regardless.
-
-**Verification Description**
-A test starts a file-owned instance against an empty database with a file naming two gates and
-asserts the instance holds exactly those two afterwards, with the criteria rows present.
-A second restarts it unchanged and asserts the gate set is identical.
-A third starts a file-owned instance against a database already holding seeded predefined gates,
-with a file naming none of them, and asserts they are gone and stay gone across a further restart.
-A review confirms the only remaining code path that writes a gate record is the startup file read.
 
 **Rationale**
 Without startup in scope the mode would be cosmetic, and on this route it is in scope for free: the
@@ -65,22 +57,30 @@ file-owned instance it moves only through a reviewed change to a committed file,
 reason better than the database ever did.
 
 The cost is that a gate cannot change without a restart, and that an instance whose file defines no
-gates has none ([SW-TMP-004](SW-TMP-004-empty-file-owned-instance-names-its-file.md)).
+gates has none ([SW-052](SW-052-empty-file-owned-instance-names-its-file.md)).
 Both are visible, both are fixed by shipping the file, and neither is a gate reappearing unattended
 after a restart.
+
+**Verification Description**
+A test starts a file-owned instance against an empty database with a file naming two gates and
+asserts the instance holds exactly those two afterwards, with the criteria rows present.
+A second restarts it unchanged and asserts the gate set is identical.
+A third starts a file-owned instance against a database already holding seeded predefined gates,
+with a file naming none of them, and asserts they are gone and stay gone across a further restart.
+A review confirms the only remaining code path that writes a gate record is the startup file read.
 
 ## Relations
 
 **Related**
 
-- [ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md) — the switch whose value
+- [ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md) — the switch whose value
   this invariant is stated against
-- [SW-TMP-001](SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md) — the one writer
-- [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — how the REST
+- [SW-050](SW-050-startup-makes-the-gate-set-exactly-the-file.md) — the one writer
+- [SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — how the REST
   writers are closed
-- [SW-TMP-005](SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — how the UI stops being one
+- [SW-054](SW-054-managed-instance-ui-offers-no-gate-write.md) — how the UI stops being one
   of those writers rather than being refused as one
-- [SW-TMP-004](SW-TMP-004-empty-file-owned-instance-names-its-file.md) — how the empty state this
+- [SW-052](SW-052-empty-file-owned-instance-names-its-file.md) — how the empty state this
   invariant allows explains itself
 - [ARCH-003](ARCH-003-idempotent-ordered-startup-seeding.md) — the ordered startup step this
   invariant repoints at the file, and leaves intact for criteria
@@ -91,3 +91,7 @@ after a restart.
 - [CON-005](CON-005-api-created-gates-are-never-predefined.md) — the closure of the predefined set,
   which seeding none keeps closed
 - [SYS-008](SYS-008-quality-gate-definitions.md) — the capability this invariant scopes
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.

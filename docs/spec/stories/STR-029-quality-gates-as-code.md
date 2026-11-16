@@ -5,7 +5,7 @@
 **Title**
 Quality gates as code, with one writer per instance
 
-**Status**: planned
+**Status**: active
 
 **Business Value**
 A quality gate decides whether a build passes, which makes it part of the build contract — and it is
@@ -40,7 +40,7 @@ That rules out the obvious compromise of seeding the defaults and treating them 
 **Solution Approach**
 An instance's gates are file-owned exactly when that instance is deployed with a gate file — on
 Kubernetes, a mounted `ConfigMap`
-([ARCH-TMP-001](../specs/ARCH-TMP-001-gitops-mode-is-instance-configuration.md)).
+([ARCH-025](../specs/ARCH-025-gitops-mode-is-instance-configuration.md)).
 There is no per-gate ownership flag and no separate mode boolean to disagree with the file, so an
 operator answers "what owns my gates, and what are they?" from the deployment rather than by
 querying a database.
@@ -48,11 +48,11 @@ querying a database.
 The file is read at startup, in the slot the seeding step already occupies, and it replaces that
 step's hardcoded definitions as its input: the gate set afterwards is exactly what the file says,
 including the deletion of gates the file does not name
-([SW-TMP-001](../specs/SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md)).
+([SW-050](../specs/SW-050-startup-makes-the-gate-set-exactly-the-file.md)).
 That makes startup the single writer rather than a third one to work around
-([CON-TMP-001](../specs/CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md)), and the CRUD
+([CON-016](../specs/CON-016-managed-instance-has-exactly-one-gate-writer.md)), and the CRUD
 writes answer `409` to close the others
-([SW-TMP-002](../specs/SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md)).
+([SW-051](../specs/SW-051-managed-instance-rejects-crud-writes-with-conflict.md)).
 A gate change is therefore a change to the file and a restart — the same event that ships every
 other change to the instance, with the same diff, author and review.
 An instance switched into the mode with predefined gates already in its database starts normally;
@@ -61,15 +61,15 @@ A configured file that is absent or unreadable fails startup rather than being r
 set, because a failed mount must not delete every gate.
 A file that is present and defines no gates leaves the instance empty, so the rejection it gives a
 calculation names the file rather than blaming the gate name
-([SW-TMP-004](../specs/SW-TMP-004-empty-file-owned-instance-names-its-file.md)).
+([SW-052](../specs/SW-052-empty-file-owned-instance-names-its-file.md)).
 
 Reads are untouched, and the mode travels on them so a client learns it before offering a control
 that would be refused
-([SW-TMP-003](../specs/SW-TMP-003-managed-mode-published-on-gate-reads.md)).
+([SW-053](../specs/SW-053-managed-mode-published-on-gate-reads.md)).
 A UI that renders create and edit controls which then fail server-side is worse than one that
 renders them disabled with a reason, and the edit routes refuse a deep link rather than leaving a
 reachable form whose submit earns the `409`
-([SW-TMP-005](../specs/SW-TMP-005-managed-instance-ui-offers-no-gate-write.md)).
+([SW-054](../specs/SW-054-managed-instance-ui-offers-no-gate-write.md)).
 
 Nothing new is exposed on the network: no apply endpoint, no CLI command, and therefore no
 authorisation question of its own.
@@ -133,19 +133,19 @@ rather than the server-side mode it reads.
 
 **Realizes**
 
-- [ARCH-TMP-001](../specs/ARCH-TMP-001-gitops-mode-is-instance-configuration.md) — where the mode
+- [ARCH-025](../specs/ARCH-025-gitops-mode-is-instance-configuration.md) — where the mode
   lives, and why not on the gate
-- [SW-TMP-001](../specs/SW-TMP-001-startup-makes-the-gate-set-exactly-the-file.md) — what the
+- [SW-050](../specs/SW-050-startup-makes-the-gate-set-exactly-the-file.md) — what the
   startup read does to the gate set, and what it refuses
-- [SW-TMP-002](../specs/SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — how a
+- [SW-051](../specs/SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — how a
   managed instance refuses a REST write
-- [SW-TMP-003](../specs/SW-TMP-003-managed-mode-published-on-gate-reads.md) — how a client learns
+- [SW-053](../specs/SW-053-managed-mode-published-on-gate-reads.md) — how a client learns
   the mode before it offers a control
-- [SW-TMP-004](../specs/SW-TMP-004-empty-file-owned-instance-names-its-file.md) — what a managed
+- [SW-052](../specs/SW-052-empty-file-owned-instance-names-its-file.md) — what a managed
   instance says when its file defines no gates
-- [SW-TMP-005](../specs/SW-TMP-005-managed-instance-ui-offers-no-gate-write.md) — what the web UI
+- [SW-054](../specs/SW-054-managed-instance-ui-offers-no-gate-write.md) — what the web UI
   offers instead of a write it knows will be refused
-- [CON-TMP-001](../specs/CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — the
+- [CON-016](../specs/CON-016-managed-instance-has-exactly-one-gate-writer.md) — the
   invariant that makes the file a source of truth rather than a claim
 
 **Related**

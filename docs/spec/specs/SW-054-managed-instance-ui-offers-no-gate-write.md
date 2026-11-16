@@ -7,11 +7,11 @@ A file-owned instance's UI offers no gate write, by control or by deep link
 
 **Lens**: SW
 
-**Status**: planned
+**Status**: active
 
 **Description**
 When the gate reads report file ownership
-([SW-TMP-003](SW-TMP-003-managed-mode-published-on-gate-reads.md)), the web UI's quality gate
+([SW-053](SW-053-managed-mode-published-on-gate-reads.md)), the web UI's quality gate
 screens offer no way to create, edit or delete a gate.
 
 On the gate list, the create control and every row's edit and delete control render disabled,
@@ -24,7 +24,7 @@ The `new`, `edit` and `delete` routes under the gate screens refuse on a file-ow
 render the same reason instead of a form or a confirmation dialog.
 Each of those routes is reachable by deep link, bookmark or browser history without the list ever
 being rendered, so suppressing the controls alone leaves a reachable form whose submit earns a
-`409` ([SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md)).
+`409` ([SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md)).
 No `POST`, `PUT` or `DELETE` on a gate path is issued from any of these screens while the mode is
 on.
 
@@ -68,16 +68,16 @@ non-predefined gate's stay enabled.
 
 **Realizes**
 
-- [CON-TMP-001](CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — keeps the client
+- [CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md) — keeps the client
   from attempting the writes the invariant forbids
 
 **Related**
 
-- [SW-TMP-003](SW-TMP-003-managed-mode-published-on-gate-reads.md) — the header this behaviour reads
+- [SW-053](SW-053-managed-mode-published-on-gate-reads.md) — the header this behaviour reads
   the mode from
-- [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal these
+- [SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal these
   screens exist to never earn
-- [ARCH-TMP-001](ARCH-TMP-001-gitops-mode-is-instance-configuration.md) — the switch the published
+- [ARCH-025](ARCH-025-gitops-mode-is-instance-configuration.md) — the switch the published
   mode reflects
 - [SW-009](SW-009-quality-gate-crud-contract.md) — the write contract these screens drive with the
   mode off
@@ -85,3 +85,7 @@ non-predefined gate's stay enabled.
   existing treatment in this UI the mode does not change
 - [NF-005](NF-005-clear-failure-feedback.md) — the feedback quality a stated reason holds up where a
   bare `409` does not
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.

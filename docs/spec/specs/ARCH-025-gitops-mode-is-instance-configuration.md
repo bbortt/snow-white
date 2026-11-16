@@ -7,7 +7,7 @@ Gate ownership is instance configuration, never state on a gate record
 
 **Lens**: ARCH
 
-**Status**: planned
+**Status**: active
 
 **Description**
 Whether a `quality-gate-api` instance's gates are defined by a file or through its REST surface is
@@ -39,9 +39,9 @@ Making the file itself the switch keeps that answer to one artifact: the deploym
 gate file or it does not, and an operator reading it learns both that the instance is file-owned and
 what it enforces.
 It is also what lets a client disable write controls once per page rather than reason per row
-([SW-TMP-003](SW-TMP-003-managed-mode-published-on-gate-reads.md)), and what makes
+([SW-053](SW-053-managed-mode-published-on-gate-reads.md)), and what makes
 "this instance's gates are managed elsewhere" a true statement about the instance rather than about
-a row ([SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md)).
+a row ([SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md)).
 
 Two costs are real and accepted.
 A team that wants one hand-tuned experimental gate alongside its file-defined ones needs a second
@@ -65,13 +65,17 @@ mode is observably a property of the instance and not of the records.
 
 **Related**
 
-- [CON-TMP-001](CON-TMP-001-managed-instance-has-exactly-one-gate-writer.md) — the invariant this
+- [CON-016](CON-016-managed-instance-has-exactly-one-gate-writer.md) — the invariant this
   structure exists to make enforceable
-- [SW-TMP-002](SW-TMP-002-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal this
+- [SW-051](SW-051-managed-instance-rejects-crud-writes-with-conflict.md) — the refusal this
   switch governs
-- [SW-TMP-003](SW-TMP-003-managed-mode-published-on-gate-reads.md) — how the switch's value reaches
+- [SW-053](SW-053-managed-mode-published-on-gate-reads.md) — how the switch's value reaches
   a client
 - [SYS-008](SYS-008-quality-gate-definitions.md) — the gate-definition capability this decision
   scopes to an instance
 - [CON-005](CON-005-api-created-gates-are-never-predefined.md) — the existing precedent that a
   gate's provenance is decided by the write path, not by what a caller claims
+
+## Changes
+
+- **2026-11-16** — Set active: implementation of `STR-029` began.
