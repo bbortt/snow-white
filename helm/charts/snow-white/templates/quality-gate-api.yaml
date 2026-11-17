@@ -22,6 +22,9 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
+        checksum/quality-gates: {{ include (print $.Template.BasePath "/quality-gate-api-gates-configmap.yaml") . | sha256sum }}
+        {{- end }}
         {{- if .Values.snowWhite.podAnnotations }}
         {{- include "common.tplvalues.render" (dict "value" .Values.snowWhite.podAnnotations "context" .) | nindent 8 }}
         {{- end }}
@@ -47,7 +50,7 @@ spec:
           {{- include "snow-white.commonNativePodEnvironmentVariables" . | nindent 12 }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_PUBLIC-API-GATEWAY-URL'
               value: '{{ include "snow-white.publicAddress" . }}'
-          {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+          {{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
             - name: 'SNOW_WHITE_QUALITY_GATE_API_GATE-FILE'
               value: 'file:/etc/snow-white/quality-gates/quality-gates.yaml'
           {{- end }}
@@ -129,7 +132,7 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-          {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+          {{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
             - name: quality-gates
               mountPath: /etc/snow-white/quality-gates
               readOnly: true
@@ -139,7 +142,7 @@ spec:
           emptyDir:
             medium: ""
             sizeLimit: 256Mi
-        {{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+        {{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
         - name: quality-gates
           configMap:
             name: {{ include "snow-white.name" (dict "name" "quality-gate-api-gates" "context" .) }}

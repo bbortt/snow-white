@@ -36,7 +36,7 @@ class QualityGateServiceUnitTest {
   private static final String TEST_QUALITY_GATE_NAME = "test-quality-gate";
 
   private static final String OWN_MESSAGE =
-    "No Quality-Gate configuration with ID 'test-quality-gate' exists!";
+    "Quality-Gate configuration 'test-quality-gate' does not exist!";
 
   private static final String OWNER_MESSAGE =
     "No Quality-Gate configuration with name 'test-quality-gate' exists! This instance's Quality-Gates are defined by its gate file, and that file defines none: add the Quality-Gate to the file and restart this instance!";

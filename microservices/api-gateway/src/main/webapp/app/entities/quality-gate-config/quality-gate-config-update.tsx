@@ -16,7 +16,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Button, Col, Row } from 'reactstrap';
 
 import { QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
-import { createEntity, getEntities, getEntity, reset, updateEntity } from './quality-gate-config.reducer';
+import { createEntity, getEntity, getGateOwnership, reset, updateEntity } from './quality-gate-config.reducer';
 
 export const QualityGateUpdate = () => {
   const dispatch = useAppDispatch();
@@ -43,7 +43,7 @@ export const QualityGateUpdate = () => {
     if (isNew) {
       dispatch(reset());
       // Nothing else on `new` reads a gate, so this is what learns the ownership mode.
-      dispatch(getEntities({ size: 1 }));
+      dispatch(getGateOwnership());
     } else {
       dispatch(getEntity(id));
     }

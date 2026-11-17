@@ -14,13 +14,17 @@ public class QualityGateNotFoundException extends Exception {
     super(message);
   }
 
-  /** The rejection this service writes itself, when the gate's owner said nothing more about it. */
+  /**
+   * The rejection this service writes itself, when the gate's owner said nothing more about it.
+   * Word for word what the Quality-Gate API says for the same case, so which side wrote it is not
+   * something a caller can tell, and an unreadable rejection body changes no answer anyone sees.
+   */
   public static QualityGateNotFoundException forGateName(
     String qualityGateConfigName
   ) {
     return new QualityGateNotFoundException(
       format(
-        "No Quality-Gate configuration with ID '%s' exists!",
+        "Quality-Gate configuration '%s' does not exist!",
         qualityGateConfigName
       )
     );
