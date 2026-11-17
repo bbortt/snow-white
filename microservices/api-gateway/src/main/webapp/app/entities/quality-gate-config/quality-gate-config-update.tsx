@@ -48,7 +48,7 @@ export const QualityGateUpdate = () => {
 
     // On `new` nothing else reads a gate at all; on `edit` the gate read reports the mode but not
     // when it 404s, which is exactly when a deep link must still be refused rather than offered.
-    dispatch(getGateOwnership());
+    void dispatch(getGateOwnership());
 
     dispatch(getOpenApiCoverageCriteria());
     setModeRequested(true);
@@ -75,6 +75,10 @@ export const QualityGateUpdate = () => {
     }
   };
 
+  // Loading wins over the refusal: `fileOwned` only means anything once the gate read has reported.
+  const isLoading = loading || !modeRequested;
+  const placeholder = isLoading ? <p>Loading...</p> : <QualityGateConfigFileOwned />;
+
   const defaultValues = () =>
     isNew
       ? {}
@@ -99,10 +103,8 @@ export const QualityGateUpdate = () => {
       </Row>
       <Row className="justify-content-center">
         <Col md="8">
-          {loading || !modeRequested ? (
-            <p>Loading...</p>
-          ) : fileOwned ? (
-            <QualityGateConfigFileOwned />
+          {isLoading || fileOwned ? (
+            placeholder
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
               <ValidatedField

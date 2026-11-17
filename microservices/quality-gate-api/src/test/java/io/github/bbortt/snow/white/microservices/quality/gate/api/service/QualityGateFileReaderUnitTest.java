@@ -168,7 +168,7 @@ class QualityGateFileReaderUnitTest {
         buildDefaultValidatorFactory().getValidator()
       );
 
-      assertThatThrownBy(() -> unreadableFixture.readQualityGateFile())
+      assertThatThrownBy(unreadableFixture::readQualityGateFile)
         .isInstanceOf(QualityGateFileException.class)
         .hasMessage(
           "Quality-Gate file '%s' cannot be used: it could not be parsed as JSON or YAML!".formatted(

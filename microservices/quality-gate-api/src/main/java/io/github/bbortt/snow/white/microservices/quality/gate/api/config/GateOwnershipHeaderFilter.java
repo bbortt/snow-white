@@ -7,6 +7,7 @@
 package io.github.bbortt.snow.white.microservices.quality.gate.api.config;
 
 import static io.github.bbortt.snow.white.commons.web.QualityGateOwnership.HEADER_X_QUALITY_GATE_OWNERSHIP;
+import static io.github.bbortt.snow.white.microservices.quality.gate.api.api.rest.QualityGateApi.PATH_GET_ALL_QUALITY_GATES;
 import static org.springframework.http.HttpMethod.GET;
 
 import clew.traceables.clew.SwTraceables;
@@ -40,7 +41,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class GateOwnershipHeaderFilter extends OncePerRequestFilter {
 
-  private static final String QUALITY_GATES_PATH = "/api/rest/v1/quality-gates";
+  // The path belongs to the spec, not to this filter: take it from the generated API.
+  private static final String QUALITY_GATES_PATH = PATH_GET_ALL_QUALITY_GATES;
 
   private final GateOwnershipService gateOwnershipService;
 

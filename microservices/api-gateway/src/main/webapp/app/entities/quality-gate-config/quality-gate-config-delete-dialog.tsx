@@ -29,7 +29,7 @@ export const QualityGateConfigDeleteDialog = () => {
     dispatch(getEntity(id!));
     // The gate read reports the mode, but not when it 404s — and a deep link to a name the gate
     // file does not define is exactly when this route must still refuse rather than offer a delete.
-    dispatch(getGateOwnership());
+    void dispatch(getGateOwnership());
     setLoadModal(true);
   }, []);
 
