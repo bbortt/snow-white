@@ -151,8 +151,11 @@ export const QualityGateConfigSlice = createEntitySlice({
         } as QualityGateConfigState;
       })
       .addCase(getGateOwnership.fulfilled, (state, action) => {
-        state.loading = false;
-        state.fileOwned = isFileOwned(action.payload.headers);
+        return {
+          ...state,
+          loading: false,
+          fileOwned: isFileOwned(action.payload.headers),
+        } as QualityGateConfigState;
       })
       .addCase(deleteEntity.fulfilled, state => {
         state.updating = false;
