@@ -134,14 +134,11 @@ public class QualityGateResource implements QualityGateApi {
         resolvedApiTests,
         reportParameter
       );
-    } catch (QualityGateNotFoundException _) {
-      return rejected(
-        NOT_FOUND,
-        format(
-          "Quality-Gate configuration '%s' does not exist!",
-          qualityGateConfigName
-        )
-      );
+    } catch (QualityGateNotFoundException e) {
+      // The gates' owner wrote this rejection, so it is passed on as given: restating it here
+      // would drop the one thing only that service can say — that its gate file defines no gates,
+      // and no name could have matched. For an ordinary unknown name the text is unchanged.
+      return rejected(NOT_FOUND, e.getMessage());
     }
   }
 

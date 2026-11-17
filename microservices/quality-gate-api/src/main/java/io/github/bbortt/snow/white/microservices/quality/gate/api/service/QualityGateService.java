@@ -173,6 +173,9 @@ public class QualityGateService {
       qualityGateConfigs.size()
     );
 
+    // Every replica applies the same file at startup; one at a time, or two of them collide by name.
+    qualityGateConfigurationRepository.lockGateFileApply();
+
     qualityGateConfigurationRepository.deleteAll();
     // Without this, an insert can be ordered ahead of the delete and hit the unique name constraint.
     qualityGateConfigurationRepository.flush();

@@ -256,6 +256,42 @@ class QualityGateFileReaderUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+    void shouldRefuseAListEntryThatDefinesNoGate() throws IOException {
+      var location = configureGateFile("empty-entry.yaml", "- \n");
+
+      assertThatThrownBy(() -> fixture.readQualityGateFile())
+        .isInstanceOf(QualityGateFileException.class)
+        .hasMessage(
+          "Quality-Gate file '%s' cannot be used: it has a list entry that defines no Quality-Gate at all!".formatted(
+            location
+          )
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+    void shouldRefuseTwoGatesSharingAName() throws IOException {
+      configureGateFile(
+        "duplicate.yaml",
+        """
+        - name: twice
+          minCoveragePercentage: 100
+          openApiCoverageCriteria: []
+        - name: twice
+          minCoveragePercentage: 80
+          openApiCoverageCriteria: []
+        """
+      );
+
+      assertThatThrownBy(() -> fixture.readQualityGateFile())
+        .isInstanceOf(QualityGateFileException.class)
+        .hasMessageContaining(
+          "it defines more than one Quality-Gate named twice"
+        );
+    }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
     void shouldClearWhatTheFileOmits() throws IOException {
       configureGateFile("sparse.yaml", "- name: states-only-its-name\n");
 

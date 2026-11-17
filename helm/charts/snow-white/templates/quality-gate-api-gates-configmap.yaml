@@ -1,4 +1,4 @@
-{{- if .Values.snowWhite.qualityGateApi.qualityGates }}
+{{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
 {{- $name := include "snow-white.name" (dict "name" "quality-gate-api-gates" "context" .) -}}
 {{- $labels := include "snow-white.labels" (dict "name" "quality-gate-api" "context" .) | nindent 0 -}}
 apiVersion: v1

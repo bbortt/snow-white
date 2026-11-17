@@ -11,6 +11,8 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 import static tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 import clew.traceables.clew.SwTraceables;
@@ -22,6 +24,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -124,10 +128,47 @@ public class QualityGateFileReader {
       );
     }
 
+    if (qualityGateConfigs.stream().anyMatch(Objects::isNull)) {
+      throw new QualityGateFileException(
+        location,
+        "it has a list entry that defines no Quality-Gate at all"
+      );
+    }
+
     qualityGateConfigs.forEach(QualityGateFileReader::clearWhatTheFileOmits);
     assertEveryStatedValueIsValid(location, qualityGateConfigs);
+    assertEveryGateIsNamedOnce(location, qualityGateConfigs);
 
     return qualityGateConfigs;
+  }
+
+  /**
+   * Two entries sharing a name is a file that cannot be applied, and saying so here names the file
+   * and the name — where letting it through surfaces it as a unique-constraint violation on
+   * whichever insert happens to be second, naming neither.
+   */
+  @RealizesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
+  private static void assertEveryGateIsNamedOnce(
+    String location,
+    List<QualityGateConfig> qualityGateConfigs
+  ) {
+    var duplicates = qualityGateConfigs
+      .stream()
+      .collect(groupingBy(QualityGateConfig::getName, counting()))
+      .entrySet()
+      .stream()
+      .filter(byName -> byName.getValue() > 1)
+      .map(Map.Entry::getKey)
+      .sorted()
+      .toList();
+
+    if (!duplicates.isEmpty()) {
+      throw new QualityGateFileException(
+        location,
+        "it defines more than one Quality-Gate named " +
+          String.join(", ", duplicates)
+      );
+    }
   }
 
   /**

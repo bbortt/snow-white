@@ -380,5 +380,53 @@ class QualityGateResourceUnitTest {
               )
         );
     }
+
+    @Test
+    @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
+    void shouldAnswerWithTheOwnersRejection_whenItExplainsWhyNoNameCouldMatch()
+      throws QualityGateNotFoundException {
+      var ownerRejection =
+        "Quality-Gate configuration 'test' does not exist! This instance's Quality-Gates are defined by its gate file, and that file defines none: add the Quality-Gate to the file and restart this instance!";
+
+      var apiTest = mock(ApiTest.class);
+      var apiTests = Set.of(apiTest);
+      doReturn(apiTests)
+        .when(apiTestMapperMock)
+        .getApiTests(calculateQualityGateRequestMock);
+
+      var reportParameter = mock(ReportParameter.class);
+      doReturn(reportParameter)
+        .when(reportParameterMapperMock)
+        .fromDto(eq(calculateQualityGateRequestMock), any(UUID.class));
+
+      doReturn(Set.<ValidationResult>of(ValidationResult.success(apiTest)))
+        .when(apiIndexServiceMock)
+        .fetchCompleteApiInformation(apiTests);
+
+      doThrow(QualityGateNotFoundException.surfacing(ownerRejection))
+        .when(reportServiceMock)
+        .initializeQualityGateCalculation(
+          eq(QUALITY_GATE_CONFIG_NAME),
+          any(),
+          eq(reportParameter)
+        );
+
+      var response = fixture.calculateQualityGate(
+        QUALITY_GATE_CONFIG_NAME,
+        calculateQualityGateRequestMock
+      );
+
+      assertThat(response)
+        .isNotNull()
+        .satisfies(
+          r -> assertThat(r.getStatusCode()).isEqualTo(NOT_FOUND),
+          r ->
+            assertThat(r.getBody())
+              .asInstanceOf(type(CalculateQualityGate400Response.class))
+              .satisfies(e ->
+                assertThat(e.getMessage()).isEqualTo(ownerRejection)
+              )
+        );
+    }
   }
 }

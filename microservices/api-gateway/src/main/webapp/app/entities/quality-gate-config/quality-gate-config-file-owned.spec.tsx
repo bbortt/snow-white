@@ -189,6 +189,9 @@ describe('Quality gate screens and the gate ownership mode', () => {
       expect(screen.queryByTestId('qualityGateConfigDeleteDialogHeading')).toBeNull();
       expect(screen.queryByTestId('entityConfirmDeleteButton')).toBeNull();
       expect(server.gateWrites()).toEqual([]);
+
+      // the route is deep-linkable, so refusing it has to leave a way back to the list
+      expect(screen.getByTestId('qualityGateConfigFileOwnedBackButton')).toBeInTheDocument();
     });
 
     it.each([

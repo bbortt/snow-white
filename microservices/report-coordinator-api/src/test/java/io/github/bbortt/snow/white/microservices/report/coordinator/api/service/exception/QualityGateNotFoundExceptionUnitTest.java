@@ -15,7 +15,7 @@ class QualityGateNotFoundExceptionUnitTest {
   @Test
   void shouldConstructMessage() {
     assertThat(QualityGateNotFoundException.forGateName("foo")).hasMessage(
-      "No Quality-Gate configuration with ID 'foo' exists!"
+      "Quality-Gate configuration 'foo' does not exist!"
     );
   }
 

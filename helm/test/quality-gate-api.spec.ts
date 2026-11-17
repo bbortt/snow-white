@@ -839,6 +839,45 @@ describe('Quality-Gate API', () => {
       });
     });
 
+    describe('with an empty gate list', () => {
+      // `qualityGates: []` is the file-owned instance that defines no gates — a placeholder to get
+      // a deployment up. It must not read as "manage the gates through the API", which would seed
+      // the four predefined gates instead.
+      const renderWithEmptyGates = () =>
+        renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            snowWhite: {
+              qualityGateApi: { qualityGates: [] },
+            },
+          },
+        });
+
+      it('should still point the service at a mounted file', async () => {
+        const container = getPodSpec(
+          getDeployment(await renderWithEmptyGates()),
+        ).containers[0];
+
+        expect(
+          container.env.find((env) => env.name === gateFileEnvName),
+        ).toBeDefined();
+      });
+
+      it('should render a ConfigMap whose file defines no gates', async () => {
+        const manifests = await renderWithEmptyGates();
+        const configMap = manifests.find(
+          (m) =>
+            m.kind === 'ConfigMap' &&
+            m.metadata.name.includes('quality-gate-api-gates'),
+        );
+
+        expect(configMap).toBeDefined();
+        expect(
+          parseDocument(configMap.data['quality-gates.yaml']).toJS(),
+        ).toStrictEqual([]);
+      });
+    });
+
     describe('with configured gates', () => {
       it('should point the service at the mounted file', async () => {
         const container = getPodSpec(getDeployment(await renderWithGates()))
@@ -878,6 +917,34 @@ describe('Quality-Gate API', () => {
         );
         expect(configMap).toBeDefined();
         expect(configMap.metadata.name).toContain('quality-gate-api-gates');
+      });
+
+      it('should checksum the gates into the pod template, so an upgrade rolls the pod', async () => {
+        // The file is read at startup only: without this, changing `qualityGates` leaves the
+        // running pods on the gates they started with.
+        const annotations = getDeployment(await renderWithGates()).spec.template
+          .metadata.annotations;
+
+        expect(annotations['checksum/quality-gates']).toMatch(/^[0-9a-f]{64}$/);
+
+        const changed = await renderHelmChart({
+          chartPath: 'charts/snow-white',
+          values: {
+            snowWhite: {
+              qualityGateApi: {
+                qualityGates: [
+                  { ...qualityGates[0], minCoveragePercentage: 95 },
+                ],
+              },
+            },
+          },
+        });
+
+        expect(
+          getDeployment(changed).spec.template.metadata.annotations[
+            'checksum/quality-gates'
+          ],
+        ).not.toBe(annotations['checksum/quality-gates']);
       });
 
       it('should render the configured gates as the file content', async () => {

@@ -75,6 +75,19 @@ export const getEntities = createAsyncThunk(
   { serializeError: serializeAxiosError },
 );
 
+/**
+ * Reads the ownership mode alone, for a screen that has no gate of its own to read. Its own action
+ * because a list response would otherwise land in `entities` and `totalItems` and truncate the list
+ * that a later render still shows.
+ */
+export const getGateOwnership = createAsyncThunk(
+  'qualityGateConfig/fetch_gate_ownership',
+  async () => {
+    return await qualityGateApi.getAllQualityGates(0, 1);
+  },
+  { serializeError: serializeAxiosError },
+);
+
 export const getEntity = createAsyncThunk(
   'qualityGateConfig/fetch_entity',
   async (name: string): Promise<AxiosResponse<IQualityGateConfig>> => {
@@ -137,6 +150,10 @@ export const QualityGateConfigSlice = createEntitySlice({
           fileOwned: isFileOwned(action.payload.headers),
         } as QualityGateConfigState;
       })
+      .addCase(getGateOwnership.fulfilled, (state, action) => {
+        state.loading = false;
+        state.fileOwned = isFileOwned(action.payload.headers);
+      })
       .addCase(deleteEntity.fulfilled, state => {
         state.updating = false;
         state.updateSuccess = true;
@@ -159,7 +176,7 @@ export const QualityGateConfigSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = fromDto(action.payload.data);
       })
-      .addMatcher(isPending(getEntities, getEntity), state => {
+      .addMatcher(isPending(getEntities, getEntity, getGateOwnership), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

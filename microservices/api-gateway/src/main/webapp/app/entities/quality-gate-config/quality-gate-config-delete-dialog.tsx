@@ -57,8 +57,23 @@ export const QualityGateConfigDeleteDialog = () => {
     return null;
   }
 
+  // No delete dialog, but still a way back: this route is reachable by deep link, and the reason
+  // alone leaves the user on a dead end with nothing but the browser's back button.
   if (fileOwned) {
-    return <QualityGateConfigFileOwned />;
+    return (
+      <Modal isOpen toggle={handleClose}>
+        <ModalBody>
+          <QualityGateConfigFileOwned />
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={handleClose} data-testid="qualityGateConfigFileOwnedBackButton">
+            <FontAwesomeIcon icon="ban" />
+            &nbsp;
+            <Translate contentKey="entity.action.cancel">Cancel</Translate>
+          </Button>
+        </ModalFooter>
+      </Modal>
+    );
   }
 
   return (
