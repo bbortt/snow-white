@@ -213,7 +213,7 @@ snowWhite:
     # -- Additional environment variables forwarded to container.
     # @section -- Snow-White Quality Gate API
     additionalEnvs: []
-    # -- Quality-Gate definitions that own this instance's gates, each entry the payload
+    # -- (list) Quality-Gate definitions that own this instance's gates, each entry the payload
     # `POST /api/rest/v1/quality-gates` takes. Setting this key at all makes the gates file-owned:
     # the chart renders them into a ConfigMap, mounts it, and the service reads it at startup, after
     # which the instance holds exactly these gates — one not listed here is deleted, none of the
@@ -223,6 +223,7 @@ snowWhite:
     # An empty list (`qualityGates: []`) is the file-owned instance that defines no gates, which is
     # a placeholder to get a deployment up, not a way back. Omitting the key entirely is what leaves
     # the gates managed through the API and the web UI.
+    # @default -- unset, which leaves the gates managed through the API and the web UI
     # @section -- Snow-White Quality Gate API
     qualityGates:
     # -- Quality Gate API pod resources.

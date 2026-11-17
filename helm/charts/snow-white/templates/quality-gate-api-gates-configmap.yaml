@@ -1,4 +1,7 @@
 {{- if not (kindIs "invalid" .Values.snowWhite.qualityGateApi.qualityGates) }}
+{{- if not (kindIs "slice" .Values.snowWhite.qualityGateApi.qualityGates) }}
+{{- fail "\n\n⚠ ERROR: 'snowWhite.qualityGateApi.qualityGates' must be a list of Quality-Gate definitions. Omit the key entirely to keep the gates managed through the API and the web UI, or set it to '[]' for a file-owned instance that defines no gates!" }}
+{{- end }}
 {{- $name := include "snow-white.name" (dict "name" "quality-gate-api-gates" "context" .) -}}
 {{- $labels := include "snow-white.labels" (dict "name" "quality-gate-api" "context" .) | nindent 0 -}}
 apiVersion: v1

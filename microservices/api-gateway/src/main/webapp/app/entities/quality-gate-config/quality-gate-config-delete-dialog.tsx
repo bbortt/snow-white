@@ -13,8 +13,8 @@ import { Translate } from 'react-jhipster';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 
-import { QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
-import { getEntity, deleteEntity } from './quality-gate-config.reducer';
+import { FILE_OWNED_REASON_ID, QualityGateConfigFileOwned } from './quality-gate-config-file-owned';
+import { getEntity, deleteEntity, getGateOwnership } from './quality-gate-config.reducer';
 
 export const QualityGateConfigDeleteDialog = () => {
   const dispatch = useAppDispatch();
@@ -27,6 +27,9 @@ export const QualityGateConfigDeleteDialog = () => {
 
   useEffect(() => {
     dispatch(getEntity(id!));
+    // The gate read reports the mode, but not when it 404s — and a deep link to a name the gate
+    // file does not define is exactly when this route must still refuse rather than offer a delete.
+    dispatch(getGateOwnership());
     setLoadModal(true);
   }, []);
 
@@ -61,15 +64,15 @@ export const QualityGateConfigDeleteDialog = () => {
   // alone leaves the user on a dead end with nothing but the browser's back button.
   if (fileOwned) {
     return (
-      <Modal isOpen toggle={handleClose}>
+      <Modal isOpen toggle={handleClose} aria-labelledby={FILE_OWNED_REASON_ID}>
         <ModalBody>
           <QualityGateConfigFileOwned />
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={handleClose} data-testid="qualityGateConfigFileOwnedBackButton">
-            <FontAwesomeIcon icon="ban" />
+            <FontAwesomeIcon icon="arrow-left" />
             &nbsp;
-            <Translate contentKey="entity.action.cancel">Cancel</Translate>
+            <Translate contentKey="entity.action.back">Back</Translate>
           </Button>
         </ModalFooter>
       </Modal>
