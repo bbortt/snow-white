@@ -42,11 +42,13 @@ export const QualityGateUpdate = () => {
   useEffect(() => {
     if (isNew) {
       dispatch(reset());
-      // Nothing else on `new` reads a gate, so this is what learns the ownership mode.
-      dispatch(getGateOwnership());
     } else {
       dispatch(getEntity(id));
     }
+
+    // On `new` nothing else reads a gate at all; on `edit` the gate read reports the mode but not
+    // when it 404s, which is exactly when a deep link must still be refused rather than offered.
+    dispatch(getGateOwnership());
 
     dispatch(getOpenApiCoverageCriteria());
     setModeRequested(true);

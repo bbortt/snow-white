@@ -59,11 +59,18 @@ const stubServer = (ownership: Ownership, gateReadsHeld?: Promise<void>) => {
     await gateReadsHeld;
     const name = /\/quality-gates\/([^/?]+)/.exec(url)?.[1];
     if (name) {
-      return respond(
-        200,
-        gates.find(gate => gate.name === name),
-        ownershipHeader,
-      );
+      const gate = gates.find(candidate => candidate.name === name);
+
+      // A name the instance does not hold is a 404, as the server answers it — the mode travels on
+      // that response too, but axios rejects it, so nothing reads the header off it.
+      if (!gate) {
+        throw Object.assign(new Error(`Request failed with status code 404`), {
+          isAxiosError: true,
+          response: respond(404, { code: 'Not Found', message: `Quality-Gate configuration '${name}' does not exist!` }, ownershipHeader),
+        });
+      }
+
+      return respond(200, gate, ownershipHeader);
     }
     return respond(200, gates, { ...ownershipHeader, 'x-total-count': String(gates.length) });
   };
@@ -192,6 +199,20 @@ describe('Quality gate screens and the gate ownership mode', () => {
 
       // the route is deep-linkable, so refusing it has to leave a way back to the list
       expect(screen.getByTestId('qualityGateConfigFileOwnedBackButton')).toBeInTheDocument();
+    });
+
+    it.each([
+      ['delete', '/quality-gate-config/not-in-the-file/delete', 'entityConfirmDeleteButton'],
+      ['edit', '/quality-gate-config/not-in-the-file/edit', 'entityCreateSaveButton'],
+    ])('should refuse the %s route for a name the gate file does not define', async (_route, path, writeControl) => {
+      // The gate read 404s here, so the mode cannot come off it — without a second source the
+      // screen would fall back to "writes allowed" and offer the control anyway.
+      const server = stubServer('file');
+      renderAt(path);
+
+      expect(await screen.findByTestId('qualityGateConfigFileOwned')).toBeInTheDocument();
+      expect(screen.queryByTestId(writeControl)).toBeNull();
+      expect(server.gateWrites()).toEqual([]);
     });
 
     it.each([

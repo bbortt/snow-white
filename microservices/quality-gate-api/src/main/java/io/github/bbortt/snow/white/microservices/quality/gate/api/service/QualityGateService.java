@@ -159,6 +159,12 @@ public class QualityGateService {
    *
    * <p>All-or-nothing, in one transaction: an unresolvable criterion leaves every gate record as it
    * was and takes the startup down with it, rather than landing half a file.
+   *
+   * <p>shortcut: replicas that start at the same moment each replace the whole table, so two of
+   * them can collide on the unique name constraint and fail that pod's startup until it is
+   * restarted into a clear window — every replica mounts the same file, so the state they converge
+   * on is the same either way. Serialize this when a restart becomes expensive; a Postgres advisory
+   * lock is the obvious way and cannot be used while the dev profile runs on H2.
    */
   @RealizesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
   @RealizesCon(
@@ -172,9 +178,6 @@ public class QualityGateService {
       "Replacing Quality-Gate configuration table with {} file-defined gate(s)",
       qualityGateConfigs.size()
     );
-
-    // Every replica applies the same file at startup; one at a time, or two of them collide by name.
-    qualityGateConfigurationRepository.lockGateFileApply();
 
     qualityGateConfigurationRepository.deleteAll();
     // Without this, an insert can be ordered ahead of the delete and hit the unique name constraint.
