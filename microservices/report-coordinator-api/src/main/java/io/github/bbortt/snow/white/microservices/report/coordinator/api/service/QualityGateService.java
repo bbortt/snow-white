@@ -102,7 +102,7 @@ public class QualityGateService {
     try {
       var error = e.getResponseBodyAs(Error.class);
       return isNull(error) ? null : error.getMessage();
-    } catch (RestClientException unparseable) {
+    } catch (RestClientException _) {
       // a 404 from anything but this API — a gateway, a proxy — carries a body we cannot read
       return null;
     }

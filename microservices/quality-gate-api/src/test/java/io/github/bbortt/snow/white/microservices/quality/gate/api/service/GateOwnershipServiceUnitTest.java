@@ -19,10 +19,14 @@ import clew.traceables.clew.annotation.VerifiesArch;
 import clew.traceables.clew.annotation.VerifiesSw;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.config.QualityGateApiProperties;
 import io.github.bbortt.snow.white.microservices.quality.gate.api.domain.repository.QualityGateConfigurationRepository;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -57,26 +61,12 @@ class GateOwnershipServiceUnitTest {
       assertThat(fixture.isFileOwned()).isTrue();
     }
 
-    @Test
+    @ParameterizedTest(name = "{0} → false")
+    @NullSource
+    @ValueSource(strings = { "", "   " })
     @VerifiesArch(ArchTraceables.ARCH_025_GITOPS_MODE_IS_INSTANCE_CONFIGURATION)
-    void shouldBeFalse_whenGateFileIsNull() {
-      qualityGateApiProperties.setGateFile(null);
-
-      assertThat(fixture.isFileOwned()).isFalse();
-    }
-
-    @Test
-    @VerifiesArch(ArchTraceables.ARCH_025_GITOPS_MODE_IS_INSTANCE_CONFIGURATION)
-    void shouldBeFalse_whenGateFileIsBlank() {
-      qualityGateApiProperties.setGateFile("   ");
-
-      assertThat(fixture.isFileOwned()).isFalse();
-    }
-
-    @Test
-    @VerifiesArch(ArchTraceables.ARCH_025_GITOPS_MODE_IS_INSTANCE_CONFIGURATION)
-    void shouldBeFalse_whenGateFileIsEmpty() {
-      qualityGateApiProperties.setGateFile("");
+    void shouldBeFalse_whenGateFileIsNotConfigured(@Nullable String gateFile) {
+      qualityGateApiProperties.setGateFile(gateFile);
 
       assertThat(fixture.isFileOwned()).isFalse();
     }
