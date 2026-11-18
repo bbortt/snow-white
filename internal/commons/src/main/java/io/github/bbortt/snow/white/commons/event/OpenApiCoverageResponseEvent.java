@@ -35,8 +35,12 @@ public record OpenApiCoverageResponseEvent(
    * producer may send. An operator raising the producer limit past this value has to raise the
    * topic's {@code max.message.bytes} to match.
    * <p>
-   * shortcut: headroom, not a bound - a busy enough window still passes any fixed number. Drop it
-   * back once the evidence a finding carries is capped at the source.
+   * shortcut: still headroom rather than a derived bound.
+   * {@link io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding#MAX_EVIDENCE} removed the
+   * traffic-shaped growth that made this necessary, so what remains scales with the number of
+   * findings - that is, with the document under test, which is predictable and reviewable in a way
+   * someone else's traffic volume was not. Derive it, or drop it back to the default, once a large
+   * real specification has been measured through the capped path.
    */
   public static final int MAX_SERIALIZED_BYTES = 10 * 1024 * 1024;
 

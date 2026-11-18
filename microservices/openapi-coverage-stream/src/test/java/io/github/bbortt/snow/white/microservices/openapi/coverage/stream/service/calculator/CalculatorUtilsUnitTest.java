@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator;
 
+import static io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding.MAX_EVIDENCE;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationEntryForConcreteKey;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.findOperationForConcreteKey;
 import static io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.calculator.CalculatorUtils.getStartedStopWatch;
@@ -23,6 +24,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.swagger.v3.oas.models.Operation;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -174,6 +176,24 @@ class CalculatorUtilsUnitTest {
       var result = toEvidence(emptyList());
 
       assertThat(result).isEmpty();
+    }
+
+    /**
+     * Every criterion reaches its target's spans through this method, so the bound belongs here
+     * rather than in any one calculator. A busy window attributing thousands of spans to a single
+     * target is what pushed the serialized response past Kafka's limit.
+     */
+    @Test
+    void shouldBoundEvidenceFromABusyWindow() {
+      var telemetry = IntStream.range(0, MAX_EVIDENCE * 100)
+        .mapToObj(span ->
+          new OpenTelemetryData("spanId" + span, "traceId" + span, null)
+        )
+        .toList();
+
+      var result = toEvidence(telemetry);
+
+      assertThat(result).hasSize(MAX_EVIDENCE);
     }
   }
 
