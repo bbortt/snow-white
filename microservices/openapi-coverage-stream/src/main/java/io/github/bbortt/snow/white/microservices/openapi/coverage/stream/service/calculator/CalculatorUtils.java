@@ -14,6 +14,7 @@ import clew.traceables.clew.ArchTraceables;
 import clew.traceables.clew.SwTraceables;
 import clew.traceables.clew.annotation.RealizesArch;
 import clew.traceables.clew.annotation.RealizesSw;
+import io.github.bbortt.snow.white.commons.event.dto.ApiTestFinding;
 import io.github.bbortt.snow.white.commons.event.dto.FindingEvidence;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.dto.OpenTelemetryData;
 import io.swagger.v3.oas.models.Operation;
@@ -21,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 final class CalculatorUtils {
 
@@ -76,24 +79,47 @@ final class CalculatorUtils {
 
   /**
    * One entry per distinct {@code (traceId, testCaseName)} pair among the spans the caller's own
-   * matching rule attributed to its target.
+   * matching rule attributed to its target, dropped to {@link ApiTestFinding#MAX_EVIDENCE}.
    * <p>
    * The test identity is whatever the span carried, verbatim, and null on a span that carried
    * none - so telemetry without it reduces to exactly the distinct trace ids and adds no
    * cardinality.
+   * <p>
+   * The bound is applied here, at the one place evidence is produced, because every criterion
+   * reaches its target's spans through this method: a cap on any single calculator would leave the
+   * other eight unbounded.
+   * <p>
+   * A drop is reported at {@code DEBUG} rather than as a warning, which is where this diverges from
+   * {@code warnAboutUnstorableTestIdentities} and the other bounds in this service. Those report
+   * once per calculation about something pathological; this fires for every target a busy window
+   * over-evidences, which is routine and would be hundreds of lines per calculation at a level
+   * anyone watches. Reporting it once per calculation instead would mean threading an accumulator
+   * through all nine calculators - more change than the bound itself.
    */
   @RealizesArch(ArchTraceables.ARCH_011_EVIDENCE_CAPTURED_AT_THE_MATCH)
   @RealizesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   static @NonNull List<FindingEvidence> toEvidence(
     @NonNull List<OpenTelemetryData> satisfyingTelemetry
   ) {
-    return satisfyingTelemetry
+    var evidence = satisfyingTelemetry
       .stream()
       .map(telemetry ->
         new FindingEvidence(telemetry.traceId(), telemetry.testCaseName())
       )
       .distinct()
       .toList();
+
+    var bounded = ApiTestFinding.bounded(evidence);
+
+    if (bounded.size() < evidence.size()) {
+      logger.debug(
+        "Bounded evidence for one target from {} entries to {}",
+        evidence.size(),
+        bounded.size()
+      );
+    }
+
+    return bounded;
   }
 
   /**

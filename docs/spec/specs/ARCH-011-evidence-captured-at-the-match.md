@@ -18,10 +18,22 @@ equivalents in the sibling calculators change shape: they take the operation's
 `List<OpenTelemetryData>` and return the subset of it that satisfied the target under that
 criterion's own rule.
 A finding's evidence is derived from the spans that criterion's rule attributed to that target: one
-entry per distinct `(traceId, testCaseName)` pair among them, where `testCaseName` is the test
-identity the span carried (`SW-032`) and is null on a span that carried none.
+entry per distinct `(traceId, testCaseName)` pair among them, up to
+`ApiTestFinding.MAX_EVIDENCE`, where `testCaseName` is the test identity the span carried
+(`SW-032`) and is null on a span that carried none.
 With no test identity present anywhere — every span today — that reduces to exactly the distinct
 `traceId` values, so the entry count is the trace count and no cardinality is added by the shape.
+
+The bound is what keeps this decision's cost a function of the document rather than of traffic.
+Unbounded, the entry count is the attributed span count, counted again for every criterion that
+judged the same spans, and a busy enough window makes the serialized response exceed any transport
+limit — which is how it first failed, against Kafka's 1 MiB default.
+Past the bound the surviving entries are the first entry of each distinct test identity in arrival
+order, then further traces of identities already represented.
+Diversity first because the attributed spans arrive grouped by test, so taking the first
+`MAX_EVIDENCE` entries outright would keep repeat traces of the earliest test and drop every later
+one, and which tests reached a target is the question the second dimension of the pair exists to
+answer.
 
 For the eleven forward criteria — "was every documented thing observed" — the attributed spans are
 the ones that satisfied the target, so a `COVERED` finding is exactly one whose subset is non-empty
@@ -99,6 +111,13 @@ evidence names exactly that span's trace — not the operation's full span set.
 A test asserts that telemetry carrying no test identity yields one evidence entry per distinct
 attributed trace with `testCaseName` null, and that two spans of one trace carrying two different
 test identities yield two entries sharing a trace id.
+Tests on the bound assert that evidence at or below `MAX_EVIDENCE` is returned in the order given,
+that more distinct test identities than there is room for keeps the first `MAX_EVIDENCE` of them in
+arrival order, and that evidence grouped by test keeps every identity that fits rather than repeat
+traces of the earliest.
+A test at the single production site asserts a window attributing far more spans than the bound to
+one target yields exactly `MAX_EVIDENCE` entries, so a calculator added later cannot reintroduce
+the unbounded shape without failing it.
 A dedicated test for the `SW-002` wildcard asserts that a `default` entry's evidence contains only
 the spans whose status code matched no sibling documented entry, and is empty (status `UNCOVERED`)
 when every observed code matched a sibling.
@@ -137,6 +156,16 @@ values before the verdict is taken.
 
 ## Changes
 
+- **2026-11-18** — Bounded a finding's evidence at `ApiTestFinding.MAX_EVIDENCE`, which this spec
+  had left as one entry per distinct attributed pair with no ceiling.
+  That made the entry count a function of how much telemetry a window held, counted again per
+  criterion judging the same spans, and `openapi-coverage-stream` crash-looped on a response that
+  serialized past Kafka's 1 MiB default: the producer refused its own record, the stream client
+  shut down, and the uncommitted offset made every restart fail identically.
+  A transport limit alone does not settle it, because a busier window passes any fixed number.
+  The surviving entries are diversity-first — the first entry of each distinct test identity before
+  any second entry of one already represented — since the attributed spans arrive grouped by test
+  and a blind truncation would answer "was it reached" while losing "by which tests".
 - **2026-09-28** — Corrected `finding_evidence`'s unique constraint, which had read this spec's
   amended pair model as "a trace is captured against a target at most once" and so held at most one
   row per `(finding, trace_id)`.
