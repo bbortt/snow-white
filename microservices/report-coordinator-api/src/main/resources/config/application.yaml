@@ -22,6 +22,10 @@ spring:
     properties:
       hibernate.default_batch_fetch_size: 32
   kafka:
+    admin:
+      # a cluster that predates the response topic's max.message.bytes keeps the 1 MiB default
+      # otherwise, and the stream's producer cannot publish into it
+      modify-topic-configs: true
     consumer:
       properties:
         spring.json.trusted.packages: 'io.github.bbortt.snow.white.*'

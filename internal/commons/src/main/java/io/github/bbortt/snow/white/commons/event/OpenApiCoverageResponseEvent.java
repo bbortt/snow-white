@@ -21,6 +21,25 @@ public record OpenApiCoverageResponseEvent(
   @Nullable Set<OpenApiTestResult> openApiTestResults,
   @With @Nullable String errorMessage
 ) implements ApiCoverageResponseEvent {
+  /**
+   * The largest this event may be on the wire, in bytes.
+   * <p>
+   * Kafka's defaults put this at 1 MiB on both ends, and a coverage response passes that: the
+   * findings ride the result they explain, so the event grows with how much telemetry the window
+   * held rather than with the document's size. Past the limit the producer refuses its own record
+   * before the broker ever sees it, the stream client shuts down, and the input offset is never
+   * committed - so the restart re-reads the same request and fails the same way.
+   * <p>
+   * It lives here because two sides have to agree on it: {@code openapi-coverage-stream} sizes its
+   * producer by it, and whichever service creates the response topic first has to admit what that
+   * producer may send. An operator raising the producer limit past this value has to raise the
+   * topic's {@code max.message.bytes} to match.
+   * <p>
+   * shortcut: headroom, not a bound - a busy enough window still passes any fixed number. Drop it
+   * back once the evidence a finding carries is capped at the source.
+   */
+  public static final int MAX_SERIALIZED_BYTES = 10 * 1024 * 1024;
+
   public OpenApiCoverageResponseEvent(
     ApiInformation apiInformation,
     @NonNull Set<OpenApiTestResult> openApiTestResults
