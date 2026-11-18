@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.6.0](https://github.com/bbortt/snow-white/compare/v2.5.1...v2.6.0) (2026-11-18)
+
+
+### Features
+
+* **quality-gate-api:** own the quality gates from a file ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([7a232b4](https://github.com/bbortt/snow-white/commit/7a232b4a2bf4e576eee822662df3b3fa680f95b4))
+
+
+### Bug Fixes
+
+* **api-gateway:** type the gate-ownership reducer case like its neighbours ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([2c64c5b](https://github.com/bbortt/snow-white/commit/2c64c5bc1f7660fba0b86d4aa2e38386062cd75d))
+* clear the SonarCloud findings on the gates-as-code change ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([d61500c](https://github.com/bbortt/snow-white/commit/d61500c9adc285250ef6f5c00b8da5e79a6ed67c))
+* **quality-gate-api:** act on the gates-as-code review ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([97dcf3a](https://github.com/bbortt/snow-white/commit/97dcf3ac64079ef2eec94acae43ada969e6ea71e))
+* **quality-gate-api:** act on the scoped re-review ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([765e667](https://github.com/bbortt/snow-white/commit/765e667a29b3b32d50b97d3adc0e846a6dc906d4))
+
+
+### Documentation
+
+* draft quality gates as code ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([f61b90d](https://github.com/bbortt/snow-white/commit/f61b90d1468b1b12dbbf4c3ccf0c404c8ff96fbb))
+* draft the UI read-only state as a spec ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([cde962d](https://github.com/bbortt/snow-white/commit/cde962dca04eb7d0350fd080c6aa1a5aa8689b7b))
+* promote quality gates as code ([#2275](https://github.com/bbortt/snow-white/issues/2275)) ([c8639ce](https://github.com/bbortt/snow-white/commit/c8639ced8849c24fafaeee3436800c0c3cbf02c6))
+
 ## [2.5.1](https://github.com/bbortt/snow-white/compare/v2.5.0...v2.5.1) (2026-11-11)
 
 ### Bug Fixes
