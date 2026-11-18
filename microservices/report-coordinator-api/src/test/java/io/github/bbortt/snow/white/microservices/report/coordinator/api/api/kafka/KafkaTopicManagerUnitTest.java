@@ -6,6 +6,7 @@
 
 package io.github.bbortt.snow.white.microservices.report.coordinator.api.api.kafka;
 
+import static io.github.bbortt.snow.white.commons.event.OpenApiCoverageResponseEvent.MAX_SERIALIZED_BYTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.doReturn;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import io.github.bbortt.snow.white.microservices.report.coordinator.api.config.ReportCoordinationServiceProperties;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.config.TopicConfig;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -149,6 +151,28 @@ class KafkaTopicManagerUnitTest {
       var outboundTopic = fixture.openapiCalculationResponseTopic();
 
       assertThat(outboundTopic.name()).isEqualTo(testResponseTopic);
+    }
+
+    @Test
+    void shouldAdmitTheLargestCoverageResponse() {
+      doReturn(true)
+        .when(reportCoordinationServicePropertiesMock)
+        .isInitTopics();
+
+      doReturn(openapiCalculationResponseMock)
+        .when(reportCoordinationServicePropertiesMock)
+        .getOpenapiCalculationResponse();
+
+      doReturn("KafkaTopicManagerTest:response")
+        .when(openapiCalculationResponseMock)
+        .getTopic();
+
+      var outboundTopic = fixture.openapiCalculationResponseTopic();
+
+      assertThat(outboundTopic.configs()).containsEntry(
+        TopicConfig.MAX_MESSAGE_BYTES_CONFIG,
+        String.valueOf(MAX_SERIALIZED_BYTES)
+      );
     }
 
     @Test

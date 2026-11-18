@@ -26,7 +26,16 @@ spring:
   application:
     name: openapi-coverage-stream
   kafka:
+    admin:
+      # a cluster that predates the response topic's max.message.bytes keeps the 1 MiB default
+      # otherwise, and this producer cannot publish into it
+      modify-topic-configs: true
     streams:
       application-id: openapi-coverage-stream
+      properties:
+        # OpenApiCoverageResponseEvent.MAX_SERIALIZED_BYTES. The response topic's max.message.bytes
+        # has to match: declared here under init-topics=true, otherwise set out of band - a topic
+        # left at 1 MiB fails the same way, only with a broker-side error that does not say why.
+        producer.max.request.size: 10485760
   profiles:
     default: prod
