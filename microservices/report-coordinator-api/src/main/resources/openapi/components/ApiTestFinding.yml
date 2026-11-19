@@ -46,7 +46,9 @@ properties:
     maxLength: 128
   evidence:
     type: array
-    description: 'The traces that evidence this finding - empty for anything but a covered one'
+    # No maxItems: the bound is applied where the event is built, so a report calculated before it
+    # shipped can still serve more, and a schema-validating consumer would reject a legitimate read.
+    description: 'The traces that evidence this finding - present on a covered one, kept on a waived one so a reviewer can see whether the waiver is still needed, and empty otherwise. Newly calculated findings carry at most 32, admitting one per distinct test case before any repeat, so a heavily exercised target keeps the breadth of which tests reached it rather than the depth of one; a report calculated before that bound shipped can carry more'
     items:
       $ref: './FindingEvidence.yml'
   # Both absent on any finding whose status is not WAIVED, rather than served as null: the status
