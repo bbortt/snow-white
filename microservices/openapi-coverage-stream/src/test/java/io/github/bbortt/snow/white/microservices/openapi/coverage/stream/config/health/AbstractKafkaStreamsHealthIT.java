@@ -63,7 +63,7 @@ abstract class AbstractKafkaStreamsHealthIT {
   static final String INDICATOR_NAME = "kafkaStreams";
 
   private static final ConfluentKafkaContainer KAFKA_CONTAINER =
-    new ConfluentKafkaContainer("confluentinc/cp-kafka:8.4.0").withExposedPorts(
+    new ConfluentKafkaContainer("confluentinc/cp-kafka:8.4.1").withExposedPorts(
       9092
     );
 
