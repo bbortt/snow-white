@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.1](https://github.com/bbortt/snow-white/compare/v2.6.0...v2.6.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **openapi-coverage-stream:** admit a coverage response past 1 MiB ([#2428](https://github.com/bbortt/snow-white/issues/2428)) ([202429f](https://github.com/bbortt/snow-white/commit/202429ff9d11c49760880b53d048cc99c17e5b09))
+* **openapi-coverage-stream:** bound the evidence a finding carries ([#2428](https://github.com/bbortt/snow-white/issues/2428)) ([dfc9e40](https://github.com/bbortt/snow-white/commit/dfc9e4040825c5ef9dc4c97543bae0febe75f3d9))
+* **report-coordinator-api:** document what the evidence array really carries ([0f60ef4](https://github.com/bbortt/snow-white/commit/0f60ef414b8ee6c4e42573be762109cbe5834a42))
+
 ## [2.6.0](https://github.com/bbortt/snow-white/compare/v2.5.1...v2.6.0) (2026-11-18)
 
 ### Features
