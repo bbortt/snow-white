@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.2](https://github.com/bbortt/snow-white/compare/v2.6.1...v2.6.2) (2026-11-21)
+
+
+### Documentation
+
+* **pages:** announce releases 2.6.0 and 2.6.1 ([507eb23](https://github.com/bbortt/snow-white/commit/507eb23bd3f91756f046a201b2fae9dda6995866))
+
 ## [2.6.1](https://github.com/bbortt/snow-white/compare/v2.6.0...v2.6.1) (2026-11-19)
 
 ### Bug Fixes
