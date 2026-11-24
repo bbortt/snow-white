@@ -159,6 +159,9 @@ To simplify this, the project provides:
   metadata in Spring-based services.
 - [**Spring Kafka Autoconfiguration**](./toolkit/spring-kafka-autoconfiguration) - Does the same for records consumed by
   a `@KafkaListener`, using the [AsyncAPI attributes](./semantic-convention/asyncapi.md).
+- [**Citrus JUnit Jupiter Extension**](./toolkit/citrus-junit-jupiter-extension) - Makes a JUnit-driven suite name its
+  own test on every request, so findings point at a test rather than a trace id.
+  Published, but use at your own risk - it carries no compatibility promise.
 
 ### Coverage Calculation
 
