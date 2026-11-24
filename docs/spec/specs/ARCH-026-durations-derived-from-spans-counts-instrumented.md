@@ -16,7 +16,7 @@ what it measures rather than by preference.
 
 A **duration** is never instrumented in application code.
 It is derived in the OpenTelemetry Collector from the spans Snow-White already emits, by the
-`spanmetrics` connector, which also yields the call count of the same span.
+`span_metrics` connector, which also yields the call count of the same span.
 Where a duration needs a span boundary that does not exist, the increment adds the span
 annotation, not a timer.
 
@@ -86,15 +86,20 @@ span carrying the number of reports it swept; derived counters would report one 
 A backlog gauge has no span to derive from at all, because it describes state between requests
 rather than a request.
 
-Micrometer rather than the OpenTelemetry Metrics API directly, for the meters that remain,
-because `micrometer-core` is already on the classpath wherever `spring-boot-starter-actuator` is —
-`api-gateway`, `api-index-api`, `openapi-coverage-stream`, `quality-gate-api`,
-`report-coordinator-api`, and `mcp-api` — so five of the modules that need a meter need no new
-dependency.
-It is injectable by Spring, and a unit test can assert against a `SimpleMeterRegistry` with no
-agent attached, which an agent-bridged OpenTelemetry `Meter` cannot offer as cheaply.
-`api-sync-job` carries neither actuator nor the OpenTelemetry starter and is the one module where
-a dependency is added deliberately.
+Micrometer rather than the OpenTelemetry Metrics API directly, for the meters that remain.
+Exactly two modules need one in this increment: `report-coordinator-api`, which already carries
+`spring-boot-starter-actuator` and therefore `micrometer-core`, and `api-sync-job`, which carries
+neither actuator nor the OpenTelemetry starter and is the one module where a dependency is added
+deliberately.
+So the choice costs one new dependency rather than two, which is a modest argument on its own —
+the stronger one is that a `MeterRegistry` is injectable by Spring and a unit test can assert
+against a `SimpleMeterRegistry` with no agent attached, which an agent-bridged OpenTelemetry
+`Meter` cannot offer as cheaply.
+
+The other actuator-carrying modules — `api-gateway`, `api-index-api`, `openapi-coverage-stream`,
+`quality-gate-api`, and `mcp-api` — need no meter at all here.
+`openapi-coverage-stream` is worth naming: it is the most heavily instrumented service in this
+increment and every one of its metrics is derived, so it gains no registry interaction.
 
 **Verification Description**
 A review confirms no production source registers a `Timer`, `LongTaskTimer`, or manual elapsed-time

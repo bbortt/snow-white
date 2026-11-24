@@ -48,7 +48,7 @@ That sweep is the lagging indicator; nothing reports the backlog while it is sti
 Two mechanisms, split by what each can actually measure.
 
 Durations are derived in the OpenTelemetry Collector from spans Snow-White already emits, using
-the `spanmetrics` connector.
+the `span_metrics` connector.
 A span records its duration on the failure path as well as the success path, so a derived
 histogram cannot omit the slow failures — which a hand-written timer around a `try` block easily
 does.
