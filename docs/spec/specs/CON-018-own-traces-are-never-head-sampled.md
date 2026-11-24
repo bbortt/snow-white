@@ -28,7 +28,7 @@ It says nothing about how a customer samples the application under test, which i
 Snow-White and governed by what that customer wants analysed.
 
 **Rationale**
-The `spanmetrics` connector measures the spans that arrive.
+The `span_metrics` connector measures the spans that arrive.
 Under head sampling, what arrives is a subset, and every derived count and histogram becomes an
 estimate scaled by a sampling rate the metric does not carry.
 The failure mode is the dangerous kind: nothing errors, no pipeline breaks, and the dashboards keep

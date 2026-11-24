@@ -18,13 +18,16 @@ and the report reaches a terminal status.
 The start is the `initiatedAt` value the `QualityGateCalculationRequestEvent` already carries.
 It is not the start of any span, and not the Kafka record timestamp.
 
-The histogram is recorded once per report, when the report leaves `IN_PROGRESS`, and is
+The histogram is recorded once per report, when the report leaves the non-terminal statuses, and is
 dimensioned by `snow.white.report.status` — the terminal status it reached.
+Non-terminal means `NOT_STARTED` or `IN_PROGRESS`, which is the pair the housekeeper sweeps and the
+pair [SW-058](SW-058-fan-out-backlog-measured-by-age.md)'s gauge counts; a report that never
+started is as much a timed-out calculation as one that stalled half way.
 
 A report swept to `TIMED_OUT` is recorded too, so the slowest outcomes are present rather than
 censored.
 This requires the housekeeper to know the ages of the rows it sweeps, which its current bulk
-`UPDATE ... WHERE createdAt < cutoff` does not surface.
+`UPDATE ... WHERE createdAt < cutoff AND status IN (NOT_STARTED, IN_PROGRESS)` does not surface.
 The housekeeper therefore reads the `createdAt` values it is about to transition, within the same
 transaction, and records one observation per swept report.
 

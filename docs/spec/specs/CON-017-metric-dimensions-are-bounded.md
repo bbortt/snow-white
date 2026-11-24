@@ -20,7 +20,7 @@ Permitted, and the complete list for this increment:
   [SW-056](SW-056-calculation-outcome-rides-on-the-span.md).
 - `snow.white.report.status` — the six persisted `ReportStatus` constants.
 - `snow.white.api.type` — `ApiType`, where a metric needs it.
-- The dimensions the `spanmetrics` connector adds by default: service name, span name, span kind,
+- The dimensions the `span_metrics` connector adds by default: service name, span name, span kind,
   and span status.
   Span name is what distinguishes the calculation phases of
   [SW-055](SW-055-coverage-phases-are-the-span-boundary.md), so no separate phase

@@ -55,8 +55,8 @@ Putting it on the span rather than in a Micrometer counter keeps one mechanism f
 telemetry and yields the duration of each failure class at no extra cost — a timeout and a refusal
 have very different latencies, and knowing which is slow is the next question after knowing which
 is frequent.
-Span status alone is insufficient: it offers `ok` and `error`, which collapses six distinct
-operator responses into one.
+Span status alone is insufficient: it offers `ok` and `error`, which collapses the seven failure
+values above into one.
 
 `no_telemetry_for_filters` is separated from `no_application_telemetry` because the operator
 actions diverge completely.
