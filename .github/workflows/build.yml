@@ -141,8 +141,17 @@ jobs:
         if: matrix.java == 25 && !contains(github.event.pull_request.user.login, 'dependabot')
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # Fully qualified rather than the 'sonar' prefix. Prefix resolution reads the goalPrefix
+        # from the declared plugin's own descriptor, so it needs the plugin resolved first; only
+        # when that fails does it fall back to the plugin group's maven-metadata, and a failure
+        # there reports 'No plugin found for prefix sonar' - which reads like a broken POM rather
+        # than the transient lookup it is. Naming the coordinate skips the prefix match and that
+        # fallback, so the same network failure surfaces as the artifact-resolution error it is.
+        # This makes the failure legible; it does not prevent it.
+        # The version still comes from the root POM's build/plugins, so there is none to keep in
+        # step here.
         run: |
-          ./mvnw -B sonar:sonar \
+          ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=bbortt-github \
             -Dsonar.projectKey=bbortt_snow-white
