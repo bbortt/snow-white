@@ -29,8 +29,14 @@ The test runner puts the name into [OpenTelemetry baggage](https://www.w3.org/TR
 Set one HTTP header per request from the test runner:
 
 ```http
-baggage: test.case.name=org.example.PetstoreIT.shouldRejectUnknownPet
+baggage: test.case.name=org.example.PetstoreIT%23shouldRejectUnknownPet
 ```
+
+The separator is the runner's business, not Snow-White's - the value is an opaque label either way.
+A JUnit suite using the [`citrus-junit-jupiter-extension`](../toolkit/citrus-junit-jupiter-extension) sends
+`<class>#<method>`, percent-encoded to `%23` by OpenTelemetry's own `W3CBaggagePropagator`, and the receiving
+propagator decodes it so the span carries the unescaped name.
+The upstream registry's examples above use a dot instead; both are read identically.
 
 For a service instrumented by the OpenTelemetry Java agent, the copy is configuration and no application code:
 
