@@ -4,8 +4,8 @@
   "exclude": [],
   "compilerOptions": {
     "paths": {
-      "app/*": ["src/main/webapp/app/*"]
+      "app/*": ["./src/main/webapp/app/*"]
     },
-    "types": ["jest", "webpack-env"]
+    "types": ["jest"]
   }
 }

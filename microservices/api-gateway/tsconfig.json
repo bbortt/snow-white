@@ -10,13 +10,14 @@
     "removeComments": false,
     "noImplicitAny": false,
     "outDir": "target/classes/static/app",
+    "rootDir": "src/main/webapp/app",
     "lib": ["dom", "es2022"],
-    "types": ["webpack-env"],
+    "types": [],
     "allowJs": true,
     "checkJs": false,
-    "baseUrl": "./",
+    "skipLibCheck": true,
     "paths": {
-      "app/*": ["src/main/webapp/app/*"]
+      "app/*": ["./src/main/webapp/app/*"]
     },
     "importHelpers": true,
     "esModuleInterop": true,
