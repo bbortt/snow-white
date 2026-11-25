@@ -198,7 +198,8 @@ class JUnitReporterUnitTest {
 
     @Test
     void shouldTransformReport_withoutOpenApiCoverage()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       var qualityGateReport = createInitialQualityGateReport();
 
       var jUnitReport = fixture.transformToJUnitTestSuites(qualityGateReport);
@@ -211,7 +212,8 @@ class JUnitReporterUnitTest {
 
     @Test
     void shouldTransformReport_withPassedOpenApiCoverages()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(
@@ -245,7 +247,8 @@ class JUnitReporterUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withFailedOpenApiCoverages()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(
@@ -279,7 +282,8 @@ class JUnitReporterUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withMixedOpenApiCoverages()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       var qualityGateReport = createInitialQualityGateReport().withApiTests(
         Set.of(
           createApiTest(
@@ -318,7 +322,8 @@ class JUnitReporterUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withCoveragesAroundALoweredThreshold()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       // Under a gate at 80%, 0.5 is still a failure while 0.85 and 0.9 pass —
       // carrying the gap they still have as a comment.
       var qualityGateReport = createInitialQualityGateReport(80).withApiTests(
@@ -361,7 +366,8 @@ class JUnitReporterUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_017_JUNIT_EXPORT_MIRRORS_THE_GATE_VERDICT)
     void shouldTransformReport_withExcludedOpenApiCoverages()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       var qualityGateReport = createInitialQualityGateReport();
 
       // Zero coverage on an excluded criterion: exclusion wins over the coverage
@@ -394,7 +400,8 @@ class JUnitReporterUnitTest {
       ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
     )
     void shouldTransformReport_withFullCoverageReachedOnlyByWaiver()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       // Every target this criterion would have judged was waived, so its ratio is
       // a vacuous 1.00. The document must not read as the plain passing case a
       // genuinely complete criterion produces: judgedTargetCount="0" beside a
@@ -444,7 +451,8 @@ class JUnitReporterUnitTest {
       ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
     )
     void shouldTransformReport_withACoverageGapBesideAWaiver()
-      throws IOException, SAXException {
+      throws IOException, SAXException
+    {
       // A waiver changes neither verdict: the criterion below the gate still fails
       // and the one above it still passes, each adding its waived targets to the
       // shape it already had. The excluded criterion stays bare `skipped` even

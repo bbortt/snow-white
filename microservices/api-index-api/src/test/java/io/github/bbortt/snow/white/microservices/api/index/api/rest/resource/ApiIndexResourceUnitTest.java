@@ -92,7 +92,8 @@ class ApiIndexResourceUnitTest {
 
     @Test
     void shouldPersistApi_whenItDoesNotExistYet()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       var domain = mock(ApiReference.class);
       doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
 
@@ -108,7 +109,8 @@ class ApiIndexResourceUnitTest {
       ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
     )
     void shouldNotPersistApi_whenItHasAlreadyBeenIngested()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       var domain = mock(ApiReference.class);
       doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
 
@@ -127,7 +129,8 @@ class ApiIndexResourceUnitTest {
       ConTraceables.CON_008_STABLE_SUBMISSION_CANNOT_CARRY_PRERELEASE_CONTENT
     )
     void shouldNotPersistApi_whenTheReceivedApiInformationIsInvalid()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       var domain = mock(ApiReference.class);
       doReturn(domain).when(apiReferenceMapperMock).fromDto(dto);
 

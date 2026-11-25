@@ -86,8 +86,7 @@ class QualityGateResourceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
-    void shouldReturnAcceptedWithLocationHeader_whenAllApiTestsAreValid()
-      throws QualityGateNotFoundException {
+    void shouldReturnAcceptedWithLocationHeader_whenAllApiTestsAreValid() throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);
       var apiTests = Set.of(apiTest);
       doReturn(apiTests)
@@ -277,8 +276,7 @@ class QualityGateResourceUnitTest {
     @VerifiesSw(
       SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST
     )
-    void shouldReturnBadRequestAndCreateNoReport_whenAWaiverIsRejected()
-      throws QualityGateNotFoundException {
+    void shouldReturnBadRequestAndCreateNoReport_whenAWaiverIsRejected() throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);
       var apiTests = Set.of(apiTest);
       doReturn(apiTests)
@@ -329,8 +327,7 @@ class QualityGateResourceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
-    void shouldReturnNotFound_whenQualityGateConfigurationDoesNotExist()
-      throws QualityGateNotFoundException {
+    void shouldReturnNotFound_whenQualityGateConfigurationDoesNotExist() throws QualityGateNotFoundException {
       var apiTest = mock(ApiTest.class);
       var apiTests = Set.of(apiTest);
       doReturn(apiTests)
@@ -383,8 +380,7 @@ class QualityGateResourceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
-    void shouldAnswerWithTheOwnersRejection_whenItExplainsWhyNoNameCouldMatch()
-      throws QualityGateNotFoundException {
+    void shouldAnswerWithTheOwnersRejection_whenItExplainsWhyNoNameCouldMatch() throws QualityGateNotFoundException {
       var ownerRejection =
         "Quality-Gate configuration 'test' does not exist! This instance's Quality-Gates are defined by its gate file, and that file defines none: add the Quality-Gate to the file and restart this instance!";
 

@@ -28,8 +28,9 @@ public class ApiIndexCachingService implements CachingService {
 
   @Override
   @WithSpan
-  public @NonNull String fetchApiSourceUrl(ApiInformation apiInformation)
-    throws OpenApiNotIndexedException {
+  public @NonNull String fetchApiSourceUrl(
+    ApiInformation apiInformation
+  ) throws OpenApiNotIndexedException {
     try {
       var response = apiIndexApiClient.getApiDetailsWithHttpInfo(
         apiInformation.getServiceName(),

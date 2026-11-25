@@ -100,8 +100,7 @@ class SyncJobUnitTest {
     }
 
     @Test
-    void shouldCollectAllSuppliersAndDelegateToProcessor()
-      throws InterruptedException {
+    void shouldCollectAllSuppliersAndDelegateToProcessor() throws InterruptedException {
       Supplier<ApiInformation> s1 = mock();
       Supplier<ApiInformation> s2 = mock();
       Supplier<ApiInformation> s3 = mock();
@@ -125,8 +124,7 @@ class SyncJobUnitTest {
     }
 
     @Test
-    void shouldPublishLoadedApisViaProcessorCallback()
-      throws InterruptedException {
+    void shouldPublishLoadedApisViaProcessorCallback() throws InterruptedException {
       ApiInformation api = new ApiInformation().withLoadStatus(LOADED);
 
       when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(
@@ -159,8 +157,7 @@ class SyncJobUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
-    void shouldNotReportPublishWhichTheIndexDidNotAccept()
-      throws InterruptedException {
+    void shouldNotReportPublishWhichTheIndexDidNotAccept() throws InterruptedException {
       ApiInformation api = new ApiInformation().withLoadStatus(LOADED);
 
       when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(
@@ -253,8 +250,7 @@ class SyncJobUnitTest {
     }
 
     @Test
-    void shouldCatchExceptionsOccurringDuringPublishing()
-      throws InterruptedException {
+    void shouldCatchExceptionsOccurringDuringPublishing() throws InterruptedException {
       ApiInformation api = new ApiInformation().withLoadStatus(LOADED);
 
       when(apiCatalogService1.getApiSpecificationLoaders()).thenReturn(

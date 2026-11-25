@@ -69,7 +69,8 @@ class ApiIndexServiceUnitTest {
 
     @Test
     void shouldSaveReferencedApi()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       doReturn(Optional.empty())
         .when(apiReferenceRepositoryMock)
         .findById(
@@ -168,7 +169,8 @@ class ApiIndexServiceUnitTest {
       SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
     )
     void shouldReplaceExistingPrerelease_whenPrereleaseIsReUploaded()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       var prereleaseReference = apiReference
         .withPrerelease(true)
         .withPrereleaseContent("spec: content");
@@ -195,7 +197,8 @@ class ApiIndexServiceUnitTest {
       SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
     )
     void shouldReplaceExistingPrerelease_whenReleaseIsReUploaded()
-      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+      throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+    {
       var prereleaseReference = apiReference
         .withPrerelease(true)
         .withPrereleaseContent("spec: content");

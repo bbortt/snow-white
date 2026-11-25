@@ -112,7 +112,7 @@ class OpenApiCoverageServiceUnitTest {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
-        {"http.request.method": "%s","url.path":"/api/rest/v1/foo" }
+        { "http.request.method": "%s", "url.path": "/api/rest/v1/foo" }
         """.formatted(httpMethod.name())
       );
 
@@ -167,7 +167,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldReturnEmptyOperationMap_whenOpenApiHasNoPaths()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
@@ -209,7 +210,8 @@ class OpenApiCoverageServiceUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
     void shouldHoistTheTestIdentityOntoEverySpanHandedToTheCalculators()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       doReturn("snow.white.test.case.name")
         .when(openApiCoverageStreamPropertiesMock)
         .getTestCaseNameAttribute();
@@ -263,7 +265,8 @@ class OpenApiCoverageServiceUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
     void shouldHandOnASpanWhoseTestIdentityIsTooLongToStore()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       doReturn("snow.white.test.case.name")
         .when(openApiCoverageStreamPropertiesMock)
         .getTestCaseNameAttribute();
@@ -413,7 +416,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldGroupTelemetryByTemplateKey_whenOperationIdIsKnown()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -453,7 +457,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFallbackToConcretePathKey_whenOperationIdIsNotInSpec()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -491,7 +496,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFallbackToConcretePathKey_whenOperationIdAttributeIsBlank()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       doReturn("openapi.operation.id")
         .when(openApiCoverageStreamPropertiesMock)
         .getOperationIdAttribute();
@@ -529,7 +535,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFilterOut_whenOperationIdIsUnknownAndUrlAttributesAreMissing()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """
@@ -557,7 +564,8 @@ class OpenApiCoverageServiceUnitTest {
 
     @Test
     void shouldFilterOut_whenUrlPathAttributeIsMissing()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       var attributes = JsonMapper.shared().readTree(
         // language=json
         """

@@ -154,8 +154,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
-    void shouldReturnCreatedResponse()
-      throws ConfigurationNameAlreadyExistsException {
+    void shouldReturnCreatedResponse() throws ConfigurationNameAlreadyExistsException {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateConfigurationMapperMock)
@@ -185,8 +184,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
-    void shouldReturnConflictResponse_whenConfigurationAlreadyExists()
-      throws ConfigurationNameAlreadyExistsException {
+    void shouldReturnConflictResponse_whenConfigurationAlreadyExists() throws ConfigurationNameAlreadyExistsException {
       var qualityGateConfiguration = QualityGateConfiguration.builder()
         .name(qualityGateConfig.getName())
         .build();
@@ -257,7 +255,10 @@ class QualityGateResourceUnitTest {
 
     @Test
     void shouldDeleteConfiguration()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var name = "TestQualityGate";
 
       var response = fixture.deleteQualityGate(name);
@@ -286,7 +287,10 @@ class QualityGateResourceUnitTest {
 
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationAlreadyExists()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var name = "NonExistingConfiguration";
       doThrow(new ConfigurationDoesNotExistException(name))
         .when(qualityGateServiceMock)
@@ -299,7 +303,10 @@ class QualityGateResourceUnitTest {
 
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationIsUnmodifiable()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var name = "UnmodifiableConfiguration";
       doThrow(new UnmodifiableConfigurationException(name))
         .when(qualityGateServiceMock)
@@ -449,8 +456,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
-    void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
-      throws ConfigurationDoesNotExistException {
+    void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists() throws ConfigurationDoesNotExistException {
       var name = "NonExistingConfiguration";
       doThrow(new ConfigurationDoesNotExistException(name))
         .when(qualityGateServiceMock)
@@ -463,8 +469,7 @@ class QualityGateResourceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
-    void shouldNameTheGateFile_whenConfigurationDoesNotExistAndFileDefinesNoGates()
-      throws ConfigurationDoesNotExistException {
+    void shouldNameTheGateFile_whenConfigurationDoesNotExistAndFileDefinesNoGates() throws ConfigurationDoesNotExistException {
       var name = "NonExistingConfiguration";
       doThrow(new ConfigurationDoesNotExistException(name))
         .when(qualityGateServiceMock)
@@ -529,7 +534,10 @@ class QualityGateResourceUnitTest {
 
     @Test
     void shouldReturnUpdatedResponse()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateServiceMock)
@@ -579,8 +587,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
-    void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists()
-      throws ConfigurationDoesNotExistException {
+    void shouldReturnNotFoundResponse_whenConfigurationDoesNotExists() throws ConfigurationDoesNotExistException {
       doThrow(new ConfigurationDoesNotExistException(NAME))
         .when(qualityGateServiceMock)
         .findByName(NAME);
@@ -595,7 +602,10 @@ class QualityGateResourceUnitTest {
 
     @Test
     void shouldReturnNotFoundResponse_whenConfigurationIsUnmodifiable()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var qualityGateConfiguration = new QualityGateConfiguration();
       doReturn(qualityGateConfiguration)
         .when(qualityGateServiceMock)
@@ -616,8 +626,7 @@ class QualityGateResourceUnitTest {
     }
 
     @Test
-    void shouldReturnBadRequestResponse_whenInvalidOpenApiCriterionSupplied()
-      throws ConfigurationDoesNotExistException {
+    void shouldReturnBadRequestResponse_whenInvalidOpenApiCriterionSupplied() throws ConfigurationDoesNotExistException {
       var criteriaName = "criteriaName";
       doThrow(new OpenApiCriterionDoesNotExistException(criteriaName))
         .when(qualityGateServiceMock)

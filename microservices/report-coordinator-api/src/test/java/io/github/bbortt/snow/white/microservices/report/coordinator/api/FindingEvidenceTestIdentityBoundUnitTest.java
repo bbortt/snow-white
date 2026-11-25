@@ -47,7 +47,8 @@ class FindingEvidenceTestIdentityBoundUnitTest {
   @Test
   @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
   void columnHoldsEveryNameTheCoverageStreamAdmits()
-    throws IOException, URISyntaxException {
+    throws IOException, URISyntaxException
+  {
     var width = lastDeclaredColumnWidth();
 
     assertThat(width)
@@ -61,8 +62,7 @@ class FindingEvidenceTestIdentityBoundUnitTest {
 
   @Test
   @VerifiesSw(SwTraceables.SW_032_TEST_IDENTITY_ON_THE_SPAN)
-  void publishedSchemaHoldsEveryNameTheCoverageStreamAdmits()
-    throws IOException {
+  void publishedSchemaHoldsEveryNameTheCoverageStreamAdmits() throws IOException {
     var schema = readClasspathResource(
       "openapi/components/FindingEvidence.yml"
     );

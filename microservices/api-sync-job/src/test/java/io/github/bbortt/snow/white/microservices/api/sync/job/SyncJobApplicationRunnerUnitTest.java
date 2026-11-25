@@ -66,8 +66,7 @@ class SyncJobApplicationRunnerUnitTest {
 
     @Test
     @VerifiesArch(ArchTraceables.ARCH_014_SYNC_CADENCE_OWNED_BY_THE_SCHEDULER)
-    void shouldInvokeSyncCatalogExactlyOncePerRun()
-      throws InterruptedException {
+    void shouldInvokeSyncCatalogExactlyOncePerRun() throws InterruptedException {
       fixture.run(new DefaultApplicationArguments());
 
       verify(syncJobMock, times(1)).syncCatalog();

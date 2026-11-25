@@ -192,7 +192,13 @@ public class OpenApiCoverageCalculationProcessor {
     > qualityGateCalculationRequestEventFixedKeyRecord,
     Long timestamp
   )
-    throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+    throws
+      OpenApiNotIndexedException,
+      UnparseableOpenApiException,
+      TelemetryBackendUnavailableException,
+      UnmatchedWaiverException,
+      NoApplicationTelemetryException
+  {
     var openApiTestContext =
       openApiCoverageCalculationService.fetchOpenApiSpecification(
         qualityGateCalculationRequestEventFixedKeyRecord.key(),

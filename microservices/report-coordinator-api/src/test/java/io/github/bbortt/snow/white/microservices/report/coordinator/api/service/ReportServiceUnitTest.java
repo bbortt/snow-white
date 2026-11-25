@@ -146,8 +146,7 @@ class ReportServiceUnitTest {
     private static final String QUALITY_GATE_CONFIG_NAME = "test-config";
 
     @Test
-    void shouldUpdateReport_whenReportAndQualityGateConfigExist()
-      throws QualityGateNotFoundException {
+    void shouldUpdateReport_whenReportAndQualityGateConfigExist() throws QualityGateNotFoundException {
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -318,8 +317,7 @@ class ReportServiceUnitTest {
     }
 
     @Test
-    void shouldLogWarningAndReturn_whenQualityGateConfigNotFound()
-      throws QualityGateNotFoundException {
+    void shouldLogWarningAndReturn_whenQualityGateConfigNotFound() throws QualityGateNotFoundException {
       var originalReport = QualityGateReport.builder()
         .calculationId(CALCULATION_ID)
         .qualityGateConfigName(QUALITY_GATE_CONFIG_NAME)
@@ -354,8 +352,7 @@ class ReportServiceUnitTest {
   class InitializeQualityGateCalculationTest {
 
     @Test
-    void shouldPersistReportAndApiTests_andDelegateDispatch()
-      throws QualityGateNotFoundException {
+    void shouldPersistReportAndApiTests_andDelegateDispatch() throws QualityGateNotFoundException {
       var qualityGateConfigName = "test-config";
       var apiTest = ApiTest.builder()
         .serviceName("test-service")
@@ -461,8 +458,7 @@ class ReportServiceUnitTest {
 
     @Test
     @VerifiesArch(ArchTraceables.ARCH_005_DISPATCH_AFTER_TRANSACTION_COMMIT)
-    void shouldDeferDispatchUntilAfterCommit_whenTransactionIsActive()
-      throws QualityGateNotFoundException {
+    void shouldDeferDispatchUntilAfterCommit_whenTransactionIsActive() throws QualityGateNotFoundException {
       var qualityGateConfigName = "test-config";
       var apiTests = Set.of(
         ApiTest.builder()
@@ -520,8 +516,7 @@ class ReportServiceUnitTest {
     }
 
     @Test
-    void shouldThrowQualityGateNotFoundException_whenQualityGateConfigNotFound()
-      throws QualityGateNotFoundException {
+    void shouldThrowQualityGateNotFoundException_whenQualityGateConfigNotFound() throws QualityGateNotFoundException {
       var qualityGateConfigName = "non-existent-config";
       var reportParameter = new ReportParameter();
 

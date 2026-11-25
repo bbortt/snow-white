@@ -10,8 +10,7 @@ import org.junit.jupiter.api.Test;
 class JUnitJupiterApiExtensionUnitTest {
 
   @Test
-  void registersSnowWhiteOpenTelemetryExtensionAutomatically()
-    throws IOException {
+  void registersSnowWhiteOpenTelemetryExtensionAutomatically() throws IOException {
     try (
       var serviceFile = requireNonNull(
         getClass()

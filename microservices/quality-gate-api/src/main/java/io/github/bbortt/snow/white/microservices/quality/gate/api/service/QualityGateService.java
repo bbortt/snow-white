@@ -98,7 +98,10 @@ public class QualityGateService {
     }
   )
   public void deleteByName(String name)
-    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+    throws
+      ConfigurationDoesNotExistException,
+      UnmodifiableConfigurationException
+  {
     if (!qualityGateConfigurationRepository.existsByName(name)) {
       throw new ConfigurationDoesNotExistException(name);
     } else if (
@@ -119,8 +122,9 @@ public class QualityGateService {
     return qualityGateConfigurationRepository.findAll(pageable);
   }
 
-  public QualityGateConfiguration findByName(@Nullable String name)
-    throws ConfigurationDoesNotExistException {
+  public QualityGateConfiguration findByName(
+    @Nullable String name
+  ) throws ConfigurationDoesNotExistException {
     return qualityGateConfigurationRepository
       .findByName(name)
       .orElseThrow(() -> new ConfigurationDoesNotExistException(name));
@@ -129,7 +133,10 @@ public class QualityGateService {
   public QualityGateConfiguration update(
     QualityGateConfiguration qualityGateConfiguration
   )
-    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+    throws
+      ConfigurationDoesNotExistException,
+      UnmodifiableConfigurationException
+  {
     var name = qualityGateConfiguration.getName();
     if (!qualityGateConfigurationRepository.existsByName(name)) {
       throw new ConfigurationDoesNotExistException(name);

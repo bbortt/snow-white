@@ -36,14 +36,16 @@ public class OpenApiService {
 
   @WithSpan
   public OpenAPI findAndParseOpenApi(ApiInformation apiInformation)
-    throws OpenApiNotIndexedException, UnparseableOpenApiException {
+    throws OpenApiNotIndexedException, UnparseableOpenApiException
+  {
     var sourceUrl = cachingService.fetchApiSourceUrl(apiInformation);
 
     return parseOpenApiSource(sourceUrl);
   }
 
-  private OpenAPI parseOpenApiSource(@NonNull String sourceUrl)
-    throws UnparseableOpenApiException {
+  private OpenAPI parseOpenApiSource(
+    @NonNull String sourceUrl
+  ) throws UnparseableOpenApiException {
     SwaggerParseResult swaggerParseResult = isRemoteLocation(sourceUrl)
       ? readRemoteOpenApiSource(sourceUrl)
       : openAPIV3Parser.readLocation(
@@ -65,8 +67,9 @@ public class OpenApiService {
    * would otherwise do internally, unretried — lets a transient network failure be retried like
    * every other outgoing call, before handing the already-fetched content to the parser.
    */
-  private SwaggerParseResult readRemoteOpenApiSource(String sourceUrl)
-    throws UnparseableOpenApiException {
+  private SwaggerParseResult readRemoteOpenApiSource(
+    String sourceUrl
+  ) throws UnparseableOpenApiException {
     try {
       var content = openApiSourceClient.fetchContent(sourceUrl);
       return openAPIV3Parser.readContents(

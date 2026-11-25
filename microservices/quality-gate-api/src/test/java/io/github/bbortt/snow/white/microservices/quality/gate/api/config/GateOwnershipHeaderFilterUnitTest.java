@@ -59,8 +59,9 @@ class GateOwnershipHeaderFilterUnitTest {
       }
     )
     @VerifiesSw(SwTraceables.SW_053_MANAGED_MODE_PUBLISHED_ON_GATE_READS)
-    void shouldPublishOwnership_onGetOfQualityGatePaths(String path)
-      throws Exception {
+    void shouldPublishOwnership_onGetOfQualityGatePaths(
+      String path
+    ) throws Exception {
       doReturn(OWNERSHIP_FILE)
         .when(gateOwnershipServiceMock)
         .currentOwnership();
@@ -78,8 +79,9 @@ class GateOwnershipHeaderFilterUnitTest {
     @ParameterizedTest
     @ValueSource(strings = { "POST", "PUT", "DELETE", "PATCH" })
     @VerifiesSw(SwTraceables.SW_053_MANAGED_MODE_PUBLISHED_ON_GATE_READS)
-    void shouldNotPublishOwnership_onWritesToQualityGatePaths(String method)
-      throws Exception {
+    void shouldNotPublishOwnership_onWritesToQualityGatePaths(
+      String method
+    ) throws Exception {
       for (var path : new String[] {
         "/api/rest/v1/quality-gates",
         "/api/rest/v1/quality-gates/some-name",
@@ -108,8 +110,9 @@ class GateOwnershipHeaderFilterUnitTest {
       }
     )
     @VerifiesSw(SwTraceables.SW_053_MANAGED_MODE_PUBLISHED_ON_GATE_READS)
-    void shouldNotPublishOwnership_onGetOfOtherPaths(String path)
-      throws Exception {
+    void shouldNotPublishOwnership_onGetOfOtherPaths(
+      String path
+    ) throws Exception {
       var request = new MockHttpServletRequest("GET", path);
 
       fixture.doFilter(request, response, filterChainMock);

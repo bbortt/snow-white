@@ -149,8 +149,7 @@ class TestTracerUnitTest {
    */
   @Test
   @VerifiesCon(ConTraceables.CON_013_EXTENSION_NEVER_CHANGES_A_TEST_VERDICT)
-  void shouldAcquireOnceWhenManyThreadsArriveAtTheSameTime()
-    throws InterruptedException {
+  void shouldAcquireOnceWhenManyThreadsArriveAtTheSameTime() throws InterruptedException {
     var threads = 16;
     var attempts = new AtomicInteger();
     var testTracer = new TestTracer(counting(attempts, OpenTelemetry::noop));

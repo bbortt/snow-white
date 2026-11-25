@@ -269,7 +269,10 @@ public class QualityGateResource implements QualityGateApi {
     String name,
     QualityGateConfig qualityGateConfig
   )
-    throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+    throws
+      ConfigurationDoesNotExistException,
+      UnmodifiableConfigurationException
+  {
     var qualityGateConfiguration = qualityGateService.findByName(name);
     var updates = qualityGateConfigurationMapper.toEntityForUpdate(
       qualityGateConfig,

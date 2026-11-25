@@ -206,8 +206,7 @@ class QualityGateResourceFileOwnedIT extends AbstractFileOwnedQualityGateApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_053_MANAGED_MODE_PUBLISHED_ON_GATE_READS)
-  void gateReadsPublishTheFileEmptyModeWhenTheFileDefinesNoGates()
-    throws Exception {
+  void gateReadsPublishTheFileEmptyModeWhenTheFileDefinesNoGates() throws Exception {
     qualityGateConfigurationRepository.deleteAll();
     qualityGateConfigurationRepository.flush();
 
@@ -236,8 +235,7 @@ class QualityGateResourceFileOwnedIT extends AbstractFileOwnedQualityGateApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
-  void unknownGateOnAnInstanceWhoseFileDefinesNoGatesNamesTheFile()
-    throws Exception {
+  void unknownGateOnAnInstanceWhoseFileDefinesNoGatesNamesTheFile() throws Exception {
     qualityGateConfigurationRepository.deleteAll();
     qualityGateConfigurationRepository.flush();
 
@@ -259,8 +257,7 @@ class QualityGateResourceFileOwnedIT extends AbstractFileOwnedQualityGateApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
-  void unknownGateOnAFileOwnedInstanceHoldingGatesIsAPlainDoesNotExist()
-    throws Exception {
+  void unknownGateOnAFileOwnedInstanceHoldingGatesIsAPlainDoesNotExist() throws Exception {
     mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, UNKNOWN_GATE))
       .andExpect(status().isNotFound())

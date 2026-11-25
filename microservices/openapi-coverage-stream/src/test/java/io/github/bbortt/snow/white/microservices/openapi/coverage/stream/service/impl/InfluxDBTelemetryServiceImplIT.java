@@ -34,8 +34,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
   private InfluxDBClient influxDBClient;
 
   @Test
-  void shouldFindRealTracingDataWrittenToInfluxDB()
-    throws TelemetryBackendUnavailableException {
+  void shouldFindRealTracingDataWrittenToInfluxDB() throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-service";
     var apiName = "influx-it-api";
     var apiVersion = "1.0.0";
@@ -51,7 +50,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       eventTime,
       // language=json
       """
-      {"api.name":"%s","api.version":"%s","http.method":"GET"}
+      { "api.name": "%s", "api.version": "%s", "http.method": "GET" }
       """.formatted(apiName, apiVersion)
     );
 
@@ -81,8 +80,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
   }
 
   @Test
-  void shouldApplyAttributeFiltersAgainstRealInfluxDB()
-    throws TelemetryBackendUnavailableException {
+  void shouldApplyAttributeFiltersAgainstRealInfluxDB() throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-filter-service";
     var apiName = "influx-it-filter-api";
     var apiVersion = "1.0.0";
@@ -101,7 +99,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       eventTime,
       // language=json
       """
-      {"api.name":"%s","api.version":"%s","http.method":"GET"}
+      { "api.name": "%s", "api.version": "%s", "http.method": "GET" }
       """.formatted(apiName, apiVersion)
     );
     writeSpan(
@@ -111,7 +109,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       eventTime,
       // language=json
       """
-      {"api.name":"%s","api.version":"%s","http.method":"POST"}
+      { "api.name": "%s", "api.version": "%s", "http.method": "POST" }
       """.formatted(apiName, apiVersion)
     );
 
@@ -144,8 +142,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
   @RealizesSw(
     SwTraceables.SW_023_INFLUXDB_QUERY_NARROWS_ATTRIBUTES_TO_REQUIRED_KEYS
   )
-  void shouldReturnNoAttributeOutsideTheRequiredKeys()
-    throws TelemetryBackendUnavailableException {
+  void shouldReturnNoAttributeOutsideTheRequiredKeys() throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-narrowing-service";
     var apiName = "influx-it-narrowing-api";
     var apiVersion = "1.0.0";
@@ -161,7 +158,13 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       eventTime,
       // language=json
       """
-      {"api.name":"%s","api.version":"%s","http.method":"GET","http.path":"/pets","db.statement":"select 1"}
+      {
+        "api.name": "%s",
+        "api.version": "%s",
+        "http.method": "GET",
+        "http.path": "/pets",
+        "db.statement": "select 1"
+      }
       """.formatted(apiName, apiVersion)
     );
 
@@ -201,8 +204,7 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
    * than the one span.
    */
   @Test
-  void shouldReturnAnArrayValuedAttributeAsAnArray()
-    throws TelemetryBackendUnavailableException {
+  void shouldReturnAnArrayValuedAttributeAsAnArray() throws TelemetryBackendUnavailableException {
     var serviceName = "influx-it-array-service";
     var apiName = "influx-it-array-api";
     var apiVersion = "1.0.0";
@@ -218,7 +220,14 @@ class InfluxDBTelemetryServiceImplIT extends AbstractOpenApiCoverageServiceIT {
       eventTime,
       // language=json
       """
-      {"api.name":"%s","api.version":"%s","http.method":"GET","http.request.header.content-type":["application/json"],"http.response.status_code":200,"url.query":"a=1&b=2"}
+      {
+        "api.name": "%s",
+        "api.version": "%s",
+        "http.method": "GET",
+        "http.request.header.content-type": ["application/json"],
+        "http.response.status_code": 200,
+        "url.query": "a=1&b=2"
+      }
       """.formatted(apiName, apiVersion)
     );
 

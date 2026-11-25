@@ -57,7 +57,8 @@ class StdioTransportIT {
 
   @Test
   void aLaunchedStdioProcessPrintsProtocolFramesAndNothingElse()
-    throws IOException, InterruptedException {
+    throws IOException, InterruptedException
+  {
     var process = new ProcessBuilder(
       Path.of(System.getProperty("java.home"), "bin", "java").toString(),
       "-jar",
@@ -128,8 +129,10 @@ class StdioTransportIT {
     }
   }
 
-  private static void write(Process process, List<String> requests)
-    throws IOException {
+  private static void write(
+    Process process,
+    List<String> requests
+  ) throws IOException {
     var stdin = new OutputStreamWriter(process.getOutputStream(), UTF_8);
     for (var request : requests) {
       stdin.write(request);

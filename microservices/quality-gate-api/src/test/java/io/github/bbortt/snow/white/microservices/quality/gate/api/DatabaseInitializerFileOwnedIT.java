@@ -178,8 +178,7 @@ class DatabaseInitializerFileOwnedIT extends AbstractFileOwnedQualityGateApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
-  void startupWithAConfiguredButAbsentFileFailsAndDeletesNoGate()
-    throws IOException {
+  void startupWithAConfiguredButAbsentFileFailsAndDeletesNoGate() throws IOException {
     qualityGateService.applyQualityGateFile(
       List.of(gate("gate-a", "untouched", 100), gate("gate-b", null, 100))
     );

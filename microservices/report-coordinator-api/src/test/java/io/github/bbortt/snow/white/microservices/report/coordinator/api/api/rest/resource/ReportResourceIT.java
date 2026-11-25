@@ -299,8 +299,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findReport_servesTheFindingsBehindEveryCriterionResult()
-    throws Exception {
+  void findReport_servesTheFindingsBehindEveryCriterionResult() throws Exception {
     var calculationId = UUID.fromString("52ad2f1b-2a9e-4d42-9e2f-9c2a0f9f7a21");
 
     persistReportWithFindings(calculationId);
@@ -339,8 +338,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findReport_servesEvidenceAsObjectsOmittingAnUnsetTestCaseName()
-    throws Exception {
+  void findReport_servesEvidenceAsObjectsOmittingAnUnsetTestCaseName() throws Exception {
     var calculationId = UUID.fromString("7b3f0c58-0a6b-4f95-8d4e-2f5c4a1b6d33");
 
     persistReportWithFindings(calculationId);
@@ -373,8 +371,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
-  void findReport_servesAnEmptyFindingsArray_leavingEveryOtherFieldUntouched()
-    throws Exception {
+  void findReport_servesAnEmptyFindingsArray_leavingEveryOtherFieldUntouched() throws Exception {
     var calculationId = UUID.fromString("c1f4a6d8-5e2b-4a70-9f13-8b6c0d2e4a55");
 
     var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
@@ -458,8 +455,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
    */
   @Test
   @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
-  void everyReportReadPublishesTheThresholdTheReportWasScoredAgainst()
-    throws Exception {
+  void everyReportReadPublishesTheThresholdTheReportWasScoredAgainst() throws Exception {
     var calculationId = UUID.fromString("5f0d4b1e-2c33-4a7e-9f61-6d0a8c2b4e17");
 
     persistReportPinnedAt(calculationId, 85, IN_PROGRESS);
@@ -488,8 +484,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
    */
   @Test
   @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
-  void theCompletedReportReadPublishesTheSamePinnedThreshold()
-    throws Exception {
+  void theCompletedReportReadPublishesTheSamePinnedThreshold() throws Exception {
     var calculationId = UUID.fromString("9c1e7a46-8b52-4d0f-ae33-1b7c05d9e284");
 
     persistReportPinnedAt(calculationId, 85, PASSED);
@@ -507,8 +502,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
    */
   @Test
   @VerifiesSw(SwTraceables.SW_039_REPORT_PUBLISHES_ITS_PINNED_THRESHOLD)
-  void theReadAnswersThePinnedThresholdAfterAnAttemptToMoveIt()
-    throws Exception {
+  void theReadAnswersThePinnedThresholdAfterAnAttemptToMoveIt() throws Exception {
     var calculationId = UUID.fromString("2a6f9d08-4e71-4c5b-b3a2-7e8d1f046c93");
 
     persistReportPinnedAt(calculationId, 85, PASSED);
@@ -617,8 +611,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   )
   @VerifiesSw(SwTraceables.SW_031_FINDINGS_SERVED_WITH_THE_REPORT)
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findReport_servesAWaivedFindingWithItsReasonAndExpiry()
-    throws Exception {
+  void findReport_servesAWaivedFindingWithItsReasonAndExpiry() throws Exception {
     var calculationId = UUID.fromString("c8f1b204-9e67-4a3d-85b0-2f4c6a1d7e98");
 
     persistReportWithTargetCounts(calculationId, FAILED);
@@ -653,8 +646,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
   )
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findReport_servesNeitherCount_whenTheResultWasScoredBeforeThem()
-    throws Exception {
+  void findReport_servesNeitherCount_whenTheResultWasScoredBeforeThem() throws Exception {
     var calculationId = UUID.fromString("a7d0c3e5-1f48-4b96-8e23-5c7a9b0d6f12");
 
     var coverage = BigDecimal.valueOf(0.5).setScale(2, HALF_UP);
@@ -707,8 +699,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
     SwTraceables.SW_044_REPORT_PUBLISHES_JUDGED_AND_WAIVED_TARGET_COUNTS
   )
   @VerifiesArch(ArchTraceables.ARCH_012_FINDINGS_ON_THE_EVENT_COVERAGE_AS_CACHE)
-  void findReport_servesThePersistedCounts_ratherThanDerivingThemFromTheFindings()
-    throws Exception {
+  void findReport_servesThePersistedCounts_ratherThanDerivingThemFromTheFindings() throws Exception {
     var calculationId = UUID.fromString("d3b6f09a-7c21-4e58-9ab4-1f0e5c8d2a73");
 
     // Nine targets judged and two waived, with a single finding to show for it: no derivation from
@@ -743,8 +734,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @VerifiesCon(
     ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
   )
-  void everyReportReadPublishesNothingJudged_whenEveryTargetWasWaived()
-    throws Exception {
+  void everyReportReadPublishesNothingJudged_whenEveryTargetWasWaived() throws Exception {
     var calculationId = UUID.fromString("f09c2d78-4a16-4b3e-92d5-6e8a1c0b7f24");
 
     persistFullyWaivedReport(calculationId, IN_PROGRESS);
@@ -787,8 +777,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @VerifiesCon(
     ConTraceables.CON_012_CRITERION_EMPTIED_BY_WAIVERS_IS_NEVER_A_COVERAGE_PASS
   )
-  void everyReportReadDistinguishesAFullyWaivedPassFromAGenuineOne()
-    throws Exception {
+  void everyReportReadDistinguishesAFullyWaivedPassFromAGenuineOne() throws Exception {
     var genuine = UUID.fromString("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d");
     var waived = UUID.fromString("9f8e7d6c-5b4a-4938-8271-6c5d4e3f2a1b");
 
@@ -1008,8 +997,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport()
-    throws Exception {
+  void findReport_withOpenApiResults_byCalculationId_andReceiveJUnitReport() throws Exception {
     var calculationId = UUID.fromString("aaac28e5-2d0e-4ea6-8fef-4dc85169759e");
 
     var qualityGateReport = qualityGateReportRepository.save(
@@ -1108,8 +1096,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
    * preference gets the documented default rather than whatever the database returns.
    */
   @Test
-  void findAllReportsWithoutSortAppliesTheDocumentedDefaultOrder()
-    throws Exception {
+  void findAllReportsWithoutSortAppliesTheDocumentedDefaultOrder() throws Exception {
     persistTwoReportsOrderedByCreationTime(PASSED);
 
     mockMvc
@@ -1133,8 +1120,9 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
       "initiatedAt,sideways",
     }
   )
-  void findAllReportsRejectsASortItDoesNotPublish(String sort)
-    throws Exception {
+  void findAllReportsRejectsASortItDoesNotPublish(
+    String sort
+  ) throws Exception {
     mockMvc
       .perform(get(PATH_LIST_QUALITY_GATE_REPORTS).queryParam("sort", sort))
       .andExpect(status().isBadRequest())
@@ -1188,8 +1176,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void findReport_answersTheWaiverDocumentItsCalculationWasGiven()
-    throws Exception {
+  void findReport_answersTheWaiverDocumentItsCalculationWasGiven() throws Exception {
     var calculationId = UUID.fromString("0fd3f8bd-0d3d-4e4f-9ad8-5e5bd3dc2cb2");
 
     persistReportWithWaivers(
@@ -1261,8 +1248,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findReport_leavesWaiversAbsent_whenTheCalculationWasGivenNone()
-    throws Exception {
+  void findReport_leavesWaiversAbsent_whenTheCalculationWasGivenNone() throws Exception {
     var calculationId = UUID.fromString("4f0a7f33-0c1e-4c86-9a01-6f9c0a1bd2f4");
 
     persistReportWithWaivers(calculationId, List.of());
@@ -1468,8 +1454,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findAllReports_filteredByServiceName_returnsOnlyMatchingReports()
-    throws Exception {
+  void findAllReports_filteredByServiceName_returnsOnlyMatchingReports() throws Exception {
     var calculationId1 = UUID.fromString(
       "30f7b64c-2a31-4452-90bc-1210d4a2faab"
     );
@@ -1507,8 +1492,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findAllReports_filteredByApiName_returnsOnlyMatchingReports()
-    throws Exception {
+  void findAllReports_filteredByApiName_returnsOnlyMatchingReports() throws Exception {
     var calculationId1 = UUID.fromString(
       "a785a394-c1ef-492d-b96c-fa6a24ff7e10"
     );
@@ -1546,8 +1530,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findAllReports_filteredByApiVersion_returnsOnlyMatchingReports()
-    throws Exception {
+  void findAllReports_filteredByApiVersion_returnsOnlyMatchingReports() throws Exception {
     var calculationId1 = UUID.fromString(
       "8f75c75e-c4a2-4a36-af55-70c98565b098"
     );
@@ -1585,8 +1568,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findAllReports_filteredByServiceNameAndApiName_returnsOnlyMatchingReports()
-    throws Exception {
+  void findAllReports_filteredByServiceNameAndApiName_returnsOnlyMatchingReports() throws Exception {
     var calculationId1 = UUID.fromString(
       "2e2bafb5-c0cd-435c-8cb9-b91516c7ef3d"
     );
@@ -1626,8 +1608,7 @@ class ReportResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void findAllReports_withNonMatchingFilter_returnsEmptyList()
-    throws Exception {
+  void findAllReports_withNonMatchingFilter_returnsEmptyList() throws Exception {
     var calculationId1 = UUID.fromString(
       "1eddb17f-60b6-4b8a-8a9f-d547e6204f27"
     );

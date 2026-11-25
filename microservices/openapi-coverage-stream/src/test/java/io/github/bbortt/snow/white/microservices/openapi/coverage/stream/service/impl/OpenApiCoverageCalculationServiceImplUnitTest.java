@@ -95,7 +95,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
 
     @Test
     void shouldFetchSpecification()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var apiInformation = defaultApiInformation();
       var requestEvent = QualityGateCalculationRequestEvent.builder()
         .apiInformation(apiInformation)
@@ -130,7 +131,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
       SwTraceables.SW_043_EXPIRY_JUDGED_AGAINST_THE_TRIGGERING_INSTANT
     )
     void shouldTakeBothHalvesOfTheWaiverContextOffTheEvent()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var apiInformation = defaultApiInformation();
       var requestEvent = QualityGateCalculationRequestEvent.builder()
         .apiInformation(apiInformation)
@@ -152,7 +154,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
 
     @Test
     void shouldCarryAnEmptyWaiverContext_whenTheEventNamedNoWaiver()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var apiInformation = defaultApiInformation();
       var requestEvent = QualityGateCalculationRequestEvent.builder()
         .apiInformation(apiInformation)
@@ -178,7 +181,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
     @MethodSource
     @ParameterizedTest
     void shouldPropagateExceptions(Exception cause)
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       doThrow(cause).when(openApiServiceMock).findAndParseOpenApi(any());
 
       var qualityGateCalculationRequestEvent =
@@ -200,8 +204,7 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
   class EnrichWithOpenTelemetryDataTest {
 
     @Test
-    void shouldEnrichWithTelemetryData()
-      throws TelemetryBackendUnavailableException {
+    void shouldEnrichWithTelemetryData() throws TelemetryBackendUnavailableException {
       var apiInformation = defaultApiInformation();
       var openAPI = mock(OpenAPI.class);
       var context = new OpenApiTestContext(
@@ -247,7 +250,11 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
       SwTraceables.SW_043_EXPIRY_JUDGED_AGAINST_THE_TRIGGERING_INSTANT
     )
     void shouldJudgeTheWaiverAgainstTheTriggeringInstantRatherThanTheRecordTimestamp()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException
+    {
       var apiInformation = defaultApiInformation();
       var openAPI = mock(OpenAPI.class);
       var requestEvent = QualityGateCalculationRequestEvent.builder()
@@ -293,8 +300,7 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
     }
 
     @Test
-    void shouldPropagateTelemetryBackendUnavailableException()
-      throws TelemetryBackendUnavailableException {
+    void shouldPropagateTelemetryBackendUnavailableException() throws TelemetryBackendUnavailableException {
       var apiInformation = defaultApiInformation();
       var context = new OpenApiTestContext(
         apiInformation,
@@ -328,7 +334,8 @@ class OpenApiCoverageCalculationServiceImplUnitTest {
 
     @Test
     void shouldCalculateCoverage()
-      throws UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws UnmatchedWaiverException, NoApplicationTelemetryException
+    {
       var context = new OpenApiTestContext(
         mock(ApiInformation.class),
         mock(OpenAPI.class),

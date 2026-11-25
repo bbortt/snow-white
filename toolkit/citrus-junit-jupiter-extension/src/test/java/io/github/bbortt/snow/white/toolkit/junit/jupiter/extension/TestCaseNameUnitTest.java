@@ -220,8 +220,7 @@ class TestCaseNameUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_046_TEST_CASE_NAME_IS_THE_QUALIFIED_INVOCATION)
-    void shouldDeriveTheIdentityFromTheExtensionContext()
-      throws NoSuchMethodException {
+    void shouldDeriveTheIdentityFromTheExtensionContext() throws NoSuchMethodException {
       when(extensionContext.getTestClass()).thenReturn(
         Optional.of(ExampleIT.class)
       );

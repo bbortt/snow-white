@@ -12,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 public interface CachingService {
   @NonNull
-  String fetchApiSourceUrl(ApiInformation apiInformation)
-    throws OpenApiNotIndexedException;
+  String fetchApiSourceUrl(
+    ApiInformation apiInformation
+  ) throws OpenApiNotIndexedException;
 }
