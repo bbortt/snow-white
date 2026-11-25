@@ -12,7 +12,11 @@ distinguishable from a failing gate
 
 **Description**
 Each coverage calculation sets the bounded `snow.white.outcome` attribute on its span, and the
-connector promotes that attribute to a dimension of the derived `snow.white.span.calls` counter.
+connector promotes that attribute to a dimension of the metrics it derives.
+The connector's `dimensions` list is global rather than per-metric, so the attribute reaches both:
+the `snow.white.span.calls` counter, which is what this spec is for, and the
+`snow.white.span.duration` histogram, which gains a split by outcome at no extra cost and answers
+whether the failures are also the slow ones.
 There is no separate outcome counter: the derived call count, split by this attribute, _is_ the
 outcome counter.
 The value set is closed, and mirrors the branches
