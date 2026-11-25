@@ -15,7 +15,13 @@ not from a span or a record timestamp
 time from a calculation's triggering instant to the moment its last outstanding result is linked
 and the report reaches a terminal status.
 
-The start is the `initiatedAt` value the `QualityGateCalculationRequestEvent` already carries.
+The start is the `initiatedAt` value the `QualityGateCalculationRequestEvent` already carries, which
+is the report row's own `createdAt`.
+`ReportService.dispatchCalculationRequest` passes `report.getCreatedAt()` as `initiatedAt`, and its
+javadoc states why: every record of one calculation then names the same instant, and it is the same
+instant the report serves back.
+There is one clock read, in one service, and the event and the row carry its value rather than two
+readings of it.
 It is not the start of any span, and not the Kafka record timestamp.
 
 The histogram is recorded once per report, when the report leaves the non-terminal statuses, and is
@@ -28,8 +34,9 @@ A report swept to `TIMED_OUT` is recorded too, so the slowest outcomes are prese
 censored.
 This requires the housekeeper to know the ages of the rows it sweeps, which its current bulk
 `UPDATE ... WHERE createdAt < cutoff AND status IN (NOT_STARTED, IN_PROGRESS)` does not surface.
-The housekeeper therefore reads the `createdAt` values it is about to transition, within the same
-transaction, and records one observation per swept report.
+The housekeeper therefore reads the `createdAt` values it is about to transition — the same instants
+the dispatched records carried — within the same transaction, and records one observation per swept
+report.
 
 **Rationale**
 No single span covers this duration, which is why it is the one duration instrumented in code
@@ -38,14 +45,16 @@ The HTTP span that triggers a calculation ends as soon as the report is accepted
 ([SW-014](SW-014-in-progress-report-answers-accepted.md)), long before any result arrives, and the
 spans that follow belong to the fan-out's individual API tests rather than to the whole.
 
-`initiatedAt` is the right clock because it is the only one every participant already agrees on.
+`initiatedAt` is the right value because it is the one instant every participant already agrees on.
 It travels on every dispatched record by design, and
 [SW-043](SW-043-expiry-judged-against-the-triggering-instant.md) already makes it the instant a
 waiver's expiry is judged against — for the same reason that applies here.
 The Kafka record timestamp is rejected on the grounds that spec names explicitly: its meaning is a
 broker configuration rather than a property of the request.
-A consumer-side clock is rejected because the measurement would then vary with pod clock skew
-across a duration that spans two services.
+A consumer-side clock is rejected because it is the one option that would cross two of them:
+`report-coordinator-api` both writes `createdAt` and links the last result, so taking either end
+from a fan-out consumer trades a measurement on one clock for a difference between two, and makes
+the number vary with pod clock skew.
 
 Dimensioning by terminal status is what makes the histogram readable.
 A `PASSED` calculation and one swept to `TIMED_OUT` describe different populations, and mixing them

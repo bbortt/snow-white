@@ -12,20 +12,39 @@ not
 
 **Description**
 `OpenApiCoverageCalculationService`'s stages each produce one span, so the derived
-`snow.white.span.duration` histogram separates them as three series keyed by span name — not as
-three metrics, since one connector emits one histogram for every span it reads:
+`snow.white.span.duration` histogram separates them as three of its series, keyed by span name —
+not as three metrics, since one connector emits one histogram for every span it reads:
 
 - `fetchOpenApiSpecification` — retrieving the specification from `api-index-api` and parsing it.
 - `enrichWithOpenTelemetryData` — querying the configured telemetry backend.
 - `calculateCoverage` — computing the criteria results.
+
+The names above are the methods; the span names are the agent's default `Class.method`, because no
+annotation here sets a value.
+The third phase is therefore `OpenApiCoverageCalculationServiceImpl.calculateCoverage`, distinct
+from the `OpenApiCoverageService.calculateCoverage` nested below it.
 
 `fetchOpenApiSpecification` and `calculateCoverage` already carry `@WithSpan`.
 `enrichWithOpenTelemetryData` gains it, and is the only annotation this spec adds.
 `buildResponseEvent` gains none: it maps fields and would contribute a span and a metric series
 measuring nothing.
 
-The individual coverage calculators are explicitly **not** annotated, and neither is any method
-below the three stages above.
+The individual coverage calculators are explicitly **not** annotated, and this spec adds no
+annotation below the three stages above.
+
+Six methods below those stages already carry `@WithSpan`, and this spec neither extends that set
+nor retires it: `ApiIndexCachingService.fetchApiSourceUrl` and `OpenApiService.findAndParseOpenApi`
+under the fetch phase, `InfluxDBTelemetryServiceImpl.findOpenTelemetryTracingData` and its Tempo
+counterpart under the telemetry-query phase, and `OpenApiCoverageCalculationCoordinator.calculate`
+and `OpenApiCoverageService.calculateCoverage` under the coverage phase.
+The histogram therefore carries eight series per deployment and not three, since one telemetry
+backend is configured at a time
+([ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md)).
+Those spans are kept because each is a distinct dependency or a distinct failure site a trace is
+read for, and because the set is fixed by the code rather than by traffic, which is the sense in
+which [CON-017](CON-017-metric-dimensions-are-bounded.md) requires span names to be bounded.
+What the three phases buy over them is attribution an operator can read without knowing the call
+tree.
 
 The phase boundary is the service interface, not the processor.
 `OpenApiCoverageCalculationProcessor` wraps the three calls in a `try` whose `catch` branches
@@ -67,8 +86,9 @@ caller's responsibility, so the query phase measures the query.
 **Verification Description**
 A unit test asserts each of the three service methods produces exactly one span, using the
 OpenTelemetry testing SDK, and that `buildResponseEvent` produces none.
-A review confirms no calculator and no method below the three stages carries `@WithSpan`, and that
-`requiredAttributeKeys` is evaluated before the enrichment call rather than within it.
+A review confirms no calculator carries `@WithSpan`, that the annotated methods below the three
+stages are the six this spec names and no others, and that `requiredAttributeKeys` is evaluated
+before the enrichment call rather than within it.
 An integration check against the development stack asserts three distinct phase durations are
 derived for one calculation, and that a deliberately slowed telemetry backend raises only the
 telemetry-query phase.

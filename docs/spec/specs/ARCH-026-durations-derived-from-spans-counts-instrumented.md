@@ -14,11 +14,20 @@ application code
 Snow-White's domain metrics come from two mechanisms, and which one a metric uses is decided by
 what it measures rather than by preference.
 
-A **duration** is never instrumented in application code.
+A **duration a span already covers** is never instrumented in application code.
 It is derived in the OpenTelemetry Collector from the spans Snow-White already emits, by the
 `span_metrics` connector, which also yields the call count of the same span.
 Where a duration needs a span boundary that does not exist, the increment adds the span
 annotation, not a timer.
+
+One duration has no span to add the annotation to, and is the named exception this spec carves out.
+The end-to-end report duration of
+[SW-059](SW-059-end-to-end-duration-from-the-triggering-instant.md) starts when a calculation is
+triggered and ends when its last result is linked, spanning two services and an HTTP span that has
+long since returned, so it is recorded in application code from the instant the report carries to
+the moment it reaches a terminal status.
+That is a recorded elapsed value and not a timer wrapped around a processing stage, which is what
+the exclusion below forbids.
 
 A **count of something inside a batch**, and a **gauge of state**, are instrumented in application
 code as Micrometer meters.
