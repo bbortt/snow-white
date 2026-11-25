@@ -154,8 +154,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   }
 
   @Test
-  void createQualityGateConfig_whereMinCoveragePercentageIsBelow80Percent()
-    throws Exception {
+  void createQualityGateConfig_whereMinCoveragePercentageIsBelow80Percent() throws Exception {
     var name = generateUniqueName("createQualityGateConfig");
     var qualityGateConfig = QualityGateConfig.builder()
       .name(name)
@@ -273,8 +272,9 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   @ValueSource(
     strings = { "description,asc", "createdAt,desc", "name", "name,sideways" }
   )
-  void findAllQualityGateConfigsRejectsASortItDoesNotPublish(String sort)
-    throws Exception {
+  void findAllQualityGateConfigsRejectsASortItDoesNotPublish(
+    String sort
+  ) throws Exception {
     mockMvc
       .perform(get(ENTITY_API_URL).param("sort", sort))
       .andExpect(status().isBadRequest())
@@ -319,8 +319,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
 
   @Test
   @VerifiesCon(ConTraceables.CON_010_REST_RESPONSES_NEVER_CARRY_NULL)
-  void findSingleQualityGateConfigByName_withoutDescription_omitsIt()
-    throws Exception {
+  void findSingleQualityGateConfigByName_withoutDescription_omitsIt() throws Exception {
     var qualityGateConfiguration = createAndSaveQualityGateConfig(
       "withoutDescription"
     );
@@ -417,8 +416,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_052_EMPTY_FILE_OWNED_INSTANCE_NAMES_ITS_FILE)
-  void unknownGateOnADatabaseOwnedInstanceIsAPlainDoesNotExist()
-    throws Exception {
+  void unknownGateOnADatabaseOwnedInstanceIsAPlainDoesNotExist() throws Exception {
     mockMvc
       .perform(get(SINGLE_ENTITY_API_URL, "no-such-gate"))
       .andExpect(status().isNotFound())
@@ -434,8 +432,7 @@ class QualityGateResourceIT extends AbstractQualityGateApiIT {
   @VerifiesSw(
     SwTraceables.SW_051_MANAGED_INSTANCE_REJECTS_CRUD_WRITES_WITH_CONFLICT
   )
-  void createQualityGateConfig_conflictMeansOnlyThatTheNameIsTaken()
-    throws Exception {
+  void createQualityGateConfig_conflictMeansOnlyThatTheNameIsTaken() throws Exception {
     var qualityGateConfiguration = createAndSaveQualityGateConfig(
       "nameIsTaken"
     );

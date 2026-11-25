@@ -52,7 +52,8 @@ class OpenApiServiceUnitTest {
 
     @Test
     void shouldQueryAndParseOpenApi()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var sourceUrl = requireNonNull(
         getClass()
           .getClassLoader()
@@ -90,7 +91,11 @@ class OpenApiServiceUnitTest {
 
     @Test
     void shouldFetchRemoteLocationsThroughRetryableClient()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, IOException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        IOException
+    {
       var sourceUrl = "https://example.test/openapi/swagger.yaml";
       var specContent = new String(
         requireNonNull(
@@ -118,7 +123,8 @@ class OpenApiServiceUnitTest {
 
     @Test
     void shouldThrowUnparseableOpenApiException_whenRemoteFetchFails()
-      throws OpenApiNotIndexedException, IOException {
+      throws OpenApiNotIndexedException, IOException
+    {
       var sourceUrl = "https://example.test/openapi/swagger.yaml";
 
       doReturn(sourceUrl)

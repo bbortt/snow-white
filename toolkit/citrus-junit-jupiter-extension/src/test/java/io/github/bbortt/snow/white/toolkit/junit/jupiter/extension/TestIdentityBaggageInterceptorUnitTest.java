@@ -87,8 +87,7 @@ class TestIdentityBaggageInterceptorUnitTest {
    */
   @Test
   @VerifiesArch(ArchTraceables.ARCH_020_TEST_IDENTITY_PUBLISHED_NOT_PROPAGATED)
-  void shouldAppendToABaggageHeaderTheRequestAlreadyCarries()
-    throws IOException {
+  void shouldAppendToABaggageHeaderTheRequestAlreadyCarries() throws IOException {
     request.getHeaders().set(BAGGAGE_HEADER, "team=platform");
 
     interceptWithIdentity(AN_IDENTITY);
@@ -100,8 +99,7 @@ class TestIdentityBaggageInterceptorUnitTest {
 
   @Test
   @VerifiesArch(ArchTraceables.ARCH_020_TEST_IDENTITY_PUBLISHED_NOT_PROPAGATED)
-  void shouldReplaceABlankBaggageHeaderRatherThanAppendToIt()
-    throws IOException {
+  void shouldReplaceABlankBaggageHeaderRatherThanAppendToIt() throws IOException {
     request.getHeaders().set(BAGGAGE_HEADER, "  ");
 
     interceptWithIdentity(AN_IDENTITY);

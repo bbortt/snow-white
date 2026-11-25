@@ -41,7 +41,8 @@ public class ApiIndexService {
     SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
   )
   public void persist(ApiReference apiReference)
-    throws ApiAlreadyIndexedException, InvalidReleaseWithContentException {
+    throws ApiAlreadyIndexedException, InvalidReleaseWithContentException
+  {
     var id = ApiReference.ApiReferenceId.builder()
       .otelServiceName(apiReference.getOtelServiceName())
       .apiName(apiReference.getApiName())

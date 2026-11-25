@@ -43,7 +43,8 @@ class DBMigrationUnitTest {
 
   @Test
   void databaseMigrationsAreImmutable()
-    throws IOException, NoSuchAlgorithmException {
+    throws IOException, NoSuchAlgorithmException
+  {
     for (Map.Entry<String, String> entry : MIGRATIONS_AND_HASHES.entrySet()) {
       String fileName = entry.getKey();
       String expectedHash = entry.getValue();
@@ -74,7 +75,8 @@ class DBMigrationUnitTest {
 
   @Test
   void noUntrackedMigrationShouldExist()
-    throws IOException, URISyntaxException {
+    throws IOException, URISyntaxException
+  {
     URL migrationDir = getClass().getClassLoader().getResource("db/migration");
     assertThat(migrationDir)
       .as("db/migration directory not found on classpath")

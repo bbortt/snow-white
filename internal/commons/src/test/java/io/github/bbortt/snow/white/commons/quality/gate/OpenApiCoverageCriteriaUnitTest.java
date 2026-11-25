@@ -400,8 +400,7 @@ class OpenApiCoverageCriteriaUnitTest {
   @VerifiesArch(
     ArchTraceables.ARCH_016_CRITERIA_CONTAINMENT_DECLARED_ON_THE_ENUM
   )
-  void publishedProseNamesTheSameContainmentsTheEnumDeclares()
-    throws IOException {
+  void publishedProseNamesTheSameContainmentsTheEnumDeclares() throws IOException {
     assertThat(publishedProseContainment()).containsExactlyInAnyOrderEntriesOf(
       declaredContainment()
     );
@@ -510,8 +509,10 @@ class OpenApiCoverageCriteriaUnitTest {
    * publish a subset claim over a pair the enum declares to be the same targets under a stricter
    * check.
    */
-  private static Map<String, String> publishedProseContainment()
-    throws IOException {
+  private static Map<
+    String,
+    String
+  > publishedProseContainment() throws IOException {
     var containment = new LinkedHashMap<String, String>();
     OpenApiCoverageCriteria criterion = null;
 

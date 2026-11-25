@@ -139,8 +139,7 @@ class HousekeepingServiceUnitTest {
   class RunScheduledHousekeepingTest {
 
     @Test
-    void scheduledAnnotationShouldStartWithPrefix()
-      throws NoSuchMethodException {
+    void scheduledAnnotationShouldStartWithPrefix() throws NoSuchMethodException {
       assertThat(
         HousekeepingService.class
           .getDeclaredMethod("runScheduledHousekeeping")

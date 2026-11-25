@@ -216,8 +216,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldSkipInvalidOpenApiSpecs_inGracefulParsingMode()
-      throws IOException {
+    void shouldSkipInvalidOpenApiSpecs_inGracefulParsingMode() throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
 
       prepareInvalidOpenApiSpecificationWhenDownloading();
@@ -246,8 +245,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
      */
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldSkipSpecsWithoutInformationObject_inGracefulParsingMode()
-      throws IOException {
+    void shouldSkipSpecsWithoutInformationObject_inGracefulParsingMode() throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
 
       var parseResult = new SwaggerParseResult();
@@ -274,8 +272,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldThrowOnInvalidOpenApiSpecs_inStrictParsingMode()
-      throws IOException {
+    void shouldThrowOnInvalidOpenApiSpecs_inStrictParsingMode() throws IOException {
       doReturn(STRICT).when(artifactoryProperties).getParsingMode();
 
       prepareInvalidOpenApiSpecificationWhenDownloading();
@@ -297,8 +294,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
       ).validateApiInformationFromIndex(any(), any());
     }
 
-    private void prepareInvalidOpenApiSpecificationWhenDownloading()
-      throws IOException {
+    private void prepareInvalidOpenApiSpecificationWhenDownloading() throws IOException {
       SwaggerParseResult parseResult = new SwaggerParseResult();
       parseResult.setOpenAPI(null);
       parseResult.setMessages(List.of("Invalid OpenAPI format"));
@@ -321,8 +317,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
      * instead of answering can stub that itself rather than leaving the
      * answering stub behind unused.
      */
-    private void prepareOpenApiSpecificationWhenDownloading()
-      throws IOException {
+    private void prepareOpenApiSpecificationWhenDownloading() throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "invalid.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
@@ -396,8 +391,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
       ).validateApiInformationFromIndex(any(), any());
     }
 
-    private @NonNull RuntimeException prepareDownloadErrorThrownWhenDownloadingOpenApiSpecification()
-      throws IOException {
+    private @NonNull RuntimeException prepareDownloadErrorThrownWhenDownloadingOpenApiSpecification() throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "error.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
@@ -421,8 +415,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
      */
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldCountEachUnreadableFileUnderItsOwnReason_inGracefulParsingMode()
-      throws IOException {
+    void shouldCountEachUnreadableFileUnderItsOwnReason_inGracefulParsingMode() throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
 
       doReturn(searches).when(artifactoryMock).searches();
@@ -577,8 +570,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
         .hasMessage("Encountered OpenAPI specification which is not a file!");
     }
 
-    private void prepareFolderInfoWhenReadingTheDownloadUrl()
-      throws IOException {
+    private void prepareFolderInfoWhenReadingTheDownloadUrl() throws IOException {
       AqlItem aqlItem = createAqlItem("apis", "petstore.yml");
       doReturn(searches).when(artifactoryMock).searches();
       doReturn(searches).when(searches).repositories("api-specs");
@@ -666,8 +658,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
      */
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldCountASpecificationWhoseReferencesRecurse_asParseFailed()
-      throws IOException {
+    void shouldCountASpecificationWhoseReferencesRecurse_asParseFailed() throws IOException {
       doReturn(GRACEFUL).when(artifactoryProperties).getParsingMode();
 
       prepareOpenApiSpecificationWhenDownloading();
@@ -689,8 +680,7 @@ class ArtifactoryApiCatalogServiceUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_034_UNREADABLE_SPEC_SKIPPED_UNLESS_STRICT)
-    void shouldAbortOnASpecificationWhoseReferencesRecurse_inStrictParsingMode()
-      throws IOException {
+    void shouldAbortOnASpecificationWhoseReferencesRecurse_inStrictParsingMode() throws IOException {
       doReturn(STRICT).when(artifactoryProperties).getParsingMode();
 
       prepareOpenApiSpecificationWhenDownloading();

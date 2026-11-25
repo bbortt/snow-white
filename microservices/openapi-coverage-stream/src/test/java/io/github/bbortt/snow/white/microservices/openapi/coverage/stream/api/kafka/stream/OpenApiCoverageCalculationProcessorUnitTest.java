@@ -130,7 +130,13 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldProcessCoverageRequest()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException,
+        UnmatchedWaiverException,
+        NoApplicationTelemetryException
+    {
       var calculationId = "685fff79-964e-4ee8-b4d5-a4fb20465cf3";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -200,7 +206,13 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldReportBackCoverageRequestsWithInvalidFilterCriteria()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException,
+        UnmatchedWaiverException,
+        NoApplicationTelemetryException
+    {
       var calculationId = "f57a401d-c3b4-48eb-8592-08aa91d14bcf";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -270,7 +282,13 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       ConTraceables.CON_015_HARNESS_SPAN_NEVER_MOVES_A_COVERAGE_VERDICT
     )
     void shouldReportBack_whenOnlyAHarnessExportedSpans()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException,
+        UnmatchedWaiverException,
+        NoApplicationTelemetryException
+    {
       var calculationId = "9b1f2c4e-5d6a-47b8-91c3-2e7a8f0d4b65";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -341,7 +359,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldRespondWithOpenApiNotIndexedException()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var cause = new OpenApiNotIndexedException(defaultApiInformation());
       assertThatEventIsBeingRespondedWithException(
         () -> cause,
@@ -351,7 +370,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldRespondWithUnparseableOpenApiException()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var cause = new UnparseableOpenApiException(
         singletonList("Error message")
       );
@@ -363,7 +383,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
     @Test
     void shouldRespondWithRootCauseOnAnyException()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException {
+      throws OpenApiNotIndexedException, UnparseableOpenApiException
+    {
       var cause = new IllegalArgumentException("Something nasty happened");
 
       assertThatEventIsBeingRespondedWithException(
@@ -375,7 +396,11 @@ class OpenApiCoverageCalculationProcessorUnitTest {
     @Test
     @VerifiesSw(SwTraceables.SW_008_KAFKA_AS_ASYNC_CALCULATION_DRIVER)
     void shouldRespondWithFriendlyMessage_whenTelemetryBackendUnavailable()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException
+    {
       var calculationId = "3fb7c5b9-9c1e-4f7c-8f3f-15f5b6f4c1f0";
       var requestEvent = qualityGateCalculationRequestEvent();
 
@@ -428,7 +453,13 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       ConTraceables.CON_011_WAIVER_MATCHING_NO_FINDING_FAILS_THE_CALCULATION
     )
     void shouldReachNoVerdict_whenAWaiverMatchedNoFinding()
-      throws OpenApiNotIndexedException, UnparseableOpenApiException, TelemetryBackendUnavailableException, UnmatchedWaiverException, NoApplicationTelemetryException {
+      throws
+        OpenApiNotIndexedException,
+        UnparseableOpenApiException,
+        TelemetryBackendUnavailableException,
+        UnmatchedWaiverException,
+        NoApplicationTelemetryException
+    {
       var calculationId = "9a4f1f2e-6b7c-4d0a-9c21-5b7f3d8e1a44";
       var requestEvent = qualityGateCalculationRequestEvent();
 

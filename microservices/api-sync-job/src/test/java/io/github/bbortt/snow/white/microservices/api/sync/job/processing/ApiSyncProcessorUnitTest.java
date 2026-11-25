@@ -106,8 +106,7 @@ class ApiSyncProcessorUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_035_INDEX_OUTAGE_DEFERS_TO_NEXT_CYCLE)
-    void shouldNotCountApisWhichTheIndexDidNotAcceptAsPublished()
-      throws InterruptedException {
+    void shouldNotCountApisWhichTheIndexDidNotAcceptAsPublished() throws InterruptedException {
       List<Supplier<ApiInformation>> suppliers = List.of(
         () -> new ApiInformation().withLoadStatus(LOADED),
         () -> new ApiInformation().withLoadStatus(LOADED)
@@ -124,8 +123,7 @@ class ApiSyncProcessorUnitTest {
 
     @Test
     @VerifiesNf(NfTraceables.NF_009_BOUNDED_SYNC_FAN_OUT_WITH_BACKPRESSURE)
-    void shouldNeverExceedTheConfiguredNumberOfInFlightSpecifications()
-      throws InterruptedException {
+    void shouldNeverExceedTheConfiguredNumberOfInFlightSpecifications() throws InterruptedException {
       // Ten times the worker count, and three times the queue capacity: the
       // listing side has to wait on the queue rather than the queue growing.
       var specificationCount = 30;
@@ -247,8 +245,7 @@ class ApiSyncProcessorUnitTest {
     }
 
     @Test
-    void shouldInvokeConsumerExactlyOncePerSupplier()
-      throws InterruptedException {
+    void shouldInvokeConsumerExactlyOncePerSupplier() throws InterruptedException {
       AtomicInteger calls = new AtomicInteger();
 
       List<Supplier<ApiInformation>> suppliers = List.of(

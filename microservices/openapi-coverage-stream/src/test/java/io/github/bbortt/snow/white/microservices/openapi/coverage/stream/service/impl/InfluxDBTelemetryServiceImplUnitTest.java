@@ -170,8 +170,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withApiVersion_shouldAppendFilterExpression()
-      throws TelemetryBackendUnavailableException {
+    void withApiVersion_shouldAppendFilterExpression() throws TelemetryBackendUnavailableException {
       ArgumentCaptor<String> queryCaptor = captor();
       doReturn(emptyList()).when(queryApi).query(queryCaptor.capture());
 
@@ -214,8 +213,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAttributeFilters_shouldIncludeFiltersInQuery()
-      throws TelemetryBackendUnavailableException {
+    void withAttributeFilters_shouldIncludeFiltersInQuery() throws TelemetryBackendUnavailableException {
       var filter1 = new AttributeFilter("http.method", STRING_EQUALS, "GET");
       var filter2 = new AttributeFilter(
         "http.status_code",
@@ -266,8 +264,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withResults_shouldParseOpenTelemetryData()
-      throws TelemetryBackendUnavailableException {
+    void withResults_shouldParseOpenTelemetryData() throws TelemetryBackendUnavailableException {
       // Prepare first record
       var spanId1 = "3f1a2c9e7d4b8a61";
       var traceId1 = "f2c79a8d4bce407aa65c1e7289f6febb";
@@ -331,8 +328,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAbsentAttribute_shouldOmitItsKeyEntirely()
-      throws TelemetryBackendUnavailableException {
+    void withAbsentAttribute_shouldOmitItsKeyEntirely() throws TelemetryBackendUnavailableException {
       var fluxRecord1 = mock(FluxRecord.class);
       doReturn("3f1a2c9e7d4b8a61").when(fluxRecord1).getValueByKey(SPAN_ID_KEY);
       doReturn("f2c79a8d4bce407aa65c1e7289f6febb")
@@ -370,8 +366,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
      * {@code string()} cannot convert one.
      */
     @Test
-    void withArrayValuedAttribute_shouldKeepItAnArray()
-      throws TelemetryBackendUnavailableException {
+    void withArrayValuedAttribute_shouldKeepItAnArray() throws TelemetryBackendUnavailableException {
       var result = parseSingleRecordWith(
         CONTENT_TYPE_HEADER_KEY,
         "[\"application/json\"]"
@@ -391,8 +386,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
      * calculators comparing a status code as text must survive unchanged.
      */
     @Test
-    void withNumericAttribute_shouldKeepItNumericAndStillReadAsItsDigits()
-      throws TelemetryBackendUnavailableException {
+    void withNumericAttribute_shouldKeepItNumericAndStillReadAsItsDigits() throws TelemetryBackendUnavailableException {
       var result = parseSingleRecordWith(
         HTTP_RESPONSE_STATUS_CODE.getKey(),
         "200"
@@ -406,8 +400,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withBooleanAttribute_shouldKeepItBoolean()
-      throws TelemetryBackendUnavailableException {
+    void withBooleanAttribute_shouldKeepItBoolean() throws TelemetryBackendUnavailableException {
       var result = parseSingleRecordWith(
         "openapi.response.schema.valid",
         "true"
@@ -424,8 +417,7 @@ class InfluxDBTelemetryServiceImplUnitTest {
      * {@code has(key)} read it as "carries a usable value".
      */
     @Test
-    void withEmptyStringAttribute_shouldDropItAsAbsent()
-      throws TelemetryBackendUnavailableException {
+    void withEmptyStringAttribute_shouldDropItAsAbsent() throws TelemetryBackendUnavailableException {
       var result = parseSingleRecordWith(URL_QUERY.getKey(), "\"\"");
 
       assertThat(result.attributes().has(URL_QUERY.getKey())).isFalse();

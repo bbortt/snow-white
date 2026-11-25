@@ -124,8 +124,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void postRequest_withAllParameters_shouldTriggerABasicCoverageCalculation()
-    throws Exception {
+  void postRequest_withAllParameters_shouldTriggerABasicCoverageCalculation() throws Exception {
     var serviceName = "star-wars";
     var apiName = "yoda";
     var apiVersion = "1.2.3";
@@ -219,8 +218,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void postRequest_withRequiredParameters_shouldTriggerABasicCoverageCalculation()
-    throws Exception {
+  void postRequest_withRequiredParameters_shouldTriggerABasicCoverageCalculation() throws Exception {
     var apiExistsEndpoint = createApiIndexApiWiremockStub(
       "serviceName",
       "apiName",
@@ -285,8 +283,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void postRequest_shouldReturnBadRequest_whenApiIsNotIndexed()
-    throws Exception {
+  void postRequest_shouldReturnBadRequest_whenApiIsNotIndexed() throws Exception {
     var apiExistsEndpoint = createApiIndexApiWiremockStub(
       "serviceName",
       "apiName",
@@ -333,8 +330,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   }
 
   @Test
-  void postRequest_withMissingRequiredParameters_shouldBeReported()
-    throws Exception {
+  void postRequest_withMissingRequiredParameters_shouldBeReported() throws Exception {
     var qualityGateCalculationRequest = CalculateQualityGateRequest.builder()
       .includeApis(null)
       .attributeFilters(null)
@@ -365,8 +361,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
    */
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withExplicitlyNullWaivers_shouldTriggerACalculationWithoutAny()
-    throws Exception {
+  void postRequest_withExplicitlyNullWaivers_shouldTriggerACalculationWithoutAny() throws Exception {
     var apiExistsEndpoint = createApiIndexApiWiremockStub(
       "serviceName",
       "apiName",
@@ -435,8 +430,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withWaivers_shouldPersistAnswerBackAndFanThemOutPerApi()
-    throws Exception {
+  void postRequest_withWaivers_shouldPersistAnswerBackAndFanThemOutPerApi() throws Exception {
     createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
     createQualityGateApiWiremockStub();
 
@@ -569,8 +563,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWildcardedApiVersion_shouldReachEveryVersionOfThatApi()
-    throws Exception {
+  void postRequest_withAWildcardedApiVersion_shouldReachEveryVersionOfThatApi() throws Exception {
     createApiIndexApiWiremockStub("star-wars", "yoda", "1.2.3", OK);
     createApiIndexApiWiremockStub("star-wars", "yoda", "2.0.0", OK);
     createQualityGateApiWiremockStub();
@@ -638,8 +631,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withABlankWaiverReason_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withABlankWaiverReason_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3").reason("   ").build(),
       "carries a blank reason!"
@@ -649,8 +641,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withSeveralWaiverTargetDiscriminators_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withSeveralWaiverTargetDiscriminators_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3")
         .responseCode("500")
@@ -663,8 +654,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWaiverForAnUnknownApi_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAWaiverForAnUnknownApi_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatWaiverIsRejected(
       waiver("star-wars", "vader", "1.2.3").build(),
       "matches no API test of this report!"
@@ -674,8 +664,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWildcardOutsideApiVersion_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAWildcardOutsideApiVersion_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3").path("*").build(),
       "wildcards path - '*' is admitted on apiVersion only!"
@@ -685,8 +674,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAnUnknownWaiverCriterion_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAnUnknownWaiverCriterion_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3")
         .criterion("RESPONSE_CODE_COVRAGE")
@@ -698,8 +686,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWaiverMissingItsReason_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAWaiverMissingItsReason_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatMalformedWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3").reason(null).build()
     );
@@ -708,8 +695,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatMalformedWaiverIsRejected(
       waiver("star-wars", "yoda", "1.2.3").expires(null).build()
     );
@@ -718,8 +704,7 @@ class QualityGateResourceIT extends AbstractReportCoordinationServiceIT {
   @Test
   @VerifiesSw(SwTraceables.SW_013_CALCULATION_TRIGGER_IS_ALL_OR_NOTHING)
   @VerifiesSw(SwTraceables.SW_040_WAIVER_ENTERS_ONLY_ON_THE_CALCULATION_REQUEST)
-  void postRequest_withAWildcardedWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport()
-    throws Exception {
+  void postRequest_withAWildcardedWaiverMissingItsExpiry_shouldBeRejectedAndCreateNoReport() throws Exception {
     assertThatMalformedWaiverIsRejected(
       waiver("star-wars", "yoda", "*").expires(null).build()
     );

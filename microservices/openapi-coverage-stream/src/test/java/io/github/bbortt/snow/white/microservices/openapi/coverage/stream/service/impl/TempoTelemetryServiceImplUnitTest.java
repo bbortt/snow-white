@@ -111,8 +111,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withoutAttributeFilters_shouldBuildCorrectQuery()
-      throws TelemetryBackendUnavailableException {
+    void withoutAttributeFilters_shouldBuildCorrectQuery() throws TelemetryBackendUnavailableException {
       var result = fixture.findOpenTelemetryTracingData(
         API_INFORMATION,
         LOOKBACK_FROM,
@@ -142,8 +141,7 @@ class TempoTelemetryServiceImplUnitTest {
 
     @Test
     @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
-    void withRequiredAttributeKeys_shouldSelectExactlyThoseKeys()
-      throws TelemetryBackendUnavailableException {
+    void withRequiredAttributeKeys_shouldSelectExactlyThoseKeys() throws TelemetryBackendUnavailableException {
       fixture.findOpenTelemetryTracingData(
         API_INFORMATION,
         LOOKBACK_FROM,
@@ -159,8 +157,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withoutRequiredAttributeKeys_shouldOmitSelectClause()
-      throws TelemetryBackendUnavailableException {
+    void withoutRequiredAttributeKeys_shouldOmitSelectClause() throws TelemetryBackendUnavailableException {
       fixture.findOpenTelemetryTracingData(
         API_INFORMATION,
         LOOKBACK_FROM,
@@ -180,8 +177,7 @@ class TempoTelemetryServiceImplUnitTest {
       NfTraceables.NF_007_TEMPO_SEARCH_LIMIT_IS_OPERATOR_CONFIGURABLE,
       NfTraceables.NF_008_TEMPO_SEARCH_RETURNS_EVERY_MATCHED_SPAN_PER_TRACE,
     })
-    void withDefaultProperties_shouldSendBothBounds()
-      throws TelemetryBackendUnavailableException {
+    void withDefaultProperties_shouldSendBothBounds() throws TelemetryBackendUnavailableException {
       fixture.findOpenTelemetryTracingData(
         API_INFORMATION,
         LOOKBACK_FROM,
@@ -205,8 +201,7 @@ class TempoTelemetryServiceImplUnitTest {
       NfTraceables.NF_007_TEMPO_SEARCH_LIMIT_IS_OPERATOR_CONFIGURABLE,
       NfTraceables.NF_008_TEMPO_SEARCH_RETURNS_EVERY_MATCHED_SPAN_PER_TRACE,
     })
-    void withConfiguredProperties_shouldSendConfiguredBounds()
-      throws TelemetryBackendUnavailableException {
+    void withConfiguredProperties_shouldSendConfiguredBounds() throws TelemetryBackendUnavailableException {
       tempoProperties.setSearchLimit(17);
       tempoProperties.setSpansPerTraceLimit(42);
 
@@ -229,8 +224,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAttributeFilters_shouldIncludeFiltersInQuery()
-      throws TelemetryBackendUnavailableException {
+    void withAttributeFilters_shouldIncludeFiltersInQuery() throws TelemetryBackendUnavailableException {
       var filter1 = new AttributeFilter(
         "service.version",
         STRING_EQUALS,
@@ -263,8 +257,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withoutApiVersion_shouldOmitVersionFilter()
-      throws TelemetryBackendUnavailableException {
+    void withoutApiVersion_shouldOmitVersionFilter() throws TelemetryBackendUnavailableException {
       var apiInformation = API_INFORMATION.withApiVersion(null);
 
       fixture.findOpenTelemetryTracingData(
@@ -283,8 +276,7 @@ class TempoTelemetryServiceImplUnitTest {
 
     @Test
     @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
-    void withResults_shouldParseAttributesFromTheSearchResponseAlone()
-      throws TelemetryBackendUnavailableException {
+    void withResults_shouldParseAttributesFromTheSearchResponseAlone() throws TelemetryBackendUnavailableException {
       var spanId1 = "3f1a2c9e7d4b8a61";
       var traceId1 = "f2c79a8d4bce407aa65c1e7289f6febb";
 
@@ -402,8 +394,7 @@ class TempoTelemetryServiceImplUnitTest {
 
     @Test
     @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
-    void shouldNeverFetchATraceById()
-      throws TelemetryBackendUnavailableException {
+    void shouldNeverFetchATraceById() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """
@@ -436,8 +427,7 @@ class TempoTelemetryServiceImplUnitTest {
 
     @Test
     @RealizesSw(SwTraceables.SW_022_TEMPO_SEARCH_RETURNS_ONLY_REQUIRED_KEYS)
-    void withBothSpanSetsAndDeprecatedSpanSet_shouldYieldEachSpanOnce()
-      throws TelemetryBackendUnavailableException {
+    void withBothSpanSetsAndDeprecatedSpanSet_shouldYieldEachSpanOnce() throws TelemetryBackendUnavailableException {
       var spanId = "3f1a2c9e7d4b8a61";
       var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
 
@@ -471,8 +461,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withOnlyTheDeprecatedSpanSet_shouldStillYieldItsSpans()
-      throws TelemetryBackendUnavailableException {
+    void withOnlyTheDeprecatedSpanSet_shouldStillYieldItsSpans() throws TelemetryBackendUnavailableException {
       var spanId = "3f1a2c9e7d4b8a61";
       var traceId = "f2c79a8d4bce407aa65c1e7289f6febb";
 
@@ -504,8 +493,7 @@ class TempoTelemetryServiceImplUnitTest {
     @RealizesNf(
       NfTraceables.NF_008_TEMPO_SEARCH_RETURNS_EVERY_MATCHED_SPAN_PER_TRACE
     )
-    void withMoreSpansThanTemposOwnDefault_shouldYieldAllOfThem()
-      throws TelemetryBackendUnavailableException {
+    void withMoreSpansThanTemposOwnDefault_shouldYieldAllOfThem() throws TelemetryBackendUnavailableException {
       var spanIds = List.of(
         "3f1a2c9e7d4b8a61",
         "8a7d2e4b9c3f1d0a",
@@ -547,8 +535,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withMultipleSpanSets_shouldYieldEverySpanSetsSpans()
-      throws TelemetryBackendUnavailableException {
+    void withMultipleSpanSets_shouldYieldEverySpanSetsSpans() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """
@@ -581,8 +568,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withLeadingZeroTraceId_shouldZeroPadToFullLength()
-      throws TelemetryBackendUnavailableException {
+    void withLeadingZeroTraceId_shouldZeroPadToFullLength() throws TelemetryBackendUnavailableException {
       // Tempo's search API strips leading zero nibbles from trace IDs
       // (Jaeger-compatible hex formatting), so a 32-char trace ID starting
       // with a "0" nibble comes back only 31 characters long.
@@ -659,8 +645,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withSearchResponseMissingTracesProperty_shouldReturnEmptyResult()
-      throws TelemetryBackendUnavailableException {
+    void withSearchResponseMissingTracesProperty_shouldReturnEmptyResult() throws TelemetryBackendUnavailableException {
       stubSearchResponse("{}");
 
       var result = fixture.findOpenTelemetryTracingData(
@@ -675,8 +660,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withEmptySearchResponseBody_shouldReturnEmptyResult()
-      throws TelemetryBackendUnavailableException {
+    void withEmptySearchResponseBody_shouldReturnEmptyResult() throws TelemetryBackendUnavailableException {
       wireMockServer.resetAll();
       wireMockServer.stubFor(
         get(urlPathEqualTo("/api/search")).willReturn(
@@ -696,8 +680,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withTraceMissingSpanSet_shouldSkipTrace()
-      throws TelemetryBackendUnavailableException {
+    void withTraceMissingSpanSet_shouldSkipTrace() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """
@@ -717,8 +700,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withSpanSetMissingSpansProperty_shouldSkipSpanSet()
-      throws TelemetryBackendUnavailableException {
+    void withSpanSetMissingSpansProperty_shouldSkipSpanSet() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """
@@ -742,8 +724,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withSpanMissingAttributesProperty_shouldResultInEmptyAttributes()
-      throws TelemetryBackendUnavailableException {
+    void withSpanMissingAttributesProperty_shouldResultInEmptyAttributes() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """
@@ -772,8 +753,7 @@ class TempoTelemetryServiceImplUnitTest {
     }
 
     @Test
-    void withAttributeMissingValueProperty_shouldSkipAttribute()
-      throws TelemetryBackendUnavailableException {
+    void withAttributeMissingValueProperty_shouldSkipAttribute() throws TelemetryBackendUnavailableException {
       stubSearchResponse(
         // language=json
         """

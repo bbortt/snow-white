@@ -81,8 +81,7 @@ class QualityGateServiceUnitTest {
 
     @Test
     @VerifiesCon(ConTraceables.CON_005_API_CREATED_GATES_ARE_NEVER_PREDEFINED)
-    void shouldSaveNewConfiguration()
-      throws ConfigurationNameAlreadyExistsException {
+    void shouldSaveNewConfiguration() throws ConfigurationNameAlreadyExistsException {
       var qualityGateConfigurationArgumentCaptor =
         assertThatNewQualityGateConfigurationHasBeenPersisted(emptyList());
 
@@ -95,8 +94,7 @@ class QualityGateServiceUnitTest {
     }
 
     @Test
-    void shouldSaveNewConfiguration_withOpenApiCriteriaAttached()
-      throws ConfigurationNameAlreadyExistsException {
+    void shouldSaveNewConfiguration_withOpenApiCriteriaAttached() throws ConfigurationNameAlreadyExistsException {
       var openApiCriteria = singletonList(PATH_COVERAGE.name());
 
       Set<QualityGateOpenApiCoverageMapping> qualityGateOpenApiCoverageMappings =
@@ -184,7 +182,10 @@ class QualityGateServiceUnitTest {
 
     @Test
     void shouldRemoveExistingConfiguration()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var name = "ExistingConfig";
       doReturn(true)
         .when(qualityGateConfigurationRepositoryMock)
@@ -254,8 +255,7 @@ class QualityGateServiceUnitTest {
   class FindByNameTest {
 
     @Test
-    void shouldReturnExistingConfiguration()
-      throws ConfigurationDoesNotExistException {
+    void shouldReturnExistingConfiguration() throws ConfigurationDoesNotExistException {
       var name = "ExistingConfig";
       var configuration = QualityGateConfiguration.builder().name(name).build();
 
@@ -287,7 +287,10 @@ class QualityGateServiceUnitTest {
 
     @Test
     void shouldUpdateExistingConfiguration()
-      throws ConfigurationDoesNotExistException, UnmodifiableConfigurationException {
+      throws
+        ConfigurationDoesNotExistException,
+        UnmodifiableConfigurationException
+    {
       var name = "ExistingConfig";
       var configuration = QualityGateConfiguration.builder().name(name).build();
 

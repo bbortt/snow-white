@@ -79,8 +79,10 @@ class QualityGateFileReaderUnitTest {
     );
   }
 
-  private String configureGateFile(String name, String content)
-    throws IOException {
+  private String configureGateFile(
+    String name,
+    String content
+  ) throws IOException {
     var file = tempDir.resolve(name);
     writeString(file, content);
 
@@ -213,8 +215,7 @@ class QualityGateFileReaderUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
-    void shouldRefuseMisspeltKey_insteadOfLeavingTheFieldAtItsDefault()
-      throws IOException {
+    void shouldRefuseMisspeltKey_insteadOfLeavingTheFieldAtItsDefault() throws IOException {
       configureGateFile(
         "typo.yaml",
         """
@@ -335,8 +336,7 @@ class QualityGateFileReaderUnitTest {
 
     @Test
     @VerifiesSw(SwTraceables.SW_050_STARTUP_MAKES_THE_GATE_SET_EXACTLY_THE_FILE)
-    void shouldRefuseAThresholdTheCreateEndpointWouldReject()
-      throws IOException {
+    void shouldRefuseAThresholdTheCreateEndpointWouldReject() throws IOException {
       configureGateFile(
         "too-low.yaml",
         """

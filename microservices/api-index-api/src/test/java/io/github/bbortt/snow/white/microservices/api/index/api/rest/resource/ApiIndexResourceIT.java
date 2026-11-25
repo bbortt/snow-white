@@ -88,8 +88,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   @VerifiesSw(
     SwTraceables.SW_026_PRERELEASE_RESUBMISSION_REPLACES_THE_PRIOR_ENTRY
   )
-  void postRequest_forPrerelease_shouldOverrideExistingEntry()
-    throws Exception {
+  void postRequest_forPrerelease_shouldOverrideExistingEntry() throws Exception {
     var prereleaseReference = GetAllApis200ResponseInner.builder()
       .serviceName("serviceName")
       .apiName("apiName")
@@ -143,8 +142,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   @VerifiesCon(
     ConTraceables.CON_007_STABLE_API_REFERENCE_IS_IMMUTABLE_ONCE_INDEXED
   )
-  void postRequest_forIdentityHoldingStableEntry_shouldRejectAndLeaveItUnchanged()
-    throws Exception {
+  void postRequest_forIdentityHoldingStableEntry_shouldRejectAndLeaveItUnchanged() throws Exception {
     var stableReference = GetAllApis200ResponseInner.builder()
       .serviceName("serviceName")
       .apiName("apiName")
@@ -195,8 +193,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void postRequest_withMissingRequiredParameters_shouldBeReported()
-    throws Exception {
+  void postRequest_withMissingRequiredParameters_shouldBeReported() throws Exception {
     var newApiReference = GetAllApis200ResponseInner.builder()
       .serviceName(null)
       .apiName(null)
@@ -288,8 +285,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_withServiceNameFilter_shouldReturnMatchingApis()
-    throws Exception {
+  void getRequest_withServiceNameFilter_shouldReturnMatchingApis() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -330,8 +326,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_withServiceNameAndApiNameFilter_shouldReturnMatchingApis()
-    throws Exception {
+  void getRequest_withServiceNameAndApiNameFilter_shouldReturnMatchingApis() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-c")
@@ -373,8 +368,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_withApiNameFilter_shouldReturnMatchingApis()
-    throws Exception {
+  void getRequest_withApiNameFilter_shouldReturnMatchingApis() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -428,8 +422,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX)
-  void getRequest_withServiceNameFilter_shouldMatchServiceNamePrefixButNotSubstring()
-    throws Exception {
+  void getRequest_withServiceNameFilter_shouldMatchServiceNamePrefixButNotSubstring() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("prefix-ingesting-service")
@@ -480,8 +473,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_028_LIST_FILTERS_MATCH_BY_CASE_INSENSITIVE_PREFIX)
-  void getRequest_withApiNameFilter_shouldMatchApiNamePrefixButNotSubstring()
-    throws Exception {
+  void getRequest_withApiNameFilter_shouldMatchApiNamePrefixButNotSubstring() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -531,8 +523,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_toListServiceNames_shouldReturnDistinctServiceNames()
-    throws Exception {
+  void getRequest_toListServiceNames_shouldReturnDistinctServiceNames() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -576,8 +567,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_toListApiNames_shouldReturnDistinctApiNames()
-    throws Exception {
+  void getRequest_toListApiNames_shouldReturnDistinctApiNames() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -621,8 +611,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_toListApiNames_withServiceNameFilter_shouldReturnFilteredApiNames()
-    throws Exception {
+  void getRequest_toListApiNames_withServiceNameFilter_shouldReturnFilteredApiNames() throws Exception {
     apiReferenceRepository.save(
       ApiReference.builder()
         .otelServiceName("service-a")
@@ -767,8 +756,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_toCheckIfApiExists_excludesPrereleasesByDefault()
-    throws Exception {
+  void getRequest_toCheckIfApiExists_excludesPrereleasesByDefault() throws Exception {
     var prereleaseReference = ApiReference.builder()
       .otelServiceName("otelServiceName")
       .apiName("apiName")
@@ -794,8 +782,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
   }
 
   @Test
-  void getRequest_toCheckIfApiExists_includesPrereleases_whenRequested()
-    throws Exception {
+  void getRequest_toCheckIfApiExists_includesPrereleases_whenRequested() throws Exception {
     var prereleaseReference = ApiReference.builder()
       .otelServiceName("otelServiceName")
       .apiName("apiName")
@@ -824,8 +811,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
-  void getRequest_forRawApiContent_shouldReturnNotFound_whenApiDoesNotExist()
-    throws Exception {
+  void getRequest_forRawApiContent_shouldReturnNotFound_whenApiDoesNotExist() throws Exception {
     mockMvc
       .perform(get(PATH_GET_RAW_API_CONTENT, "foo", "bar", "baz"))
       .andExpect(status().isNotFound());
@@ -833,8 +819,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
-  void getRequest_forRawApiContent_shouldReturnYaml_whenContentIsOpenApiSpec()
-    throws Exception {
+  void getRequest_forRawApiContent_shouldReturnYaml_whenContentIsOpenApiSpec() throws Exception {
     var openApiContent =
       "openapi: 3.1.2\ninfo:\n  title: Test API\n  version: v1";
 
@@ -870,8 +855,7 @@ class ApiIndexResourceIT extends AbstractApiIndexApiIT {
 
   @Test
   @VerifiesSw(SwTraceables.SW_027_RAW_CONTENT_ENDPOINT_IS_SCOPED_TO_PRERELEASES)
-  void getRequest_forRawApiContent_shouldReturnPlainText_whenContentIsNotOpenApiSpec()
-    throws Exception {
+  void getRequest_forRawApiContent_shouldReturnPlainText_whenContentIsNotOpenApiSpec() throws Exception {
     var rawContent = "some raw spec content that is not openapi";
 
     var prereleaseReference = ApiReference.builder()

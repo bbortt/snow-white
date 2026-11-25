@@ -311,8 +311,10 @@ public class ArtifactoryApiCatalogService implements ApiCatalogService {
     return ApiInformation.builder().build().withLoadStatus(reason);
   }
 
-  private String downloadFile(String repository, String filePath)
-    throws IOException {
+  private String downloadFile(
+    String repository,
+    String filePath
+  ) throws IOException {
     try (
       var inputStream = artifactory
         .repository(repository)
