@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.6.3](https://github.com/bbortt/snow-white/compare/v2.6.2...v2.6.3) (2026-11-25)
+
+
+### Bug Fixes
+
+* release citrus-junit-jupiter-extension module ([35cd269](https://github.com/bbortt/snow-white/commit/35cd2697b8ff13dd2b42eaea57ee3df1a5511c93))
+
+
+### Documentation
+
+* document the citrus-junit-jupiter-extension module ([4b20a6b](https://github.com/bbortt/snow-white/commit/4b20a6be24efafa654419c55384a66bfea2365f6))
+
 ## [2.6.2](https://github.com/bbortt/snow-white/compare/v2.6.1...v2.6.2) (2026-11-21)
 
 ### Documentation
