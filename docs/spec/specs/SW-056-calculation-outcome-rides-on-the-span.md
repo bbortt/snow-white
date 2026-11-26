@@ -19,14 +19,18 @@ the `snow.white.span.calls` counter, which is what this spec is for, and the
 whether the failures are also the slow ones.
 There is no separate outcome counter: the derived call count, split by this attribute, _is_ the
 outcome counter.
-The value set is closed, and mirrors the branches
-`OpenApiCoverageCalculationProcessor` already distinguishes by name:
+The value set is closed, and each value names a branch the coverage stream takes:
 
 - `ok` — coverage was computed and published.
 - `telemetry_backend_unavailable`
-- `no_application_telemetry` — the application never appeared in the lookback window.
-- `no_telemetry_for_filters` — telemetry existed, but the configured attribute filters matched
-  none of it.
+- `no_telemetry_in_window` — the backend returned nothing for the lookback window and the
+  configured filters.
+  One value rather than two: the fetch is a single query, so no branch can separate "the
+  application never appeared" from "the filters matched none of what did".
+- `only_harness_telemetry` — telemetry arrived and matched, and every matched span is the test
+  harness's own.
+  This is what `NoApplicationTelemetryException` reports, thrown where the grouping first makes a
+  harness span distinguishable from the application's.
 - `unmatched_waiver`
 - `not_indexed`
 - `unparseable_specification`
@@ -47,13 +51,19 @@ result: a finished report carrying no coverage.
 There is consequently no error rate anywhere in the system to read, and nothing distinguishes
 "Tempo is down" from "this API is poorly covered" without opening a trace.
 
-The taxonomy needs no invention.
+Six of the eight values need no invention.
 The processor already catches `TelemetryBackendUnavailableException`,
 `UnmatchedWaiverException`, and `NoApplicationTelemetryException` by name, and comments on why each
-is worth separating; `OpenApiNotIndexedException` and `UnparseableOpenApiException` are declared on
-the call, and the empty-filter-result case already returns its own event.
-This spec records what the code already decided, in a form something other than a human reader can
-aggregate.
+is worth separating; the empty-telemetry case already returns its own event; `ok` is the path that
+returns a computed response; and `other` is the fallback the processor already has.
+
+`not_indexed` and `unparseable_specification` are the two this spec adds.
+`OpenApiNotIndexedException` and `UnparseableOpenApiException` are declared on
+`processOpenApiCoverageRequest` but reach no branch of their own — both land in the
+`catch (Exception)` fallback — so each needs its own catch branch before it can carry anything but
+`other`.
+Recording them as `other` instead is the cheaper option and is rejected: they are the two failures
+whose owner is unambiguous, one pointing at the index and one at the specification's author.
 
 Putting it on the span rather than in a Micrometer counter keeps one mechanism for the stream's
 telemetry and yields the duration of each failure class at no extra cost — a timeout and a refusal
@@ -62,15 +72,23 @@ is frequent.
 Span status alone is insufficient: it offers `ok` and `error`, which collapses the seven failure
 values above into one.
 
-`no_telemetry_for_filters` is separated from `no_application_telemetry` because the operator
-actions diverge completely.
-The first means the filters are wrong, which is a configuration fix; the second means the
-application is not instrumented or was not running, which is not Snow-White's problem to fix at
-all.
+`only_harness_telemetry` is separated from `no_telemetry_in_window` because the operator actions
+diverge completely.
+The first means the window, the filters, and the ingestion all worked, and the application under
+test is not instrumented — which is not Snow-White's problem to fix at all.
+The second means nothing arrived, and the lookback window and the filters are the first two things
+to check.
+Collapsing them would put the one case Snow-White cannot fix behind the same value as the one it
+usually can.
 
 **Verification Description**
 A unit test drives the processor through each branch and asserts the span carries the expected
 outcome value, including `ok` on the success path.
+A test asserts an empty telemetry result yields `no_telemetry_in_window` and a window carrying
+only harness spans yields `only_harness_telemetry`, since those two are the pair most easily
+wired to each other's value.
+A test asserts `OpenApiNotIndexedException` and `UnparseableOpenApiException` yield their own
+values rather than `other`, which is what the two added catch branches exist for.
 A test asserts the attribute's value set is closed — an unexpected exception type yields `other`
 and never a message-derived value.
 A review confirms no root cause message reaches the attribute.
