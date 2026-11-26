@@ -39,10 +39,12 @@ not sticky: rule 1 of
 Every API test row exists from dispatch, born `IN_PROGRESS`, and that same precedence ranks
 `IN_PROGRESS` above every failure, so on the normal path the two edges coincide — the report
 cannot read `PASSED` while a result is outstanding.
-They part only when a re-delivered or corrected result flips an already-`PASSED` report to
-`FAILED`.
-At most one observation exists per report: such a flip produces no second one, and the report
-keeps the duration and the status it was recorded with.
+At most one observation exists per report, taken at whichever edge comes first and never again.
+Both orders occur: a re-delivered or corrected result can flip an already-`PASSED` report to
+`FAILED` after the linking edge, and a late coverage response can be linked after the housekeeper
+has already swept the report to `TIMED_OUT`.
+Rule 1 leaves the swept status untouched in the second case, and in both the report keeps the
+duration and the status its one observation carried.
 
 A report swept to `TIMED_OUT` is recorded too, so the slowest outcomes are present rather than
 censored.
@@ -88,7 +90,8 @@ asserts the histogram records a duration measured from that instant and not from
 the record timestamp.
 A test asserts a report swept to `TIMED_OUT` is recorded with that terminal status.
 A test asserts exactly one observation per report, including a report whose results arrive in
-several batches, and a report observed as `PASSED` that a later result flips to `FAILED`.
+several batches, a report observed as `PASSED` that a later result flips to `FAILED`, and a report
+whose last result is linked after the housekeeper swept it to `TIMED_OUT`.
 A test asserts the histogram's tag keys are exactly the terminal status.
 
 ## Relations

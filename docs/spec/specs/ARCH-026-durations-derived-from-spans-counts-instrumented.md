@@ -50,11 +50,11 @@ That namespace is not chosen here; it is the one Snow-White's own span attribute
 a second one.
 Segments are dot-separated throughout, with no underscores, to match those keys.
 
-The reverse-DNS form `io.github.bbortt.snow.white` is deliberately not used.
-It appears exactly once in the repository, as the collector's `service.namespace` resource
-attribute, and that is the right place for publisher identity: it is already attached to every
-signal and can be grouped by, whereas the same twenty characters in a metric name would repeat it
-where nothing can query it.
+The reverse-DNS form `io.github.bbortt.snow.white` is deliberately not used in a metric name.
+Where it does appear is as the `service.namespace` resource attribute, set by each service and by
+the collectors, and that is the right place for publisher identity: it is already attached to
+every signal and can be grouped by, whereas the same twenty characters in a metric name would
+repeat it where nothing can query it.
 
 Names are fixed here because they are the operator-visible contract: the agent's Micrometer bridge
 runs with `otel.instrumentation.micrometer.prometheus-mode.enabled` at its default of `false`, so a
@@ -101,16 +101,19 @@ Exactly two modules need one in this increment: `report-coordinator-api`, which 
 `MeterRegistry`, and `api-sync-job`, which carries neither actuator nor the OpenTelemetry starter
 and is the one module where a dependency is added deliberately.
 
-Which registry that is cannot be left to Spring there.
-`micrometer-core` on its own supplies no registry bean — that auto-configuration arrives with
-actuator, in `spring-boot-actuator-autoconfigure` — and the agent's `micrometer-1.5`
-instrumentation bridges `Metrics.globalRegistry` rather than whichever registry a bean happens to
-hold.
-`api-sync-job` therefore exposes `Metrics.globalRegistry` as its `MeterRegistry` bean, which is one
-line and makes both things true at once: the meter reaches the agent, and the class registering it
-still takes a registry as a constructor argument.
-A registry the agent does not bridge is the failure this forecloses — it satisfies every local
-assertion and exports nothing.
+Which registry that is cannot be left to Spring, in either module.
+The agent's `micrometer-1.5` instrumentation observes `Metrics.globalRegistry`, and a meter
+registered anywhere else is not bridged: Spring Boot adds its auto-configured registry _to_ the
+global composite rather than being it, so a meter created on an injected actuator registry sits in
+a sibling of the agent's and propagates nowhere.
+`micrometer-core` on its own supplies no registry bean at all — that auto-configuration arrives
+with actuator, in `spring-boot-actuator-autoconfigure` — so `api-sync-job` has nothing to inject
+either way.
+Both modules therefore register their meters on `Metrics.globalRegistry`, supplied to the class
+that owns the meter as a `MeterRegistry` constructor argument.
+A registry the agent does not observe is the failure this forecloses — it satisfies every local
+assertion and exports nothing, which is why the verification below proves export rather than
+registration.
 
 That constructor argument is the reason for Micrometer over the OpenTelemetry Metrics API: a unit
 test can pass a `SimpleMeterRegistry` with no agent attached, which an agent-bridged OpenTelemetry
@@ -123,14 +126,20 @@ increment and every one of its metrics is derived, so it gains no registry inter
 
 **Verification Description**
 A review confirms no production source registers a `Timer`, `LongTaskTimer`, or manual elapsed-time
-measurement for a processing stage, and that no module declares a `micrometer-registry-*`
+measurement around a processing stage, and that no module declares a `micrometer-registry-*`
 dependency.
+The one permitted `Timer` is `snow.white.report.duration`, identified by that name rather than by
+its type: it records an already-elapsed duration instead of wrapping a stage, which is the
+distinction the sentence above draws.
 A review confirms each metric fixed by a sibling spec is implemented by the mechanism this spec
 assigns to its kind.
 An integration or application test asserts the code-instrumented counters and gauges are
 registered and move, driven through a `MeterRegistry` rather than through an exported metric.
-A review confirms every module registering a meter does so on a registry the agent bridges, which
-for `api-sync-job` means its `MeterRegistry` bean is `Metrics.globalRegistry`.
+A review confirms every module registering a meter supplies `Metrics.globalRegistry` to it, in
+`report-coordinator-api` as much as in `api-sync-job`, since an injected actuator registry is a
+sibling of the agent's rather than the global composite.
+An application test per instrumented module asserts the meter's value arrives at a collector,
+which is the only check that tells a bridged registry from an unbridged one.
 The derived durations are verified where they are produced, by
 [ARCH-027](ARCH-027-connector-reads-only-snow-whites-own-spans.md).
 
