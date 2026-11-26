@@ -97,12 +97,23 @@ rather than a request.
 
 Micrometer rather than the OpenTelemetry Metrics API directly, for the meters that remain.
 Exactly two modules need one in this increment: `report-coordinator-api`, which already carries
-`spring-boot-starter-actuator` and therefore `micrometer-core`, and `api-sync-job`, which carries
-neither actuator nor the OpenTelemetry starter and is the one module where a dependency is added
-deliberately.
-So the choice costs one new dependency rather than two, which is a modest argument on its own —
-the stronger one is that a `MeterRegistry` is injectable by Spring and a unit test can assert
-against a `SimpleMeterRegistry` with no agent attached, which an agent-bridged OpenTelemetry
+`spring-boot-starter-actuator` and therefore both `micrometer-core` and an auto-configured
+`MeterRegistry`, and `api-sync-job`, which carries neither actuator nor the OpenTelemetry starter
+and is the one module where a dependency is added deliberately.
+
+Which registry that is cannot be left to Spring there.
+`micrometer-core` on its own supplies no registry bean — that auto-configuration arrives with
+actuator, in `spring-boot-actuator-autoconfigure` — and the agent's `micrometer-1.5`
+instrumentation bridges `Metrics.globalRegistry` rather than whichever registry a bean happens to
+hold.
+`api-sync-job` therefore exposes `Metrics.globalRegistry` as its `MeterRegistry` bean, which is one
+line and makes both things true at once: the meter reaches the agent, and the class registering it
+still takes a registry as a constructor argument.
+A registry the agent does not bridge is the failure this forecloses — it satisfies every local
+assertion and exports nothing.
+
+That constructor argument is the reason for Micrometer over the OpenTelemetry Metrics API: a unit
+test can pass a `SimpleMeterRegistry` with no agent attached, which an agent-bridged OpenTelemetry
 `Meter` cannot offer as cheaply.
 
 The other actuator-carrying modules — `api-gateway`, `api-index-api`, `openapi-coverage-stream`,
@@ -118,6 +129,8 @@ A review confirms each metric fixed by a sibling spec is implemented by the mech
 assigns to its kind.
 An integration or application test asserts the code-instrumented counters and gauges are
 registered and move, driven through a `MeterRegistry` rather than through an exported metric.
+A review confirms every module registering a meter does so on a registry the agent bridges, which
+for `api-sync-job` means its `MeterRegistry` bean is `Metrics.globalRegistry`.
 The derived durations are verified where they are produced, by
 [ARCH-027](ARCH-027-connector-reads-only-snow-whites-own-spans.md).
 

@@ -25,8 +25,22 @@ No count is computed for the metric, and the workers do not touch the registry.
 A cycle that aborts — which only a strict parsing mode causes — emits the counts accumulated before
 the abort, so a partial cycle is not a silent one.
 
-`api-sync-job` gains the dependency needed to register a meter; it carries neither
+`api-sync-job` gains the dependency needed to register a meter, and a `MeterRegistry` bean
+exposing `Metrics.globalRegistry` — the registry the agent bridges
+([ARCH-026](ARCH-026-durations-derived-from-spans-counts-instrumented.md)); it carries neither
 `spring-boot-starter-actuator` nor the OpenTelemetry Spring Boot starter today.
+
+The counter lives in a short-lived process, which is what it is read with rather than something it
+compromises.
+`SyncJobApplicationRunner` runs one pass per process start and the process then exits, with cadence
+owned by the scheduler ([ARCH-014](ARCH-014-sync-cadence-owned-by-the-scheduler.md)), so the
+counter starts at zero every cycle and its series ends with the JVM.
+`PUBLISH_DEFERRED` rising is therefore read across runs, with `increase` or a sum over a window,
+and never as a rate within one series — a rate over a series that exists for the length of one
+sync pass is meaningless.
+The export is the agent's flush on shutdown rather than a scrape or a periodic interval the
+process outlives, which is the one thing about this metric that cannot be asserted from inside the
+JVM.
 
 **Rationale**
 The distinction this metric carries is already made, deliberately, in the code — and currently
@@ -62,6 +76,8 @@ A test asserts a cycle whose supplier raises still emits the counts accumulated 
 A test asserts the counter's tag keys are exactly the load status, per
 [CON-017](CON-017-metric-dimensions-are-bounded.md).
 A review confirms no registry interaction occurs inside `ApiSyncProcessor`'s workers.
+An application test asserts a completed job run exports the counter, since a meter that moves in a
+`SimpleMeterRegistry` proves nothing about a process that exits before an export interval elapses.
 
 ## Relations
 

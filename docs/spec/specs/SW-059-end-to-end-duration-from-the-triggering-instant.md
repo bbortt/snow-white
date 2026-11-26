@@ -24,11 +24,25 @@ There is one clock read, in one service, and the event and the row carry its val
 readings of it.
 It is not the start of any span, and not the Kafka record timestamp.
 
-The histogram is recorded once per report, when the report leaves the non-terminal statuses, and is
-dimensioned by `snow.white.report.status` — the terminal status it reached.
-Non-terminal means `NOT_STARTED` or `IN_PROGRESS`, which is the pair the housekeeper sweeps and the
-pair [SW-058](SW-058-fan-out-backlog-measured-by-age.md)'s gauge counts; a report that never
-started is as much a timed-out calculation as one that stalled half way.
+The histogram is recorded once per report, and is dimensioned by `snow.white.report.status` — the
+status the report held when its observation was taken.
+The observation is taken when the last outstanding API test result is linked, or when the
+housekeeper sweeps the report to `TIMED_OUT`; the housekeeper's pair is `NOT_STARTED` and
+`IN_PROGRESS`, the pair [SW-058](SW-058-fan-out-backlog-measured-by-age.md)'s gauge also counts,
+because a report that never started is as much a timed-out calculation as one that stalled half
+way.
+
+The edge is that linking rather than "the report's status became terminal", because `PASSED` is
+not sticky: rule 1 of
+[SW-015](SW-015-report-status-aggregates-with-sticky-terminal.md) protects `FAILED`,
+`FINISHED_EXCEPTIONALLY`, and `TIMED_OUT` only.
+Every API test row exists from dispatch, born `IN_PROGRESS`, and that same precedence ranks
+`IN_PROGRESS` above every failure, so on the normal path the two edges coincide — the report
+cannot read `PASSED` while a result is outstanding.
+They part only when a re-delivered or corrected result flips an already-`PASSED` report to
+`FAILED`.
+At most one observation exists per report: such a flip produces no second one, and the report
+keeps the duration and the status it was recorded with.
 
 A report swept to `TIMED_OUT` is recorded too, so the slowest outcomes are present rather than
 censored.
@@ -74,7 +88,7 @@ asserts the histogram records a duration measured from that instant and not from
 the record timestamp.
 A test asserts a report swept to `TIMED_OUT` is recorded with that terminal status.
 A test asserts exactly one observation per report, including a report whose results arrive in
-several batches.
+several batches, and a report observed as `PASSED` that a later result flips to `FAILED`.
 A test asserts the histogram's tag keys are exactly the terminal status.
 
 ## Relations
