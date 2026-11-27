@@ -11,9 +11,9 @@ cycle
 **Status**: planned
 
 **Description**
-At the end of each sync cycle, `api-sync-job` increments `snow.white.sync.specifications` once per
-specification, dimensioned by `snow.white.load.status` — the `ApiLoadStatus` the specification
-reached.
+At the end of each sync cycle that completes, `api-sync-job` increments
+`snow.white.sync.specifications` once per specification, dimensioned by `snow.white.load.status` —
+the `ApiLoadStatus` the specification reached.
 The values are the enum's ten constants, unchanged and uncollapsed — `PUBLISHED`,
 `PUBLISH_DEFERRED`, `LOADED`, `DOWNLOAD_FAILED`, `PARSE_FAILED`, `LOAD_FAILED`,
 `MANDATORY_INFORMATION_MISSING`, `NO_SOURCE`, `NO_API_TYPE`, and `UNLOADED`.
@@ -21,9 +21,6 @@ The values are the enum's ten constants, unchanged and uncollapsed — `PUBLISHE
 The counter is fed from the `Map<ApiLoadStatus, Long>` that `ApiSyncProcessor.process` already
 returns and `SyncJob.syncCatalog` already logs.
 No count is computed for the metric, and the workers do not touch the registry.
-
-A cycle that aborts — which only a strict parsing mode causes — emits the counts accumulated before
-the abort, so a partial cycle is not a silent one.
 
 `api-sync-job` gains the dependency needed to register a meter, and a `MeterRegistry` bean
 exposing `Metrics.globalRegistry` — the registry the agent bridges
@@ -72,7 +69,6 @@ emitting.
 **Verification Description**
 A unit test drives `SyncJob` with a processor returning a known status map and asserts the counter
 is incremented by the mapped amount for each status, against a `SimpleMeterRegistry`.
-A test asserts a cycle whose supplier raises still emits the counts accumulated before the abort.
 A test asserts the counter's tag keys are exactly the load status, per
 [CON-017](CON-017-metric-dimensions-are-bounded.md).
 A review confirms no registry interaction occurs inside `ApiSyncProcessor`'s workers.
@@ -97,6 +93,6 @@ An application test asserts a completed job run exports the counter, since a met
 - [NF-009](NF-009-bounded-sync-fan-out-with-backpressure.md) — the bounded fan-out whose tally
   this counter reads
 - [SW-034](SW-034-unreadable-spec-skipped-unless-strict.md) — the skip-versus-abort behaviour that
-  decides whether a cycle's counts are complete
+  decides whether a cycle completes
 - [CON-002](CON-002-tolerate-dependency-outages.md) — the outage tolerance that turns an index
   failure into a deferral rather than an error
