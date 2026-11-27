@@ -37,9 +37,10 @@ nor retires it: `ApiIndexCachingService.fetchApiSourceUrl` and `OpenApiService.f
 under the fetch phase, `InfluxDBTelemetryServiceImpl.findOpenTelemetryTracingData` and its Tempo
 counterpart under the telemetry-query phase, and `OpenApiCoverageCalculationCoordinator.calculate`
 and `OpenApiCoverageService.calculateCoverage` under the coverage phase.
-The histogram therefore carries eight series per deployment and not three, since one telemetry
+The histogram therefore carries nine series per deployment and not three, since one telemetry
 backend is configured at a time
-([ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md)).
+([ARCH-001](ARCH-001-pluggable-influxdb-or-tempo-telemetry-backend.md)) and the processor's own span
+([SW-056](SW-056-calculation-outcome-rides-on-the-span.md)) is the ninth.
 Those spans are kept because each is a distinct dependency or a distinct failure site a trace is
 read for, and because the set is fixed by the code rather than by traffic, which is the sense in
 which [CON-017](CON-017-metric-dimensions-are-bounded.md) requires span names to be bounded.
@@ -50,6 +51,10 @@ The phase boundary is the service interface, not the processor.
 `OpenApiCoverageCalculationProcessor` wraps the three calls in a `try` whose `catch` branches
 answer the request, so a span at the processor would measure the three phases plus the failure
 handling as one number.
+The processor does carry a span, because the outcome is decided in those `catch` branches and an
+attribute needs an open span to ride on
+([SW-056](SW-056-calculation-outcome-rides-on-the-span.md)); it is read as the outcome's carrier and
+as the one span per calculation, never as a phase.
 
 **Rationale**
 The three phases have different owners and different fixes, and a single duration cannot tell them
