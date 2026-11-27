@@ -27,6 +27,7 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -47,6 +48,15 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 public class OpenApiCoverageCalculationProcessor {
+
+  private static final String OUTCOME_ATTRIBUTE = "snow.white.outcome";
+
+  /**
+   * The name the agent's annotation would have given this span, kept so the derived histogram's
+   * series name does not change with the mechanism.
+   */
+  private static final String SPAN_NAME =
+    "OpenApiCoverageCalculationProcessor.processOpenApiCoverageRequestAndHandleExceptions";
 
   private final OpenTelemetry openTelemetry;
   private final OpenApiCoverageStreamProperties openApiCoverageStreamProperties;
@@ -96,7 +106,39 @@ public class OpenApiCoverageCalculationProcessor {
     );
   }
 
+  /**
+   * The span is opened here rather than left to the agent's annotation because the outcome is
+   * decided in the branches below, and an attribute needs a recording span to ride on: the context
+   * current at this point carries the non-recording remote span the incoming headers named.
+   */
   private @NonNull OpenApiCoverageResponseEvent processOpenApiCoverageRequestAndHandleExceptions(
+    FixedKeyRecord<
+      String,
+      QualityGateCalculationRequestEvent
+    > qualityGateCalculationRequestEventFixedKeyRecord,
+    Long timestamp
+  ) {
+    var span = openTelemetry
+      .getTracer(OpenApiCoverageCalculationProcessor.class.getName())
+      .spanBuilder(SPAN_NAME)
+      .startSpan();
+
+    // The outcome is a closed set, and the derived counter's denominator is the calculation count:
+    // a span that reached this line has to carry a value even if it dies on an Error no branch
+    // below can catch. The branches overwrite it; whatever they cannot name stays "other".
+    span.setAttribute(OUTCOME_ATTRIBUTE, "other");
+
+    try (var _ = span.makeCurrent()) {
+      return handleRecord(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        timestamp
+      );
+    } finally {
+      span.end();
+    }
+  }
+
+  private @NonNull OpenApiCoverageResponseEvent handleRecord(
     FixedKeyRecord<
       String,
       QualityGateCalculationRequestEvent
@@ -109,6 +151,8 @@ public class OpenApiCoverageCalculationProcessor {
         timestamp
       );
     } catch (TelemetryBackendUnavailableException exception) {
+      tagCurrentSpanWithOutcome("telemetry_backend_unavailable");
+
       logger.error(
         "Telemetry backend unavailable while processing OpenAPI coverage for message: {}",
         exception.getMessage(),
@@ -120,6 +164,8 @@ public class OpenApiCoverageCalculationProcessor {
         exception.getMessage()
       );
     } catch (UnmatchedWaiverException exception) {
+      tagCurrentSpanWithOutcome("unmatched_waiver");
+
       logger.error(
         "Refusing to publish coverage for a calculation holding a waiver that matched nothing: {}",
         exception.getMessage()
@@ -135,6 +181,8 @@ public class OpenApiCoverageCalculationProcessor {
         exception.getMessage()
       );
     } catch (NoApplicationTelemetryException exception) {
+      tagCurrentSpanWithOutcome("only_harness_telemetry");
+
       logger.error(
         "Refusing to publish coverage for a window the application under test never appeared in: {}",
         exception.getMessage()
@@ -143,6 +191,30 @@ public class OpenApiCoverageCalculationProcessor {
       // Caught by name for the reason above, and with the same consequence: an empty result set
       // has no criterion below the gate's threshold, so answering this case with one would publish
       // an uninstrumented application as a passing gate.
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        exception.getMessage()
+      );
+    } catch (OpenApiNotIndexedException exception) {
+      tagCurrentSpanWithOutcome("not_indexed");
+
+      logger.error(
+        "Refusing to calculate coverage for an API that is not indexed: {}",
+        exception.getMessage()
+      );
+
+      return failureEvent(
+        qualityGateCalculationRequestEventFixedKeyRecord,
+        exception.getMessage()
+      );
+    } catch (UnparseableOpenApiException exception) {
+      tagCurrentSpanWithOutcome("unparseable_specification");
+
+      logger.error(
+        "Refusing to calculate coverage for a specification that cannot be parsed: {}",
+        exception.getMessage()
+      );
+
       return failureEvent(
         qualityGateCalculationRequestEventFixedKeyRecord,
         exception.getMessage()
@@ -163,6 +235,10 @@ public class OpenApiCoverageCalculationProcessor {
           : rootCause.getClass().getSimpleName()
       );
     }
+  }
+
+  private static void tagCurrentSpanWithOutcome(String outcome) {
+    Span.current().setAttribute(OUTCOME_ATTRIBUTE, outcome);
   }
 
   /**
@@ -212,6 +288,8 @@ public class OpenApiCoverageCalculationProcessor {
       );
 
     if (isEmpty(openApiTestContext.openTelemetryData())) {
+      tagCurrentSpanWithOutcome("no_telemetry_in_window");
+
       return new OpenApiCoverageResponseEvent(
         openApiTestContext.apiInformation(),
         format(
@@ -231,8 +309,12 @@ public class OpenApiCoverageCalculationProcessor {
       openApiTestContext
     );
 
-    return openApiCoverageCalculationService.buildResponseEvent(
+    var responseEvent = openApiCoverageCalculationService.buildResponseEvent(
       openApiTestContext
     );
+
+    tagCurrentSpanWithOutcome("ok");
+
+    return responseEvent;
   }
 }
