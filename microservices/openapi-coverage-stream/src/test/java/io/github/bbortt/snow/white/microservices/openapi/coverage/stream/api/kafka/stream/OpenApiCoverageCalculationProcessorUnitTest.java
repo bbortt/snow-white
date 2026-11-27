@@ -48,8 +48,8 @@ import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnmatchedWaiverException;
 import io.github.bbortt.snow.white.microservices.openapi.coverage.stream.service.exception.UnparseableOpenApiException;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Properties;
@@ -67,6 +67,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
@@ -77,6 +78,12 @@ import tools.jackson.databind.node.ObjectNode;
 @ExtendWith({ MockitoExtension.class })
 class OpenApiCoverageCalculationProcessorUnitTest {
 
+  private static final String OUTCOME_ATTRIBUTE = "snow.white.outcome";
+
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting =
+    OpenTelemetryExtension.create();
+
   private final String requestTopicName =
     getClass().getSimpleName() + ":request";
   private final String responseTopicName =
@@ -84,9 +91,7 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
   private final Properties snowWhiteKafkaProperties = new Properties();
 
-  private final OpenTelemetry openTelemetry = OpenTelemetry.propagating(
-    ContextPropagators.create(W3CTraceContextPropagator.getInstance())
-  );
+  private final OpenTelemetry openTelemetry = otelTesting.getOpenTelemetry();
 
   @Mock
   private OpenApiCoverageCalculationService openApiCoverageCalculationServiceMock;
@@ -202,6 +207,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       verify(openApiCoverageCalculationServiceMock).buildResponseEvent(
         calculatedContext
       );
+
+      assertThatSpanOutcomeIs("ok");
     }
 
     @Test
@@ -270,6 +277,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
         any(OpenApiTestContext.class)
       );
+
+      assertThatSpanOutcomeIs("no_telemetry_in_window");
     }
 
     /**
@@ -341,6 +350,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
         any(OpenApiTestContext.class)
       );
+
+      assertThatSpanOutcomeIs("only_harness_telemetry");
     }
 
     @ParameterizedTest
@@ -364,7 +375,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       var cause = new OpenApiNotIndexedException(defaultApiInformation());
       assertThatEventIsBeingRespondedWithException(
         () -> cause,
-        "OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }"
+        "OpenApi identifier not indexed: { \"serviceName\": \"serviceName\", \"apiName\": \"apiName\", \"apiVersion\": \"apiVersion\" }",
+        "not_indexed"
       );
     }
 
@@ -377,7 +389,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       );
       assertThatEventIsBeingRespondedWithException(
         () -> cause,
-        "Unparsable OpenAPI: Error message"
+        "Unparsable OpenAPI: Error message",
+        "unparseable_specification"
       );
     }
 
@@ -389,7 +402,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
 
       assertThatEventIsBeingRespondedWithException(
         () -> new IllegalArgumentException(cause),
-        "Something nasty happened"
+        "Something nasty happened",
+        "other"
       );
     }
 
@@ -440,6 +454,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
         anyLong()
       );
       verifyNoMoreInteractions(openApiCoverageCalculationServiceMock);
+
+      assertThatSpanOutcomeIs("telemetry_backend_unavailable");
     }
 
     /**
@@ -524,11 +540,28 @@ class OpenApiCoverageCalculationProcessorUnitTest {
       verify(openApiCoverageCalculationServiceMock, never()).buildResponseEvent(
         any(OpenApiTestContext.class)
       );
+
+      assertThatSpanOutcomeIs("unmatched_waiver");
+    }
+
+    private String recordedOutcome() {
+      assertThat(otelTesting.getSpans()).hasSize(1);
+
+      return otelTesting
+        .getSpans()
+        .getFirst()
+        .getAttributes()
+        .get(AttributeKey.stringKey(OUTCOME_ATTRIBUTE));
+    }
+
+    private void assertThatSpanOutcomeIs(String expectedOutcome) {
+      assertThat(recordedOutcome()).isEqualTo(expectedOutcome);
     }
 
     private void assertThatEventIsBeingRespondedWithException(
       Supplier<Exception> exceptionSupplier,
-      String expectedMessage
+      String expectedMessage,
+      String expectedOutcome
     ) throws OpenApiNotIndexedException, UnparseableOpenApiException {
       var calculationId = "e872b8e9-bca6-406f-9a7e-728017171138";
       var requestEvent = qualityGateCalculationRequestEvent();
@@ -557,6 +590,8 @@ class OpenApiCoverageCalculationProcessorUnitTest {
         requestEvent
       );
       verifyNoMoreInteractions(openApiCoverageCalculationServiceMock);
+
+      assertThatSpanOutcomeIs(expectedOutcome);
     }
 
     private void sendEventsAndAssert(
