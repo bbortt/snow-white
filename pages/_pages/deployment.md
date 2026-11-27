@@ -55,8 +55,8 @@ Snow-White is verified against the following PostgreSQL and Kafka versions:
 | Component                             | Versions                              |
 | ------------------------------------- | ------------------------------------- |
 | PostgreSQL                            | `16-alpine`, `17-alpine`, `18-alpine` |
-| Kafka (`kafka.version`)               | `4.0`, `4.1`, `4.2`, `4.3`            |
-| Kafka (`confluentinc/cp-kafka` image) | `8.0.x`, `8.1.x`, `8.2.x`, `8.3.x`    |
+| Kafka (`kafka.version`)               | `4.0`, `4.1`, `4.2`, `4.4`            |
+| Kafka (`confluentinc/cp-kafka` image) | `8.0.x`, `8.1.x`, `8.2.x`, `8.4.x`    |
 
 Pull requests verify against the latest versions (`18-alpine` and Kafka image `8.4.1`).
 The full version matrix runs weekly.

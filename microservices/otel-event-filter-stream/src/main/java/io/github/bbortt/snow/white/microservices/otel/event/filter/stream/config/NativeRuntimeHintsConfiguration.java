@@ -109,7 +109,7 @@ public class NativeRuntimeHintsConfiguration {
   }
 
   /**
-   * The GraalVM reachability metadata for {@code kafka-streams:4.3.1} misses
+   * The GraalVM reachability metadata for {@code kafka-streams:4.4.0} misses
    * types that Kafka Streams instantiates reflectively. The assignor is loaded
    * by class name through the consumer's {@code partition.assignment.strategy},
    * the process file is (de-)serialized by Jackson in the state directory.
