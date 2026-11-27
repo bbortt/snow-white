@@ -61,7 +61,7 @@ webapp and the standalone CLI have their own contracts (`004-technology-contract
   Until it is, a still-required plain `Build and Test` never reports and blocks every PR, while the
   two real legs are advisory.
   Same for a third JDK: add its context there, or the new leg does not gate.
-- Spring Boot 4.1.1, via `spring-boot-dependencies` BOM import (`spring-boot.version` in the root
+- Spring Boot 4.2.0, via `spring-boot-dependencies` BOM import (`spring-boot.version` in the root
   `pom.xml`).
 - Maven multi-module reactor (`./mvnw -b smart package`, `-pl :<artifactId> -am` for scoped
   builds).

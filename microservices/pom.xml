@@ -40,7 +40,6 @@
     <io.opentelemetry.javaagent.version>
       2.32.0
     </io.opentelemetry.javaagent.version>
-    <kafka-streams.version>4.3.1</kafka-streams.version>
     <org.flywaydb.version>13.12.2</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.2.0</org.springdoc.version>
@@ -65,13 +64,6 @@
         <scope>import</scope>
       </dependency>
 
-      <dependency>
-        <groupId>io.opentelemetry</groupId>
-        <artifactId>opentelemetry-bom</artifactId>
-        <version>${io.opentelemetry.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <groupId>io.opentelemetry.instrumentation</groupId>
         <artifactId>opentelemetry-instrumentation-bom</artifactId>
@@ -102,22 +94,6 @@
         <version>2.0.5</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-streams</artifactId>
-        <version>${kafka-streams.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-clients</artifactId>
-        <version>${kafka-streams.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-streams-test-utils</artifactId>
-        <version>${kafka-streams.version}</version>
       </dependency>
 
       <dependency>

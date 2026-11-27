@@ -36,7 +36,9 @@
     <!-- Default optimization configuration for native image during development -->
     <native-maven-plugin.optimization>-0B</native-maven-plugin.optimization>
 
-    <confluent.version>8.3.2</confluent.version>
+    <!-- 8.4.x is the first release compiled against kafka 4.4's relocated
+         org.apache.kafka.common.utils.internals.ByteUtils -->
+    <confluent.version>8.4.1</confluent.version>
     <google-protobuf.version>4.36.2</google-protobuf.version>
     <grpc.version>1.85.1</grpc.version>
     <spring-cloud.version>4.1.4</spring-cloud.version>
