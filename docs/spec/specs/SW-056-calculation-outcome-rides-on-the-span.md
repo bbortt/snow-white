@@ -11,8 +11,11 @@ distinguishable from a failing gate
 **Status**: planned
 
 **Description**
-Each coverage calculation sets the bounded `snow.white.outcome` attribute on its span, and the
-connector promotes that attribute to a dimension of the metrics it derives.
+Each coverage calculation sets the bounded `snow.white.outcome` attribute on the span of
+`OpenApiCoverageCalculationProcessor`'s record handling — the one span open where the outcome is
+decided, and the one span per calculation
+([SW-055](SW-055-coverage-phases-are-the-span-boundary.md)) — and the connector promotes that
+attribute to a dimension of the metrics it derives.
 The connector's `dimensions` list is global rather than per-metric, so the attribute reaches both:
 the `snow.white.span.calls` counter, which is what this spec is for, and the
 `snow.white.span.duration` histogram, which gains a split by outcome at no extra cost and answers
@@ -37,7 +40,8 @@ The value set is closed, and each value names a branch the coverage stream takes
 - `other` — the fallback branch.
 
 The success path sets the attribute to `ok` rather than leaving it unset, so the counter's
-denominator is the calculation count and a ratio needs no second metric.
+denominator is the calculation count — read over the series carrying the attribute, which the
+connector counts per span rather than per calculation — and a ratio needs no second metric.
 
 The attribute carries the **reason class only**.
 The root cause message stays in the log line that already reports it and is never promoted to a
