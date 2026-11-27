@@ -20,6 +20,10 @@ is interchangeable: the chart adds `k8s_attributes`, the development config adds
 `groupbyattrs/service` and exports through an `otlp_grpc/grafana` the chart does not define.
 This spec therefore states what each configuration must contain, not that one can be copied into
 the other.
+Each connector carries `namespace: snow.white.span` and a histogram `unit` of `s` rather than the
+defaults, which is what produces the pair
+[ARCH-026](ARCH-026-durations-derived-from-spans-counts-instrumented.md) names in the seconds it
+fixes: that spec names the metrics, and this one is where the naming is configured.
 
 That pipeline is carved out explicitly rather than hung off an existing one: a `traces/span-metrics`
 pipeline that receives from `otlp` and exports to the connector alone.
@@ -111,6 +115,11 @@ dedicated `traces/span-metrics` pipeline whose processors are `filter/all-extern
 A review confirms `filter/all-external-services` names every Snow-White service, `api-index-api`
 and `mcp-api` included, and names them identically in both configurations.
 A review confirms `otel-collector/config.yaml` carries no connector.
+A review of both configurations reads back the connector's `namespace` and its histogram `unit`
+against the names and the seconds unit
+[ARCH-026](ARCH-026-durations-derived-from-spans-counts-instrumented.md) fixes, since the
+connector's defaults are `traces.span.metrics` and milliseconds and every other check here passes
+with them in place.
 A Helm template test renders the chart with `connectToExternalOtelCollector.exportTraces` disabled
 and `exportMetrics` enabled, and asserts the connector and its pipeline are still present and
 wired to the metrics exporters.
