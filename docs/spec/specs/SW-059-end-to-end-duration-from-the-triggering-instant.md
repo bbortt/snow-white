@@ -50,9 +50,17 @@ A report swept to `TIMED_OUT` is recorded too, so the slowest outcomes are prese
 censored.
 This requires the housekeeper to know the ages of the rows it sweeps, which its current bulk
 `UPDATE ... WHERE createdAt < cutoff AND status IN (NOT_STARTED, IN_PROGRESS)` does not surface.
-The housekeeper therefore reads the `createdAt` values it is about to transition — the same instants
-the dispatched records carried — within the same transaction, and records one observation per swept
-report.
+The sweep therefore records one observation for exactly the rows it transitioned, carrying their
+`createdAt` values — the same instants the dispatched records carried.
+The ages it records and the rows it transitions must come from the same decision: either the
+statement that transitions them also returns their `createdAt`, or a locked read in the same
+transaction holds the candidates until the update commits.
+An unlocked read of the rows the sweep is about to transition is not sufficient, because a report
+that reaches a terminal status between that read and the update is excluded by the update's status
+filter, and would be recorded as `TIMED_OUT` carrying the duration of a calculation that in fact
+completed.
+The observations are published once the sweep's transaction commits, so a rolled-back sweep leaves
+its rows to the next one rather than observing them twice.
 
 **Rationale**
 No single span covers this duration, which is why it is the one duration instrumented in code
@@ -89,6 +97,8 @@ An integration test triggers a calculation with a known `initiatedAt`, completes
 asserts the histogram records a duration measured from that instant and not from the dispatch or
 the record timestamp.
 A test asserts a report swept to `TIMED_OUT` is recorded with that terminal status.
+A test asserts the sweep records observations for exactly the rows it transitioned, and that a sweep
+whose transaction rolls back records none.
 A test asserts exactly one observation per report, including a report whose results arrive in
 several batches, a report observed as `PASSED` that a later result flips to `FAILED`, and a report
 whose last result is linked after the housekeeper swept it to `TIMED_OUT`.
