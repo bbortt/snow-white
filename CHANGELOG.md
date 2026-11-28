@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.7.0](https://github.com/bbortt/snow-white/compare/v2.6.3...v2.7.0) (2026-11-28)
+
+### Features
+
+- **openapi-coverage-stream:** record the calculation outcome on the span ([6127060](https://github.com/bbortt/snow-white/commit/6127060b464c6f7a2766f19fa2c28f638b38dda0))
+
+### Bug Fixes
+
+- **api-gateway:** make the webapp tsconfig TypeScript 6 clean ([700dcc4](https://github.com/bbortt/snow-white/commit/700dcc439bf1dbfd4c910649dd35a31da2082c43))
+- **cli:** exempt test doubles from no-unsafe-class-instance-assignment ([d061e82](https://github.com/bbortt/snow-white/commit/d061e8214ea3ddc184ed392b15174c3b1cd6eae6))
+- **otel-collector:** admit api-index-api and mcp-api telemetry ([89fc29d](https://github.com/bbortt/snow-white/commit/89fc29dd3b8954068c294d53fd186752870c3ada))
+
+### Documentation
+
+- **ARCH-027:** read back the connector's namespace and unit ([608e402](https://github.com/bbortt/snow-white/commit/608e4027d62687146bf79f681693173c87087357))
+- **STR-030:** correct the connector's name, pipeline and admission ([40a7a87](https://github.com/bbortt/snow-white/commit/40a7a8773b3aaa53a27782f33203226e78dcb2a5))
+- **STR-030:** fix the outcome taxonomy, the duration edge and the registry ([2363b90](https://github.com/bbortt/snow-white/commit/2363b90aae55484c4dc04f95dacd28ec7a4ab5b8))
+- **STR-030:** promote the domain metrics specs ([c753ca8](https://github.com/bbortt/snow-white/commit/c753ca8c1b8e8ed8f7e5abb5cfb67ef923d392a1))
+- **STR-030:** reconcile the promoted specs with the code they describe ([ea200dc](https://github.com/bbortt/snow-white/commit/ea200dcdf3a58f0a93c04fc2a1b3fe57a0bacb59))
+- **STR-030:** the agent bridges only the global registry, in both modules ([b6b5b89](https://github.com/bbortt/snow-white/commit/b6b5b890856aa18005a7766c9a11bf174b3fc0dd))
+- **SW-056:** name the span the outcome rides on ([f510b6a](https://github.com/bbortt/snow-white/commit/f510b6a23e70a83196dbd986b8b6a69a91a116ed))
+- **SW-057:** drop the partial-counts-on-abort sentence ([f7d74b8](https://github.com/bbortt/snow-white/commit/f7d74b8229ea3d1e79d23ad5216d8bf1cc705cf0))
+- **SW-059:** the sweep records the ages of the rows it transitioned ([f4a0d96](https://github.com/bbortt/snow-white/commit/f4a0d963b2bb25cede54f180cc8855238f0d9da7))
+
 ## [2.6.3](https://github.com/bbortt/snow-white/compare/v2.6.2...v2.6.3) (2026-11-25)
 
 ### Bug Fixes
