@@ -40,7 +40,7 @@
     <io.opentelemetry.javaagent.version>
       2.32.0
     </io.opentelemetry.javaagent.version>
-    <org.flywaydb.version>13.12.2</org.flywaydb.version>
+    <org.flywaydb.version>13.13.0</org.flywaydb.version>
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <org.springdoc.version>3.2.0</org.springdoc.version>
     <!-- The 2.0.x line is the one built against Spring Boot 4.1; 1.1.x targets Boot 3. -->
