@@ -321,6 +321,8 @@ export default defineConfig(
           '@typescript-eslint/no-unsafe-argument': 'off',
           '@typescript-eslint/no-unsafe-assignment': 'off',
           '@typescript-eslint/no-unsafe-call': 'off',
+          // a test double is an object literal standing in for an instance on purpose
+          '@typescript-eslint/no-unsafe-class-instance-assignment': 'off',
           '@typescript-eslint/no-unsafe-member-access': 'off',
           '@typescript-eslint/no-unsafe-return': 'off',
           'vitest/hoisted-apis-on-top': 'error',
